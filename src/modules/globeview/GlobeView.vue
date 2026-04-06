@@ -198,14 +198,8 @@ watch(
   () => nextTick(() => mlMap.value?.resize()),
 );
 
-const {
-  showHexGrid,
-  hexResolution,
-  autoResolution,
-  lineColor,
-  lineOpacity,
-  lineWidth,
-} = useH3HexGrid(mlMap);
+const { showHexGrid, hexResolution, autoResolution, lineColor, lineOpacity, lineWidth } =
+  useH3HexGrid(mlMap);
 
 const hexResolutionSlider = computed({
   get: () => [hexResolution.value],
@@ -373,12 +367,7 @@ onUnmounted(() => {
                       lineOpacity.toFixed(2)
                     }}</span>
                   </div>
-                  <Slider
-                    v-model="lineOpacitySlider"
-                    :min="0"
-                    :max="1"
-                    :step="0.05"
-                  />
+                  <Slider v-model="lineOpacitySlider" :min="0" :max="1" :step="0.05" />
                 </div>
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
@@ -387,12 +376,7 @@ onUnmounted(() => {
                       lineWidth.toFixed(1)
                     }}</span>
                   </div>
-                  <Slider
-                    v-model="lineWidthSlider"
-                    :min="0.5"
-                    :max="5"
-                    :step="0.1"
-                  />
+                  <Slider v-model="lineWidthSlider" :min="0.5" :max="5" :step="0.1" />
                 </div>
               </PopoverContent>
             </Popover>

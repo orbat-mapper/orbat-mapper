@@ -40,7 +40,6 @@ const basemapOptions = computed(() => getSupportedGlobeBasemaps(baseLayersStore.
               v-for="option in basemapOptions"
               :key="option.id"
               :value="option.id"
-              @select.prevent
             >
               {{ option.title }}
             </ContextMenuRadioItem>
