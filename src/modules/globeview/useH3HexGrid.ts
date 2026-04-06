@@ -1,14 +1,53 @@
 import { ref, watch, type ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
+import { polygonToCells, cellToBoundary } from "h3-js";
+import type { Feature, FeatureCollection, Polygon } from "geojson";
 import {
   registerH3Protocol,
-  unregisterH3Protocol,
   setH3Resolution,
   H3_PROTOCOL,
 } from "./h3TileProtocol";
+import icelandGeo from "./iceland.geo.json";
+import greenlandGeo from "./greenland.geo.json";
 
 const H3_SOURCE = "h3HexSource";
 const H3_LAYER_LINE = "h3HexLine";
+const ICELAND_SOURCE = "h3IcelandSource";
+const ICELAND_FILL_LAYER = "h3IcelandFill";
+const GREENLAND_SOURCE = "h3GreenlandSource";
+const GREENLAND_FILL_LAYER = "h3GreenlandFill";
+
+/** Build a GeoJSON FeatureCollection of H3 cells covering a country polygon */
+function buildCountryCells(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  geo: any,
+  res: number,
+): FeatureCollection<Polygon> {
+  const feature = geo.features[0];
+  const { type, coordinates } = feature.geometry;
+
+  // polygonToCells only accepts a single polygon; iterate over MultiPolygon parts
+  const polygons: number[][][][] =
+    type === "MultiPolygon" ? coordinates : [coordinates];
+
+  const cellSet = new Set<string>();
+  for (const poly of polygons) {
+    for (const cell of polygonToCells(poly, res, true)) {
+      cellSet.add(cell);
+    }
+  }
+
+  const features: Feature<Polygon>[] = Array.from(cellSet).map((cell) => {
+    const boundary = cellToBoundary(cell, true);
+    boundary.push(boundary[0]);
+    return {
+      type: "Feature",
+      properties: { h3index: cell },
+      geometry: { type: "Polygon", coordinates: [boundary] },
+    };
+  });
+  return { type: "FeatureCollection", features };
+}
 
 /** Approximate H3 resolution from map zoom level */
 function zoomToDefaultResolution(zoom: number): number {
@@ -57,8 +96,48 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
         maxzoom: tileZoom,
       });
     }
+    if (!map.getSource(ICELAND_SOURCE)) {
+      map.addSource(ICELAND_SOURCE, {
+        type: "geojson",
+        data: buildCountryCells(icelandGeo, hexResolution.value),
+      });
+    }
+    if (!map.getSource(GREENLAND_SOURCE)) {
+      map.addSource(GREENLAND_SOURCE, {
+        type: "geojson",
+        data: buildCountryCells(greenlandGeo, hexResolution.value),
+      });
+    }
+    const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
+    if (!map.getLayer(ICELAND_FILL_LAYER)) {
+      map.addLayer(
+        {
+          id: ICELAND_FILL_LAYER,
+          type: "fill",
+          source: ICELAND_SOURCE,
+          paint: {
+            "fill-color": "#ef4444",
+            "fill-opacity": 0.4,
+          },
+        },
+        beforeLayer,
+      );
+    }
+    if (!map.getLayer(GREENLAND_FILL_LAYER)) {
+      map.addLayer(
+        {
+          id: GREENLAND_FILL_LAYER,
+          type: "fill",
+          source: GREENLAND_SOURCE,
+          paint: {
+            "fill-color": "#10b981",
+            "fill-opacity": 0.4,
+          },
+        },
+        beforeLayer,
+      );
+    }
     if (!map.getLayer(H3_LAYER_LINE)) {
-      const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
       map.addLayer(
         {
           id: H3_LAYER_LINE,
@@ -88,7 +167,11 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
 
   function removeSourceAndLayers(map: MlMap) {
     if (map.getLayer(H3_LAYER_LINE)) map.removeLayer(H3_LAYER_LINE);
+    if (map.getLayer(GREENLAND_FILL_LAYER)) map.removeLayer(GREENLAND_FILL_LAYER);
+    if (map.getLayer(ICELAND_FILL_LAYER)) map.removeLayer(ICELAND_FILL_LAYER);
     if (map.getSource(H3_SOURCE)) map.removeSource(H3_SOURCE);
+    if (map.getSource(GREENLAND_SOURCE)) map.removeSource(GREENLAND_SOURCE);
+    if (map.getSource(ICELAND_SOURCE)) map.removeSource(ICELAND_SOURCE);
   }
 
   /** Force MapLibre to re-fetch all tiles (after resolution change) */
