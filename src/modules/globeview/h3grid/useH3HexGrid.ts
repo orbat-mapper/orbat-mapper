@@ -13,6 +13,7 @@ const ICELAND_SOURCE = "h3IcelandSource";
 const ICELAND_FILL_LAYER = "h3IcelandFill";
 const GREENLAND_SOURCE = "h3GreenlandSource";
 const GREENLAND_FILL_LAYER = "h3GreenlandFill";
+const COUNTRY_OVERLAY_MAX_RES = 5;
 
 /**
  * LRU cache for computed country cell FeatureCollections. Keyed on geo object
@@ -119,6 +120,10 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
       : hexResolution.value;
   }
 
+  function resolveCountryOverlayResolution(res: number): number {
+    return Math.min(res, COUNTRY_OVERLAY_MAX_RES);
+  }
+
   function addH3SourceAndLayer(map: MlMap, res: number) {
     if (!map.getSource(H3_SOURCE)) {
       const tileZoom = h3ResToTileZoom(res);
@@ -149,28 +154,30 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
   }
 
   function updateCountrySourceData(map: MlMap, res: number) {
+    const overlayRes = resolveCountryOverlayResolution(res);
     const icelandSource = map.getSource(ICELAND_SOURCE) as GeoJSONSource | undefined;
     if (icelandSource) {
-      icelandSource.setData(buildCountryCells(icelandGeo, res));
+      icelandSource.setData(buildCountryCells(icelandGeo, overlayRes));
     }
 
     const greenlandSource = map.getSource(GREENLAND_SOURCE) as GeoJSONSource | undefined;
     if (greenlandSource) {
-      greenlandSource.setData(buildCountryCells(greenlandGeo, res));
+      greenlandSource.setData(buildCountryCells(greenlandGeo, overlayRes));
     }
   }
 
   function addCountrySourcesAndLayers(map: MlMap, res: number) {
+    const overlayRes = resolveCountryOverlayResolution(res);
     if (!map.getSource(ICELAND_SOURCE)) {
       map.addSource(ICELAND_SOURCE, {
         type: "geojson",
-        data: buildCountryCells(icelandGeo, res),
+        data: buildCountryCells(icelandGeo, overlayRes),
       });
     }
     if (!map.getSource(GREENLAND_SOURCE)) {
       map.addSource(GREENLAND_SOURCE, {
         type: "geojson",
-        data: buildCountryCells(greenlandGeo, res),
+        data: buildCountryCells(greenlandGeo, overlayRes),
       });
     }
     const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
@@ -252,6 +259,18 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
 
   const debouncedUpdateResolution = useDebounceFn(updateResolution, 200);
 
+  function onZoom() {
+    if (!autoResolution.value) return;
+
+    const map = mlMap.value;
+    if (!map || !showHexGrid.value) return;
+
+    const res = resolveTargetResolution(map);
+    if (res < hexResolution.value) {
+      applyResolution(map, res);
+    }
+  }
+
   function onZoomEnd() {
     if (!autoResolution.value) return;
     debouncedUpdateResolution();
@@ -271,10 +290,12 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     mlMap,
     (map, oldMap) => {
       if (oldMap) {
+        oldMap.off("zoom", onZoom);
         oldMap.off("zoomend", onZoomEnd);
         oldMap.off("style.load", onStyleLoad);
       }
       if (map) {
+        map.on("zoom", onZoom);
         map.on("zoomend", onZoomEnd);
         map.on("style.load", onStyleLoad);
         if (showHexGrid.value) {
