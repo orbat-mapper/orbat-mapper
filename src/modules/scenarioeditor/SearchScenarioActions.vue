@@ -131,7 +131,8 @@ onScenarioAction(({ action }) => {
 
 onFeatureSelect(({ featureId }) => {
   ui.activeTabIndex = TAB_LAYERS;
-  const { feature, layer } = activeScenario.geo.getFeatureById(featureId);
+  const { layerItem: feature, layer } =
+    activeScenario.geo.getGeometryLayerItemById(featureId);
   nextTick(() => {
     if (layer) {
       layer._isOpen = true;

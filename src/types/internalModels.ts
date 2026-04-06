@@ -21,16 +21,24 @@ import type { DropTarget, EntityId } from "./base";
 import type {
   FeatureId,
   RangeRingGroup,
-  ScenarioFeature,
-  ScenarioFeatureMeta,
   ScenarioImageLayer,
   ScenarioKMLLayer,
-  ScenarioLayer,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
 import type { Optional } from "@/types/helpers";
 import type { SymbolFillColor } from "@/config/colors.ts";
+import type {
+  GeometryLayerItemUpdate,
+  NGeometryLayerItem,
+  NScenarioLayerItem,
+  NScenarioLayerItemsLayer,
+} from "@/types/scenarioLayerItems";
+import type {
+  NScenarioOverlayLayer,
+  NScenarioReferenceLayer,
+  NScenarioStackLayer,
+} from "@/types/scenarioStackLayers";
 
 export interface NUnit extends Omit<
   Unit,
@@ -121,23 +129,18 @@ export interface NSideGroup extends Omit<SideGroup, "subUnits" | "_pid"> {
   _pid: EntityId;
 }
 
-export interface NScenarioLayer extends Omit<ScenarioLayer, "features"> {
-  features: FeatureId[];
+export interface NScenarioLayer extends Omit<NScenarioLayerItemsLayer, "items"> {
+  items: FeatureId[];
   _isOpen?: boolean;
 }
-export interface NScenarioFeature extends ScenarioFeature {
-  _pid: FeatureId;
-}
-
-export interface ScenarioFeatureUpdate extends Partial<
-  Omit<NScenarioFeature, "id" | "meta">
-> {
-  meta?: Partial<ScenarioFeatureMeta>;
-  _hidden?: boolean;
-}
+export interface NScenarioMapStackLayer extends NScenarioReferenceLayer {}
+export type { NScenarioOverlayLayer, NScenarioReferenceLayer, NScenarioStackLayer };
 export interface ScenarioLayerUpdate extends Partial<
-  Omit<NScenarioLayer, "id" | "features">
-> {}
+  Omit<NScenarioLayer, "id" | "items">
+> {
+  items?: FeatureId[];
+}
+export type { NGeometryLayerItem, NScenarioLayerItem, GeometryLayerItemUpdate };
 
 export interface ScenarioImageLayerUpdate extends Partial<
   Omit<ScenarioImageLayer, "id">
@@ -153,6 +156,10 @@ export type ScenarioMapLayerUpdate =
   | ScenarioTileJSONLayerUpdate
   | ScenarioXYZLayerUpdate
   | ScenarioKMLLayerUpdate;
+export type ScenarioStackLayerUpdate =
+  | ScenarioLayerUpdate
+  | ScenarioMapLayerUpdate
+  | Record<string, unknown>;
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id" | "subUnits">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}

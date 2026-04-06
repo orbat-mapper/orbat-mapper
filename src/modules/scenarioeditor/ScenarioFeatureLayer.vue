@@ -11,7 +11,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import EditLayerInlineForm from "@/modules/scenarioeditor/EditLayerInlineForm.vue";
 import ScenarioFeatureListItem from "@/modules/scenarioeditor/ScenarioFeatureListItem.vue";
-import type { NScenarioFeature, NScenarioLayer } from "@/types/internalModels";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { MenuItemData } from "@/components/types";
@@ -32,6 +32,7 @@ import {
   idle,
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
+  isScenarioMapLayerDragItem,
   type ItemState,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
@@ -46,20 +47,20 @@ import { Button } from "@/components/ui/button";
 
 const props = defineProps<{
   layer: NScenarioLayer;
-  features: NScenarioFeature[];
+  features: NGeometryLayerItem[];
   layerMenuItems?: MenuItemData<ScenarioLayerAction>[];
   featureMenuItems?: MenuItemData<ScenarioFeatureActions>[];
 }>();
 const emit = defineEmits<{
   (
     e: "feature-click",
-    feature: NScenarioFeature,
+    feature: NGeometryLayerItem,
     layer: NScenarioLayer,
     event: MouseEvent,
   ): void;
   (
     e: "feature-double-click",
-    feature: NScenarioFeature,
+    feature: NGeometryLayerItem,
     layer: NScenarioLayer,
     event: MouseEvent,
   ): void;
@@ -103,7 +104,7 @@ const defaultLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
 
-function toggleFeatureVisibility(feature: NScenarioFeature) {
+function toggleFeatureVisibility(feature: NGeometryLayerItem) {
   geo.updateFeature(feature.id, { meta: { isHidden: !feature.meta.isHidden } });
 }
 
@@ -132,7 +133,8 @@ onMounted(() => {
         (isScenarioFeatureDragItem(source.data) &&
           source.data.feature._pid !== props.layer.id) ||
         (isScenarioFeatureLayerDragItem(source.data) &&
-          source.data.layer.id !== props.layer.id),
+          source.data.layer.id !== props.layer.id) ||
+        isScenarioMapLayerDragItem(source.data),
       onDragEnter: ({ self }) => {
         isDragOver.value = true;
         const closestEdge = extractClosestEdge(self.data);
@@ -146,7 +148,10 @@ onMounted(() => {
         ) {
           startOpenTimeout();
         }
-        if (isScenarioFeatureLayerDragItem(self.data)) {
+        if (
+          isScenarioFeatureLayerDragItem(self.data) ||
+          isScenarioMapLayerDragItem(self.data)
+        ) {
           const closestEdge = extractClosestEdge(self.data);
           itemState.value = { type: "drag-over", closestEdge: closestEdge };
         }
@@ -158,7 +163,10 @@ onMounted(() => {
       },
       getData({ input, element, source }) {
         const data = getScenarioFeatureLayerDragItem({ layer: props.layer });
-        if (isScenarioFeatureLayerDragItem(source.data)) {
+        if (
+          isScenarioFeatureLayerDragItem(source.data) ||
+          isScenarioMapLayerDragItem(source.data)
+        ) {
           return attachClosestEdge(data, {
             input,
             element,

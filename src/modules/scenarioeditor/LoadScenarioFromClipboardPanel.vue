@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { type EncryptedScenario, type Scenario } from "@/types/scenarioModels";
+import { type EncryptedScenario } from "@/types/scenarioModels";
 import { ClipboardPasteIcon } from "lucide-vue-next";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const emit = defineEmits(["loaded"]);
 
@@ -21,7 +22,7 @@ async function pasteFromClipboard() {
 
 function processContent(content: string) {
   try {
-    const scenarioData = JSON.parse(content) as Scenario | EncryptedScenario;
+    const scenarioData = JSON.parse(content) as LoadableScenario | EncryptedScenario;
     if (
       scenarioData?.type === "ORBAT-mapper" ||
       scenarioData?.type === "ORBAT-mapper-encrypted"

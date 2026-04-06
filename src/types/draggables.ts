@@ -1,10 +1,11 @@
 import type {
-  NScenarioFeature,
+  NGeometryLayerItem,
   NScenarioLayer,
   NSide,
   NSideGroup,
   NUnit,
 } from "@/types/internalModels";
+import type { ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 
 export type ItemState =
@@ -16,6 +17,7 @@ export const idle = { type: "idle" } as const;
 
 const privateKey = Symbol("scenarioFeature");
 const _scnFeatureLayerKey = Symbol("scenarioFeatureLayer");
+const _scnMapLayerKey = Symbol("scenarioMapLayer");
 const privateUnitDragKey = Symbol("unit");
 const privateSideKey = Symbol("side");
 const privateSideGroupKey = Symbol("sideGroup");
@@ -24,7 +26,7 @@ export type UnitDragItemSource = "orbatTree" | "breadcrumbs" | "detailsPanel";
 
 export type ScenarioFeatureDragItem = {
   [privateKey]: boolean;
-  feature: NScenarioFeature;
+  feature: NGeometryLayerItem;
 };
 
 export type ScenarioFeatureLayerDragItem = {
@@ -123,4 +125,24 @@ export function isScenarioFeatureLayerDragItem(
   data: Record<string | symbol, unknown>,
 ): data is ScenarioFeatureLayerDragItem {
   return Boolean(data[_scnFeatureLayerKey]);
+}
+
+export type ScenarioMapLayerDragItem = {
+  [_scnMapLayerKey]: boolean;
+  mapLayer: ScenarioMapLayer;
+};
+
+export function getScenarioMapLayerDragItem(
+  data: Omit<ScenarioMapLayerDragItem, typeof _scnMapLayerKey>,
+): ScenarioMapLayerDragItem {
+  return {
+    [_scnMapLayerKey]: true,
+    ...data,
+  };
+}
+
+export function isScenarioMapLayerDragItem(
+  data: Record<string | symbol, unknown>,
+): data is ScenarioMapLayerDragItem {
+  return Boolean(data[_scnMapLayerKey]);
 }

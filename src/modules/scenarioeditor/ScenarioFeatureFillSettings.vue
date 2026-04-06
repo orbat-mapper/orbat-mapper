@@ -6,11 +6,11 @@ import {
   type FillStyleSpec,
   type SimpleStyleSpec,
 } from "@/geo/simplestyle";
-import { type ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
 
-const props = defineProps<{ feature: ScenarioFeature }>();
+const props = defineProps<{ feature: GeometryLayerItem }>();
 const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();

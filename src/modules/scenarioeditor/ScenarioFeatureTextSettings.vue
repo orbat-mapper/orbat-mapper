@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { SimpleStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
-import type { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import ToggleField from "@/components/ToggleField.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 
-const props = defineProps<{ feature: ScenarioFeature }>();
+const props = defineProps<{ feature: GeometryLayerItem }>();
 const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();

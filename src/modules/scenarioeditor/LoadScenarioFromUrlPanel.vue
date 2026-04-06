@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useToggle } from "@vueuse/core";
-import { type Scenario } from "@/types/scenarioModels";
 import { isUrl } from "@/utils";
 import { IconWebPlus } from "@iconify-prerendered/vue-mdi";
 import LoadScenarioUrlForm from "@/modules/scenarioeditor/LoadScenarioUrlForm.vue";
 import { useRoute } from "vue-router";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const emit = defineEmits(["update:modelValue", "loaded"]);
 
@@ -27,7 +27,7 @@ onMounted(() => {
 async function fetchScenario(url: string) {
   try {
     const response = await fetch(url);
-    const jsonData = (await response.json()) as Scenario;
+    const jsonData = (await response.json()) as LoadableScenario;
     if (
       jsonData?.type === "ORBAT-mapper" ||
       jsonData?.type === "ORBAT-mapper-encrypted"

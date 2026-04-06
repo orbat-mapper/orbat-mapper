@@ -29,6 +29,10 @@ import {
 import { UseDark } from "@vueuse/components";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { Separator } from "@/components/ui/separator";
+import {
+  type LoadableScenario,
+  upgradeScenarioIfNecessary,
+} from "@/scenariostore/upgrade";
 
 const route = useRoute();
 const router = useRouter();
@@ -96,7 +100,7 @@ onMounted(async () => {
         currentEncryptedScenario.value = loadedScenario as EncryptedScenario;
         showDecryptModal.value = true;
       } else {
-        await processLoadedScenario(loadedScenario as Scenario);
+        await processLoadedScenario(loadedScenario);
       }
     } catch (e: any) {
       console.error("Failed to load clipboard scenario", e);
@@ -155,8 +159,8 @@ async function handleDownload() {
   }
 }
 
-async function processLoadedScenario(scenario: Scenario) {
-  scenarioData.value = scenario;
+async function processLoadedScenario(scenario: Scenario | LoadableScenario) {
+  scenarioData.value = upgradeScenarioIfNecessary(scenario);
   hasConflict.value = false;
   existingScenario.value = null;
 

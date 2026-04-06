@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { type Scenario } from "@/types/scenarioModels";
 import InputGroup from "@/components/InputGroup.vue";
 import { computed, ref } from "vue";
 import { isUrl } from "@/utils";
 import { useClipboard } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -30,7 +30,7 @@ async function fetchScenario() {
   }
   try {
     const response = await fetch(url);
-    const jsonData = (await response.json()) as Scenario;
+    const jsonData = (await response.json()) as LoadableScenario;
     if (
       jsonData?.type === "ORBAT-mapper" ||
       jsonData?.type === "ORBAT-mapper-encrypted"

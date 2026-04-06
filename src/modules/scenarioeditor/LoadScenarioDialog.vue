@@ -11,6 +11,7 @@ import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { defineAsyncComponent } from "vue";
 import type { EncryptedScenario } from "@/types/scenarioModels";
+import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -35,13 +36,13 @@ const {
   routeName: props.routeName,
 });
 
-function onLoaded(scenario: Scenario | EncryptedScenario) {
+function onLoaded(scenario: LoadableScenario | EncryptedScenario) {
   if (scenario.type === "ORBAT-mapper-encrypted") {
     currentEncryptedScenario.value = scenario as EncryptedScenario;
     showDecryptModal.value = true;
     return;
   }
-  loadScenario(scenario as Scenario, props.routeName);
+  loadScenario(scenario, props.routeName);
   open.value = false;
 }
 

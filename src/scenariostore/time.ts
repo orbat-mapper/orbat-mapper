@@ -2,7 +2,7 @@ import type { NewScenarioStore } from "./newScenarioStore";
 import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
 import type {
   NScenarioEvent,
-  NScenarioFeature,
+  NGeometryLayerItem,
   NUnit,
   ScenarioEventUpdate,
 } from "@/types/internalModels";
@@ -15,10 +15,16 @@ import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import type { CurrentScenarioFeatureState } from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
+import {
+  createInitialGeometryLayerItemState,
+  type CurrentGeometryLayerItemState,
+  isNGeometryLayerItem,
+  projectGeometryLayerItemState,
+} from "@/types/scenarioLayerItems";
+import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -179,15 +185,6 @@ export function updateCurrentUnitState(
   unit._state = currentState;
 }
 
-function createInitialFeatureState(
-  feature: NScenarioFeature,
-): CurrentScenarioFeatureState | null {
-  return {
-    t: Number.MIN_SAFE_INTEGER,
-    geometry: feature.geometry,
-  };
-}
-
 export function useScenarioTime(store: NewScenarioStore) {
   const { state, update } = store;
 
@@ -202,7 +199,11 @@ export function useScenarioTime(store: NewScenarioStore) {
       }),
     );
     syncTimedHierarchyProjection(state, timestamp);
-    Object.values(state.layerMap).forEach((layer) => {
+    (
+      Object.values(state.layerStackMap).filter(
+        isScenarioOverlayLayer,
+      ) as import("@/types/scenarioStackLayers").NScenarioOverlayLayer[]
+    ).forEach((layer) => {
       const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
       const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;
       const oldHidden = layer._hidden;
@@ -210,11 +211,11 @@ export function useScenarioTime(store: NewScenarioStore) {
       if (oldHidden !== layer._hidden) {
         state.featureStateCounter++;
       }
-      layer.features.forEach((featureId) => {
-        const feature = state.featureMap[featureId];
+      layer.items.forEach((featureId) => {
+        const feature = state.layerItemMap[featureId];
+        if (!feature || !isNGeometryLayerItem(feature)) return;
         const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
-        if (!feature) return;
         const oldHidden = feature._hidden;
         feature._hidden =
           timestamp <= visibleFromT ||
@@ -224,10 +225,13 @@ export function useScenarioTime(store: NewScenarioStore) {
           state.featureStateCounter++;
         }
         if (feature.state?.length) {
-          let currentState = createInitialFeatureState(feature);
+          let currentState = createInitialGeometryLayerItemState(feature);
           for (const s of feature.state) {
             if (s.t <= timestamp) {
-              currentState = { ...currentState, ...s };
+              currentState = {
+                ...currentState,
+                ...projectGeometryLayerItemState(s),
+              };
             } else {
               break;
             }
@@ -305,14 +309,16 @@ export function useScenarioTime(store: NewScenarioStore) {
       });
     });
 
-    Object.values(state.featureMap).forEach((feature) => {
-      (feature?.state || []).forEach((s) => {
-        // round to nearest hour
-        const t = Math.round(s.t / 3600000) * 3600000;
-        histogram[t] = (histogram[t] || 0) + 1;
-        max = Math.max(max, histogram[t]);
+    Object.values(state.layerItemMap)
+      .filter(isNGeometryLayerItem)
+      .forEach((feature) => {
+        (feature?.state || []).forEach((s) => {
+          // round to nearest hour
+          const t = Math.round(s.t / 3600000) * 3600000;
+          histogram[t] = (histogram[t] || 0) + 1;
+          max = Math.max(max, histogram[t]);
+        });
       });
-    });
 
     return {
       histogram: Object.entries(histogram).map(([k, v]) => ({ t: +k, count: v })),

@@ -830,7 +830,7 @@ export function convertParsedUnitsToOrbatMapperScenario(
   const scenario: Scenario = {
     type: "ORBAT-mapper",
     id: scenarioId,
-    version: "2.0.0",
+    version: "3.0.0",
     meta: {
       createdDate: now,
       lastModifiedDate: now,
@@ -838,8 +838,7 @@ export function convertParsedUnitsToOrbatMapperScenario(
     name: "Text to ORBAT Scenario",
     sides: [side],
     events: [],
-    layers: [],
-    mapLayers: [],
+    layerStack: [{ id: nanoid(), kind: "overlay", name: "Features", items: [] }],
   };
 
   return scenario;
