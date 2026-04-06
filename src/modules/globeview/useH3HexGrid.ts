@@ -18,7 +18,12 @@ const ICELAND_FILL_LAYER = "h3IcelandFill";
 const GREENLAND_SOURCE = "h3GreenlandSource";
 const GREENLAND_FILL_LAYER = "h3GreenlandFill";
 
-/** Cache computed country cell FeatureCollections per geo object and resolution */
+/**
+ * LRU cache for computed country cell FeatureCollections. Keyed on geo object
+ * with a nested Map<res, FC>. Each nested Map keeps at most MAX_CACHED_RES
+ * entries; least-recently-used entries are evicted first.
+ */
+const MAX_CACHED_RES = 3;
 const countryCellsCache = new WeakMap<object, Map<number, FeatureCollection<Polygon>>>();
 
 /** Build a GeoJSON FeatureCollection of H3 cells covering a country polygon */
@@ -28,12 +33,17 @@ function buildCountryCells(
   res: number,
 ): FeatureCollection<Polygon> {
   let byRes = countryCellsCache.get(geo);
-  if (byRes) {
-    const cached = byRes.get(res);
-    if (cached) return cached;
-  } else {
+  if (!byRes) {
     byRes = new Map();
     countryCellsCache.set(geo, byRes);
+  }
+
+  // LRU hit: delete + re-set to move entry to the "newest" position.
+  const cached = byRes.get(res);
+  if (cached) {
+    byRes.delete(res);
+    byRes.set(res, cached);
+    return cached;
   }
 
   const feature = geo.features[0];
@@ -60,7 +70,14 @@ function buildCountryCells(
     };
   });
   const fc: FeatureCollection<Polygon> = { type: "FeatureCollection", features };
+
   byRes.set(res, fc);
+  // Evict oldest entries if over the cap.
+  while (byRes.size > MAX_CACHED_RES) {
+    const oldest = byRes.keys().next().value;
+    if (oldest === undefined) break;
+    byRes.delete(oldest);
+  }
   return fc;
 }
 
