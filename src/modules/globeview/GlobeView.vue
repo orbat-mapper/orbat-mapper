@@ -54,6 +54,7 @@ import { useUiStore } from "@/stores/uiStore";
 import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
 import { useH3HexGrid } from "@/modules/globeview/h3grid";
+import { getHexagonEdgeLengthAvg, getHexagonAreaAvg } from "h3-js";
 import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
@@ -208,6 +209,47 @@ const hexResolutionSlider = computed({
   },
 });
 
+const showHexEdge = ref(true);
+const showHexArea = ref(true);
+const hexUnitSystem = ref<"si" | "imperial">("si");
+
+function formatLength(km: number): string {
+  if (hexUnitSystem.value === "imperial") {
+    const mi = km * 0.621371;
+    if (mi >= 1) return `${mi.toFixed(mi >= 100 ? 0 : 1)} mi`;
+    const ft = mi * 5280;
+    return `${ft < 100 ? ft.toFixed(0) : Math.round(ft).toLocaleString()} ft`;
+  }
+  if (km >= 1) return `${km.toFixed(km >= 100 ? 0 : 1)} km`;
+  return `${(km * 1000).toFixed(0)} m`;
+}
+
+function formatArea(km2: number): string {
+  if (hexUnitSystem.value === "imperial") {
+    const mi2 = km2 * 0.386102;
+    if (mi2 >= 1)
+      return `${mi2 < 10 ? mi2.toFixed(1) : Math.round(mi2).toLocaleString()} mi²`;
+    const ft2 = mi2 * 27878400;
+    return `${Math.round(ft2).toLocaleString()} ft²`;
+  }
+  if (km2 >= 1)
+    return `${km2 < 10 ? km2.toFixed(1) : Math.round(km2).toLocaleString()} km²`;
+  return `${(km2 * 1e6).toFixed(0)} m²`;
+}
+
+const hexSizeLabel = computed(() => {
+  if (!showHexEdge.value && !showHexArea.value) return "";
+  const res = hexResolution.value;
+  const parts: string[] = [];
+  if (showHexEdge.value) {
+    parts.push(`${formatLength(getHexagonEdgeLengthAvg(res, "km"))} edge`);
+  }
+  if (showHexArea.value) {
+    parts.push(formatArea(getHexagonAreaAvg(res, "km2")));
+  }
+  return `~${parts.join(" · ")}`;
+});
+
 const lineOpacitySlider = computed({
   get: () => [lineOpacity.value],
   set: ([v]: number[]) => {
@@ -344,6 +386,12 @@ onUnmounted(() => {
               />
               <span class="text-muted-foreground w-4 text-xs">{{ hexResolution }}</span>
             </template>
+            <span
+              v-if="hexSizeLabel"
+              class="text-muted-foreground text-xs whitespace-nowrap tabular-nums"
+              :title="`H3 resolution ${hexResolution}`"
+              >{{ hexSizeLabel }}</span
+            >
             <Popover>
               <PopoverTrigger as-child>
                 <Button variant="outline" size="icon" title="Hex grid style">
@@ -377,6 +425,32 @@ onUnmounted(() => {
                     }}</span>
                   </div>
                   <Slider v-model="lineWidthSlider" :min="0.5" :max="5" :step="0.1" />
+                </div>
+                <div class="space-y-2 border-t pt-3">
+                  <Label class="text-xs">Size display</Label>
+                  <ToggleField v-model="showHexEdge">Show edge length</ToggleField>
+                  <ToggleField v-model="showHexArea">Show area</ToggleField>
+                  <div class="flex items-center justify-between pt-1">
+                    <Label class="text-xs">Units</Label>
+                    <div class="flex gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        :variant="hexUnitSystem === 'si' ? 'default' : 'outline'"
+                        class="h-7 px-2 text-xs"
+                        @click="hexUnitSystem = 'si'"
+                        >SI</Button
+                      >
+                      <Button
+                        type="button"
+                        size="sm"
+                        :variant="hexUnitSystem === 'imperial' ? 'default' : 'outline'"
+                        class="h-7 px-2 text-xs"
+                        @click="hexUnitSystem = 'imperial'"
+                        >Imperial</Button
+                      >
+                    </div>
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
