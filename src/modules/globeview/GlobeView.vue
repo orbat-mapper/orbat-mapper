@@ -268,8 +268,10 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="bg-background flex h-full w-full flex-col">
-    <header class="bg-muted flex items-center justify-between border-b px-4 py-2">
-      <div class="flex items-center gap-4">
+    <header
+      class="bg-muted flex items-center justify-between gap-4 overflow-x-auto border-b px-4 py-2 [scrollbar-width:thin]"
+    >
+      <div class="flex shrink-0 items-center gap-4">
         <router-link to="/" class="text-muted-foreground hover:text-foreground">
           <ArrowLeftIcon class="size-5" />
         </router-link>
@@ -298,7 +300,7 @@ onUnmounted(() => {
           <GanttChartIcon class="size-4" />
         </Button>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex shrink-0 items-center gap-4">
         <FpsDisplay v-if="showDebug" />
         <div id="globetoolbar"></div>
         <div class="flex items-center gap-2">
