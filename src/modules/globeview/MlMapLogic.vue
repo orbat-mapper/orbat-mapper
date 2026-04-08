@@ -32,8 +32,14 @@ provide(activeScenarioKey, activeScenario);
 
 const { unitActions } = activeScenario;
 
-const symbolCache: Map<string, Record<string, any>> = new Map();
+type SymbolCacheEntry = {
+  sidc: string;
+  symbolOptions: ReturnType<typeof unitActions.getCombinedSymbolOptions>;
+};
+
+const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
+let shouldCenterOnNextStyleLoad = true;
 
 const playback = usePlaybackStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
@@ -107,7 +113,8 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
 function onStyleLoad() {
   usedImageIds.clear();
   setupMapLayers();
-  addUnits();
+  addUnits(shouldCenterOnNextStyleLoad);
+  shouldCenterOnNextStyleLoad = false;
 }
 
 mlMap.on("styleimagemissing", styleImageMissing);
@@ -131,11 +138,9 @@ function onMapMouseMove(e: MapMouseEvent) {
 mlMap.on("click", onMapClick);
 mlMap.on("mousemove", onMapMouseMove);
 
-onStyleLoad();
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
 }
-addUnits(true);
 
 watch(
   () => activeScenario.store.state.currentTime,

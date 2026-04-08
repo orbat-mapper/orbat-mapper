@@ -92,6 +92,42 @@ describe("MaplibreMap", () => {
     expect(setProjection).toHaveBeenCalled();
   });
 
+  it("updates the map style when the style changes without a basemap id change", async () => {
+    const wrapper = mount(MaplibreMap, {
+      props: {
+        basemapId: "osm",
+        styleSpec: {
+          version: 8,
+          sources: {},
+          layers: [],
+        },
+      },
+    });
+
+    await wrapper.setProps({
+      styleSpec: {
+        version: 8,
+        sources: {
+          osm: {
+            type: "raster",
+            tiles: ["https://tiles.example.com/{z}/{x}/{y}.png"],
+            tileSize: 256,
+          },
+        },
+        layers: [
+          {
+            id: "osm-raster",
+            type: "raster",
+            source: "osm",
+          },
+        ],
+      },
+    });
+    await nextTick();
+
+    expect(setStyle).toHaveBeenCalledTimes(1);
+  });
+
   it("emits MapLibre contextmenu events using the original mouse event", async () => {
     const wrapper = mount(MaplibreMap, {
       props: {

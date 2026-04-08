@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { GlobalEvents } from "vue-global-events";
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
@@ -15,11 +15,12 @@ import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 
+const activeScenario = injectStrict(activeScenarioKey);
 const {
   unitActions,
   store: { state },
   helpers: { getUnitById },
-} = injectStrict(activeScenarioKey);
+} = activeScenario;
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
@@ -37,6 +38,7 @@ const unitSettings = useUnitSettingsStore();
 const playback = usePlaybackStore();
 const recordingStore = useRecordingStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
+let featureActions: ReturnType<typeof useScenarioFeatureActions> | null = null;
 
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => getUnitById(id)),
@@ -46,12 +48,19 @@ const activeUnit = computed(
   () => (activeUnitId.value && getUnitById(activeUnitId.value)) || null,
 );
 
+watch(
+  () => geoStore.olMap,
+  (olMap) => {
+    featureActions = olMap ? useScenarioFeatureActions({ activeScenario, olMap }) : null;
+  },
+  { immediate: true },
+);
+
 function onFeatureAction(
   featureOrFeaturesId: FeatureId | FeatureId[],
   action: "zoom" | "pan" | "delete" | string,
 ) {
-  if (!geoStore.olMap) return;
-  useScenarioFeatureActions().onFeatureAction(featureOrFeaturesId, action);
+  featureActions?.onFeatureAction(featureOrFeaturesId, action);
 }
 
 const createNewUnit = () => {

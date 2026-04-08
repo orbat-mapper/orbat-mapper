@@ -83,7 +83,7 @@ onMounted(async () => {
 });
 
 watch(
-  () => props.basemapId,
+  () => [props.basemapId, props.styleSpec] as const,
   () => {
     if (!mlMap) return;
     mlMap.setStyle(props.styleSpec);

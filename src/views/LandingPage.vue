@@ -168,7 +168,6 @@ const features = [
               </router-link>
               <router-link
                 :to="{ name: GLOBE_ROUTE, params: { scenarioId: 'demo-falkland82' } }"
-                class=""
                 >Globe view</router-link
               >
 

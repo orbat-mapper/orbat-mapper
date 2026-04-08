@@ -17,6 +17,20 @@ const ML_EVENT_MAP: Record<MapEventType, string> = {
   singleclick: "click",
 };
 
+function toMapEventPayload(e: MapMouseEvent) {
+  const originalEvent = e.originalEvent as Event | undefined;
+
+  return {
+    coordinate: e.lngLat ? [e.lngLat.lng, e.lngLat.lat] : undefined,
+    pixel: e.point ? ([e.point.x, e.point.y] as [number, number]) : undefined,
+    stopPropagation: () => {
+      e.preventDefault();
+      originalEvent?.preventDefault();
+      originalEvent?.stopPropagation();
+    },
+  };
+}
+
 export class MapLibreMapAdapter implements MapAdapter {
   constructor(private mlMap: MlMap) {}
 
@@ -104,11 +118,7 @@ export class MapLibreMapAdapter implements MapAdapter {
   on(event: MapEventType, handler: MapEventHandler): () => void {
     const mlEvent = ML_EVENT_MAP[event];
     const wrappedHandler = (e: MapMouseEvent) => {
-      handler({
-        coordinate: e.lngLat ? [e.lngLat.lng, e.lngLat.lat] : undefined,
-        pixel: e.point ? ([e.point.x, e.point.y] as [number, number]) : undefined,
-        stopPropagation: () => e.preventDefault(),
-      });
+      handler(toMapEventPayload(e));
     };
     this.mlMap.on(mlEvent as any, wrappedHandler as any);
     return () => this.mlMap.off(mlEvent as any, wrappedHandler as any);
@@ -119,11 +129,7 @@ export class MapLibreMapAdapter implements MapAdapter {
     let removed = false;
     const wrappedHandler = (e: MapMouseEvent) => {
       if (removed) return;
-      handler({
-        coordinate: e.lngLat ? [e.lngLat.lng, e.lngLat.lat] : undefined,
-        pixel: e.point ? ([e.point.x, e.point.y] as [number, number]) : undefined,
-        stopPropagation: () => e.preventDefault(),
-      });
+      handler(toMapEventPayload(e));
     };
     this.mlMap.once(mlEvent as any, wrappedHandler as any);
     return () => {
