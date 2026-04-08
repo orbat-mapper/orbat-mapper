@@ -272,29 +272,45 @@ export function useUnitMenu(
   return { unitMenuItems };
 }
 
-export function useScenarioFeatureActions() {
-  const mapRef = useGeoStore().olMap! as OLMap;
+export function useScenarioFeatureActions(
+  options: Partial<{
+    activeScenario: TScenario;
+    olMap: OLMap | null;
+  }> = {},
+) {
+  const geoStore = useGeoStore();
+  const activeScenario = options.activeScenario || injectStrict(activeScenarioKey);
   const {
     store: { groupUpdate },
     geo,
-  } = injectStrict(activeScenarioKey);
+  } = activeScenario;
 
-  const { zoomToFeature, panToFeature, zoomToFeatures } = useFeatureLayerUtils(mapRef);
+  const initialMapRef = options.olMap ?? geoStore.olMap;
+  const initialFeatureLayerUtils = initialMapRef
+    ? useFeatureLayerUtils(initialMapRef, { activeScenario })
+    : null;
+
+  function getFeatureLayerUtils() {
+    if (initialFeatureLayerUtils) return initialFeatureLayerUtils;
+    const mapRef = options.olMap ?? geoStore.olMap;
+    return mapRef ? useFeatureLayerUtils(mapRef, { activeScenario }) : null;
+  }
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
     action: "zoom" | "pan" | "delete" | string,
   ) {
+    const featureLayerUtils = getFeatureLayerUtils();
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
-      zoomToFeatures(featureOrFeaturesId);
+      featureLayerUtils?.zoomToFeatures(featureOrFeaturesId);
       return;
     }
     groupUpdate(
       () => {
         (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
-          if (action === "zoom") zoomToFeature(featureId);
-          if (action === "pan") panToFeature(featureId);
+          if (action === "zoom") featureLayerUtils?.zoomToFeature(featureId);
+          if (action === "pan") featureLayerUtils?.panToFeature(featureId);
           if (action === "delete") geo.deleteFeature(featureId);
           if (action === "duplicate") {
             geo.duplicateFeature(featureId);
