@@ -4,6 +4,7 @@ import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
   CHART_EDIT_MODE_ROUTE,
+  GLOBE_ROUTE,
   GRID_EDIT_ROUTE,
   IMPORT_SCENARIO_ROUTE,
   LANDING_PAGE_ROUTE,
@@ -33,6 +34,7 @@ const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
+const GlobeView = () => import("@/modules/globeview/GlobeView.vue");
 const routes = [
   {
     path: "/scenario/:scenarioId",
@@ -101,6 +103,7 @@ const routes = [
     name: SYMBOL_BROWSER_ROUTE,
     component: SymbolBrowserView,
   },
+  { path: "/globe/:scenarioId", props: true, component: GlobeView, name: GLOBE_ROUTE },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 

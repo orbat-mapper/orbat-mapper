@@ -11,11 +11,12 @@ import {
 } from "@/components/injects";
 import { useUiStore } from "@/stores/uiStore";
 import { useToeActions, useUnitActions } from "@/composables/scenarioActions";
-import { getTransform } from "ol/proj";
+import type { Position } from "geojson";
 import { applyTransform } from "ol/extent";
-import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
 import OlPoint from "ol/geom/Point";
+import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
 import VectorLayer from "ol/layer/Vector";
+import { getTransform } from "ol/proj";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -74,7 +75,6 @@ onUnitSelect(({ unitId, options }) => {
 });
 
 onLayerSelect(({ layerId }) => {
-  if (!mapRef.value) return;
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
     const layer = activeScenario.geo.getLayerById(layerId);
@@ -87,7 +87,6 @@ onLayerSelect(({ layerId }) => {
 });
 
 onImageLayerSelect(({ layerId }) => {
-  if (!mapRef.value) return;
   ui.activeTabIndex = TAB_LAYERS;
   nextTick(() => {
     engineRef.value?.layers.zoomToMapLayer(layerId);
@@ -96,7 +95,6 @@ onImageLayerSelect(({ layerId }) => {
 });
 
 onScenarioAction(({ action }) => {
-  if (!mapRef.value) return;
   if (
     action === "addTileJSONLayer" ||
     action === "addXYZLayer" ||
@@ -154,9 +152,22 @@ onEventSelect((e) => {
 });
 
 onPlaceSelect((item) => {
-  const map = mapRef.value;
-  const transform = getTransform("EPSG:4326", map.getView().getProjection());
   const extent = fixExtent(item.properties.extent);
+  if (extent) {
+    engineRef.value?.map.fitExtent(extent as [number, number, number, number], {
+      maxZoom: 15,
+    });
+  } else {
+    engineRef.value?.map.animateView({
+      center: item.geometry.coordinates as Position,
+      zoom: 15,
+      duration: 900,
+    });
+  }
+
+  const map = mapRef.value;
+  if (!map) return;
+  const transform = getTransform("EPSG:4326", map.getView().getProjection());
   const polygon = extent && polygonFromExtent(applyTransform(extent, transform));
   const p = new OlPoint(item.geometry.coordinates).transform(
     "EPSG:4326",
