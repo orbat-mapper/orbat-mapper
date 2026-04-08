@@ -54,11 +54,12 @@ import { useUiStore } from "@/stores/uiStore";
 import GlobeTimeline from "@/modules/globeview/GlobeTimeline.vue";
 import { useSidcModal } from "@/composables/modals";
 import { useH3HexGrid } from "@/modules/globeview/h3grid";
+import { useMgrsGrid } from "@/modules/globeview/mgrsgrid";
 import { getHexagonEdgeLengthAvg, getHexagonAreaAvg } from "h3-js";
 import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { HexagonIcon, SlidersHorizontalIcon } from "lucide-vue-next";
+import { HexagonIcon, SlidersHorizontalIcon, GridIcon } from "lucide-vue-next";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
@@ -276,6 +277,38 @@ const lineWidthSlider = computed({
   },
 });
 
+const {
+  showMgrsGrid,
+  showLabels: showMgrsLabels,
+  lineColor: mgrsLineColor,
+  lineOpacity: mgrsLineOpacity,
+  lineWidth: mgrsLineWidth,
+  currentAccuracy: mgrsAccuracy,
+} = useMgrsGrid(mlMap);
+
+const mgrsPrecisionLabel = computed(() => {
+  const a = mgrsAccuracy.value;
+  if (a === 0) return "100 km";
+  if (a === 1) return "10 km";
+  if (a === 2) return "1 km";
+  if (a === 3) return "100 m";
+  return "10 m";
+});
+
+const mgrsLineOpacitySlider = computed({
+  get: () => [mgrsLineOpacity.value],
+  set: ([v]: number[]) => {
+    mgrsLineOpacity.value = v;
+  },
+});
+
+const mgrsLineWidthSlider = computed({
+  get: () => [mgrsLineWidth.value],
+  set: ([v]: number[]) => {
+    mgrsLineWidth.value = v;
+  },
+});
+
 const baseLayersStore = useBaseLayersStore();
 const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
 
@@ -471,6 +504,71 @@ onUnmounted(() => {
                       >
                     </div>
                   </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </template>
+          <Button
+            variant="outline"
+            size="icon"
+            @click="showMgrsGrid = !showMgrsGrid"
+            title="Toggle MGRS grid zones"
+            :class="{ 'bg-accent': showMgrsGrid }"
+          >
+            <GridIcon class="size-4" />
+          </Button>
+          <template v-if="showMgrsGrid">
+            <span
+              class="text-muted-foreground text-xs whitespace-nowrap tabular-nums"
+              title="Current MGRS grid precision"
+              >{{ mgrsPrecisionLabel }}</span
+            >
+            <Popover>
+              <PopoverTrigger as-child>
+                <Button variant="outline" size="icon" title="MGRS grid style">
+                  <SlidersHorizontalIcon class="size-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent class="w-64 space-y-4">
+                <div class="space-y-2">
+                  <Label for="mgrs-line-color" class="text-xs">Line color</Label>
+                  <input
+                    id="mgrs-line-color"
+                    type="color"
+                    v-model="mgrsLineColor"
+                    class="h-8 w-full cursor-pointer rounded border"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label class="text-xs">Opacity</Label>
+                    <span class="text-muted-foreground text-xs">{{
+                      mgrsLineOpacity.toFixed(2)
+                    }}</span>
+                  </div>
+                  <Slider
+                    v-model="mgrsLineOpacitySlider"
+                    :min="0"
+                    :max="1"
+                    :step="0.05"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label class="text-xs">Line width</Label>
+                    <span class="text-muted-foreground text-xs">{{
+                      mgrsLineWidth.toFixed(1)
+                    }}</span>
+                  </div>
+                  <Slider
+                    v-model="mgrsLineWidthSlider"
+                    :min="0.5"
+                    :max="5"
+                    :step="0.1"
+                  />
+                </div>
+                <div class="space-y-2 border-t pt-3">
+                  <ToggleField v-model="showMgrsLabels">Show labels</ToggleField>
                 </div>
               </PopoverContent>
             </Popover>
