@@ -17,7 +17,6 @@ import {
   activeScenarioMapEngineKey,
   searchActionsKey,
 } from "@/components/injects.ts";
-import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
@@ -226,7 +225,6 @@ watch(
 );
 </script>
 <template>
-  <Teleport to="#globetoolbar"><PlaybackMenu /></Teleport>
   <div v-if="isDragging" class="pointer-events-none absolute inset-0 z-10">
     <p
       class="text-foreground bg-background absolute bottom-1 left-2 rounded px-1 text-base tracking-tighter tabular-nums"

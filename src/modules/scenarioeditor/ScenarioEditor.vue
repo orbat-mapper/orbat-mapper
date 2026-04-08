@@ -44,6 +44,7 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
+  GLOBE_ROUTE,
   GRID_EDIT_ROUTE,
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
@@ -58,7 +59,13 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import { MapIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import {
+  FlaskConicalIcon,
+  GlobeIcon,
+  MapIcon,
+  MoonStarIcon,
+  SunIcon,
+} from "lucide-vue-next";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,7 +153,8 @@ const selectedModeRoute = computed({
     if (
       route.name === MAP_EDIT_MODE_ROUTE ||
       route.name === GRID_EDIT_ROUTE ||
-      route.name === CHART_EDIT_MODE_ROUTE
+      route.name === CHART_EDIT_MODE_ROUTE ||
+      route.name === GLOBE_ROUTE
     ) {
       return route.name;
     }
@@ -160,9 +168,15 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: MapIcon },
-  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon },
-  { value: CHART_EDIT_MODE_ROUTE, label: "Chart", icon: IconSitemap },
+  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: MapIcon, experimental: false },
+  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, experimental: false },
+  {
+    value: CHART_EDIT_MODE_ROUTE,
+    label: "Chart",
+    icon: IconSitemap,
+    experimental: false,
+  },
+  { value: GLOBE_ROUTE, label: "Globe", icon: GlobeIcon, experimental: true },
 ] as const;
 
 const activeModeOption = computed(
@@ -394,14 +408,22 @@ if (firstOverlayLayerId) {
         </Button>
         <div class="flex min-w-0 items-center gap-0.5 sm:gap-2">
           <RecordingState />
-          <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
+          <PlaybackMenu
+            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === GLOBE_ROUTE"
+          />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
               class="bg-muted-foreground/20 border-0 sm:hidden"
               aria-label="Edit mode"
             >
               <SelectValue>
-                <component :is="activeModeOption.icon" class="size-6 text-green-500" />
+                <span class="relative inline-flex">
+                  <component :is="activeModeOption.icon" class="size-6 text-green-500" />
+                  <FlaskConicalIcon
+                    v-if="activeModeOption.experimental"
+                    class="bg-background absolute -right-1 -bottom-1 size-3.5 rounded-full p-0.5 text-amber-500"
+                  />
+                </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent class="">
@@ -410,7 +432,13 @@ if (firstOverlayLayerId) {
                 :key="mode.value"
                 :value="mode.value"
               >
-                <component :is="mode.icon" class="size-5" />
+                <span class="relative inline-flex">
+                  <component :is="mode.icon" class="size-5" />
+                  <FlaskConicalIcon
+                    v-if="mode.experimental"
+                    class="bg-background absolute -right-1 -bottom-1 size-3 rounded-full p-0.5 text-amber-500"
+                  />
+                </span>
                 <span>{{ mode.label }}</span>
               </SelectItem>
             </SelectContent>
@@ -442,6 +470,19 @@ if (firstOverlayLayerId) {
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
               <IconSitemap class="size-6" />
+            </router-link>
+            <router-link
+              :to="{ name: GLOBE_ROUTE }"
+              title="Globe view"
+              exact-active-class="text-green-500"
+              class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
+            >
+              <span class="relative inline-flex">
+                <GlobeIcon class="size-6" />
+                <FlaskConicalIcon
+                  class="bg-background absolute -right-1 -bottom-1 size-3.5 rounded-full p-0.5 text-amber-500"
+                />
+              </span>
             </router-link>
           </div>
         </div>
@@ -502,6 +543,7 @@ if (firstOverlayLayerId) {
       <!--      <keep-alive include="ScenarioEditorGeo">-->
       <component
         :is="Component"
+        :key="route.fullPath"
         @show-export="showExportModal = true"
         @show-load="showLoadModal = true"
         @show-settings="isOpen = true"
@@ -536,7 +578,11 @@ if (firstOverlayLayerId) {
       @select-place="onPlaceSelectHook.trigger($event)"
       @select-action="onScenarioAction"
     />
-    <LoadScenarioDialog v-if="showLoadModal" v-model="showLoadModal" />
+    <LoadScenarioDialog
+      v-if="showLoadModal"
+      v-model="showLoadModal"
+      :routeName="selectedModeRoute"
+    />
     <InputDateModal
       v-if="showDateModal"
       v-model="showDateModal"

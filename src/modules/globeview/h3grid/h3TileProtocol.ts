@@ -16,6 +16,7 @@ import Pbf from "pbf";
 
 export const H3_PROTOCOL = "h3tile";
 const EXTENT = 4096;
+const TILE_BUFFER = EXTENT;
 type LngLat = [number, number];
 type CellRef = { id: string; centerLng: number; shift: number };
 
@@ -98,7 +99,10 @@ function project(
   const x = ((lng - west) / (east - west)) * EXTENT;
   const mercY = latToMercatorY(lat);
   const y = ((mercNorth - mercY) / (mercNorth - mercSouth)) * EXTENT;
-  return [Math.round(x), Math.round(y)];
+  return [
+    Math.round(Math.min(EXTENT + TILE_BUFFER, Math.max(-TILE_BUFFER, x))),
+    Math.round(Math.min(EXTENT + TILE_BUFFER, Math.max(-TILE_BUFFER, y))),
+  ];
 }
 
 /** Zigzag encode a signed int to unsigned (MVT parameter encoding) */
@@ -222,7 +226,7 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     // At high latitudes, increase longitude padding further since
     // mercator tiles are narrower.
     const midLat = (bounds.north + bounds.south) / 2;
-    const latFactor = 1 / Math.max(Math.cos((midLat * Math.PI) / 180), 0.1);
+    const latFactor = Math.min(2, 1 / Math.max(Math.cos((midLat * Math.PI) / 180), 0.1));
     const highLatPadWest =
       bounds.west - (bounds.east - bounds.west) * Math.max(0.5, latFactor);
     const highLatPadEast =

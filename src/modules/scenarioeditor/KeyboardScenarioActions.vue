@@ -8,7 +8,8 @@ import { activeScenarioKey, searchActionsKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
-import { useUnitSettingsStore } from "@/stores/geoStore";
+import type { FeatureId } from "@/types/scenarioGeoModels";
+import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -30,7 +31,7 @@ const {
   activeScenarioEventId,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
-const { onFeatureAction } = useScenarioFeatureActions();
+const geoStore = useGeoStore();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const unitSettings = useUnitSettingsStore();
 const playback = usePlaybackStore();
@@ -44,6 +45,14 @@ const selectedUnits = computed(() =>
 const activeUnit = computed(
   () => (activeUnitId.value && getUnitById(activeUnitId.value)) || null,
 );
+
+function onFeatureAction(
+  featureOrFeaturesId: FeatureId | FeatureId[],
+  action: "zoom" | "pan" | "delete" | string,
+) {
+  if (!geoStore.olMap) return;
+  useScenarioFeatureActions().onFeatureAction(featureOrFeaturesId, action);
+}
 
 const createNewUnit = () => {
   activeUnitId.value && unitActions.createSubordinateUnit(activeUnitId.value);

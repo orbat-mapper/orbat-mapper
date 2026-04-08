@@ -43,8 +43,8 @@ function buildGzdLines(): FeatureCollection<LineString> {
   const features: Feature<LineString>[] = [];
 
   const lats = [
-    -80, -72, -64, -56, -48, -40, -32, -24, -16, -8, 0, 8, 16, 24, 32, 40, 48, 56, 64,
-    72, 84,
+    -80, -72, -64, -56, -48, -40, -32, -24, -16, -8, 0, 8, 16, 24, 32, 40, 48, 56, 64, 72,
+    84,
   ];
   for (const lat of lats) {
     const coords: Position[] = [];

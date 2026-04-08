@@ -1,81 +1,11 @@
 import { ref, watch, type ShallowRef } from "vue";
-import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
+import type { Map as MlMap } from "maplibre-gl";
 import { useDebounceFn } from "@vueuse/core";
 import { polygonToCells, cellToBoundary } from "h3-js";
-import type { Feature, FeatureCollection, Polygon } from "geojson";
 import { registerH3Protocol, setH3Resolution, H3_PROTOCOL } from "./h3TileProtocol";
-import icelandGeo from "./iceland.geo.json";
-import greenlandGeo from "./greenland.geo.json";
 
 const H3_SOURCE = "h3HexSource";
 const H3_LAYER_LINE = "h3HexLine";
-const ICELAND_SOURCE = "h3IcelandSource";
-const ICELAND_FILL_LAYER = "h3IcelandFill";
-const GREENLAND_SOURCE = "h3GreenlandSource";
-const GREENLAND_FILL_LAYER = "h3GreenlandFill";
-const COUNTRY_OVERLAY_MAX_RES = 5;
-
-/**
- * LRU cache for computed country cell FeatureCollections. Keyed on geo object
- * with a nested Map<res, FC>. Each nested Map keeps at most MAX_CACHED_RES
- * entries; least-recently-used entries are evicted first.
- */
-const MAX_CACHED_RES = 3;
-const countryCellsCache = new WeakMap<object, Map<number, FeatureCollection<Polygon>>>();
-
-/** Build a GeoJSON FeatureCollection of H3 cells covering a country polygon */
-function buildCountryCells(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  geo: any,
-  res: number,
-): FeatureCollection<Polygon> {
-  let byRes = countryCellsCache.get(geo);
-  if (!byRes) {
-    byRes = new Map();
-    countryCellsCache.set(geo, byRes);
-  }
-
-  // LRU hit: delete + re-set to move entry to the "newest" position.
-  const cached = byRes.get(res);
-  if (cached) {
-    byRes.delete(res);
-    byRes.set(res, cached);
-    return cached;
-  }
-
-  const feature = geo.features[0];
-  const { type, coordinates } = feature.geometry;
-
-  // polygonToCells only accepts a single polygon; iterate over MultiPolygon parts
-  const polygons: number[][][][] = type === "MultiPolygon" ? coordinates : [coordinates];
-
-  const cellSet = new Set<string>();
-  for (const poly of polygons) {
-    for (const cell of polygonToCells(poly, res, true)) {
-      cellSet.add(cell);
-    }
-  }
-
-  const features: Feature<Polygon>[] = Array.from(cellSet).map((cell) => {
-    const boundary = cellToBoundary(cell, true);
-    boundary.push(boundary[0]);
-    return {
-      type: "Feature",
-      properties: { h3index: cell },
-      geometry: { type: "Polygon", coordinates: [boundary] },
-    };
-  });
-  const fc: FeatureCollection<Polygon> = { type: "FeatureCollection", features };
-
-  byRes.set(res, fc);
-  // Evict oldest entries if over the cap.
-  while (byRes.size > MAX_CACHED_RES) {
-    const oldest = byRes.keys().next().value;
-    if (oldest === undefined) break;
-    byRes.delete(oldest);
-  }
-  return fc;
-}
 
 /** Approximate H3 resolution from map zoom level */
 function zoomToDefaultResolution(zoom: number): number {
@@ -105,7 +35,7 @@ function h3ResToTileZoom(res: number): number {
 let protocolRegistered = false;
 
 export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
-  const showHexGrid = ref(true);
+  const showHexGrid = ref(false);
   const hexResolution = ref(3);
   const autoResolution = ref(false);
   const lineColor = ref("#3b82f6");
@@ -121,10 +51,6 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     return autoResolution.value
       ? zoomToDefaultResolution(map.getZoom())
       : hexResolution.value;
-  }
-
-  function resolveCountryOverlayResolution(res: number): number {
-    return Math.min(res, COUNTRY_OVERLAY_MAX_RES);
   }
 
   function addH3SourceAndLayer(map: MlMap, res: number) {
@@ -156,67 +82,8 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     }
   }
 
-  function updateCountrySourceData(map: MlMap, res: number) {
-    const overlayRes = resolveCountryOverlayResolution(res);
-    const icelandSource = map.getSource(ICELAND_SOURCE) as GeoJSONSource | undefined;
-    if (icelandSource) {
-      icelandSource.setData(buildCountryCells(icelandGeo, overlayRes));
-    }
-
-    const greenlandSource = map.getSource(GREENLAND_SOURCE) as GeoJSONSource | undefined;
-    if (greenlandSource) {
-      greenlandSource.setData(buildCountryCells(greenlandGeo, overlayRes));
-    }
-  }
-
-  function addCountrySourcesAndLayers(map: MlMap, res: number) {
-    const overlayRes = resolveCountryOverlayResolution(res);
-    if (!map.getSource(ICELAND_SOURCE)) {
-      map.addSource(ICELAND_SOURCE, {
-        type: "geojson",
-        data: buildCountryCells(icelandGeo, overlayRes),
-      });
-    }
-    if (!map.getSource(GREENLAND_SOURCE)) {
-      map.addSource(GREENLAND_SOURCE, {
-        type: "geojson",
-        data: buildCountryCells(greenlandGeo, overlayRes),
-      });
-    }
-    const beforeLayer = map.getLayer("unitLayer") ? "unitLayer" : undefined;
-    if (!map.getLayer(ICELAND_FILL_LAYER)) {
-      map.addLayer(
-        {
-          id: ICELAND_FILL_LAYER,
-          type: "fill",
-          source: ICELAND_SOURCE,
-          paint: {
-            "fill-color": "#ef4444",
-            "fill-opacity": 0.4,
-          },
-        },
-        beforeLayer,
-      );
-    }
-    if (!map.getLayer(GREENLAND_FILL_LAYER)) {
-      map.addLayer(
-        {
-          id: GREENLAND_FILL_LAYER,
-          type: "fill",
-          source: GREENLAND_SOURCE,
-          paint: {
-            "fill-color": "#10b981",
-            "fill-opacity": 0.4,
-          },
-        },
-        beforeLayer,
-      );
-    }
-  }
-
   function addSourceAndLayers(map: MlMap, res: number) {
     addH3SourceAndLayer(map, res);
-    addCountrySourcesAndLayers(map, res);
   }
 
   function removeH3SourceAndLayer(map: MlMap) {
@@ -224,19 +91,11 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
     if (map.getSource(H3_SOURCE)) map.removeSource(H3_SOURCE);
   }
 
-  function removeCountrySourcesAndLayers(map: MlMap) {
-    if (map.getLayer(GREENLAND_FILL_LAYER)) map.removeLayer(GREENLAND_FILL_LAYER);
-    if (map.getLayer(ICELAND_FILL_LAYER)) map.removeLayer(ICELAND_FILL_LAYER);
-    if (map.getSource(GREENLAND_SOURCE)) map.removeSource(GREENLAND_SOURCE);
-    if (map.getSource(ICELAND_SOURCE)) map.removeSource(ICELAND_SOURCE);
-  }
-
   function removeSourceAndLayers(map: MlMap) {
     removeH3SourceAndLayer(map);
-    removeCountrySourcesAndLayers(map);
   }
 
-  /** Force MapLibre to re-fetch H3 vector tiles without rebuilding country layers */
+  /** Force MapLibre to re-fetch H3 vector tiles. */
   function reloadH3Tiles(map: MlMap, res: number) {
     removeH3SourceAndLayer(map);
     addH3SourceAndLayer(map, res);
@@ -245,7 +104,6 @@ export function useH3HexGrid(mlMap: ShallowRef<MlMap | undefined>) {
   function applyResolution(map: MlMap, res: number) {
     hexResolution.value = res;
     setH3Resolution(res);
-    updateCountrySourceData(map, res);
     reloadH3Tiles(map, res);
   }
 
