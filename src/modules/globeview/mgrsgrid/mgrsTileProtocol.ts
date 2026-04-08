@@ -109,25 +109,15 @@ function utmToLl(easting: number, northing: number, zone: number, isSouth: boole
   const N1 = A_EARTH / Math.sqrt(1 - 0.00669438 * sinPhi * sinPhi);
   const T1 = Math.tan(phi1) * Math.tan(phi1);
   const C1 = 0.006739496752268451 * Math.cos(phi1) * Math.cos(phi1);
-  const R1 =
-    (0.99330562 * A_EARTH) / Math.pow(1 - 0.00669438 * sinPhi * sinPhi, 1.5);
+  const R1 = (0.99330562 * A_EARTH) / Math.pow(1 - 0.00669438 * sinPhi * sinPhi, 1.5);
   const D = x / (N1 * 0.9996);
   const lat =
     phi1 -
     ((N1 * Math.tan(phi1)) / R1) *
       ((D * D) / 2 -
-        ((5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 0.06065547077041606) *
-          D *
-          D *
-          D *
-          D) /
+        ((5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 0.06065547077041606) * D * D * D * D) /
           24 +
-        ((61 +
-          90 * T1 +
-          298 * C1 +
-          45 * T1 * T1 -
-          1.6983531815716497 -
-          3 * C1 * C1) *
+        ((61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 1.6983531815716497 - 3 * C1 * C1) *
           D *
           D *
           D *
@@ -415,12 +405,7 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
      * Bisect in UTM space to find the lat/lng point where the segment from an
      * inside UTM coord to an outside UTM coord crosses the GZD boundary.
      */
-    const bisectCrossing = (
-      eIn: number,
-      nIn: number,
-      eOut: number,
-      nOut: number,
-    ) => {
+    const bisectCrossing = (eIn: number, nIn: number, eOut: number, nOut: number) => {
       let lo = 0;
       let hi = 1;
       for (let i = 0; i < 14; i++) {
@@ -447,13 +432,15 @@ function generateTile(z: number, x: number, y: number): ArrayBuffer {
     };
 
     /** Walk a polyline along (eFn(t), nFn(t)) for t in 0..NSEG, clipping to GZD. */
-    const walkLine = (
-      eFn: (t: number) => number,
-      nFn: (t: number) => number,
-    ) => {
+    const walkLine = (eFn: (t: number) => number, nFn: (t: number) => number) => {
       let buf: Array<[number, number]> = [];
-      let prev: { e: number; n: number; lat: number; lng: number; inside: boolean } | null =
-        null;
+      let prev: {
+        e: number;
+        n: number;
+        lat: number;
+        lng: number;
+        inside: boolean;
+      } | null = null;
       for (let s = 0; s <= NSEG; s++) {
         const e = eFn(s);
         const n = nFn(s);

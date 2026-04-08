@@ -34,7 +34,7 @@ const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
-const GlobeView = () => import("@/modules/globeview/GlobeView.vue");
+const ScenarioEditorGlobe = () => import("@/modules/globeview/ScenarioEditorGlobe.vue");
 const routes = [
   {
     path: "/scenario/:scenarioId",
@@ -61,6 +61,11 @@ const routes = [
         name: CHART_EDIT_MODE_ROUTE,
         component: ChartEditView,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/chart-edit-mode" },
+      },
+      {
+        path: "globe",
+        name: GLOBE_ROUTE,
+        component: ScenarioEditorGlobe,
       },
     ],
   },
@@ -103,7 +108,10 @@ const routes = [
     name: SYMBOL_BROWSER_ROUTE,
     component: SymbolBrowserView,
   },
-  { path: "/globe/:scenarioId", props: true, component: GlobeView, name: GLOBE_ROUTE },
+  {
+    path: "/globe/:scenarioId",
+    redirect: (to) => ({ name: GLOBE_ROUTE, params: to.params }),
+  },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];
 

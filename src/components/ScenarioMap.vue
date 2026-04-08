@@ -75,7 +75,13 @@ function onMoveEnd({ view }: { view: View }) {
 
 <style>
 .map-wrapper {
-  --ol-toolbar-clearance-left: 0rem;
+  --ol-toolbar-clearance-left: 3rem;
+}
+
+@container (min-width: 40rem) {
+  .map-wrapper {
+    --ol-toolbar-clearance-left: 0rem;
+  }
 }
 
 @container (min-width: 40rem) and (max-width: 60rem) {

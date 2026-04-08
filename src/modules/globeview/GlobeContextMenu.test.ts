@@ -6,6 +6,8 @@ import { createPinia, setActivePinia } from "pinia";
 import GlobeContextMenu from "@/modules/globeview/GlobeContextMenu.vue";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import { GLOBE_VECTOR_BASEMAP_ID } from "@/modules/globeview/globeBasemaps";
+import { usePlaybackStore } from "@/stores/playbackStore";
+import { useUiStore } from "@/stores/uiStore";
 
 const radioGroupKey = Symbol("radio-group");
 
@@ -22,6 +24,57 @@ const ContextMenuTriggerStub = defineComponent({
 const ContextMenuContentStub = defineComponent({
   name: "ContextMenuContent",
   template: "<div><slot /></div>",
+});
+
+const ContextMenuItemStub = defineComponent({
+  name: "ContextMenuItem",
+  emits: ["select"],
+  setup(_, { emit, slots }) {
+    return () =>
+      h(
+        "button",
+        {
+          type: "button",
+          onClick: () => emit("select", new Event("select")),
+        },
+        slots.default?.(),
+      );
+  },
+});
+
+const ContextMenuCheckboxItemStub = defineComponent({
+  name: "ContextMenuCheckboxItem",
+  props: {
+    modelValue: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  emits: ["update:modelValue", "select"],
+  setup(props, { emit, slots }) {
+    return () =>
+      h(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            emit("update:modelValue", !props.modelValue);
+            emit("select", new Event("select"));
+          },
+        },
+        slots.default?.(),
+      );
+  },
+});
+
+const ContextMenuSeparatorStub = defineComponent({
+  name: "ContextMenuSeparator",
+  template: "<div />",
+});
+
+const ContextMenuShortcutStub = defineComponent({
+  name: "ContextMenuShortcut",
+  template: "<span><slot /></span>",
 });
 
 const ContextMenuSubStub = defineComponent({
@@ -95,7 +148,33 @@ const ContextMenuRadioItemStub = defineComponent({
 describe("GlobeContextMenu", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.useRealTimers();
   });
+
+  function mountMenu(props?: Record<string, unknown>) {
+    return mount(GlobeContextMenu, {
+      props,
+      slots: {
+        default: "<div data-testid='trigger'>Trigger</div>",
+      },
+      global: {
+        stubs: {
+          ContextMenu: ContextMenuStub,
+          ContextMenuTrigger: ContextMenuTriggerStub,
+          ContextMenuContent: ContextMenuContentStub,
+          ContextMenuItem: ContextMenuItemStub,
+          ContextMenuCheckboxItem: ContextMenuCheckboxItemStub,
+          ContextMenuSeparator: ContextMenuSeparatorStub,
+          ContextMenuShortcut: ContextMenuShortcutStub,
+          ContextMenuSub: ContextMenuSubStub,
+          ContextMenuSubContent: ContextMenuSubContentStub,
+          ContextMenuSubTrigger: ContextMenuSubTriggerStub,
+          ContextMenuRadioGroup: ContextMenuRadioGroupStub,
+          ContextMenuRadioItem: ContextMenuRadioItemStub,
+        },
+      },
+    });
+  }
 
   it("updates the bound globe basemap when a basemap is selected", async () => {
     const baseLayersStore = useBaseLayersStore();
@@ -120,28 +199,11 @@ describe("GlobeContextMenu", () => {
       },
     ] as any;
 
-    const wrapper = mount(GlobeContextMenu, {
-      props: {
-        baseMapId: selectedBasemap.value,
-        "onUpdate:baseMapId": async (value: string) => {
-          selectedBasemap.value = value;
-          await wrapper.setProps({ baseMapId: value });
-        },
-      },
-      slots: {
-        default: "<div data-testid='trigger'>Trigger</div>",
-      },
-      global: {
-        stubs: {
-          ContextMenu: ContextMenuStub,
-          ContextMenuTrigger: ContextMenuTriggerStub,
-          ContextMenuContent: ContextMenuContentStub,
-          ContextMenuSub: ContextMenuSubStub,
-          ContextMenuSubContent: ContextMenuSubContentStub,
-          ContextMenuSubTrigger: ContextMenuSubTriggerStub,
-          ContextMenuRadioGroup: ContextMenuRadioGroupStub,
-          ContextMenuRadioItem: ContextMenuRadioItemStub,
-        },
+    const wrapper = mountMenu({
+      baseMapId: selectedBasemap.value,
+      "onUpdate:baseMapId": async (value: string) => {
+        selectedBasemap.value = value;
+        await wrapper.setProps({ baseMapId: value });
       },
     });
 
@@ -151,23 +213,7 @@ describe("GlobeContextMenu", () => {
   });
 
   it("re-dispatches captured contextmenu events through the trigger", async () => {
-    const wrapper = mount(GlobeContextMenu, {
-      slots: {
-        default: "<div data-testid='trigger'>Trigger</div>",
-      },
-      global: {
-        stubs: {
-          ContextMenu: ContextMenuStub,
-          ContextMenuTrigger: ContextMenuTriggerStub,
-          ContextMenuContent: ContextMenuContentStub,
-          ContextMenuSub: ContextMenuSubStub,
-          ContextMenuSubContent: ContextMenuSubContentStub,
-          ContextMenuSubTrigger: ContextMenuSubTriggerStub,
-          ContextMenuRadioGroup: ContextMenuRadioGroupStub,
-          ContextMenuRadioItem: ContextMenuRadioItemStub,
-        },
-      },
-    });
+    const wrapper = mountMenu();
 
     const triggerWrapper = wrapper.get(".h-full.w-full");
     const dispatchSpy = vi.spyOn(triggerWrapper.element, "dispatchEvent");
@@ -182,28 +228,79 @@ describe("GlobeContextMenu", () => {
     expect(dispatchSpy).toHaveBeenCalled();
   });
 
-  it("defaults to the vector globe basemap", () => {
-    const wrapper = mount(GlobeContextMenu, {
-      slots: {
-        default: "<div data-testid='trigger'>Trigger</div>",
-      },
-      global: {
-        stubs: {
-          ContextMenu: ContextMenuStub,
-          ContextMenuTrigger: ContextMenuTriggerStub,
-          ContextMenuContent: ContextMenuContentStub,
-          ContextMenuSub: ContextMenuSubStub,
-          ContextMenuSubContent: ContextMenuSubContentStub,
-          ContextMenuSubTrigger: ContextMenuSubTriggerStub,
-          ContextMenuRadioGroup: ContextMenuRadioGroupStub,
-          ContextMenuRadioItem: ContextMenuRadioItemStub,
-        },
-      },
+  it("opens the context menu on touch long press", async () => {
+    vi.useFakeTimers();
+
+    const wrapper = mountMenu();
+
+    const triggerWrapper = wrapper.get(".h-full.w-full");
+    const dispatchSpy = vi.spyOn(triggerWrapper.element, "dispatchEvent");
+
+    const pointerDownEvent = new Event("pointerdown", {
+      bubbles: true,
+      cancelable: true,
     });
+    Object.defineProperties(pointerDownEvent, {
+      pointerId: { value: 1 },
+      pointerType: { value: "touch" },
+      clientX: { value: 10 },
+      clientY: { value: 20 },
+    });
+
+    triggerWrapper.element.dispatchEvent(pointerDownEvent);
+
+    vi.advanceTimersByTime(600);
+
+    expect(dispatchSpy).toHaveBeenCalled();
+  });
+
+  it("defaults to the vector globe basemap", () => {
+    const wrapper = mountMenu();
 
     expect(wrapper.exists()).toBe(true);
     expect(
       (wrapper.props("baseMapId") as string | undefined) ?? GLOBE_VECTOR_BASEMAP_ID,
     ).toBe(GLOBE_VECTOR_BASEMAP_ID);
+  });
+
+  it("toggles shared UI controls from the globe context menu", async () => {
+    const uiStore = useUiStore();
+    uiStore.showToolbar = true;
+    uiStore.showTimeline = true;
+    uiStore.showOrbatBreadcrumbs = true;
+
+    const wrapper = mountMenu();
+    const buttons = wrapper.findAll("button");
+
+    await buttons.find((button) => button.text() === "Map toolbar")?.trigger("click");
+    await buttons.find((button) => button.text() === "Timeline")?.trigger("click");
+    await buttons
+      .find((button) => button.text() === "Unit breadcrumbs")
+      ?.trigger("click");
+
+    expect(uiStore.showToolbar).toBe(false);
+    expect(uiStore.showTimeline).toBe(false);
+    expect(uiStore.showOrbatBreadcrumbs).toBe(false);
+  });
+
+  it("controls playback from the globe context menu", async () => {
+    const playback = usePlaybackStore();
+    playback.playbackRunning = false;
+    playback.playbackLooping = false;
+    const increaseSpy = vi.spyOn(playback, "increaseSpeed");
+    const decreaseSpy = vi.spyOn(playback, "decreaseSpeed");
+
+    const wrapper = mountMenu();
+    const buttons = wrapper.findAll("button");
+
+    await buttons.find((button) => button.text().includes("Play"))?.trigger("click");
+    await buttons.find((button) => button.text().includes("Speed up"))?.trigger("click");
+    await buttons.find((button) => button.text().includes("Slow down"))?.trigger("click");
+    await buttons.find((button) => button.text() === "Loop playback")?.trigger("click");
+
+    expect(playback.playbackRunning).toBe(true);
+    expect(increaseSpy).toHaveBeenCalled();
+    expect(decreaseSpy).toHaveBeenCalled();
+    expect(playback.playbackLooping).toBe(true);
   });
 });

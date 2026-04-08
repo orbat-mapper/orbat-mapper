@@ -1,17 +1,8 @@
 <script setup lang="ts">
-import { nextTick } from "vue";
-import { useSearchActions } from "@/composables/searchActions";
-import { TAB_EVENTS, TAB_LAYERS, TAB_ORBAT, UnitActions } from "@/types/constants";
+import { UnitActions } from "@/types/constants";
 import { injectStrict } from "@/utils";
-import {
-  activeLayerKey,
-  activeNativeMapKey,
-  activeScenarioKey,
-  activeScenarioMapEngineKey,
-} from "@/components/injects";
-import { useUiStore } from "@/stores/uiStore";
-import { useToeActions, useUnitActions } from "@/composables/scenarioActions";
-import type { Position } from "geojson";
+import { activeNativeMapKey } from "@/components/injects";
+import { useUnitActions } from "@/composables/scenarioActions";
 import { applyTransform } from "ol/extent";
 import OlPoint from "ol/geom/Point";
 import { fromExtent as polygonFromExtent } from "ol/geom/Polygon";
@@ -19,152 +10,15 @@ import VectorLayer from "ol/layer/Vector";
 import { getTransform } from "ol/proj";
 import VectorSource from "ol/source/Vector";
 import OlFeature from "ol/Feature";
-import { useSelectedItems } from "@/stores/selectedStore";
-import { fixExtent } from "@/utils/geoConvert";
-import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
-import { usePlaybackStore } from "@/stores/playbackStore";
+import type { PhotonSearchResult } from "@/composables/geosearching";
+import { useScenarioMapSearchActions } from "@/modules/scenarioeditor/useScenarioMapSearchActions";
 
 const mapRef = injectStrict(activeNativeMapKey);
-const engineRef = injectStrict(activeScenarioMapEngineKey);
-const activeScenario = injectStrict(activeScenarioKey);
-const activeLayerId = injectStrict(activeLayerKey);
-const playback = usePlaybackStore();
-
-const {
-  onUnitSelect,
-  onFeatureSelect,
-  onLayerSelect,
-  onEventSelect,
-  onPlaceSelect,
-  onImageLayerSelect,
-  onScenarioAction,
-} = useSearchActions();
-const ui = useUiStore();
-
-const {
-  selectedUnitIds,
-  selectedFeatureIds,
-  activeUnitId,
-  activeScenarioEventId,
-  activeMapLayerId,
-  orbatRevealUnitId,
-} = useSelectedItems();
 const { onUnitAction } = useUnitActions();
-const toeActions = useToeActions();
-
-onUnitSelect(({ unitId, options }) => {
-  const doZoom = !(options?.noZoom === true);
-  ui.showLeftPanel = true;
-  ui.activeTabIndex = TAB_ORBAT;
-  activeUnitId.value = unitId;
-  selectedUnitIds.value.clear();
-  selectedUnitIds.value.add(unitId);
-  const unit = activeScenario.unitActions.getUnitById(unitId);
-  const { side, sideGroup, parents } =
-    activeScenario.unitActions.getUnitHierarchy(unitId);
-  if (side) side._isOpen = true;
-  if (sideGroup) sideGroup._isOpen = true;
-  parents.forEach((p) => (p._isOpen = true));
-  orbatRevealUnitId.value = unitId;
-
-  nextTick(() => {
-    if (doZoom) {
-      onUnitAction(unit, UnitActions.Zoom);
-    }
-  });
-});
-
-onLayerSelect(({ layerId }) => {
-  ui.activeTabIndex = TAB_LAYERS;
-  nextTick(() => {
-    const layer = activeScenario.geo.getLayerById(layerId);
-    if (layer) {
-      layer._isOpen = true;
-      nextTick(() => engineRef.value?.layers.zoomToScenarioLayer(layerId));
-    }
-    activeLayerId.value = layerId;
-  });
-});
-
-onImageLayerSelect(({ layerId }) => {
-  ui.activeTabIndex = TAB_LAYERS;
-  nextTick(() => {
-    engineRef.value?.layers.zoomToMapLayer(layerId);
-    activeMapLayerId.value = layerId;
-  });
-});
-
-onScenarioAction(({ action }) => {
-  if (
-    action === "addTileJSONLayer" ||
-    action === "addXYZLayer" ||
-    action === "addImageLayer"
-  ) {
-    const layerType =
-      action === "addXYZLayer"
-        ? "XYZLayer"
-        : action === "addImageLayer"
-          ? "ImageLayer"
-          : "TileJSONLayer";
-    ui.activeTabIndex = TAB_LAYERS;
-    const newLayer = addMapLayer(layerType, activeScenario.geo);
-    ui.mapLayersPanelOpen = true;
-    nextTick(() => {
-      activeMapLayerId.value = newLayer.id;
-    });
-  } else if (action === "addEquipment") {
-    toeActions.goToAddEquipment();
-  } else if (action === "addPersonnel") {
-    toeActions.goToAddPersonnel();
-  } else if (action === "startPlayback") {
-    playback.playbackRunning = true;
-  } else if (action === "stopPlayback") {
-    playback.playbackRunning = false;
-  } else if (action === "increaseSpeed") {
-    playback.increaseSpeed();
-  } else if (action === "decreaseSpeed") {
-    playback.decreaseSpeed();
-  }
-});
-
-onFeatureSelect(({ featureId }) => {
-  ui.activeTabIndex = TAB_LAYERS;
-  const { layerItem: feature, layer } =
-    activeScenario.geo.getGeometryLayerItemById(featureId);
-  nextTick(() => {
-    if (layer) {
-      layer._isOpen = true;
-    }
-    if (feature) {
-      selectedUnitIds.value.clear();
-      selectedFeatureIds.value.clear();
-      selectedFeatureIds.value.add(featureId);
-
-      nextTick(() => engineRef.value?.layers.zoomToFeature(featureId));
-    }
-  });
-});
-
-onEventSelect((e) => {
-  activeScenario.time.goToScenarioEvent(e.id);
-  activeScenarioEventId.value = e.id;
-  ui.activeTabIndex = TAB_EVENTS;
-});
-
-onPlaceSelect((item) => {
-  const extent = fixExtent(item.properties.extent);
-  if (extent) {
-    engineRef.value?.map.fitExtent(extent as [number, number, number, number], {
-      maxZoom: 15,
-    });
-  } else {
-    engineRef.value?.map.animateView({
-      center: item.geometry.coordinates as Position,
-      zoom: 15,
-      duration: 900,
-    });
-  }
-
+function focusPlace(
+  item: PhotonSearchResult,
+  extent: [number, number, number, number] | undefined,
+) {
   const map = mapRef.value;
   if (!map) return;
   const transform = getTransform("EPSG:4326", map.getView().getProjection());
@@ -191,6 +45,11 @@ onPlaceSelect((item) => {
   setTimeout(() => layer.setMap(null), 2000);
 
   map.getView().fit(polygon || p, { maxZoom: 15 });
+}
+
+useScenarioMapSearchActions({
+  zoomToUnit: (unit) => onUnitAction(unit, UnitActions.Zoom),
+  focusPlace,
 });
 </script>
 <template></template>
