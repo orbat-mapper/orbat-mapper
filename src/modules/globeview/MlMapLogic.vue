@@ -119,6 +119,7 @@ function onStyleLoad() {
 
 mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
+onStyleLoad();
 
 function queryUnitFeatures(point: PointLike) {
   if (!mlMap.getLayer("unitLayer")) return [];
