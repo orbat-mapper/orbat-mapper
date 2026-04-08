@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  GLOBE_BRIGHT_BASEMAP_ID,
+  GLOBE_DARK_BASEMAP_ID,
+  GLOBE_LIBERTY_BASEMAP_ID,
   GLOBE_VECTOR_BASEMAP_ID,
   NO_BASEMAP_ID,
   getSupportedGlobeBasemaps,
@@ -44,11 +47,14 @@ describe("globeBasemaps", () => {
 
     expect(options.map((option) => option.id)).toEqual([
       GLOBE_VECTOR_BASEMAP_ID,
+      GLOBE_LIBERTY_BASEMAP_ID,
+      GLOBE_BRIGHT_BASEMAP_ID,
+      GLOBE_DARK_BASEMAP_ID,
       "osm",
       "imagery",
       NO_BASEMAP_ID,
     ]);
-    expect(options[1].style).toMatchObject({
+    expect(options[4].style).toMatchObject({
       version: 8,
       sources: {
         osm: {
@@ -56,7 +62,7 @@ describe("globeBasemaps", () => {
         },
       },
     });
-    expect(options[2].style).toMatchObject({
+    expect(options[5].style).toMatchObject({
       layers: [
         {
           source: "imagery",
@@ -66,7 +72,7 @@ describe("globeBasemaps", () => {
         },
       ],
     });
-    expect(options[3].style).toMatchObject({
+    expect(options[6].style).toMatchObject({
       version: 8,
       sources: {},
       layers: [],
