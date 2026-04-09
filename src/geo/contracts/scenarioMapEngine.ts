@@ -4,4 +4,6 @@ import type { ScenarioLayerController } from "@/geo/contracts/scenarioLayerContr
 export interface ScenarioMapEngine {
   map: MapAdapter;
   layers: ScenarioLayerController;
+  suspendFeatureSelection(): void;
+  resumeFeatureSelection(): void;
 }

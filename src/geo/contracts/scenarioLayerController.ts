@@ -9,6 +9,7 @@ export interface ScenarioLayerCapabilities {
   panToFeature: boolean;
   zoomToScenarioLayer: boolean;
   zoomToMapLayer: boolean;
+  featureTransform: boolean;
   mapLayerTransform: boolean;
   mapLayerExtent: boolean;
 }

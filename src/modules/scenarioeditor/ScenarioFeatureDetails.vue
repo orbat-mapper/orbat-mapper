@@ -8,11 +8,7 @@ import {
 import { GlobalEvents } from "vue-global-events";
 
 import { injectStrict } from "@/utils";
-import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
-  activeScenarioKey,
-} from "@/components/injects";
+import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { type ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
@@ -62,8 +58,7 @@ const {
   geo,
   store: { groupUpdate },
 } = injectStrict(activeScenarioKey);
-const olMapRef = injectStrict(activeNativeMapKey);
-const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
+const engineRef = injectStrict(activeScenarioMapEngineKey);
 
 const { send: notify } = useNotifications();
 const featureActions = useScenarioFeatureActions();
@@ -129,6 +124,15 @@ const hasArrows = computed(() => geometryType.value === "LineString");
 const hasFill = computed(
   () => !["Point", "LineString"].includes(geometryType.value || ""),
 );
+const canTransformFeature = computed(() =>
+  Boolean(engineRef.value?.layers.capabilities.featureTransform),
+);
+
+watch(canTransformFeature, (enabled) => {
+  if (!enabled && selectedTab.value === 3) {
+    selectedTab.value = 0;
+  }
+});
 
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
 
@@ -137,8 +141,10 @@ const tabList = computed(() => {
     { label: "Style", value: "0" },
     { label: "Details", value: "1" },
     { label: "State", value: "2" },
-    { label: "Transform", value: "3" },
   ];
+  if (canTransformFeature.value) {
+    base.push({ label: "Transform", value: "3" });
+  }
   if (uiStore.debugMode) {
     base.push({ label: "Debug", value: "4" });
   }
@@ -163,7 +169,7 @@ function updateValue(value: string) {
 }
 
 const debouncedResetMap = useDebounceFn(
-  () => featureSelectInteractionRef.value.setMap(olMapRef.value),
+  () => engineRef.value?.resumeFeatureSelection(),
   3000,
 );
 
@@ -171,7 +177,7 @@ function doUpdateFeature(data: GeometryLayerItemUpdate) {
   const featureOrFeatures = isMultiMode.value
     ? [...props.selectedIds.values()]
     : feature.value?.id;
-  featureSelectInteractionRef.value.setMap(null);
+  engineRef.value?.suspendFeatureSelection();
   if (Array.isArray(featureOrFeatures)) {
     groupUpdate(() => featureOrFeatures.forEach((f) => geo.updateFeature(f, data)), {
       label: "batchLayer",
@@ -320,7 +326,7 @@ function onAction(action: ScenarioFeatureActions) {
         <TabsContent value="2" class="mx-4"
           ><ScenarioFeatureState v-if="feature" :feature="feature"
         /></TabsContent>
-        <TabsContent value="3" class="mx-4">
+        <TabsContent v-if="canTransformFeature" value="3" class="mx-4">
           <FeatureTransformations class="mt-4" />
         </TabsContent>
         <TabsContent

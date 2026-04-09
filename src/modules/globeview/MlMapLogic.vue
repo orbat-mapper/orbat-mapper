@@ -7,7 +7,7 @@ import {
   type PointLike,
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
-import { onUnmounted, provide, watch } from "vue";
+import { computed, onUnmounted, provide, watch } from "vue";
 import type { Feature } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -21,7 +21,13 @@ import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject, injectStrict } from "@/utils";
+import {
+  getFeatureIdFromRenderedFeature,
+  getLayerIdFromRenderedFeature,
+  isManagedScenarioFeatureLayerId,
+} from "@/modules/globeview/maplibreScenarioFeatures";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUiStore } from "@/stores/uiStore";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -42,9 +48,11 @@ const usedImageIds = new Set<string>();
 let shouldCenterOnNextStyleLoad = true;
 
 const playback = usePlaybackStore();
+const uiStore = useUiStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
-const { onUnitSelectHook } = injectStrict(searchActionsKey);
-const { selectedUnitIds } = useSelectedItems();
+const { onUnitSelectHook, onFeatureSelectHook } = injectStrict(searchActionsKey);
+const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 
 const { isDragging, formattedPosition } = useGlobeMapDrop(
   engineRef.value!.map,
@@ -121,19 +129,35 @@ mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
-function queryUnitFeatures(point: PointLike) {
-  if (!mlMap.getLayer("unitLayer")) return [];
-  return mlMap.queryRenderedFeatures(point, { layers: ["unitLayer"] });
+function queryInteractiveFeatures(point: PointLike) {
+  return mlMap
+    .queryRenderedFeatures(point)
+    .filter(
+      (feature) =>
+        feature.layer.id === "unitLayer" ||
+        isManagedScenarioFeatureLayerId(feature.layer.id),
+    );
 }
 
 function onMapClick(e: MapMouseEvent) {
-  const unitId = queryUnitFeatures(e.point)[0]?.properties?.id;
-  if (!unitId) return;
-  onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
+  const topHit = queryInteractiveFeatures(e.point)[0];
+  if (!topHit) return;
+  if (topHit.layer.id === "unitLayer") {
+    const unitId = topHit.properties?.id;
+    if (!unitId) return;
+    onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
+    return;
+  }
+  const featureId = getFeatureIdFromRenderedFeature(topHit);
+  const layerId = getLayerIdFromRenderedFeature(topHit);
+  if (!(featureId && layerId)) return;
+  onFeatureSelectHook.trigger({ featureId, layerId, options: { noZoom: true } });
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
-  mlMap.getCanvas().style.cursor = queryUnitFeatures(e.point).length ? "pointer" : "";
+  mlMap.getCanvas().style.cursor = queryInteractiveFeatures(e.point).length
+    ? "pointer"
+    : "";
 }
 
 mlMap.on("click", onMapClick);
@@ -151,6 +175,27 @@ watch(
 );
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
+
+watch(
+  [() => activeScenario.store.state.featureStateCounter, doNotFilterLayers],
+  () => {
+    engineRef.value?.layers.refreshScenarioFeatureLayers({
+      doClearCache: false,
+      filterVisible: !doNotFilterLayers.value,
+    });
+  },
+  { immediate: true },
+);
+
+watch(
+  () => [...selectedFeatureIds.value],
+  () => {
+    engineRef.value?.layers.refreshScenarioFeatureLayers({
+      doClearCache: false,
+      filterVisible: !doNotFilterLayers.value,
+    });
+  },
+);
 
 function addUnits(initial = false) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
@@ -184,7 +229,7 @@ function addUnits(initial = false) {
       } as Feature;
     }),
   );
-  if (initial) {
+  if (initial && features.features.length > 0) {
     const center = centerOfMass(features);
     mlMap.setCenter(center.geometry.coordinates as [number, number]);
   }
@@ -199,8 +244,8 @@ onUnmounted(() => {
   mlMap.off("mousemove", onMapMouseMove);
 });
 
-const { pause, resume, isActive } = useRafFn(
-  ({ delta }) => {
+const { pause, resume } = useRafFn(
+  () => {
     if (
       playback.playbackLooping &&
       playback.endMarker !== undefined &&

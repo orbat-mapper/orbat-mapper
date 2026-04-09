@@ -95,6 +95,12 @@ function onMapReady({
   scenarioMapEngineRef.value = {
     map: new OlMapAdapter(olMap),
     layers: scenarioLayerController,
+    suspendFeatureSelection() {
+      featureSelectInteraction.setMap(null);
+    },
+    resumeFeatureSelection() {
+      featureSelectInteraction.setMap(olMap);
+    },
   };
   featureSelectInteractionRef.value = featureSelectInteraction;
 }

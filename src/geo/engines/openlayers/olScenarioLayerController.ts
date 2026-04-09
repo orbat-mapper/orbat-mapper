@@ -889,6 +889,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       panToFeature: true,
       zoomToScenarioLayer: true,
       zoomToMapLayer: true,
+      featureTransform: true,
       mapLayerTransform: true,
       mapLayerExtent: true,
     },

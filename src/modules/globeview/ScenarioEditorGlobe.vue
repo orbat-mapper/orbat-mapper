@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, provide, ref, shallowRef } from "vue";
+import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef } from "vue";
 import type { ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
 import type OLMap from "ol/Map";
@@ -67,6 +67,7 @@ const {
 
 const mlMap = shallowRef<MlMap>();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
+let cleanupScenarioBinding: (() => void) | null = null;
 const nativeMapStub = shallowRef(null) as unknown as ShallowRef<OLMap>;
 const featureSelectStub = shallowRef(null) as unknown as ShallowRef<Select>;
 provide(
@@ -84,14 +85,17 @@ const activeGlobeBasemap = computed(() =>
 );
 
 function onMapReady(mapInstance: MlMap) {
+  cleanupScenarioBinding?.();
   mlMap.value = mapInstance;
   const adapter = new MapLibreMapAdapter(mapInstance);
   const layers = createMapLibreScenarioLayerController(adapter);
   scenarioMapEngineRef.value = {
     map: adapter,
     layers,
+    suspendFeatureSelection() {},
+    resumeFeatureSelection() {},
   };
-  layers.bindScenario(activeScenario);
+  cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
 }
 
@@ -211,8 +215,15 @@ onMounted(() => {
   void baseLayersStore.initialize();
 });
 
-onUnmounted(() => {
+function disposeGlobeBinding() {
+  cleanupScenarioBinding?.();
+  cleanupScenarioBinding = null;
+  scenarioMapEngineRef.value = undefined;
   geoStore.setMapAdapter(null);
+}
+
+onBeforeUnmount(() => {
+  disposeGlobeBinding();
 });
 
 const mapReady = computed(() => Boolean(mlMap.value));

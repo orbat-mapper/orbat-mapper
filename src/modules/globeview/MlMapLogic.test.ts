@@ -5,10 +5,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { computed, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
-import {
-  activeScenarioMapEngineKey,
-  searchActionsKey,
-} from "@/components/injects";
+import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injects";
 
 vi.mock("@/modules/globeview/useGlobeMapDrop.ts", () => ({
   useGlobeMapDrop: () => ({
@@ -56,6 +53,7 @@ function createMockMap() {
   const listeners = new Map<string, Set<(event?: unknown) => void>>();
   const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
   const layers = new Map<string, unknown>();
+  const canvas = { style: { cursor: "" } };
 
   const map = {
     on: vi.fn((event: string, handler: (event?: unknown) => void) => {
@@ -77,12 +75,19 @@ function createMockMap() {
     hasImage: vi.fn(() => false),
     addImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
-    getCanvas: vi.fn(() => ({ style: { cursor: "" } })),
+    getCanvas: vi.fn(() => canvas),
     setCenter: vi.fn(),
+    removeLayer: vi.fn((id: string) => {
+      layers.delete(id);
+    }),
+    removeSource: vi.fn((id: string) => {
+      sources.delete(id);
+    }),
   };
 
   return {
     map: map as any,
+    canvas,
     getSource(id: string) {
       return sources.get(id);
     },
@@ -99,11 +104,14 @@ describe("MlMapLogic", () => {
 
   it("creates the unit layer immediately when mounted after the initial map load", () => {
     const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
         state: {
           id: "scenario-1",
           currentTime: 0,
+          featureStateCounter: 0,
         },
       },
       unitActions: {
@@ -135,8 +143,11 @@ describe("MlMapLogic", () => {
       global: {
         plugins: [createPinia()],
         provide: {
-          [activeScenarioMapEngineKey as symbol]: shallowRef({ map: {} } as any),
-          [searchActionsKey as symbol]: createSearchActions(),
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
         },
       },
     });
@@ -150,5 +161,133 @@ describe("MlMapLogic", () => {
     );
     expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalledTimes(1);
     expect(mockMap.map.setCenter).toHaveBeenCalledWith([10, 20]);
+    expect(refreshScenarioFeatureLayers).toHaveBeenCalled();
+  });
+
+  it("selects a rendered globe feature on click", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const featureSelectSpy = vi.spyOn(searchActions.onFeatureSelectHook, "trigger");
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-2",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("click", { point: { x: 12, y: 20 } });
+
+    expect(featureSelectSpy).toHaveBeenCalledWith({
+      featureId: "feature-1",
+      layerId: "layer-1",
+      options: { noZoom: true },
+    });
+  });
+
+  it("keeps unit clicks above feature clicks and updates the pointer cursor for hits", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+    const featureSelectSpy = vi.spyOn(searchActions.onFeatureSelectHook, "trigger");
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-3",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("mousemove", { point: { x: 1, y: 2 } });
+    mockMap.emit("click", { point: { x: 1, y: 2 } });
+
+    expect(mockMap.canvas.style.cursor).toBe("pointer");
+    expect(unitSelectSpy).toHaveBeenCalledWith({
+      unitId: "unit-1",
+      options: { noZoom: true },
+    });
+    expect(featureSelectSpy).not.toHaveBeenCalled();
   });
 });

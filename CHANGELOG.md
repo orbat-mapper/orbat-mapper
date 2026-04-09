@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added experimental globe mode.
 - Added a standalone symbol browser page at `/symbol-browser`.
 - Added symbol export with copy and download as PNG and SVG, with configurable size and display options.
 - Added "Copy as GeoJSON" to the feature layer menu, individual feature menu, and feature details panel. Circles are exported as polygons.

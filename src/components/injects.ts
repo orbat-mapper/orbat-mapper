@@ -41,7 +41,11 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onUnitSelectHook: EventHook<{ unitId: EntityId; options?: { noZoom?: boolean } }>;
   onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onImageLayerSelectHook: EventHook<{ layerId: FeatureId }>;
-  onFeatureSelectHook: EventHook<{ featureId: FeatureId; layerId: FeatureId }>;
+  onFeatureSelectHook: EventHook<{
+    featureId: FeatureId;
+    layerId: FeatureId;
+    options?: { noZoom?: boolean };
+  }>;
   onEventSelectHook: EventHook<EventSearchResult>;
   onPlaceSelectHook: EventHook<PhotonSearchResult>;
   onScenarioActionHook: EventHook<{ action: ScenarioActions }>;

@@ -148,6 +148,7 @@ vi.mock("@/geo/engines/openlayers/olScenarioLayerController", () => ({
       panToFeature: true,
       zoomToScenarioLayer: true,
       zoomToMapLayer: true,
+      featureTransform: true,
       mapLayerTransform: true,
       mapLayerExtent: true,
     },

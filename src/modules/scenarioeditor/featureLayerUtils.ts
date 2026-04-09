@@ -46,6 +46,7 @@ import {
   isGeometryLayerItemLike,
   isNGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
+import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -238,6 +239,7 @@ export function useScenarioFeatureSelect(
   const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
     VectorLayer<any>
   >;
+  const { applyScenarioFeatureSelection } = useScenarioFeatureSelection();
 
   const { selectedFeatureIds: selectedIds, selectedUnitIds } = useSelectedItems();
 
@@ -281,11 +283,16 @@ export function useScenarioFeatureSelect(
   useOlEvent(
     selectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
-      if (event.selected.length > 0 && selectedUnitIds.value.size > 0) {
-        selectedUnitIds.value.clear();
-      }
-      event.selected.forEach((f) => selectedIds.value.add(f.getId()!));
-      event.deselected.forEach((f) => selectedIds.value.delete(f.getId()!));
+      const featureIds = selectedFeatures
+        .getArray()
+        .map((feature) => feature.getId())
+        .filter((featureId): featureId is FeatureId => featureId !== undefined);
+      const primaryFeatureId = event.selected[0]?.getId() ?? featureIds[0];
+      applyScenarioFeatureSelection({
+        featureIds,
+        primaryFeatureId,
+        noZoom: true,
+      });
     }),
   );
 

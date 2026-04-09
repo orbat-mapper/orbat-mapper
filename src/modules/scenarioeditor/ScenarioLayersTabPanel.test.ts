@@ -53,6 +53,7 @@ describe("ScenarioLayersTabPanel", () => {
         panToFeature: true,
         zoomToScenarioLayer: true,
         zoomToMapLayer: canZoomMapLayer,
+        featureTransform: true,
         mapLayerTransform: true,
         mapLayerExtent: canZoomMapLayer,
       },

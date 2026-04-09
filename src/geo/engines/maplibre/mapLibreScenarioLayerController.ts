@@ -1,6 +1,7 @@
 import { featureCollection } from "@turf/helpers";
 import centerOfMass from "@turf/center-of-mass";
 import turfCircle from "@turf/circle";
+import type { Map as MlMap } from "maplibre-gl";
 import { transformExtent } from "ol/proj";
 import type { Feature as GeoJsonFeature, Position } from "geojson";
 import type {
@@ -10,12 +11,28 @@ import type {
 } from "@/geo/contracts/scenarioLayerController";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TScenario } from "@/scenariostore";
+import type { ActionLabel } from "@/scenariostore/newScenarioStore";
+import { MapLibreScenarioFeatureManager } from "@/modules/globeview/maplibreScenarioFeatures";
+import { useSelectedItems } from "@/stores/selectedStore";
+import type { ScenarioLayerUpdate } from "@/types/internalModels";
 import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import {
   isNGeometryLayerItem,
   type NGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
 import { fixExtent } from "@/utils/geoConvert";
+
+const undoActionLabels: ActionLabel[] = [
+  "deleteLayer",
+  "moveLayer",
+  "updateLayer",
+  "batchLayer",
+  "moveFeature",
+  "deleteFeature",
+  "addFeature",
+  "updateFeatureGeometry",
+  "updateFeature",
+];
 
 function normalizeMapLayerExtent(
   extent: number[] | undefined,
@@ -74,8 +91,12 @@ function isGeometryLayerItem(
 export function createMapLibreScenarioLayerController(
   mapAdapter: MapAdapter,
 ): ScenarioLayerController {
+  const mlMap = mapAdapter.getNativeMap() as MlMap;
+  const { selectedFeatureIds } = useSelectedItems();
   const layerEventHandlers = new Set<(event: ScenarioLayerControllerEvent) => void>();
   let activeScenario: TScenario | null = null;
+  let featureManager: MapLibreScenarioFeatureManager | null = null;
+  let currentFilterVisible = true;
   let cleanupScenarioBinding = () => {};
 
   function emitLayerEvent(event: ScenarioLayerControllerEvent) {
@@ -141,31 +162,88 @@ export function createMapLibreScenarioLayerController(
     }
   }
 
+  function refreshScenarioFeatureLayers(
+    options: RefreshScenarioFeatureLayersOptions = {},
+  ) {
+    if (options.filterVisible !== undefined) {
+      currentFilterVisible = options.filterVisible;
+    }
+    if (!activeScenario || !featureManager) return;
+    featureManager.refresh(activeScenario.geo.layerItemsLayers.value, {
+      doClearCache: options.doClearCache ?? false,
+      filterVisible: currentFilterVisible,
+    });
+  }
+
+  function refreshAfterFeatureUpdate(_featureId: FeatureId) {
+    refreshScenarioFeatureLayers({ doClearCache: false });
+  }
+
+  function emitScenarioLayerVisibility(layerId: FeatureId, data: ScenarioLayerUpdate) {
+    if (data.isHidden === undefined) return;
+    emitLayerEvent({
+      type: "scenario-layer-visibility-changed",
+      layerId,
+      isHidden: data.isHidden,
+    });
+  }
+
   function bindScenario(scenario: TScenario) {
     cleanupScenarioBinding();
     activeScenario = scenario;
+    featureManager = new MapLibreScenarioFeatureManager(
+      mlMap,
+      () => selectedFeatureIds.value,
+    );
+    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+
+    const onStyleLoad = () => {
+      refreshScenarioFeatureLayers({ doClearCache: true });
+    };
+    mlMap.on("style.load", onStyleLoad);
 
     const cleanupMapLayers = scenario.geo.onMapLayerEvent((event) => {
-      if (event.type !== "update") return;
-      emitLayerEvent({
-        type: "map-layer-updated",
-        layerId: event.id,
-        data: event.data,
-      });
+      if (event.type === "update") {
+        emitLayerEvent({
+          type: "map-layer-updated",
+          layerId: event.id,
+          data: event.data,
+        });
+      }
     });
 
     const cleanupFeatureLayers = scenario.geo.onFeatureLayerEvent((event) => {
-      if (event.type !== "updateLayer" || event.data.isHidden === undefined) return;
-      emitLayerEvent({
-        type: "scenario-layer-visibility-changed",
-        layerId: event.id,
-        isHidden: event.data.isHidden,
-      });
+      switch (event.type) {
+        case "removeLayer":
+        case "addLayer":
+        case "moveLayer":
+        case "moveFeature":
+          refreshScenarioFeatureLayers({ doClearCache: false });
+          break;
+        case "updateLayer":
+          refreshScenarioFeatureLayers({ doClearCache: false });
+          emitScenarioLayerVisibility(event.id, event.data);
+          break;
+        case "updateFeature":
+        case "deleteFeature":
+        case "addFeature":
+          refreshAfterFeatureUpdate(event.id);
+          break;
+      }
+    });
+
+    const cleanupUndoRedo = scenario.store.onUndoRedo(({ meta }) => {
+      if (!meta || !undoActionLabels.includes(meta.label as ActionLabel)) return;
+      refreshScenarioFeatureLayers({ doClearCache: false });
     });
 
     cleanupScenarioBinding = () => {
       cleanupMapLayers.off();
       cleanupFeatureLayers.off();
+      cleanupUndoRedo.off();
+      mlMap.off("style.load", onStyleLoad);
+      featureManager?.destroy();
+      featureManager = null;
       activeScenario = null;
     };
 
@@ -179,11 +257,12 @@ export function createMapLibreScenarioLayerController(
       panToFeature: true,
       zoomToScenarioLayer: true,
       zoomToMapLayer: true,
+      featureTransform: false,
       mapLayerTransform: false,
       mapLayerExtent: true,
     },
     bindScenario,
-    refreshScenarioFeatureLayers(_options: RefreshScenarioFeatureLayersOptions = {}) {},
+    refreshScenarioFeatureLayers,
     zoomToFeature,
     zoomToFeatures,
     panToFeature,

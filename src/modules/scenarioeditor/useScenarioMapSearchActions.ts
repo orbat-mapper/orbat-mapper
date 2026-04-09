@@ -13,6 +13,7 @@ import {
 } from "@/components/injects";
 import { useSearchActions } from "@/composables/searchActions";
 import { useToeActions } from "@/composables/scenarioActions";
+import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { fixExtent } from "@/utils/geoConvert";
@@ -44,6 +45,7 @@ export function useScenarioMapSearchActions({
   const playback = usePlaybackStore();
   const ui = useUiStore();
   const toeActions = useToeActions();
+  const { applyScenarioFeatureSelection } = useScenarioFeatureSelection();
   const breakpoints = useBreakpoints(breakpointsTailwind);
   const isMobile = breakpoints.smallerOrEqual("md");
   const {
@@ -111,21 +113,15 @@ export function useScenarioMapSearchActions({
     });
   });
 
-  onFeatureSelect(({ featureId }) => {
-    ui.activeTabIndex = TAB_LAYERS;
-    const { layerItem: feature, layer } =
-      activeScenario.geo.getGeometryLayerItemById(featureId);
-    nextTick(() => {
-      if (layer) {
-        layer._isOpen = true;
-      }
-      if (feature) {
-        selectedUnitIds.value.clear();
-        selectedFeatureIds.value.clear();
-        selectedFeatureIds.value.add(featureId);
-        nextTick(() => engineRef.value?.layers.zoomToFeature(featureId));
-      }
-    });
+  onFeatureSelect(({ featureId, layerId, options }) => {
+    nextTick(() =>
+      applyScenarioFeatureSelection({
+        featureIds: [featureId],
+        primaryFeatureId: featureId,
+        layerId,
+        noZoom: options?.noZoom === true,
+      }),
+    );
   });
 
   onEventSelect((event) => {
