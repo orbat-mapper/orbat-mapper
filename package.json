@@ -39,6 +39,7 @@
     "@turf/along": "^7.3.4",
     "@turf/bbox": "^7.3.4",
     "@turf/bbox-polygon": "^7.3.4",
+    "@turf/bearing": "^7.3.4",
     "@turf/bezier-spline": "^7.3.4",
     "@turf/buffer": "^7.3.4",
     "@turf/center": "^7.3.4",

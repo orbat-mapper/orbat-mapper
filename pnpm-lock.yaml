@@ -65,6 +65,9 @@ importers:
       '@turf/bbox-polygon':
         specifier: ^7.3.4
         version: 7.3.4
+      '@turf/bearing':
+        specifier: ^7.3.4
+        version: 7.3.4
       '@turf/bezier-spline':
         specifier: ^7.3.4
         version: 7.3.4
