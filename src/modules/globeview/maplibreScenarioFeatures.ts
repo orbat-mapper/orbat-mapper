@@ -17,6 +17,7 @@ import type {
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
 import { fromString as parseColor } from "ol/color";
+import { drawArrowSymbol, getArrowSymbolDefinition } from "@/geo/arrowSymbols";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type {
   FullScenarioLayerItemsLayer,
@@ -24,6 +25,7 @@ import type {
 } from "@/types/scenarioLayerItems";
 import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
 import { hashObject } from "@/utils";
+import type { ArrowType } from "@/geo/simplestyle";
 
 export const GLOBE_SCENARIO_FEATURE_PREFIX = "scenario-feature";
 
@@ -75,6 +77,7 @@ type ArrowFeatureProperties = {
   selected: boolean;
   zIndex: number;
   arrowImageId: string;
+  iconAnchor: "center" | "right";
   rotation: number;
   sourceOpacity: number;
 };
@@ -110,7 +113,7 @@ type ImageDefinition =
     }
   | {
       kind: "arrow";
-      arrowType: string;
+      arrowType: ArrowType;
       color: string;
     };
 
@@ -441,6 +444,7 @@ function buildFeatureData(
             selected: selectedFeatureIds.has(item.id),
             zIndex: item.meta._zIndex ?? 0,
             arrowImageId: imageId,
+            iconAnchor: getArrowSymbolDefinition(startArrow)?.anchorKind ?? "center",
             rotation: getLineRotation(arrowAnchors.startAdjacent, arrowAnchors.start),
             sourceOpacity,
           },
@@ -467,6 +471,7 @@ function buildFeatureData(
             selected: selectedFeatureIds.has(item.id),
             zIndex: item.meta._zIndex ?? 0,
             arrowImageId: imageId,
+            iconAnchor: getArrowSymbolDefinition(endArrow)?.anchorKind ?? "center",
             rotation: getLineRotation(arrowAnchors.endAdjacent, arrowAnchors.end),
             sourceOpacity,
           },
@@ -766,6 +771,7 @@ function createLayerDefinitions(
           visibility: layoutVisibility,
           "icon-image": ["get", "arrowImageId"],
           "icon-rotate": ["get", "rotation"],
+          "icon-anchor": ["get", "iconAnchor"],
           "icon-rotation-alignment": "map",
           "icon-pitch-alignment": "map",
           "icon-allow-overlap": true,
@@ -913,126 +919,10 @@ function createMarkerImage(definition: Extract<ImageDefinition, { kind: "marker"
   });
 }
 
-function drawArrow(
-  context: CanvasRenderingContext2D,
-  arrowType: string,
-  color: string,
-  size: number,
-) {
-  const c = size / 2;
-  context.strokeStyle = color;
-  context.fillStyle = color;
-  context.lineWidth = 2;
-
-  if (arrowType === "dot") {
-    context.beginPath();
-    context.arc(c, c, size * 0.18, 0, Math.PI * 2);
-    context.fill();
-    return;
-  }
-  if (arrowType === "square") {
-    context.fillRect(c - size * 0.16, c - size * 0.16, size * 0.32, size * 0.32);
-    return;
-  }
-  if (arrowType === "diamond") {
-    context.beginPath();
-    context.moveTo(c, c - size * 0.2);
-    context.lineTo(c + size * 0.2, c);
-    context.lineTo(c, c + size * 0.2);
-    context.lineTo(c - size * 0.2, c);
-    context.closePath();
-    context.fill();
-    return;
-  }
-  if (arrowType === "bar") {
-    context.beginPath();
-    context.moveTo(c, size * 0.18);
-    context.lineTo(c, size * 0.82);
-    context.stroke();
-    return;
-  }
-
-  if (arrowType === "arrow-open" || arrowType === "arrow-hand-drawn") {
-    context.beginPath();
-    context.moveTo(size * 0.22, size * 0.18);
-    context.lineTo(size * 0.82, c);
-    context.lineTo(size * 0.22, size * 0.82);
-    context.stroke();
-    if (arrowType === "arrow-hand-drawn") {
-      context.beginPath();
-      context.moveTo(size * 0.28, size * 0.28);
-      context.lineTo(size * 0.74, c);
-      context.lineTo(size * 0.28, size * 0.72);
-      context.stroke();
-    }
-    return;
-  }
-
-  if (arrowType === "arrow-curved") {
-    context.beginPath();
-    context.moveTo(size * 0.16, size * 0.18);
-    context.quadraticCurveTo(size * 0.46, size * 0.18, size * 0.56, size * 0.06);
-    context.lineTo(size * 0.86, c);
-    context.lineTo(size * 0.56, size * 0.94);
-    context.quadraticCurveTo(size * 0.46, size * 0.82, size * 0.16, size * 0.82);
-    context.quadraticCurveTo(size * 0.36, size * 0.6, size * 0.36, c);
-    context.quadraticCurveTo(size * 0.36, size * 0.4, size * 0.16, size * 0.18);
-    context.closePath();
-    context.fill();
-    return;
-  }
-
-  if (arrowType === "arrow-double" || arrowType === "arrow-double-hand-drawn") {
-    context.beginPath();
-    context.moveTo(size * 0.08, size * 0.18);
-    context.lineTo(size * 0.44, c);
-    context.lineTo(size * 0.08, size * 0.82);
-    context.closePath();
-    context.fill();
-    context.beginPath();
-    context.moveTo(size * 0.38, size * 0.18);
-    context.lineTo(size * 0.82, c);
-    context.lineTo(size * 0.38, size * 0.82);
-    context.closePath();
-    context.fill();
-    if (arrowType === "arrow-double-hand-drawn") {
-      context.beginPath();
-      context.moveTo(size * 0.16, size * 0.28);
-      context.lineTo(size * 0.4, c);
-      context.lineTo(size * 0.16, size * 0.72);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(size * 0.44, size * 0.28);
-      context.lineTo(size * 0.74, c);
-      context.lineTo(size * 0.44, size * 0.72);
-      context.stroke();
-    }
-    return;
-  }
-
-  if (arrowType === "arrow-stealth") {
-    context.beginPath();
-    context.moveTo(size * 0.12, size * 0.18);
-    context.lineTo(size * 0.86, c);
-    context.lineTo(size * 0.12, size * 0.82);
-    context.lineTo(size * 0.28, c);
-    context.closePath();
-    context.fill();
-    return;
-  }
-
-  context.beginPath();
-  context.moveTo(size * 0.16, size * 0.18);
-  context.lineTo(size * 0.86, c);
-  context.lineTo(size * 0.16, size * 0.82);
-  context.closePath();
-  context.fill();
-}
-
 function createArrowImage(definition: Extract<ImageDefinition, { kind: "arrow" }>) {
   const size = 28;
   return ensureCanvasImageData(size, size, (context) => {
-    drawArrow(context, definition.arrowType, definition.color, size);
+    drawArrowSymbol(context, definition.arrowType, definition.color, size);
   });
 }
 

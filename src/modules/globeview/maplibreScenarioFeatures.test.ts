@@ -135,6 +135,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
 
     const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
     expect(arrowLayer?.spec.layout).toMatchObject({
+      "icon-anchor": ["get", "iconAnchor"],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
     });
@@ -186,5 +187,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
 
     expect(startArrow?.properties?.rotation).toBeCloseTo(-180, 5);
     expect(endArrow?.properties?.rotation).toBeCloseTo(-90, 5);
+    expect(startArrow?.properties?.iconAnchor).toBe("right");
+    expect(endArrow?.properties?.iconAnchor).toBe("right");
   });
 });

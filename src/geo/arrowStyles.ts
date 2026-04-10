@@ -9,13 +9,13 @@ import type Geometry from "ol/geom/Geometry";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
-import RegularShape from "ol/style/RegularShape";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
-import CircleStyle from "ol/style/Circle";
 import Icon from "ol/style/Icon";
 import * as olColor from "ol/color";
 import type { ArrowType, SimpleStyleSpec } from "./simplestyle";
+import {
+  getArrowSvgDataUri as getSharedArrowSvgDataUri,
+  getArrowSymbolDefinition,
+} from "./arrowSymbols";
 import {
   defaultStrokeColor,
   defaultStrokeOpacity,
@@ -46,58 +46,18 @@ export function getLineAngle(coordinates: number[][], position: "start" | "end")
 }
 
 /**
- * Get the SVG data URI for an arrow type, for use in direct canvas rendering.
- * Returns null for shape-based arrow types (which use RegularShape/CircleStyle).
+ * Get the SVG data URI for an arrow type.
  *
  * @param arrowType - The type of arrow marker
  * @param color - Fill/stroke color for the marker
- * @returns Base64-encoded SVG data URI, or null for non-SVG types
+ * @returns Base64-encoded SVG data URI, or null for "none"
  */
 export function getArrowSvgDataUri(arrowType: ArrowType, color: string): string | null {
-  switch (arrowType) {
-    case "arrow-curved": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,12 Q6,12 10,4 L22,12 L10,20 Q6,12 2,12 Z" /></svg>`;
-      return "data:image/svg+xml;base64," + btoa(svg);
-    }
-    case "arrow-stealth": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L22,12 L2,22 L6,12 Z" /></svg>`;
-      return "data:image/svg+xml;base64," + btoa(svg);
-    }
-    case "arrow-double": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L12,12 L2,22 Z M10,2 L20,12 L10,22 Z" /></svg>`;
-      return "data:image/svg+xml;base64," + btoa(svg);
-    }
-    case "arrow-hand-drawn": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
-      </svg>`;
-      return "data:image/svg+xml;base64," + btoa(svg);
-    }
-    case "arrow-double-hand-drawn": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-        <!-- First arrow -->
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 4 10 C 10 16 26 22 36 24 C 26 26 10 32 4 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 6 14 C 12 18 22 22 32 24 C 22 26 12 30 6 34" />
-        <!-- Second arrow -->
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
-      </svg>`;
-      return "data:image/svg+xml;base64," + btoa(svg);
-    }
-    default:
-      return null;
-  }
+  return getSharedArrowSvgDataUri(arrowType, color);
 }
 
 /**
- * Create an arrow marker image (RegularShape or CircleStyle) for a specific arrow type.
+ * Create an arrow marker image for a specific arrow type.
  *
  * @param arrowType - The type of arrow marker to create
  * @param color - Fill/stroke color for the marker
@@ -110,136 +70,17 @@ export function createArrowMarkerImage(
   color: string,
   rotation: number,
   scale: number = 1,
-): RegularShape | CircleStyle | Icon | null {
-  if (arrowType === "none") return null;
-  const size = 10 * scale;
+): Icon | null {
+  const definition = getArrowSymbolDefinition(arrowType);
+  const src = getArrowSvgDataUri(arrowType, color);
+  if (!(definition && src)) return null;
 
-  // Helper functions to create fill/stroke on demand
-  const createFill = () => new Fill({ color });
-  const createStroke = () => new Stroke({ color, width: 2 });
-
-  switch (arrowType) {
-    case "arrow":
-      return new RegularShape({
-        fill: createFill(),
-        stroke: createStroke(),
-        points: 3,
-        radius: size,
-        rotation: -rotation + Math.PI / 2,
-        angle: 0,
-      });
-
-    case "arrow-open":
-      return new RegularShape({
-        stroke: createStroke(),
-        points: 3,
-        radius: size,
-        rotation: -rotation + Math.PI / 2,
-        angle: 0,
-      });
-
-    case "arrow-curved": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,12 Q6,12 10,4 L22,12 L10,20 Q6,12 2,12 Z" /></svg>`;
-      return new Icon({
-        src: "data:image/svg+xml;base64," + btoa(svg),
-        rotation: -rotation,
-        scale: scale * 0.8,
-        anchor: [0.5, 0.5],
-      });
-    }
-
-    case "arrow-stealth": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L22,12 L2,22 L6,12 Z" /></svg>`;
-      return new Icon({
-        src: "data:image/svg+xml;base64," + btoa(svg),
-        rotation: -rotation,
-        scale: scale * 0.8,
-        anchor: [0.5, 0.5],
-      });
-    }
-
-    case "arrow-double": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${color}" d="M2,2 L12,12 L2,22 Z M10,2 L20,12 L10,22 Z" /></svg>`;
-      return new Icon({
-        src: "data:image/svg+xml;base64," + btoa(svg),
-        rotation: -rotation,
-        scale: scale * 0.8,
-        anchor: [0.5, 0.5],
-      });
-    }
-
-    case "arrow-hand-drawn": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
-      </svg>`;
-      return new Icon({
-        src: "data:image/svg+xml;base64," + btoa(svg),
-        rotation: -rotation,
-        scale: scale * 0.4,
-        anchor: [0.5, 0.5],
-      });
-    }
-
-    case "arrow-double-hand-drawn": {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-        <!-- First arrow -->
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 4 10 C 10 16 26 22 36 24 C 26 26 10 32 4 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 6 14 C 12 18 22 22 32 24 C 22 26 12 30 6 34" />
-        <!-- Second arrow -->
-        <path stroke="${color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          d="M 12 10 C 18 16 34 22 44 24 C 34 26 18 32 12 38" />
-        <path stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          d="M 14 14 C 20 18 30 22 40 24 C 30 26 20 30 14 34" />
-      </svg>`;
-      return new Icon({
-        src: "data:image/svg+xml;base64," + btoa(svg),
-        rotation: -rotation,
-        scale: scale * 0.4,
-        anchor: [0.5, 0.5],
-      });
-    }
-
-    case "dot":
-      return new CircleStyle({
-        fill: createFill(),
-        radius: size / 2,
-      });
-
-    case "square":
-      return new RegularShape({
-        fill: createFill(),
-        points: 4,
-        radius: size * 0.7,
-        rotation: -rotation + Math.PI / 4,
-        angle: 0,
-      });
-
-    case "diamond":
-      return new RegularShape({
-        fill: createFill(),
-        points: 4,
-        radius: size * 0.7,
-        rotation: -rotation,
-        angle: 0,
-      });
-
-    case "bar":
-      return new RegularShape({
-        stroke: new Stroke({ color, width: 2 + 4 * scale }),
-        points: 2,
-        radius: size,
-        rotation: -rotation,
-        angle: 0,
-      });
-
-    default:
-      return null;
-  }
+  return new Icon({
+    src,
+    rotation: -rotation,
+    scale: scale * definition.olScale,
+    anchor: definition.olAnchor,
+  });
 }
 
 /**
