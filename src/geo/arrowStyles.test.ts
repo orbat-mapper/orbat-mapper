@@ -104,6 +104,11 @@ describe("createArrowMarkerImage", () => {
     expect(src).toBeTruthy();
     expect(decodeDataUri(src!)).toContain("rgba(255,0,0,0.5)");
   });
+
+  it("extends directional arrow tips to the symbol edge", () => {
+    const image = createArrowMarkerImage("arrow", "#000", 0) as Icon;
+    expect(decodeDataUri(image.getSrc()!)).toContain("L24 12");
+  });
 });
 
 describe("getArrowSvgDataUri", () => {
