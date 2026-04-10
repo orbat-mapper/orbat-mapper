@@ -1,12 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { getLineAngle, createArrowMarkerImage, createArrowStyles } from "./arrowStyles";
+import {
+  getLineAngle,
+  createArrowMarkerImage,
+  createArrowStyles,
+  getArrowSvgDataUri,
+} from "./arrowStyles";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import Polygon from "ol/geom/Polygon";
 import Style from "ol/style/Style";
-import RegularShape from "ol/style/RegularShape";
-import CircleStyle from "ol/style/Circle";
 import Icon from "ol/style/Icon";
+
+function decodeDataUri(uri: string) {
+  const encoded = uri.split(",", 2)[1] ?? "";
+  return Buffer.from(encoded, "base64").toString("utf8");
+}
 
 describe("getLineAngle", () => {
   it("returns 0 for a horizontal line pointing right", () => {
@@ -67,65 +75,44 @@ describe("createArrowMarkerImage", () => {
     expect(createArrowMarkerImage("none", "#000", 0)).toBeNull();
   });
 
-  it("creates a RegularShape for 'arrow' type", () => {
-    const image = createArrowMarkerImage("arrow", "#ff0000", 0);
-    expect(image).toBeInstanceOf(RegularShape);
-  });
-
-  it("creates a RegularShape for 'arrow-open' type", () => {
-    const image = createArrowMarkerImage("arrow-open", "#ff0000", 0);
-    expect(image).toBeInstanceOf(RegularShape);
-  });
-
-  it("creates a CircleStyle for 'dot' type", () => {
-    const image = createArrowMarkerImage("dot", "#ff0000", 0);
-    expect(image).toBeInstanceOf(CircleStyle);
-  });
-
-  it("creates a RegularShape for 'square' type", () => {
-    const image = createArrowMarkerImage("square", "#ff0000", 0);
-    expect(image).toBeInstanceOf(RegularShape);
-  });
-
-  it("creates a RegularShape for 'diamond' type", () => {
-    const image = createArrowMarkerImage("diamond", "#ff0000", 0);
-    expect(image).toBeInstanceOf(RegularShape);
-  });
-
-  it("creates a RegularShape for 'bar' type", () => {
-    const image = createArrowMarkerImage("bar", "#ff0000", 0);
-    expect(image).toBeInstanceOf(RegularShape);
-  });
-
-  it("creates an Icon for 'arrow-curved' type", () => {
-    const image = createArrowMarkerImage("arrow-curved", "#ff0000", 0);
-    expect(image).toBeInstanceOf(Icon);
-  });
-
-  it("creates an Icon for 'arrow-stealth' type", () => {
-    const image = createArrowMarkerImage("arrow-stealth", "#ff0000", 0);
-    expect(image).toBeInstanceOf(Icon);
-  });
-
-  it("creates an Icon for 'arrow-double' type", () => {
-    const image = createArrowMarkerImage("arrow-double", "#ff0000", 0);
-    expect(image).toBeInstanceOf(Icon);
-  });
-
-  it("creates an Icon for 'arrow-hand-drawn' type", () => {
-    const image = createArrowMarkerImage("arrow-hand-drawn", "#ff0000", 0);
-    expect(image).toBeInstanceOf(Icon);
-  });
-
-  it("creates an Icon for 'arrow-double-hand-drawn' type", () => {
-    const image = createArrowMarkerImage("arrow-double-hand-drawn", "#ff0000", 0);
+  it.each([
+    "arrow",
+    "arrow-open",
+    "dot",
+    "square",
+    "diamond",
+    "bar",
+    "arrow-curved",
+    "arrow-stealth",
+    "arrow-double",
+    "arrow-hand-drawn",
+    "arrow-double-hand-drawn",
+  ] as const)("creates a shared Icon for '%s'", (arrowType) => {
+    const image = createArrowMarkerImage(arrowType, "#ff0000", 0);
     expect(image).toBeInstanceOf(Icon);
   });
 
   it("respects scale parameter", () => {
-    const scale1 = createArrowMarkerImage("arrow", "#000", 0, 1) as RegularShape;
-    const scale2 = createArrowMarkerImage("arrow", "#000", 0, 2) as RegularShape;
-    expect(scale2.getRadius()).toBe(scale1.getRadius() * 2);
+    const scale1 = createArrowMarkerImage("arrow", "#000", 0, 1) as Icon;
+    const scale2 = createArrowMarkerImage("arrow", "#000", 0, 2) as Icon;
+    expect(scale2.getScale()).toBe((scale1.getScale() as number) * 2);
+  });
+
+  it("encodes the requested color in the shared SVG", () => {
+    const image = createArrowMarkerImage("arrow", "rgba(255,0,0,0.5)", 0) as Icon;
+    const src = image.getSrc();
+    expect(src).toBeTruthy();
+    expect(decodeDataUri(src!)).toContain("rgba(255,0,0,0.5)");
+  });
+});
+
+describe("getArrowSvgDataUri", () => {
+  it("returns a data URI for all supported arrow types", () => {
+    expect(getArrowSvgDataUri("none", "#000")).toBeNull();
+    expect(getArrowSvgDataUri("arrow", "#000")).toMatch(/^data:image\/svg\+xml;base64,/);
+    expect(getArrowSvgDataUri("arrow-hand-drawn", "#000")).toMatch(
+      /^data:image\/svg\+xml;base64,/,
+    );
   });
 });
 
@@ -211,8 +198,8 @@ describe("createArrowStyles", () => {
       "stroke-opacity": strokeOpacity,
     });
     expect(styles).toHaveLength(1);
-    const image = styles[0].getImage() as RegularShape;
-    expect(image.getFill()?.getColor()).toBe("rgba(255,0,0,0.5)");
+    const image = styles[0].getImage() as Icon;
+    expect(decodeDataUri(image.getSrc()!)).toContain("rgba(255,0,0,0.5)");
   });
 
   it("scales arrow markers with strokeWidth", () => {
@@ -231,11 +218,10 @@ describe("createArrowStyles", () => {
       "stroke-width": 4,
     });
 
-    const image2 = stylesWidth2[0].getImage() as RegularShape;
-    const image4 = stylesWidth4[0].getImage() as RegularShape;
+    const image2 = stylesWidth2[0].getImage() as Icon;
+    const image4 = stylesWidth4[0].getImage() as Icon;
 
-    // Radius should be larger for larger strokeWidth
-    expect(image4.getRadius()).toBeGreaterThan(image2.getRadius());
+    expect(image4.getScale()).toBeGreaterThan(image2.getScale());
   });
 
   it("returns empty for lines with too few coordinates", () => {
