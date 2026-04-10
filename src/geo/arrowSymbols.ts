@@ -14,6 +14,7 @@ export type ArrowSymbolDefinition = {
   width: number;
   height: number;
   anchorKind: "center" | "right";
+  globeOffset: [number, number];
   olAnchor: [number, number];
   olScale: number;
   elements: ArrowSvgElement[];
@@ -27,11 +28,12 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "right",
-    olAnchor: [0.86, 0.5],
+    globeOffset: [0, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.85,
     elements: [
       {
-        d: "M3.84 4.32 L20.64 12 L3.84 19.68 Z",
+        d: "M3.84 4.32 L24 12 L3.84 19.68 Z",
         fill: true,
         stroke: true,
         strokeWidth: 2,
@@ -43,11 +45,12 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "right",
-    olAnchor: [0.82, 0.5],
+    globeOffset: [0.35, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.85,
     elements: [
       {
-        d: "M5.28 4.32 L19.68 12 L5.28 19.68",
+        d: "M5.28 4.32 L24 12 L5.28 19.68",
         stroke: true,
         strokeWidth: 2,
         lineCap: sharedLineCap,
@@ -59,11 +62,12 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "right",
-    olAnchor: [0.86, 0.5],
+    globeOffset: [0.2, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.8,
     elements: [
       {
-        d: "M2,12 Q6,12 10,4 L22,12 L10,20 Q6,12 2,12 Z",
+        d: "M2,12 Q6,12 10,4 L24,12 L10,20 Q6,12 2,12 Z",
         fill: true,
       },
     ],
@@ -72,11 +76,12 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "right",
-    olAnchor: [0.86, 0.5],
+    globeOffset: [0, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.8,
     elements: [
       {
-        d: "M2,2 L22,12 L2,22 L6,12 Z",
+        d: "M2,2 L24,12 L2,22 L6,12 Z",
         fill: true,
       },
     ],
@@ -85,11 +90,12 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "right",
-    olAnchor: [0.83, 0.5],
+    globeOffset: [0.2, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.8,
     elements: [
       {
-        d: "M2,2 L12,12 L2,22 Z M10,2 L20,12 L10,22 Z",
+        d: "M2,2 L12,12 L2,22 Z M10,2 L24,12 L10,22 Z",
         fill: true,
       },
     ],
@@ -98,18 +104,19 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 48,
     height: 48,
     anchorKind: "right",
-    olAnchor: [44 / 48, 0.5],
+    globeOffset: [0.45, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.4,
     elements: [
       {
-        d: "M12 10 C18 16 34 22 44 24 C34 26 18 32 12 38",
+        d: "M12 10 C18 16 34 22 48 24 C34 26 18 32 12 38",
         stroke: true,
         strokeWidth: 2.5,
         lineCap: sharedLineCap,
         lineJoin: sharedLineJoin,
       },
       {
-        d: "M14 14 C20 18 30 22 40 24 C30 26 20 30 14 34",
+        d: "M14 14 C20 18 30 22 44 24 C30 26 20 30 14 34",
         stroke: true,
         strokeWidth: 2,
         lineCap: sharedLineCap,
@@ -121,7 +128,8 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 48,
     height: 48,
     anchorKind: "right",
-    olAnchor: [44 / 48, 0.5],
+    globeOffset: [0.45, 0],
+    olAnchor: [1, 0.5],
     olScale: 0.4,
     elements: [
       {
@@ -139,14 +147,14 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
         lineJoin: sharedLineJoin,
       },
       {
-        d: "M12 10 C18 16 34 22 44 24 C34 26 18 32 12 38",
+        d: "M12 10 C18 16 34 22 48 24 C34 26 18 32 12 38",
         stroke: true,
         strokeWidth: 2.5,
         lineCap: sharedLineCap,
         lineJoin: sharedLineJoin,
       },
       {
-        d: "M14 14 C20 18 30 22 40 24 C30 26 20 30 14 34",
+        d: "M14 14 C20 18 30 22 44 24 C30 26 20 30 14 34",
         stroke: true,
         strokeWidth: 2,
         lineCap: sharedLineCap,
@@ -158,6 +166,7 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "center",
+    globeOffset: [0, 0],
     olAnchor: [0.5, 0.5],
     olScale: 1,
     elements: [
@@ -171,6 +180,7 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "center",
+    globeOffset: [0, 0],
     olAnchor: [0.5, 0.5],
     olScale: 1,
     elements: [
@@ -184,6 +194,7 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "center",
+    globeOffset: [0, 0],
     olAnchor: [0.5, 0.5],
     olScale: 1,
     elements: [
@@ -197,6 +208,7 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     width: 24,
     height: 24,
     anchorKind: "center",
+    globeOffset: [0, 0],
     olAnchor: [0.5, 0.5],
     olScale: 1,
     elements: [

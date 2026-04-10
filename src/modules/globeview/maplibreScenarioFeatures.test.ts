@@ -135,9 +135,14 @@ describe("buildScenarioFeatureRenderPlan", () => {
 
     const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
     expect(arrowLayer?.spec.layout).toMatchObject({
-      "icon-anchor": ["get", "iconAnchor"],
+      "icon-anchor": "right",
+      "icon-offset": ["literal", [0, 0]],
+      "icon-size": ["get", "iconScale"],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
+    });
+    expect(arrowLayer?.spec.paint).toMatchObject({
+      "icon-opacity": ["get", "sourceOpacity"],
     });
   });
 
@@ -189,5 +194,150 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(endArrow?.properties?.rotation).toBeCloseTo(-90, 5);
     expect(startArrow?.properties?.iconAnchor).toBe("right");
     expect(endArrow?.properties?.iconAnchor).toBe("right");
+    expect(startArrow?.properties?.iconScale).toBeCloseTo(0.8, 5);
+    expect(endArrow?.properties?.iconScale).toBeCloseTo(0.8, 5);
+  });
+
+  it("scales globe arrowheads with stroke width", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-4",
+        kind: "overlay",
+        name: "Layer 4",
+        items: [
+          {
+            id: "line-3",
+            kind: "geometry",
+            _pid: "layer-4",
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [0, 1],
+              ],
+            },
+            properties: {},
+            meta: {
+              type: "LineString",
+            },
+            style: {
+              "arrow-end": "bar",
+              "stroke-width": 10,
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const arrow = plan.arrowData.features.find(
+      (feature) => feature.id === "line-3-arrow-end",
+    );
+    const imageDefinition = Array.from(plan.imageDefinitions.values()).find(
+      (definition) => definition.kind === "arrow",
+    );
+
+    expect(arrow?.properties?.iconScale).toBeCloseTo(1, 5);
+    expect(arrow?.properties?.iconAnchor).toBe("center");
+    expect(imageDefinition).toMatchObject({
+      kind: "arrow",
+      spriteScale: 4,
+    });
+  });
+
+  it("buckets globe arrow sprites upward to avoid bitmap upscaling", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-5",
+        kind: "overlay",
+        name: "Layer 5",
+        items: [
+          {
+            id: "line-4",
+            kind: "geometry",
+            _pid: "layer-5",
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [1, 0],
+              ],
+            },
+            properties: {},
+            meta: {
+              type: "LineString",
+            },
+            style: {
+              "arrow-end": "arrow",
+              "stroke-width": 4,
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const arrow = plan.arrowData.features.find(
+      (feature) => feature.id === "line-4-arrow-end",
+    );
+    const imageDefinition = Array.from(plan.imageDefinitions.values()).find(
+      (definition) => definition.kind === "arrow",
+    );
+
+    expect(arrow?.properties?.iconScale).toBeCloseTo(0.8, 5);
+    expect(imageDefinition).toMatchObject({
+      kind: "arrow",
+      spriteScale: 2,
+    });
+  });
+
+  it("uses per-arrow globe placement metadata for open hand-drawn heads", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-6",
+        kind: "overlay",
+        name: "Layer 6",
+        items: [
+          {
+            id: "line-5",
+            kind: "geometry",
+            _pid: "layer-6",
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [1, 1],
+              ],
+            },
+            properties: {},
+            meta: {
+              type: "LineString",
+            },
+            style: {
+              "arrow-end": "arrow-hand-drawn",
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
+    expect(arrowLayer?.spec.layout).toMatchObject({
+      "icon-anchor": "right",
+      "icon-offset": ["literal", [0.45, 0]],
+    });
   });
 });
