@@ -132,5 +132,55 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(dashedLineLayer?.spec.paint).toMatchObject({
       "line-dasharray": expect.any(Array),
     });
+
+    const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
+    expect(arrowLayer?.spec.layout).toMatchObject({
+      "icon-rotation-alignment": "map",
+      "icon-pitch-alignment": "map",
+    });
+  });
+
+  it("uses local segment bearings for arrowheads and reverses start arrows", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-3",
+        kind: "overlay",
+        name: "Layer 3",
+        items: [
+          {
+            id: "line-2",
+            kind: "geometry",
+            _pid: "layer-3",
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+              ],
+            },
+            properties: {},
+            meta: {
+              type: "LineString",
+            },
+            style: {
+              "arrow-start": "arrow",
+              "arrow-end": "arrow",
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const startArrow = plan.arrowData.features.find((feature) => feature.id === "line-2-arrow-start");
+    const endArrow = plan.arrowData.features.find((feature) => feature.id === "line-2-arrow-end");
+
+    expect(startArrow?.properties?.rotation).toBeCloseTo(-180, 5);
+    expect(endArrow?.properties?.rotation).toBeCloseTo(-90, 5);
   });
 });

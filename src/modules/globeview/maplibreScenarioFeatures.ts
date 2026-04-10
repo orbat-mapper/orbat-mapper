@@ -1,4 +1,5 @@
 import centerOfMass from "@turf/center-of-mass";
+import bearing from "@turf/bearing";
 import turfCircle from "@turf/circle";
 import { featureCollection, point } from "@turf/helpers";
 import type {
@@ -252,9 +253,16 @@ function getLabelGeometry(geometry: Geometry): Point | undefined {
   }
 }
 
-function getLineEndpoints(
+function getLineArrowAnchors(
   geometry: Geometry,
-): { start: Position; end: Position } | undefined {
+):
+  | {
+      start: Position;
+      startAdjacent: Position;
+      endAdjacent: Position;
+      end: Position;
+    }
+  | undefined {
   const line =
     geometry.type === "LineString"
       ? geometry.coordinates
@@ -264,12 +272,14 @@ function getLineEndpoints(
   if (!(line && line.length > 1)) return;
   return {
     start: line[0] as Position,
+    startAdjacent: line[1] as Position,
+    endAdjacent: line[line.length - 2] as Position,
     end: line[line.length - 1] as Position,
   };
 }
 
 function getLineRotation(from: Position, to: Position) {
-  return (Math.atan2(to[1] - from[1], to[0] - from[0]) * 180) / Math.PI;
+  return bearing(point(from), point(to)) - 90;
 }
 
 function featureSourceId(layerId: string) {
@@ -408,8 +418,8 @@ function buildFeatureData(
       }
     });
 
-    const endpoints = getLineEndpoints(geometry);
-    if (endpoints) {
+    const arrowAnchors = getLineArrowAnchors(geometry);
+    if (arrowAnchors) {
       const startArrow = style["arrow-start"];
       const endArrow = style["arrow-end"];
       if (startArrow && startArrow !== "none") {
@@ -425,7 +435,7 @@ function buildFeatureData(
         arrows.push({
           type: "Feature",
           id: `${featureId}-arrow-start`,
-          geometry: point(endpoints.start).geometry,
+          geometry: point(arrowAnchors.start).geometry,
           properties: {
             featureId,
             layerId,
@@ -433,7 +443,7 @@ function buildFeatureData(
             selected: selectedFeatureIds.has(item.id),
             zIndex: item.meta._zIndex ?? 0,
             arrowImageId: imageId,
-            rotation: getLineRotation(endpoints.start, endpoints.end),
+            rotation: getLineRotation(arrowAnchors.startAdjacent, arrowAnchors.start),
             sourceOpacity,
           },
         });
@@ -451,7 +461,7 @@ function buildFeatureData(
         arrows.push({
           type: "Feature",
           id: `${featureId}-arrow-end`,
-          geometry: point(endpoints.end).geometry,
+          geometry: point(arrowAnchors.end).geometry,
           properties: {
             featureId,
             layerId,
@@ -459,7 +469,7 @@ function buildFeatureData(
             selected: selectedFeatureIds.has(item.id),
             zIndex: item.meta._zIndex ?? 0,
             arrowImageId: imageId,
-            rotation: getLineRotation(endpoints.start, endpoints.end),
+            rotation: getLineRotation(arrowAnchors.endAdjacent, arrowAnchors.end),
             sourceOpacity,
           },
         });
@@ -758,6 +768,8 @@ function createLayerDefinitions(
           visibility: layoutVisibility,
           "icon-image": ["get", "arrowImageId"],
           "icon-rotate": ["get", "rotation"],
+          "icon-rotation-alignment": "map",
+          "icon-pitch-alignment": "map",
           "icon-allow-overlap": true,
           "symbol-sort-key": ["get", "zIndex"],
         },
