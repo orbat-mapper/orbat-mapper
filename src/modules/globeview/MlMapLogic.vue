@@ -29,6 +29,7 @@ import {
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
+import { useGlobeRangeRings } from "@/composables/globeRangeRings";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -60,10 +61,18 @@ const {
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 
+const { setupRangeRingLayers, drawRangeRings } = useGlobeRangeRings(
+  mlMap,
+  activeScenario,
+);
+
 const { isDragging, formattedPosition } = useGlobeMapDrop(
   engineRef.value!.map,
   activeScenario,
-  () => addUnits(),
+  () => {
+    addUnits();
+    drawRangeRings();
+  },
 );
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
@@ -95,6 +104,8 @@ function setupMapLayers() {
         "text-field": ["get", "label"],
       },
     });
+
+  setupRangeRingLayers("unitLayer");
 }
 
 function styleImageMissing(e: MapStyleImageMissingEvent) {
@@ -128,6 +139,7 @@ function onStyleLoad() {
   usedImageIds.clear();
   setupMapLayers();
   addUnits(shouldCenterOnNextStyleLoad);
+  drawRangeRings();
   shouldCenterOnNextStyleLoad = false;
 }
 
@@ -189,7 +201,13 @@ watch(
   () => activeScenario.store.state.currentTime,
   () => {
     addUnits();
+    drawRangeRings();
   },
+);
+
+watch(
+  () => activeScenario.store.state.rangeRingStateCounter,
+  () => drawRangeRings(),
 );
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
