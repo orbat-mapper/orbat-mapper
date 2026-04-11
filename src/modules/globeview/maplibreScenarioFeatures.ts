@@ -17,7 +17,14 @@ import type {
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
 import { fromString as parseColor } from "ol/color";
-import { drawArrowSymbol, getArrowSymbolDefinition } from "@/geo/arrowSymbols";
+import {
+  drawArrowSymbol,
+  getArrowGlobeIconOffset,
+  getArrowRenderScale,
+  getArrowSpriteCanvasSize,
+  getArrowSymbolDefinition,
+  type ArrowSymbolDefinition,
+} from "@/geo/arrowSymbols";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type {
   FullScenarioLayerItemsLayer,
@@ -205,22 +212,33 @@ function getVisibilityGroup(style: StyleLike, suffix: string, layerId: string) {
   } satisfies GroupDefinition;
 }
 
+// Derive the arrow visibility group from a symbol definition and its sprite
+// scale. `icon-offset` is computed from the definition's tip position (in
+// native sprite pixels) so the MapLibre `icon-anchor` preset lands on the
+// logical tip; because offset pixels depend on sprite canvas size, the group
+// is keyed on spriteScale as well.
 function getArrowVisibilityGroup(
   style: StyleLike,
   suffix: string,
   layerId: string,
-  placement: Pick<ArrowGroupDefinition, "iconAnchor" | "iconOffset">,
+  symbolDefinition: ArrowSymbolDefinition | null,
+  spriteScale: number,
 ) {
   const baseGroup = getVisibilityGroup(style, suffix, layerId);
+  const iconAnchor = symbolDefinition?.anchorKind ?? "center";
+  const iconOffset: [number, number] = symbolDefinition
+    ? getArrowGlobeIconOffset(symbolDefinition, getArrowSpriteCanvasSize(spriteScale))
+    : [0, 0];
   return {
     ...baseGroup,
     id: hashObject({
       baseGroupId: baseGroup.id,
-      iconAnchor: placement.iconAnchor,
-      iconOffset: placement.iconOffset,
+      iconAnchor,
+      iconOffset,
+      spriteScale,
     }),
-    iconAnchor: placement.iconAnchor,
-    iconOffset: placement.iconOffset,
+    iconAnchor,
+    iconOffset,
   } satisfies ArrowGroupDefinition;
 }
 
@@ -350,7 +368,6 @@ function buildFeatureData(
   const arrows: RenderableGeoJsonFeature<ArrowFeatureProperties>[] = [];
   const renderGroups = new Set<string>();
   const labelGroups = new Set<string>();
-  const arrowGroups = new Set<string>();
   const renderGroupDefs = new Map<string, GroupDefinition>();
   const labelGroupDefs = new Map<string, GroupDefinition>();
   const arrowGroupDefs = new Map<string, ArrowGroupDefinition>();
@@ -374,7 +391,7 @@ function buildFeatureData(
     const markerColor = toRgbaColor(style["marker-color"], 1, "#7e7e7e");
     const markerSize = getMarkerSize(style);
     const strokeWidth = getStrokeWidth(style);
-    const arrowScale = Math.max(0.4, strokeWidth / 2.5);
+    const arrowScale = getArrowRenderScale(strokeWidth);
     const arrowSpriteScale = quantizeArrowSpriteScale(arrowScale);
     const arrowIconScale = arrowScale / arrowSpriteScale;
     const markerSymbol = style["marker-symbol"] || "circle";
@@ -460,11 +477,13 @@ function buildFeatureData(
       const endArrow = style["arrow-end"];
       if (startArrow && startArrow !== "none") {
         const symbolDefinition = getArrowSymbolDefinition(startArrow);
-        const group = getArrowVisibilityGroup(style, "arrow-start", layerId, {
-          iconAnchor: symbolDefinition?.anchorKind ?? "center",
-          iconOffset: symbolDefinition?.globeOffset ?? [0, 0],
-        });
-        arrowGroups.add(group.id);
+        const group = getArrowVisibilityGroup(
+          style,
+          "arrow-start",
+          layerId,
+          symbolDefinition,
+          arrowSpriteScale,
+        );
         arrowGroupDefs.set(group.id, group);
         const imageId = arrowImageId(startArrow, strokeColor, arrowSpriteScale);
         imageDefinitions.set(imageId, {
@@ -493,11 +512,13 @@ function buildFeatureData(
       }
       if (endArrow && endArrow !== "none") {
         const symbolDefinition = getArrowSymbolDefinition(endArrow);
-        const group = getArrowVisibilityGroup(style, "arrow-end", layerId, {
-          iconAnchor: symbolDefinition?.anchorKind ?? "center",
-          iconOffset: symbolDefinition?.globeOffset ?? [0, 0],
-        });
-        arrowGroups.add(group.id);
+        const group = getArrowVisibilityGroup(
+          style,
+          "arrow-end",
+          layerId,
+          symbolDefinition,
+          arrowSpriteScale,
+        );
         arrowGroupDefs.set(group.id, group);
         const imageId = arrowImageId(endArrow, strokeColor, arrowSpriteScale);
         imageDefinitions.set(imageId, {
@@ -538,7 +559,7 @@ function buildFeatureData(
     structureKey: hashObject({
       renderGroups: Array.from(renderGroups).sort(),
       labelGroups: Array.from(labelGroups).sort(),
-      arrowGroups: Array.from(arrowGroups).sort(),
+      arrowGroups: Array.from(arrowGroupDefs.keys()).sort(),
       isHidden: layer.isHidden ?? false,
     }),
   };
@@ -969,7 +990,7 @@ function createMarkerImage(definition: Extract<ImageDefinition, { kind: "marker"
 }
 
 function createArrowImage(definition: Extract<ImageDefinition, { kind: "arrow" }>) {
-  const size = Math.max(28, Math.round(28 * definition.spriteScale));
+  const size = getArrowSpriteCanvasSize(definition.spriteScale);
   return ensureCanvasImageData(size, size, (context) => {
     drawArrowSymbol(context, definition.arrowType, definition.color, size);
   });

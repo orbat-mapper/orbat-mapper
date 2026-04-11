@@ -13,7 +13,9 @@ import Icon from "ol/style/Icon";
 import * as olColor from "ol/color";
 import type { ArrowType, SimpleStyleSpec } from "./simplestyle";
 import {
-  getArrowSvgDataUri as getSharedArrowSvgDataUri,
+  getArrowOlAnchor,
+  getArrowRenderScale,
+  getArrowSvgDataUri,
   getArrowSymbolDefinition,
 } from "./arrowSymbols";
 import {
@@ -46,17 +48,6 @@ export function getLineAngle(coordinates: number[][], position: "start" | "end")
 }
 
 /**
- * Get the SVG data URI for an arrow type.
- *
- * @param arrowType - The type of arrow marker
- * @param color - Fill/stroke color for the marker
- * @returns Base64-encoded SVG data URI, or null for "none"
- */
-export function getArrowSvgDataUri(arrowType: ArrowType, color: string): string | null {
-  return getSharedArrowSvgDataUri(arrowType, color);
-}
-
-/**
  * Create an arrow marker image for a specific arrow type.
  *
  * @param arrowType - The type of arrow marker to create
@@ -79,7 +70,7 @@ export function createArrowMarkerImage(
     src,
     rotation: -rotation,
     scale: scale * definition.olScale,
-    anchor: definition.olAnchor,
+    anchor: getArrowOlAnchor(definition),
   });
 }
 
@@ -110,7 +101,7 @@ export function createArrowStyles(
   const color = [...olColor.fromString(strokeColor)];
   color[3] = strokeOpacity;
   const rgbaColor = olColor.asString(color);
-  const scale = Math.max(0.4, strokeWidth / 2.5);
+  const scale = getArrowRenderScale(strokeWidth);
 
   // Start arrow
   if (opts["arrow-start"] && opts["arrow-start"] !== "none") {
