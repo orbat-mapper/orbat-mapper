@@ -30,6 +30,10 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
 import { useGlobeRangeRings } from "@/composables/globeRangeRings";
+import {
+  UNIT_HISTORY_LAYER_IDS,
+  useGlobeUnitHistory,
+} from "@/composables/globeUnitHistory";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -66,12 +70,20 @@ const { setupRangeRingLayers, drawRangeRings } = useGlobeRangeRings(
   activeScenario,
 );
 
+const {
+  setupUnitHistoryLayers,
+  drawHistory,
+  handleMapClick: handleHistoryMapClick,
+  dispose: disposeUnitHistory,
+} = useGlobeUnitHistory(mlMap, activeScenario);
+
 const { isDragging, formattedPosition } = useGlobeMapDrop(
   engineRef.value!.map,
   activeScenario,
   () => {
     addUnits();
     drawRangeRings();
+    drawHistory();
   },
 );
 function setupMapLayers() {
@@ -106,6 +118,7 @@ function setupMapLayers() {
     });
 
   setupRangeRingLayers("unitLayer");
+  setupUnitHistoryLayers("unitLayer");
 }
 
 function styleImageMissing(e: MapStyleImageMissingEvent) {
@@ -158,6 +171,7 @@ function onStyleLoad() {
   setupMapLayers();
   addUnits(shouldCenterOnNextStyleLoad);
   drawRangeRings();
+  drawHistory();
   shouldCenterOnNextStyleLoad = false;
 }
 
@@ -171,11 +185,13 @@ function queryInteractiveFeatures(point: PointLike) {
     .filter(
       (feature) =>
         feature.layer.id === "unitLayer" ||
+        UNIT_HISTORY_LAYER_IDS.includes(feature.layer.id) ||
         isManagedScenarioFeatureLayerId(feature.layer.id),
     );
 }
 
 function onMapClick(e: MapMouseEvent) {
+  if (handleHistoryMapClick(e)) return;
   const topHit = queryInteractiveFeatures(e.point)[0];
   const additive = e.originalEvent.shiftKey;
   if (!topHit) {
@@ -217,6 +233,14 @@ if (activeScenario.store.state.id === "demo-falklands82") {
 
 watch(
   () => activeScenario.store.state.currentTime,
+  () => {
+    addUnits();
+    drawRangeRings();
+  },
+);
+
+watch(
+  () => activeScenario.store.state.unitStateCounter,
   () => {
     addUnits();
     drawRangeRings();
@@ -292,6 +316,7 @@ function addUnits(initial = false) {
 
 onUnmounted(() => {
   if (!mlMap) return;
+  disposeUnitHistory();
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
