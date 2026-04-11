@@ -73,6 +73,10 @@ function createMockMap() {
     addLayer: vi.fn((layer: { id: string }) => {
       layers.set(layer.id, layer);
     }),
+    setLayoutProperty: vi.fn(),
+    setPaintProperty: vi.fn(),
+    setFeatureState: vi.fn(),
+    removeFeatureState: vi.fn(),
     hasImage: vi.fn(() => false),
     addImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
