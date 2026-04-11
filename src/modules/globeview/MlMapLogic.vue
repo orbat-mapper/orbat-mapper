@@ -125,12 +125,30 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
     ...symbolOptions,
   });
   const { width, height } = symb.getSize();
-  const data = symb
-    .asCanvas(2)
-    ?.getContext("2d")
-    ?.getImageData(0, 0, 2 * width, 2 * height);
+  const anchor = symb.getAnchor();
+  const sourceCanvas = symb.asCanvas(2);
+  if (!sourceCanvas) return;
+
+  // milsymbol canvases are not centered on the symbol anchor — pad the image
+  // so the anchor sits at the canvas center, which is what MapLibre uses as
+  // the icon's origin.
+  const pixelRatio = 2;
+  const halfW = Math.max(anchor.x, width - anchor.x);
+  const halfH = Math.max(anchor.y, height - anchor.y);
+  const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
+  const paddedHeight = Math.ceil(2 * halfH * pixelRatio);
+  const drawX = Math.round((halfW - anchor.x) * pixelRatio);
+  const drawY = Math.round((halfH - anchor.y) * pixelRatio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = paddedWidth;
+  canvas.height = paddedHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.drawImage(sourceCanvas, drawX, drawY);
+  const data = ctx.getImageData(0, 0, paddedWidth, paddedHeight);
   if (data) {
-    mlMap.addImage(e.id, data, { pixelRatio: 2 });
+    mlMap.addImage(e.id, data, { pixelRatio });
     usedImageIds.add(e.id);
   }
 }
