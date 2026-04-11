@@ -34,6 +34,7 @@ onMounted(async () => {
     center: [0, 0], // starting position [lng, lat]
     zoom: 3, // starting zoom
   });
+  mlMap.boxZoom.disable();
   mlMap.addControl(new GlobeControl(), "top-left");
   mlMap.addControl(
     new NavigationControl({

@@ -27,6 +27,7 @@ import {
   isManagedScenarioFeatureLayerId,
 } from "@/modules/globeview/maplibreScenarioFeatures";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
 
 const { mlMap, activeScenario } = defineProps<{
@@ -51,7 +52,12 @@ const playback = usePlaybackStore();
 const uiStore = useUiStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const { onUnitSelectHook, onFeatureSelectHook } = injectStrict(searchActionsKey);
-const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+const {
+  selectedFeatureIds,
+  selectedUnitIds,
+  clear: clearSelectedItems,
+} = useSelectedItems();
+const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 
 const { isDragging, formattedPosition } = useGlobeMapDrop(
@@ -141,16 +147,28 @@ function queryInteractiveFeatures(point: PointLike) {
 
 function onMapClick(e: MapMouseEvent) {
   const topHit = queryInteractiveFeatures(e.point)[0];
-  if (!topHit) return;
+  const additive = e.originalEvent.shiftKey;
+  if (!topHit) {
+    if (!additive) clearSelectedItems();
+    return;
+  }
   if (topHit.layer.id === "unitLayer") {
     const unitId = topHit.properties?.id;
     if (!unitId) return;
+    if (additive) {
+      toggleUnitSelection(unitId);
+      return;
+    }
     onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
     return;
   }
   const featureId = getFeatureIdFromRenderedFeature(topHit);
   const layerId = getLayerIdFromRenderedFeature(topHit);
   if (!(featureId && layerId)) return;
+  if (additive) {
+    toggleFeatureSelection(featureId);
+    return;
+  }
   onFeatureSelectHook.trigger({ featureId, layerId, options: { noZoom: true } });
 }
 

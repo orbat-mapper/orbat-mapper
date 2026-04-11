@@ -8,6 +8,7 @@ const setStyle = vi.fn();
 const setProjection = vi.fn();
 const addControl = vi.fn();
 const remove = vi.fn();
+const boxZoomDisable = vi.fn();
 const listeners = new Map<string, Array<(event?: any) => void>>();
 
 vi.mock("maplibre-gl", () => {
@@ -15,6 +16,7 @@ vi.mock("maplibre-gl", () => {
     constructor(_options: unknown) {}
 
     addControl = addControl;
+    boxZoom = { disable: boxZoomDisable };
 
     on(event: string, handler: (event?: any) => void) {
       const handlers = listeners.get(event) ?? [];
@@ -51,6 +53,7 @@ describe("MaplibreMap", () => {
     setProjection.mockClear();
     addControl.mockClear();
     remove.mockClear();
+    boxZoomDisable.mockClear();
     listeners.clear();
   });
 
@@ -90,6 +93,7 @@ describe("MaplibreMap", () => {
 
     expect(setStyle).toHaveBeenCalledTimes(1);
     expect(setProjection).toHaveBeenCalled();
+    expect(boxZoomDisable).toHaveBeenCalled();
   });
 
   it("updates the map style when the style changes without a basemap id change", async () => {

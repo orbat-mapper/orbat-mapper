@@ -33,6 +33,7 @@ import { activeScenarioKey } from "@/components/injects";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useSelectionActions } from "@/composables/selectionActions";
 import type { FeatureLike } from "ol/Feature";
 import BaseEvent from "ol/events/Event";
 import { useMapDropTarget } from "@/composables/useMapDropTarget";
@@ -548,11 +549,8 @@ export function useUnitSelectInteraction(
   const enableRef = ref(options.enable ?? true);
   const enableBoxSelectRef = ref(options.enableBoxSelect ?? true);
 
-  const {
-    selectedUnitIds: selectedIds,
-    selectedFeatureIds,
-    clear: clearSelectedItems,
-  } = useSelectedItems();
+  const { selectedUnitIds: selectedIds, clear: clearSelectedItems } = useSelectedItems();
+  const { canAdditivelySelectUnit } = useSelectionActions();
   const activeScenario = injectStrict(activeScenarioKey);
   const {
     geo,
@@ -569,7 +567,7 @@ export function useUnitSelectInteraction(
       clickCondition(event) &&
       getTopHitLayerType(olMap, event.pixel, hitTolerance) !==
         LayerTypes.scenarioFeature &&
-      !(event.originalEvent.shiftKey && selectedFeatureIds.value.size > 0),
+      (!event.originalEvent.shiftKey || canAdditivelySelectUnit()),
     removeCondition: altKeyOnly,
   });
 

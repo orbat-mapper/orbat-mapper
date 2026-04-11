@@ -47,6 +47,7 @@ import {
   isNGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
 import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
+import { useSelectionActions } from "@/composables/selectionActions";
 
 const selectStyle = new Style({
   stroke: new Stroke({ color: "#ffff00", width: 9 }),
@@ -240,8 +241,9 @@ export function useScenarioFeatureSelect(
     VectorLayer<any>
   >;
   const { applyScenarioFeatureSelection } = useScenarioFeatureSelection();
+  const { canAdditivelySelectFeature } = useSelectionActions();
 
-  const { selectedFeatureIds: selectedIds, selectedUnitIds } = useSelectedItems();
+  const { selectedFeatureIds: selectedIds } = useSelectedItems();
 
   const enableRef = ref(options.enable ?? true);
   const hitTolerance = 20;
@@ -256,7 +258,7 @@ export function useScenarioFeatureSelect(
       ) {
         return false;
       }
-      return !(event.originalEvent.shiftKey && selectedUnitIds.value.size > 0);
+      return !event.originalEvent.shiftKey || canAdditivelySelectFeature();
     },
     hitTolerance,
     layers: scenarioLayersOl.getArray(),
