@@ -1,8 +1,6 @@
 import { nextTick } from "vue";
-import { TAB_LAYERS } from "@/types/constants";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
-import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 
@@ -16,7 +14,6 @@ interface ApplyScenarioFeatureSelectionOptions {
 export function useScenarioFeatureSelection() {
   const engineRef = injectStrict(activeScenarioMapEngineKey);
   const activeScenario = injectStrict(activeScenarioKey);
-  const ui = useUiStore();
   const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
 
   function applyScenarioFeatureSelection({
@@ -27,10 +24,6 @@ export function useScenarioFeatureSelection() {
   }: ApplyScenarioFeatureSelectionOptions) {
     const resolvedPrimaryFeatureId =
       primaryFeatureId !== undefined ? primaryFeatureId : featureIds[0];
-
-    if (resolvedPrimaryFeatureId) {
-      ui.activeTabIndex = TAB_LAYERS;
-    }
 
     const resolvedLayerId =
       layerId ??

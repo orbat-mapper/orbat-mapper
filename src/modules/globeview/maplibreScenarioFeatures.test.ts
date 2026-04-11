@@ -177,8 +177,12 @@ describe("buildScenarioFeatureRenderPlan", () => {
       },
     );
 
-    const startArrow = plan.arrowData.features.find((feature) => feature.id === "line-2-arrow-start");
-    const endArrow = plan.arrowData.features.find((feature) => feature.id === "line-2-arrow-end");
+    const startArrow = plan.arrowData.features.find(
+      (feature) => feature.id === "line-2-arrow-start",
+    );
+    const endArrow = plan.arrowData.features.find(
+      (feature) => feature.id === "line-2-arrow-end",
+    );
 
     expect(startArrow?.properties?.rotation).toBeCloseTo(-180, 5);
     expect(endArrow?.properties?.rotation).toBeCloseTo(-90, 5);
