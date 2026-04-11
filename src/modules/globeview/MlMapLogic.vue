@@ -34,6 +34,7 @@ import {
   UNIT_HISTORY_LAYER_IDS,
   useGlobeUnitHistory,
 } from "@/composables/globeUnitHistory";
+import { saveMapLibreMapAsPng } from "@/modules/globeview/mapLibreExport";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -56,7 +57,8 @@ let shouldCenterOnNextStyleLoad = true;
 const playback = usePlaybackStore();
 const uiStore = useUiStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
-const { onUnitSelectHook, onFeatureSelectHook } = injectStrict(searchActionsKey);
+const { onUnitSelectHook, onFeatureSelectHook, onScenarioActionHook } =
+  injectStrict(searchActionsKey);
 const {
   selectedFeatureIds,
   selectedUnitIds,
@@ -274,6 +276,11 @@ watch(
     });
   },
 );
+
+onScenarioActionHook.on(async ({ action }) => {
+  if (action !== "exportToImage") return;
+  await saveMapLibreMapAsPng(mlMap);
+});
 
 function addUnits(initial = false) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
