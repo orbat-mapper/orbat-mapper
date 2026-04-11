@@ -96,6 +96,7 @@ export interface ScenarioState {
   unitStateCounter: number;
   featureStateCounter: number;
   settingsStateCounter: number; // used to force reactivity
+  rangeRingStateCounter: number;
   mapSettings: MapSettings;
   symbolFillColorMap: Record<string, NSymbolFillColor>;
   customSymbolMap: Record<string, CustomSymbol>;
@@ -149,6 +150,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   const unitStateCounter = 0;
   const featureStateCounter = 0;
   const settingsStateCounter = 0;
+  const rangeRingStateCounter = 0;
   const hierarchyChangeTimestamps: number[] = [];
   const hierarchyStateVersion = 0;
   const hierarchyProjectionVersion = -1;
@@ -546,6 +548,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     unitStateCounter,
     featureStateCounter,
     settingsStateCounter,
+    rangeRingStateCounter,
     unitStatusMap,
     mapSettings,
     symbolFillColorMap,
