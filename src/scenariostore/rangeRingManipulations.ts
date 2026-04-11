@@ -18,6 +18,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
       } else {
         unit.rangeRings.push(rangeRing);
       }
+      s.rangeRingStateCounter++;
     });
   }
 
@@ -27,6 +28,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
       if (!unit) return;
       if (!unit.rangeRings) return;
       unit.rangeRings.splice(index, 1);
+      s.rangeRingStateCounter++;
     });
   }
 
@@ -53,6 +55,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
           unit.rangeRings[index].style = style;
         }
       }
+      s.rangeRingStateCounter++;
     });
   }
 
@@ -86,6 +89,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
           group.style = style;
         }
       }
+      s.rangeRingStateCounter++;
     });
   }
 
@@ -97,6 +101,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
     const newId = newGroup.id;
     update((s) => {
       s.rangeRingGroupMap[newId] = newGroup;
+      s.rangeRingStateCounter++;
     });
   }
 
@@ -111,6 +116,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
     if (isUsed) return false;
     update((s) => {
       delete s.rangeRingGroupMap[id];
+      s.rangeRingStateCounter++;
     });
     return true;
   }

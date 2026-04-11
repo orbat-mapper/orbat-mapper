@@ -51,6 +51,7 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
     unitStateCounter: 0,
     featureStateCounter: 0,
     settingsStateCounter: 0,
+    rangeRingStateCounter: 0,
 
     ...overrides,
   } as unknown as ScenarioState;

@@ -255,6 +255,11 @@ watch(
   },
 );
 
+watch(
+  () => state.rangeRingStateCounter,
+  () => drawRangeRings(),
+);
+
 watch([doNotFilterLayers, () => state.featureStateCounter], () => {
   scenarioLayerController.refreshScenarioFeatureLayers({
     doClearCache: false,
