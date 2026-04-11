@@ -134,9 +134,15 @@ describe("buildScenarioFeatureRenderPlan", () => {
     });
 
     const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
+    // `arrow` has its attach point (tip) at [20, 12] in a 24-wide viewBox —
+    // several units behind the visual tip so the arrow body overshoots the
+    // line endpoint and covers the line's round-cap. At spriteScale 1 (28px
+    // native canvas) MapLibre places the `right` anchor at the feature and
+    // displaces the icon forward by (24-20)/24*28 ≈ 4.667 so the tip lands
+    // on the endpoint.
     expect(arrowLayer?.spec.layout).toMatchObject({
       "icon-anchor": "right",
-      "icon-offset": ["literal", [0, 0]],
+      "icon-offset": ["literal", [((24 - 20) / 24) * 28, 0]],
       "icon-size": ["get", "iconScale"],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
@@ -335,9 +341,13 @@ describe("buildScenarioFeatureRenderPlan", () => {
     );
 
     const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
+    // `arrow-hand-drawn` has its attach point at [42, 24] in a 48-wide
+    // viewBox; at 28px sprite canvas (spriteScale 1) the icon-offset
+    // (48-42)/48*28 = 3.5 pushes the icon forward so the tip lands on the
+    // endpoint.
     expect(arrowLayer?.spec.layout).toMatchObject({
       "icon-anchor": "right",
-      "icon-offset": ["literal", [0.45, 0]],
+      "icon-offset": ["literal", [((48 - 42) / 48) * 28, 0]],
     });
   });
 });

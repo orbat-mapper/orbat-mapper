@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  getLineAngle,
-  createArrowMarkerImage,
-  createArrowStyles,
-  getArrowSvgDataUri,
-} from "./arrowStyles";
+import { getLineAngle, createArrowMarkerImage, createArrowStyles } from "./arrowStyles";
+import { getArrowSvgDataUri } from "./arrowSymbols";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import Polygon from "ol/geom/Polygon";
@@ -12,8 +8,9 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 
 function decodeDataUri(uri: string) {
-  const encoded = uri.split(",", 2)[1] ?? "";
-  return Buffer.from(encoded, "base64").toString("utf8");
+  const headerEnd = uri.indexOf(",");
+  const encoded = headerEnd >= 0 ? uri.slice(headerEnd + 1) : "";
+  return decodeURIComponent(encoded);
 }
 
 describe("getLineAngle", () => {
@@ -105,18 +102,18 @@ describe("createArrowMarkerImage", () => {
     expect(decodeDataUri(src!)).toContain("rgba(255,0,0,0.5)");
   });
 
-  it("extends directional arrow tips to the symbol edge", () => {
+  it("insets stroked arrow tips to keep round joins inside the viewBox", () => {
     const image = createArrowMarkerImage("arrow", "#000", 0) as Icon;
-    expect(decodeDataUri(image.getSrc()!)).toContain("L24 12");
+    expect(decodeDataUri(image.getSrc()!)).toContain("L23 12");
   });
 });
 
 describe("getArrowSvgDataUri", () => {
   it("returns a data URI for all supported arrow types", () => {
     expect(getArrowSvgDataUri("none", "#000")).toBeNull();
-    expect(getArrowSvgDataUri("arrow", "#000")).toMatch(/^data:image\/svg\+xml;base64,/);
+    expect(getArrowSvgDataUri("arrow", "#000")).toMatch(/^data:image\/svg\+xml;utf8,/);
     expect(getArrowSvgDataUri("arrow-hand-drawn", "#000")).toMatch(
-      /^data:image\/svg\+xml;base64,/,
+      /^data:image\/svg\+xml;utf8,/,
     );
   });
 });
@@ -226,7 +223,7 @@ describe("createArrowStyles", () => {
     const image2 = stylesWidth2[0].getImage() as Icon;
     const image4 = stylesWidth4[0].getImage() as Icon;
 
-    expect(image4.getScale()).toBeGreaterThan(image2.getScale());
+    expect(image4.getScale() as number).toBeGreaterThan(image2.getScale() as number);
   });
 
   it("returns empty for lines with too few coordinates", () => {

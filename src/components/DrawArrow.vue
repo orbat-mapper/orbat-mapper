@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
-import { getArrowSvgDataUri } from "@/geo/arrowStyles";
+import { getArrowSvgDataUri } from "@/geo/arrowSymbols";
 import type { ArrowType } from "@/geo/simplestyle";
 
 interface Props {
