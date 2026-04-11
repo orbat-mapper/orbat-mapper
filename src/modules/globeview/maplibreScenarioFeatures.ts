@@ -253,9 +253,7 @@ function getLabelGeometry(geometry: Geometry): Point | undefined {
   }
 }
 
-function getLineArrowAnchors(
-  geometry: Geometry,
-):
+function getLineArrowAnchors(geometry: Geometry):
   | {
       start: Position;
       startAdjacent: Position;
