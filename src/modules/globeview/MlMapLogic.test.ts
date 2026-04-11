@@ -8,6 +8,10 @@ import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
 import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 
+const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
+  saveMapLibreMapAsPng: vi.fn(),
+}));
+
 vi.mock("@/modules/globeview/useGlobeMapDrop.ts", () => ({
   useGlobeMapDrop: () => ({
     isDragging: ref(false),
@@ -37,6 +41,10 @@ vi.mock("@vueuse/core", async () => {
     }),
   };
 });
+
+vi.mock("@/modules/globeview/mapLibreExport", () => ({
+  saveMapLibreMapAsPng,
+}));
 
 function createSearchActions() {
   return {
@@ -105,6 +113,7 @@ function createMockMap() {
 describe("MlMapLogic", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    saveMapLibreMapAsPng.mockReset();
   });
 
   it("creates the unit layer immediately when mounted after the initial map load", () => {
@@ -610,5 +619,50 @@ describe("MlMapLogic", () => {
     expect(featureSelectSpy).not.toHaveBeenCalled();
     expect(selectedFeatureIds.value.has("feature-existing")).toBe(true);
     expect(selectedFeatureIds.value.has("feature-1")).toBe(true);
+  });
+
+  it("exports the globe map when the shared scenario action is triggered", async () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-export",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    await searchActions.onScenarioActionHook.trigger({ action: "exportToImage" });
+
+    expect(saveMapLibreMapAsPng).toHaveBeenCalledWith(mockMap.map);
   });
 });

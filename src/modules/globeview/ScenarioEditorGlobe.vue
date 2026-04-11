@@ -255,7 +255,7 @@ const headerControlsStyle = computed(() =>
     @close-details-panel="onCloseDetailsPanel()"
   >
     <template #map>
-      <GlobeContextMenu v-model:base-map-id="globeBaseMapId">
+      <GlobeContextMenu v-model:base-map-id="globeBaseMapId" :map-ref="mlMap">
         <MaplibreMap
           @ready="onMapReady"
           :basemap-id="activeGlobeBasemap.id"
