@@ -6,6 +6,7 @@ import type { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
+import { useMapViewStore } from "@/stores/mapViewStore";
 
 import { shallowRef, ref, computed } from "vue";
 import { useLocalStorage } from "@vueuse/core";
@@ -18,6 +19,8 @@ export interface ZoomOptions {
 
 export const useGeoStore = defineStore("geo", () => {
   const mapAdapter = shallowRef<MapAdapter | null>(null);
+  const mapViewStore = useMapViewStore();
+  let stopZoomTracking: (() => void) | null = null;
 
   /** @deprecated Use mapAdapter instead. Returns the native OL Map for backward compatibility. */
   const olMap = computed<OLMap | null>(() => {
@@ -26,7 +29,14 @@ export const useGeoStore = defineStore("geo", () => {
   });
 
   function setMapAdapter(adapter: MapAdapter | null) {
+    stopZoomTracking?.();
+    stopZoomTracking = null;
     mapAdapter.value = adapter;
+    if (!adapter) return;
+    mapViewStore.zoomLevel = adapter.getZoom() ?? 0;
+    stopZoomTracking = adapter.on("moveend", () => {
+      mapViewStore.zoomLevel = adapter.getZoom() ?? 0;
+    });
   }
 
   function zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {
