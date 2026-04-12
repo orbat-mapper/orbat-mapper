@@ -8,6 +8,7 @@ import type {
   MapAdapter,
   MapEventHandler,
   MapEventType,
+  ViewConstraints,
 } from "@/geo/contracts/mapAdapter";
 
 const ML_EVENT_MAP: Record<MapEventType, string> = {
@@ -32,6 +33,8 @@ function toMapEventPayload(e: MapMouseEvent) {
 }
 
 export class MapLibreMapAdapter implements MapAdapter {
+  private _viewConstraints: ViewConstraints = {};
+
   constructor(private mlMap: MlMap) {}
 
   animateView(options: AnimateOptions): void {
@@ -83,6 +86,23 @@ export class MapLibreMapAdapter implements MapAdapter {
 
   getResolutionForZoom(_zoom: number): number | undefined {
     return undefined;
+  }
+
+  getViewConstraints(): ViewConstraints {
+    return this._viewConstraints;
+  }
+
+  setViewConstraints(constraints: ViewConstraints): void {
+    this._viewConstraints = { ...this._viewConstraints, ...constraints };
+    if (constraints.extent !== undefined) {
+      this.mlMap.setMaxBounds(constraints.extent || null);
+    }
+    if (constraints.minZoom !== undefined) {
+      this.mlMap.setMinZoom(constraints.minZoom ?? null);
+    }
+    if (constraints.maxZoom !== undefined) {
+      this.mlMap.setMaxZoom(constraints.maxZoom ?? null);
+    }
   }
 
   updateSize(): void {

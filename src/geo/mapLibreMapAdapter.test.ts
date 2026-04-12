@@ -26,6 +26,9 @@ function createMockMap() {
     getContainer: vi.fn(() => document.createElement("div")),
     getCanvas: vi.fn(() => document.createElement("canvas")),
     unproject: vi.fn(() => ({ lng: 10, lat: 20 })),
+    setMaxBounds: vi.fn(),
+    setMinZoom: vi.fn(),
+    setMaxZoom: vi.fn(),
   };
 
   return { mlMap, listeners };
@@ -59,5 +62,56 @@ describe("MapLibreMapAdapter", () => {
     expect(mapPreventDefault).toHaveBeenCalledTimes(1);
     expect(stopPropagationSpy).toHaveBeenCalledTimes(1);
     expect(originalEvent.defaultPrevented).toBe(true);
+  });
+
+  describe("setViewConstraints", () => {
+    it("sets max bounds on the map", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+      const extent: [number, number, number, number] = [-10, -20, 30, 40];
+
+      adapter.setViewConstraints({ extent });
+
+      expect(mlMap.setMaxBounds).toHaveBeenCalledWith(extent);
+    });
+
+    it("ignores extent when not provided", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.setViewConstraints({ minZoom: 3 });
+
+      expect(mlMap.setMaxBounds).not.toHaveBeenCalled();
+    });
+
+    it("returns current constraints via getter", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+      const extent: [number, number, number, number] = [-10, -20, 30, 40];
+
+      adapter.setViewConstraints({ extent, minZoom: 3, maxZoom: 18 });
+
+      expect(adapter.getViewConstraints()).toEqual({ extent, minZoom: 3, maxZoom: 18 });
+    });
+
+    it("merges constraints across multiple calls", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.setViewConstraints({ minZoom: 3 });
+      adapter.setViewConstraints({ maxZoom: 18 });
+
+      expect(adapter.getViewConstraints()).toEqual({ minZoom: 3, maxZoom: 18 });
+    });
+
+    it("sets min and max zoom", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.setViewConstraints({ minZoom: 3, maxZoom: 18 });
+
+      expect(mlMap.setMinZoom).toHaveBeenCalledWith(3);
+      expect(mlMap.setMaxZoom).toHaveBeenCalledWith(18);
+    });
   });
 });

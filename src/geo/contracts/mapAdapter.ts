@@ -13,6 +13,12 @@ export interface AnimateOptions {
   duration?: number;
 }
 
+export interface ViewConstraints {
+  extent?: [number, number, number, number];
+  minZoom?: number;
+  maxZoom?: number;
+}
+
 export type MapEventType = "moveend" | "click" | "pointermove" | "singleclick";
 
 export interface MapEvent {
@@ -34,6 +40,8 @@ export interface MapAdapter {
   getResolution(): number | undefined;
   getRotation(): number;
   getResolutionForZoom(zoom: number): number | undefined;
+  getViewConstraints(): ViewConstraints;
+  setViewConstraints(constraints: ViewConstraints): void;
   updateSize(): void;
 
   // Coordinate conversion
