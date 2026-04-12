@@ -7,15 +7,19 @@ import Feature from "ol/Feature";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import turfEnvelope from "@turf/envelope";
 import { unByKey } from "ol/Observable";
+import View from "ol/View";
 import type {
   AnimateOptions,
   FitOptions,
   MapAdapter,
   MapEventHandler,
   MapEventType,
+  ViewConstraints,
 } from "@/geo/contracts/mapAdapter";
 
 export class OlMapAdapter implements MapAdapter {
+  private _viewConstraints: ViewConstraints = {};
+
   constructor(private olMap: OLMap) {}
 
   private get projection() {
@@ -84,6 +88,37 @@ export class OlMapAdapter implements MapAdapter {
 
   getResolutionForZoom(zoom: number): number | undefined {
     return this.olMap.getView().getResolutionForZoom(zoom);
+  }
+
+  getViewConstraints(): ViewConstraints {
+    return this._viewConstraints;
+  }
+
+  setViewConstraints(constraints: ViewConstraints): void {
+    this._viewConstraints = { ...this._viewConstraints, ...constraints };
+    const view = this.olMap.getView();
+
+    if (constraints.minZoom !== undefined) {
+      view.setMinZoom(constraints.minZoom ?? 0);
+    }
+    if (constraints.maxZoom !== undefined) {
+      view.setMaxZoom(constraints.maxZoom ?? 28);
+    }
+    if (constraints.extent !== undefined) {
+      const currentView = this.olMap.getView();
+      const newView = new View({
+        center: currentView.getCenter(),
+        zoom: currentView.getZoom(),
+        rotation: currentView.getRotation(),
+        projection: currentView.getProjection(),
+        minZoom: currentView.getMinZoom(),
+        maxZoom: currentView.getMaxZoom(),
+        extent: constraints.extent
+          ? transformExtent(constraints.extent, "EPSG:4326", this.projection)
+          : undefined,
+      });
+      this.olMap.setView(newView);
+    }
   }
 
   updateSize(): void {

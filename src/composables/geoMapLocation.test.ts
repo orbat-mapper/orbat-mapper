@@ -65,6 +65,10 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     getResolutionForZoom(_zoom: number) {
       return undefined;
     },
+    getViewConstraints() {
+      return {};
+    },
+    setViewConstraints() {},
     updateSize() {},
     toLonLat(coordinate: number[]) {
       return coordinate as [number, number];
