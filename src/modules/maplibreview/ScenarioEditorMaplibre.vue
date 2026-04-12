@@ -128,9 +128,9 @@ watch(
   }),
   ({ engine, ...settings }) => {
     engine?.map.setViewConstraints({
-      extent: settings.extent,
-      minZoom: settings.minZoom,
-      maxZoom: settings.maxZoom,
+      extent: settings.extent ?? null,
+      minZoom: settings.minZoom ?? null,
+      maxZoom: settings.maxZoom ?? null,
     });
   },
   { immediate: true },
