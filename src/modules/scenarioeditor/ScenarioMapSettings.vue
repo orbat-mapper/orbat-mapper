@@ -74,19 +74,19 @@ function setExtentFromMapView() {
 
 function clearExtent() {
   store.update((s) => {
-    s.mapSettings.maxExtent = undefined;
+    delete s.mapSettings.maxExtent;
   });
 }
 
 function clearMinZoom() {
   store.update((s) => {
-    s.mapSettings.minZoom = undefined;
+    delete s.mapSettings.minZoom;
   });
 }
 
 function clearMaxZoom() {
   store.update((s) => {
-    s.mapSettings.maxZoom = undefined;
+    delete s.mapSettings.maxZoom;
   });
 }
 </script>
