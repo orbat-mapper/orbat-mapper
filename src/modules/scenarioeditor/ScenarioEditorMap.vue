@@ -105,6 +105,23 @@ function onMapReady({
   featureSelectInteractionRef.value = featureSelectInteraction;
 }
 
+watch(
+  () => ({
+    engine: scenarioMapEngineRef.value,
+    extent: state.mapSettings.maxExtent,
+    minZoom: state.mapSettings.minZoom,
+    maxZoom: state.mapSettings.maxZoom,
+  }),
+  ({ engine, ...settings }) => {
+    engine?.map.setViewConstraints({
+      extent: settings.extent ?? null,
+      minZoom: settings.minZoom ?? null,
+      maxZoom: settings.maxZoom ?? null,
+    });
+  },
+  { immediate: true },
+);
+
 onUnmounted(() => {
   activeUnitStore.clearActiveUnit();
   playback.playbackRunning = false;

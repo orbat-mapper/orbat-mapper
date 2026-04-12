@@ -14,9 +14,9 @@ export interface AnimateOptions {
 }
 
 export interface ViewConstraints {
-  extent?: [number, number, number, number];
-  minZoom?: number;
-  maxZoom?: number;
+  extent?: [number, number, number, number] | null;
+  minZoom?: number | null;
+  maxZoom?: number | null;
 }
 
 export type MapEventType = "moveend" | "click" | "pointermove" | "singleclick";
