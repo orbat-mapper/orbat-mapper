@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario. Not supported in globe mode yet.
+- Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
 - Added experimental globe mode.
 - Added a standalone symbol browser page at `/symbol-browser`.
 - Added symbol export with copy and download as PNG and SVG, with configurable size and display options.
