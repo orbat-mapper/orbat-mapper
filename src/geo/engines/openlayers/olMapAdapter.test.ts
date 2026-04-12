@@ -59,7 +59,7 @@ describe("OlMapAdapter", () => {
       const { olMap } = createMockMap();
       const adapter = new OlMapAdapter(olMap as any);
 
-      adapter.setViewConstraints({ extent: null as any });
+      adapter.setViewConstraints({ extent: null });
 
       expect(olMap.setView).toHaveBeenCalledTimes(1);
     });
