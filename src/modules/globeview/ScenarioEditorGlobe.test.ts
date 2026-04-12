@@ -14,6 +14,7 @@ const initializeBaseLayers = vi.fn();
 vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
     constructor(public map: unknown) {}
+    setViewConstraints() {}
   },
 }));
 
@@ -130,7 +131,7 @@ describe("ScenarioEditorGlobe", () => {
         plugins: [createPinia()],
         provide: {
           [activeScenarioKey as symbol]: {
-            store: { state: { id: "scenario-1" } },
+            store: { state: { id: "scenario-1", mapSettings: {} } },
           },
         },
         stubs: {
