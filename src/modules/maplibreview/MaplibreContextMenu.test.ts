@@ -8,9 +8,9 @@ import {
   activeScenarioKey,
   searchActionsKey,
 } from "@/components/injects";
-import GlobeContextMenu from "@/modules/globeview/GlobeContextMenu.vue";
+import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
-import { GLOBE_VECTOR_BASEMAP_ID } from "@/modules/globeview/globeBasemaps";
+import { MAPLIBRE_VECTOR_BASEMAP_ID } from "@/modules/maplibreview/maplibreBasemaps";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -191,7 +191,7 @@ const ContextMenuRadioItemStub = defineComponent({
   },
 });
 
-describe("GlobeContextMenu", () => {
+describe("MaplibreContextMenu", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.useRealTimers();
@@ -248,7 +248,7 @@ describe("GlobeContextMenu", () => {
       },
     } as any;
 
-    const wrapper = mount(GlobeContextMenu, {
+    const wrapper = mount(MaplibreContextMenu, {
       props,
       slots: {
         default: "<div data-testid='trigger'>Trigger</div>",
@@ -281,9 +281,9 @@ describe("GlobeContextMenu", () => {
     return { wrapper, scenario, searchHooks };
   }
 
-  it("updates the bound globe basemap when a basemap is selected", async () => {
+  it("updates the bound maplibre basemap when a basemap is selected", async () => {
     const baseLayersStore = useBaseLayersStore();
-    const selectedBasemap = ref(GLOBE_VECTOR_BASEMAP_ID);
+    const selectedBasemap = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
 
     baseLayersStore.layers = [
       {
@@ -359,16 +359,16 @@ describe("GlobeContextMenu", () => {
     expect(dispatchSpy).toHaveBeenCalled();
   });
 
-  it("defaults to the vector globe basemap", () => {
+  it("defaults to the vector maplibre basemap", () => {
     const { wrapper } = mountMenu();
 
     expect(wrapper.exists()).toBe(true);
     expect(
-      (wrapper.props("baseMapId") as string | undefined) ?? GLOBE_VECTOR_BASEMAP_ID,
-    ).toBe(GLOBE_VECTOR_BASEMAP_ID);
+      (wrapper.props("baseMapId") as string | undefined) ?? MAPLIBRE_VECTOR_BASEMAP_ID,
+    ).toBe(MAPLIBRE_VECTOR_BASEMAP_ID);
   });
 
-  it("toggles shared UI controls from the globe context menu", async () => {
+  it("toggles shared UI controls from the maplibre context menu", async () => {
     const uiStore = useUiStore();
     uiStore.showToolbar = true;
     uiStore.showTimeline = true;
@@ -388,7 +388,7 @@ describe("GlobeContextMenu", () => {
     expect(uiStore.showOrbatBreadcrumbs).toBe(false);
   });
 
-  it("controls playback from the globe context menu", async () => {
+  it("controls playback from the maplibre context menu", async () => {
     const playback = usePlaybackStore();
     playback.playbackRunning = false;
     playback.playbackLooping = false;
@@ -415,7 +415,7 @@ describe("GlobeContextMenu", () => {
     expect(playback.endMarker).toBeUndefined();
   });
 
-  it("shows clicked units and features from the globe map hit test", async () => {
+  it("shows clicked units and features from the maplibre map hit test", async () => {
     const mapRef = {
       getContainer: () => ({
         getBoundingClientRect: () => ({ left: 0, top: 0 }),
@@ -448,7 +448,7 @@ describe("GlobeContextMenu", () => {
     expect(wrapper.text()).toContain("Map as image");
   });
 
-  it("triggers the shared export action from the globe context menu", async () => {
+  it("triggers the shared export action from the maplibre context menu", async () => {
     const { wrapper, searchHooks } = mountMenu();
 
     await wrapper

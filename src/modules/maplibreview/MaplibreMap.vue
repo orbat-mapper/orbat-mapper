@@ -7,8 +7,8 @@ import {
   type MapMouseEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { GlobeBasemapStyle } from "@/modules/globeview/globeBasemaps";
-import { applyGlobeProjection } from "@/modules/globeview/maplibreGlobe";
+import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
+import { applyGlobeProjection } from "@/modules/maplibreview/maplibreProjection";
 
 defineOptions({
   inheritAttrs: false,
@@ -16,7 +16,7 @@ defineOptions({
 
 const props = defineProps<{
   basemapId: string;
-  styleSpec: GlobeBasemapStyle;
+  styleSpec: MaplibreBasemapStyle;
 }>();
 const emit = defineEmits<{
   ready: [map: MlMap];

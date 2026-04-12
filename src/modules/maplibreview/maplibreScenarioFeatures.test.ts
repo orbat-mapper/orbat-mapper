@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { buildScenarioFeatureRenderPlan } from "@/modules/globeview/maplibreScenarioFeatures";
+import { buildScenarioFeatureRenderPlan } from "@/modules/maplibreview/maplibreScenarioFeatures";
 
 describe("buildScenarioFeatureRenderPlan", () => {
   it("converts circles into polygon render features", () => {
@@ -204,7 +204,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(endArrow?.properties?.iconScale).toBeCloseTo(0.8, 5);
   });
 
-  it("scales globe arrowheads with stroke width", () => {
+  it("scales maplibre arrowheads with stroke width", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {
         id: "layer-4",
@@ -255,7 +255,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
     });
   });
 
-  it("buckets globe arrow sprites upward to avoid bitmap upscaling", () => {
+  it("buckets maplibre arrow sprites upward to avoid bitmap upscaling", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {
         id: "layer-5",
@@ -305,7 +305,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
     });
   });
 
-  it("uses per-arrow globe placement metadata for open hand-drawn heads", () => {
+  it("uses per-arrow maplibre placement metadata for open hand-drawn heads", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {
         id: "layer-6",

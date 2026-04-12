@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { GLOBE_ROUTE, SYMBOL_BROWSER_ROUTE, TEXT_TO_ORBAT_ROUTE } from "@/router/names";
+import {
+  MAPLIBRE_ROUTE,
+  SYMBOL_BROWSER_ROUTE,
+  TEXT_TO_ORBAT_ROUTE,
+} from "@/router/names";
 
 // ... existing imports
 import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
@@ -167,7 +171,7 @@ const features = [
                 >Text to ORBAT
               </router-link>
               <router-link
-                :to="{ name: GLOBE_ROUTE, params: { scenarioId: 'demo-falkland82' } }"
+                :to="{ name: MAPLIBRE_ROUTE, params: { scenarioId: 'demo-falkland82' } }"
                 >Globe view</router-link
               >
 

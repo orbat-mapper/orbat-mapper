@@ -56,7 +56,7 @@ function createRangeRings(unit: NUnit): Feature<Polygon, RingIdProperties>[] {
   return out;
 }
 
-export function useGlobeRangeRings(mlMap: MlMap, activeScenario: TScenario) {
+export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
   function setupRangeRingLayers(beforeLayerId?: string) {
     if (!mlMap.getSource(RANGE_RING_SOURCE_ID)) {
       mlMap.addSource(RANGE_RING_SOURCE_ID, {

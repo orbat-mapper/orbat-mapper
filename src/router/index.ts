@@ -4,7 +4,7 @@ import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
   CHART_EDIT_MODE_ROUTE,
-  GLOBE_ROUTE,
+  MAPLIBRE_ROUTE,
   GRID_EDIT_ROUTE,
   IMPORT_SCENARIO_ROUTE,
   LANDING_PAGE_ROUTE,
@@ -34,7 +34,8 @@ const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
 const GridEditView = () => import("@/modules/scenarioeditor/GridEditView.vue");
 const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue");
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
-const ScenarioEditorGlobe = () => import("@/modules/globeview/ScenarioEditorGlobe.vue");
+const ScenarioEditorMaplibre = () =>
+  import("@/modules/maplibreview/ScenarioEditorMaplibre.vue");
 const routes = [
   {
     path: "/scenario/:scenarioId",
@@ -63,9 +64,9 @@ const routes = [
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/chart-edit-mode" },
       },
       {
-        path: "globe",
-        name: GLOBE_ROUTE,
-        component: ScenarioEditorGlobe,
+        path: "maplibre",
+        name: MAPLIBRE_ROUTE,
+        component: ScenarioEditorMaplibre,
       },
     ],
   },
@@ -110,7 +111,7 @@ const routes = [
   },
   {
     path: "/globe/:scenarioId",
-    redirect: (to) => ({ name: GLOBE_ROUTE, params: to.params }),
+    redirect: (to) => ({ name: MAPLIBRE_ROUTE, params: to.params }),
   },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];

@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import { computed, defineComponent, h } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ScenarioEditorGlobe from "@/modules/globeview/ScenarioEditorGlobe.vue";
+import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
 import { activeScenarioKey } from "@/components/injects";
 
 const bindScenario = vi.fn();
@@ -76,15 +76,15 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
   }),
 }));
 
-vi.mock("@/modules/globeview/globeBasemaps", () => ({
-  GLOBE_VECTOR_BASEMAP_ID: "vector",
-  resolveGlobeBasemap: () => ({
+vi.mock("@/modules/maplibreview/maplibreBasemaps", () => ({
+  MAPLIBRE_VECTOR_BASEMAP_ID: "vector",
+  resolveMaplibreBasemap: () => ({
     id: "vector",
     style: { version: 8, sources: {}, layers: [] },
   }),
 }));
 
-vi.mock("@/modules/globeview/h3grid", () => ({
+vi.mock("@/modules/maplibreview/h3grid", () => ({
   useH3HexGrid: () => ({
     showHexGrid: { value: false },
     hexResolution: { value: 3 },
@@ -95,7 +95,7 @@ vi.mock("@/modules/globeview/h3grid", () => ({
   }),
 }));
 
-vi.mock("@/modules/globeview/mgrsgrid", () => ({
+vi.mock("@/modules/maplibreview/mgrsgrid", () => ({
   useMgrsGrid: () => ({
     showMgrsGrid: { value: false },
     showLabels: { value: false },
@@ -115,7 +115,7 @@ const MaplibreMapStub = defineComponent({
   },
 });
 
-describe("ScenarioEditorGlobe", () => {
+describe("ScenarioEditorMaplibre", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     bindScenario.mockReset();
@@ -125,8 +125,8 @@ describe("ScenarioEditorGlobe", () => {
     initializeBaseLayers.mockReset();
   });
 
-  it("cleans up the scenario binding when the globe view unmounts", () => {
-    const wrapper = mount(ScenarioEditorGlobe, {
+  it("cleans up the scenario binding when the maplibre view unmounts", () => {
+    const wrapper = mount(ScenarioEditorMaplibre, {
       global: {
         plugins: [createPinia()],
         provide: {
@@ -136,8 +136,8 @@ describe("ScenarioEditorGlobe", () => {
         },
         stubs: {
           ScenarioMapModeShell: { template: "<div><slot name='map' /></div>" },
-          GlobeContextMenu: { template: "<div><slot /></div>" },
-          GlobeSearchScenarioActions: true,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
           MaplibreMap: MaplibreMapStub,
           ToggleField: true,

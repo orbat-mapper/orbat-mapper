@@ -29,13 +29,13 @@ import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
 import {
-  GLOBE_VECTOR_BASEMAP_ID,
-  getSupportedGlobeBasemaps,
-} from "@/modules/globeview/globeBasemaps";
+  MAPLIBRE_VECTOR_BASEMAP_ID,
+  getSupportedMaplibreBasemaps,
+} from "@/modules/maplibreview/maplibreBasemaps";
 import {
   getFeatureIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
-} from "@/modules/globeview/maplibreScenarioFeatures";
+} from "@/modules/maplibreview/maplibreScenarioFeatures";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -83,10 +83,12 @@ const { sidc, symbolOptions } = useActiveSidc();
 
 const props = defineProps<{ mapRef?: MlMap }>();
 const baseMapId = defineModel<string>("baseMapId", {
-  default: GLOBE_VECTOR_BASEMAP_ID,
+  default: MAPLIBRE_VECTOR_BASEMAP_ID,
 });
 
-const basemapOptions = computed(() => getSupportedGlobeBasemaps(baseLayersStore.layers));
+const basemapOptions = computed(() =>
+  getSupportedMaplibreBasemaps(baseLayersStore.layers),
+);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 

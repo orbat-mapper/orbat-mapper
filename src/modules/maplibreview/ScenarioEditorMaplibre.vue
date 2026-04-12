@@ -38,16 +38,16 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
-import GlobeContextMenu from "@/modules/globeview/GlobeContextMenu.vue";
-import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
-import MaplibreMap from "@/modules/globeview/MaplibreMap.vue";
-import GlobeSearchScenarioActions from "@/modules/globeview/GlobeSearchScenarioActions.vue";
+import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
+import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
+import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
+import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearchScenarioActions.vue";
 import {
-  GLOBE_VECTOR_BASEMAP_ID,
-  resolveGlobeBasemap,
-} from "@/modules/globeview/globeBasemaps";
-import { useH3HexGrid } from "@/modules/globeview/h3grid";
-import { useMgrsGrid } from "@/modules/globeview/mgrsgrid";
+  MAPLIBRE_VECTOR_BASEMAP_ID,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
+import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
+import { useMgrsGrid } from "@/modules/maplibreview/mgrsgrid";
 
 const emit = defineEmits(["show-settings"]);
 
@@ -87,9 +87,9 @@ provide(activeFeatureSelectInteractionKey, featureSelectStub);
 
 const geoStore = useGeoStore();
 const baseLayersStore = useBaseLayersStore();
-const globeBaseMapId = ref(GLOBE_VECTOR_BASEMAP_ID);
-const activeGlobeBasemap = computed(() =>
-  resolveGlobeBasemap(globeBaseMapId.value, baseLayersStore.layers),
+const maplibreBaseMapId = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
+const activeMaplibreBasemap = computed(() =>
+  resolveMaplibreBasemap(maplibreBaseMapId.value, baseLayersStore.layers),
 );
 
 function onMapReady(mapInstance: MlMap) {
@@ -240,7 +240,7 @@ onMounted(() => {
   void baseLayersStore.initialize();
 });
 
-function disposeGlobeBinding() {
+function disposeMaplibreBinding() {
   cleanupScenarioBinding?.();
   cleanupScenarioBinding = null;
   scenarioMapEngineRef.value = undefined;
@@ -248,7 +248,7 @@ function disposeGlobeBinding() {
 }
 
 onBeforeUnmount(() => {
-  disposeGlobeBinding();
+  disposeMaplibreBinding();
 });
 
 const mapReady = computed(() => Boolean(mlMap.value));
@@ -280,14 +280,14 @@ const headerControlsStyle = computed(() =>
     @close-details-panel="onCloseDetailsPanel()"
   >
     <template #map>
-      <GlobeContextMenu v-model:base-map-id="globeBaseMapId" :map-ref="mlMap">
+      <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
         <MaplibreMap
           @ready="onMapReady"
-          :basemap-id="activeGlobeBasemap.id"
-          :style-spec="activeGlobeBasemap.style"
+          :basemap-id="activeMaplibreBasemap.id"
+          :style-spec="activeMaplibreBasemap.style"
           class="flex-auto bg-radial from-gray-800 to-gray-950"
         />
-      </GlobeContextMenu>
+      </MaplibreContextMenu>
       <MlMapLogic
         v-if="mlMap"
         :mlMap="mlMap"
@@ -296,7 +296,7 @@ const headerControlsStyle = computed(() =>
       />
     </template>
     <template #after-keyboard>
-      <GlobeSearchScenarioActions />
+      <MaplibreSearchScenarioActions />
     </template>
     <template #header-right-after-search>
       <span
