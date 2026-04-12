@@ -50,6 +50,12 @@ vi.mock("maplibre-gl", () => {
   };
 });
 
+const defaultProps = {
+  basemapId: "osm",
+  styleSpec: { version: 8 as const, sources: {}, layers: [] },
+  projection: "globe" as const,
+};
+
 describe("MaplibreMap", () => {
   beforeEach(() => {
     setStyle.mockClear();
@@ -61,17 +67,22 @@ describe("MaplibreMap", () => {
     listeners.clear();
   });
 
-  it("updates the map style when the basemap changes and reapplies globe projection", async () => {
-    const wrapper = mount(MaplibreMap, {
-      props: {
-        basemapId: "osm",
-        styleSpec: {
-          version: 8,
-          sources: {},
-          layers: [],
-        },
-      },
-    });
+  it("applies the projection prop on style.load", async () => {
+    mount(MaplibreMap, { props: defaultProps });
+
+    expect(setProjection).toHaveBeenCalledWith({ type: "globe" });
+  });
+
+  it("applies mercator when projection prop is mercator", async () => {
+    mount(MaplibreMap, { props: { ...defaultProps, projection: "mercator" } });
+
+    expect(setProjection).toHaveBeenCalledWith({ type: "mercator" });
+  });
+
+  it("updates the map style when the basemap changes and reapplies projection", async () => {
+    const wrapper = mount(MaplibreMap, { props: defaultProps });
+
+    setProjection.mockClear();
 
     await wrapper.setProps({
       basemapId: "imagery",
@@ -96,7 +107,7 @@ describe("MaplibreMap", () => {
     await nextTick();
 
     expect(setStyle).toHaveBeenCalledTimes(1);
-    expect(setProjection).toHaveBeenCalled();
+    expect(setProjection).toHaveBeenCalledWith({ type: "globe" });
     expect(boxZoomDisable).toHaveBeenCalled();
     expect(mapConstructor).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -105,16 +116,31 @@ describe("MaplibreMap", () => {
     );
   });
 
+  it("applies projection when the projection prop changes", async () => {
+    const wrapper = mount(MaplibreMap, { props: defaultProps });
+
+    setProjection.mockClear();
+
+    await wrapper.setProps({ projection: "mercator" });
+    await nextTick();
+
+    expect(setProjection).toHaveBeenCalledWith({ type: "mercator" });
+  });
+
+  it("emits update:projection on projectiontransition events", async () => {
+    const wrapper = mount(MaplibreMap, { props: defaultProps });
+
+    for (const handler of listeners.get("projectiontransition") ?? []) {
+      handler({ newProjection: "mercator" });
+    }
+    await nextTick();
+
+    expect(wrapper.emitted("update:projection")).toEqual([["mercator"]]);
+  });
+
   it("updates the map style when the style changes without a basemap id change", async () => {
     const wrapper = mount(MaplibreMap, {
-      props: {
-        basemapId: "osm",
-        styleSpec: {
-          version: 8,
-          sources: {},
-          layers: [],
-        },
-      },
+      props: defaultProps,
     });
 
     await wrapper.setProps({
@@ -143,14 +169,7 @@ describe("MaplibreMap", () => {
 
   it("emits MapLibre contextmenu events using the original mouse event", async () => {
     const wrapper = mount(MaplibreMap, {
-      props: {
-        basemapId: "osm",
-        styleSpec: {
-          version: 8,
-          sources: {},
-          layers: [],
-        },
-      },
+      props: defaultProps,
     });
 
     const dispatchSpy = vi.spyOn(wrapper.element, "dispatchEvent");

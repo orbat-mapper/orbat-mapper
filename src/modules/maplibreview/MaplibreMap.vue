@@ -8,7 +8,8 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
-import { applyGlobeProjection } from "@/modules/maplibreview/maplibreProjection";
+import type { MapProjection } from "@/stores/mapSettingsStore";
+import { applyProjection } from "@/modules/maplibreview/maplibreProjection";
 
 defineOptions({
   inheritAttrs: false,
@@ -17,9 +18,11 @@ defineOptions({
 const props = defineProps<{
   basemapId: string;
   styleSpec: MaplibreBasemapStyle;
+  projection: MapProjection;
 }>();
 const emit = defineEmits<{
   ready: [map: MlMap];
+  "update:projection": [projection: MapProjection];
 }>();
 const attrs = useAttrs();
 
@@ -50,7 +53,14 @@ onMounted(async () => {
   );
 
   mlMap.on("style.load", () => {
-    applyGlobeProjection(mlMap);
+    applyProjection(mlMap, props.projection);
+  });
+
+  mlMap.on("projectiontransition", (e) => {
+    const newProjection = e.newProjection as MapProjection;
+    if (newProjection === "globe" || newProjection === "mercator") {
+      emit("update:projection", newProjection);
+    }
   });
 
   mlMap.on("load", async () => {
@@ -91,6 +101,14 @@ watch(
   () => {
     if (!mlMap) return;
     mlMap.setStyle(props.styleSpec);
+  },
+);
+
+watch(
+  () => props.projection,
+  (projection) => {
+    if (!mlMap) return;
+    applyProjection(mlMap, projection);
   },
 );
 

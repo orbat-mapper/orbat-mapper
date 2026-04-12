@@ -25,6 +25,7 @@ import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import { useGeoStore } from "@/stores/geoStore";
+import { useMapSettingsStore, type MapProjection } from "@/stores/mapSettingsStore";
 import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
@@ -87,7 +88,18 @@ provide(activeFeatureSelectInteractionKey, featureSelectStub);
 
 const geoStore = useGeoStore();
 const baseLayersStore = useBaseLayersStore();
+const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
+
+const effectiveProjection = computed<MapProjection>(() =>
+  state.mapSettings.maxExtent ? "mercator" : mapSettingsStore.mapProjection,
+);
+
+function onProjectionUpdate(projection: MapProjection) {
+  if (!state.mapSettings.maxExtent) {
+    mapSettingsStore.mapProjection = projection;
+  }
+}
 const activeMaplibreBasemap = computed(() =>
   resolveMaplibreBasemap(maplibreBaseMapId.value, baseLayersStore.layers),
 );
@@ -285,6 +297,8 @@ const headerControlsStyle = computed(() =>
           @ready="onMapReady"
           :basemap-id="activeMaplibreBasemap.id"
           :style-spec="activeMaplibreBasemap.style"
+          :projection="effectiveProjection"
+          @update:projection="onProjectionUpdate"
           class="flex-auto bg-radial from-gray-800 to-gray-950"
         />
       </MaplibreContextMenu>
