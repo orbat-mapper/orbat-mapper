@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import type { ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
 import type OLMap from "ol/Map";
@@ -98,6 +106,23 @@ function onMapReady(mapInstance: MlMap) {
   cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
 }
+
+watch(
+  () => ({
+    engine: scenarioMapEngineRef.value,
+    extent: state.mapSettings.maxExtent,
+    minZoom: state.mapSettings.minZoom,
+    maxZoom: state.mapSettings.maxZoom,
+  }),
+  ({ engine, ...settings }) => {
+    engine?.map.setViewConstraints({
+      extent: settings.extent ?? null,
+      minZoom: settings.minZoom ?? null,
+      maxZoom: settings.maxZoom ?? null,
+    });
+  },
+  { immediate: true },
+);
 
 const { showHexGrid, hexResolution, autoResolution, lineColor, lineOpacity, lineWidth } =
   useH3HexGrid(mlMap);
