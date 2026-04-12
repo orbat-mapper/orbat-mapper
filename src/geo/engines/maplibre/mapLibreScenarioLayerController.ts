@@ -12,7 +12,7 @@ import type {
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TScenario } from "@/scenariostore";
 import type { ActionLabel } from "@/scenariostore/newScenarioStore";
-import { MapLibreScenarioFeatureManager } from "@/modules/globeview/maplibreScenarioFeatures";
+import { MapLibreScenarioFeatureManager } from "@/modules/maplibreview/maplibreScenarioFeatures";
 import { useSelectedItems } from "@/stores/selectedStore";
 import type { ScenarioLayerUpdate } from "@/types/internalModels";
 import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";

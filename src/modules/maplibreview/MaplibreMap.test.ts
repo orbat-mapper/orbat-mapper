@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import MaplibreMap from "@/modules/globeview/MaplibreMap.vue";
+import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 
 const setStyle = vi.fn();
 const setProjection = vi.fn();

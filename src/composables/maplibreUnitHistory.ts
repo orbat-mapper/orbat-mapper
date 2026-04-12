@@ -37,7 +37,7 @@ export const UNIT_HISTORY_LAYER_IDS = [
 
 const EMPTY_FC: FeatureCollection = { type: "FeatureCollection", features: [] };
 
-export function useGlobeUnitHistory(mlMap: MlMap, activeScenario: TScenario) {
+export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) {
   const { geo, unitActions } = activeScenario;
   const state = activeScenario.store.state;
   const getUnitById = (id: string) => activeScenario.helpers?.getUnitById(id);

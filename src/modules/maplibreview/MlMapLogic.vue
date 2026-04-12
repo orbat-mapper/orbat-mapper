@@ -18,23 +18,23 @@ import {
   searchActionsKey,
 } from "@/components/injects.ts";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
-import { useGlobeMapDrop } from "@/modules/globeview/useGlobeMapDrop.ts";
+import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject, injectStrict } from "@/utils";
 import {
   getFeatureIdFromRenderedFeature,
   getLayerIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
-} from "@/modules/globeview/maplibreScenarioFeatures";
+} from "@/modules/maplibreview/maplibreScenarioFeatures";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
-import { useGlobeRangeRings } from "@/composables/globeRangeRings";
+import { useMaplibreRangeRings } from "@/composables/maplibreRangeRings";
 import {
   UNIT_HISTORY_LAYER_IDS,
-  useGlobeUnitHistory,
-} from "@/composables/globeUnitHistory";
-import { saveMapLibreMapAsPng } from "@/modules/globeview/mapLibreExport";
+  useMaplibreUnitHistory,
+} from "@/composables/maplibreUnitHistory";
+import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -67,7 +67,7 @@ const {
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 
-const { setupRangeRingLayers, drawRangeRings } = useGlobeRangeRings(
+const { setupRangeRingLayers, drawRangeRings } = useMaplibreRangeRings(
   mlMap,
   activeScenario,
 );
@@ -77,9 +77,9 @@ const {
   drawHistory,
   handleMapClick: handleHistoryMapClick,
   dispose: disposeUnitHistory,
-} = useGlobeUnitHistory(mlMap, activeScenario);
+} = useMaplibreUnitHistory(mlMap, activeScenario);
 
-const { isDragging, formattedPosition } = useGlobeMapDrop(
+const { isDragging, formattedPosition } = useMaplibreMapDrop(
   engineRef.value!.map,
   activeScenario,
   () => {

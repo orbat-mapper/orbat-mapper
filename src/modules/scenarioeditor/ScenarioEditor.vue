@@ -44,7 +44,7 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
-  GLOBE_ROUTE,
+  MAPLIBRE_ROUTE,
   GRID_EDIT_ROUTE,
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
@@ -155,7 +155,7 @@ const selectedModeRoute = computed({
       route.name === MAP_EDIT_MODE_ROUTE ||
       route.name === GRID_EDIT_ROUTE ||
       route.name === CHART_EDIT_MODE_ROUTE ||
-      route.name === GLOBE_ROUTE
+      route.name === MAPLIBRE_ROUTE
     ) {
       return route.name;
     }
@@ -169,7 +169,7 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "Map", icon: MapIcon, experimental: false },
+  { value: MAP_EDIT_MODE_ROUTE, label: "OpenLayers", icon: MapIcon, experimental: false },
   { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, experimental: false },
   {
     value: CHART_EDIT_MODE_ROUTE,
@@ -177,7 +177,7 @@ const modeOptions = [
     icon: IconSitemap,
     experimental: false,
   },
-  { value: GLOBE_ROUTE, label: "Globe", icon: GlobeIcon, experimental: true },
+  { value: MAPLIBRE_ROUTE, label: "MapLibre", icon: GlobeIcon, experimental: true },
 ] as const;
 
 const activeModeOption = computed(
@@ -410,7 +410,7 @@ if (firstOverlayLayerId) {
         <div class="flex min-w-0 items-center gap-0.5 sm:gap-2">
           <RecordingState />
           <PlaybackMenu
-            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === GLOBE_ROUTE"
+            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === MAPLIBRE_ROUTE"
           />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
@@ -450,7 +450,7 @@ if (firstOverlayLayerId) {
           >
             <router-link
               :to="{ name: MAP_EDIT_MODE_ROUTE }"
-              title="Map edit mode"
+              title="OpenLayers view"
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
@@ -473,8 +473,8 @@ if (firstOverlayLayerId) {
               <IconSitemap class="size-6" />
             </router-link>
             <router-link
-              :to="{ name: GLOBE_ROUTE }"
-              title="Globe view"
+              :to="{ name: MAPLIBRE_ROUTE }"
+              title="MapLibre view"
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >

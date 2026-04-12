@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { computed, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import MlMapLogic from "@/modules/globeview/MlMapLogic.vue";
+import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
 import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 
@@ -12,8 +12,8 @@ const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
 }));
 
-vi.mock("@/modules/globeview/useGlobeMapDrop.ts", () => ({
-  useGlobeMapDrop: () => ({
+vi.mock("@/modules/maplibreview/useMaplibreMapDrop.ts", () => ({
+  useMaplibreMapDrop: () => ({
     isDragging: ref(false),
     formattedPosition: ref(""),
   }),
@@ -42,7 +42,7 @@ vi.mock("@vueuse/core", async () => {
   };
 });
 
-vi.mock("@/modules/globeview/mapLibreExport", () => ({
+vi.mock("@/modules/maplibreview/mapLibreExport", () => ({
   saveMapLibreMapAsPng,
 }));
 
@@ -178,7 +178,7 @@ describe("MlMapLogic", () => {
     expect(refreshScenarioFeatureLayers).toHaveBeenCalled();
   });
 
-  it("selects a rendered globe feature on click", () => {
+  it("selects a rendered maplibre feature on click", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const featureSelectSpy = vi.spyOn(searchActions.onFeatureSelectHook, "trigger");
@@ -621,7 +621,7 @@ describe("MlMapLogic", () => {
     expect(selectedFeatureIds.value.has("feature-1")).toBe(true);
   });
 
-  it("exports the globe map when the shared scenario action is triggered", async () => {
+  it("exports the maplibre map when the shared scenario action is triggered", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const refreshScenarioFeatureLayers = vi.fn();
