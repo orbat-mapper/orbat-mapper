@@ -61,7 +61,8 @@ export function useFeatureStyles(geo: TGeo) {
     const scenarioFeature = layerItem;
 
     const {
-      meta: { name: label, _zIndex },
+      name: label,
+      _zIndex,
       style: {
         showLabel = false,
         limitVisibility,
@@ -75,7 +76,7 @@ export function useFeatureStyles(geo: TGeo) {
     if (!cachedStyle) {
       const baseStyle = createSimpleStyle(scenarioFeature.style || {}) || defaultStyle;
       // @ts-ignore
-      feature.set("_zIndex", scenarioFeature.meta._zIndex, true);
+      feature.set("_zIndex", scenarioFeature._zIndex, true);
 
       // Create arrow styles if applicable
       const geometry = feature.getGeometry();

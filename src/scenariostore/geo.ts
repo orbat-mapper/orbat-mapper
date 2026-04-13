@@ -125,6 +125,13 @@ function getReferenceLayerFromMap(
   return isScenarioReferenceLayer(layer) ? (layer as NScenarioReferenceLayer) : undefined;
 }
 
+function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: number) {
+  const visibleFromT = feature.visibleFromT || Number.MIN_SAFE_INTEGER;
+  const visibleUntilT = feature.visibleUntilT || Number.MAX_SAFE_INTEGER;
+  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
+  feature._hidden = timeHidden || !!feature.isHidden;
+}
+
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
@@ -334,7 +341,7 @@ export function useGeo(store: NewScenarioStore) {
         layer.items.forEach((fid, i) => {
           const feature = getGeometryLayerItemFromMap(s.layerItemMap, fid);
           if (!feature) return;
-          if (feature.meta._zIndex !== i) feature.meta._zIndex = i;
+          if (feature._zIndex !== i) feature._zIndex = i;
         });
       },
       { label: "moveFeature", value: featureId },
@@ -597,23 +604,48 @@ export function useGeo(store: NewScenarioStore) {
         (s) => {
           const feature = getGeometryLayerItemFromMap(s.layerItemMap, featureId);
           if (!feature) return;
-          const { properties = {}, geometry, media, style = {}, meta = {}, state } = data;
+          const {
+            geometry,
+            geometryMeta = {},
+            media,
+            style = {},
+            state,
+            userData,
+            name,
+            description,
+            externalUrl,
+            locked,
+            isHidden,
+            visibleFromT,
+            visibleUntilT,
+            _zIndex,
+            _hidden,
+            _state,
+          } = data;
           Object.assign(feature.style, style);
-          Object.assign(feature.meta, meta);
-          feature.properties
-            ? Object.assign(feature.properties, properties)
-            : (feature.properties = properties);
-          Object.assign(feature.geometry, geometry);
+          Object.assign(feature.geometryMeta, geometryMeta);
+          if (geometry) Object.assign(feature.geometry, geometry);
 
           if (state) feature.state = state;
           if (media) feature.media = media;
+          if (userData) {
+            feature.userData = {
+              ...(feature.userData ?? {}),
+              ...userData,
+            };
+          }
+          if (name !== undefined) feature.name = name;
+          if (description !== undefined) feature.description = description;
+          if (externalUrl !== undefined) feature.externalUrl = externalUrl;
+          if (locked !== undefined) feature.locked = locked;
+          if (isHidden !== undefined) feature.isHidden = isHidden;
+          if (visibleFromT !== undefined) feature.visibleFromT = visibleFromT;
+          if (visibleUntilT !== undefined) feature.visibleUntilT = visibleUntilT;
+          if (_zIndex !== undefined) feature._zIndex = _zIndex;
+          if (_hidden !== undefined) feature._hidden = _hidden;
+          if (_state !== undefined) feature._state = _state;
 
-          const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
-          const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
-          const timeHidden =
-            s.currentTime <= visibleFromT || s.currentTime >= visibleUntilT;
-
-          feature._hidden = timeHidden || feature.meta.isHidden;
+          updateGeometryItemHidden(feature, s.currentTime);
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
@@ -623,7 +655,23 @@ export function useGeo(store: NewScenarioStore) {
     } else {
       const layerItem = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
       if (!layerItem) return;
-      Object.assign(layerItem, data);
+      Object.assign(layerItem.style, data.style ?? {});
+      Object.assign(layerItem.geometryMeta, data.geometryMeta ?? {});
+      if (data.geometry) Object.assign(layerItem.geometry, data.geometry);
+      if (data.userData) {
+        layerItem.userData = {
+          ...(layerItem.userData ?? {}),
+          ...data.userData,
+        };
+      }
+      Object.assign(layerItem, {
+        ...data,
+        style: layerItem.style,
+        geometryMeta: layerItem.geometryMeta,
+        geometry: layerItem.geometry,
+        userData: layerItem.userData,
+      });
+      updateGeometryItemHidden(layerItem, state.currentTime);
     }
     if (data.state) {
       updateFeatureState(featureId);
@@ -701,12 +749,12 @@ export function useGeo(store: NewScenarioStore) {
           };
         }
         const feature = layerItem;
-        const { meta, id } = feature;
+        const { id } = feature;
         return {
           id,
-          type: meta.type,
-          name: meta.name || "",
-          description: meta.description,
+          type: feature.geometryMeta.geometryKind,
+          name: feature.name || "",
+          description: feature.description,
           _pid: layer.id,
         };
       });

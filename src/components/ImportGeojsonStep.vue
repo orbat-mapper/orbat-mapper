@@ -188,19 +188,19 @@ function loadAsUnits() {
 function loadAsFeatures() {
   if (!activeLayer.value) return;
   const features = selectedFeatures.value.map((f): NGeometryLayerItem => {
+    const userData = { ...(f.properties ?? {}) } as Record<string, unknown>;
+    delete userData[nameColumn.value];
     return {
-      ...f,
       kind: "geometry",
       _pid: activeLayer.value,
       id: nanoid(),
-      meta: {
-        type: f.geometry.type,
-        name: f.properties?.[nameColumn.value] || "New feature",
+      name: String(f.properties?.[nameColumn.value] || "New feature"),
+      geometryMeta: {
+        geometryKind: f.geometry.type,
       },
+      geometry: f.geometry,
       style: {},
-      properties: {
-        // ...(f.properties ?? {}),
-      },
+      userData,
     };
   });
   scnStore.groupUpdate(() => {

@@ -30,7 +30,10 @@ import type {
   FullScenarioLayerItemsLayer,
   NGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
-import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  getGeometryLayerItemLabelText,
+  isNGeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 import { hashObject } from "@/utils";
 import type { ArrowType } from "@/geo/simplestyle";
 
@@ -143,7 +146,7 @@ function toRgbaColor(
 }
 
 function getLabelText(feature: NGeometryLayerItem) {
-  return feature.meta.name || feature.properties?.title || feature.properties?.name || "";
+  return getGeometryLayerItemLabelText(feature);
 }
 
 function getCurrentGeometry(feature: NGeometryLayerItem) {
@@ -268,11 +271,15 @@ function getTextVisibilityGroup(style: StyleLike, layerId: string) {
 
 function convertCircleFeature(feature: NGeometryLayerItem) {
   const geometry = getCurrentGeometry(feature);
-  if (!feature.meta.radius || geometry.type !== "Point") return geometry;
-  return turfCircle(geometry.coordinates as Position, feature.meta.radius / 1000, {
-    steps: 48,
-    units: "kilometers",
-  }).geometry;
+  if (!feature.geometryMeta.radius || geometry.type !== "Point") return geometry;
+  return turfCircle(
+    geometry.coordinates as Position,
+    feature.geometryMeta.radius / 1000,
+    {
+      steps: 48,
+      units: "kilometers",
+    },
+  ).geometry;
 }
 
 function flattenGeometry(
@@ -424,7 +431,7 @@ function buildFeatureData(
           geometryKind,
           renderGroup: renderGroup.id,
           selected: selectedFeatureIds.has(item.id),
-          zIndex: item.meta._zIndex ?? index,
+          zIndex: item._zIndex ?? index,
           strokeColor,
           strokeWidth,
           strokeStyle: style["stroke-style"] || "solid",
@@ -455,7 +462,7 @@ function buildFeatureData(
               layerId,
               labelGroup: labelGroup.id,
               selected: selectedFeatureIds.has(item.id),
-              zIndex: item.meta._zIndex ?? index,
+              zIndex: item._zIndex ?? index,
               textField: labelText,
               textColor: "#333333",
               textHaloColor: "#FBFCFB",
@@ -501,7 +508,7 @@ function buildFeatureData(
             layerId,
             arrowGroup: group.id,
             selected: selectedFeatureIds.has(item.id),
-            zIndex: item.meta._zIndex ?? 0,
+            zIndex: item._zIndex ?? 0,
             arrowImageId: imageId,
             iconAnchor: group.iconAnchor,
             iconScale: arrowIconScale,
@@ -536,7 +543,7 @@ function buildFeatureData(
             layerId,
             arrowGroup: group.id,
             selected: selectedFeatureIds.has(item.id),
-            zIndex: item.meta._zIndex ?? 0,
+            zIndex: item._zIndex ?? 0,
             arrowImageId: imageId,
             iconAnchor: group.iconAnchor,
             iconScale: arrowIconScale,

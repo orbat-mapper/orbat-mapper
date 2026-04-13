@@ -45,6 +45,7 @@ import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayer
 import {
   isGeometryLayerItemLike,
   isNGeometryLayerItem,
+  toGeometryLayerItemGeoJsonProperties,
 } from "@/types/scenarioLayerItems";
 import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
 import { useSelectionActions } from "@/composables/selectionActions";
@@ -89,6 +90,24 @@ const geometryIconMap: any = {
 
 type GeometryFeatureLike = GeometryLayerItem | NGeometryLayerItem | ScenarioFeature;
 
+function getGeometryKind(item: GeometryFeatureLike): string {
+  return "geometryMeta" in item ? item.geometryMeta.geometryKind : item.meta.type;
+}
+
+function getGeometryRadius(item: GeometryFeatureLike): number | undefined {
+  return "geometryMeta" in item ? item.geometryMeta.radius : item.meta.radius;
+}
+
+function getGeometryUserData(
+  item: GeometryFeatureLike,
+): Record<string, unknown> | undefined {
+  if ("userData" in item) return item.userData;
+  return (
+    ((item as ScenarioFeature).properties as Record<string, unknown> | undefined) ??
+    undefined
+  );
+}
+
 function isGeometryFeatureLike(
   item: ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature,
 ): item is GeometryFeatureLike {
@@ -99,7 +118,7 @@ function getItemIconKey(
   item?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
 ): string | undefined {
   if (!item) return undefined;
-  if (isGeometryLayerItemLike(item)) return item.meta.type;
+  if (isGeometryLayerItemLike(item)) return getGeometryKind(item as GeometryFeatureLike);
   return "kind" in item ? item.kind : undefined;
 }
 
@@ -129,13 +148,20 @@ export function layerItemsToGeoJsonString(
 ) {
   const fc = featureCollection(
     items.filter(isGeometryFeatureLike).map((f) => {
-      const properties = {
-        name: f.meta.name,
-        description: f.meta.description,
-        ...f.properties,
-      };
-      if (f.meta.type === "Circle" && f.meta.radius && f.geometry.type === "Point") {
-        const poly = turfCircle(f.geometry.coordinates, f.meta.radius, {
+      const properties =
+        "geometryMeta" in f
+          ? toGeometryLayerItemGeoJsonProperties(f)
+          : {
+              name: f.meta.name,
+              description: f.meta.description,
+              ...f.properties,
+            };
+      if (
+        getGeometryKind(f) === "Circle" &&
+        getGeometryRadius(f) &&
+        f.geometry.type === "Point"
+      ) {
+        const poly = turfCircle(f.geometry.coordinates, getGeometryRadius(f)!, {
           units: "meters",
         });
         return { ...poly, id: f.id, properties };
@@ -194,11 +220,19 @@ export function projectGeometryLayerItemToOlFeature(
     };
   }
 
-  feature.meta._zIndex = index;
-  if (feature.meta?.radius && feature.geometry.type === "Point") {
+  if ("geometryMeta" in feature) {
+    feature._zIndex = index;
+  } else {
+    feature.meta._zIndex = index;
+  }
+  if (getGeometryRadius(feature) && feature.geometry.type === "Point") {
     const newRadius = convertRadius(
-      feature as GeoJsonFeature<Point>,
-      feature.meta.radius,
+      {
+        type: "Feature",
+        geometry: feature.geometry,
+        properties: {},
+      } as GeoJsonFeature<Point>,
+      getGeometryRadius(feature)!,
     );
     const circle = new Circle(
       fromLonLat(feature.geometry.coordinates as number[]),
@@ -206,16 +240,27 @@ export function projectGeometryLayerItemToOlFeature(
     );
     const f = new Feature({
       geometry: circle,
-      ...feature.properties,
+      ...(getGeometryUserData(feature) ?? {}),
     });
     f.setId(feature.id);
     return f;
   }
 
-  return gjson.readFeature(feature, {
-    featureProjection,
-    dataProjection: "EPSG:4326",
-  }) as Feature;
+  return gjson.readFeature(
+    {
+      type: "Feature",
+      id: feature.id,
+      geometry: feature.geometry,
+      properties:
+        "geometryMeta" in feature
+          ? toGeometryLayerItemGeoJsonProperties(feature)
+          : (feature.properties ?? {}),
+    },
+    {
+      featureProjection,
+      dataProjection: "EPSG:4326",
+    },
+  ) as Feature;
 }
 
 export function createScenarioLayerItemFeatures(
@@ -362,7 +407,15 @@ export function useFeatureLayerUtils(
 
   function zoomToFeatures(featureIds: FeatureId[]) {
     const c = featureCollection(
-      featureIds.map((fid) => state.layerItemMap[fid]).filter(isNGeometryLayerItem),
+      featureIds
+        .map((fid) => state.layerItemMap[fid])
+        .filter(isNGeometryLayerItem)
+        .map((item) => ({
+          type: "Feature" as const,
+          id: item.id,
+          geometry: item._state?.geometry ?? item.geometry,
+          properties: {},
+        })),
     );
     const bb = new GeoJSON().readFeature(turfEnvelope(c), {
       featureProjection: "EPSG:3857",

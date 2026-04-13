@@ -205,9 +205,7 @@ describe("MaplibreContextMenu", () => {
   function mountMenu(props?: Record<string, unknown>) {
     const feature = {
       id: "feature-1",
-      meta: {
-        name: "Feature 1",
-      },
+      name: "Feature 1",
     };
     const scenario = {
       store: {

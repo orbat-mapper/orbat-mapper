@@ -105,7 +105,7 @@ const defaultLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
 ];
 
 function toggleFeatureVisibility(feature: NGeometryLayerItem) {
-  geo.updateFeature(feature.id, { meta: { isHidden: !feature.meta.isHidden } });
+  geo.updateFeature(feature.id, { isHidden: !feature.isHidden });
 }
 
 function toggleFeatureLayerVisibility(layer: NScenarioLayer) {

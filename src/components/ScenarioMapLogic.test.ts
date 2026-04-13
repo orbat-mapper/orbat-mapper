@@ -453,7 +453,7 @@ describe("ScenarioMapLogic", () => {
       geo: {
         everyVisibleUnit: ref([]),
         getGeometryLayerItemById: vi.fn(() => ({
-          layerItem: { meta: { name: "Bridge Alpha" } },
+          layerItem: { name: "Bridge Alpha" },
         })),
       },
       store: {
@@ -496,7 +496,7 @@ describe("ScenarioMapLogic", () => {
       geo: {
         everyVisibleUnit: ref([]),
         getGeometryLayerItemById: vi.fn(() => ({
-          layerItem: { meta: { name: "" } },
+          layerItem: { name: "" },
         })),
       },
       store: {
@@ -540,9 +540,8 @@ describe("ScenarioMapLogic", () => {
       geo: {
         everyVisibleUnit: ref([]),
         getGeometryLayerItemById: vi.fn((id: string) => {
-          if (id === "feature-empty") return { layerItem: { meta: { name: "" } } };
-          if (id === "feature-1")
-            return { layerItem: { meta: { name: "Bridge Alpha" } } };
+          if (id === "feature-empty") return { layerItem: { name: "" } };
+          if (id === "feature-1") return { layerItem: { name: "Bridge Alpha" } };
           return { layerItem: undefined };
         }),
       },

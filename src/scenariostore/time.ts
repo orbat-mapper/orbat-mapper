@@ -214,13 +214,11 @@ export function useScenarioTime(store: NewScenarioStore) {
       layer.items.forEach((featureId) => {
         const feature = state.layerItemMap[featureId];
         if (!feature || !isNGeometryLayerItem(feature)) return;
-        const visibleFromT = feature.meta.visibleFromT || Number.MIN_SAFE_INTEGER;
-        const visibleUntilT = feature.meta.visibleUntilT || Number.MAX_SAFE_INTEGER;
+        const visibleFromT = feature.visibleFromT || Number.MIN_SAFE_INTEGER;
+        const visibleUntilT = feature.visibleUntilT || Number.MAX_SAFE_INTEGER;
         const oldHidden = feature._hidden;
         feature._hidden =
-          timestamp <= visibleFromT ||
-          timestamp >= visibleUntilT ||
-          !!feature.meta.isHidden;
+          timestamp <= visibleFromT || timestamp >= visibleUntilT || !!feature.isHidden;
         if (oldHidden !== feature._hidden) {
           state.featureStateCounter++;
         }

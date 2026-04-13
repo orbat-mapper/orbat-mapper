@@ -65,7 +65,7 @@ describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
 
-    expect(scenario.version).toBe("3.1.0");
+    expect(scenario.version).toBe("3.2.0");
     expect(getOverlayLayers(scenario)[0]).toHaveProperty("items");
     expect(getOverlayLayers(scenario)[0]).not.toHaveProperty("features");
     expect((getOverlayLayers(scenario)[0] as any).items).toEqual([]);
@@ -209,12 +209,27 @@ describe("Scenario IO", () => {
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
 
-    expect(serialized.version).toBe("3.1.0");
+    expect(serialized.version).toBe("3.2.0");
     expect(getOverlayLayers(serialized)[0]).not.toHaveProperty("features");
     expect(getOverlayLayers(serialized)[0].items).toEqual([
       {
-        ...feature,
         kind: "geometry",
+        id: "feature-1",
+        geometry: { type: "Point", coordinates: [10, 60] },
+        geometryMeta: { geometryKind: "Point" },
+        name: "HQ",
+        description: "Feature description",
+        externalUrl: undefined,
+        locked: undefined,
+        isHidden: undefined,
+        visibleFromT: undefined,
+        visibleUntilT: undefined,
+        media: undefined,
+        userData: undefined,
+        _zIndex: undefined,
+        _hidden: undefined,
+        _state: undefined,
+        style: { showLabel: true, title: "HQ" },
         state: [
           {
             id: "state-1",
@@ -245,11 +260,10 @@ describe("Scenario IO", () => {
           items: [
             {
               kind: "geometry",
-              type: "Feature",
               id: "feature-1",
               geometry: { type: "Point", coordinates: [10, 60] },
-              properties: {},
-              meta: { type: "Point", name: "HQ" },
+              geometryMeta: { geometryKind: "Point" },
+              name: "HQ",
               style: {},
             },
           ],

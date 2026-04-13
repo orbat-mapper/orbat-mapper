@@ -11,7 +11,6 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
-import { type ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
 import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
 import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
@@ -77,9 +76,7 @@ const feature = computed(() => {
 
 const featureName = ref("DD");
 const featureDescription = ref();
-const hDescription = computed(() =>
-  renderMarkdown(feature.value?.meta.description || ""),
-);
+const hDescription = computed(() => renderMarkdown(feature.value?.description || ""));
 
 const isEditMode = ref(false);
 
@@ -110,15 +107,15 @@ function showStylePanel() {
 }
 
 watch(
-  () => feature.value?.meta.name,
+  () => feature.value?.name,
   (v) => {
     featureName.value = v ?? "";
-    featureDescription.value = feature.value?.meta.description ?? "";
+    featureDescription.value = feature.value?.description ?? "";
   },
   { immediate: true },
 );
 
-const geometryType = computed(() => feature.value?.meta.type);
+const geometryType = computed(() => feature.value?.geometryMeta.geometryKind);
 const hasStroke = computed(() => geometryType.value !== "Point");
 const hasArrows = computed(() => geometryType.value === "LineString");
 const hasFill = computed(
@@ -165,7 +162,7 @@ const media = computed(() => {
 });
 
 function updateValue(value: string) {
-  feature.value && geo.updateFeature(feature.value?.id, { meta: { name: value } });
+  feature.value && geo.updateFeature(feature.value?.id, { name: value });
 }
 
 const debouncedResetMap = useDebounceFn(
@@ -192,8 +189,10 @@ function doUpdateFeature(data: GeometryLayerItemUpdate) {
   debouncedResetMap();
 }
 
-function doMetaUpdate(data: Partial<ScenarioFeatureMeta>) {
-  if (data) doUpdateFeature({ meta: data });
+function doMetaUpdate(
+  data: Pick<GeometryLayerItemUpdate, "name" | "description" | "externalUrl">,
+) {
+  if (data) doUpdateFeature(data);
   isEditMode.value = false;
 }
 

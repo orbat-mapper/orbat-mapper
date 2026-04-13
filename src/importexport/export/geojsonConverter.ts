@@ -10,6 +10,7 @@ import {
   type GeometryLayerItem,
   type NScenarioLayerItem,
   isNGeometryLayerItem,
+  toGeometryLayerItemGeoJsonProperties,
 } from "@/types/scenarioLayerItems";
 
 export function useGeoJsonConverter(scenario: TScenario) {
@@ -48,14 +49,13 @@ export function useGeoJsonConverter(scenario: TScenario) {
           isNGeometryLayerItem(layerItem),
         )
         .map((f) => {
-          const { id, geometry, properties, meta } = f;
+          const { id, geometry } = f;
+          const properties = toGeometryLayerItemGeoJsonProperties(f);
           return {
             type: "Feature",
             id: options.includeId ? id : undefined,
             properties: {
               id: includeIdInProperties ? id : undefined,
-              name: meta.name,
-              description: meta.description,
               ...properties,
             },
             geometry,

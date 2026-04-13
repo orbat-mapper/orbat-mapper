@@ -257,18 +257,16 @@ function onAddPoint() {
 
   const newFeature: Omit<NGeometryLayerItem, "_pid"> = {
     kind: "geometry" as const,
-    type: "Feature",
     id: nanoid(),
-    meta: {
-      type: "Point",
-      name,
+    name,
+    geometryMeta: {
+      geometryKind: "Point",
     },
     geometry: {
       type: "Point",
       coordinates: dropPosition.value,
     },
     style: mainToolbarStore.currentDrawStyle ?? {},
-    properties: {},
   };
   geo.addFeature(newFeature, activeLayer.id);
 }
@@ -382,7 +380,7 @@ function onContextMenu(event: MouseEvent) {
                 class="text-muted-foreground mr-1 h-5 w-5"
               />
               <span :class="[selectedFeatureIds.has(feature.id) ? 'font-semibold' : '']">
-                {{ feature.meta.name }}
+                {{ feature.name }}
               </span>
             </div>
           </ContextMenuItem>
