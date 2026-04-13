@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 import { useGeoStore } from "@/stores/geoStore";
 import { Button } from "@/components/ui/button";
 import DescriptionItem from "@/components/DescriptionItem.vue";
@@ -14,9 +14,8 @@ import OLMap from "ol/Map";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
-import Draw, { createBox } from "ol/interaction/Draw";
-import { transformExtent, toLonLat } from "ol/proj";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
+import { useBoxDraw } from "@/composables/geoBoxDraw";
 
 const BBOX_SOURCE_ID = "scenarioBboxSource";
 const BBOX_FILL_LAYER_ID = "scenarioBboxFill";
@@ -29,8 +28,15 @@ const geoStore = useGeoStore();
 const { selectedUnitIds } = useSelectedItems();
 
 const boundingBox = computed(() => store.state.boundingBox);
-const isDrawing = ref(false);
-let drawInteraction: Draw | null = null;
+
+const {
+  isActive: isDrawing,
+  start: startDrawing,
+  cancel: stopDrawing,
+  onDrawEnd,
+} = useBoxDraw(() => geoStore.mapAdapter);
+
+onDrawEnd((bbox) => updateBoundingBox(bbox));
 
 const hasBbox = computed(() => {
   const bbox = boundingBox.value;
@@ -179,42 +185,10 @@ onUnmounted(() => {
   cleanupMLLayers();
 });
 
-function updateBoundingBox(bbox: BBox | null) {
+function updateBoundingBox(bbox: BBox | [number, number, number, number] | null) {
   store.update((s) => {
     s.boundingBox = bbox;
   });
-}
-
-function startDrawing() {
-  const map = getNativeMap();
-  if (!map || !isOLMap(map)) return;
-  isDrawing.value = true;
-  drawInteraction = new Draw({
-    type: "Circle",
-    geometryFunction: createBox(),
-  });
-
-  drawInteraction.on("drawend", (e) => {
-    const geometry = e.feature.getGeometry();
-    if (!geometry) return;
-    const extent = geometry.getExtent();
-    const bbox = transformExtent(extent, "EPSG:3857", "EPSG:4326");
-    updateBoundingBox(bbox as BBox);
-    stopDrawing();
-  });
-
-  map.addInteraction(drawInteraction);
-}
-
-function stopDrawing() {
-  if (drawInteraction) {
-    const map = getNativeMap();
-    if (map && isOLMap(map)) {
-      map.removeInteraction(drawInteraction);
-    }
-    drawInteraction = null;
-  }
-  isDrawing.value = false;
 }
 
 function toggleDrawing() {
@@ -301,7 +275,6 @@ function clearBbox() {
 
     <div class="flex flex-wrap gap-2">
       <Button
-        v-if="isOL"
         :variant="isDrawing ? 'default' : 'outline'"
         size="sm"
         @click="toggleDrawing"
