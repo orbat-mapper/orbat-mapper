@@ -65,7 +65,9 @@ const selectedValue = defineModel<string | FeatureId>({
             :value="feature.id"
           >
             <component :is="getGeometryIcon(feature)" />
-            {{ feature.meta.name || feature.type || feature.geometry.type }}
+            {{
+              feature.name || feature.geometryMeta.geometryKind || feature.geometry.type
+            }}
           </SelectItem>
         </SelectGroup>
       </template>

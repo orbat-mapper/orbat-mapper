@@ -100,11 +100,11 @@ function createScenarioFeatureFromGeoJSON(
 ): NGeometryLayerItem {
   return {
     kind: "geometry",
-    type: "Feature",
     id: nanoid(),
-    properties: feature.properties ?? {},
+    userData: (feature.properties as Record<string, unknown> | undefined) ?? {},
     geometry: feature.geometry,
-    meta: { type: feature.geometry.type, name: "New Feature" },
+    geometryMeta: { geometryKind: feature.geometry.type },
+    name: "New Feature",
     style: {},
     _pid: layerId,
   };
@@ -182,9 +182,9 @@ function onSubmit(updateMode = false) {
 
     const activeFeatureName = isUnitMode
       ? (activeFeature as NUnit).name
-      : (activeFeature as NGeometryLayerItem).meta.name;
+      : (activeFeature as NGeometryLayerItem).name;
     const featureName = isMultiMode.value ? "FeatureCollection" : activeFeatureName;
-    scenarioFeature.meta.name = `${featureName} (${filteredTrans[0].transform})`;
+    scenarioFeature.name = `${featureName} (${filteredTrans[0].transform})`;
     scn.geo.addFeature(scenarioFeature, layerId!);
   }
   previewLayer.getSource()?.clear();

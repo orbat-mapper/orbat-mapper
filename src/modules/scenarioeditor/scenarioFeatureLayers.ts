@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
-import type { FeatureId, ScenarioFeatureMeta } from "@/types/scenarioGeoModels";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
 import { type ProjectionLike, toLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
@@ -263,18 +263,16 @@ export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryL
     const { geometry, properties = {} } = olFeature.getProperties();
     const center = circle.getCenter();
     const r = addCoordinate([...center], [0, circle.getRadius()]);
-    const meta: ScenarioFeatureMeta = {
-      type: "Circle",
-      radius: getLength(new LineString([center, r])),
-    };
 
     return {
       kind: "geometry",
-      type: "Feature",
       id: String(olFeature.getId() || nanoid()),
       geometry: point(toLonLat(circle.getCenter())).geometry,
-      properties,
-      meta,
+      geometryMeta: {
+        geometryKind: "Circle",
+        radius: getLength(new LineString([center, r])),
+      },
+      userData: properties,
       style: {},
     };
   }
@@ -285,11 +283,10 @@ export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryL
 
   return {
     kind: "geometry",
-    type: gj.type,
     id: String(gj.id ?? nanoid()),
     geometry: gj.geometry,
-    properties: gj.properties ?? {},
+    userData: gj.properties ?? {},
     style: {},
-    meta: { type: gj.geometry.type },
+    geometryMeta: { geometryKind: gj.geometry.type },
   };
 }

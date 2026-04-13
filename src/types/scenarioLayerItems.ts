@@ -9,7 +9,7 @@ import type {
 import type {
   LayerId,
   Position,
-  ScenarioFeatureMeta,
+  ScenarioFeatureType,
   ScenarioLayer,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
@@ -68,11 +68,16 @@ export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   locked?: boolean;
   isHidden?: boolean;
   media?: Media[];
+  userData?: Record<string, unknown>;
+}
+
+export interface GeometryLayerMeta {
+  geometryKind: ScenarioFeatureType;
+  radius?: number;
 }
 
 export interface GeometryLayerItemStatePatch {
   geometry?: Geometry;
-  properties?: GeoJsonProperties;
 }
 
 export interface GeometryLayerItemState extends Partial<ScenarioEventDescription> {
@@ -87,7 +92,6 @@ export type LoadableGeometryLayerItemState =
       id: string;
       t: ScenarioTime;
       geometry?: Geometry;
-      properties?: GeoJsonProperties;
     });
 
 export interface CurrentGeometryLayerItemState
@@ -95,16 +99,13 @@ export interface CurrentGeometryLayerItemState
   type?: CurrentStateType;
 }
 
-export interface GeometryLayerItem {
+export interface GeometryLayerItem extends ScenarioLayerItemBase {
   kind: "geometry";
-  type: "Feature";
-  id: LayerItemId;
   geometry: Geometry;
-  properties: GeoJsonProperties;
-  meta: ScenarioFeatureMeta;
+  geometryMeta: GeometryLayerMeta;
   style: Partial<SimpleStyleSpec>;
   state?: GeometryLayerItemState[];
-  media?: Media[];
+  _zIndex?: number;
   _hidden?: boolean;
   _state?: CurrentGeometryLayerItemState | null;
 }
@@ -255,7 +256,11 @@ export function isGeometryLayerItemLike(item: unknown): item is GeometryLayerIte
   }
   // Transitional fallback for legacy feature-shaped data loaded before kind tagging.
   // Remove this once all call sites operate on canonical ScenarioLayerItem objects only.
-  return candidate.type === "Feature" && !!candidate.geometry && !!candidate.meta;
+  return (
+    candidate.type === "Feature" &&
+    !!candidate.geometry &&
+    ("geometryMeta" in candidate || "meta" in candidate)
+  );
 }
 
 export function isNGeometryLayerItem(
@@ -274,12 +279,11 @@ export function normalizeGeometryLayerItemState(
     LoadableGeometryLayerItemState,
     GeometryLayerItemState
   >;
-  const { geometry, properties, ...rest } = legacyState;
+  const { geometry, ...rest } = legacyState;
   return {
     ...rest,
     patch: {
       ...(geometry !== undefined ? { geometry } : {}),
-      ...(properties !== undefined ? { properties } : {}),
     },
   };
 }
@@ -313,10 +317,9 @@ export interface NScenarioLayerItemsLayer extends Omit<ScenarioLayerItemsLayer, 
 }
 
 export interface GeometryLayerItemUpdate extends Partial<
-  Omit<NGeometryLayerItem, "id" | "meta" | "kind">
+  Omit<NGeometryLayerItem, "id" | "geometryMeta" | "kind">
 > {
-  meta?: Partial<ScenarioFeatureMeta>;
-  _hidden?: boolean;
+  geometryMeta?: Partial<GeometryLayerMeta>;
 }
 
 export interface FullScenarioLayerItemsLayer extends Omit<
@@ -324,4 +327,92 @@ export interface FullScenarioLayerItemsLayer extends Omit<
   "items"
 > {
   items: NScenarioLayerItem[];
+}
+
+const RESERVED_GEOMETRY_ITEM_USERDATA_KEYS = new Set([
+  "type",
+  "radius",
+  "name",
+  "description",
+  "externalUrl",
+  "locked",
+  "isHidden",
+  "visibleFromT",
+  "visibleUntilT",
+  "_zIndex",
+  "fill",
+  "fill-opacity",
+  "stroke",
+  "stroke-opacity",
+  "stroke-width",
+  "stroke-style",
+  "marker-color",
+  "marker-size",
+  "marker-symbol",
+  "showLabel",
+  "title",
+  "text-placement",
+  "text-align",
+  "text-offset-x",
+  "text-offset-y",
+  "limitVisibility",
+  "minZoom",
+  "maxZoom",
+  "textMinZoom",
+  "textMaxZoom",
+  "arrow-start",
+  "arrow-end",
+]);
+
+export function getGeometryLayerItemLabelText(
+  item: Pick<GeometryLayerItem, "name" | "userData">,
+): string {
+  const title = item.userData?.title;
+  const userName = item.userData?.name;
+  return (
+    item.name ||
+    (typeof title === "string" ? title : undefined) ||
+    (typeof userName === "string" ? userName : undefined) ||
+    ""
+  );
+}
+
+export function toGeometryLayerItemGeoJsonProperties(
+  item: Pick<
+    GeometryLayerItem,
+    | "name"
+    | "description"
+    | "externalUrl"
+    | "locked"
+    | "isHidden"
+    | "visibleFromT"
+    | "visibleUntilT"
+    | "style"
+    | "userData"
+    | "geometryMeta"
+    | "_zIndex"
+  >,
+): GeoJsonProperties {
+  const properties: Record<string, unknown> = {
+    ...(item.geometryMeta.geometryKind ? { type: item.geometryMeta.geometryKind } : {}),
+    ...(item.geometryMeta.radius !== undefined
+      ? { radius: item.geometryMeta.radius }
+      : {}),
+    ...(item.name !== undefined ? { name: item.name } : {}),
+    ...(item.description !== undefined ? { description: item.description } : {}),
+    ...(item.externalUrl !== undefined ? { externalUrl: item.externalUrl } : {}),
+    ...(item.locked !== undefined ? { locked: item.locked } : {}),
+    ...(item.isHidden !== undefined ? { isHidden: item.isHidden } : {}),
+    ...(item.visibleFromT !== undefined ? { visibleFromT: item.visibleFromT } : {}),
+    ...(item.visibleUntilT !== undefined ? { visibleUntilT: item.visibleUntilT } : {}),
+    ...(item._zIndex !== undefined ? { _zIndex: item._zIndex } : {}),
+    ...(item.style ?? {}),
+  };
+
+  Object.entries(item.userData ?? {}).forEach(([key, value]) => {
+    if (RESERVED_GEOMETRY_ITEM_USERDATA_KEYS.has(key) || value === undefined) return;
+    properties[key] = value;
+  });
+
+  return properties;
 }

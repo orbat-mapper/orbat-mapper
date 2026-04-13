@@ -52,7 +52,7 @@ const form = ref<Partial<ItemMetaForm>>({
 const isScenarioFeatureType = (
   item: NUnit | NGeometryLayerItem | NScenarioEvent,
 ): item is NGeometryLayerItem => {
-  return "type" in item && item.type == "Feature";
+  return "kind" in item && item.kind === "geometry";
 };
 
 const isScenarioEventType = (
@@ -79,9 +79,9 @@ watch(
     if (!item) return;
     if (isScenarioFeatureType(item)) {
       form.value = {
-        name: item?.meta?.name ?? "",
-        description: item?.meta?.description ?? "",
-        externalUrl: item?.meta?.externalUrl ?? "",
+        name: item?.name ?? "",
+        description: item?.description ?? "",
+        externalUrl: item?.externalUrl ?? "",
       };
     } else if (isUnitType(item)) {
       form.value = {

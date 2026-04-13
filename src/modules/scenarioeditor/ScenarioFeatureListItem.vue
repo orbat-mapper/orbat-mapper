@@ -132,7 +132,7 @@ onUnmounted(() => {
         class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"
       >
-        {{ feature.meta.name || feature.type || feature.geometry.type }}
+        {{ feature.name || feature.geometryMeta.geometryKind || feature.geometry.type }}
       </span>
     </button>
     <div class="relative flex items-center">
@@ -142,12 +142,12 @@ onUnmounted(() => {
         class="text-muted-foreground hover:text-foreground mr-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
         title="Toggle visibility"
       >
-        <IconEyeOff v-if="feature.meta.isHidden" class="size-5" />
+        <IconEyeOff v-if="feature.isHidden" class="size-5" />
         <IconEye v-else class="size-5" />
       </button>
 
       <IconClockOutline
-        v-if="feature.meta.visibleFromT || feature.meta.visibleUntilT"
+        v-if="feature.visibleFromT || feature.visibleUntilT"
         class="text-muted-foreground h-5 w-5"
       />
       <DotsMenu

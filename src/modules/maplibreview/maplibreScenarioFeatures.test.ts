@@ -14,14 +14,12 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "circle-1",
             kind: "geometry",
             _pid: "layer-1",
-            type: "Feature",
             geometry: {
               type: "Point",
               coordinates: [10, 20],
             },
-            properties: {},
-            meta: {
-              type: "Circle",
+            geometryMeta: {
+              geometryKind: "Circle",
               radius: 1500,
             },
             style: {},
@@ -49,16 +47,13 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "point-1",
             kind: "geometry",
             _pid: "layer-2",
-            type: "Feature",
             geometry: {
               type: "Point",
               coordinates: [10, 20],
             },
-            properties: { name: "Alpha" },
-            meta: {
-              type: "Point",
-              name: "Alpha",
-            },
+            userData: { name: "Alpha" },
+            geometryMeta: { geometryKind: "Point" },
+            name: "Alpha",
             style: {
               showLabel: true,
               "marker-symbol": "square",
@@ -69,7 +64,6 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "line-1",
             kind: "geometry",
             _pid: "layer-2",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -77,10 +71,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
                 [15, 25],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
-            },
+            geometryMeta: { geometryKind: "LineString" },
             style: {
               "arrow-end": "arrow",
               "stroke-style": "dashed",
@@ -91,15 +82,11 @@ describe("buildScenarioFeatureRenderPlan", () => {
             kind: "geometry",
             _pid: "layer-2",
             _hidden: true,
-            type: "Feature",
             geometry: {
               type: "Point",
               coordinates: [0, 0],
             },
-            properties: {},
-            meta: {
-              type: "Point",
-            },
+            geometryMeta: { geometryKind: "Point" },
             style: {},
           },
         ],
@@ -163,7 +150,6 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "line-2",
             kind: "geometry",
             _pid: "layer-3",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -172,10 +158,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
                 [1, 1],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
-            },
+            geometryMeta: { geometryKind: "LineString" },
             style: {
               "arrow-start": "arrow",
               "arrow-end": "arrow",
@@ -215,7 +198,6 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "line-3",
             kind: "geometry",
             _pid: "layer-4",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -223,10 +205,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
                 [0, 1],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
-            },
+            geometryMeta: { geometryKind: "LineString" },
             style: {
               "arrow-end": "bar",
               "stroke-width": 10,
@@ -266,7 +245,6 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "line-4",
             kind: "geometry",
             _pid: "layer-5",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -274,10 +252,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
                 [1, 0],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
-            },
+            geometryMeta: { geometryKind: "LineString" },
             style: {
               "arrow-end": "arrow",
               "stroke-width": 4,
@@ -316,7 +291,6 @@ describe("buildScenarioFeatureRenderPlan", () => {
             id: "line-5",
             kind: "geometry",
             _pid: "layer-6",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -324,10 +298,7 @@ describe("buildScenarioFeatureRenderPlan", () => {
                 [1, 1],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
-            },
+            geometryMeta: { geometryKind: "LineString" },
             style: {
               "arrow-end": "arrow-hand-drawn",
             },

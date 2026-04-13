@@ -48,6 +48,38 @@ function createFeature(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createExpectedGeometryItem(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "feature-1",
+    kind: "geometry",
+    geometry: { type: "Point", coordinates: [10, 60] },
+    geometryMeta: { geometryKind: "Point" },
+    name: "HQ",
+    description: "Feature description",
+    externalUrl: undefined,
+    locked: undefined,
+    isHidden: undefined,
+    visibleFromT: undefined,
+    visibleUntilT: undefined,
+    media: undefined,
+    style: { showLabel: true, title: "HQ" },
+    userData: undefined,
+    _zIndex: undefined,
+    _hidden: undefined,
+    _state: undefined,
+    state: [
+      {
+        id: "state-1",
+        t: "2025-01-01T01:00:00Z",
+        patch: {
+          geometry: { type: "Point", coordinates: [11, 61] },
+        },
+      },
+    ],
+    ...overrides,
+  };
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -61,21 +93,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(getOverlayLayers(upgraded)[0].items).toEqual([
-      {
-        ...feature,
-        kind: "geometry",
-        state: [
-          {
-            id: "state-1",
-            t: "2025-01-01T01:00:00Z",
-            patch: {
-              geometry: { type: "Point", coordinates: [11, 61] },
-            },
-          },
-        ],
-      },
-    ]);
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([createExpectedGeometryItem()]);
     expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
@@ -107,21 +125,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(getOverlayLayers(upgraded)[0].items).toEqual([
-      {
-        ...feature,
-        kind: "geometry",
-        state: [
-          {
-            id: "state-1",
-            t: "2025-01-01T01:00:00Z",
-            patch: {
-              geometry: { type: "Point", coordinates: [11, 61] },
-            },
-          },
-        ],
-      },
-    ]);
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([createExpectedGeometryItem()]);
     expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
@@ -164,21 +168,7 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(getOverlayLayers(upgraded)[0].items).toEqual([
-      {
-        ...feature,
-        kind: "geometry",
-        state: [
-          {
-            id: "state-1",
-            t: "2025-01-01T01:00:00Z",
-            patch: {
-              geometry: { type: "Point", coordinates: [11, 61] },
-            },
-          },
-        ],
-      },
-    ]);
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([createExpectedGeometryItem()]);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0][0]).toContain('layer "Features" (layer-1)');
     expect(warnSpy.mock.calls[0][0]).toContain("annotation=1");
@@ -208,19 +198,11 @@ describe("upgradeScenarioIfNecessary", () => {
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
     expect(getOverlayLayers(upgraded)[0].items).toEqual([
-      {
-        ...itemFeature,
-        kind: "geometry",
-        state: [
-          {
-            id: "state-1",
-            t: "2025-01-01T01:00:00Z",
-            patch: {
-              geometry: { type: "Point", coordinates: [11, 61] },
-            },
-          },
-        ],
-      },
+      createExpectedGeometryItem({
+        id: "item-feature",
+        name: "Items",
+        description: undefined,
+      }),
     ]);
   });
 
@@ -273,8 +255,8 @@ describe("upgradeScenarioIfNecessary", () => {
 
     expect(feature.kind).toBe("geometry");
     if (feature.kind !== "geometry") throw new Error("Expected geometry item");
-    expect(feature.meta).toMatchObject({
-      type: "Point",
+    expect(feature).toMatchObject({
+      geometryMeta: { geometryKind: "Point" },
       name: "Legacy item",
       description: "Before v0.30",
     });
@@ -286,6 +268,6 @@ describe("upgradeScenarioIfNecessary", () => {
       showLabel: true,
       title: "Legacy title",
     });
-    expect(feature.properties).toEqual({ foo: "bar" });
+    expect(feature.userData).toEqual({ foo: "bar" });
   });
 });

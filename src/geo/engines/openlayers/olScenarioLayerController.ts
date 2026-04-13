@@ -652,10 +652,16 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
   function zoomToFeatures(featureIds: FeatureId[]) {
     const scenario = activeScenario;
     if (!scenario) return;
+    const items = featureIds
+      .map((featureId) => scenario.geo.getLayerItemById(featureId).layerItem)
+      .filter(isNGeometryLayerItem);
     const collection = featureCollection(
-      featureIds
-        .map((featureId) => scenario.geo.getLayerItemById(featureId).layerItem)
-        .filter(isNGeometryLayerItem),
+      items.map((item) => ({
+        type: "Feature" as const,
+        id: item.id,
+        geometry: item._state?.geometry ?? item.geometry,
+        properties: {},
+      })),
     );
     if (!collection.features.length) return;
     const bboxFeature = new GeoJSON().readFeature(turfEnvelope(collection), {

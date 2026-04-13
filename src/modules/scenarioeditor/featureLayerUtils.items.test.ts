@@ -7,11 +7,12 @@ import type { AnnotationLayerItem, GeometryLayerItem } from "@/types/scenarioLay
 
 const geometryItem: GeometryLayerItem = {
   kind: "geometry",
-  type: "Feature",
   id: "feature-1",
   geometry: { type: "Point", coordinates: [10, 60] },
-  properties: { status: "active" },
-  meta: { type: "Point", name: "HQ", description: "Headquarters" },
+  geometryMeta: { geometryKind: "Point" },
+  name: "HQ",
+  description: "Headquarters",
+  userData: { status: "active" },
   style: { showLabel: true },
 };
 

@@ -27,16 +27,14 @@ describe("ScenarioFeatureDetails", () => {
       id: "feature-1",
       kind: "geometry",
       _pid: "layer-1",
-      type: "Feature",
       geometry: {
         type: "Point",
         coordinates: [10, 20],
       },
-      properties: {},
-      meta: {
-        type: "Point",
-        name: "Alpha",
+      geometryMeta: {
+        geometryKind: "Point",
       },
+      name: "Alpha",
       style: {},
     };
 

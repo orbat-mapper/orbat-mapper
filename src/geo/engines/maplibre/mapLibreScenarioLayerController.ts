@@ -58,18 +58,22 @@ function normalizeMapLayerExtent(
 function toCurrentFeature(feature: NGeometryLayerItem): GeoJsonFeature | undefined {
   const geometry = feature._state?.geometry ?? feature.geometry;
   if (!geometry) return;
-  if (feature.meta.radius && geometry.type === "Point") {
-    return turfCircle(geometry.coordinates as Position, feature.meta.radius / 1000, {
-      steps: 48,
-      units: "kilometers",
-      properties: feature.properties ?? {},
-    }) as GeoJsonFeature;
+  if (feature.geometryMeta.radius && geometry.type === "Point") {
+    return turfCircle(
+      geometry.coordinates as Position,
+      feature.geometryMeta.radius / 1000,
+      {
+        steps: 48,
+        units: "kilometers",
+        properties: feature.userData ?? {},
+      },
+    ) as GeoJsonFeature;
   }
   return {
     type: "Feature",
     id: feature.id,
     geometry,
-    properties: feature.properties ?? {},
+    properties: feature.userData ?? {},
   };
 }
 

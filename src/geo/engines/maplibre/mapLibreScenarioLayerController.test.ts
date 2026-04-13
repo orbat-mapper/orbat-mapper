@@ -65,7 +65,6 @@ function createScenario() {
             id: "feature-1",
             kind: "geometry",
             _pid: "layer-1",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -73,9 +72,8 @@ function createScenario() {
                 [15, 25],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
+            geometryMeta: {
+              geometryKind: "LineString",
             },
             style: {
               "arrow-end": "arrow",
@@ -159,7 +157,6 @@ describe("createMapLibreScenarioLayerController", () => {
             id: "feature-1",
             kind: "geometry",
             _pid: "layer-1",
-            type: "Feature",
             geometry: {
               type: "LineString",
               coordinates: [
@@ -167,9 +164,8 @@ describe("createMapLibreScenarioLayerController", () => {
                 [30, 40],
               ],
             },
-            properties: {},
-            meta: {
-              type: "LineString",
+            geometryMeta: {
+              geometryKind: "LineString",
             },
             style: {
               "arrow-end": "arrow",

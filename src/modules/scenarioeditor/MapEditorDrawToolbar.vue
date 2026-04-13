@@ -77,8 +77,8 @@ function updateFeatureGeometryFromOlFeature(olFeature: Feature, updateState = fa
   const { layerItem: feature, layer } = geo.getGeometryLayerItemById(id) || {};
   if (!(feature && layer)) return;
   const dataUpdate = {
-    meta: { ...feature.meta, ...t.meta },
-    properties: { ...feature.properties, ...t.properties },
+    geometryMeta: { ...feature.geometryMeta, ...t.geometryMeta },
+    userData: { ...(feature.userData ?? {}), ...(t.userData ?? {}) },
     geometry: t.geometry,
   };
   if (updateState) {
@@ -100,10 +100,10 @@ function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
 
   const _zIndex = Math.max(
     scenarioLayer.items.length,
-    (lastFeatureInLayer?.meta._zIndex || 0) + 1,
+    (lastFeatureInLayer?._zIndex || 0) + 1,
   );
-  scenarioFeature.meta.name = `${scenarioFeature.meta.type} ${_zIndex + 1}`;
-  scenarioFeature.meta._zIndex = _zIndex;
+  scenarioFeature.name = `${scenarioFeature.geometryMeta.geometryKind} ${_zIndex + 1}`;
+  scenarioFeature._zIndex = _zIndex;
   scenarioFeature.style = currentDrawStyle.value ?? {};
 
   olFeature.set("_zIndex", _zIndex);

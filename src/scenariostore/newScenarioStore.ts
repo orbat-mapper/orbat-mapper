@@ -482,11 +482,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
             id: s.id || nanoid(),
           }),
         }));
-
-        tmp.meta = mapVisibility(tmp.meta);
-        tmp.properties = tmp.properties ?? {};
         layerItemMap[item.id] = {
-          ...tmp,
+          ...mapVisibility(tmp),
           _pid: layer.id,
         } as NGeometryLayerItem;
       });
