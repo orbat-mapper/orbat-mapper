@@ -314,9 +314,18 @@ function addUnits(initial = false) {
       } as Feature;
     }),
   );
-  if (initial && features.features.length > 0) {
-    const center = centerOfMass(features);
-    mlMap.setCenter(center.geometry.coordinates as [number, number]);
+  if (initial) {
+    const bbox = activeScenario.store.state.boundingBox;
+    if (bbox && bbox.length === 4) {
+      mlMap.fitBounds(bbox as [number, number, number, number], {
+        padding: 20,
+        duration: 0,
+        maxZoom: 16,
+      });
+    } else if (features.features.length > 0) {
+      const center = centerOfMass(features);
+      mlMap.setCenter(center.geometry.coordinates as [number, number]);
+    }
   }
   source.setData(features);
 }
