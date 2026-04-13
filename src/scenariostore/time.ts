@@ -204,8 +204,8 @@ export function useScenarioTime(store: NewScenarioStore) {
         isScenarioOverlayLayer,
       ) as import("@/types/scenarioStackLayers").NScenarioOverlayLayer[]
     ).forEach((layer) => {
-      const visibleFromT = layer.visibleFromT || Number.MIN_SAFE_INTEGER;
-      const visibleUntilT = layer.visibleUntilT || Number.MAX_SAFE_INTEGER;
+      const visibleFromT = layer.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+      const visibleUntilT = layer.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
       const oldHidden = layer._hidden;
       layer._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
       if (oldHidden !== layer._hidden) {
@@ -214,8 +214,8 @@ export function useScenarioTime(store: NewScenarioStore) {
       layer.items.forEach((featureId) => {
         const feature = state.layerItemMap[featureId];
         if (!feature || !isNGeometryLayerItem(feature)) return;
-        const visibleFromT = feature.visibleFromT || Number.MIN_SAFE_INTEGER;
-        const visibleUntilT = feature.visibleUntilT || Number.MAX_SAFE_INTEGER;
+        const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+        const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
         const oldHidden = feature._hidden;
         feature._hidden =
           timestamp <= visibleFromT || timestamp >= visibleUntilT || !!feature.isHidden;
