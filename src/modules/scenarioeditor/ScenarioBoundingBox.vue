@@ -290,6 +290,9 @@ function clearBbox() {
 
 <template>
   <div class="space-y-4">
+    <p class="text-muted-foreground text-sm">
+      Define a bounding box to set the initial map view when the scenario is loaded.
+    </p>
     <DescriptionItem label="Current bounding box">
       <span :class="{ 'text-gray-400 dark:text-gray-500': !hasBbox }">
         {{ formattedBbox }}
