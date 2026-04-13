@@ -132,6 +132,20 @@ function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: numb
   feature._hidden = timeHidden || !!feature.isHidden;
 }
 
+function mergeGeometryUserData(
+  current: Record<string, unknown> | undefined,
+  next: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  const merged = {
+    ...(current ?? {}),
+    ...(next ?? {}),
+  };
+  Object.keys(merged).forEach((key) => {
+    if (merged[key] === undefined) delete merged[key];
+  });
+  return Object.keys(merged).length ? merged : undefined;
+}
+
 export function useGeo(store: NewScenarioStore) {
   const { state, update } = store;
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
@@ -629,10 +643,7 @@ export function useGeo(store: NewScenarioStore) {
           if (state) feature.state = state;
           if (media) feature.media = media;
           if (userData) {
-            feature.userData = {
-              ...(feature.userData ?? {}),
-              ...userData,
-            };
+            feature.userData = mergeGeometryUserData(feature.userData, userData);
           }
           if (name !== undefined) feature.name = name;
           if (description !== undefined) feature.description = description;
@@ -659,18 +670,10 @@ export function useGeo(store: NewScenarioStore) {
       Object.assign(layerItem.geometryMeta, data.geometryMeta ?? {});
       if (data.geometry) Object.assign(layerItem.geometry, data.geometry);
       if (data.userData) {
-        layerItem.userData = {
-          ...(layerItem.userData ?? {}),
-          ...data.userData,
-        };
+        layerItem.userData = mergeGeometryUserData(layerItem.userData, data.userData);
       }
-      Object.assign(layerItem, {
-        ...data,
-        style: layerItem.style,
-        geometryMeta: layerItem.geometryMeta,
-        geometry: layerItem.geometry,
-        userData: layerItem.userData,
-      });
+      const { geometry, geometryMeta, style, userData, ...topLevelData } = data;
+      Object.assign(layerItem, topLevelData);
       updateGeometryItemHidden(layerItem, state.currentTime);
     }
     if (data.state) {

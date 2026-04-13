@@ -222,6 +222,9 @@ function canonicalizeOverlayLayer(
       kind: "overlay",
       items: features.map((feature) => {
         const { state, ...featureRest } = feature;
+        // Transitional stage: canonicalization keeps legacy feature-shaped data intact.
+        // The object is normalized to the real GeometryLayerItem shape by the
+        // versioned shared-base upgrade later in this pipeline.
         return {
           ...featureRest,
           id: String(feature.id),
@@ -240,6 +243,8 @@ function canonicalizeOverlayLayer(
   items.forEach((item) => {
     if (isGeometryLayerItem(item)) {
       const { kind: _kind, state, ...feature } = item;
+      // Transitional stage: canonicalization preserves the loaded shape here so
+      // pre-3.2 scenarios can still flow through the later shared-base upgrader.
       canonicalItems.push({
         ...feature,
         id: String(feature.id),
@@ -360,6 +365,8 @@ function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
     const upgradedLayer = { ...layer };
     upgradedLayer.items = upgradedLayer.items.map((item) => {
       if (item.kind !== "geometry") return item;
+      // This migration intentionally operates on the legacy pre-shared-base
+      // geometry shape before the final 3.2.0 normalization step runs.
       const upgradedFeature = { ...(item as any) } as any;
       const {
         visibleFromT,

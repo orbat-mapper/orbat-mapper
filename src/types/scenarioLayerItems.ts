@@ -255,6 +255,8 @@ export function isGeometryLayerItemLike(item: unknown): item is GeometryLayerIte
     return candidate.kind === "geometry";
   }
   // Transitional fallback for legacy feature-shaped data loaded before kind tagging.
+  // TODO: Remove the legacy `meta` branch once all geometry items enter through
+  // the shared-base upgrade pipeline.
   // Remove this once all call sites operate on canonical ScenarioLayerItem objects only.
   return (
     candidate.type === "Feature" &&
