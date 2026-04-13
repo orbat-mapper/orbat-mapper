@@ -76,7 +76,8 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
       },
     },
     {
-      accessorFn: (f) => f.properties?.[nameColumn.value] ?? "Feature",
+      accessorFn: (f) =>
+        normalizeImportedName(f.properties?.[nameColumn.value], "Feature"),
       id: "name",
       header: "Name",
     },
@@ -148,6 +149,11 @@ function findLikelySymbolColumn(columnNames: string[]) {
   return columnNames[0];
 }
 
+function normalizeImportedName(rawName: unknown, fallback: string): string {
+  if (typeof rawName === "string") return rawName.trim() || fallback;
+  return String(rawName ?? fallback);
+}
+
 const activeLayer = ref(existingLayers.value[0].value);
 const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
 const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
@@ -169,7 +175,7 @@ function loadAsUnits() {
     const sidc = f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000";
     return {
       id: nanoid(),
-      name: f.properties?.[nameColumn.value] || "New unit",
+      name: normalizeImportedName(f.properties?.[nameColumn.value], "New unit"),
       sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
       subUnits: [],
       _pid: "",
@@ -194,7 +200,7 @@ function loadAsFeatures() {
       kind: "geometry",
       _pid: activeLayer.value,
       id: nanoid(),
-      name: String(f.properties?.[nameColumn.value] || "New feature"),
+      name: normalizeImportedName(f.properties?.[nameColumn.value], "New feature"),
       geometryMeta: {
         geometryKind: f.geometry.type,
       },

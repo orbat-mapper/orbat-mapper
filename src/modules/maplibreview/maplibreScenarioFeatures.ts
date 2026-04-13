@@ -271,7 +271,8 @@ function getTextVisibilityGroup(style: StyleLike, layerId: string) {
 
 function convertCircleFeature(feature: NGeometryLayerItem) {
   const geometry = getCurrentGeometry(feature);
-  if (!feature.geometryMeta.radius || geometry.type !== "Point") return geometry;
+  if (feature.geometryMeta.radius === undefined || geometry.type !== "Point")
+    return geometry;
   return turfCircle(
     geometry.coordinates as Position,
     feature.geometryMeta.radius / 1000,

@@ -126,8 +126,8 @@ function getReferenceLayerFromMap(
 }
 
 function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: number) {
-  const visibleFromT = feature.visibleFromT || Number.MIN_SAFE_INTEGER;
-  const visibleUntilT = feature.visibleUntilT || Number.MAX_SAFE_INTEGER;
+  const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+  const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
   const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
   feature._hidden = timeHidden || !!feature.isHidden;
 }

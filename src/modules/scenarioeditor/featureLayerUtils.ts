@@ -156,12 +156,13 @@ export function layerItemsToGeoJsonString(
               description: f.meta.description,
               ...f.properties,
             };
+      const radius = getGeometryRadius(f);
       if (
         getGeometryKind(f) === "Circle" &&
-        getGeometryRadius(f) &&
+        radius !== undefined &&
         f.geometry.type === "Point"
       ) {
-        const poly = turfCircle(f.geometry.coordinates, getGeometryRadius(f)!, {
+        const poly = turfCircle(f.geometry.coordinates, radius, {
           units: "meters",
         });
         return { ...poly, id: f.id, properties };
@@ -225,14 +226,15 @@ export function projectGeometryLayerItemToOlFeature(
   } else {
     feature.meta._zIndex = index;
   }
-  if (getGeometryRadius(feature) && feature.geometry.type === "Point") {
+  const radius = getGeometryRadius(feature);
+  if (radius !== undefined && feature.geometry.type === "Point") {
     const newRadius = convertRadius(
       {
         type: "Feature",
         geometry: feature.geometry,
         properties: {},
       } as GeoJsonFeature<Point>,
-      getGeometryRadius(feature)!,
+      radius,
     );
     const circle = new Circle(
       fromLonLat(feature.geometry.coordinates as number[]),
