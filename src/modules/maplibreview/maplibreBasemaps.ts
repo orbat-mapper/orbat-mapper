@@ -21,6 +21,10 @@ export interface MaplibreBasemapOption {
   style: MaplibreBasemapStyle;
 }
 
+function resolveBasemapTitle(layer: MlLayerConfig): string {
+  return layer.title || layer.name;
+}
+
 function createRasterStyle(layer: MlRasterLayerConfig): StyleSpecification {
   return {
     version: 8,
@@ -70,11 +74,15 @@ function configToBasemapOption(layer: MlLayerConfig): MaplibreBasemapOption | nu
     case "style": {
       const style = resolveStyleSource(layer);
       if (!style) return null;
-      return { id: layer.name, title: layer.title, style };
+      return { id: layer.name, title: resolveBasemapTitle(layer), style };
     }
     case "raster": {
       if (!layer.tiles || layer.tiles.length === 0) return null;
-      return { id: layer.name, title: layer.title, style: createRasterStyle(layer) };
+      return {
+        id: layer.name,
+        title: resolveBasemapTitle(layer),
+        style: createRasterStyle(layer),
+      };
     }
   }
 }

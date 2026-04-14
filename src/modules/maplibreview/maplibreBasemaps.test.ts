@@ -32,6 +32,11 @@ const layers: MlLayerConfig[] = [
     title: "Broken",
     sourceType: "style",
   },
+  {
+    name: "name-only",
+    sourceType: "raster",
+    tiles: ["https://tiles.example.com/name-only/{z}/{x}/{y}.png"],
+  },
 ];
 
 describe("maplibreBasemaps", () => {
@@ -42,8 +47,15 @@ describe("maplibreBasemaps", () => {
       MAPLIBRE_VECTOR_BASEMAP_ID,
       "osm",
       "imagery",
+      "name-only",
       NO_BASEMAP_ID,
     ]);
+  });
+
+  it("falls back to the layer name when title is missing", () => {
+    const options = getSupportedMaplibreBasemaps(layers);
+    const nameOnly = options.find((o) => o.id === "name-only");
+    expect(nameOnly?.title).toBe("name-only");
   });
 
   it("passes through a style URL unchanged for style sources", () => {

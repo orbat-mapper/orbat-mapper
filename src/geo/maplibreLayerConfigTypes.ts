@@ -9,8 +9,8 @@ import type { StyleSpecification } from "maplibre-gl";
 interface BaseMlLayerConfig {
   /** Unique identifier. Used as the basemap id in the UI and as the MapLibre source id. */
   name: string;
-  /** Display name shown in the basemap picker. */
-  title: string;
+  /** Display name shown in the basemap picker. Falls back to `name` when omitted. */
+  title?: string;
   minZoom?: number;
   maxZoom?: number;
   /** Applied as raster-opacity for raster sources; ignored for style sources. */
