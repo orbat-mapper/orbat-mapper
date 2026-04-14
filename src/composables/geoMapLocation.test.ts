@@ -15,6 +15,7 @@ type FakeMapAdapter = MapAdapter & {
   targetElement: HTMLElement;
   onceUnsubscribe: ReturnType<typeof vi.fn>;
   onUnsubscribe: ReturnType<typeof vi.fn>;
+  getEventCoordinateSpy: ReturnType<typeof vi.fn>;
   emit(event: MapEventType, payload?: { coordinate?: [number, number] }): void;
 };
 
@@ -26,6 +27,7 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
   const onHandlers = new Map<MapEventType, MapEventHandler[]>();
   const onceUnsubscribe = vi.fn();
   const onUnsubscribe = vi.fn();
+  const getEventCoordinateSpy = vi.fn((_event: MouseEvent) => [0, 0] as [number, number]);
 
   const removeHandler = (
     handlers: Map<MapEventType, MapEventHandler[]>,
@@ -44,6 +46,7 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     targetElement,
     onceUnsubscribe,
     onUnsubscribe,
+    getEventCoordinateSpy,
     animateView(_options: AnimateOptions) {},
     fitExtent(_bbox: [number, number, number, number], _options?: FitOptions) {},
     fitGeometry(_geojson, _options?: FitOptions) {},
@@ -76,9 +79,7 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     fromLonLat(position) {
       return position;
     },
-    getEventCoordinate(_event: MouseEvent) {
-      return [0, 0] as [number, number];
-    },
+    getEventCoordinate: getEventCoordinateSpy,
     getTargetElement() {
       return targetElement;
     },
@@ -151,5 +152,34 @@ describe("useGetMapLocation", () => {
     expect(secondMap.targetElement.style.cursor).toBe("default");
     expect(firstMap.onceUnsubscribe).toHaveBeenCalledWith("click");
     expect(secondMap.onceUnsubscribe).not.toHaveBeenCalled();
+  });
+
+  it("can capture the next location from a DOM click instead of a map event", () => {
+    const map = createFakeMapAdapter("grab");
+    map.getEventCoordinateSpy.mockReturnValue([12, 34]);
+    const activeMap = ref<MapAdapter | null>(map);
+    const locationPicker = useGetMapLocation(activeMap, {
+      cancelOnClickOutside: false,
+      eventSource: "dom",
+    });
+    const onGetLocation = vi.fn();
+
+    locationPicker.onGetLocation(onGetLocation);
+    locationPicker.start();
+
+    map.targetElement.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        clientX: 10,
+        clientY: 20,
+      }),
+    );
+
+    expect(onGetLocation).toHaveBeenCalledWith([12, 34]);
+    expect(map.getEventCoordinateSpy).toHaveBeenCalledTimes(1);
+    expect(map.onceUnsubscribe).not.toHaveBeenCalled();
+    expect(locationPicker.isActive.value).toBe(false);
+    expect(map.targetElement.style.cursor).toBe("grab");
   });
 });

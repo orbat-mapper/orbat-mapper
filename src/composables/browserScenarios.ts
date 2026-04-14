@@ -30,7 +30,8 @@ export const DEMO_SCENARIOS = [
     id: "narvik40",
     summary:
       "A series of naval and land engagements fought between German and Allied forces from April to June 1940. The battles marked the first Allied victory against Germany in the war.",
-    imageUrl: "/scenarios/images/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
+    imageUrl:
+      "/scenarios/images/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
   },
 ];
 

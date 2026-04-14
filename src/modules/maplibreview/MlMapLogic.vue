@@ -8,7 +8,7 @@ import {
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import { computed, onUnmounted, provide, watch } from "vue";
-import type { Feature } from "geojson";
+import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
@@ -29,12 +29,16 @@ import {
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useMaplibreRangeRings } from "@/composables/maplibreRangeRings";
 import {
   UNIT_HISTORY_LAYER_IDS,
   useMaplibreUnitHistory,
 } from "@/composables/maplibreUnitHistory";
 import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
+import { storeToRefs } from "pinia";
+import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useRecordingStore } from "@/stores/recordingStore";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -44,6 +48,7 @@ const { mlMap, activeScenario } = defineProps<{
 provide(activeScenarioKey, activeScenario);
 
 const { unitActions } = activeScenario;
+const getUnitById = activeScenario.helpers?.getUnitById ?? (() => undefined);
 
 type SymbolCacheEntry = {
   sidc: string;
@@ -65,7 +70,17 @@ const {
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
+const { hoverEnabled } = storeToRefs(useMapSelectStore());
+const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
+const recordingStore = useRecordingStore();
+let unitDragState: {
+  clickedUnitId: string;
+  additive: boolean;
+  startPointer: Position;
+  startPositions: Map<string, Position>;
+  moved: boolean;
+} | null = null;
 
 const { setupRangeRingLayers, drawRangeRings } = useMaplibreRangeRings(
   mlMap,
@@ -174,6 +189,10 @@ function onStyleLoad() {
   addUnits(shouldCenterOnNextStyleLoad);
   drawRangeRings();
   drawHistory();
+  engineRef.value?.layers.refreshScenarioFeatureLayers({
+    doClearCache: false,
+    filterVisible: !doNotFilterLayers.value,
+  });
   shouldCenterOnNextStyleLoad = false;
 }
 
@@ -193,6 +212,7 @@ function queryInteractiveFeatures(point: PointLike) {
 }
 
 function onMapClick(e: MapMouseEvent) {
+  if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
   const topHit = queryInteractiveFeatures(e.point)[0];
   const additive = e.originalEvent.shiftKey;
@@ -221,32 +241,123 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
+  if (unitDragState) {
+    previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+    mlMap.getCanvas().style.cursor = "grabbing";
+    return;
+  }
+  if (!hoverEnabled.value) {
+    mlMap.getCanvas().style.cursor = "crosshair";
+    return;
+  }
   mlMap.getCanvas().style.cursor = queryInteractiveFeatures(e.point).length
     ? "pointer"
     : "";
 }
 
+function onUnitDragStart(e: MapMouseEvent) {
+  if (!moveUnitEnabled.value || !recordingStore.isRecordingLocation) return;
+
+  const topHit = queryInteractiveFeatures(e.point)[0];
+  if (!topHit || topHit.layer.id !== "unitLayer") return;
+
+  const clickedUnitId = topHit.properties?.id;
+  if (!clickedUnitId || unitActions.isUnitLocked(clickedUnitId)) return;
+
+  const candidateIds = selectedUnitIds.value.has(clickedUnitId)
+    ? [...selectedUnitIds.value]
+    : [clickedUnitId];
+  const movableUnitIds = candidateIds.filter((unitId) => {
+    const unit = getUnitById(unitId);
+    return !!unit?._state?.location && !unitActions.isUnitLocked(unitId);
+  });
+  if (!movableUnitIds.length) return;
+  const startPositions = new Map<string, Position>(
+    movableUnitIds.flatMap((unitId) => {
+      const location = getUnitById(unitId)?._state?.location;
+      return location ? [[unitId, location]] : [];
+    }),
+  );
+  if (!startPositions.size) return;
+
+  unitDragState = {
+    clickedUnitId,
+    additive: e.originalEvent.shiftKey,
+    startPointer: [e.lngLat.lng, e.lngLat.lat],
+    startPositions,
+    moved: false,
+  };
+  e.preventDefault();
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
+  mlMap.getCanvas().style.cursor = "grabbing";
+}
+
+function previewDraggedUnits(pointer: Position) {
+  if (!unitDragState) return;
+  const dx = pointer[0] - unitDragState.startPointer[0];
+  const dy = pointer[1] - unitDragState.startPointer[1];
+  const positionOverrides = new Map<string, Position>();
+  unitDragState.startPositions.forEach((position, unitId) => {
+    positionOverrides.set(unitId, [position[0] + dx, position[1] + dy]);
+  });
+  unitDragState.moved = true;
+  addUnits(false, positionOverrides);
+}
+
+function onUnitDragEnd(e: MapMouseEvent) {
+  if (!unitDragState) return;
+  const dragState = unitDragState;
+  unitDragState = null;
+  mlMap.getCanvas().style.cursor = "";
+
+  if (!dragState.moved) {
+    addUnits();
+    if (dragState.additive) {
+      toggleUnitSelection(dragState.clickedUnitId);
+    } else {
+      onUnitSelectHook.trigger({
+        unitId: dragState.clickedUnitId,
+        options: { noZoom: true },
+      });
+    }
+    return;
+  }
+
+  const dx = e.lngLat.lng - dragState.startPointer[0];
+  const dy = e.lngLat.lat - dragState.startPointer[1];
+  const commitMove = () => {
+    dragState.startPositions.forEach((position, unitId) => {
+      activeScenario.geo.addUnitPosition(unitId, [position[0] + dx, position[1] + dy]);
+    });
+  };
+  if (activeScenario.store.groupUpdate) {
+    activeScenario.store.groupUpdate(commitMove);
+  } else {
+    commitMove();
+  }
+}
+
 mlMap.on("click", onMapClick);
+mlMap.on("mousedown", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
+mlMap.on("mouseup", onUnitDragEnd);
 
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
 }
 
 watch(
-  () => activeScenario.store.state.currentTime,
+  [
+    () => activeScenario.store.state.currentTime,
+    () => activeScenario.store.state.unitStateCounter,
+    () => activeScenario.geo.everyVisibleUnit.value.length,
+  ],
   () => {
     addUnits();
     drawRangeRings();
   },
-);
-
-watch(
-  () => activeScenario.store.state.unitStateCounter,
-  () => {
-    addUnits();
-    drawRangeRings();
-  },
+  { immediate: true },
 );
 
 watch(
@@ -282,7 +393,7 @@ onScenarioActionHook.on(async ({ action }) => {
   await saveMapLibreMapAsPng(mlMap);
 });
 
-function addUnits(initial = false) {
+function addUnits(initial = false, positionOverrides?: ReadonlyMap<string, Position>) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
   if (!source) return;
 
@@ -303,7 +414,7 @@ function addUnits(initial = false) {
         type: "Feature",
         geometry: {
           type: "Point",
-          coordinates: unit._state?.location,
+          coordinates: positionOverrides?.get(unit.id) ?? unit._state?.location,
         },
         properties: {
           id: unit.id,
@@ -336,7 +447,9 @@ onUnmounted(() => {
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
+  mlMap.off("mousedown", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);
+  mlMap.off("mouseup", onUnitDragEnd);
 });
 
 const { pause, resume } = useRafFn(
