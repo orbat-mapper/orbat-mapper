@@ -23,16 +23,14 @@ export const DEMO_SCENARIOS = [
     id: "falkland82",
     summary:
       "The Falklands War was a military conflict that took place in 1982 between Argentina and the United Kingdom. Argentina invaded the Falkland Islands on April 2, 1982, and the UK responded by sending a task force to retake the islands.",
-    imageUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/8/8b/HMS_Broadsword_and_Hermes%2C_1982_%28IWM%29.jpg",
+    imageUrl: "/scenarios/images/HMS_Broadsword_and_Hermes_1982_IWM.jpg",
   },
   {
     name: "Battles of Narvik 1940",
     id: "narvik40",
     summary:
       "A series of naval and land engagements fought between German and Allied forces from April to June 1940. The battles marked the first Allied victory against Germany in the war.",
-    imageUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/5/5f/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
+    imageUrl: "/scenarios/images/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
   },
 ];
 
