@@ -1,78 +1,81 @@
 import { describe, expect, it } from "vitest";
 import {
-  MAPLIBRE_BRIGHT_BASEMAP_ID,
-  MAPLIBRE_DARK_BASEMAP_ID,
-  MAPLIBRE_LIBERTY_BASEMAP_ID,
   MAPLIBRE_VECTOR_BASEMAP_ID,
   NO_BASEMAP_ID,
   getSupportedMaplibreBasemaps,
   resolveMaplibreBasemap,
 } from "@/modules/maplibreview/maplibreBasemaps";
-import type { StoredLayerConfig } from "@/stores/baseLayersStore";
+import type { MlLayerConfig } from "@/geo/maplibreLayerConfigTypes";
 
-const layers: StoredLayerConfig[] = [
+const layers: MlLayerConfig[] = [
   {
-    title: "OSM",
-    name: "osm",
-    layerSourceType: "osm",
-    sourceOptions: {
-      crossOrigin: "anonymous",
-    },
-    layerType: "baselayer",
-    opacity: 1,
+    name: MAPLIBRE_VECTOR_BASEMAP_ID,
+    title: "OpenFreeMap Positron",
+    sourceType: "style",
+    styleUrl: "https://tiles.openfreemap.org/styles/positron",
   },
   {
-    title: "Imagery",
+    name: "osm",
+    title: "OSM",
+    sourceType: "raster",
+    tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+  },
+  {
     name: "imagery",
-    layerSourceType: "xyz",
-    sourceOptions: {
-      url: "https://tiles.example.com/{z}/{x}/{y}.png",
-    },
-    layerType: "baselayer",
+    title: "Imagery",
+    sourceType: "raster",
+    tiles: ["https://tiles.example.com/{z}/{x}/{y}.png"],
     opacity: 0.6,
   },
   {
-    title: "Unsupported",
-    name: "unsupported",
-    layerSourceType: "wms" as any,
-    sourceOptions: {},
-    layerType: "baselayer",
-    opacity: 1,
+    name: "broken-style",
+    title: "Broken",
+    sourceType: "style",
   },
 ];
 
 describe("maplibreBasemaps", () => {
-  it("returns the vector option, supported raster basemaps, and no basemap", () => {
+  it("returns the configured basemaps plus the no-basemap option", () => {
     const options = getSupportedMaplibreBasemaps(layers);
 
     expect(options.map((option) => option.id)).toEqual([
       MAPLIBRE_VECTOR_BASEMAP_ID,
-      MAPLIBRE_LIBERTY_BASEMAP_ID,
-      MAPLIBRE_BRIGHT_BASEMAP_ID,
-      MAPLIBRE_DARK_BASEMAP_ID,
       "osm",
       "imagery",
       NO_BASEMAP_ID,
     ]);
-    expect(options[4].style).toMatchObject({
+  });
+
+  it("passes through a style URL unchanged for style sources", () => {
+    const [positron] = getSupportedMaplibreBasemaps(layers);
+    expect(positron.style).toBe("https://tiles.openfreemap.org/styles/positron");
+  });
+
+  it("synthesizes a raster StyleSpecification for raster sources", () => {
+    const options = getSupportedMaplibreBasemaps(layers);
+    const osm = options.find((o) => o.id === "osm");
+    expect(osm?.style).toMatchObject({
       version: 8,
       sources: {
-        osm: {
-          type: "raster",
-        },
+        osm: { type: "raster" },
       },
     });
-    expect(options[5].style).toMatchObject({
+
+    const imagery = options.find((o) => o.id === "imagery");
+    expect(imagery?.style).toMatchObject({
       layers: [
         {
           source: "imagery",
-          paint: {
-            "raster-opacity": 0.6,
-          },
+          paint: { "raster-opacity": 0.6 },
         },
       ],
     });
-    expect(options[6].style).toMatchObject({
+  });
+
+  it("emits an empty style for the no-basemap option", () => {
+    const options = getSupportedMaplibreBasemaps(layers);
+    const none = options.find((o) => o.id === NO_BASEMAP_ID);
+    expect(none?.style).toMatchObject({
       version: 8,
       sources: {},
       layers: [],
@@ -81,7 +84,6 @@ describe("maplibreBasemaps", () => {
 
   it("falls back to the vector maplibre basemap when the requested id is unavailable", () => {
     const option = resolveMaplibreBasemap("missing-id", layers);
-
     expect(option.id).toBe(MAPLIBRE_VECTOR_BASEMAP_ID);
   });
 });

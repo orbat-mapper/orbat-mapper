@@ -23,7 +23,7 @@ import { injectStrict } from "@/utils";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
-import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useGeoStore } from "@/stores/geoStore";
 import { useMapSettingsStore, type MapProjection } from "@/stores/mapSettingsStore";
 import {
@@ -87,7 +87,7 @@ provide(activeNativeMapKey, nativeMapStub);
 provide(activeFeatureSelectInteractionKey, featureSelectStub);
 
 const geoStore = useGeoStore();
-const baseLayersStore = useBaseLayersStore();
+const maplibreLayersStore = useMaplibreLayersStore();
 const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
 
@@ -101,7 +101,7 @@ function onProjectionUpdate(projection: MapProjection) {
   }
 }
 const activeMaplibreBasemap = computed(() =>
-  resolveMaplibreBasemap(maplibreBaseMapId.value, baseLayersStore.layers),
+  resolveMaplibreBasemap(maplibreBaseMapId.value, maplibreLayersStore.layers),
 );
 
 function onMapReady(mapInstance: MlMap) {
@@ -249,7 +249,7 @@ const mgrsPrecisionLabel = computed(() => {
 });
 
 onMounted(() => {
-  void baseLayersStore.initialize();
+  void maplibreLayersStore.initialize();
 });
 
 function disposeMaplibreBinding() {

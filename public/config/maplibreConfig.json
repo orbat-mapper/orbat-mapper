@@ -1,0 +1,82 @@
+[
+  {
+    "name": "openFreeMapPositron",
+    "title": "OpenFreeMap Positron",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.openfreemap.org/styles/positron"
+  },
+  {
+    "name": "openFreeMapLiberty",
+    "title": "OpenFreeMap Liberty",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.openfreemap.org/styles/liberty"
+  },
+  {
+    "name": "openFreeMapBright",
+    "title": "OpenFreeMap Bright",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.openfreemap.org/styles/bright"
+  },
+  {
+    "name": "versaTilesEclipse",
+    "title": "VersaTiles Eclipse (dark)",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.versatiles.org/assets/styles/eclipse/style.json"
+  },
+  {
+    "name": "osm",
+    "title": "OSM",
+    "sourceType": "raster",
+    "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+    "tileSize": 256,
+    "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
+  },
+  {
+    "name": "osm-de",
+    "title": "OSM (DE)",
+    "sourceType": "raster",
+    "tiles": ["https://tile.openstreetmap.de/{z}/{x}/{y}.png"],
+    "tileSize": 256,
+    "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
+  },
+  {
+    "name": "grayBasemap",
+    "title": "Gray Basemap",
+    "sourceType": "raster",
+    "tiles": [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+    ],
+    "tileSize": 256,
+    "attribution": "Tiles © <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Light_Gray_Base/MapServer\">ArcGIS</a>"
+  },
+  {
+    "name": "openTopoMap",
+    "title": "Open topo map",
+    "sourceType": "raster",
+    "tiles": ["https://a.tile.opentopomap.org/{z}/{x}/{y}.png"],
+    "tileSize": 256,
+    "maxZoom": 14,
+    "attribution": "Map data: © <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors, <a href=\"http://viewfinderpanoramas.org\">SRTM</a> | Map style: © <a href=\"https://opentopomap.org\">OpenTopoMap</a> (<a href=\"https://creativecommons.org/licenses/by-sa/3.0/\">CC-BY-SA</a>)"
+  },
+  {
+    "name": "esriWorldImagery",
+    "title": "ESRI World imagery",
+    "sourceType": "raster",
+    "tiles": [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    ],
+    "tileSize": 256,
+    "attribution": "Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+  },
+  {
+    "name": "kartverketTopo4",
+    "title": "Topographic Map Norway",
+    "sourceType": "raster",
+    "tiles": [
+      "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png"
+    ],
+    "tileSize": 256,
+    "bounds": [2, 57, 33, 72],
+    "attribution": "<a href=\"http://www.kartverket.no/\">Kartverket</a>"
+  }
+]

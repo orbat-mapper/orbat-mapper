@@ -25,7 +25,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import type { Position } from "geojson";
 import type { Map as MlMap } from "maplibre-gl";
-import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
 import {
@@ -59,7 +59,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
 
-const baseLayersStore = useBaseLayersStore();
+const maplibreLayersStore = useMaplibreLayersStore();
 const {
   store,
   unitActions,
@@ -87,7 +87,7 @@ const baseMapId = defineModel<string>("baseMapId", {
 });
 
 const basemapOptions = computed(() =>
-  getSupportedMaplibreBasemaps(baseLayersStore.layers),
+  getSupportedMaplibreBasemaps(maplibreLayersStore.layers),
 );
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");

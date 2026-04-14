@@ -9,7 +9,7 @@ import { activeScenarioKey } from "@/components/injects";
 const bindScenario = vi.fn();
 const cleanupScenarioBinding = vi.fn();
 const setMapAdapter = vi.fn();
-const initializeBaseLayers = vi.fn();
+const initializeMaplibreLayers = vi.fn();
 
 vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
@@ -43,10 +43,10 @@ vi.mock("@/geo/engines/maplibre/mapLibreScenarioLayerController", () => ({
   })),
 }));
 
-vi.mock("@/stores/baseLayersStore", () => ({
-  useBaseLayersStore: () => ({
+vi.mock("@/stores/maplibreLayersStore", () => ({
+  useMaplibreLayersStore: () => ({
     layers: [],
-    initialize: initializeBaseLayers,
+    initialize: initializeMaplibreLayers,
   }),
 }));
 
@@ -122,7 +122,7 @@ describe("ScenarioEditorMaplibre", () => {
     bindScenario.mockReturnValue(cleanupScenarioBinding);
     cleanupScenarioBinding.mockReset();
     setMapAdapter.mockReset();
-    initializeBaseLayers.mockReset();
+    initializeMaplibreLayers.mockReset();
   });
 
   it("cleans up the scenario binding when the maplibre view unmounts", () => {
