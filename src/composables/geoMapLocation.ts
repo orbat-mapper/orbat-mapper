@@ -13,13 +13,18 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 export interface UseGetMapLocationOptions {
   cancelOnClickOutside?: boolean;
   stopPropagationOnClickOutside?: boolean;
+  eventSource?: "map" | "dom";
 }
 
 export function useGetMapLocation(
   mapSource: MaybeRefOrGetter<MapAdapter | null | undefined>,
   options: UseGetMapLocationOptions = {},
 ) {
-  const { cancelOnClickOutside = true, stopPropagationOnClickOutside = true } = options;
+  const {
+    cancelOnClickOutside = true,
+    stopPropagationOnClickOutside = true,
+    eventSource = "map",
+  } = options;
 
   const isActive = ref(false);
   const mapSelectStore = useMapSelectStore();
@@ -27,8 +32,9 @@ export function useGetMapLocation(
   let activeMap: MapAdapter | null = null;
   let prevCursor = "";
   let unsubscribeClick: Fn | undefined;
-  let stopEscListener: Fn;
+  let stopEscListener: Fn | undefined;
   let stopClickOutside: Fn | undefined;
+  let removeNativeClickListener: Fn | undefined;
 
   const onGetLocationHook = createEventHook<[Position]>();
   const onCancelHook = createEventHook();
@@ -53,6 +59,18 @@ export function useGetMapLocation(
       });
     }
     stopEscListener = onKeyStroke("Escape", () => cancel());
+    if (eventSource === "dom" && targetEl) {
+      const handleNativeClickEvent = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        cleanUp();
+        onGetLocationHook.trigger(map.getEventCoordinate(event));
+      };
+      targetEl.addEventListener("click", handleNativeClickEvent, { capture: true });
+      removeNativeClickListener = () =>
+        targetEl.removeEventListener("click", handleNativeClickEvent, { capture: true });
+      return;
+    }
     unsubscribeClick = map.once("click", handleMapClickEvent);
   }
 
@@ -69,8 +87,13 @@ export function useGetMapLocation(
     activeMap = null;
     isActive.value = false;
     if (unsubscribeClick) unsubscribeClick();
+    if (removeNativeClickListener) removeNativeClickListener();
     if (stopEscListener) stopEscListener();
     if (stopClickOutside) stopClickOutside();
+    removeNativeClickListener = undefined;
+    unsubscribeClick = undefined;
+    stopEscListener = undefined;
+    stopClickOutside = undefined;
     mapSelectStore.hoverEnabled = prevHoverValue;
   }
 

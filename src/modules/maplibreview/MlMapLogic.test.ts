@@ -2,11 +2,13 @@
 import { createEventHook } from "@vueuse/core";
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { computed, ref, shallowRef } from "vue";
+import { computed, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
 import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
+import { useUnitSettingsStore } from "@/stores/geoStore";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -65,14 +67,32 @@ function createMockMap() {
   const canvas = { style: { cursor: "" } };
 
   const map = {
-    on: vi.fn((event: string, handler: (event?: unknown) => void) => {
-      const handlers = listeners.get(event) ?? new Set();
-      handlers.add(handler);
-      listeners.set(event, handlers);
-    }),
-    off: vi.fn((event: string, handler: (event?: unknown) => void) => {
-      listeners.get(event)?.delete(handler);
-    }),
+    on: vi.fn(
+      (
+        event: string,
+        layerOrHandler: string | ((event?: unknown) => void),
+        maybeHandler?: (event?: unknown) => void,
+      ) => {
+        const handler =
+          typeof layerOrHandler === "function" ? layerOrHandler : maybeHandler;
+        if (!handler) return;
+        const handlers = listeners.get(event) ?? new Set();
+        handlers.add(handler);
+        listeners.set(event, handlers);
+      },
+    ),
+    off: vi.fn(
+      (
+        event: string,
+        layerOrHandler: string | ((event?: unknown) => void),
+        maybeHandler?: (event?: unknown) => void,
+      ) => {
+        const handler =
+          typeof layerOrHandler === "function" ? layerOrHandler : maybeHandler;
+        if (!handler) return;
+        listeners.get(event)?.delete(handler);
+      },
+    ),
     getSource: vi.fn((id: string) => sources.get(id)),
     addSource: vi.fn((id: string) => {
       sources.set(id, { setData: vi.fn() });
@@ -173,9 +193,74 @@ describe("MlMapLogic", () => {
     expect(mockMap.map.addLayer).toHaveBeenCalledWith(
       expect.objectContaining({ id: "unitLayer", source: "unitSource" }),
     );
-    expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalledTimes(1);
+    expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalled();
     expect(mockMap.map.setCenter).toHaveBeenCalledWith([10, 20]);
     expect(refreshScenarioFeatureLayers).toHaveBeenCalled();
+  });
+
+  it("renders units that become visible right after mount without needing further interaction", async () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const visibleUnits = ref<any[]>([]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-late-visible-units",
+          currentTime: 0,
+          featureStateCounter: 0,
+          unitStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    const source = mockMap.getSource("unitSource");
+    expect(source?.setData).toHaveBeenCalled();
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+
+    visibleUnits.value = [
+      {
+        id: "unit-late",
+        sidc: "SFGPUCI----K",
+        shortName: "B1",
+        name: "Bravo 1",
+        _state: {
+          location: [12, 34],
+        },
+      },
+    ];
+
+    await nextTick();
+
+    const updatedSource = mockMap.getSource("unitSource");
+    expect(updatedSource?.setData).toBeDefined();
+    expect(updatedSource!.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
   });
 
   it("selects a rendered maplibre feature on click", () => {
@@ -309,6 +394,237 @@ describe("MlMapLogic", () => {
       options: { noZoom: true },
     });
     expect(featureSelectSpy).not.toHaveBeenCalled();
+  });
+
+  it("keeps the crosshair cursor while map placement mode is active", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const pinia = createPinia();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-placement-cursor",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    setActivePinia(pinia);
+    const mapSelectStore = useMapSelectStore(pinia);
+    mapSelectStore.hoverEnabled = false;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("mousemove", { point: { x: 1, y: 2 } });
+
+    expect(mockMap.canvas.style.cursor).toBe("crosshair");
+  });
+
+  it("moves a unit when maplibre move mode is enabled", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const addUnitPosition = vi.fn();
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      shortName: "A1",
+      name: "Alpha 1",
+      _state: {
+        location: [10, 20],
+      },
+    };
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-move-unit",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+        groupUpdate: (fn: () => void) => fn(),
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [unit]),
+        addUnitPosition,
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => (id === unit.id ? unit : undefined)),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("mousedown", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      },
+    });
+    mockMap.emit("mousemove", {
+      point: { x: 2, y: 3 },
+      lngLat: { lng: 12, lat: 23 },
+    });
+    mockMap.emit("mouseup", {
+      lngLat: { lng: 12, lat: 23 },
+    });
+
+    expect(addUnitPosition).toHaveBeenCalledWith("unit-1", [12, 23]);
+    expect(mockMap.canvas.style.cursor).toBe("");
+  });
+
+  it("selects a unit on click while maplibre move mode is enabled", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+    const refreshScenarioFeatureLayers = vi.fn();
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      shortName: "A1",
+      name: "Alpha 1",
+      _state: {
+        location: [10, 20],
+      },
+    };
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-move-select",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [unit]),
+        addUnitPosition: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => (id === unit.id ? unit : undefined)),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("mousedown", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: {
+        shiftKey: false,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      },
+    });
+    mockMap.emit("mouseup", {
+      lngLat: { lng: 10, lat: 20 },
+    });
+
+    expect(unitSelectSpy).toHaveBeenCalledWith({
+      unitId: "unit-1",
+      options: { noZoom: true },
+    });
   });
 
   it("toggles unit selection on shift+click instead of replacing it", () => {
@@ -664,5 +980,78 @@ describe("MlMapLogic", () => {
     await searchActions.onScenarioActionHook.trigger({ action: "exportToImage" });
 
     expect(saveMapLibreMapAsPng).toHaveBeenCalledWith(mockMap.map);
+  });
+
+  it("does not throw when history waypoint layers are temporarily missing during style reload", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-missing-history-layer",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockImplementation(
+      (_point: unknown, options?: any) => {
+        if (
+          options?.layers?.includes("unitHistoryWaypointLayer") &&
+          !mockMap.map.getLayer("unitHistoryWaypointLayer")
+        ) {
+          throw new Error(
+            "The layer 'unitHistoryWaypointLayer' does not exist in the map's style and cannot be queried for features.",
+          );
+        }
+        return [];
+      },
+    );
+
+    mockMap.map.removeLayer("unitHistoryWaypointLayer");
+
+    expect(() => {
+      mockMap.emit("click", {
+        point: { x: 10, y: 12 },
+        lngLat: { lng: 1, lat: 2 },
+        originalEvent: {
+          shiftKey: false,
+          ctrlKey: false,
+          metaKey: false,
+          altKey: false,
+        },
+      });
+    }).not.toThrow();
   });
 });

@@ -43,6 +43,9 @@ import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue"
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
 import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearchScenarioActions.vue";
+import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
+import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import {
   MAPLIBRE_VECTOR_BASEMAP_ID,
   resolveMaplibreBasemap,
@@ -53,6 +56,7 @@ import { useMgrsGrid } from "@/modules/maplibreview/mgrsgrid";
 const emit = defineEmits(["show-settings"]);
 
 const activeScenario = injectStrict(activeScenarioKey);
+const toolbarStore = useMainToolbarStore();
 
 const {
   store: { state },
@@ -250,6 +254,12 @@ const mgrsPrecisionLabel = computed(() => {
 
 onMounted(() => {
   void maplibreLayersStore.initialize();
+  if (
+    toolbarStore.currentToolbar === "measurements" ||
+    toolbarStore.currentToolbar === "draw"
+  ) {
+    toolbarStore.clearToolbar();
+  }
 });
 
 function disposeMaplibreBinding() {
@@ -311,6 +321,32 @@ const headerControlsStyle = computed(() =>
     </template>
     <template #after-keyboard>
       <MaplibreSearchScenarioActions />
+    </template>
+    <template #footer-overlays>
+      <footer
+        v-if="mlMap && ui.showToolbar"
+        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+      >
+        <MapEditorMainToolbar
+          :can-move-units="true"
+          :can-rotate-units="false"
+          :can-measure="false"
+          :can-draw="false"
+          :can-track="true"
+          :can-add-units="true"
+          location-picker-event-source="dom"
+          @open-time-modal="openTimeDialog()"
+          @inc-day="onIncDay()"
+          @dec-day="onDecDay()"
+          @next-event="goToNextScenarioEvent()"
+          @prev-event="goToPrevScenarioEvent()"
+          @show-settings="emit('show-settings')"
+        />
+        <MapEditorUnitTrackToolbar
+          v-if="toolbarStore.currentToolbar === 'track'"
+          class="absolute bottom-14 sm:bottom-16"
+        />
+      </footer>
     </template>
     <template #header-right-after-search>
       <span

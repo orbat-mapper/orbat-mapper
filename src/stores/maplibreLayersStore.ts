@@ -30,7 +30,7 @@ const FALLBACK_LAYERS: MlLayerConfig[] = [
 ];
 
 export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
-  const layers = shallowRef<MlLayerConfig[]>([]);
+  const layers = shallowRef<MlLayerConfig[]>(FALLBACK_LAYERS);
   const isInitialized = ref(false);
 
   async function initialize() {

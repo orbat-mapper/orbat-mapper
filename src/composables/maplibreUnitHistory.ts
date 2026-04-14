@@ -278,9 +278,11 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       !originalEvent.shiftKey &&
       !originalEvent.altKey;
 
-    const hits = mlMap
-      .queryRenderedFeatures(e.point, { layers: [WAYPOINT_LAYER_ID] })
-      .filter((f) => f.layer?.id === WAYPOINT_LAYER_ID);
+    const hits = mlMap.getLayer(WAYPOINT_LAYER_ID)
+      ? mlMap
+          .queryRenderedFeatures(e.point, { layers: [WAYPOINT_LAYER_ID] })
+          .filter((f) => f.layer?.id === WAYPOINT_LAYER_ID)
+      : [];
     if (hits.length > 0) {
       const feature = hits[0];
       const unitId = feature.properties?.unitId as string | undefined;
