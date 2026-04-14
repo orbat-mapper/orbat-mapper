@@ -132,6 +132,12 @@ function setupMapLayers() {
         "icon-optional": false,
         "text-field": ["get", "label"],
       },
+      paint: {
+        "text-color": "#111827",
+        "text-halo-color": "rgba(255, 255, 255, 0.9)",
+        "text-halo-width": 1.75,
+        "text-halo-blur": 0.6,
+      },
     });
 
   setupRangeRingLayers("unitLayer");
