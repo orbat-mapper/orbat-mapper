@@ -9,7 +9,7 @@ import {
   searchActionsKey,
 } from "@/components/injects";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
-import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { MAPLIBRE_VECTOR_BASEMAP_ID } from "@/modules/maplibreview/maplibreBasemaps";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -282,27 +282,23 @@ describe("MaplibreContextMenu", () => {
   }
 
   it("updates the bound maplibre basemap when a basemap is selected", async () => {
-    const baseLayersStore = useBaseLayersStore();
+    const maplibreLayersStore = useMaplibreLayersStore();
     const selectedBasemap = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
 
-    baseLayersStore.layers = [
+    maplibreLayersStore.layers = [
       {
-        title: "OSM",
         name: "osm",
-        layerSourceType: "osm",
-        sourceOptions: { crossOrigin: "anonymous" },
-        layerType: "baselayer",
-        opacity: 1,
+        title: "OSM",
+        sourceType: "raster",
+        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
       },
       {
-        title: "Imagery",
         name: "imagery",
-        layerSourceType: "xyz",
-        sourceOptions: { url: "https://tiles.example.com/{z}/{x}/{y}.png" },
-        layerType: "baselayer",
-        opacity: 1,
+        title: "Imagery",
+        sourceType: "raster",
+        tiles: ["https://tiles.example.com/{z}/{x}/{y}.png"],
       },
-    ] as any;
+    ];
 
     const { wrapper } = mountMenu({
       baseMapId: selectedBasemap.value,
