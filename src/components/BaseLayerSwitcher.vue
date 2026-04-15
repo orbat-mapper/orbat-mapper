@@ -6,14 +6,14 @@ import OpacityInput from "./OpacityInput.vue";
 import { computed } from "vue";
 
 interface Props {
-  settings: LayerInfo<any>[];
+  settings: LayerInfo[];
   defaultLayerName?: string;
 }
 
 const props = defineProps<Props>();
 defineEmits(["update:layerOpacity"]);
 
-const selected = defineModel<LayerInfo<any>>();
+const selected = defineModel<LayerInfo>();
 const nsettings = computed(() => [...props.settings]);
 
 const selectedId = computed({

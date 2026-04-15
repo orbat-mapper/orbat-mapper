@@ -34,17 +34,10 @@ export interface LayerInfo {
   description?: string;
   layerType?: LayerType | "baselayer" | "map-layer";
   supportsOpacity?: boolean;
+  kind?: "openlayers" | "scenario-layer";
+  nativeLayer?: unknown;
+  layerId?: FeatureId;
 }
-
-type PanelLayerInfo =
-  | (LayerInfo & {
-      kind: "openlayers";
-      layer: BaseLayer;
-    })
-  | (LayerInfo & {
-      kind: "scenario-layer";
-      layerId: FeatureId;
-    });
 
 const route = useRoute();
 const geoStore = useGeoStore();
@@ -53,7 +46,7 @@ const baseLayersStore = useBaseLayersStore();
 const maplibreLayersStore = useMaplibreLayersStore();
 const activeScenario = inject<TScenario | null>(activeScenarioKey, null);
 
-const otherLayers = ref<PanelLayerInfo[]>([]);
+const otherLayers = ref<LayerInfo[]>([]);
 const isMaplibreMode = computed(() => route.name === MAPLIBRE_ROUTE);
 
 const selectedBaseLayerId = computed(() => {
@@ -134,8 +127,8 @@ function setScenarioBaseMapId(baseMapId: string) {
   activeScenario.store.state.mapSettings.baseMapId = baseMapId;
 }
 
-function transformLayer(layer: BaseLayer): PanelLayerInfo {
-  const layerInfo: PanelLayerInfo = {
+function transformLayer(layer: BaseLayer): LayerInfo {
+  const layerInfo: LayerInfo = {
     kind: "openlayers",
     id: getUid(layer),
     title: layer.get("title") || layer.get("name"),
@@ -144,7 +137,7 @@ function transformLayer(layer: BaseLayer): PanelLayerInfo {
     visible: layer.getVisible(),
     zIndex: layer.getZIndex() || 0,
     opacity: layer.getOpacity(),
-    layer: markRaw(layer),
+    nativeLayer: markRaw(layer),
     subLayers: [],
   };
 
@@ -171,7 +164,6 @@ function syncLayers() {
         visible: !(layer.isHidden ?? false),
         zIndex: index,
         opacity: layer.opacity ?? 1,
-        layerType: layer.layerType,
       })) ?? [];
     return;
   }
@@ -188,10 +180,10 @@ function syncLayers() {
     .map(transformLayer);
 
   otherLayers.value = mappedLayers.filter(
-    ({ layer, layerType }) =>
-      (layer instanceof VectorLayer ||
-        layer instanceof LayerGroup ||
-        layer instanceof ImageLayer) &&
+    ({ nativeLayer, layerType }) =>
+      (nativeLayer instanceof VectorLayer ||
+        nativeLayer instanceof LayerGroup ||
+        nativeLayer instanceof ImageLayer) &&
       layerType !== "baselayer",
   );
 }
@@ -205,19 +197,21 @@ watchEffect(() => {
   syncLayers();
 });
 
-function toggleLayer(layerInfo: PanelLayerInfo) {
+function toggleLayer(layerInfo: LayerInfo) {
   layerInfo.visible = !layerInfo.visible;
 
-  if (layerInfo.kind === "openlayers") {
-    layerInfo.layer.setOpacity(layerInfo.opacity);
-    layerInfo.layer.setVisible(layerInfo.visible);
+  if (layerInfo.kind === "openlayers" && layerInfo.nativeLayer instanceof BaseLayer) {
+    layerInfo.nativeLayer.setOpacity(layerInfo.opacity);
+    layerInfo.nativeLayer.setVisible(layerInfo.visible);
     return;
   }
 
-  activeScenario?.geo.updateLayer(layerInfo.layerId, { isHidden: !layerInfo.visible });
+  if (layerInfo.layerId) {
+    activeScenario?.geo.updateLayer(layerInfo.layerId, { isHidden: !layerInfo.visible });
+  }
 }
 
-function updateOpacity(layerInfo: LayerInfo | PanelLayerInfo, opacity: number) {
+function updateOpacity(layerInfo: LayerInfo, opacity: number) {
   if (layerInfo.layerType === "baselayer") {
     if (isMaplibreMode.value) {
       maplibreLayersStore.setLayerOpacity(layerInfo.name, opacity);
@@ -227,14 +221,16 @@ function updateOpacity(layerInfo: LayerInfo | PanelLayerInfo, opacity: number) {
     return;
   }
 
-  if (layerInfo.kind === "openlayers") {
+  if (layerInfo.kind === "openlayers" && layerInfo.nativeLayer instanceof BaseLayer) {
     layerInfo.opacity = opacity;
-    layerInfo.layer.setOpacity(opacity);
+    layerInfo.nativeLayer.setOpacity(opacity);
     return;
   }
 
   layerInfo.opacity = opacity;
-  activeScenario?.geo.updateLayer(layerInfo.layerId, { opacity });
+  if (layerInfo.layerId) {
+    activeScenario?.geo.updateLayer(layerInfo.layerId, { opacity });
+  }
 }
 </script>
 
