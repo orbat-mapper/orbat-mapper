@@ -227,7 +227,7 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
     </template>
     <template #footer-overlays>
       <footer
-        v-if="nativeMapRef && ui.showToolbar"
+        v-if="nativeMapRef && ui.showToolbar && !isMobile"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
         <MapEditorMainToolbar
@@ -251,6 +251,33 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
           v-if="toolbarStore.currentToolbar === 'track'"
         />
       </footer>
+    </template>
+    <template #mobile-toolbar>
+      <div
+        v-if="nativeMapRef && ui.showToolbar && isMobile"
+        class="border-border bg-background pointer-events-auto border-t px-2 py-2"
+      >
+        <MapEditorMainToolbar
+          @open-time-modal="openTimeDialog()"
+          @inc-day="onIncDay()"
+          @dec-day="onDecDay()"
+          @next-event="goToNextScenarioEvent()"
+          @prev-event="goToPrevScenarioEvent()"
+          @show-settings="emit('show-settings')"
+        />
+        <MapEditorMeasurementToolbar
+          class="mt-2"
+          v-if="toolbarStore.currentToolbar === 'measurements'"
+        />
+        <MapEditorDrawToolbar
+          class="mt-2"
+          v-if="toolbarStore.currentToolbar === 'draw'"
+        />
+        <MapEditorUnitTrackToolbar
+          class="mt-2"
+          v-if="toolbarStore.currentToolbar === 'track'"
+        />
+      </div>
     </template>
     <template #after-keyboard>
       <SearchScenarioActions v-if="nativeMapRef" />

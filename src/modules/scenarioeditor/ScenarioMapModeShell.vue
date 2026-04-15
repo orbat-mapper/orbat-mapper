@@ -120,6 +120,7 @@ const ui = useUiStore();
     </div>
     <template v-if="isMobile">
       <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs" />
+      <slot name="mobile-toolbar" />
       <MapEditorMobilePanel
         @open-time-modal="emit('openTimeModal')"
         @inc-day="emit('incDay')"

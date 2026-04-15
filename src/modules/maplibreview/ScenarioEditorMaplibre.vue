@@ -324,7 +324,7 @@ const headerControlsStyle = computed(() =>
     </template>
     <template #footer-overlays>
       <footer
-        v-if="mlMap && ui.showToolbar"
+        v-if="mlMap && ui.showToolbar && !isMobile"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
         <MapEditorMainToolbar
@@ -347,6 +347,32 @@ const headerControlsStyle = computed(() =>
           class="absolute bottom-14 sm:bottom-16"
         />
       </footer>
+    </template>
+    <template #mobile-toolbar>
+      <div
+        v-if="mlMap && ui.showToolbar && isMobile"
+        class="border-border bg-background pointer-events-auto border-t px-2 py-2"
+      >
+        <MapEditorMainToolbar
+          :can-move-units="true"
+          :can-rotate-units="false"
+          :can-measure="false"
+          :can-draw="false"
+          :can-track="true"
+          :can-add-units="true"
+          location-picker-event-source="dom"
+          @open-time-modal="openTimeDialog()"
+          @inc-day="onIncDay()"
+          @dec-day="onDecDay()"
+          @next-event="goToNextScenarioEvent()"
+          @prev-event="goToPrevScenarioEvent()"
+          @show-settings="emit('show-settings')"
+        />
+        <MapEditorUnitTrackToolbar
+          v-if="toolbarStore.currentToolbar === 'track'"
+          class="mt-2"
+        />
+      </div>
     </template>
     <template #header-right-after-search>
       <span

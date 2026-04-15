@@ -7,6 +7,10 @@ import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibr
 import { activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
+const { mapModeState } = vi.hoisted(() => ({
+  mapModeState: { isMobile: false },
+}));
+
 const bindScenario = vi.fn();
 const cleanupScenarioBinding = vi.fn();
 const setMapAdapter = vi.fn();
@@ -64,7 +68,7 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
       showLeftPanel: false,
       showToolbar: true,
     },
-    isMobile: computed(() => false),
+    isMobile: computed(() => mapModeState.isMobile),
     showLeftPanel: computed(() => false),
     detailsWidth: computed(() => 320),
     showDetailsPanel: computed(() => false),
@@ -119,9 +123,22 @@ const MaplibreMapStub = defineComponent({
   },
 });
 
+const ScenarioMapModeShellStub = defineComponent({
+  name: "ScenarioMapModeShell",
+  template: `
+    <div>
+      <div data-test="map-slot"><slot name="map" /></div>
+      <div data-test="footer-overlays-slot"><slot name="footer-overlays" /></div>
+      <div data-test="mobile-toolbar-slot"><slot name="mobile-toolbar" /></div>
+      <div data-test="after-keyboard-slot"><slot name="after-keyboard" /></div>
+    </div>
+  `,
+});
+
 describe("ScenarioEditorMaplibre", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    mapModeState.isMobile = false;
     bindScenario.mockReset();
     bindScenario.mockReturnValue(cleanupScenarioBinding);
     cleanupScenarioBinding.mockReset();
@@ -139,10 +156,7 @@ describe("ScenarioEditorMaplibre", () => {
           },
         },
         stubs: {
-          ScenarioMapModeShell: {
-            template:
-              "<div><slot name='map' /><slot name='footer-overlays' /><slot name='after-keyboard' /></div>",
-          },
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
           MaplibreContextMenu: { template: "<div><slot /></div>" },
           MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
@@ -183,10 +197,7 @@ describe("ScenarioEditorMaplibre", () => {
           },
         },
         stubs: {
-          ScenarioMapModeShell: {
-            template:
-              "<div><slot name='map' /><slot name='footer-overlays' /><slot name='after-keyboard' /></div>",
-          },
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
           MaplibreContextMenu: { template: "<div><slot /></div>" },
           MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
@@ -228,5 +239,56 @@ describe("ScenarioEditorMaplibre", () => {
     expect(toolbar.props("canAddUnits")).toBe(true);
     expect(toolbar.props("locationPickerEventSource")).toBe("dom");
     expect(toolbarStore.currentToolbar).toBeNull();
+  });
+
+  it("docks the toolbar outside the map overlay on mobile", async () => {
+    mapModeState.isMobile = true;
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioKey as symbol]: {
+            store: { state: { id: "scenario-1", mapSettings: {} } },
+          },
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MaplibreMap: MaplibreMapStub,
+          MapEditorMainToolbar: defineComponent({
+            name: "MapEditorMainToolbar",
+            template: "<div data-test='map-toolbar' />",
+          }),
+          MapEditorUnitTrackToolbar: true,
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(
+      wrapper
+        .get("[data-test='mobile-toolbar-slot']")
+        .find("[data-test='map-toolbar']")
+        .exists(),
+    ).toBe(true);
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='map-toolbar']")
+        .exists(),
+    ).toBe(false);
   });
 });

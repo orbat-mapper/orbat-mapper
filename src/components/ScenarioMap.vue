@@ -67,7 +67,7 @@ onUnmounted(() => {
 
 <style>
 .map-wrapper {
-  --ol-toolbar-clearance-left: 3rem;
+  --ol-toolbar-clearance-left: 0rem;
 }
 
 @container (min-width: 40rem) {
