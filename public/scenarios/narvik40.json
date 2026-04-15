@@ -1,10 +1,10 @@
 {
   "id": "demo-narvik40",
   "type": "ORBAT-mapper",
-  "version": "2.2.0",
+  "version": "3.2.0",
   "meta": {
     "createdDate": "2024-04-01T17:14:51.567Z",
-    "lastModifiedDate": "2026-02-08T12:36:40.409Z"
+    "lastModifiedDate": "2026-04-15T18:43:36.899Z"
   },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
@@ -658,15 +658,15 @@
       ]
     }
   ],
-  "layers": [
+  "layerStack": [
     {
       "name": "Features",
       "id": "vN7ltfakRq23",
-      "features": []
+      "kind": "overlay",
+      "items": []
     }
   ],
   "events": [],
-  "mapLayers": [],
   "equipment": [],
   "personnel": [],
   "supplyCategories": [],
