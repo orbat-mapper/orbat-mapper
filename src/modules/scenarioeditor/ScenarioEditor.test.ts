@@ -160,7 +160,10 @@ describe("ScenarioEditor", () => {
       routes,
     });
 
-    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: "scenario-1" } });
+    await router.push({
+      name: MAP_EDIT_MODE_ROUTE,
+      params: { scenarioId: "scenario-1" },
+    });
     await router.isReady();
 
     mount(ScenarioEditor, {
@@ -212,7 +215,10 @@ describe("ScenarioEditor", () => {
       routes,
     });
 
-    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: "scenario-1" } });
+    await router.push({
+      name: MAP_EDIT_MODE_ROUTE,
+      params: { scenarioId: "scenario-1" },
+    });
     await router.isReady();
 
     mount(ScenarioEditor, {
@@ -247,7 +253,10 @@ describe("ScenarioEditor", () => {
 
     await router.push({ name: MAPLIBRE_ROUTE, params: { scenarioId: "scenario-1" } });
     await flushPromises();
-    await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: "scenario-1" } });
+    await router.push({
+      name: MAP_EDIT_MODE_ROUTE,
+      params: { scenarioId: "scenario-1" },
+    });
     await flushPromises();
     await router.push({ name: MAPLIBRE_ROUTE, params: { scenarioId: "scenario-1" } });
     await flushPromises();

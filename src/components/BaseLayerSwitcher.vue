@@ -57,7 +57,7 @@ const selectedId = computed({
                 >Default</span
               >
             </Label>
-            <span v-if="setting.title === 'None'" />
+            <span v-if="setting.title === 'None' || setting.supportsOpacity === false" />
             <OpacityInput
               v-else
               :model-value="setting.opacity"

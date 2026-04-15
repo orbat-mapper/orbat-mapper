@@ -93,7 +93,16 @@ provide(activeFeatureSelectInteractionKey, featureSelectStub);
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
 const mapSettingsStore = useMapSettingsStore();
-const maplibreBaseMapId = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
+const maplibreBaseMapId = computed({
+  get: () =>
+    resolveMaplibreBasemap(state.mapSettings.baseMapId, maplibreLayersStore.layers).id,
+  set: (value: string) => {
+    activeScenario.store.update((draft) => {
+      draft.mapSettings.baseMapId = value;
+    });
+    mapSettingsStore.baseLayerName = value;
+  },
+});
 
 const effectiveProjection = computed<MapProjection>(() =>
   state.mapSettings.maxExtent ? "mercator" : mapSettingsStore.mapProjection,
