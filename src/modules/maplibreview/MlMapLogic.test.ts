@@ -65,6 +65,28 @@ function createMockMap() {
   const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
   const layers = new Map<string, unknown>();
   const canvas = { style: { cursor: "" } };
+  let dragPanEnabled = true;
+  let touchZoomRotateEnabled = true;
+
+  const dragPan = {
+    enable: vi.fn(() => {
+      dragPanEnabled = true;
+    }),
+    disable: vi.fn(() => {
+      dragPanEnabled = false;
+    }),
+    isEnabled: vi.fn(() => dragPanEnabled),
+  };
+
+  const touchZoomRotate = {
+    enable: vi.fn(() => {
+      touchZoomRotateEnabled = true;
+    }),
+    disable: vi.fn(() => {
+      touchZoomRotateEnabled = false;
+    }),
+    isEnabled: vi.fn(() => touchZoomRotateEnabled),
+  };
 
   const map = {
     on: vi.fn(
@@ -109,6 +131,8 @@ function createMockMap() {
     addImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
     getCanvas: vi.fn(() => canvas),
+    dragPan,
+    touchZoomRotate,
     setCenter: vi.fn(),
     removeLayer: vi.fn((id: string) => {
       layers.delete(id);
@@ -121,6 +145,8 @@ function createMockMap() {
   return {
     map: map as any,
     canvas,
+    dragPan,
+    touchZoomRotate,
     getSource(id: string) {
       return sources.get(id);
     },
@@ -539,6 +565,98 @@ describe("MlMapLogic", () => {
 
     expect(addUnitPosition).toHaveBeenCalledWith("unit-1", [12, 23]);
     expect(mockMap.canvas.style.cursor).toBe("");
+  });
+
+  it("moves a unit on touch drag and restores map gestures afterwards", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const addUnitPosition = vi.fn();
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      shortName: "A1",
+      name: "Alpha 1",
+      _state: {
+        location: [10, 20],
+      },
+    };
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-move-touch-unit",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+        groupUpdate: (fn: () => void) => fn(),
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [unit]),
+        addUnitPosition,
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => (id === unit.id ? unit : undefined)),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("touchstart", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      },
+    });
+    expect(mockMap.dragPan.disable).toHaveBeenCalledTimes(1);
+    expect(mockMap.touchZoomRotate.disable).toHaveBeenCalledTimes(1);
+
+    mockMap.emit("touchmove", {
+      point: { x: 2, y: 3 },
+      lngLat: { lng: 12, lat: 23 },
+    });
+    mockMap.emit("touchend", {
+      lngLat: { lng: 12, lat: 23 },
+    });
+
+    expect(addUnitPosition).toHaveBeenCalledWith("unit-1", [12, 23]);
+    expect(mockMap.dragPan.enable).toHaveBeenCalledTimes(1);
+    expect(mockMap.touchZoomRotate.enable).toHaveBeenCalledTimes(1);
   });
 
   it("shows a move cursor over movable units while maplibre move mode is enabled", () => {

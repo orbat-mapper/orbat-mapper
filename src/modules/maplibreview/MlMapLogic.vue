@@ -3,6 +3,7 @@ import {
   type GeoJSONSource,
   type MapMouseEvent,
   type MapStyleImageMissingEvent,
+  type MapTouchEvent,
   type Map as MlMap,
   type PointLike,
 } from "maplibre-gl";
@@ -79,6 +80,10 @@ let unitDragState: {
   additive: boolean;
   startPointer: Position;
   startPositions: Map<string, Position>;
+  interactions: {
+    dragPanEnabled: boolean;
+    touchZoomRotateEnabled: boolean;
+  };
   moved: boolean;
 } | null = null;
 
@@ -230,6 +235,31 @@ function getMovableUnitIds(clickedUnitId: string | undefined): string[] {
   });
 }
 
+function suspendMapDragInteractions() {
+  const dragPanEnabled = mlMap.dragPan.isEnabled();
+  const touchZoomRotateEnabled = mlMap.touchZoomRotate.isEnabled();
+
+  if (dragPanEnabled) mlMap.dragPan.disable();
+  if (touchZoomRotateEnabled) mlMap.touchZoomRotate.disable();
+
+  return {
+    dragPanEnabled,
+    touchZoomRotateEnabled,
+  };
+}
+
+function restoreMapDragInteractions(interactions: {
+  dragPanEnabled: boolean;
+  touchZoomRotateEnabled: boolean;
+}) {
+  if (interactions.dragPanEnabled && !mlMap.dragPan.isEnabled()) {
+    mlMap.dragPan.enable();
+  }
+  if (interactions.touchZoomRotateEnabled && !mlMap.touchZoomRotate.isEnabled()) {
+    mlMap.touchZoomRotate.enable();
+  }
+}
+
 function onMapClick(e: MapMouseEvent) {
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
@@ -281,7 +311,12 @@ function onMapMouseMove(e: MapMouseEvent) {
     : "";
 }
 
-function onUnitDragStart(e: MapMouseEvent) {
+function onMapTouchMove(e: MapTouchEvent) {
+  if (!unitDragState) return;
+  previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+}
+
+function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   if (!moveUnitEnabled.value || !recordingStore.isRecordingLocation) return;
 
   const topHit = queryInteractiveFeatures(e.point)[0];
@@ -300,9 +335,10 @@ function onUnitDragStart(e: MapMouseEvent) {
 
   unitDragState = {
     clickedUnitId,
-    additive: e.originalEvent.shiftKey,
+    additive: Boolean(e.originalEvent.shiftKey),
     startPointer: [e.lngLat.lng, e.lngLat.lat],
     startPositions,
+    interactions: suspendMapDragInteractions(),
     moved: false,
   };
   e.preventDefault();
@@ -323,10 +359,11 @@ function previewDraggedUnits(pointer: Position) {
   addUnits(false, positionOverrides);
 }
 
-function onUnitDragEnd(e: MapMouseEvent) {
+function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
   if (!unitDragState) return;
   const dragState = unitDragState;
   unitDragState = null;
+  restoreMapDragInteractions(dragState.interactions);
   mlMap.getCanvas().style.cursor = "";
 
   if (!dragState.moved) {
@@ -358,8 +395,12 @@ function onUnitDragEnd(e: MapMouseEvent) {
 
 mlMap.on("click", onMapClick);
 mlMap.on("mousedown", onUnitDragStart);
+mlMap.on("touchstart", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
+mlMap.on("touchmove", onMapTouchMove);
 mlMap.on("mouseup", onUnitDragEnd);
+mlMap.on("touchend", onUnitDragEnd);
+mlMap.on("touchcancel", onUnitDragEnd);
 
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
@@ -466,8 +507,12 @@ onUnmounted(() => {
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
   mlMap.off("mousedown", onUnitDragStart);
+  mlMap.off("touchstart", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);
+  mlMap.off("touchmove", onMapTouchMove);
   mlMap.off("mouseup", onUnitDragEnd);
+  mlMap.off("touchend", onUnitDragEnd);
+  mlMap.off("touchcancel", onUnitDragEnd);
 });
 
 const { pause, resume } = useRafFn(
