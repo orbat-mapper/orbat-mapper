@@ -217,6 +217,19 @@ function queryInteractiveFeatures(point: PointLike) {
     );
 }
 
+function getMovableUnitIds(clickedUnitId: string | undefined): string[] {
+  if (!clickedUnitId || unitActions.isUnitLocked(clickedUnitId)) return [];
+
+  const candidateIds = selectedUnitIds.value.has(clickedUnitId)
+    ? [...selectedUnitIds.value]
+    : [clickedUnitId];
+
+  return candidateIds.filter((unitId) => {
+    const unit = getUnitById(unitId);
+    return !!unit?._state?.location && !unitActions.isUnitLocked(unitId);
+  });
+}
+
 function onMapClick(e: MapMouseEvent) {
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
@@ -252,6 +265,13 @@ function onMapMouseMove(e: MapMouseEvent) {
     mlMap.getCanvas().style.cursor = "grabbing";
     return;
   }
+  if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
+    const topHit = queryInteractiveFeatures(e.point)[0];
+    const movableUnitIds =
+      topHit?.layer.id === "unitLayer" ? getMovableUnitIds(topHit.properties?.id) : [];
+    mlMap.getCanvas().style.cursor = movableUnitIds.length ? "move" : "";
+    return;
+  }
   if (!hoverEnabled.value) {
     mlMap.getCanvas().style.cursor = "crosshair";
     return;
@@ -268,15 +288,7 @@ function onUnitDragStart(e: MapMouseEvent) {
   if (!topHit || topHit.layer.id !== "unitLayer") return;
 
   const clickedUnitId = topHit.properties?.id;
-  if (!clickedUnitId || unitActions.isUnitLocked(clickedUnitId)) return;
-
-  const candidateIds = selectedUnitIds.value.has(clickedUnitId)
-    ? [...selectedUnitIds.value]
-    : [clickedUnitId];
-  const movableUnitIds = candidateIds.filter((unitId) => {
-    const unit = getUnitById(unitId);
-    return !!unit?._state?.location && !unitActions.isUnitLocked(unitId);
-  });
+  const movableUnitIds = getMovableUnitIds(clickedUnitId);
   if (!movableUnitIds.length) return;
   const startPositions = new Map<string, Position>(
     movableUnitIds.flatMap((unitId) => {

@@ -541,6 +541,88 @@ describe("MlMapLogic", () => {
     expect(mockMap.canvas.style.cursor).toBe("");
   });
 
+  it("shows a move cursor over movable units while maplibre move mode is enabled", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      shortName: "A1",
+      name: "Alpha 1",
+      _state: {
+        location: [10, 20],
+      },
+    };
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-move-hover",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [unit]),
+        addUnitPosition: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => (id === unit.id ? unit : undefined)),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("mousemove", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+
+    expect(mockMap.canvas.style.cursor).toBe("move");
+
+    activeScenario.unitActions.isUnitLocked.mockReturnValue(true);
+
+    mockMap.emit("mousemove", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+
+    expect(mockMap.canvas.style.cursor).toBe("");
+  });
+
   it("selects a unit on click while maplibre move mode is enabled", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
