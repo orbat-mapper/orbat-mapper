@@ -47,9 +47,16 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
     }
   }
 
+  function setLayerOpacity(name: string, opacity: number) {
+    layers.value = layers.value.map((layer) =>
+      layer.name === name ? { ...layer, opacity } : layer,
+    );
+  }
+
   return {
     layers,
     isInitialized,
     initialize,
+    setLayerOpacity,
   };
 });

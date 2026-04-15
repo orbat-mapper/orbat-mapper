@@ -1,64 +1,113 @@
 <script setup lang="ts">
-import { computed, markRaw, ref, shallowRef, watch } from "vue";
-import { useGeoStore } from "@/stores/geoStore";
-import BaseLayer from "ol/layer/Base";
-import TileLayer from "ol/layer/Tile";
-import VectorLayer from "ol/layer/Vector";
-import LayerGroup from "ol/layer/Group";
+import { computed, inject, markRaw, ref, watchEffect } from "vue";
+import { useRoute } from "vue-router";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
-import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
-import type { AnyTileLayer, AnyVectorLayer } from "@/geo/types";
-import TileSource from "ol/source/Tile";
-
-import OpacityInput from "./OpacityInput.vue";
-import { getUid } from "ol/util";
-import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
-import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import BaseLayer from "ol/layer/Base";
+import LayerGroup from "ol/layer/Group";
+import VectorLayer from "ol/layer/Vector";
 import ImageLayer from "ol/layer/Image";
+import { getUid } from "ol/util";
+import BaseLayerSwitcher from "./BaseLayerSwitcher.vue";
+import OpacityInput from "./OpacityInput.vue";
+import { useGeoStore } from "@/stores/geoStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import { activeScenarioKey } from "@/components/injects";
+import { MAPLIBRE_ROUTE } from "@/router/names";
+import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
+import {
+  getSupportedMaplibreBasemaps,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
+import type { FeatureId } from "@/types/scenarioGeoModels";
+import type { TScenario } from "@/scenariostore";
 
-export interface LayerInfo<T extends BaseLayer = BaseLayer> {
+export interface LayerInfo {
   id: string;
   name: string;
   title: string;
   visible: boolean;
   zIndex: number;
   opacity: number;
-  layer: T;
-  subLayers?: LayerInfo<T>[];
+  subLayers?: LayerInfo[];
   description?: string;
-  layerType?: LayerType | "baselayer";
+  layerType?: LayerType | "baselayer" | "map-layer";
+  supportsOpacity?: boolean;
 }
 
+type PanelLayerInfo =
+  | (LayerInfo & {
+      kind: "openlayers";
+      layer: BaseLayer;
+    })
+  | (LayerInfo & {
+      kind: "scenario-layer";
+      layerId: FeatureId;
+    });
+
+const route = useRoute();
 const geoStore = useGeoStore();
 const mapSettings = useMapSettingsStore();
 const baseLayersStore = useBaseLayersStore();
+const maplibreLayersStore = useMaplibreLayersStore();
+const activeScenario = inject<TScenario | null>(activeScenarioKey, null);
 
-const vectorLayers = ref<LayerInfo<AnyVectorLayer>[]>([]);
+const otherLayers = ref<PanelLayerInfo[]>([]);
+const isMaplibreMode = computed(() => route.name === MAPLIBRE_ROUTE);
 
-// Adapt store layers to the format expected by BaseLayerSwitcher
-// BaseLayerSwitcher expects LayerInfo<any>[] but mostly cares about id, title, description
-const baseLayers = computed(() => {
-  return baseLayersStore.layers.map((l) => ({
-    id: l.name,
-    name: l.name,
-    title: l.title,
-    visible: baseLayersStore.activeLayerName === l.name,
+const selectedBaseLayerId = computed(() => {
+  if (isMaplibreMode.value) {
+    return resolveMaplibreBasemap(
+      activeScenario?.store.state.mapSettings.baseMapId,
+      maplibreLayersStore.layers,
+    ).id;
+  }
+  return (
+    activeScenario?.store.state.mapSettings.baseMapId ?? baseLayersStore.activeLayerName
+  );
+});
+
+const baseLayers = computed<LayerInfo[]>(() => {
+  if (isMaplibreMode.value) {
+    const activeId = selectedBaseLayerId.value;
+    return getSupportedMaplibreBasemaps(maplibreLayersStore.layers).map((layer) => {
+      const config = maplibreLayersStore.layers.find((entry) => entry.name === layer.id);
+      return {
+        id: layer.id,
+        name: layer.id,
+        title: layer.title,
+        visible: activeId === layer.id,
+        zIndex: 0,
+        opacity: config?.opacity ?? 1,
+        description: "",
+        layerType: "baselayer" as const,
+        supportsOpacity: config?.sourceType === "raster",
+      };
+    });
+  }
+
+  const activeId = selectedBaseLayerId.value;
+  return baseLayersStore.layers.map((layer) => ({
+    id: layer.name,
+    name: layer.name,
+    title: layer.title,
+    visible: activeId === layer.name,
     zIndex: 0,
-    opacity: l.opacity,
-    layer: null as any, // We don't need the OL layer instance here for the switcher anymore
+    opacity: layer.opacity,
     description: "",
     layerType: "baselayer" as const,
+    supportsOpacity: true,
   }));
 });
 
-// We need a writable computed or something to handle v-model from BaseLayerSwitcher
 const activeBaseLayer = computed({
-  get: () => baseLayers.value.find((l) => l.name === baseLayersStore.activeLayerName),
-  set: (layerInfo) => {
-    if (layerInfo) {
+  get: () => baseLayers.value.find((layer) => layer.id === selectedBaseLayerId.value),
+  set: (layerInfo?: LayerInfo) => {
+    if (!layerInfo) return;
+    setScenarioBaseMapId(layerInfo.name);
+    if (!isMaplibreMode.value) {
       baseLayersStore.selectLayer(layerInfo.name);
-      mapSettings.baseLayerName = layerInfo.name;
     }
   },
 });
@@ -71,68 +120,121 @@ const mapView = computed(() => {
   };
 });
 
-watch(
-  () => geoStore.mapAdapter,
-  (v) => v && updateLayers(),
-  { immediate: true },
-);
+function setScenarioBaseMapId(baseMapId: string) {
+  mapSettings.baseLayerName = baseMapId;
+  if (!activeScenario) return;
 
-function updateLayers() {
-  const nativeMap = geoStore.olMap;
-  if (!nativeMap) return;
+  if (typeof activeScenario.store.update === "function") {
+    activeScenario.store.update((state) => {
+      state.mapSettings.baseMapId = baseMapId;
+    });
+    return;
+  }
 
-  const transformLayer = (layer: BaseLayer): LayerInfo => {
-    const l: LayerInfo = {
-      id: getUid(layer),
-      title: layer.get("title") || layer.get("name"),
-      name: layer.get("name"),
-      layerType: layer.get("layerType"),
-      visible: layer.getVisible(),
-      zIndex: layer.getZIndex() || 0,
-      opacity: layer.getOpacity(),
-      layer: markRaw(layer),
-      subLayers: [],
-    };
-    if (layer instanceof LayerGroup) {
-      l.subLayers = layer
-        .getLayers()
-        .getArray()
-        .filter((l) => l.get("title"))
-        .map(transformLayer);
-    }
-    return l;
+  activeScenario.store.state.mapSettings.baseMapId = baseMapId;
+}
+
+function transformLayer(layer: BaseLayer): PanelLayerInfo {
+  const layerInfo: PanelLayerInfo = {
+    kind: "openlayers",
+    id: getUid(layer),
+    title: layer.get("title") || layer.get("name"),
+    name: layer.get("name"),
+    layerType: layer.get("layerType"),
+    visible: layer.getVisible(),
+    zIndex: layer.getZIndex() || 0,
+    opacity: layer.getOpacity(),
+    layer: markRaw(layer),
+    subLayers: [],
   };
+
+  if (layer instanceof LayerGroup) {
+    layerInfo.subLayers = layer
+      .getLayers()
+      .getArray()
+      .filter((child) => child.get("title"))
+      .map((child) => transformLayer(child));
+  }
+
+  return layerInfo;
+}
+
+function syncLayers() {
+  if (isMaplibreMode.value) {
+    otherLayers.value =
+      activeScenario?.geo.layerItemsLayers.value.map((layer, index) => ({
+        kind: "scenario-layer",
+        id: String(layer.id),
+        layerId: layer.id,
+        title: layer.name,
+        name: layer.name,
+        visible: !(layer.isHidden ?? false),
+        zIndex: index,
+        opacity: layer.opacity ?? 1,
+        layerType: layer.layerType,
+      })) ?? [];
+    return;
+  }
+
+  const nativeMap = geoStore.olMap;
+  if (!nativeMap) {
+    otherLayers.value = [];
+    return;
+  }
 
   const mappedLayers = nativeMap
     .getAllLayers()
-    .filter((l) => l.get("title"))
+    .filter((layer) => layer.get("title"))
     .map(transformLayer);
 
-  // We filter out baserlayers from here, as they are now managed by baseLayersStore
-  // Now we only want vector/other layers here.
-
-  vectorLayers.value = mappedLayers.filter(
+  otherLayers.value = mappedLayers.filter(
     ({ layer, layerType }) =>
       (layer instanceof VectorLayer ||
         layer instanceof LayerGroup ||
         layer instanceof ImageLayer) &&
       layerType !== "baselayer",
-  ) as LayerInfo<AnyVectorLayer>[];
+  );
 }
 
-const toggleLayer = (l: LayerInfo<any>) => {
-  l.visible = !l.visible;
-  l.layer.setOpacity(l.opacity);
-  l.layer.setVisible(l.visible);
-};
-
-function updateOpacity(l: LayerInfo<any>, opacity: number) {
-  if (l.layerType === "baselayer") {
-    baseLayersStore.setLayerOpacity(l.name, opacity);
+watchEffect(() => {
+  if (isMaplibreMode.value) {
+    activeScenario?.geo.layerItemsLayers.value;
   } else {
-    l.opacity = opacity;
-    l.layer.setOpacity(opacity);
+    geoStore.olMap;
   }
+  syncLayers();
+});
+
+function toggleLayer(layerInfo: PanelLayerInfo) {
+  layerInfo.visible = !layerInfo.visible;
+
+  if (layerInfo.kind === "openlayers") {
+    layerInfo.layer.setOpacity(layerInfo.opacity);
+    layerInfo.layer.setVisible(layerInfo.visible);
+    return;
+  }
+
+  activeScenario?.geo.updateLayer(layerInfo.layerId, { isHidden: !layerInfo.visible });
+}
+
+function updateOpacity(layerInfo: LayerInfo | PanelLayerInfo, opacity: number) {
+  if (layerInfo.layerType === "baselayer") {
+    if (isMaplibreMode.value) {
+      maplibreLayersStore.setLayerOpacity(layerInfo.name, opacity);
+    } else {
+      baseLayersStore.setLayerOpacity(layerInfo.name, opacity);
+    }
+    return;
+  }
+
+  if (layerInfo.kind === "openlayers") {
+    layerInfo.opacity = opacity;
+    layerInfo.layer.setOpacity(opacity);
+    return;
+  }
+
+  layerInfo.opacity = opacity;
+  activeScenario?.geo.updateLayer(layerInfo.layerId, { opacity });
 }
 </script>
 
@@ -151,7 +253,7 @@ function updateOpacity(l: LayerInfo<any>, opacity: number) {
 
     <div class="bg-card mt-4 overflow-hidden rounded-md shadow-sm">
       <ul class="divide-y">
-        <li v-for="layer in vectorLayers" :key="layer.id" class="px-6 py-4">
+        <li v-for="layer in otherLayers" :key="layer.id" class="px-6 py-4">
           <div class="flex items-center justify-between">
             <p class="flex-auto truncate text-sm">{{ layer.title }}</p>
             <div class="ml-2 flex shrink-0 items-center">
