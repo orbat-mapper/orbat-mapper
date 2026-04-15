@@ -100,7 +100,7 @@ watch(
   () => [props.basemapId, props.styleSpec] as const,
   () => {
     if (!mlMap) return;
-    mlMap.setStyle(props.styleSpec);
+    mlMap.setStyle(props.styleSpec, { diff: false });
   },
 );
 

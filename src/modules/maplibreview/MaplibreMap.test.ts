@@ -32,8 +32,8 @@ vi.mock("maplibre-gl", () => {
 
     setProjection = setProjection;
 
-    setStyle(style: unknown) {
-      setStyle(style);
+    setStyle(style: unknown, options?: unknown) {
+      setStyle(style, options);
       for (const handler of listeners.get("style.load") ?? []) handler();
     }
 
@@ -107,6 +107,10 @@ describe("MaplibreMap", () => {
     await nextTick();
 
     expect(setStyle).toHaveBeenCalledTimes(1);
+    expect(setStyle).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ diff: false }),
+    );
     expect(setProjection).toHaveBeenCalledWith({ type: "globe" });
     expect(boxZoomDisable).toHaveBeenCalled();
     expect(mapConstructor).toHaveBeenCalledWith(
@@ -165,6 +169,10 @@ describe("MaplibreMap", () => {
     await nextTick();
 
     expect(setStyle).toHaveBeenCalledTimes(1);
+    expect(setStyle).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ diff: false }),
+    );
   });
 
   it("emits MapLibre contextmenu events using the original mouse event", async () => {
