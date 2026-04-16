@@ -10,7 +10,6 @@ import {
 } from "@/components/injects";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
-import { MAPLIBRE_VECTOR_BASEMAP_ID } from "@/modules/maplibreview/maplibreBasemaps";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -281,7 +280,7 @@ describe("MaplibreContextMenu", () => {
 
   it("updates the bound maplibre basemap when a basemap is selected", async () => {
     const maplibreLayersStore = useMaplibreLayersStore();
-    const selectedBasemap = ref(MAPLIBRE_VECTOR_BASEMAP_ID);
+    const selectedBasemap = ref("osm");
 
     maplibreLayersStore.layers = [
       {
@@ -353,13 +352,11 @@ describe("MaplibreContextMenu", () => {
     expect(dispatchSpy).toHaveBeenCalled();
   });
 
-  it("defaults to the vector maplibre basemap", () => {
+  it("defaults to an empty basemap selection until the parent resolves one", () => {
     const { wrapper } = mountMenu();
 
     expect(wrapper.exists()).toBe(true);
-    expect(
-      (wrapper.props("baseMapId") as string | undefined) ?? MAPLIBRE_VECTOR_BASEMAP_ID,
-    ).toBe(MAPLIBRE_VECTOR_BASEMAP_ID);
+    expect((wrapper.props("baseMapId") as string | undefined) ?? "").toBe("");
   });
 
   it("toggles shared UI controls from the maplibre context menu", async () => {

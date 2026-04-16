@@ -115,9 +115,10 @@ describe("LayersPanel", () => {
     baseLayerSwitcher.vm.$emit("update:modelValue", brightLayer);
     await wrapper.vm.$nextTick();
 
-    expect(update).toHaveBeenCalled();
-    expect(state.mapSettings.baseMapId).toBe("bright");
-    expect(mapSettings.baseLayerName).toBe("bright");
+    expect(update).not.toHaveBeenCalled();
+    expect(state.mapSettings.baseMapId).toBe("osmRaster");
+    expect(mapSettings.maplibreBaseLayerName).toBe("bright");
+    expect(mapSettings.baseLayerName).toBe("osm");
 
     const rasterLayer = baseLayerSettings.find((setting) => setting.id === "osmRaster");
     baseLayerSwitcher.vm.$emit("update:layerOpacity", rasterLayer, 0.3);

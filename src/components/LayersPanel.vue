@@ -52,7 +52,7 @@ const isMaplibreMode = computed(() => route.name === MAPLIBRE_ROUTE);
 const selectedBaseLayerId = computed(() => {
   if (isMaplibreMode.value) {
     return resolveMaplibreBasemap(
-      activeScenario?.store.state.mapSettings.baseMapId,
+      mapSettings.maplibreBaseLayerName,
       maplibreLayersStore.layers,
     ).id;
   }
@@ -98,7 +98,10 @@ const activeBaseLayer = computed({
   get: () => baseLayers.value.find((layer) => layer.id === selectedBaseLayerId.value),
   set: (layerInfo?: LayerInfo) => {
     if (!layerInfo) return;
-    setScenarioBaseMapId(layerInfo.name);
+    setScenarioBaseMapId(
+      layerInfo.name,
+      isMaplibreMode.value ? "maplibre" : "openlayers",
+    );
     if (!isMaplibreMode.value) {
       baseLayersStore.selectLayer(layerInfo.name);
     }
@@ -113,9 +116,16 @@ const mapView = computed(() => {
   };
 });
 
-function setScenarioBaseMapId(baseMapId: string) {
-  mapSettings.baseLayerName = baseMapId;
-  if (!activeScenario) return;
+function setScenarioBaseMapId(
+  baseMapId: string,
+  mode: "openlayers" | "maplibre" = "openlayers",
+) {
+  if (mode === "maplibre") {
+    mapSettings.maplibreBaseLayerName = baseMapId;
+  } else {
+    mapSettings.baseLayerName = baseMapId;
+  }
+  if (mode === "maplibre" || !activeScenario) return;
 
   if (typeof activeScenario.store.update === "function") {
     activeScenario.store.update((state) => {

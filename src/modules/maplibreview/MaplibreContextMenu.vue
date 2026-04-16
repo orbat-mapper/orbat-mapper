@@ -28,10 +28,7 @@ import type { Map as MlMap } from "maplibre-gl";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
-import {
-  MAPLIBRE_VECTOR_BASEMAP_ID,
-  getSupportedMaplibreBasemaps,
-} from "@/modules/maplibreview/maplibreBasemaps";
+import { getSupportedMaplibreBasemaps } from "@/modules/maplibreview/maplibreBasemaps";
 import {
   getFeatureIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
@@ -83,7 +80,7 @@ const { sidc, symbolOptions } = useActiveSidc();
 
 const props = defineProps<{ mapRef?: MlMap }>();
 const baseMapId = defineModel<string>("baseMapId", {
-  default: MAPLIBRE_VECTOR_BASEMAP_ID,
+  default: "",
 });
 
 const basemapOptions = computed(() =>

@@ -96,6 +96,6 @@ describe("maplibreBasemaps", () => {
 
   it("falls back to the vector maplibre basemap when the requested id is unavailable", () => {
     const option = resolveMaplibreBasemap("missing-id", layers);
-    expect(option.id).toBe(MAPLIBRE_VECTOR_BASEMAP_ID);
+    expect(option.id).toBe(layers[0]?.name);
   });
 });

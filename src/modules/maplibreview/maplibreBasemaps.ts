@@ -1,11 +1,12 @@
 import type { StyleSpecification } from "maplibre-gl";
+import { DEFAULT_MAPLIBRE_BASEMAP_ID } from "@/config/constants";
 import type {
   MlLayerConfig,
   MlRasterLayerConfig,
   MlStyleLayerConfig,
 } from "@/geo/maplibreLayerConfigTypes";
 
-export const MAPLIBRE_VECTOR_BASEMAP_ID = "openFreeMapPositron";
+export const MAPLIBRE_VECTOR_BASEMAP_ID = DEFAULT_MAPLIBRE_BASEMAP_ID;
 export const MAPLIBRE_LIBERTY_BASEMAP_ID = "openFreeMapLiberty";
 export const MAPLIBRE_BRIGHT_BASEMAP_ID = "openFreeMapBright";
 export const MAPLIBRE_DARK_BASEMAP_ID = "versaTilesEclipse";
@@ -110,9 +111,5 @@ export function resolveMaplibreBasemap(
   layers: MlLayerConfig[],
 ): MaplibreBasemapOption {
   const options = getSupportedMaplibreBasemaps(layers);
-  return (
-    options.find((option) => option.id === basemapId) ??
-    options.find((option) => option.id === MAPLIBRE_VECTOR_BASEMAP_ID) ??
-    options[0]
-  );
+  return options.find((option) => option.id === basemapId) ?? options[0];
 }

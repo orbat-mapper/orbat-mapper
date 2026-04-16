@@ -25,7 +25,7 @@ import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useGeoStore } from "@/stores/geoStore";
-import { useMapSettingsStore, type MapProjection } from "@/stores/mapSettingsStore";
+import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
@@ -46,10 +46,7 @@ import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearch
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import {
-  MAPLIBRE_VECTOR_BASEMAP_ID,
-  resolveMaplibreBasemap,
-} from "@/modules/maplibreview/maplibreBasemaps";
+import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
 import { useMgrsGrid } from "@/modules/maplibreview/mgrsgrid";
 
@@ -95,12 +92,12 @@ const maplibreLayersStore = useMaplibreLayersStore();
 const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = computed({
   get: () =>
-    resolveMaplibreBasemap(state.mapSettings.baseMapId, maplibreLayersStore.layers).id,
+    resolveMaplibreBasemap(
+      mapSettingsStore.maplibreBaseLayerName,
+      maplibreLayersStore.layers,
+    ).id,
   set: (value: string) => {
-    activeScenario.store.update((draft) => {
-      draft.mapSettings.baseMapId = value;
-    });
-    mapSettingsStore.baseLayerName = value;
+    mapSettingsStore.maplibreBaseLayerName = value;
   },
 });
 
