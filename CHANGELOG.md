@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
-- Added experimental globe mode.
+- Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over. 
 - Added a standalone symbol browser page at `/symbol-browser`.
 - Added symbol export with copy and download as PNG and SVG, with configurable size and display options.
 - Added "Copy as GeoJSON" to the feature layer menu, individual feature menu, and feature details panel. Circles are exported as polygons.
