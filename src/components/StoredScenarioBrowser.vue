@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
-import { Search, X, ListChecksIcon } from "lucide-vue-next";
+import { Search, X, ListChecksIcon } from "@lucide/vue";
 
 import DeleteStoredScenariosModal from "@/components/DeleteStoredScenariosModal.vue";
 import ScenarioLinkCard from "@/components/ScenarioLinkCard.vue";

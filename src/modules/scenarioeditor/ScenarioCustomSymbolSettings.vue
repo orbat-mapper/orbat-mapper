@@ -14,7 +14,7 @@ import AddCustomSymbolForm from "@/modules/scenarioeditor/AddCustomSymbolForm.vu
 import { clearUnitStyleCache } from "@/geo/unitStyles.ts";
 import MilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRightIcon } from "lucide-vue-next";
+import { ArrowUpRightIcon } from "@lucide/vue";
 
 const scn = injectStrict(activeScenarioKey);
 const icons = computed(() => {

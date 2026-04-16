@@ -6,7 +6,7 @@ import {
 } from "@/router/names";
 
 // ... existing imports
-import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { ExternalLinkIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import ProseSection from "../components/ProseSection.vue";
 import LandingPageScenarios from "./LandingPageScenarios.vue";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";

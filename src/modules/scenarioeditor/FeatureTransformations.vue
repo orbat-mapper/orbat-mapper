@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusIcon } from "lucide-vue-next";
+import { PlusIcon } from "@lucide/vue";
 import { geometryCollection } from "@turf/helpers";
 import { computed, onUnmounted, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";

@@ -11,7 +11,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/external/adapter";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { useRouter } from "vue-router";
-import { Redo2Icon, Trash2Icon, Undo2Icon } from "lucide-vue-next";
+import { Redo2Icon, Trash2Icon, Undo2Icon } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import SplitButton from "@/components/SplitButton.vue";
 import type { ButtonGroupItem } from "@/components/types";

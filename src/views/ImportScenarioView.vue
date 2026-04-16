@@ -25,7 +25,7 @@ import {
   LoaderCircleIcon,
   MoonStarIcon,
   SunIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { IconGithub as GithubIcon } from "@iconify-prerendered/vue-mdi";
 import { Separator } from "@/components/ui/separator";

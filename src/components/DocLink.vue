@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
-import { ExternalLinkIcon } from "lucide-vue-next";
+import { ExternalLinkIcon } from "@lucide/vue";
 </script>
 
 <template>

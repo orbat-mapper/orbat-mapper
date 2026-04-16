@@ -9,7 +9,7 @@ import { upgradeScenarioIfNecessary } from "@/scenariostore/upgrade";
 
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircleIcon } from "lucide-vue-next";
+import { AlertCircleIcon } from "@lucide/vue";
 
 const props = defineProps<{
   encryptedScenario: EncryptedScenario;

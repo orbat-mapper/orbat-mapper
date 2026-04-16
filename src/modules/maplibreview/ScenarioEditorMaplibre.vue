@@ -17,7 +17,7 @@ import {
   GridIcon,
   HexagonIcon,
   SlidersHorizontalIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { getHexagonAreaAvg, getHexagonEdgeLengthAvg } from "h3-js";
 import { injectStrict } from "@/utils";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";

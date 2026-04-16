@@ -12,7 +12,7 @@ import {
   SlidersHorizontalIcon,
   SunIcon,
   WandSparklesIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import SplitButton from "@/components/SplitButton.vue";
 import type { ButtonGroupItem } from "@/components/types";

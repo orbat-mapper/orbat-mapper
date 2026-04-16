@@ -11,7 +11,7 @@ import { computed, type HTMLAttributes, nextTick, useTemplateRef, watch } from "
 import { reactiveOmit, useElementVisibility, useScroll } from "@vueuse/core";
 import { cn } from "@/lib/utils.ts";
 import type { MyTabItem } from "@/components/types.ts";
-import { ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { ChevronLeft, ChevronRight } from "@lucide/vue";
 
 const props = defineProps<
   TabsRootProps & { class?: HTMLAttributes["class"] } & { items: MyTabItem[] }

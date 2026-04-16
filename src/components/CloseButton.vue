@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XIcon } from "lucide-vue-next";
+import { XIcon } from "@lucide/vue";
 import { Button } from "@/components/ui/button/index";
 </script>
 

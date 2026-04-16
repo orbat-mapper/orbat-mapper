@@ -3,7 +3,7 @@ import type { ListboxFilterProps } from "reka-ui";
 import { ListboxFilter, useForwardProps } from "reka-ui";
 import type { HTMLAttributes } from "vue";
 import { reactiveOmit } from "@vueuse/core";
-import { Search } from "lucide-vue-next";
+import { Search } from "@lucide/vue";
 import { cn } from "@/lib/utils";
 
 defineOptions({

@@ -3,7 +3,7 @@ import CloseButton from "@/components/CloseButton.vue";
 import { type DetailsPanelMode, useUiStore, useWidthStore } from "@/stores/uiStore";
 import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import { Button } from "@/components/ui/button";
-import { PanelRightIcon, PinIcon, PinOffIcon } from "lucide-vue-next";
+import { PanelRightIcon, PinIcon, PinOffIcon } from "@lucide/vue";
 import OverlayPanelIcon from "@/components/OverlayPanelIcon.vue";
 
 defineProps<{ mode: DetailsPanelMode }>();

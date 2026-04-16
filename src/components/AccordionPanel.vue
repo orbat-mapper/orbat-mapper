@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { Minus, Plus } from "lucide-vue-next";
+import { Minus, Plus } from "@lucide/vue";
 import {
   Collapsible,
   CollapsibleContent,

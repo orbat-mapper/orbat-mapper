@@ -8,7 +8,7 @@ import {
   ComboboxLabel,
   ComboboxRoot,
 } from "reka-ui";
-import { ArrowLeftIcon, ChevronRightIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { ArrowLeftIcon, ChevronRightIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import {
   breakpointsTailwind,

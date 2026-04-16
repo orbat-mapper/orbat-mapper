@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowDown, ArrowUp, ChevronDown } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ChevronDown } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ options: MenuItemData[]; sortDirection?: "asc" | "desc" }>();

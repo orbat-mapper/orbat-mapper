@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ImportData } from "@/types/importExport.ts";
 import { Item, ItemContent, ItemGroup, ItemMedia } from "@/components/ui/item";
-import { PaperclipIcon } from "lucide-vue-next";
+import { PaperclipIcon } from "@lucide/vue";
 import { Badge } from "@/components/ui/badge";
 import prettyBytes from "pretty-bytes";
 

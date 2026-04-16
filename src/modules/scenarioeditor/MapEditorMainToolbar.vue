@@ -16,7 +16,7 @@ import {
   IconSkipPrevious,
   IconUndoVariant as UndoIcon,
 } from "@iconify-prerendered/vue-mdi";
-import { RotateCwIcon } from "lucide-vue-next";
+import { RotateCwIcon } from "@lucide/vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";

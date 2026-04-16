@@ -9,7 +9,7 @@ import {
 
 import { type ScenarioFeatureActions } from "@/types/constants";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical } from "lucide-vue-next";
+import { EllipsisVertical } from "@lucide/vue";
 
 const emit = defineEmits<{
   action: [value: ScenarioFeatureActions];

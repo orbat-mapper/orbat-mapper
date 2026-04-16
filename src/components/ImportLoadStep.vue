@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from "vue";
-import { AlertCircleIcon } from "lucide-vue-next";
+import { AlertCircleIcon } from "@lucide/vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
 import type {
