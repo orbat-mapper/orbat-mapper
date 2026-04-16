@@ -6,7 +6,7 @@ import {
   IconMapMarkerOffOutline,
   IconMapMarkerPath,
 } from "@iconify-prerendered/vue-mdi";
-import { GitBranchIcon, RotateCwIcon } from "lucide-vue-next";
+import { GitBranchIcon, RotateCwIcon } from "@lucide/vue";
 import type { StateAdd, TimedHierarchyMove } from "@/types/scenarioModels";
 import { formatDateString, formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";

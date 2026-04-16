@@ -33,7 +33,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   },
 }));
 
-vi.mock("lucide-vue-next", () => ({
+vi.mock("@lucide/vue", () => ({
   ChevronDown: {
     name: "ChevronDown",
     template: "<span />",

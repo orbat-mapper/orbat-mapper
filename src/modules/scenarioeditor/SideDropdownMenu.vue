@@ -11,7 +11,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-vue-next";
+import { EllipsisVertical } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 
 import { type SideAction, SideActions } from "@/types/constants";

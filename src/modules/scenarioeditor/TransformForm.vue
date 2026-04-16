@@ -4,7 +4,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronsUpDown, Trash2Icon } from "lucide-vue-next";
+import { ChevronsUpDown, Trash2Icon } from "@lucide/vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
 import NewSelect from "@/components/NewSelect.vue";

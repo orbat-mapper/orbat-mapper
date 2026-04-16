@@ -18,7 +18,7 @@ import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
-import { GripHorizontal } from "lucide-vue-next";
+import { GripHorizontal } from "@lucide/vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(

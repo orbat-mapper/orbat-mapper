@@ -13,7 +13,7 @@ export interface CoordinateInputProps {
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { MapPin } from "lucide-vue-next";
+import { MapPin } from "@lucide/vue";
 
 import * as mgrsLib from "mgrs";
 import type { Position } from "geojson";

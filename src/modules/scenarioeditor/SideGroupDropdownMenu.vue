@@ -12,7 +12,7 @@ import {
 import { type SideAction, SideActions } from "@/types/constants";
 import { computed } from "vue";
 import { type MenuItemData } from "@/components/types";
-import { EllipsisVertical } from "lucide-vue-next";
+import { EllipsisVertical } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 
 const props = defineProps<{

@@ -7,7 +7,7 @@ import type { NGeometryLayerItem, NScenarioEvent, NUnit } from "@/types/internal
 import { createShortUnitName } from "@/utils/shortUnitName";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { storeToRefs } from "pinia";
-import { WandSparklesIcon, ChevronDownIcon } from "lucide-vue-next";
+import { WandSparklesIcon, ChevronDownIcon } from "@lucide/vue";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

@@ -2,7 +2,7 @@
 import type { StyleValue } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
-import { PanelLeftOpenIcon as ShowPanelIcon } from "lucide-vue-next";
+import { PanelLeftOpenIcon as ShowPanelIcon } from "@lucide/vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";

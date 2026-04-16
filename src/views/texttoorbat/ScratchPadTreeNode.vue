@@ -12,7 +12,7 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { Input } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { CircleXIcon } from "lucide-vue-next";
+import { CircleXIcon } from "@lucide/vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import {

@@ -26,7 +26,7 @@ import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useShareHistory } from "@/composables/scenarioShare";
-import { LockIcon, MoonStarIcon, SunIcon } from "lucide-vue-next";
+import { LockIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";

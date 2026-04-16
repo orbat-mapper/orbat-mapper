@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { type EncryptedScenario } from "@/types/scenarioModels";
-import { ClipboardPasteIcon } from "lucide-vue-next";
+import { ClipboardPasteIcon } from "@lucide/vue";
 import type { LoadableScenario } from "@/scenariostore/upgrade";
 
 const emit = defineEmits(["loaded"]);

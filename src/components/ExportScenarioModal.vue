@@ -20,7 +20,7 @@ import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
 import { Button } from "@/components/ui/button";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
-import { ClipboardCopyIcon, CheckIcon } from "lucide-vue-next";
+import { ClipboardCopyIcon, CheckIcon } from "@lucide/vue";
 import { useClipboard } from "@vueuse/core";
 import { ref } from "vue";
 

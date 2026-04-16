@@ -5,7 +5,7 @@ import {
   ClipboardCopyIcon,
   DownloadIcon,
   SettingsIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { storeToRefs } from "pinia";
 import { Button } from "@/components/ui/button";
 import {

@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-vue-next";
+import { EllipsisVertical } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { type MenuItemData } from "@/components/types";
 

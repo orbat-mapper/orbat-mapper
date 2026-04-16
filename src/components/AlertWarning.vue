@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TriangleAlertIcon } from "lucide-vue-next";
+import { TriangleAlertIcon } from "@lucide/vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const props = defineProps({

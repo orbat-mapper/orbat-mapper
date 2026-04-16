@@ -8,7 +8,7 @@ import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ClipboardCopyIcon, LoaderCircleIcon, TriangleAlertIcon } from "lucide-vue-next";
+import { ClipboardCopyIcon, LoaderCircleIcon, TriangleAlertIcon } from "@lucide/vue";
 import { encryptScenario } from "@/utils/crypto";
 
 const open = defineModel<boolean>({ default: false });

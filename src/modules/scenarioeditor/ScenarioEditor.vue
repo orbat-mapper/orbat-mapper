@@ -65,7 +65,7 @@ import {
   MapIcon,
   MoonStarIcon,
   SunIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {

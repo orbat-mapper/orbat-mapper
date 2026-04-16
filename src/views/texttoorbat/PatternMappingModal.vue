@@ -46,7 +46,7 @@ import {
   Undo2Icon,
   UploadIcon,
   XIcon,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import {
   DropdownMenu,
   DropdownMenuContent,

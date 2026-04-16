@@ -7,7 +7,7 @@ import { inject, onMounted, ref } from "vue";
 import { activeScenarioKey } from "@/components/injects";
 import InputGroup from "@/components/InputGroup.vue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ClipboardCopyIcon, TriangleAlertIcon } from "lucide-vue-next";
+import { ClipboardCopyIcon, TriangleAlertIcon } from "@lucide/vue";
 import DocLink from "@/components/DocLink.vue";
 
 const open = defineModel<boolean>({ default: false });

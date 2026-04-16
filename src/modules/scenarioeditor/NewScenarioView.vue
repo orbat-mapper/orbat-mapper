@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { ExternalLinkIcon } from "lucide-vue-next";
+import { ExternalLinkIcon } from "@lucide/vue";
 import FormCard from "@/components/FormCard.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import SimpleMarkdownInput from "@/components/SimpleMarkdownInput.vue";

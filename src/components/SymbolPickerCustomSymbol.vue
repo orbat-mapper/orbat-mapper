@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import { ArrowUpRightIcon, ShapesIcon } from "lucide-vue-next";
+import { ArrowUpRightIcon, ShapesIcon } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { useDebounce } from "@vueuse/core";
 import { injectStrict } from "@/utils";

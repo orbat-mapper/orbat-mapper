@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconClockEditOutline as IconClockEdit } from "@iconify-prerendered/vue-mdi";
-import { MapPinned, Workflow } from "lucide-vue-next";
+import { MapPinned, Workflow } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { useRecordingStore } from "@/stores/recordingStore";
 

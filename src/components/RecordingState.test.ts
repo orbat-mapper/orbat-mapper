@@ -53,7 +53,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   }),
 }));
 
-vi.mock("lucide-vue-next", () => {
+vi.mock("@lucide/vue", () => {
   const icon = (name: string) =>
     defineComponent({
       name,
