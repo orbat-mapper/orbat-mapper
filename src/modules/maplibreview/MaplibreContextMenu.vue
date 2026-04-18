@@ -36,6 +36,7 @@ import {
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useMeasurementsStore } from "@/stores/geoStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/notifications";
@@ -68,11 +69,14 @@ const { onScenarioActionHook } = injectStrict(searchActionsKey);
 const playback = usePlaybackStore();
 const tm = useTimeFormatStore();
 const uiSettings = useUiStore();
+const mapSettings = useMapSettingsStore();
 const mainToolbarStore = useMainToolbarStore();
 const recordingStore = useRecordingStore();
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
-const { coordinateFormat } = storeToRefs(useMapSettingsStore());
+const { coordinateFormat, showLocation, showScaleLine, showFeatureTooltip } =
+  storeToRefs(mapSettings);
+const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const { activeUnitId, activeFeatureId, selectedUnitIds, selectedFeatureIds } =
   useSelectedItems();
 const { activeParent } = useActiveUnitStore();
@@ -423,6 +427,68 @@ function onContextMenu(event: MouseEvent) {
               {{ option.title }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSub>
+        <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger inset>Coordinate format</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuRadioGroup v-model="coordinateFormat">
+                <ContextMenuRadioItem value="dms" @select.prevent>
+                  Degrees, minutes, seconds
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="dd" @select.prevent>
+                  Decimal degrees
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="MGRS" @select.prevent>
+                  MGRS
+                </ContextMenuRadioItem>
+              </ContextMenuRadioGroup>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger inset>
+              <span class="pr-4">Measurement units</span>
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuRadioGroup v-model="measurementUnit">
+                <ContextMenuRadioItem value="metric" @select.prevent>
+                  Metric
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="imperial" @select.prevent>
+                  Imperial
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="nautical" @select.prevent>
+                  Nautical
+                </ContextMenuRadioItem>
+              </ContextMenuRadioGroup>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuCheckboxItem v-model="showLocation" @select.prevent>
+            Pointer location
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="showScaleLine" @select.prevent>
+            Scale line
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="showFeatureTooltip" @select.prevent>
+            Feature tooltip
+          </ContextMenuCheckboxItem>
+          <ContextMenuSeparator />
+          <ContextMenuCheckboxItem
+            v-model="mapSettings.mapUnitLabelBelow"
+            @select.prevent
+          >
+            Unit labels below icons
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem
+            v-if="mapSettings.mapUnitLabelBelow"
+            v-model="mapSettings.mapWrapUnitLabels"
+            @select.prevent
+          >
+            Wrap long unit labels
+          </ContextMenuCheckboxItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>
