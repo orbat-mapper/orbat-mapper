@@ -2,15 +2,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
+import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useMeasurementsStore } from "@/stores/geoStore";
+import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
 
 const setStyle = vi.fn();
 const setProjection = vi.fn();
 const addControl = vi.fn();
+const removeControl = vi.fn();
 const remove = vi.fn();
 const boxZoomDisable = vi.fn();
-const listeners = new Map<string, Array<(event?: any) => void>>();
+const listeners = new Map<string, Array<(event?: unknown) => void>>();
 const mapConstructor = vi.fn();
+const scaleControlSetUnit = vi.fn();
+const off = vi.fn();
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -19,9 +26,11 @@ vi.mock("maplibre-gl", () => {
     }
 
     addControl = addControl;
+    removeControl = removeControl;
     boxZoom = { disable: boxZoomDisable };
+    off = off;
 
-    on(event: string, handler: (event?: any) => void) {
+    on(event: string, handler: (event?: unknown) => void) {
       const handlers = listeners.get(event) ?? [];
       handlers.push(handler);
       listeners.set(event, handlers);
@@ -42,45 +51,72 @@ vi.mock("maplibre-gl", () => {
 
   class MockGlobeControl {}
   class MockNavigationControl {}
+  class MockScaleControl {
+    constructor(options: unknown) {
+      void options;
+    }
+    setUnit = scaleControlSetUnit;
+  }
 
   return {
     Map: MockMap,
     GlobeControl: MockGlobeControl,
     NavigationControl: MockNavigationControl,
+    ScaleControl: MockScaleControl,
   };
 });
 
-const defaultProps = {
+const defaultProps: {
+  basemapId: string;
+  styleSpec: MaplibreBasemapStyle;
+  projection: MapProjection;
+} = {
   basemapId: "osm",
   styleSpec: { version: 8 as const, sources: {}, layers: [] },
   projection: "globe" as const,
 };
 
+function mountMap(props = defaultProps) {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  return {
+    pinia,
+    wrapper: mount(MaplibreMap, {
+      props,
+      global: { plugins: [pinia] },
+    }),
+  };
+}
+
 describe("MaplibreMap", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     setStyle.mockClear();
     setProjection.mockClear();
     addControl.mockClear();
+    removeControl.mockClear();
     remove.mockClear();
     boxZoomDisable.mockClear();
     mapConstructor.mockClear();
+    scaleControlSetUnit.mockClear();
+    off.mockClear();
     listeners.clear();
   });
 
   it("applies the projection prop on style.load", async () => {
-    mount(MaplibreMap, { props: defaultProps });
+    mountMap();
 
     expect(setProjection).toHaveBeenCalledWith({ type: "globe" });
   });
 
   it("applies mercator when projection prop is mercator", async () => {
-    mount(MaplibreMap, { props: { ...defaultProps, projection: "mercator" } });
+    mountMap({ ...defaultProps, projection: "mercator" });
 
     expect(setProjection).toHaveBeenCalledWith({ type: "mercator" });
   });
 
   it("updates the map style when the basemap changes and reapplies projection", async () => {
-    const wrapper = mount(MaplibreMap, { props: defaultProps });
+    const { wrapper } = mountMap();
 
     setProjection.mockClear();
 
@@ -121,7 +157,7 @@ describe("MaplibreMap", () => {
   });
 
   it("applies projection when the projection prop changes", async () => {
-    const wrapper = mount(MaplibreMap, { props: defaultProps });
+    const { wrapper } = mountMap();
 
     setProjection.mockClear();
 
@@ -132,7 +168,7 @@ describe("MaplibreMap", () => {
   });
 
   it("emits update:projection on projectiontransition events", async () => {
-    const wrapper = mount(MaplibreMap, { props: defaultProps });
+    const { wrapper } = mountMap();
 
     for (const handler of listeners.get("projectiontransition") ?? []) {
       handler({ newProjection: "mercator" });
@@ -143,9 +179,7 @@ describe("MaplibreMap", () => {
   });
 
   it("updates the map style when the style changes without a basemap id change", async () => {
-    const wrapper = mount(MaplibreMap, {
-      props: defaultProps,
-    });
+    const { wrapper } = mountMap();
 
     await wrapper.setProps({
       styleSpec: {
@@ -176,9 +210,7 @@ describe("MaplibreMap", () => {
   });
 
   it("emits MapLibre contextmenu events using the original mouse event", async () => {
-    const wrapper = mount(MaplibreMap, {
-      props: defaultProps,
-    });
+    const { wrapper } = mountMap();
 
     const dispatchSpy = vi.spyOn(wrapper.element, "dispatchEvent");
     const mouseEvent = new MouseEvent("contextmenu", {
@@ -196,5 +228,57 @@ describe("MaplibreMap", () => {
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(mouseEvent.defaultPrevented).toBe(true);
+  });
+
+  it("adds a scale control and updates its unit from shared map settings", async () => {
+    mountMap();
+
+    expect(addControl).toHaveBeenCalledWith(expect.anything(), "bottom-left");
+
+    const measurementsStore = useMeasurementsStore();
+    measurementsStore.measurementUnit = "imperial";
+    await nextTick();
+
+    expect(scaleControlSetUnit).toHaveBeenCalledWith("imperial");
+
+    const mapSettingsStore = useMapSettingsStore();
+    mapSettingsStore.showScaleLine = false;
+    await nextTick();
+
+    expect(removeControl).toHaveBeenCalledWith(expect.anything());
+  });
+
+  it("shows the formatted pointer location when enabled", async () => {
+    const { wrapper } = mountMap();
+    const mapSettingsStore = useMapSettingsStore();
+    mapSettingsStore.showLocation = true;
+    await nextTick();
+
+    for (const handler of listeners.get("mousemove") ?? []) {
+      handler({ lngLat: { lng: 10.1234, lat: 59.9876 } });
+    }
+    await nextTick();
+
+    expect(wrapper.text()).toContain("59.988° N 10.123° E");
+  });
+
+  it("restores the last pointer location immediately when location display is re-enabled", async () => {
+    const { wrapper } = mountMap();
+    const mapSettingsStore = useMapSettingsStore();
+    mapSettingsStore.showLocation = true;
+    await nextTick();
+
+    for (const handler of listeners.get("mousemove") ?? []) {
+      handler({ lngLat: { lng: 10.1234, lat: 59.9876 } });
+    }
+    await nextTick();
+
+    mapSettingsStore.showLocation = false;
+    await nextTick();
+    expect(wrapper.text()).not.toContain("59.988° N 10.123° E");
+
+    mapSettingsStore.showLocation = true;
+    await nextTick();
+    expect(wrapper.text()).toContain("59.988° N 10.123° E");
   });
 });

@@ -5,13 +5,7 @@ import {
   useRecordingStore,
   type RecordingMix,
 } from "@/stores/recordingStore";
-import {
-  ChevronDown,
-  MapPinned,
-  Settings2,
-  SplinePointer,
-  Workflow,
-} from "@lucide/vue";
+import { ChevronDown, MapPinned, Settings2, SplinePointer, Workflow } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

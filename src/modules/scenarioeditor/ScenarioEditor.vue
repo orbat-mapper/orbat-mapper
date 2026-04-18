@@ -59,13 +59,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import {
-  FlaskConicalIcon,
-  GlobeIcon,
-  MapIcon,
-  MoonStarIcon,
-  SunIcon,
-} from "@lucide/vue";
+import { FlaskConicalIcon, GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {

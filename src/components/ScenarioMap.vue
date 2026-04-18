@@ -44,7 +44,7 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="@container h-full">
-    <div class="map-wrapper bg-background relative h-full">
+    <div class="map-ui-root bg-background relative h-full">
       <MapContextMenu :map-ref="mapRef" v-slot="{ onContextMenu }">
         <MapContainer
           @ready="onMapReady"
@@ -64,25 +64,3 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
-
-<style>
-.map-wrapper {
-  --ol-toolbar-clearance-left: 0rem;
-}
-
-@container (min-width: 40rem) {
-  .map-wrapper {
-    --ol-toolbar-clearance-left: 0rem;
-  }
-}
-
-@container (min-width: 40rem) and (max-width: 60rem) {
-  .map-wrapper {
-    --ol-toolbar-clearance-left: 4.5rem;
-  }
-}
-
-.ol-scale-line {
-  bottom: calc(2.2rem + var(--ol-toolbar-clearance-left));
-}
-</style>

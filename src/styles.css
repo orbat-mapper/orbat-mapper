@@ -148,7 +148,36 @@
 
 .location-control {
   @apply text-foreground bg-background/50 absolute left-2 rounded px-1 text-base tracking-tighter tabular-nums;
-  bottom: calc(0.5rem + var(--ol-toolbar-clearance-left, 0rem));
+  bottom: calc(0.5rem + var(--map-toolbar-clearance-left, 0rem));
+}
+
+.map-ui-root {
+  --map-toolbar-clearance-left: 0rem;
+}
+
+@container (min-width: 40rem) {
+  .map-ui-root {
+    --map-toolbar-clearance-left: 0rem;
+  }
+}
+
+@container (min-width: 40rem) and (max-width: 60rem) {
+  .map-ui-root {
+    --map-toolbar-clearance-left: 4.5rem;
+  }
+}
+
+.map-ui-root .ol-scale-line {
+  bottom: calc(2.2rem + var(--map-toolbar-clearance-left));
+}
+
+.map-ui-root .maplibregl-ctrl-bottom-left {
+  left: 0.5rem;
+  bottom: calc(2.2rem + var(--map-toolbar-clearance-left));
+}
+
+.map-ui-root .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+  margin: 0;
 }
 
 .badge {
