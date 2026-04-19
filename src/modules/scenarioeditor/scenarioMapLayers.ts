@@ -170,10 +170,9 @@ export function useScenarioMapLayers(olMap: OLMap) {
       { noEmit: true, undoable: false },
     );
     mapLayersGroup.getLayers().push(newLayer);
-    const releaseImportedImages = () => releaseImageCache();
-    newLayer.getSource()?.once("featuresloaderror", releaseImportedImages);
-    newLayer.getSource()?.once("featuresloadend", () => {
-      releaseImportedImages();
+    source.once("featuresloaderror", releaseImageCache);
+    source.once("featuresloadend", () => {
+      releaseImageCache();
       console.log("Loaded KML layer");
       const layerExtent = fixExtent(source.getExtent());
       console.log("layerExtent", layerExtent);
