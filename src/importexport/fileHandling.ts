@@ -33,7 +33,10 @@ export function retainImageCache() {
 }
 
 export function releaseImageCache() {
-  imageCacheReferences = Math.max(0, imageCacheReferences - 1);
+  if (imageCacheReferences === 0) {
+    return;
+  }
+  imageCacheReferences -= 1;
   if (imageCacheReferences === 0) {
     clearCache();
   }

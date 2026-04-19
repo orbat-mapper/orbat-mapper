@@ -7,7 +7,7 @@ import XYZ from "ol/source/XYZ";
 import GeoImageLayer from "ol-ext/layer/GeoImage";
 import GeoImage from "ol-ext/source/GeoImage";
 import { KMLZ } from "@/geo/kmlz";
-import { imageCache, releaseImageCache, retainImageCache } from "@/importexport/fileHandling";
+import { imageCache } from "@/importexport/fileHandling";
 import {
   createScenarioLayerItemFeatures,
   getOrCreateLayerGroup,
@@ -389,7 +389,6 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
 
     if (data.url.startsWith("blob:")) {
       data._isTemporary = true;
-      retainImageCache();
     }
 
     const format = new KMLZ({
@@ -420,8 +419,6 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
         name: data.name,
       },
     });
-    source.once("featuresloaderror", releaseImageCache);
-    source.once("featuresloadend", releaseImageCache);
 
     const statusUpdate: ScenarioMapLayerUpdate = { _status: "initialized" };
     scenario.geo.updateMapLayer(data.id, statusUpdate, {

@@ -38,6 +38,7 @@ import {
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
 import { klona } from "klona";
+import { releaseImageCache, retainImageCache } from "@/importexport/fileHandling";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
@@ -292,6 +293,9 @@ export function useGeo(store: NewScenarioStore) {
       _isTemporary: data.url.startsWith("blob:"),
     });
     if (!newLayer.id) newLayer.id = nanoid();
+    if (newLayer.type === "KMLLayer" && newLayer.url.startsWith("blob:")) {
+      retainImageCache();
+    }
     update(
       (s) => {
         s.layerStack.push(newLayer.id);
@@ -539,6 +543,9 @@ export function useGeo(store: NewScenarioStore) {
       (s) => {
         const layer = getReferenceLayerFromMap(s.layerStackMap, layerId);
         if (!layer) return;
+        if (layer.source.type === "KMLLayer" && layer.source.url.startsWith("blob:")) {
+          releaseImageCache();
+        }
         delete s.layerStackMap[layerId];
         removeElement(layerId, s.layerStack);
       },

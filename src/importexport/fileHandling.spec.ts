@@ -78,6 +78,19 @@ describe("KMZ image cache cleanup", () => {
     vi.restoreAllMocks();
   });
 
+  it("ignores releases that do not have a matching retain", () => {
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+
+    imageCache.set("icon.png", "blob:icon");
+
+    releaseImageCache();
+
+    expect(imageCache.size).toBe(1);
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+  });
+
   it("clears cached image URLs after the last active layer finishes using them", () => {
     const revokeObjectURL = vi
       .spyOn(URL, "revokeObjectURL")

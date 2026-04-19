@@ -6,7 +6,11 @@ import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externa
 import type { FeatureCollection } from "geojson";
 import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
-import { clearCache, type ImportedFileInfo } from "@/importexport/fileHandling";
+import {
+  releaseImageCache,
+  retainImageCache,
+  type ImportedFileInfo,
+} from "@/importexport/fileHandling";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import type { ImportData } from "@/types/importExport.ts";
 
@@ -61,6 +65,19 @@ const emit = defineEmits(["cancel"]);
 
 const open = defineModel<boolean>({ default: false });
 const showDecryptModal = ref(false);
+const retainsKmlImageCache = ref(false);
+
+function retainKmlImageCache() {
+  if (retainsKmlImageCache.value) return;
+  retainImageCache();
+  retainsKmlImageCache.value = true;
+}
+
+function releaseOwnedKmlImageCache() {
+  if (!retainsKmlImageCache.value) return;
+  releaseImageCache();
+  retainsKmlImageCache.value = false;
+}
 
 function onLoaded(nextState: ImportState, data: any, info: ImportedFileInfo | undefined) {
   loadedData.value = data;
@@ -79,11 +96,17 @@ function onDecrypted(scenario: any) {
 }
 
 function onLod(importData: ImportData) {
+  if (importData.format === "kml") {
+    retainKmlImageCache();
+  }
   loadedImportData.value = importData;
   importState.value = importData.format;
 }
 
 function onImport() {
+  if (importState.value === "kml") {
+    releaseOwnedKmlImageCache();
+  }
   open.value = false;
 }
 
@@ -100,7 +123,7 @@ function onCancel() {
     }
   });
   loadedImportData.value = undefined;
-  clearCache();
+  releaseOwnedKmlImageCache();
 
   emit("cancel");
 }

@@ -39,7 +39,7 @@ import {
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { KMLZ } from "@/geo/kmlz";
-import { imageCache, releaseImageCache, retainImageCache } from "@/importexport/fileHandling";
+import { imageCache } from "@/importexport/fileHandling";
 
 const layersMap = new WeakMap<OLMap, LayerGroup>();
 
@@ -132,7 +132,6 @@ export function useScenarioMapLayers(olMap: OLMap) {
 
     if (data.url.startsWith("blob:")) {
       data._isTemporary = true;
-      retainImageCache();
     }
 
     const format = new KMLZ({
@@ -170,15 +169,12 @@ export function useScenarioMapLayers(olMap: OLMap) {
       { noEmit: true, undoable: false },
     );
     mapLayersGroup.getLayers().push(newLayer);
-    const onFeaturesLoadEnd = () => {
-      releaseImageCache();
+    source.once("featuresloadend", () => {
       console.log("Loaded KML layer");
       const layerExtent = fixExtent(source.getExtent());
       console.log("layerExtent", layerExtent);
       layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
-    };
-    source.once("featuresloaderror", releaseImageCache);
-    source.once("featuresloadend", onFeaturesLoadEnd);
+    });
   }
 
   function addTileJSONLayer(data: ScenarioTileJSONLayer) {
