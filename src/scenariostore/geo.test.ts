@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
+import * as fileHandling from "@/importexport/fileHandling";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("scenario geo item accessors", () => {
   it("exposes layer-item accessors backed by the current feature store", () => {
@@ -49,6 +54,84 @@ describe("scenario geo item accessors", () => {
     expect(fullItemsLayer?.items).toHaveLength(1);
     expect(geo.layerItemsLayers.value[0].items).toHaveLength(1);
     expect(geo.layersItems.value[0].items[0].id).toBe("feature-1");
+  });
+
+  it("retains and releases KMZ image cache for blob-backed KML map layers", () => {
+    const retainSpy = vi.spyOn(fileHandling, "retainImageCache").mockImplementation(() => {});
+    const releaseSpy = vi
+      .spyOn(fileHandling, "releaseImageCache")
+      .mockImplementation(() => {});
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.7.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layers: [],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const geo = useGeo(store);
+    const layer = geo.addMapLayer({
+      id: "kml-1",
+      type: "KMLLayer",
+      name: "KMZ",
+      url: "blob:kmz-layer",
+      extractStyles: true,
+      showPointNames: true,
+    });
+
+    expect(retainSpy).toHaveBeenCalledTimes(1);
+    geo.deleteMapLayer(layer.id);
+    expect(releaseSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not touch the KMZ image cache for remote KML map layers", () => {
+    const retainSpy = vi.spyOn(fileHandling, "retainImageCache").mockImplementation(() => {});
+    const releaseSpy = vi
+      .spyOn(fileHandling, "releaseImageCache")
+      .mockImplementation(() => {});
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.7.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layers: [],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const geo = useGeo(store);
+    const layer = geo.addMapLayer({
+      id: "kml-2",
+      type: "KMLLayer",
+      name: "Remote KML",
+      url: "https://example.com/layer.kml",
+      extractStyles: true,
+      showPointNames: true,
+    });
+
+    expect(retainSpy).not.toHaveBeenCalled();
+    geo.deleteMapLayer(layer.id);
+    expect(releaseSpy).not.toHaveBeenCalled();
   });
 
   it("keeps the item event hook aligned with the existing feature event hook", () => {

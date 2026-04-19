@@ -18,12 +18,28 @@ export interface ImportedFileInfo {
 }
 
 export const imageCache = new Map<string, string>();
+let imageCacheReferences = 0;
 
 export function clearCache() {
+  imageCacheReferences = 0;
   imageCache.forEach((value) => {
     URL.revokeObjectURL(value);
   });
   imageCache.clear();
+}
+
+export function retainImageCache() {
+  imageCacheReferences += 1;
+}
+
+export function releaseImageCache() {
+  if (imageCacheReferences === 0) {
+    return;
+  }
+  imageCacheReferences -= 1;
+  if (imageCacheReferences === 0) {
+    clearCache();
+  }
 }
 
 export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {

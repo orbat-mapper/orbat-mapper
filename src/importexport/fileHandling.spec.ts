@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { guessImportFormat } from "./fileHandling";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  clearCache,
+  guessImportFormat,
+  imageCache,
+  releaseImageCache,
+  retainImageCache,
+} from "./fileHandling";
 
 function createMockFile(content: string, name: string, options?: FilePropertyBag) {
   const file = new File([content], name, options);
@@ -63,5 +69,47 @@ describe("guessImportFormat", () => {
     expect(result.isJson).toBe(true);
     expect(result.format).not.toBe("csv");
     expect(result.format).not.toBe("tsv");
+  });
+});
+
+describe("KMZ image cache cleanup", () => {
+  afterEach(() => {
+    clearCache();
+    vi.restoreAllMocks();
+  });
+
+  it("ignores releases that do not have a matching retain", () => {
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+
+    imageCache.set("icon.png", "blob:icon");
+
+    releaseImageCache();
+
+    expect(imageCache.size).toBe(1);
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+  });
+
+  it("clears cached image URLs after the last active layer finishes using them", () => {
+    const revokeObjectURL = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+
+    imageCache.set("icon-1.png", "blob:icon-1");
+    imageCache.set("icon-2.png", "blob:icon-2");
+
+    retainImageCache();
+    retainImageCache();
+
+    releaseImageCache();
+    expect(imageCache.size).toBe(2);
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+
+    releaseImageCache();
+    expect(imageCache.size).toBe(0);
+    expect(revokeObjectURL).toHaveBeenCalledTimes(2);
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:icon-1");
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:icon-2");
   });
 });
