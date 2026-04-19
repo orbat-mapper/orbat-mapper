@@ -240,6 +240,15 @@ describe("ScenarioEditorWrapper", () => {
     });
   });
 
+  it("looks up drafts by the saved scenario id rather than the route param", async () => {
+    const savedScenario = createScenario("demo-falklands82", "Saved demo");
+    loadDemoScenarioMock.mockResolvedValue(savedScenario);
+
+    await mountWrapper("/scenario/demo-custom");
+
+    expect(getNewerDraftMock).toHaveBeenCalledWith("demo-falklands82", savedScenario);
+  });
+
   it("kicks off a best-effort draft flush on pagehide and beforeunload", async () => {
     await mountWrapper();
 

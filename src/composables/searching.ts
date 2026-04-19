@@ -225,7 +225,7 @@ const actionItems: ActionItem[] = [
 
 export function useActionSearch() {
   const {
-    io: { hasDistinctOpenedBaseline },
+    io: { hasDistinctOpenedBaseline, hasSavedBaseline },
   } = injectStrict(activeScenarioKey);
 
   function searchActions(query: string) {
@@ -233,7 +233,9 @@ export function useActionSearch() {
     if (!q) return [];
 
     const availableActionItems = actionItems.filter(
-      (item) => item.action !== "restoreOriginal" || hasDistinctOpenedBaseline.value,
+      (item) =>
+        (item.action !== "restoreOriginal" || hasDistinctOpenedBaseline.value) &&
+        (item.action !== "revertToSaved" || hasSavedBaseline.value),
     );
 
     const hits = fuzzysort.go(q, availableActionItems, { key: ["label"] });

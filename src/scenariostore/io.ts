@@ -784,6 +784,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     }
 
     if (draft.updatedAt <= savedModifiedAt) {
+      await deleteScenarioDraft(scenarioId);
       return null;
     }
 

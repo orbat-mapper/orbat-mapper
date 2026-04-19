@@ -204,6 +204,30 @@ describe("Scenario IO save model", () => {
     await expect(io.getNewerDraft(scenario.id, savedScenario)).resolves.toBeNull();
   });
 
+  it("deletes stale drafts that are older than the saved scenario", async () => {
+    const { io, scenario } = await createIo();
+    const savedScenario: Scenario = {
+      ...scenario,
+      meta: {
+        createdDate: scenario.meta!.createdDate,
+        lastModifiedDate: "2025-01-02T00:00:00.000Z",
+      },
+    };
+
+    (getScenarioDraftMock as any).mockImplementation(async () => ({
+      scenarioId: scenario.id,
+      scenario: {
+        ...scenario,
+        name: "Older draft",
+      },
+      updatedAt: Date.parse("2025-01-01T00:00:00.000Z"),
+      savedComparisonKey: (await import("./io")).getScenarioComparisonKey(savedScenario),
+    }));
+
+    await expect(io.getNewerDraft(scenario.id, savedScenario)).resolves.toBeNull();
+    expect(deleteScenarioDraftMock).toHaveBeenCalledWith(scenario.id);
+  });
+
   it("restores drafts tied to the current saved baseline without relying on timestamps", async () => {
     const { io, scenario } = await createIo();
     const { getScenarioComparisonKey } = await import("./io");
