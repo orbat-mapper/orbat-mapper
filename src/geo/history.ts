@@ -22,6 +22,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { unwindCoordinates } from "@/geo/longitude";
 
 export const VIA_TIME = -1337;
 
@@ -139,31 +140,6 @@ export function createUnitHistoryLayers() {
     arcLayer,
     labelsLayer,
   };
-}
-
-function unwindCoordinates(coordinates: number[][]): number[][] {
-  const result = [coordinates[0]]; // Start with the first coordinate
-
-  for (let i = 1; i < coordinates.length; i++) {
-    const currentCoordinate = [...coordinates[i]];
-    const prevLongitude = result[i - 1][0];
-    let longitude = coordinates[i][0];
-    const latitude = coordinates[i][1];
-
-    while (longitude - prevLongitude > 180) {
-      longitude -= 360;
-    }
-
-    while (prevLongitude - longitude > 180) {
-      longitude += 360;
-    }
-    currentCoordinate[0] = longitude;
-    currentCoordinate[1] = latitude;
-
-    result.push(currentCoordinate);
-  }
-
-  return result;
 }
 
 interface CreateUnitPathFeaturesOptions {

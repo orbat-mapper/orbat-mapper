@@ -12,6 +12,12 @@ import type { TGeo } from "@/scenariostore";
 import View from "ol/View";
 import Geometry from "ol/geom/Geometry";
 import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import { useRoutingStore } from "@/stores/routingStore";
+import { isObstacleHighlighted } from "@/geo/routing/obstacleHighlight";
+import {
+  createFeatureSelectionMarkerStyle,
+  createFeatureSelectionStyle,
+} from "@/modules/scenarioeditor/featureLayerUtils";
 
 let zoomResolutions: number[] = [];
 
@@ -34,8 +40,12 @@ const defaultStyle = new Style({
   }),
 });
 
+const obstacleHighlightStyle = createFeatureSelectionStyle();
+const obstacleHighlightMarkerStyle = createFeatureSelectionMarkerStyle();
+
 export function useFeatureStyles(geo: TGeo) {
   const styleCache = new Map<any, { style: Style | Style[]; revision: number }>();
+  const routingStore = useRoutingStore();
 
   function clearCache() {
     styleCache.clear();
@@ -122,6 +132,25 @@ export function useFeatureStyles(geo: TGeo) {
     // Update arrow z-index
     for (let i = 1; i < stylesArray.length; i++) {
       stylesArray[i].setZIndex((_zIndex ?? 0) + 1);
+    }
+
+    const highlighted = isObstacleHighlighted(
+      {
+        active: routingStore.obstaclePickerOpen,
+        layerIds: routingStore.obstacleLayerIds,
+        featureIds: routingStore.obstacleFeatureIds,
+      },
+      featureId,
+      scenarioFeature._pid,
+    );
+    if (highlighted) {
+      if (feature.getGeometry()?.getType() === "Point") {
+        return [obstacleHighlightMarkerStyle, ...stylesArray];
+      }
+      obstacleHighlightStyle
+        .getStroke()
+        ?.setWidth((baseStyle.getStroke()?.getWidth() || 0) + 8);
+      return [obstacleHighlightStyle, ...stylesArray];
     }
 
     return cachedStyle;

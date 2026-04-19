@@ -12,8 +12,10 @@ import type {
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TScenario } from "@/scenariostore";
 import type { ActionLabel } from "@/scenariostore/newScenarioStore";
+import { watch } from "vue";
 import { MapLibreScenarioFeatureManager } from "@/modules/maplibreview/maplibreScenarioFeatures";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useRoutingStore } from "@/stores/routingStore";
 import type { ScenarioLayerUpdate } from "@/types/internalModels";
 import type { FeatureId, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import {
@@ -94,6 +96,7 @@ export function createMapLibreScenarioLayerController(
 ): ScenarioLayerController {
   const mlMap = mapAdapter.getNativeMap() as MlMap;
   const { selectedFeatureIds } = useSelectedItems();
+  const routingStore = useRoutingStore();
   const layerEventHandlers = new Set<(event: ScenarioLayerControllerEvent) => void>();
   let activeScenario: TScenario | null = null;
   let featureManager: MapLibreScenarioFeatureManager | null = null;
@@ -195,8 +198,20 @@ export function createMapLibreScenarioLayerController(
     featureManager = new MapLibreScenarioFeatureManager(
       mlMap,
       () => selectedFeatureIds.value,
+      () => ({
+        active: routingStore.obstaclePickerOpen,
+        layerIds: routingStore.obstacleLayerIds,
+        featureIds: routingStore.obstacleFeatureIds,
+      }),
     );
     refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+
+    const stopObstacleHighlightWatch = watch(
+      () => [routingStore.obstaclePickerOpen, routingStore.obstacleSelectionKey] as const,
+      () => {
+        refreshScenarioFeatureLayers({ doClearCache: false });
+      },
+    );
 
     const onStyleLoad = () => {
       refreshScenarioFeatureLayers({ doClearCache: true });
@@ -242,6 +257,7 @@ export function createMapLibreScenarioLayerController(
       cleanupMapLayers.off();
       cleanupFeatureLayers.off();
       cleanupUndoRedo.off();
+      stopObstacleHighlightWatch();
       mlMap.off("style.load", onStyleLoad);
       featureManager?.destroy();
       featureManager = null;

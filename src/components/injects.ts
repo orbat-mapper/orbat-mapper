@@ -1,4 +1,4 @@
-import type { InjectionKey, Ref, ShallowRef } from "vue";
+import type { ComputedRef, InjectionKey, Ref, ShallowRef } from "vue";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
 import type { UseFeatureStyles } from "@/geo/featureStyles";
@@ -66,3 +66,17 @@ export const activeNativeMapKey = Symbol("Active native map") as InjectionKey<
 export const activeFeatureSelectInteractionKey = Symbol(
   "Active feature select",
 ) as InjectionKey<ShallowRef<Select>>;
+
+export interface RouteDetailsPanelContext {
+  activeRoutingUnitName: ComputedRef<string | null>;
+  addRouteLeg: () => boolean;
+  clearCurrentLeg: () => boolean;
+  finishRoute: () => boolean;
+  closeRouting: () => void;
+  endRouting: () => void;
+  handleEscape: () => boolean;
+}
+
+export const routeDetailsPanelKey = Symbol(
+  "Route details panel",
+) as InjectionKey<RouteDetailsPanelContext>;

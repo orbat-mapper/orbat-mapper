@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { createEventHook } from "@vueuse/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 
 function createMockMap() {
@@ -117,6 +118,7 @@ function createScenario() {
 describe("createMapLibreScenarioLayerController", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    setActivePinia(createPinia());
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
   });
 

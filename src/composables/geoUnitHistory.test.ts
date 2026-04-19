@@ -118,6 +118,12 @@ vi.mock("@/stores/timeFormatStore", () => ({
   }),
 }));
 
+vi.mock("@/stores/routingStore", () => ({
+  useRoutingStore: () => ({
+    active: false,
+  }),
+}));
+
 vi.mock("@/geo/history", () => ({
   VIA_TIME: -1337,
   labelStyle: { getText: () => ({ setText: vi.fn() }) },

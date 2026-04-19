@@ -2,25 +2,21 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { IconChevronDoubleUp } from "@iconify-prerendered/vue-mdi";
 import ScenarioEventsPanel from "@/modules/scenarioeditor/ScenarioEventsPanel.vue";
-import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
-import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import OrbatPanel from "@/modules/scenarioeditor/OrbatPanel.vue";
 import CloseButton from "@/components/CloseButton.vue";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { useSwipe, useThrottleFn, useToggle, useWindowSize } from "@vueuse/core";
 import MapTimeController from "@/components/MapTimeController.vue";
 import { useUiStore } from "@/stores/uiStore";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { storeToRefs } from "pinia";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
-import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
-import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
-import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import { GripHorizontal } from "@lucide/vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
-import ReferenceFeatureDetails from "@/modules/scenarioeditor/ReferenceFeatureDetails.vue";
+import DetailsPanelContent from "@/modules/scenarioeditor/DetailsPanelContent.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -35,15 +31,8 @@ const emit = defineEmits([
   "show-settings",
 ]);
 
-const {
-  selectedFeatureIds,
-  selectedUnitIds,
-  activeUnitId,
-  activeScenarioEventId,
-  activeMapLayerId,
-  activeReferenceFeature,
-  activeDetailsPanel,
-} = useSelectedItems();
+const { activeDetailsPanel } = useSelectedItems();
+const toolbarStore = useMainToolbarStore();
 const uiStore = useUiStore();
 const {
   mobilePanelOpen: showBottomPanel,
@@ -204,32 +193,10 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
         <ScenarioFiltersTabPanel />
       </TabsContent>
       <TabsContent value="5" class="mt-0 pb-10">
-        <UnitDetails
-          v-if="activeDetailsPanel === 'unit'"
-          :unit-id="activeUnitId || [...selectedUnitIds][0]"
-          class="p-4"
+        <DetailsPanelContent
+          v-if="activeDetailsPanel || toolbarStore.currentToolbar === 'route'"
+          content-class="p-4"
         />
-        <ScenarioFeatureDetails
-          v-else-if="activeDetailsPanel === 'feature'"
-          :selected-ids="selectedFeatureIds"
-          class="p-4"
-        />
-        <ScenarioEventDetails
-          v-else-if="activeDetailsPanel === 'event'"
-          :event-id="activeScenarioEventId!"
-          class="p-4"
-        />
-        <ReferenceFeatureDetails
-          v-else-if="activeDetailsPanel === 'referenceFeature'"
-          :feature="activeReferenceFeature!"
-          class="p-4"
-        />
-        <ScenarioMapLayerDetails
-          v-else-if="activeDetailsPanel === 'mapLayer'"
-          :layer-id="activeMapLayerId!"
-          class="p-4"
-        />
-        <ScenarioInfoPanel v-else-if="activeDetailsPanel === 'scenario'" class="p-4" />
       </TabsContent>
     </ScrollTabs>
   </main>

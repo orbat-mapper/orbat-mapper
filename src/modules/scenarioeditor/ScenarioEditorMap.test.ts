@@ -8,8 +8,18 @@ import { activeLayerKey, activeParentKey, activeScenarioKey } from "@/components
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
-const { mapModeState } = vi.hoisted(() => ({
-  mapModeState: { isMobile: false },
+const { mapModeState, routingHandlers, closeDetailsPanelMock } = vi.hoisted(() => ({
+  mapModeState: { isMobile: false, hasRouteDetails: false },
+  routingHandlers: {
+    activeRoutingUnitName: "Unit 1",
+    addRouteLeg: vi.fn(),
+    clearCurrentLeg: vi.fn(),
+    finishRoute: vi.fn(),
+    closeRouting: vi.fn(),
+    endRouting: vi.fn(),
+    handleEscape: vi.fn(),
+  },
+  closeDetailsPanelMock: vi.fn(),
 }));
 
 vi.mock("@/geo/engines/openlayers/olMapAdapter", () => ({
@@ -40,13 +50,26 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
     showLeftPanel: computed(() => false),
     detailsWidth: computed(() => 320),
     showDetailsPanel: computed(() => false),
+    hasRouteDetails: computed(() => mapModeState.hasRouteDetails),
     openTimeDialog: vi.fn(),
     onIncDay: vi.fn(),
     onDecDay: vi.fn(),
     onShowPlaceSearch: vi.fn(),
-    onCloseDetailsPanel: vi.fn(),
+    onCloseDetailsPanel: closeDetailsPanelMock,
     goToNextScenarioEvent: vi.fn(),
     goToPrevScenarioEvent: vi.fn(),
+  }),
+}));
+
+vi.mock("@/modules/scenarioeditor/useScenarioRouting", () => ({
+  useScenarioRouting: () => ({
+    activeRoutingUnitName: computed(() => routingHandlers.activeRoutingUnitName),
+    addRouteLeg: routingHandlers.addRouteLeg,
+    clearCurrentLeg: routingHandlers.clearCurrentLeg,
+    finishRoute: routingHandlers.finishRoute,
+    closeRouting: routingHandlers.closeRouting,
+    endRouting: routingHandlers.endRouting,
+    handleEscape: routingHandlers.handleEscape,
   }),
 }));
 
@@ -77,6 +100,7 @@ vi.mock("@/components/ScenarioMap.vue", () => ({
 
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
+  emits: ["closeDetailsPanel"],
   template: `
     <div>
       <div data-test="map-slot"><slot name="map" /></div>
@@ -84,6 +108,7 @@ const ScenarioMapModeShellStub = defineComponent({
       <div data-test="mobile-toolbar-slot"><slot name="mobile-toolbar" /></div>
       <div data-test="after-keyboard-slot"><slot name="after-keyboard" /></div>
       <div data-test="modals-slot"><slot name="modals" /></div>
+      <button data-test="close-details-panel" @click="$emit('closeDetailsPanel')" />
     </div>
   `,
 });
@@ -94,6 +119,12 @@ describe("ScenarioEditorMap", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     mapModeState.isMobile = false;
+    mapModeState.hasRouteDetails = false;
+    routingHandlers.addRouteLeg.mockReset();
+    routingHandlers.clearCurrentLeg.mockReset();
+    routingHandlers.finishRoute.mockReset();
+    routingHandlers.closeRouting.mockReset();
+    closeDetailsPanelMock.mockReset();
   });
 
   afterEach(() => {
@@ -237,5 +268,38 @@ describe("ScenarioEditorMap", () => {
         .find("[data-test='draw-toolbar']")
         .exists(),
     ).toBe(false);
+    expect(wrapper.find("[data-test='route-toolbar']").exists()).toBe(false);
+  });
+
+  it("closes routing instead of clearing selection when the details panel is closed in route mode", async () => {
+    mapModeState.hasRouteDetails = true;
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
+    const wrapper = mount(ScenarioEditorMap, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeParentKey as symbol]: ref(null),
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario().scenario,
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          NewScenarioMap: true,
+          SearchScenarioActions: true,
+          MapEditorMainToolbar: true,
+          MapEditorMeasurementToolbar: true,
+          MapEditorDrawToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+        },
+      },
+    });
+    mountedWrappers.push(wrapper);
+
+    await wrapper.get("[data-test='close-details-panel']").trigger("click");
+
+    expect(routingHandlers.closeRouting).toHaveBeenCalledTimes(1);
+    expect(closeDetailsPanelMock).not.toHaveBeenCalled();
   });
 });

@@ -60,6 +60,8 @@ import {
   isScenarioOverlayLayer,
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
+import { watch } from "vue";
+import { useRoutingStore } from "@/stores/routingStore";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -138,6 +140,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     injectStrict(activeFeatureStylesKey);
   const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
   const layerEventHandlers = new Set<(event: ScenarioLayerControllerEvent) => void>();
+  const routingStore = useRoutingStore();
 
   const {
     startTransform,
@@ -187,6 +190,17 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
 
   function getScenarioLayersCollection() {
     return scenarioLayersGroup.getLayers() as any;
+  }
+
+  function redrawScenarioLayers() {
+    getScenarioLayersCollection().forEach((layer: VectorLayer<any>) => layer.changed());
+    if ("renderSync" in olMap && typeof olMap.renderSync === "function") {
+      olMap.renderSync();
+      return;
+    }
+    if ("render" in olMap && typeof olMap.render === "function") {
+      olMap.render();
+    }
   }
 
   function getScenarioOlLayerById(layerId: FeatureId) {
@@ -776,6 +790,13 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     activeScenario = scenario;
     refreshManagedLayers({ doClearCache: true, filterVisible: true });
     initializeScenarioLayerListeners();
+    const stopObstacleHighlightWatch = watch(
+      () => [routingStore.obstaclePickerOpen, routingStore.obstacleSelectionKey] as const,
+      () => {
+        redrawScenarioLayers();
+      },
+      { immediate: true },
+    );
 
     const cleanups: CleanupHandle[] = [
       scenario.geo.onFeatureLayerEvent((event) => {
@@ -912,6 +933,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     ];
 
     cleanupScenarioBinding = () => {
+      stopObstacleHighlightWatch();
       cleanups.forEach((cleanup) => runCleanup(cleanup));
       clearScenarioLayerVisibilityListeners();
       getScenarioLayersCollection().clear();

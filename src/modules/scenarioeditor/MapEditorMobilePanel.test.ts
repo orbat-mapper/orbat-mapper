@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import { defineComponent, nextTick, ref } from "vue";
+import { computed, defineComponent, nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
+import { activeScenarioKey, routeDetailsPanelKey } from "@/components/injects";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useUiStore } from "@/stores/uiStore";
 
 vi.mock("@vueuse/core", async () => {
@@ -24,30 +26,56 @@ const ScrollTabsStub = defineComponent({
   template: "<div><slot /><slot name='right' /></div>",
 });
 
+const TabsContentStub = defineComponent({
+  name: "TabsContent",
+  template: "<div><slot /></div>",
+});
+
 function mountPanel() {
   const wrapper = mount(MapEditorMobilePanel, {
     global: {
       stubs: {
         ScrollTabs: ScrollTabsStub,
-        TabsContent: true,
+        TabsContent: TabsContentStub,
         ScenarioEventsPanel: true,
-        ScenarioInfoPanel: true,
-        ScenarioFeatureDetails: true,
         OrbatPanel: true,
         CloseButton: true,
         MapTimeController: true,
         ScenarioLayersTabPanel: true,
-        ScenarioMapLayerDetails: true,
-        ScenarioEventDetails: true,
-        UnitDetails: true,
         ScenarioSettingsPanel: true,
         GripHorizontal: true,
         IconChevronDoubleUp: true,
       },
+      provide: {
+        [activeScenarioKey as symbol]: {
+          store: {
+            state: {
+              currentTime: 0,
+              info: { timeZone: "UTC" },
+            },
+          },
+          geo: {
+            layerItemsLayers: computed(() => []),
+          },
+          helpers: {
+            getUnitById: vi.fn(() => null),
+          },
+        } as any,
+        [routeDetailsPanelKey as symbol]: {
+          activeRoutingUnitName: computed(() => "Unit 1"),
+          addRouteLeg: vi.fn(),
+          clearCurrentLeg: vi.fn(),
+          finishRoute: vi.fn(),
+          closeRouting: vi.fn(),
+          endRouting: vi.fn(),
+          handleEscape: vi.fn(),
+        },
+      },
     },
   });
   const uiStore = useUiStore();
-  return { wrapper, uiStore };
+  const toolbarStore = useMainToolbarStore();
+  return { wrapper, uiStore, toolbarStore };
 }
 
 async function pointerGesture(
@@ -137,5 +165,15 @@ describe("MapEditorMobilePanel", () => {
     expect(wrapper.find("[data-testid='mobile-panel-resize-strip']").exists()).toBe(
       false,
     );
+  });
+
+  it("renders route controls in the details tab while routing is active", async () => {
+    const { wrapper, toolbarStore } = mountPanel();
+    toolbarStore.currentToolbar = "route";
+
+    await nextTick();
+
+    expect(wrapper.text()).toContain("Buffer (m)");
+    expect(wrapper.text()).toContain("Obstacles: 0 selected");
   });
 });

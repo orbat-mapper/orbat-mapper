@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import VectorLayer from "ol/layer/Vector";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 
 Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
   configurable: true,
@@ -31,6 +32,7 @@ function createMockView(overrides: Record<string, any> = {}) {
 
 function createMockMap(viewOverrides: Record<string, any> = {}) {
   const view = createMockView(viewOverrides);
+  const listeners = new Map<string, (event: any) => void>();
 
   const olMap = {
     getView: vi.fn(() => view),
@@ -39,14 +41,21 @@ function createMockMap(viewOverrides: Record<string, any> = {}) {
     render: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    on: vi.fn(),
-    once: vi.fn(),
+    on: vi.fn((event: string, handler: (event: any) => void) => {
+      listeners.set(event, handler);
+      return { event, handler };
+    }),
+    once: vi.fn((event: string, handler: (event: any) => void) => {
+      listeners.set(event, handler);
+      return { event, handler };
+    }),
     getSize: vi.fn(() => [800, 600]),
     getEventCoordinate: vi.fn(() => [0, 0]),
     getTargetElement: vi.fn(() => document.createElement("div")),
+    forEachFeatureAtPixel: vi.fn(),
   };
 
-  return { olMap, view };
+  return { olMap, view, listeners };
 }
 
 describe("OlMapAdapter", () => {
@@ -126,6 +135,41 @@ describe("OlMapAdapter", () => {
 
       expect(setMapSpy).toHaveBeenCalledWith(null);
       setMapSpy.mockRestore();
+    });
+  });
+
+  describe("events", () => {
+    it("includes the hit unit id on map click events", () => {
+      const { olMap, listeners } = createMockMap();
+      const adapter = new OlMapAdapter(olMap as any);
+      const handler = vi.fn();
+      const stopPropagation = vi.fn();
+
+      olMap.forEachFeatureAtPixel.mockImplementation(
+        (_pixel: unknown, callback: (feature: any, layer: any) => boolean) => {
+          callback(
+            { getId: () => "unit-1" },
+            {
+              get: (key: string) => (key === "layerType" ? LayerTypes.units : undefined),
+            },
+          );
+        },
+      );
+
+      adapter.on("click", handler);
+      listeners.get("click")?.({
+        coordinate: [0, 0],
+        pixel: [10, 20],
+        stopPropagation,
+      });
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unitId: "unit-1",
+          targetUnitId: "unit-1",
+          pixel: [10, 20],
+        }),
+      );
     });
   });
 });

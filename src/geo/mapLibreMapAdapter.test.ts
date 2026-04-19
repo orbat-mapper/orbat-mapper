@@ -28,6 +28,7 @@ function createMockMap() {
     getContainer: vi.fn(() => document.createElement("div")),
     getCanvas: vi.fn(() => document.createElement("canvas")),
     unproject: vi.fn(() => ({ lng: 10, lat: 20 })),
+    queryRenderedFeatures: vi.fn(() => [] as any[]),
     setMaxBounds: vi.fn(),
     setMinZoom: vi.fn(),
     setMaxZoom: vi.fn(),
@@ -82,6 +83,35 @@ describe("MapLibreMapAdapter", () => {
     expect(mapPreventDefault).toHaveBeenCalledTimes(1);
     expect(stopPropagationSpy).toHaveBeenCalledTimes(1);
     expect(originalEvent.defaultPrevented).toBe(true);
+  });
+
+  it("includes the hit unit id on map click events", () => {
+    const { mlMap, listeners } = createMockMap();
+    const adapter = new MapLibreMapAdapter(mlMap as any);
+    const handler = vi.fn();
+
+    mlMap.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer-visible-group" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    adapter.on("click", handler);
+    listeners.get("click")?.({
+      lngLat: { lng: 1, lat: 2 },
+      point: { x: 3, y: 4 },
+      preventDefault: vi.fn(),
+      originalEvent: new MouseEvent("click"),
+    });
+
+    expect(handler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        unitId: "unit-1",
+        targetUnitId: "unit-1",
+        pixel: [3, 4],
+      }),
+    );
   });
 
   describe("setViewConstraints", () => {

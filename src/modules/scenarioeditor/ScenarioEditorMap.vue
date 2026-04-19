@@ -12,6 +12,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
+  routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
@@ -35,6 +36,8 @@ import {
   getScenarioMapViewSnapshot,
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
+import { useOpenLayersRoutingPreview } from "@/geo/routing/openLayersRoutingPreview";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -59,6 +62,7 @@ const {
   showLeftPanel,
   detailsWidth,
   showDetailsPanel,
+  hasRouteDetails,
   openTimeDialog,
   onIncDay,
   onDecDay,
@@ -74,6 +78,16 @@ const playback = usePlaybackStore();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const nativeMapRef = shallowRef<OLMap>();
 const featureSelectInteractionRef = shallowRef<Select>();
+const {
+  activeRoutingUnitName,
+  addRouteLeg,
+  clearCurrentLeg,
+  finishRoute,
+  closeRouting,
+  endRouting,
+  handleEscape,
+} = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
+useOpenLayersRoutingPreview(() => nativeMapRef.value);
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
@@ -83,6 +97,15 @@ provide(
   activeFeatureSelectInteractionKey,
   featureSelectInteractionRef as ShallowRef<Select>,
 );
+provide(routeDetailsPanelKey, {
+  activeRoutingUnitName,
+  addRouteLeg,
+  clearCurrentLeg,
+  finishRoute,
+  closeRouting,
+  endRouting,
+  handleEscape,
+});
 
 function onMapReady({
   olMap,
@@ -175,6 +198,14 @@ const headerControlsStyle = computed(() =>
     ? { marginRight: `${detailsWidth.value + 16}px` }
     : undefined,
 );
+
+function onCloseActiveDetailsPanel() {
+  if (hasRouteDetails.value) {
+    closeRouting();
+    return;
+  }
+  onCloseDetailsPanel();
+}
 </script>
 
 <template>
@@ -193,7 +224,7 @@ const headerControlsStyle = computed(() =>
     @next-event="goToNextScenarioEvent()"
     @prev-event="goToPrevScenarioEvent()"
     @show-place-search="onShowPlaceSearch()"
-    @close-details-panel="onCloseDetailsPanel()"
+    @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
       <NewScenarioMap

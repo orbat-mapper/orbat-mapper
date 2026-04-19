@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { shallowRef } from "vue";
+import { defineComponent } from "vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 
@@ -83,6 +84,13 @@ describe("ScenarioFeatureDetails", () => {
           ScenarioFeatureArrowSettings: true,
           ScenarioFeatureFillSettings: true,
           ScenarioFeatureTextSettings: true,
+          ToggleField: defineComponent({
+            name: "ToggleField",
+            props: { modelValue: Boolean },
+            emits: ["update:modelValue"],
+            template:
+              "<button data-test='toggle-field' @click=\"$emit('update:modelValue', !modelValue)\"><slot /></button>",
+          }),
           ScenarioFeatureMarkerSettings: {
             name: "ScenarioFeatureMarkerSettings",
             template: "<div />",
@@ -167,6 +175,13 @@ describe("ScenarioFeatureDetails", () => {
           ScenarioFeatureFillSettings: true,
           ScenarioFeatureTextSettings: true,
           ScenarioFeatureMarkerSettings: true,
+          ToggleField: defineComponent({
+            name: "ToggleField",
+            props: { modelValue: Boolean },
+            emits: ["update:modelValue"],
+            template:
+              "<button data-test='toggle-field' @click=\"$emit('update:modelValue', !modelValue)\"><slot /></button>",
+          }),
         },
       },
     });

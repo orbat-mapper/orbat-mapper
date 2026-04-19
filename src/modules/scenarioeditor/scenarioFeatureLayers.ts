@@ -1,6 +1,8 @@
 import OLMap from "ol/Map";
+import { watch } from "vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
+import { useRoutingStore } from "@/stores/routingStore";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
@@ -46,6 +48,14 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
     injectStrict(activeFeatureStylesKey);
 
   const olFeatureLayersGroup = getOrCreateLayerGroup(olMap);
+  const routingStore = useRoutingStore();
+
+  watch(
+    () => [routingStore.obstaclePickerOpen, routingStore.obstacleSelectionKey] as const,
+    () => {
+      olFeatureLayersGroup.getLayers().forEach((layer) => layer.changed());
+    },
+  );
 
   scn.geo.onFeatureLayerEvent(featureLayerEventHandler);
 
