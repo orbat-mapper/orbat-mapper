@@ -368,7 +368,9 @@ describe("MlMapLogic", () => {
       },
     });
 
-    const extraUnitLayer = getAddedUnitLayers(mockMap).find((layer) => layer.id !== "unitLayer");
+    const extraUnitLayer = getAddedUnitLayers(mockMap).find(
+      (layer: { id: string }) => layer.id !== "unitLayer",
+    );
     expect(extraUnitLayer).toBeDefined();
 
     mockMap.map.setLayoutProperty.mockClear();
@@ -592,7 +594,9 @@ describe("MlMapLogic", () => {
       ]),
     );
 
-    const extraUnitLayer = unitLayers.find((layer) => layer.id !== "unitLayer");
+    const extraUnitLayer = unitLayers.find(
+      (layer: { id: string }) => layer.id !== "unitLayer",
+    );
     expect(extraUnitLayer?.filter).toEqual([
       "==",
       ["get", "visibilityGroup"],

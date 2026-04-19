@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  type AddLayerObject,
   type GeoJSONSource,
   type MapMouseEvent,
   type MapStyleImageMissingEvent,
@@ -177,12 +178,12 @@ function createUnitLayerSpec(
   layerId: string,
   group: UnitVisibilityGroup,
   alignment: ReturnType<typeof getUnitRotationAlignment>,
-) {
+) : AddLayerObject {
   return {
     id: layerId,
     type: "symbol" as const,
     source: "unitSource",
-    filter: ["==", ["get", "visibilityGroup"], group.id],
+    filter: ["==", ["get", "visibilityGroup"], group.id] as any,
     layout: {
       "icon-image": ["get", "symbolKey"],
       "icon-rotate": ["get", "symbolRotation"],
