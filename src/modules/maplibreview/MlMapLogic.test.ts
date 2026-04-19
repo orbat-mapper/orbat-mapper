@@ -163,6 +163,15 @@ function getAddedLayerSpec(mockMap: ReturnType<typeof createMockMap>, id: string
     .find((layer: { id: string }) => layer.id === id);
 }
 
+function getAddedUnitLayers(mockMap: ReturnType<typeof createMockMap>) {
+  return mockMap.map.addLayer.mock.calls
+    .map(([layer]: [{ id: string; source?: string }]) => layer)
+    .filter(
+      (layer: { id: string; source?: string }) =>
+        layer.source === "unitSource" && layer.id.startsWith("unitLayer"),
+    );
+}
+
 describe("MlMapLogic", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -298,6 +307,91 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("updates rotation alignment for all unit visibility layers", async () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-unit-rotation-mode-groups",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-1",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            style: {
+              limitVisibility: true,
+              minZoom: 6,
+              maxZoom: 10,
+            },
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    const extraUnitLayer = getAddedUnitLayers(mockMap).find((layer) => layer.id !== "unitLayer");
+    expect(extraUnitLayer).toBeDefined();
+
+    mockMap.map.setLayoutProperty.mockClear();
+    mapSettings.mapLibreUnitRotationMode = "mixed";
+    await nextTick();
+
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "unitLayer",
+      "icon-rotation-alignment",
+      "map",
+    );
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      extraUnitLayer!.id,
+      "icon-rotation-alignment",
+      "map",
+    );
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      extraUnitLayer!.id,
+      "text-rotation-alignment",
+      "viewport",
+    );
+  });
+
   it("re-applies the current rotation preset when the MapLibre style reloads", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
@@ -420,6 +514,109 @@ describe("MlMapLogic", () => {
     const updatedSource = mockMap.getSource("unitSource");
     expect(updatedSource?.setData).toBeDefined();
     expect(updatedSource!.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
+  });
+
+  it("creates zoom-bounded MapLibre unit layers for units with visibility limits", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-unit-visibility-groups",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-default",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            _state: {
+              location: [10, 20],
+            },
+          },
+          {
+            id: "unit-limited",
+            sidc: "SFGPUCI----K",
+            shortName: "B1",
+            name: "Bravo 1",
+            style: {
+              limitVisibility: true,
+              minZoom: 6,
+              maxZoom: 10,
+            },
+            _state: {
+              location: [11, 21],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    const unitLayers = getAddedUnitLayers(mockMap);
+    expect(unitLayers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "unitLayer", source: "unitSource" }),
+        expect.objectContaining({
+          source: "unitSource",
+          minzoom: 6,
+          maxzoom: 10,
+        }),
+      ]),
+    );
+
+    const extraUnitLayer = unitLayers.find((layer) => layer.id !== "unitLayer");
+    expect(extraUnitLayer?.filter).toEqual([
+      "==",
+      ["get", "visibilityGroup"],
+      expect.any(String),
+    ]);
+
+    expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        features: expect.arrayContaining([
+          expect.objectContaining({
+            properties: expect.objectContaining({
+              id: "unit-default",
+              visibilityGroup: "always",
+            }),
+          }),
+          expect.objectContaining({
+            properties: expect.objectContaining({
+              id: "unit-limited",
+              visibilityGroup: expect.any(String),
+            }),
+          }),
+        ]),
+      }),
+    );
   });
 
   it("selects a rendered maplibre feature on click", () => {
@@ -553,6 +750,65 @@ describe("MlMapLogic", () => {
       options: { noZoom: true },
     });
     expect(featureSelectSpy).not.toHaveBeenCalled();
+  });
+
+  it("treats zoom-bounded unit layers as interactive unit hits", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+    const refreshScenarioFeatureLayers = vi.fn();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-unit-layer-prefix-hit",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer-visibility-group" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+
+    mockMap.emit("click", {
+      point: { x: 1, y: 2 },
+      originalEvent: { shiftKey: false },
+    });
+
+    expect(unitSelectSpy).toHaveBeenCalledWith({
+      unitId: "unit-1",
+      options: { noZoom: true },
+    });
   });
 
   it("keeps the crosshair cursor while map placement mode is active", () => {

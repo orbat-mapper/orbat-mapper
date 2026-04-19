@@ -46,6 +46,16 @@ import {
   type MapLibreUnitRotationMode,
 } from "@/stores/mapSettingsStore";
 
+const UNIT_LAYER_ID = "unitLayer";
+const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
+const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
+
+type UnitVisibilityGroup = {
+  id: string;
+  minzoom?: number;
+  maxzoom?: number;
+};
+
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
   activeScenario: TScenario;
@@ -63,6 +73,7 @@ type SymbolCacheEntry = {
 
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
+const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
 let shouldCenterOnNextStyleLoad = true;
 
 const playback = usePlaybackStore();
@@ -135,15 +146,110 @@ function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
   }
 }
 
-function applyUnitLayerRotationAlignment() {
-  if (!mlMap.getLayer("unitLayer")) return;
+function isUnitLayerId(layerId: string | undefined | null) {
+  return layerId === UNIT_LAYER_ID || layerId?.startsWith(UNIT_LAYER_PREFIX);
+}
+
+function getUnitVisibilityGroup(unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number]) {
+  const style = unit.style ?? {};
+  if (!style.limitVisibility) {
+    return { id: ALWAYS_VISIBLE_UNIT_GROUP_ID } satisfies UnitVisibilityGroup;
+  }
+
+  return {
+    id: hashObject({
+      type: "unit-visibility",
+      minZoom: style.minZoom ?? 0,
+      maxZoom: style.maxZoom ?? 24,
+    }),
+    minzoom: style.minZoom ?? 0,
+    maxzoom: style.maxZoom ?? 24,
+  } satisfies UnitVisibilityGroup;
+}
+
+function getUnitLayerId(groupId: string) {
+  return groupId === ALWAYS_VISIBLE_UNIT_GROUP_ID
+    ? UNIT_LAYER_ID
+    : `${UNIT_LAYER_PREFIX}${groupId}`;
+}
+
+function createUnitLayerSpec(
+  layerId: string,
+  group: UnitVisibilityGroup,
+  alignment: ReturnType<typeof getUnitRotationAlignment>,
+) {
+  return {
+    id: layerId,
+    type: "symbol" as const,
+    source: "unitSource",
+    filter: ["==", ["get", "visibilityGroup"], group.id],
+    layout: {
+      "icon-image": ["get", "symbolKey"],
+      "icon-rotate": ["get", "symbolRotation"],
+      "icon-rotation-alignment": alignment.icon,
+      "text-rotate": ["get", "symbolRotation"],
+      "text-rotation-alignment": alignment.text,
+      "text-font": ["Noto Sans Italic"],
+      "text-offset": [0, 1.5],
+      "text-anchor": "top",
+      "text-size": 12,
+      "icon-allow-overlap": true,
+      "text-allow-overlap": false,
+      "text-overlap": "never",
+      "text-ignore-placement": false,
+      "text-optional": true,
+      "icon-optional": false,
+      "text-field": ["get", "label"],
+    },
+    paint: {
+      "text-color": "#111827",
+      "text-halo-color": "rgba(255, 255, 255, 0.9)",
+      "text-halo-width": 1.75,
+      "text-halo-blur": 0.6,
+    },
+    ...(typeof group.minzoom === "number" ? { minzoom: group.minzoom } : {}),
+    ...(typeof group.maxzoom === "number" ? { maxzoom: group.maxzoom } : {}),
+  };
+}
+
+function syncUnitLayers(groups: Iterable<UnitVisibilityGroup>) {
   const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
-  mlMap.setLayoutProperty("unitLayer", "icon-rotation-alignment", alignment.icon);
-  mlMap.setLayoutProperty("unitLayer", "text-rotation-alignment", alignment.text);
+  const desiredGroups = new Map<string, UnitVisibilityGroup>([
+    [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
+  ]);
+  for (const group of groups) {
+    desiredGroups.set(group.id, group);
+  }
+
+  const desiredLayerIds = new Set<string>();
+  for (const group of desiredGroups.values()) {
+    const layerId = getUnitLayerId(group.id);
+    desiredLayerIds.add(layerId);
+    if (!mlMap.getLayer(layerId)) {
+      mlMap.addLayer(createUnitLayerSpec(layerId, group, alignment));
+    }
+    unitLayerIds.add(layerId);
+  }
+
+  for (const layerId of [...unitLayerIds]) {
+    if (desiredLayerIds.has(layerId)) continue;
+    if (mlMap.getLayer(layerId)) {
+      mlMap.removeLayer(layerId);
+    }
+    unitLayerIds.delete(layerId);
+  }
+}
+
+function applyUnitLayerRotationAlignment() {
+  const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
+  for (const layerId of unitLayerIds) {
+    if (!mlMap.getLayer(layerId)) continue;
+    mlMap.setLayoutProperty(layerId, "icon-rotation-alignment", alignment.icon);
+    mlMap.setLayoutProperty(layerId, "text-rotation-alignment", alignment.text);
+  }
 }
 
 function setupMapLayers() {
-  const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
       type: "geojson",
@@ -153,39 +259,10 @@ function setupMapLayers() {
       },
     });
 
-  !mlMap.getLayer("unitLayer") &&
-    mlMap.addLayer({
-      id: "unitLayer",
-      type: "symbol",
-      source: "unitSource",
-      layout: {
-        "icon-image": ["get", "symbolKey"],
-        "icon-rotate": ["get", "symbolRotation"],
-        "icon-rotation-alignment": alignment.icon,
-        "text-rotate": ["get", "symbolRotation"],
-        "text-rotation-alignment": alignment.text,
-        "text-font": ["Noto Sans Italic"],
-        "text-offset": [0, 1.5],
-        "text-anchor": "top",
-        "text-size": 12,
-        "icon-allow-overlap": true,
-        "text-allow-overlap": false,
-        "text-overlap": "never",
-        "text-ignore-placement": false,
-        "text-optional": true,
-        "icon-optional": false,
-        "text-field": ["get", "label"],
-      },
-      paint: {
-        "text-color": "#111827",
-        "text-halo-color": "rgba(255, 255, 255, 0.9)",
-        "text-halo-width": 1.75,
-        "text-halo-blur": 0.6,
-      },
-    });
+  syncUnitLayers([]);
 
-  setupRangeRingLayers("unitLayer");
-  setupUnitHistoryLayers("unitLayer");
+  setupRangeRingLayers(UNIT_LAYER_ID);
+  setupUnitHistoryLayers(UNIT_LAYER_ID);
 }
 
 function styleImageMissing(e: MapStyleImageMissingEvent) {
@@ -255,7 +332,7 @@ function queryInteractiveFeatures(point: PointLike) {
     .queryRenderedFeatures(point)
     .filter(
       (feature) =>
-        feature.layer.id === "unitLayer" ||
+        isUnitLayerId(feature.layer.id) ||
         UNIT_HISTORY_LAYER_IDS.includes(feature.layer.id) ||
         isManagedScenarioFeatureLayerId(feature.layer.id),
     );
@@ -308,7 +385,7 @@ function onMapClick(e: MapMouseEvent) {
     if (!additive) clearSelectedItems();
     return;
   }
-  if (topHit.layer.id === "unitLayer") {
+  if (isUnitLayerId(topHit.layer.id)) {
     const unitId = topHit.properties?.id;
     if (!unitId) return;
     if (additive) {
@@ -338,7 +415,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   if (rotateUnitEnabled.value) {
     const topHit = queryInteractiveFeatures(e.point)[0];
     const rotatableUnitIds =
-      topHit?.layer.id === "unitLayer"
+      isUnitLayerId(topHit?.layer.id)
         ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
         : [];
     mlMap.getCanvas().style.cursor = rotatableUnitIds.length ? "grab" : "";
@@ -347,7 +424,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
     const topHit = queryInteractiveFeatures(e.point)[0];
     const movableUnitIds =
-      topHit?.layer.id === "unitLayer" ? getMovableUnitIds(topHit.properties?.id) : [];
+      isUnitLayerId(topHit?.layer.id) ? getMovableUnitIds(topHit.properties?.id) : [];
     mlMap.getCanvas().style.cursor = movableUnitIds.length ? "move" : "";
     return;
   }
@@ -370,7 +447,7 @@ function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   if (!moveUnitEnabled.value || !recordingStore.isRecordingLocation) return;
 
   const topHit = queryInteractiveFeatures(e.point)[0];
-  if (!topHit || topHit.layer.id !== "unitLayer") return;
+  if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
 
   const clickedUnitId = topHit.properties?.id;
   const movableUnitIds = getMovableUnitIds(clickedUnitId);
@@ -515,9 +592,12 @@ function addUnits(
   if (!source) return;
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
+  const visibilityGroups = new Map<string, UnitVisibilityGroup>();
 
   const features = featureCollection(
     visibleUnits.map((unit) => {
+      const visibilityGroup = getUnitVisibilityGroup(unit);
+      visibilityGroups.set(visibilityGroup.id, visibilityGroup);
       const symbolData = {
         sidc: unit.sidc,
         symbolOptions: unitActions.getCombinedSymbolOptions(unit),
@@ -540,6 +620,7 @@ function addUnits(
         },
         properties: {
           id: unit.id,
+          visibilityGroup: visibilityGroup.id,
           symbolKey: isSelected ? `sel-${symbolKey}` : symbolKey,
           sidc: unit.sidc,
           label: unit.shortName || unit.name || "Unnamed Unit",
@@ -548,6 +629,7 @@ function addUnits(
       } as Feature;
     }),
   );
+  syncUnitLayers(visibilityGroups.values());
   if (initial) {
     const bbox = activeScenario.store.state.boundingBox;
     if (bbox && bbox.length === 4) {
