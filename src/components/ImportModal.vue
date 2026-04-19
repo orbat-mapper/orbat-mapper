@@ -6,7 +6,7 @@ import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externa
 import type { FeatureCollection } from "geojson";
 import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
-import type { ImportedFileInfo } from "@/importexport/fileHandling";
+import { clearCache, type ImportedFileInfo } from "@/importexport/fileHandling";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import type { ImportData } from "@/types/importExport.ts";
 
@@ -95,11 +95,12 @@ function onCancel() {
   }
   // clean up loadedImportData
   loadedImportData.value?.data.forEach((d) => {
-    if (d instanceof String && d.startsWith("blob:")) {
-      URL.revokeObjectURL(d as string);
+    if (typeof d === "string" && d.startsWith("blob:")) {
+      URL.revokeObjectURL(d);
     }
   });
   loadedImportData.value = undefined;
+  clearCache();
 
   emit("cancel");
 }
