@@ -25,6 +25,8 @@ interface UndoEntry<T = string> {
   patches: Patch[];
   inversePatches: Patch[];
   meta?: MetaEntry<T>;
+  beforeRevision: number;
+  afterRevision: number;
 }
 
 export function useImmerStore<T extends object, M>(baseState: T) {
@@ -32,6 +34,8 @@ export function useImmerStore<T extends object, M>(baseState: T) {
 
   const past = shallowReactive<UndoEntry<M>[]>([]);
   const future = shallowReactive<UndoEntry<M>[]>([]);
+  const revision = shallowReactive({ value: 0 });
+  let nextRevision = 1;
 
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
@@ -41,6 +45,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     meta?: MetaEntry<M>;
     action: "undo" | "redo";
   }>();
+  const mutationHook = createEventHook<void>();
 
   const update = (
     updater: (currentState: T) => void,
@@ -50,8 +55,12 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     const [, patches, inversePatches] = produceWithPatches(toRaw(state), updater);
     if (patches.length === 0 && !force) return;
     applyPatchWrapper(state, patches);
-    past.push({ patches, inversePatches, meta });
+    const beforeRevision = revision.value;
+    const afterRevision = nextRevision++;
+    revision.value = afterRevision;
+    past.push({ patches, inversePatches, meta, beforeRevision, afterRevision });
     future.splice(0);
+    mutationHook.trigger();
   };
 
   function groupUpdate(updates: () => void, meta?: MetaEntry<M>) {
@@ -61,36 +70,55 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     if (diff <= 0) return;
     const elems: UndoEntry<M>[] = [];
     for (let i = 0; i < diff; i++) elems.push(past.pop()!);
+    elems.reverse();
     const mergedPatches: Patch[] = [];
     const mergedInversePatches: Patch[] = [];
     elems.forEach(({ patches, inversePatches }) => {
       mergedPatches.push(...patches);
-      mergedInversePatches.push(...inversePatches);
     });
-    past.push({ patches: mergedPatches, inversePatches: mergedInversePatches, meta });
+    for (let i = elems.length - 1; i >= 0; i--) {
+      mergedInversePatches.push(...elems[i].inversePatches);
+    }
+    past.push({
+      patches: mergedPatches,
+      inversePatches: mergedInversePatches,
+      meta,
+      beforeRevision: elems[0].beforeRevision,
+      afterRevision: elems[elems.length - 1].afterRevision,
+    });
   }
 
   const undo = () => {
     if (!canUndo.value) return false;
-    const { patches, inversePatches, meta } = past.pop()!;
+    const { patches, inversePatches, meta, beforeRevision, afterRevision } = past.pop()!;
     applyPatchWrapper(state, inversePatches);
-    future.unshift({ patches, inversePatches, meta });
+    revision.value = beforeRevision;
+    future.unshift({ patches, inversePatches, meta, beforeRevision, afterRevision });
     undoRedoHook.trigger({ patch: inversePatches, meta, action: "undo" });
+    mutationHook.trigger();
     return true;
   };
 
   const redo = () => {
     if (!canRedo.value) return false;
-    const { patches, inversePatches, meta } = future.shift()!;
+    const { patches, inversePatches, meta, beforeRevision, afterRevision } =
+      future.shift()!;
     applyPatchWrapper(state, patches);
-    past.push({ patches, inversePatches, meta });
+    revision.value = afterRevision;
+    past.push({ patches, inversePatches, meta, beforeRevision, afterRevision });
     undoRedoHook.trigger({ patch: patches, meta, action: "redo" });
+    mutationHook.trigger();
     return true;
   };
 
   const clearUndoRedoStack = () => {
     past.splice(0);
     future.splice(0);
+  };
+
+  const setRevision = (value: number) => {
+    revision.value = value;
+    nextRevision = Math.max(nextRevision, value + 1);
   };
 
   return {
@@ -101,7 +129,10 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     clearUndoRedoStack,
     canRedo,
     canUndo,
+    revision,
+    setRevision,
     groupUpdate,
     onUndoRedo: undoRedoHook.on,
+    onMutation: mutationHook.on,
   };
 }

@@ -67,6 +67,8 @@ export type ScenarioActions =
   | "import"
   | "load"
   | "loadNew"
+  | "restoreOriginal"
+  | "revertToSaved"
   | "save"
   | "showInfo"
   | "createNew"

@@ -300,6 +300,14 @@ async function onScenarioAction(action: ScenarioActions) {
     await io.downloadAsJson();
   } else if (action === "loadNew") {
     showLoadModal.value = true;
+  } else if (action === "restoreOriginal") {
+    if (io.restoreLoadedBaseline()) {
+      send({ message: "Reverted scenario to the opened state" });
+    }
+  } else if (action === "revertToSaved") {
+    if (io.revertToSaved()) {
+      send({ message: "Reverted scenario to the saved version" });
+    }
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard", type: "success" });

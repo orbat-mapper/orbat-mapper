@@ -43,6 +43,7 @@ const emit = defineEmits<{
 
 const {
   store: { undo, redo, canRedo, canUndo },
+  io: { hasDistinctOpenedBaseline, hasSavedBaseline },
 } = injectStrict(activeScenarioKey);
 
 const route = useRoute();
@@ -183,6 +184,19 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <DropdownMenuItem @select="redo()" :disabled="!canRedo">
             Redo
             <DropdownMenuShortcut class="ml-4">Ctrl/⌘ shift Z</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            v-if="hasDistinctOpenedBaseline"
+            @select="emit('action', 'restoreOriginal')"
+          >
+            Revert to opened state
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            @select="emit('action', 'revertToSaved')"
+            :disabled="!hasSavedBaseline"
+          >
+            Revert to saved version
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem @select="emit('action', 'exportToClipboard')">

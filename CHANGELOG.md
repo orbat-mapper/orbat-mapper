@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added multi-select batch delete for stored scenarios in the landing page and import scenario browsers, including filtered select-all and confirmation dialog support.
 - Added a sort direction control to the stored scenario browser dropdown, with an icon indicating ascending or descending order.
 - Added a recording control dropdown to the navbar.
+- Added recovery drafts for scenario editing, along with "Revert to opened state" and "Revert to saved version" actions.
 
 ### Changed
 
@@ -24,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Reworked the ORBAT panel footer recording controls into compact direct toggles for hierarchy and position recording.
 - The stored scenario browser now keeps its header controls visible while long scenario lists scroll within a capped results area.
 - The stored scenario browser sort dropdown now shows the active sort field with radio-item selection.
+- Scenario editing now uses a hybrid save model: "Save scenario" updates the stored scenario, autosave writes recovery drafts, and leaving or reloading warns only about changes not explicitly saved.
 
 ### Fixed
 
