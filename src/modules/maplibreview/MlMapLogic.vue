@@ -125,6 +125,10 @@ function setupMapLayers() {
       source: "unitSource",
       layout: {
         "icon-image": ["get", "symbolKey"],
+        "icon-rotate": ["get", "symbolRotation"],
+        "icon-rotation-alignment": "map",
+        "text-rotate": ["get", "symbolRotation"],
+        "text-rotation-alignment": "map",
         "text-font": ["Noto Sans Italic"],
         "text-offset": [0, 1.5],
         "text-anchor": "top",
@@ -480,6 +484,7 @@ function addUnits(initial = false, positionOverrides?: ReadonlyMap<string, Posit
           symbolKey: isSelected ? `sel-${symbolKey}` : symbolKey,
           sidc: unit.sidc,
           label: unit.shortName || unit.name || "Unnamed Unit",
+          symbolRotation: unit._state?.symbolRotation ?? 0,
         },
       } as Feature;
     }),
