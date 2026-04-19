@@ -48,11 +48,10 @@ function showScenarioInfo() {
 }
 
 async function maybePromptForDraftRecovery(
-  scenarioId: string,
   savedScenario: Scenario | null,
 ) {
   if (!savedScenario) return;
-  const draft = await scenario.value.io.getNewerDraft(scenarioId, savedScenario);
+  const draft = await scenario.value.io.getNewerDraft(savedScenario.id, savedScenario);
   if (!draft) return;
   pendingDraft.value = draft;
   canonicalScenario.value = savedScenario;
@@ -72,7 +71,7 @@ async function loadScenarioForEditor(scenarioId: string) {
       const demoScenario = await scenario.value.io.loadDemoScenario(demoId);
       if (demoScenario) {
         showScenarioInfo();
-        await maybePromptForDraftRecovery(scenarioId, demoScenario);
+        await maybePromptForDraftRecovery(demoScenario);
       }
     }
     localReady.value = true;
@@ -84,7 +83,7 @@ async function loadScenarioForEditor(scenarioId: string) {
   if (idbscenario) {
     scenario.value.io.loadFromObject(idbscenario);
     showScenarioInfo();
-    await maybePromptForDraftRecovery(scenarioId, idbscenario);
+    await maybePromptForDraftRecovery(idbscenario);
   } else {
     scenarioNotFound.value = true;
     console.error("Scenario not found in indexeddb");
