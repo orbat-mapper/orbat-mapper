@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
-import { formatReferenceFeatureValue } from "@/modules/scenarioeditor/referenceFeatureUtils";
+import { getReferenceFeatureDisplayValue } from "@/modules/scenarioeditor/referenceFeatureUtils";
 
 interface Props {
   feature: ReferenceFeatureSelection;
@@ -14,7 +14,7 @@ const propertyEntries = computed(() =>
     .filter(([, value]) => value !== undefined)
     .map(([key, value]) => ({
       key,
-      value: formatReferenceFeatureValue(value),
+      ...getReferenceFeatureDisplayValue(value),
     })),
 );
 </script>
@@ -38,7 +38,12 @@ const propertyEntries = computed(() =>
         <p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           {{ entry.key }}
         </p>
-        <pre class="font-sans text-sm break-words whitespace-pre-wrap">{{
+        <div
+          v-if="entry.kind === 'html'"
+          class="reference-feature-html prose prose-sm dark:prose-invert max-w-none break-words overflow-x-auto"
+          v-html="entry.value"
+        />
+        <pre v-else class="font-sans text-sm break-words whitespace-pre-wrap">{{
           entry.value
         }}</pre>
       </div>
@@ -49,3 +54,68 @@ const propertyEntries = computed(() =>
     </p>
   </section>
 </template>
+
+<style scoped>
+.reference-feature-html :deep(table) {
+  width: 100%;
+}
+
+.reference-feature-html :deep(th),
+.reference-feature-html :deep(td) {
+  vertical-align: top;
+}
+
+:global(.dark) .reference-feature-html :deep(
+    p,
+    div,
+    span,
+    li,
+    dt,
+    dd,
+    blockquote,
+    pre,
+    code,
+    th,
+    td,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    em,
+    b,
+    i,
+    u,
+    small,
+    sub,
+    sup,
+    font
+  ) {
+  color: var(--foreground) !important;
+}
+
+:global(.dark) .reference-feature-html :deep(table),
+:global(.dark) .reference-feature-html :deep(thead),
+:global(.dark) .reference-feature-html :deep(tbody),
+:global(.dark) .reference-feature-html :deep(tfoot),
+:global(.dark) .reference-feature-html :deep(tr),
+:global(.dark) .reference-feature-html :deep(th),
+:global(.dark) .reference-feature-html :deep(td) {
+  background-color: transparent !important;
+  border-color: var(--border) !important;
+}
+
+:global(.dark) .reference-feature-html :deep(a) {
+  color: var(--primary) !important;
+}
+
+:global(.dark) .reference-feature-html :deep(hr) {
+  border-color: var(--border) !important;
+}
+
+:global(.dark) .reference-feature-html :deep(img) {
+  opacity: 0.95;
+}
+</style>
