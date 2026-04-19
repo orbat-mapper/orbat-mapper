@@ -279,11 +279,7 @@ watchEffect(() => {
       <MainToolbarButton
         :active="rotateUnitEnabled"
         @click="setRotateMode()"
-        :title="
-          props.canRotateUnits
-            ? 'Rotate unit'
-            : 'Rotate unit not supported in MapLibre mode yet'
-        "
+        :title="props.canRotateUnits ? 'Rotate unit' : 'Rotate unit not supported'"
         :disabled="!props.canRotateUnits"
       >
         <RotateCwIcon class="size-5" />

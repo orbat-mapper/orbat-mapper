@@ -335,7 +335,7 @@ const headerControlsStyle = computed(() =>
       >
         <MapEditorMainToolbar
           :can-move-units="true"
-          :can-rotate-units="false"
+          :can-rotate-units="true"
           :can-measure="false"
           :can-draw="false"
           :can-track="true"
@@ -361,7 +361,7 @@ const headerControlsStyle = computed(() =>
       >
         <MapEditorMainToolbar
           :can-move-units="true"
-          :can-rotate-units="false"
+          :can-rotate-units="true"
           :can-measure="false"
           :can-draw="false"
           :can-track="true"

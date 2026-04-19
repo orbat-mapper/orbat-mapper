@@ -40,6 +40,7 @@ import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { useMaplibreRotateInteraction } from "@/modules/maplibreview/useMaplibreRotateInteraction";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -72,7 +73,11 @@ const {
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const { hoverEnabled } = storeToRefs(useMapSelectStore());
-const { moveUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
+  onPreview: (overrides) => addUnits(false, undefined, overrides),
+  onPreviewEnd: () => addUnits(),
+});
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const recordingStore = useRecordingStore();
 let unitDragState: {
@@ -294,9 +299,19 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
+  if (rotateInteraction.isRotating.value) return;
   if (unitDragState) {
     previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
     mlMap.getCanvas().style.cursor = "grabbing";
+    return;
+  }
+  if (rotateUnitEnabled.value) {
+    const topHit = queryInteractiveFeatures(e.point)[0];
+    const rotatableUnitIds =
+      topHit?.layer.id === "unitLayer"
+        ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
+        : [];
+    mlMap.getCanvas().style.cursor = rotatableUnitIds.length ? "grab" : "";
     return;
   }
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
@@ -316,6 +331,7 @@ function onMapMouseMove(e: MapMouseEvent) {
 }
 
 function onMapTouchMove(e: MapTouchEvent) {
+  if (rotateInteraction.isRotating.value) return;
   if (!unitDragState) return;
   previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
 }
@@ -456,7 +472,11 @@ onScenarioActionHook.on(async ({ action }) => {
   await saveMapLibreMapAsPng(mlMap);
 });
 
-function addUnits(initial = false, positionOverrides?: ReadonlyMap<string, Position>) {
+function addUnits(
+  initial = false,
+  positionOverrides?: ReadonlyMap<string, Position>,
+  rotationOverrides?: ReadonlyMap<string, number>,
+) {
   const source = mlMap.getSource("unitSource") as GeoJSONSource;
   if (!source) return;
 
@@ -473,6 +493,11 @@ function addUnits(initial = false, positionOverrides?: ReadonlyMap<string, Posit
         symbolCache.set(symbolKey, symbolData);
       }
       const isSelected = selectedUnitIds.value.has(unit.id);
+      const rotationOverride = rotationOverrides?.get(unit.id);
+      const symbolRotation =
+        rotationOverride !== undefined
+          ? rotationOverride
+          : (unit._state?.symbolRotation ?? 0);
       return {
         type: "Feature",
         geometry: {
@@ -484,7 +509,7 @@ function addUnits(initial = false, positionOverrides?: ReadonlyMap<string, Posit
           symbolKey: isSelected ? `sel-${symbolKey}` : symbolKey,
           sidc: unit.sidc,
           label: unit.shortName || unit.name || "Unnamed Unit",
-          symbolRotation: unit._state?.symbolRotation ?? 0,
+          symbolRotation,
         },
       } as Feature;
     }),

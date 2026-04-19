@@ -232,7 +232,7 @@ describe("ScenarioEditorMaplibre", () => {
     const toolbar = wrapper.getComponent({ name: "MapEditorMainToolbar" });
 
     expect(toolbar.props("canMoveUnits")).toBe(true);
-    expect(toolbar.props("canRotateUnits")).toBe(false);
+    expect(toolbar.props("canRotateUnits")).toBe(true);
     expect(toolbar.props("canMeasure")).toBe(false);
     expect(toolbar.props("canDraw")).toBe(false);
     expect(toolbar.props("canTrack")).toBe(true);
