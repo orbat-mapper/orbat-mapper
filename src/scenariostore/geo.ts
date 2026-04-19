@@ -38,7 +38,7 @@ import {
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
 import { klona } from "klona";
-import { releaseImageCache, retainImageCache } from "@/importexport/fileHandling";
+import * as fileHandling from "@/importexport/fileHandling";
 import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
@@ -293,8 +293,10 @@ export function useGeo(store: NewScenarioStore) {
       _isTemporary: data.url.startsWith("blob:"),
     });
     if (!newLayer.id) newLayer.id = nanoid();
+    // Blob-backed KML layers are temporary import artifacts, so cache ownership is
+    // established when the layer is added and released when the layer is removed.
     if (newLayer.type === "KMLLayer" && newLayer.url.startsWith("blob:")) {
-      retainImageCache();
+      fileHandling.retainImageCache();
     }
     update(
       (s) => {
@@ -544,7 +546,7 @@ export function useGeo(store: NewScenarioStore) {
         const layer = getReferenceLayerFromMap(s.layerStackMap, layerId);
         if (!layer) return;
         if (layer.source.type === "KMLLayer" && layer.source.url.startsWith("blob:")) {
-          releaseImageCache();
+          fileHandling.releaseImageCache();
         }
         delete s.layerStackMap[layerId];
         removeElement(layerId, s.layerStack);

@@ -6,11 +6,8 @@ import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externa
 import type { FeatureCollection } from "geojson";
 import type { MilxImportedLayer } from "@/composables/scenarioImport";
 import ImportImageStep from "@/components/ImportImageStep.vue";
-import {
-  releaseImageCache,
-  retainImageCache,
-  type ImportedFileInfo,
-} from "@/importexport/fileHandling";
+import * as fileHandling from "@/importexport/fileHandling";
+import type { ImportedFileInfo } from "@/importexport/fileHandling";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import type { ImportData } from "@/types/importExport.ts";
 
@@ -69,13 +66,13 @@ const retainsKmlImageCache = ref(false);
 
 function retainKmlImageCache() {
   if (retainsKmlImageCache.value) return;
-  retainImageCache();
+  fileHandling.retainImageCache();
   retainsKmlImageCache.value = true;
 }
 
 function releaseOwnedKmlImageCache() {
   if (!retainsKmlImageCache.value) return;
-  releaseImageCache();
+  fileHandling.releaseImageCache();
   retainsKmlImageCache.value = false;
 }
 
