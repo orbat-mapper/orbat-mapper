@@ -14,6 +14,7 @@ import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 vi.mock("@/composables/mainToolbarData", () => ({
   useActiveSidc: () => ({
@@ -195,6 +196,12 @@ describe("MaplibreContextMenu", () => {
     setActivePinia(createPinia());
     vi.useRealTimers();
     useSelectedItems().clear();
+    const mapSettings = useMapSettingsStore();
+    mapSettings.coordinateFormat = "DecimalDegrees";
+    mapSettings.showLocation = true;
+    mapSettings.showScaleLine = true;
+    mapSettings.showFeatureTooltip = true;
+    mapSettings.mapLibreUnitRotationMode = "screen";
     const playback = usePlaybackStore();
     playback.playbackRunning = false;
     playback.playbackLooping = false;
@@ -357,6 +364,22 @@ describe("MaplibreContextMenu", () => {
 
     expect(wrapper.exists()).toBe(true);
     expect((wrapper.props("baseMapId") as string | undefined) ?? "").toBe("");
+  });
+
+  it("renders unit rotation presets and updates the shared map setting", async () => {
+    const mapSettings = useMapSettingsStore();
+    const { wrapper } = mountMenu();
+
+    expect(wrapper.text()).toContain("Unit rotation");
+    expect(wrapper.text()).toContain("Screen-aligned");
+    expect(wrapper.text()).toContain("Mixed");
+    expect(wrapper.text()).toContain("Map-aligned");
+
+    await wrapper.get("[data-value='mixed']").trigger("click");
+    expect(mapSettings.mapLibreUnitRotationMode).toBe("mixed");
+
+    await wrapper.get("[data-value='map']").trigger("click");
+    expect(mapSettings.mapLibreUnitRotationMode).toBe("map");
   });
 
   it("toggles shared UI controls from the maplibre context menu", async () => {

@@ -74,8 +74,13 @@ const mainToolbarStore = useMainToolbarStore();
 const recordingStore = useRecordingStore();
 const { send } = useNotifications();
 const { copy: copyToClipboard } = useClipboard();
-const { coordinateFormat, showLocation, showScaleLine, showFeatureTooltip } =
-  storeToRefs(mapSettings);
+const {
+  coordinateFormat,
+  showLocation,
+  showScaleLine,
+  showFeatureTooltip,
+  mapLibreUnitRotationMode,
+} = storeToRefs(mapSettings);
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 const { activeUnitId, activeFeatureId, selectedUnitIds, selectedFeatureIds } =
   useSelectedItems();
@@ -462,6 +467,22 @@ function onContextMenu(event: MouseEvent) {
                 </ContextMenuRadioItem>
                 <ContextMenuRadioItem value="nautical" @select.prevent>
                   Nautical
+                </ContextMenuRadioItem>
+              </ContextMenuRadioGroup>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger inset>Unit rotation</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuRadioGroup v-model="mapLibreUnitRotationMode">
+                <ContextMenuRadioItem value="screen" @select.prevent>
+                  Screen-aligned
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="mixed" @select.prevent>
+                  Mixed
+                </ContextMenuRadioItem>
+                <ContextMenuRadioItem value="map" @select.prevent>
+                  Map-aligned
                 </ContextMenuRadioItem>
               </ContextMenuRadioGroup>
             </ContextMenuSubContent>

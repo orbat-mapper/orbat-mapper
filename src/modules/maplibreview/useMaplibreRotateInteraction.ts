@@ -1,9 +1,4 @@
-import type {
-  Map as MlMap,
-  MapMouseEvent,
-  MapTouchEvent,
-  PointLike,
-} from "maplibre-gl";
+import type { Map as MlMap, MapMouseEvent, MapTouchEvent, PointLike } from "maplibre-gl";
 import { onUnmounted, ref, watch, type Ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { TScenario } from "@/scenariostore";

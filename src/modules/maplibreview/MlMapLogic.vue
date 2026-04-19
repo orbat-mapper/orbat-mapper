@@ -41,6 +41,10 @@ import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useMaplibreRotateInteraction } from "@/modules/maplibreview/useMaplibreRotateInteraction";
+import {
+  useMapSettingsStore,
+  type MapLibreUnitRotationMode,
+} from "@/stores/mapSettingsStore";
 
 const { mlMap, activeScenario } = defineProps<{
   mlMap: MlMap;
@@ -63,6 +67,7 @@ let shouldCenterOnNextStyleLoad = true;
 
 const playback = usePlaybackStore();
 const uiStore = useUiStore();
+const mapSettings = useMapSettingsStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const { onUnitSelectHook, onFeatureSelectHook, onScenarioActionHook } =
   injectStrict(searchActionsKey);
@@ -74,6 +79,7 @@ const {
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const { hoverEnabled } = storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
   onPreviewEnd: () => addUnits(),
@@ -113,7 +119,31 @@ const { isDragging, formattedPosition } = useMaplibreMapDrop(
     drawHistory();
   },
 );
+
+function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
+  icon: "map" | "viewport";
+  text: "map" | "viewport";
+} {
+  switch (mode) {
+    case "map":
+      return { icon: "map", text: "map" };
+    case "mixed":
+      return { icon: "map", text: "viewport" };
+    case "screen":
+    default:
+      return { icon: "viewport", text: "viewport" };
+  }
+}
+
+function applyUnitLayerRotationAlignment() {
+  if (!mlMap.getLayer("unitLayer")) return;
+  const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
+  mlMap.setLayoutProperty("unitLayer", "icon-rotation-alignment", alignment.icon);
+  mlMap.setLayoutProperty("unitLayer", "text-rotation-alignment", alignment.text);
+}
+
 function setupMapLayers() {
+  const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
       type: "geojson",
@@ -131,9 +161,9 @@ function setupMapLayers() {
       layout: {
         "icon-image": ["get", "symbolKey"],
         "icon-rotate": ["get", "symbolRotation"],
-        "icon-rotation-alignment": "map",
+        "icon-rotation-alignment": alignment.icon,
         "text-rotate": ["get", "symbolRotation"],
-        "text-rotation-alignment": "map",
+        "text-rotation-alignment": alignment.text,
         "text-font": ["Noto Sans Italic"],
         "text-offset": [0, 1.5],
         "text-anchor": "top",
@@ -445,6 +475,10 @@ watch(
 );
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
+
+watch(mapLibreUnitRotationMode, () => {
+  applyUnitLayerRotationAlignment();
+});
 
 watch(
   [() => activeScenario.store.state.featureStateCounter, doNotFilterLayers],

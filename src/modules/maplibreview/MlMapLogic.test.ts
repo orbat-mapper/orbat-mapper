@@ -9,6 +9,7 @@ import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injec
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -156,10 +157,17 @@ function createMockMap() {
   };
 }
 
+function getAddedLayerSpec(mockMap: ReturnType<typeof createMockMap>, id: string) {
+  return mockMap.map.addLayer.mock.calls
+    .map(([layer]: [{ id: string }]) => layer)
+    .find((layer: { id: string }) => layer.id === id);
+}
+
 describe("MlMapLogic", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     saveMapLibreMapAsPng.mockReset();
+    useMapSettingsStore().mapLibreUnitRotationMode = "screen";
   });
 
   it("creates the unit layer immediately when mounted after the initial map load", () => {
@@ -219,9 +227,134 @@ describe("MlMapLogic", () => {
     expect(mockMap.map.addLayer).toHaveBeenCalledWith(
       expect.objectContaining({ id: "unitLayer", source: "unitSource" }),
     );
+    expect(getAddedLayerSpec(mockMap, "unitLayer")?.layout).toMatchObject({
+      "icon-rotation-alignment": "viewport",
+      "text-rotation-alignment": "viewport",
+    });
     expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalled();
     expect(mockMap.map.setCenter).toHaveBeenCalledWith([10, 20]);
     expect(refreshScenarioFeatureLayers).toHaveBeenCalled();
+  });
+
+  it("updates unit rotation alignment live when the map setting changes", async () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-unit-rotation-mode",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.setLayoutProperty.mockClear();
+    mapSettings.mapLibreUnitRotationMode = "mixed";
+    await nextTick();
+
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "unitLayer",
+      "icon-rotation-alignment",
+      "map",
+    );
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "unitLayer",
+      "text-rotation-alignment",
+      "viewport",
+    );
+  });
+
+  it("re-applies the current rotation preset when the MapLibre style reloads", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapLibreUnitRotationMode = "map";
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-style-reload-rotation-mode",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    mockMap.map.removeLayer("unitLayer");
+    mockMap.map.removeSource("unitSource");
+    mockMap.map.addLayer.mockClear();
+
+    mockMap.emit("style.load");
+
+    expect(getAddedLayerSpec(mockMap, "unitLayer")?.layout).toMatchObject({
+      "icon-rotation-alignment": "map",
+      "text-rotation-alignment": "map",
+    });
   });
 
   it("renders units that become visible right after mount without needing further interaction", async () => {
