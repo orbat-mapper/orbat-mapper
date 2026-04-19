@@ -170,14 +170,15 @@ export function useScenarioMapLayers(olMap: OLMap) {
       { noEmit: true, undoable: false },
     );
     mapLayersGroup.getLayers().push(newLayer);
-    source.once("featuresloaderror", releaseImageCache);
-    source.once("featuresloadend", () => {
+    const onFeaturesLoadEnd = () => {
       releaseImageCache();
       console.log("Loaded KML layer");
       const layerExtent = fixExtent(source.getExtent());
       console.log("layerExtent", layerExtent);
       layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
-    });
+    };
+    source.once("featuresloaderror", releaseImageCache);
+    source.once("featuresloadend", onFeaturesLoadEnd);
   }
 
   function addTileJSONLayer(data: ScenarioTileJSONLayer) {
