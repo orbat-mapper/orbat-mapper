@@ -56,10 +56,15 @@ function applyFormattedLocation(position: Position | null) {
   formattedLocation.value = getCoordinateFormatFunction(coordinateFormat.value)(position);
 }
 
-const throttledApplyFormattedLocation = useThrottleFn(() => {
-  if (!showLocation.value) return;
-  applyFormattedLocation(lastPointerLocation);
-}, 16, true, true) as ReturnType<typeof useThrottleFn> & {
+const throttledApplyFormattedLocation = useThrottleFn(
+  () => {
+    if (!showLocation.value) return;
+    applyFormattedLocation(lastPointerLocation);
+  },
+  16,
+  true,
+  true,
+) as ReturnType<typeof useThrottleFn> & {
   cancel?: () => void;
 };
 

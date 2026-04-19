@@ -40,7 +40,13 @@ export interface TableColumn extends SelectItem<ColumnField> {
 
 export type GridColumnWidths = Record<GridResizableColumnKey, number>;
 
-export type DetailsPanel = "unit" | "event" | "mapLayer" | "feature" | "scenario";
+export type DetailsPanel =
+  | "unit"
+  | "event"
+  | "mapLayer"
+  | "feature"
+  | "referenceFeature"
+  | "scenario";
 
 export type BreadcrumbItemType = {
   name: string;

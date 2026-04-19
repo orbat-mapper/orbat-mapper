@@ -417,6 +417,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
         id: data.id,
         title: data.name,
         name: data.name,
+        layerType: LayerTypes.referenceFeature,
       },
     });
 

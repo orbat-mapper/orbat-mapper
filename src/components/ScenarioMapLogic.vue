@@ -24,7 +24,11 @@ import {
   useUnitSelectInteraction,
 } from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
-import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtils";
+import {
+  getTopHitLayerType,
+  isReferenceFeatureLayerType,
+  useScenarioFeatureSelect,
+} from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { provideMapHover } from "@/composables/geoHover";
 import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";
@@ -42,6 +46,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useOlScenarioLayerController } from "@/geo/engines/openlayers/olScenarioLayerController";
+import { extractReferenceFeatureSelection } from "@/modules/scenarioeditor/referenceFeatureUtils";
 
 const props = defineProps<{ olMap: OLMap }>();
 const emit = defineEmits<{
@@ -66,7 +71,7 @@ const mapRef = shallowRef<OLMap>();
 const uiStore = useUiStore();
 const recordingStore = useRecordingStore();
 
-const { selectedFeatureIds } = useSelectedItems();
+const { selectedFeatureIds, activeReferenceFeature } = useSelectedItems();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -154,6 +159,30 @@ const { rotateInteraction } = useRotateInteraction(olMap, unitLayer, rotateUnitE
 useOlEvent(unitLayerGroup.on("change:visible", toggleUnitInteractions));
 olMap.addInteraction(moveUnitInteraction);
 olMap.addInteraction(rotateInteraction);
+
+useOlEvent(
+  olMap.on("singleclick", (event) => {
+    const topHitLayerType = getTopHitLayerType(olMap, event.pixel, 20);
+    if (!isReferenceFeatureLayerType(topHitLayerType)) {
+      activeReferenceFeature.value = null;
+      return;
+    }
+
+    let selection = null;
+    olMap.forEachFeatureAtPixel(
+      event.pixel,
+      (feature, layer) => {
+        if (!isReferenceFeatureLayerType(layer?.get("layerType"))) {
+          return false;
+        }
+        selection = extractReferenceFeatureSelection(feature, layer);
+        return true;
+      },
+      { hitTolerance: 20 },
+    );
+    activeReferenceFeature.value = selection;
+  }),
+);
 
 const { showLocation, coordinateFormat, showScaleLine } =
   storeToRefs(useMapSettingsStore());

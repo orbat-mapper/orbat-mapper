@@ -70,6 +70,7 @@ const selectMarkerStyle = new Style({
 
 export const LayerTypes = {
   scenarioFeature: "SCENARIO_FEATURE",
+  referenceFeature: "REFERENCE_FEATURE",
   units: "UNITS",
   labels: "LABELS",
 } as const;
@@ -78,6 +79,10 @@ export type LayerType = (typeof LayerTypes)[keyof typeof LayerTypes];
 
 export function isScenarioFeatureLayerType(layerType?: string): boolean {
   return layerType === LayerTypes.scenarioFeature;
+}
+
+export function isReferenceFeatureLayerType(layerType?: string): boolean {
+  return layerType === LayerTypes.referenceFeature;
 }
 
 const geometryIconMap: any = {

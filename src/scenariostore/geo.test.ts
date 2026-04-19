@@ -57,7 +57,9 @@ describe("scenario geo item accessors", () => {
   });
 
   it("retains and releases KMZ image cache for blob-backed KML map layers", () => {
-    const retainSpy = vi.spyOn(fileHandling, "retainImageCache").mockImplementation(() => {});
+    const retainSpy = vi
+      .spyOn(fileHandling, "retainImageCache")
+      .mockImplementation(() => {});
     const releaseSpy = vi
       .spyOn(fileHandling, "releaseImageCache")
       .mockImplementation(() => {});
@@ -96,7 +98,9 @@ describe("scenario geo item accessors", () => {
   });
 
   it("does not touch the KMZ image cache for remote KML map layers", () => {
-    const retainSpy = vi.spyOn(fileHandling, "retainImageCache").mockImplementation(() => {});
+    const retainSpy = vi
+      .spyOn(fileHandling, "retainImageCache")
+      .mockImplementation(() => {});
     const releaseSpy = vi
       .spyOn(fileHandling, "releaseImageCache")
       .mockImplementation(() => {});

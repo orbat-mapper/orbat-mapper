@@ -20,6 +20,7 @@ import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPane
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import { GripHorizontal } from "@lucide/vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
+import ReferenceFeatureDetails from "@/modules/scenarioeditor/ReferenceFeatureDetails.vue";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -40,6 +41,7 @@ const {
   activeUnitId,
   activeScenarioEventId,
   activeMapLayerId,
+  activeReferenceFeature,
   activeDetailsPanel,
 } = useSelectedItems();
 const uiStore = useUiStore();
@@ -215,6 +217,11 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
         <ScenarioEventDetails
           v-else-if="activeDetailsPanel === 'event'"
           :event-id="activeScenarioEventId!"
+          class="p-4"
+        />
+        <ReferenceFeatureDetails
+          v-else-if="activeDetailsPanel === 'referenceFeature'"
+          :feature="activeReferenceFeature!"
           class="p-4"
         />
         <ScenarioMapLayerDetails

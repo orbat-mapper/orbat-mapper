@@ -2,6 +2,7 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EntityId } from "@/types/base";
 import { computed, ref, watch } from "vue";
 import { type DetailsPanel } from "@/modules/scenarioeditor/types";
+import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
 
 export type SelectedScenarioFeatures = Set<FeatureId>;
 
@@ -12,6 +13,7 @@ const selectedFeatureIds = ref<SelectedScenarioFeatures>(new Set());
 const activeFeatureIdRef = ref<FeatureId | undefined | null>();
 const activeMapLayerIdRef = ref<FeatureId | undefined | null>();
 const selectedMapLayerIds = ref<SelectedScenarioFeatures>(new Set());
+const activeReferenceFeatureRef = ref<ReferenceFeatureSelection | null>(null);
 
 const selectedScenarioEventIds = ref<Set<EntityId>>(new Set());
 const activeScenarioEventIdRef = ref<EntityId | undefined | null>(null);
@@ -97,11 +99,20 @@ const activeMapLayerId = computed({
   },
 });
 
+const activeReferenceFeature = computed({
+  get: () => activeReferenceFeatureRef.value,
+  set: (v: ReferenceFeatureSelection | null) => {
+    if (v) clear();
+    activeReferenceFeatureRef.value = v;
+  },
+});
+
 function clear() {
   if (selectedUnitIds.value.size > 0) selectedUnitIds.value.clear();
   if (selectedFeatureIds.value.size > 0) selectedFeatureIds.value.clear();
   if (selectedScenarioEventIds.value.size > 0) selectedScenarioEventIds.value.clear();
   if (selectedMapLayerIds.value.size > 0) selectedMapLayerIds.value.clear();
+  activeReferenceFeatureRef.value = null;
   orbatRevealUnitId.value = null;
   showScenarioInfo.value = false;
 }
@@ -116,6 +127,9 @@ const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
 
   if (activeScenarioEventId.value) {
     return "event";
+  }
+  if (activeReferenceFeature.value) {
+    return "referenceFeature";
   }
   if (activeMapLayerId.value) {
     return "mapLayer";
@@ -137,6 +151,7 @@ export function useSelectedItems() {
     selectedScenarioEventIds,
     selectedMapLayerIds,
     activeMapLayerId,
+    activeReferenceFeature,
     showScenarioInfo,
     activeDetailsPanel,
     clear,
