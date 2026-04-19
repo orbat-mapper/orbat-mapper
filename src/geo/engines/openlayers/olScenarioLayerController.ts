@@ -420,9 +420,8 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
         name: data.name,
       },
     });
-    const releaseImportedImages = () => releaseImageCache();
-    source.once("featuresloaderror", releaseImportedImages);
-    source.once("featuresloadend", releaseImportedImages);
+    source.once("featuresloaderror", releaseImageCache);
+    source.once("featuresloadend", releaseImageCache);
 
     const statusUpdate: ScenarioMapLayerUpdate = { _status: "initialized" };
     scenario.geo.updateMapLayer(data.id, statusUpdate, {
