@@ -28,6 +28,7 @@ import { MapCtrlClick } from "@/geo/olInteractions";
 import { getDistance } from "ol/sphere";
 import { convertSpeedToMetric } from "@/utils/convert";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { useRoutingStore } from "@/stores/routingStore";
 
 function squaredDistance(a: number[], b: number[]) {
   const dx = a[0] - b[0];
@@ -74,6 +75,7 @@ export function useUnitHistory(
   } = injectStrict(activeScenarioKey);
 
   const fmt = useTimeFormatStore();
+  const routingStore = useRoutingStore();
   const { selectedUnitIds } = useSelectedItems();
   const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer, labelsLayer } =
     createUnitHistoryLayers();
@@ -148,9 +150,9 @@ export function useUnitHistory(
   );
 
   watch(
-    editHistoryRef,
-    (v) => {
-      historyModify.setActive(v);
+    [editHistoryRef, () => routingStore.active],
+    ([v, routingActive]) => {
+      historyModify.setActive(v && !routingActive);
       drawHistory();
     },
     { immediate: true },
@@ -362,11 +364,18 @@ export function useUnitHistory(
   }
 
   watch(
-    () => showHistoryRef.value && [...selectedUnitIds.value.values()],
-    (selectedUnitIds) => {
+    () => ({
+      selectedUnitIds: showHistoryRef.value && [...selectedUnitIds.value.values()],
+      routingActive: routingStore.active,
+    }),
+    ({ selectedUnitIds, routingActive }) => {
       drawHistory();
-      waypointSelect.setActive(selectedUnitIds && selectedUnitIds.length > 0);
-      ctrlClickInteraction.setActive(selectedUnitIds && selectedUnitIds.length > 0);
+      waypointSelect.setActive(
+        Boolean(selectedUnitIds && selectedUnitIds.length > 0 && !routingActive),
+      );
+      ctrlClickInteraction.setActive(
+        Boolean(selectedUnitIds && selectedUnitIds.length > 0 && !routingActive),
+      );
     },
   );
 

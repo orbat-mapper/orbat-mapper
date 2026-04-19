@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { GlobalEvents } from "vue-global-events";
-import { computed, watch } from "vue";
+import { computed, inject, watch } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey, searchActionsKey } from "@/components/injects";
+import {
+  activeScenarioKey,
+  routeDetailsPanelKey,
+  searchActionsKey,
+} from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
@@ -22,6 +26,7 @@ const {
   helpers: { getUnitById },
 } = activeScenario;
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
+const routeDetailsPanel = inject(routeDetailsPanelKey, null);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
 const {
@@ -74,6 +79,7 @@ const duplicateUnit = () => {
 function handleEscape(e: KeyboardEvent) {
   if (uiStore.escEnabled) {
     if (isRekaComponent(e)) return;
+    if (routeDetailsPanel?.handleEscape()) return;
     clearSelected();
     activeUnitStore.clearActiveUnit();
     activeScenarioEventId.value = null;

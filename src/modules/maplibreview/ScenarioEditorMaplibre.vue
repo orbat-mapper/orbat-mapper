@@ -29,6 +29,7 @@ import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsSto
 import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
+  routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
@@ -53,6 +54,8 @@ import {
   getScenarioMapViewSnapshot,
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
+import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -74,6 +77,7 @@ const {
   showLeftPanel,
   detailsWidth,
   showDetailsPanel,
+  hasRouteDetails,
   openTimeDialog,
   onIncDay,
   onDecDay,
@@ -87,6 +91,15 @@ const {
 
 const mlMap = shallowRef<MlMap>();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
+const {
+  activeRoutingUnitName,
+  addRouteLeg,
+  clearCurrentLeg,
+  finishRoute,
+  closeRouting,
+  endRouting,
+  handleEscape,
+} = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 let cleanupScenarioBinding: (() => void) | null = null;
 const nativeMapStub = shallowRef(null) as unknown as ShallowRef<OLMap>;
 const featureSelectStub = shallowRef(null) as unknown as ShallowRef<Select>;
@@ -96,6 +109,16 @@ provide(
 );
 provide(activeNativeMapKey, nativeMapStub);
 provide(activeFeatureSelectInteractionKey, featureSelectStub);
+provide(routeDetailsPanelKey, {
+  activeRoutingUnitName,
+  addRouteLeg,
+  clearCurrentLeg,
+  finishRoute,
+  closeRouting,
+  endRouting,
+  handleEscape,
+});
+useMapLibreRoutingPreview(() => mlMap.value);
 
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
@@ -299,6 +322,14 @@ const headerControlsStyle = computed(() =>
     ? { marginRight: `${detailsWidth.value + 16}px` }
     : undefined,
 );
+
+function onCloseActiveDetailsPanel() {
+  if (hasRouteDetails.value) {
+    closeRouting();
+    return;
+  }
+  onCloseDetailsPanel();
+}
 </script>
 
 <template>
@@ -319,7 +350,7 @@ const headerControlsStyle = computed(() =>
     @next-event="goToNextScenarioEvent()"
     @prev-event="goToPrevScenarioEvent()"
     @show-place-search="onShowPlaceSearch()"
-    @close-details-panel="onCloseDetailsPanel()"
+    @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
       <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">

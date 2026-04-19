@@ -8,8 +8,18 @@ import { activeLayerKey, activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
-const { mapModeState } = vi.hoisted(() => ({
-  mapModeState: { isMobile: false },
+const { mapModeState, routingHandlers, closeDetailsPanelMock } = vi.hoisted(() => ({
+  mapModeState: { isMobile: false, hasRouteDetails: false },
+  routingHandlers: {
+    activeRoutingUnitName: "Unit 1",
+    addRouteLeg: vi.fn(),
+    clearCurrentLeg: vi.fn(),
+    finishRoute: vi.fn(),
+    closeRouting: vi.fn(),
+    endRouting: vi.fn(),
+    handleEscape: vi.fn(),
+  },
+  closeDetailsPanelMock: vi.fn(),
 }));
 
 const bindScenario = vi.fn();
@@ -82,13 +92,26 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
     showLeftPanel: computed(() => false),
     detailsWidth: computed(() => 320),
     showDetailsPanel: computed(() => false),
+    hasRouteDetails: computed(() => mapModeState.hasRouteDetails),
     openTimeDialog: vi.fn(),
     onIncDay: vi.fn(),
     onDecDay: vi.fn(),
     onShowPlaceSearch: vi.fn(),
-    onCloseDetailsPanel: vi.fn(),
+    onCloseDetailsPanel: closeDetailsPanelMock,
     goToNextScenarioEvent: vi.fn(),
     goToPrevScenarioEvent: vi.fn(),
+  }),
+}));
+
+vi.mock("@/modules/scenarioeditor/useScenarioRouting", () => ({
+  useScenarioRouting: () => ({
+    activeRoutingUnitName: computed(() => routingHandlers.activeRoutingUnitName),
+    addRouteLeg: routingHandlers.addRouteLeg,
+    clearCurrentLeg: routingHandlers.clearCurrentLeg,
+    finishRoute: routingHandlers.finishRoute,
+    closeRouting: routingHandlers.closeRouting,
+    endRouting: routingHandlers.endRouting,
+    handleEscape: routingHandlers.handleEscape,
   }),
 }));
 
@@ -176,11 +199,17 @@ describe("ScenarioEditorMaplibre", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     mapModeState.isMobile = false;
+    mapModeState.hasRouteDetails = false;
     bindScenario.mockReset();
     bindScenario.mockReturnValue(cleanupScenarioBinding);
     cleanupScenarioBinding.mockReset();
     setMapAdapter.mockReset();
     initializeMaplibreLayers.mockReset();
+    routingHandlers.addRouteLeg.mockReset();
+    routingHandlers.clearCurrentLeg.mockReset();
+    routingHandlers.finishRoute.mockReset();
+    routingHandlers.closeRouting.mockReset();
+    closeDetailsPanelMock.mockReset();
   });
 
   it("forwards the initial map view snapshot and emits one on unmount", async () => {

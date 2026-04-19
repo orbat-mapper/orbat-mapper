@@ -77,6 +77,11 @@ export interface MoveLayerOptions {
   direction?: "up" | "down";
 }
 
+export interface AddUnitPositionOptions {
+  via?: Position[];
+  viaStartTime?: number;
+}
+
 function assignReferenceLayerSharedFields(
   layer: NScenarioReferenceLayer,
   data: ScenarioMapLayerUpdate,
@@ -181,13 +186,21 @@ export function useGeo(store: NewScenarioStore) {
     unitId: EntityId,
     coordinates: Position | null,
     atTime?: number,
+    options: AddUnitPositionOptions = {},
   ) {
     let newState: CurrentState | null = null;
     update(
       (s) => {
         const u = s.unitMap[unitId];
         const t = atTime ?? s.currentTime;
-        newState = { t, location: coordinates };
+        newState = {
+          t,
+          location: coordinates,
+          ...(options.via?.length ? { via: options.via } : {}),
+          ...(options.viaStartTime !== undefined
+            ? { viaStartTime: options.viaStartTime }
+            : {}),
+        };
         if (t === s.currentTime) u._state = newState;
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {

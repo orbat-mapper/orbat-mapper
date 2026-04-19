@@ -47,6 +47,7 @@ import {
   useMapSettingsStore,
   type MapLibreUnitRotationMode,
 } from "@/stores/mapSettingsStore";
+import { useRoutingStore } from "@/stores/routingStore";
 
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
@@ -95,6 +96,7 @@ const {
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
 const { hoverEnabled } = storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
+const routingStore = useRoutingStore();
 const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
@@ -392,6 +394,7 @@ function restoreMapDragInteractions(interactions: {
 }
 
 function onMapClick(e: MapMouseEvent) {
+  if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
   const topHit = queryInteractiveFeatures(e.point)[0];

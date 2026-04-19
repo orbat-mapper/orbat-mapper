@@ -33,11 +33,18 @@ export interface GeoJsonOverlayOptions {
   style?: GeoJsonOverlayStyle;
 }
 
-export type MapEventType = "moveend" | "click" | "pointermove" | "singleclick";
+export type MapEventType =
+  | "moveend"
+  | "click"
+  | "pointermove"
+  | "singleclick"
+  | "dblclick";
 
 export interface MapEvent {
   coordinate?: Position;
   pixel?: [number, number];
+  unitId?: string;
+  targetUnitId?: string;
   stopPropagation(): void;
 }
 

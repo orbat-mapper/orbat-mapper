@@ -10,6 +10,7 @@ import VectorSource from "ol/source/Vector";
 import turfEnvelope from "@turf/envelope";
 import { unByKey } from "ol/Observable";
 import View from "ol/View";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 import type {
   AnimateOptions,
   FitOptions,
@@ -150,28 +151,58 @@ export class OlMapAdapter implements MapAdapter {
     if (el) el.style.cursor = cursor;
   }
 
+  private getUnitIdAtPixel(pixel: [number, number] | undefined): string | undefined {
+    if (!pixel || typeof this.olMap.forEachFeatureAtPixel !== "function") {
+      return undefined;
+    }
+
+    let unitId: string | undefined;
+    this.olMap.forEachFeatureAtPixel(
+      pixel,
+      (feature, layer) => {
+        if (layer?.get("layerType") !== LayerTypes.units) {
+          return false;
+        }
+        const id = feature.getId();
+        if (id === undefined || id === null) {
+          return false;
+        }
+        unitId = String(id);
+        return true;
+      },
+      { hitTolerance: 20 },
+    );
+    return unitId;
+  }
+
+  private createMapEventPayload(e: any, includeUnitHit: boolean) {
+    const pixel = e.pixel as [number, number] | undefined;
+    const unitId = includeUnitHit ? this.getUnitIdAtPixel(pixel) : undefined;
+    return {
+      coordinate: e.coordinate
+        ? (toLonLat(e.coordinate, this.projection) as Position)
+        : undefined,
+      pixel,
+      unitId,
+      targetUnitId: unitId,
+      stopPropagation: () => e.stopPropagation(),
+    };
+  }
+
   on(event: MapEventType, handler: MapEventHandler): () => void {
     const key = this.olMap.on(event as any, (e: any) => {
-      handler({
-        coordinate: e.coordinate
-          ? (toLonLat(e.coordinate, this.projection) as Position)
-          : undefined,
-        pixel: e.pixel as [number, number] | undefined,
-        stopPropagation: () => e.stopPropagation(),
-      });
+      handler(
+        this.createMapEventPayload(e, event === "click" || event === "singleclick"),
+      );
     });
     return () => unByKey(key);
   }
 
   once(event: MapEventType, handler: MapEventHandler): () => void {
     const key = this.olMap.once(event as any, (e: any) => {
-      handler({
-        coordinate: e.coordinate
-          ? (toLonLat(e.coordinate, this.projection) as Position)
-          : undefined,
-        pixel: e.pixel as [number, number] | undefined,
-        stopPropagation: () => e.stopPropagation(),
-      });
+      handler(
+        this.createMapEventPayload(e, event === "click" || event === "singleclick"),
+      );
     });
     return () => unByKey(key);
   }

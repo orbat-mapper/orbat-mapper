@@ -18,7 +18,7 @@ import {
 } from "@iconify-prerendered/vue-mdi";
 import { RotateCwIcon } from "@lucide/vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
-import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import { type ToolbarType, useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { storeToRefs } from "pinia";
@@ -214,7 +214,7 @@ function setRotateMode() {
   moveUnitEnabled.value = false;
 }
 
-function toggleToolbarIfSupported(toolbar: "measurements" | "draw" | "track") {
+function toggleToolbarIfSupported(toolbar: ToolbarType) {
   if (
     (toolbar === "measurements" && !props.canMeasure) ||
     (toolbar === "draw" && !props.canDraw) ||

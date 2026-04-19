@@ -36,6 +36,11 @@ import {
 } from "@/types/scenarioLayerItems";
 import { hashObject } from "@/utils";
 import type { ArrowType } from "@/geo/simplestyle";
+import {
+  EMPTY_OBSTACLE_HIGHLIGHT,
+  isObstacleHighlighted,
+  type ObstacleHighlightState,
+} from "@/geo/routing/obstacleHighlight";
 
 export const GLOBE_SCENARIO_FEATURE_PREFIX = "scenario-feature";
 
@@ -49,6 +54,7 @@ type RenderFeatureProperties = {
   geometryKind: GeometryKind;
   renderGroup: string;
   selected: boolean;
+  obstacleHighlighted: boolean;
   zIndex: number;
   strokeColor: string;
   strokeWidth: number;
@@ -368,7 +374,12 @@ function buildFeatureData(
   {
     filterVisible,
     selectedFeatureIds,
-  }: { filterVisible: boolean; selectedFeatureIds: Set<FeatureId> },
+    obstacleHighlight = EMPTY_OBSTACLE_HIGHLIGHT,
+  }: {
+    filterVisible: boolean;
+    selectedFeatureIds: Set<FeatureId>;
+    obstacleHighlight?: ObstacleHighlightState;
+  },
 ) {
   const sourceOpacity = getFeatureOpacity(layer.opacity);
   const features: RenderableGeoJsonFeature<RenderFeatureProperties>[] = [];
@@ -387,6 +398,11 @@ function buildFeatureData(
     const style = item.style || {};
     const layerId = String(layer.id);
     const featureId = String(item.id);
+    const obstacleHighlighted = isObstacleHighlighted(
+      obstacleHighlight,
+      item.id,
+      layer.id,
+    );
     const geometry = convertCircleFeature(item);
     const flattened = flattenGeometry(geometry);
     const strokeColor = toRgbaColor(
@@ -432,6 +448,7 @@ function buildFeatureData(
           geometryKind,
           renderGroup: renderGroup.id,
           selected: selectedFeatureIds.has(item.id),
+          obstacleHighlighted,
           zIndex: item._zIndex ?? index,
           strokeColor,
           strokeWidth,
@@ -795,6 +812,76 @@ function createLayerDefinitions(
         ...zoomBounds,
       },
     });
+    layerDefinitions.push({
+      id: `${prefix}-polygon-obstacle-${suffix}`,
+      spec: {
+        id: `${prefix}-polygon-obstacle-${suffix}`,
+        type: "line",
+        source: sourceId,
+        filter: [
+          "all",
+          createRenderFilter(group.id, "polygon"),
+          ["==", ["get", "obstacleHighlighted"], true],
+        ],
+        layout: {
+          visibility: layoutVisibility,
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#facc15",
+          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-opacity": 0.95,
+        },
+        ...zoomBounds,
+      },
+    });
+    layerDefinitions.push({
+      id: `${prefix}-line-obstacle-${suffix}`,
+      spec: {
+        id: `${prefix}-line-obstacle-${suffix}`,
+        type: "line",
+        source: sourceId,
+        filter: [
+          "all",
+          createRenderFilter(group.id, "line"),
+          ["==", ["get", "obstacleHighlighted"], true],
+        ],
+        layout: {
+          visibility: layoutVisibility,
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-color": "#facc15",
+          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-opacity": 0.95,
+        },
+        ...zoomBounds,
+      },
+    });
+    layerDefinitions.push({
+      id: `${prefix}-point-obstacle-${suffix}`,
+      spec: {
+        id: `${prefix}-point-obstacle-${suffix}`,
+        type: "circle",
+        source: sourceId,
+        filter: [
+          "all",
+          createRenderFilter(group.id, "point"),
+          ["==", ["get", "obstacleHighlighted"], true],
+        ],
+        layout: { visibility: layoutVisibility },
+        paint: {
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-radius": ["+", ["get", "markerSize"], 5],
+          "circle-stroke-color": "#facc15",
+          "circle-stroke-width": 3,
+          "circle-opacity": 0.95,
+        },
+        ...zoomBounds,
+      },
+    });
   }
 
   for (const group of renderResult.labelGroupDefs.values()) {
@@ -873,7 +960,11 @@ function createLayerDefinitions(
 
 export function buildScenarioFeatureRenderPlan(
   layer: FullScenarioLayerItemsLayer,
-  options: { filterVisible: boolean; selectedFeatureIds: Set<FeatureId> },
+  options: {
+    filterVisible: boolean;
+    selectedFeatureIds: Set<FeatureId>;
+    obstacleHighlight?: ObstacleHighlightState;
+  },
 ): ScenarioLayerRenderPlan {
   const layerId = String(layer.id);
   const renderResult = buildFeatureData(layer, options);
@@ -1028,6 +1119,11 @@ export class MapLibreScenarioFeatureManager {
   constructor(
     private mlMap: MlMap,
     private getSelectedFeatureIds: () => Set<FeatureId>,
+    private getObstacleHighlight: () => ObstacleHighlightState = () => ({
+      active: false,
+      layerIds: new Set(),
+      featureIds: new Set(),
+    }),
   ) {
     this.mlMap.on("styleimagemissing", this.styleImageMissingHandler);
   }
@@ -1071,6 +1167,7 @@ export class MapLibreScenarioFeatureManager {
     }
     const filterVisible = options.filterVisible ?? true;
     const selectedFeatureIds = this.getSelectedFeatureIds();
+    const obstacleHighlight = this.getObstacleHighlight();
     const desiredPlans = new Map<string, ScenarioLayerRenderPlan>();
 
     layers.forEach((layer) => {
@@ -1078,6 +1175,7 @@ export class MapLibreScenarioFeatureManager {
       const plan = buildScenarioFeatureRenderPlan(layer, {
         filterVisible,
         selectedFeatureIds,
+        obstacleHighlight,
       });
       desiredPlans.set(plan.layerId, plan);
     });

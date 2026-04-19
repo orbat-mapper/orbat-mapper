@@ -50,23 +50,31 @@ import {
 import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
 import { useSelectionActions } from "@/composables/selectionActions";
 
-const selectStyle = new Style({
-  stroke: new Stroke({ color: "#ffff00", width: 9 }),
-  image: new CircleStyle({
-    radius: 15,
-    fill: new Fill({
-      color: "#ffff00",
+export function createFeatureSelectionStyle(width = 9) {
+  return new Style({
+    stroke: new Stroke({ color: "#ffff00", width }),
+    image: new CircleStyle({
+      radius: 15,
+      fill: new Fill({
+        color: "#ffff00",
+      }),
     }),
-  }),
-});
-const selectMarkerStyle = new Style({
-  image: new CircleStyle({
-    radius: 15,
-    fill: new Fill({
-      color: "#ffff00",
+  });
+}
+
+export function createFeatureSelectionMarkerStyle(radius = 15) {
+  return new Style({
+    image: new CircleStyle({
+      radius,
+      fill: new Fill({
+        color: "#ffff00",
+      }),
     }),
-  }),
-});
+  });
+}
+
+const selectStyle = createFeatureSelectionStyle();
+const selectMarkerStyle = createFeatureSelectionMarkerStyle();
 
 export const LayerTypes = {
   scenarioFeature: "SCENARIO_FEATURE",
@@ -340,6 +348,17 @@ export function useScenarioFeatureSelect(
   const selectedFeatures = selectInteraction.getFeatures();
   let isInternal = false;
 
+  function redrawSelectionOverlay() {
+    selectInteraction.changed();
+    if ("renderSync" in olMap && typeof olMap.renderSync === "function") {
+      olMap.renderSync();
+      return;
+    }
+    if ("render" in olMap && typeof olMap.render === "function") {
+      olMap.render();
+    }
+  }
+
   useOlEvent(
     selectInteraction.on("select", (event: SelectEvent) => {
       isInternal = true;
@@ -365,6 +384,7 @@ export function useScenarioFeatureSelect(
           const { feature } = getFeatureAndLayerById(fid, scenarioLayersOl) || {};
           if (feature) selectedFeatures.push(feature);
         });
+        redrawSelectionOverlay();
       }
       isInternal = false;
     },
@@ -378,6 +398,7 @@ export function useScenarioFeatureSelect(
     (enabled) => {
       selectInteraction.getFeatures().clear();
       selectInteraction.setActive(enabled);
+      redrawSelectionOverlay();
     },
     { immediate: true },
   );

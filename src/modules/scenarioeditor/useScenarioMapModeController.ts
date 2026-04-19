@@ -5,12 +5,14 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore, useWidthStore } from "@/stores/uiStore";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 export function useScenarioMapModeController(resizeMap: () => void) {
   const activeScenario = injectStrict(activeScenarioKey);
   const { getModalTimestamp } = injectStrict(timeModalKey);
 
   const ui = useUiStore();
+  const toolbarStore = useMainToolbarStore();
   const widthStore = useWidthStore();
   const { showLeftPanel } = storeToRefs(ui);
   const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
@@ -28,8 +30,10 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   } = useSelectedItems();
 
   const detailsPanelClosed = ref(false);
+  const hasRouteDetails = computed(() => toolbarStore.currentToolbar === "route");
   const hasSelection = computed(() =>
     Boolean(
+      hasRouteDetails.value ||
       selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
       activeScenarioEventId.value ||
@@ -104,6 +108,7 @@ export function useScenarioMapModeController(resizeMap: () => void) {
     showLeftPanel,
     detailsWidth,
     showDetailsPanel,
+    hasRouteDetails,
     openTimeDialog,
     onIncDay,
     onDecDay,
