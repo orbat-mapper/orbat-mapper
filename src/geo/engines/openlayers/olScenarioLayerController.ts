@@ -98,6 +98,35 @@ function isXyzLayer(layer: ScenarioMapLayer): layer is ScenarioXYZLayer {
   return layer.type === "XYZLayer";
 }
 
+// OpenLayers exposes `declutterMode` only via the Image/Text constructors —
+// no public setter. To declutter labels but always render KML icons, wrap the
+// feature's style function and force every Image style's declutterMode to
+// "none" the first time it appears. Text styles keep their default mode and
+// continue to participate in the layer's declutter pipeline.
+const decluttered = new WeakSet<object>();
+
+function excludeIconsFromDeclutter(feature: Feature) {
+  const original = feature.getStyle();
+  if (original === null || original === undefined) return;
+
+  feature.setStyle((f, resolution) => {
+    const resolved =
+      typeof original === "function"
+        ? (original as (f: any, r: number) => any)(f, resolution)
+        : original;
+    if (!resolved) return resolved;
+    const styleArray = Array.isArray(resolved) ? resolved : [resolved];
+    for (const style of styleArray) {
+      const image = style.getImage?.();
+      if (image && !decluttered.has(image) && image.getDeclutterMode() !== "none") {
+        (image as unknown as { declutterMode_: "none" }).declutterMode_ = "none";
+        decluttered.add(image);
+      }
+    }
+    return styleArray;
+  });
+}
+
 function runCleanup(cleanup: CleanupHandle | undefined) {
   if (!cleanup) return;
   if (typeof cleanup === "function") cleanup();
@@ -413,6 +442,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       opacity: data.opacity ?? 0.7,
       visible: !(data.isHidden ?? false),
       source,
+      declutter: true,
       properties: {
         id: data.id,
         title: data.name,
@@ -428,6 +458,9 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     });
     emitLayerEvent({ type: "map-layer-updated", layerId: data.id, data: statusUpdate });
     layer.getSource()?.once("featuresloadend", () => {
+      for (const feature of source.getFeatures()) {
+        excludeIconsFromDeclutter(feature);
+      }
       const extent = fixExtent(source.getExtent());
       if (extent && !isEmpty(extent)) {
         olMap.getView().fit(extent);

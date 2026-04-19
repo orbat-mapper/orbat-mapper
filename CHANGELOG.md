@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- KML/KMZ features with labels are now decluttered by default.
 - Moved the dark mode toggle into the main menu on mobile devices.
 - Reworked the ORBAT panel footer recording controls into compact direct toggles for hierarchy and position recording.
 - The stored scenario browser now keeps its header controls visible while long scenario lists scroll within a capped results area.
