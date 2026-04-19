@@ -76,6 +76,10 @@ export const LayerTypes = {
 
 export type LayerType = (typeof LayerTypes)[keyof typeof LayerTypes];
 
+export function isScenarioFeatureLayerType(layerType?: string): boolean {
+  return layerType === LayerTypes.scenarioFeature;
+}
+
 const geometryIconMap: any = {
   Point: IconMapMarker,
   LineString: IconVectorLine,
@@ -299,18 +303,20 @@ export function useScenarioFeatureSelect(
     condition: (event) => {
       if (!clickCondition(event)) return false;
       const topHitLayerType = getTopHitLayerType(olMap, event.pixel, hitTolerance);
-      if (
-        topHitLayerType !== undefined &&
-        topHitLayerType !== LayerTypes.scenarioFeature
-      ) {
+      if (topHitLayerType !== undefined && !isScenarioFeatureLayerType(topHitLayerType)) {
         return false;
       }
       return !event.originalEvent.shiftKey || canAdditivelySelectFeature();
     },
     hitTolerance,
-    layers: scenarioLayersOl.getArray(),
+    layers: (layer) => isScenarioFeatureLayerType(layer.get("layerType")),
     style: (feature: FeatureLike, res: number): Style | Style[] => {
-      const styleOrStyles = scenarioFeatureStyle(feature, res, true)!;
+      const styleOrStyles = scenarioFeatureStyle(feature, res, true);
+      if (!styleOrStyles) {
+        return feature.getGeometry()?.getType() === "Point"
+          ? selectMarkerStyle
+          : selectStyle;
+      }
       // scenarioFeatureStyle may return an array when arrows are present
       const baseStyle = Array.isArray(styleOrStyles) ? styleOrStyles[0] : styleOrStyles;
       let activeSelectStyle: Style;
