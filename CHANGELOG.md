@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Clicking KML/KMZ features now opens a read-only details view with attached properties, including richer HTML description rendering.
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
 - Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over. 
 - Added a standalone symbol browser page at `/symbol-browser`.
@@ -30,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Fixed overlapping unit/feature selection on the map so the topmost item takes priority.
 - Fixed blank map clicks so they clear selected scenario features.
 - Fixed shift-click selection on the map so it only extends the current selection type instead of switching between units and scenario features.
+- Fixed KMZ/KML feature clicks in the OpenLayers editor so imported reference features no longer crash the map renderer. 
 
 ## March 2026
 
