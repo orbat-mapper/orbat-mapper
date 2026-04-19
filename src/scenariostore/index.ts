@@ -8,8 +8,14 @@ import { useStateHelpers } from "@/scenariostore/helpers";
 import { useScenarioSettings } from "@/scenariostore/settingsManipulations.ts";
 
 const globalStoreRef = shallowRef<NewScenarioStore>({} as any);
+let globalScenarioIO: ReturnType<typeof useScenarioIO> | undefined;
 
 export const isLoading = ref(false);
+
+function getScenarioIO() {
+  globalScenarioIO ??= useScenarioIO(globalStoreRef);
+  return globalScenarioIO;
+}
 
 // Todo: add store ref as parameter in case we want to load multiple scenarios.
 export function useScenario() {
@@ -19,7 +25,7 @@ export function useScenario() {
         store: globalStoreRef.value,
         unitActions: useUnitManipulations(globalStoreRef.value),
         time: useScenarioTime(globalStoreRef.value),
-        io: useScenarioIO(globalStoreRef),
+        io: getScenarioIO(),
         geo: useGeo(globalStoreRef.value),
         helpers: useStateHelpers(globalStoreRef.value),
         settings: useScenarioSettings(globalStoreRef.value),

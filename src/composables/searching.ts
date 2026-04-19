@@ -178,8 +178,18 @@ const actionItems: ActionItem[] = [
   { action: "browseSymbols", label: "Browse symbols" },
   {
     action: "save",
-    label: "Save scenario to local storage",
+    label: "Save scenario",
     icon: "save",
+  },
+  {
+    action: "restoreOriginal",
+    label: "Revert scenario to opened state",
+    icon: "history",
+  },
+  {
+    action: "revertToSaved",
+    label: "Revert scenario to saved version",
+    icon: "history",
   },
   { action: "loadNew", label: "Load scenario", icon: "upload" },
   { action: "createNew", label: "Create new scenario", icon: "add" },
@@ -214,11 +224,19 @@ const actionItems: ActionItem[] = [
 ];
 
 export function useActionSearch() {
+  const {
+    io: { hasDistinctOpenedBaseline },
+  } = injectStrict(activeScenarioKey);
+
   function searchActions(query: string) {
     const q = query.trim();
     if (!q) return [];
 
-    const hits = fuzzysort.go(q, actionItems, { key: ["label"] });
+    const availableActionItems = actionItems.filter(
+      (item) => item.action !== "restoreOriginal" || hasDistinctOpenedBaseline.value,
+    );
+
+    const hits = fuzzysort.go(q, availableActionItems, { key: ["label"] });
 
     return hits.map(
       (u, i) =>

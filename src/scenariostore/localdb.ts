@@ -13,6 +13,14 @@ export interface ScenarioMetadata {
   image: string;
 }
 
+export interface ScenarioDraft {
+  scenarioId: string;
+  scenario: Scenario;
+  updatedAt: number;
+  appVersion?: string;
+  savedComparisonKey?: string;
+}
+
 interface ScenarioDb extends DBSchema {
   "scenario-blobs": {
     key: string;
@@ -22,6 +30,11 @@ interface ScenarioDb extends DBSchema {
     key: string;
     value: ScenarioMetadata;
     indexes: { "by-name": string; "by-created": Date; "by-modified": Date };
+  };
+  "scenario-drafts": {
+    key: string;
+    value: ScenarioDraft;
+    indexes: { "by-updated-at": number };
   };
 }
 
@@ -33,7 +46,7 @@ export async function useIndexedDb() {
   }
 
   function createOrUpdateDb() {
-    return openDB<ScenarioDb>("scenario-db", 3, {
+    return openDB<ScenarioDb>("scenario-db", 4, {
       upgrade(db, oldVersion, newVersion, transaction) {
         if (oldVersion < 1) {
           db.createObjectStore("scenario-blobs");
@@ -52,6 +65,13 @@ export async function useIndexedDb() {
         if (oldVersion < 3) {
           const metadataStore = transaction.objectStore("scenario-metadata");
           metadataStore.deleteIndex("by-name");
+        }
+
+        if (oldVersion < 4) {
+          const draftStore = db.createObjectStore("scenario-drafts", {
+            keyPath: "scenarioId",
+          });
+          draftStore.createIndex("by-updated-at", "updatedAt", { unique: false });
         }
       },
     });
@@ -122,10 +142,14 @@ export async function useIndexedDb() {
   }
 
   async function deleteScenarios(ids: string[]) {
-    const tx = db.transaction(["scenario-blobs", "scenario-metadata"], "readwrite");
+    const tx = db.transaction(
+      ["scenario-blobs", "scenario-metadata", "scenario-drafts"],
+      "readwrite",
+    );
     for (const id of ids) {
       await tx.objectStore("scenario-blobs").delete(id);
       await tx.objectStore("scenario-metadata").delete(id);
+      await tx.objectStore("scenario-drafts").delete(id);
     }
     await tx.done;
   }
@@ -173,6 +197,33 @@ export async function useIndexedDb() {
   async function getScenarioInfo(id: string) {
     return db.get("scenario-metadata", id);
   }
+
+  async function putScenarioDraft(
+    scenarioId: string,
+    scenario: Scenario,
+    options: Pick<ScenarioDraft, "updatedAt" | "appVersion" | "savedComparisonKey"> = {
+      updatedAt: Date.now(),
+    },
+  ) {
+    const draft: ScenarioDraft = {
+      scenarioId,
+      scenario,
+      updatedAt: options.updatedAt,
+      appVersion: options.appVersion,
+      savedComparisonKey: options.savedComparisonKey,
+    };
+    await db.put("scenario-drafts", draft);
+    return draft;
+  }
+
+  async function getScenarioDraft(scenarioId: string) {
+    return db.get("scenario-drafts", scenarioId);
+  }
+
+  async function deleteScenarioDraft(scenarioId: string) {
+    await db.delete("scenario-drafts", scenarioId);
+  }
+
   return {
     db,
     addScenario,
@@ -184,5 +235,8 @@ export async function useIndexedDb() {
     duplicateScenario,
     downloadAsJson,
     getScenarioInfo,
+    putScenarioDraft,
+    getScenarioDraft,
+    deleteScenarioDraft,
   };
 }

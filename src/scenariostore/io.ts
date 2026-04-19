@@ -1,4 +1,5 @@
 import { until, useFetch, useLocalStorage } from "@vueuse/core";
+import { computed, ref, type ShallowRef } from "vue";
 import type {
   EquipmentData,
   PersonnelData,
@@ -21,7 +22,6 @@ import {
   useNewScenarioStore,
 } from "./newScenarioStore";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
-import type { ShallowRef } from "vue";
 import { isLoading } from "@/scenariostore/index";
 import {
   INTERNAL_NAMES,
@@ -44,7 +44,7 @@ import {
   LOCALSTORAGE_KEY,
   SCENARIO_FILE_VERSION,
 } from "@/config/constants";
-import { useIndexedDb } from "@/scenariostore/localdb";
+import { type ScenarioDraft, useIndexedDb } from "@/scenariostore/localdb";
 import { klona } from "klona";
 import { saveBlobToLocalFile } from "@/utils/files";
 import { compare as compareVersions } from "compare-versions";
@@ -63,6 +63,11 @@ export interface CreateEmptyScenarioOptions {
   id?: string;
   addGroups?: boolean;
   symbologyStandard?: SymbologyStandard;
+}
+
+export interface LoadScenarioOptions {
+  loadedBaseline?: Scenario | null;
+  savedBaseline?: Scenario | null;
 }
 
 export function createEmptyScenario(options: CreateEmptyScenarioOptions = {}): Scenario {
@@ -381,8 +386,69 @@ function getCustomSymbols(state: ScenarioState) {
   return Object.values(state.customSymbolMap);
 }
 
+const DRAFT_SAVE_DEBOUNCE_MS = 2000;
+
+export function normalizeScenarioForComparison(scenario: Scenario): Scenario {
+  const normalized = klona(scenario);
+  if (normalized.meta) {
+    normalized.meta = {
+      ...normalized.meta,
+      lastModifiedDate: "",
+    };
+  }
+  return normalized;
+}
+
+export function getScenarioComparisonKey(scenario: Scenario) {
+  return JSON.stringify(normalizeScenarioForComparison(scenario));
+}
+
+function getScenarioModifiedAt(scenario?: Scenario | null) {
+  if (!scenario?.meta?.lastModifiedDate) return 0;
+  const ts = Date.parse(scenario.meta.lastModifiedDate);
+  return Number.isNaN(ts) ? 0 : ts;
+}
+
 export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   const settingsStore = useSymbolSettingsStore();
+  const loadedBaseline = ref<Scenario | null>(null);
+  const savedBaseline = ref<Scenario | null>(null);
+  const draftDirty = ref(false);
+  const savedDirty = ref(false);
+  const lastDraftSavedAt = ref<number | null>(null);
+  const loadedRevision = ref(0);
+  const savedRevision = ref(0);
+  const lastDraftRevision = ref<number | null>(null);
+  const sessionRevision = ref(0);
+  const hasLoadedBaseline = computed(() => loadedBaseline.value !== null);
+  const hasSavedBaseline = computed(() => savedBaseline.value !== null);
+  const hasDistinctOpenedBaseline = computed(
+    () =>
+      hasLoadedBaseline.value &&
+      hasSavedBaseline.value &&
+      loadedRevision.value !== savedRevision.value,
+  );
+
+  let draftSaveTimer: ReturnType<typeof setTimeout> | undefined;
+  let stopMutationTracking: { off: () => void } | undefined;
+  let dirtySyncQueued = false;
+  let nextScenarioStateRevision = 1;
+
+  function clearDraftSaveTimer() {
+    if (draftSaveTimer) {
+      clearTimeout(draftSaveTimer);
+      draftSaveTimer = undefined;
+    }
+  }
+
+  function stopMutationTrackingSubscription() {
+    stopMutationTracking?.off();
+    stopMutationTracking = undefined;
+  }
+
+  function allocateScenarioStateRevision() {
+    return nextScenarioStateRevision++;
+  }
 
   function toObject(): Scenario {
     const { state } = store.value;
@@ -437,6 +503,132 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     return JSON.parse(stringifyScenario());
   }
 
+  function setBaselines(
+    nextLoadedBaseline: Scenario | null,
+    nextSavedBaseline: Scenario | null = nextLoadedBaseline,
+    options: { loadedRevision?: number; savedRevision?: number } = {},
+  ) {
+    loadedBaseline.value = nextLoadedBaseline ? klona(nextLoadedBaseline) : null;
+    savedBaseline.value = nextSavedBaseline ? klona(nextSavedBaseline) : null;
+    loadedRevision.value = options.loadedRevision ?? 0;
+    savedRevision.value = options.savedRevision ?? loadedRevision.value;
+  }
+
+  function syncRevisionState(currentRevision = store.value.revision.value) {
+    const dirty = hasSavedBaseline.value ? currentRevision !== savedRevision.value : false;
+    savedDirty.value = dirty;
+    draftDirty.value =
+      dirty && (lastDraftRevision.value === null || currentRevision !== lastDraftRevision.value);
+    return { currentRevision, dirty };
+  }
+
+  function hasUnsavedChanges() {
+    return hasSavedBaseline.value
+      ? store.value.revision.value !== savedRevision.value
+      : false;
+  }
+
+  async function deleteDraftByScenarioId(scenarioId: string) {
+    const { deleteScenarioDraft } = await useIndexedDb();
+    await deleteScenarioDraft(scenarioId);
+  }
+
+  async function discardDraft(scenarioId = store.value.state.id) {
+    clearDraftSaveTimer();
+    await deleteDraftByScenarioId(scenarioId);
+    // Reset in-memory draft tracking only when clearing the active scenario's draft.
+    if (store.value?.state?.id === scenarioId) {
+      draftDirty.value = false;
+      lastDraftSavedAt.value = null;
+      lastDraftRevision.value = null;
+    }
+  }
+
+  async function persistDraftNow() {
+    if (!store.value?.state) return;
+    const scenarioId = store.value.state.id;
+    const { currentRevision, dirty } = syncRevisionState();
+    if (!dirty) {
+      await discardDraft(scenarioId);
+      return;
+    }
+    if (lastDraftRevision.value === currentRevision) {
+      draftDirty.value = false;
+      return;
+    }
+    const currentScenario = serializeToObject();
+    const { putScenarioDraft } = await useIndexedDb();
+    const savedAt = Date.now();
+    await putScenarioDraft(scenarioId, currentScenario, {
+      updatedAt: savedAt,
+      appVersion: SCENARIO_FILE_VERSION,
+      savedComparisonKey: savedBaseline.value
+        ? getScenarioComparisonKey(savedBaseline.value)
+        : undefined,
+    });
+    draftDirty.value = false;
+    lastDraftSavedAt.value = savedAt;
+    lastDraftRevision.value = currentRevision;
+  }
+
+  function scheduleDraftSave(delayMs = DRAFT_SAVE_DEBOUNCE_MS) {
+    clearDraftSaveTimer();
+    if (!savedDirty.value) return;
+    draftSaveTimer = setTimeout(() => {
+      draftSaveTimer = undefined;
+      void persistDraftNow();
+    }, delayMs);
+  }
+
+  function queueDirtyStateSync() {
+    if (dirtySyncQueued) return;
+    dirtySyncQueued = true;
+    queueMicrotask(() => {
+      dirtySyncQueued = false;
+      const { dirty } = syncRevisionState();
+      if (!dirty) {
+        void discardDraft();
+        return;
+      }
+      if (draftDirty.value) {
+        scheduleDraftSave();
+      }
+    });
+  }
+
+  function bindMutationTracking() {
+    stopMutationTrackingSubscription();
+    stopMutationTracking = store.value.onMutation(queueDirtyStateSync);
+  }
+
+  function applyScenarioObject(data: LoadableScenario | Scenario) {
+    const { send } = useNotifications();
+    if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
+      send({
+        message: `This scenario was created with a newer version (${data.version}). The current supported version is ${SCENARIO_FILE_VERSION}. Some features may not work correctly.`,
+        type: "warning",
+      });
+    }
+
+    try {
+      clearDraftSaveTimer();
+      stopMutationTrackingSubscription();
+      store.value = useNewScenarioStore(data);
+      sessionRevision.value += 1;
+      bindMutationTracking();
+      settingsStore.symbologyStandard =
+        store.value.state.info.symbologyStandard || "2525";
+      return true;
+    } catch (e) {
+      send({
+        message: `Failed to load scenario: ${e instanceof Error ? e.message : e}. The scenario version (${data.version}) may be incompatible.`,
+        type: "error",
+      });
+      console.error("Failed to load scenario", e);
+      return false;
+    }
+  }
+
   function saveToLocalStorage(key = LOCALSTORAGE_KEY) {
     const scn = useLocalStorage(key, "");
     scn.value = stringifyScenario();
@@ -444,12 +636,27 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
 
   async function saveToIndexedDb() {
     const { putScenario } = await useIndexedDb();
+    clearDraftSaveTimer();
+    const previousScenarioId = store.value.state.id;
     const scn = serializeToObject();
     if (scn.id.startsWith("demo-")) {
       scn.id = nanoid();
       store.value.state.id = scn.id;
     }
-    return await putScenario(scn);
+    await putScenario(scn);
+    setBaselines(loadedBaseline.value, scn, {
+      loadedRevision: loadedRevision.value,
+      savedRevision: store.value.revision.value,
+    });
+    syncRevisionState();
+    draftDirty.value = false;
+    lastDraftSavedAt.value = null;
+    lastDraftRevision.value = null;
+    await Promise.all([
+      deleteDraftByScenarioId(previousScenarioId),
+      previousScenarioId !== scn.id ? deleteDraftByScenarioId(scn.id) : Promise.resolve(),
+    ]);
+    return scn.id;
   }
 
   async function duplicateScenario() {
@@ -469,24 +676,35 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     }
   }
 
-  function loadFromObject(data: LoadableScenario | Scenario) {
-    const { send } = useNotifications();
-    if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
-      send({
-        message: `This scenario was created with a newer version (${data.version}). The current supported version is ${SCENARIO_FILE_VERSION}. Some features may not work correctly.`,
-        type: "warning",
-      });
-    }
-    try {
-      store.value = useNewScenarioStore(data);
-      settingsStore.symbologyStandard =
-        store.value.state.info.symbologyStandard || "2525";
-    } catch (e) {
-      send({
-        message: `Failed to load scenario: ${e instanceof Error ? e.message : e}. The scenario version (${data.version}) may be incompatible.`,
-        type: "error",
-      });
-      console.error("Failed to load scenario", e);
+  function loadFromObject(data: LoadableScenario | Scenario, options: LoadScenarioOptions = {}) {
+    if (!applyScenarioObject(data)) return;
+    const currentScenario = serializeToObject();
+    const nextLoadedBaseline = options.loadedBaseline ?? currentScenario;
+    const nextSavedBaseline = options.savedBaseline ?? nextLoadedBaseline;
+    const baselineSavedRevision = allocateScenarioStateRevision();
+    const baselinesMatch =
+      getScenarioComparisonKey(nextLoadedBaseline) ===
+      getScenarioComparisonKey(nextSavedBaseline);
+    const baselineLoadedRevision = baselinesMatch
+      ? baselineSavedRevision
+      : allocateScenarioStateRevision();
+    const currentRevision =
+      getScenarioComparisonKey(currentScenario) ===
+      getScenarioComparisonKey(nextSavedBaseline)
+        ? baselineSavedRevision
+        : allocateScenarioStateRevision();
+    store.value.setRevision(currentRevision);
+    setBaselines(nextLoadedBaseline, nextSavedBaseline, {
+      loadedRevision: baselineLoadedRevision,
+      savedRevision: baselineSavedRevision,
+    });
+    lastDraftSavedAt.value = null;
+    lastDraftRevision.value = null;
+    syncRevisionState(currentRevision);
+    if (!savedDirty.value) {
+      lastDraftSavedAt.value = null;
+    } else {
+      scheduleDraftSave();
     }
   }
 
@@ -497,14 +715,79 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
 
     if (error.value) {
       console.error(statusCode.value, error.value);
-      return;
+      return null;
     }
     loadFromObject(data.value);
+    return serializeToObject();
   }
 
   function loadEmptyScenario() {
     const scn = createEmptyScenario();
     loadFromObject(scn);
+  }
+
+  function restoreLoadedBaseline() {
+    if (!loadedBaseline.value) return false;
+    if (!applyScenarioObject(loadedBaseline.value)) return false;
+    store.value.clearUndoRedoStack();
+    store.value.setRevision(loadedRevision.value);
+    const { dirty } = syncRevisionState();
+    if (!dirty) {
+      void discardDraft();
+    } else {
+      if (draftDirty.value) scheduleDraftSave();
+    }
+    return true;
+  }
+
+  function revertToSaved() {
+    if (!savedBaseline.value) return false;
+    if (!applyScenarioObject(savedBaseline.value)) return false;
+    store.value.clearUndoRedoStack();
+    store.value.setRevision(savedRevision.value);
+    syncRevisionState(savedRevision.value);
+    void discardDraft();
+    return true;
+  }
+
+  async function flushDraft() {
+    clearDraftSaveTimer();
+    await persistDraftNow();
+  }
+
+  async function getNewerDraft(
+    scenarioId: string,
+    savedScenario: Scenario,
+  ): Promise<ScenarioDraft | null> {
+    const { getScenarioDraft, deleteScenarioDraft } = await useIndexedDb();
+    const draft = await getScenarioDraft(scenarioId);
+    if (!draft) return null;
+
+    const savedComparison = getScenarioComparisonKey(savedScenario);
+    const draftComparison = getScenarioComparisonKey(draft.scenario);
+    if (draftComparison === savedComparison) {
+      await deleteScenarioDraft(scenarioId);
+      return null;
+    }
+
+    if (
+      draft.savedComparisonKey !== undefined &&
+      draft.savedComparisonKey !== savedComparison
+    ) {
+      await deleteScenarioDraft(scenarioId);
+      return null;
+    }
+
+    const savedModifiedAt = getScenarioModifiedAt(savedScenario);
+    if (savedModifiedAt === 0) {
+      return draft.savedComparisonKey === savedComparison ? draft : null;
+    }
+
+    if (draft.updatedAt <= savedModifiedAt) {
+      return null;
+    }
+
+    return draft;
   }
 
   async function loadDemoScenario(id: string | "falkland82" | "narvik40") {
@@ -516,10 +799,11 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const url = idUrlMap[id];
     if (!url) {
       console.warn("Unknown scenario id", id);
-      return;
+      return null;
     }
-    await loadFromUrl(url);
+    const scenario = await loadFromUrl(url);
     isLoading.value = false;
+    return scenario;
   }
 
   async function downloadAsJson(fileName?: string) {
@@ -547,6 +831,24 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     serializeToObject,
     saveToIndexedDb,
     duplicateScenario,
+    loadedBaseline,
+    savedBaseline,
+    hasLoadedBaseline,
+    hasSavedBaseline,
+    hasDistinctOpenedBaseline,
+    draftDirty,
+    savedDirty,
+    hasUnsavedChanges,
+    lastDraftSavedAt,
+    loadedRevision,
+    savedRevision,
+    lastDraftRevision,
+    sessionRevision,
+    flushDraft,
+    discardDraft,
+    getNewerDraft,
+    restoreLoadedBaseline,
+    revertToSaved,
     stringifyObject,
     toObject,
   };
