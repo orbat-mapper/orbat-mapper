@@ -2,12 +2,11 @@
 import { computed, h, ref } from "vue";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
-import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
+import type { NUnit } from "@/types/internalModels";
 import type { Feature as GeoJSONFeature, FeatureCollection, Point } from "geojson";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
-import { featureEach, propReduce } from "@turf/meta";
 import { type SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import InputRadio from "@/components/InputRadio.vue";
@@ -19,6 +18,13 @@ import AlertWarning from "@/components/AlertWarning.vue";
 import { useRootUnits } from "@/composables/scenarioUtils.ts";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import {
+  convertGeoJSONFeatureToScenarioFeature,
+  findLikelyNameColumn,
+  getGeoJSONFeatures,
+  getGeoJSONPropertyNames,
+  normalizeImportedName,
+} from "@/importexport/geojsonScenarioFeatures";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -36,24 +42,15 @@ const isFeatureMode = computed(() => importMode.value === "features");
 
 const selectedFeatures = ref<GeoJSONFeature[]>([]);
 
-const propertyNames = computed(() =>
-  propReduce(
-    props.data,
-    (acc, properties) => {
-      if (properties) Object.keys(properties).forEach((key) => acc.add(key));
-      return acc;
-    },
-    new Set<string>(),
-  ),
-);
+const propertyNames = computed(() => new Set(getGeoJSONPropertyNames(props.data)));
 
 const propertyNameItems = computed(() =>
   Array.from(propertyNames.value).map((key) => ({ label: key, value: key })),
 );
 
-const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] => {
+const computedColumns = computed((): (ColumnDef<GeoJSONFeature, unknown> | false)[] => {
   const items = Array.from(propertyNames.value).map(
-    (key): ColumnDef<GeoJSONFeature, any> => ({
+    (key): ColumnDef<GeoJSONFeature, unknown> => ({
       accessorFn: (f) => f.properties?.[key] ?? "",
       header: key,
     }),
@@ -88,45 +85,20 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, any> | false)[] 
 const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 
 const geoJSONFeatures = computed((): GeoJSONFeature[] => {
-  const extractedFeatures: GeoJSONFeature[] = [];
-  featureEach(props.data, (f) => {
-    extractedFeatures.push(f);
-  });
   // This is a hack to force the computed to re-run when we change column assignments
   // See https://github.com/TanStack/table/issues/5363
-  nameColumn.value;
-  symbolColumn.value;
-  return extractedFeatures;
+  void nameColumn.value;
+  void symbolColumn.value;
+  return getGeoJSONFeatures(props.data) ?? [];
 });
 
 const geoJSONPointFeatures = computed(() => {
-  return geoJSONFeatures.value.filter((f) => f.geometry.type === "Point");
+  return geoJSONFeatures.value.filter((f) => f.geometry?.type === "Point");
 });
 
 const existingLayers = computed((): SelectItem[] => {
   return geo.layerItemsLayers.value.map((l) => ({ label: l.name, value: l.id }));
 });
-
-function findLikelyNameColumn(columnNames: string[]) {
-  // List of common name field variations
-  const nameVariations = ["name", "title"];
-
-  // Find and return the first column name that matches any of the name variations
-  for (const columnName of columnNames) {
-    if (nameVariations.includes(columnName.trim().toLowerCase())) {
-      return columnName;
-    }
-  }
-
-  for (const columnName of columnNames) {
-    if (columnName.toLowerCase().includes("name")) {
-      return columnName;
-    }
-  }
-
-  // Fallback: return the first column name if no common name field is found
-  return columnNames[0];
-}
 
 function findLikelySymbolColumn(columnNames: string[]) {
   // List of common symbol field variations
@@ -147,11 +119,6 @@ function findLikelySymbolColumn(columnNames: string[]) {
 
   // Fallback: return the first column name if no common symbol field is found
   return columnNames[0];
-}
-
-function normalizeImportedName(rawName: unknown, fallback: string): string {
-  if (typeof rawName === "string") return rawName.trim() || fallback;
-  return String(rawName ?? fallback);
 }
 
 const activeLayer = ref(existingLayers.value[0].value);
@@ -193,22 +160,13 @@ function loadAsUnits() {
 
 function loadAsFeatures() {
   if (!activeLayer.value) return;
-  const features = selectedFeatures.value.map((f): NGeometryLayerItem => {
-    const userData = { ...(f.properties ?? {}) } as Record<string, unknown>;
-    delete userData[nameColumn.value];
-    return {
-      kind: "geometry",
-      _pid: activeLayer.value,
-      id: nanoid(),
-      name: normalizeImportedName(f.properties?.[nameColumn.value], "New feature"),
-      geometryMeta: {
-        geometryKind: f.geometry.type,
-      },
-      geometry: f.geometry,
-      style: {},
-      userData,
-    };
-  });
+  const features = selectedFeatures.value
+    .map((feature) =>
+      convertGeoJSONFeatureToScenarioFeature(feature, activeLayer.value, {
+        nameColumn: nameColumn.value,
+      }),
+    )
+    .filter((feature) => !!feature);
   scnStore.groupUpdate(() => {
     features.forEach((feature) => geo.addFeature(feature, feature._pid));
   });

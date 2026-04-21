@@ -12,6 +12,7 @@ import {
 } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
+  activeLayerKey,
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
   activeScenarioKey,
@@ -37,6 +38,14 @@ import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import type { LoadableScenario } from "@/scenariostore/upgrade";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
+import { useNotifications } from "@/composables/notifications";
+import { useSelectedItems } from "@/stores/selectedStore";
+import {
+  convertGeoJSONFeatureToScenarioFeature,
+  findLikelyNameColumn,
+  getGeoJSONPropertyNames,
+  getGeoJSONFeatures,
+} from "@/importexport/geojsonScenarioFeatures";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -44,8 +53,14 @@ const DecryptScenarioModal = defineAsyncComponent(
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
+const activeLayerId = injectStrict(activeLayerKey);
+const { send } = useNotifications();
+const { clear: clearSelection, selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
-const { state } = activeScenario.store;
+const {
+  store: { state, groupUpdate },
+  geo,
+} = activeScenario;
 const {
   time: { setCurrentTime },
 } = activeScenario;
@@ -181,6 +196,65 @@ const headerControlsStyle = computed(() =>
     : undefined,
 );
 
+function getTargetLayerId() {
+  if (activeLayerId.value && state.layerStackMap[activeLayerId.value]?.kind === "overlay") {
+    return activeLayerId.value;
+  }
+
+  return state.layerStack.find((layerId) => state.layerStackMap[layerId]?.kind === "overlay");
+}
+
+function pasteGeoJSON(data: unknown) {
+  const clipboardFeatures = getGeoJSONFeatures(data);
+  if (!clipboardFeatures) return false;
+
+  const targetLayerId = getTargetLayerId();
+  if (!targetLayerId) {
+    send({
+      message: "No scenario feature layer available for pasted GeoJSON",
+      type: "error",
+    });
+    return false;
+  }
+
+  const nameColumn = findLikelyNameColumn(
+    getGeoJSONPropertyNames({
+      type: "FeatureCollection",
+      features: clipboardFeatures,
+    }),
+  );
+  const importedFeatures = clipboardFeatures
+    .map((feature) =>
+      convertGeoJSONFeatureToScenarioFeature(feature, targetLayerId, { nameColumn }),
+    )
+    .filter((feature) => !!feature);
+  if (!importedFeatures.length) {
+    send({
+      message: "Clipboard GeoJSON has no importable features",
+      type: "error",
+    });
+    return false;
+  }
+
+  const addedFeatureIds: string[] = [];
+  groupUpdate(() => {
+    importedFeatures.forEach((feature) => {
+      addedFeatureIds.push(geo.addFeature(feature, targetLayerId));
+    });
+  });
+
+  clearSelection();
+  activeFeatureId.value = addedFeatureIds[0];
+  addedFeatureIds.slice(1).forEach((featureId) => selectedFeatureIds.value.add(featureId));
+  send({
+    message: `Pasted ${addedFeatureIds.length} GeoJSON feature${
+      addedFeatureIds.length === 1 ? "" : "s"
+    }`,
+    type: "success",
+  });
+  return true;
+}
+
 useEventListener(document, "paste", (e: ClipboardEvent) => {
   if (!inputEventFilter(e)) return;
   if (e.clipboardData?.types.includes("application/orbat")) return;
@@ -193,9 +267,15 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
     if (scenarioData?.type === "ORBAT-mapper") {
       browserLoadScenario(scenarioData);
       e.preventDefault();
-    } else if (scenarioData?.type === "ORBAT-mapper-encrypted") {
+      return;
+    }
+    if (scenarioData?.type === "ORBAT-mapper-encrypted") {
       currentEncryptedScenario.value = scenarioData as EncryptedScenario;
       showDecryptModal.value = true;
+      e.preventDefault();
+      return;
+    }
+    if (pasteGeoJSON(scenarioData)) {
       e.preventDefault();
     }
   } catch {
