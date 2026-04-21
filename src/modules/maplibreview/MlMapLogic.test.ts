@@ -65,7 +65,20 @@ function createMockMap() {
   const listeners = new Map<string, Set<(event?: unknown) => void>>();
   const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
   const layers = new Map<string, unknown>();
-  const canvas = { style: { cursor: "" } };
+  const canvas = document.createElement("canvas");
+  canvas.style.cursor = "";
+  vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    right: 100,
+    bottom: 100,
+    width: 100,
+    height: 100,
+    toJSON: () => ({}),
+  });
+  const canvasContainer = document.createElement("div");
   let dragPanEnabled = true;
   let touchZoomRotateEnabled = true;
 
@@ -132,6 +145,7 @@ function createMockMap() {
     addImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
     getCanvas: vi.fn(() => canvas),
+    getCanvasContainer: vi.fn(() => canvasContainer),
     dragPan,
     touchZoomRotate,
     setCenter: vi.fn(),
