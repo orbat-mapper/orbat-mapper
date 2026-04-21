@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added support for pasting GeoJSON from the clipboard directly into the scenario editor as scenario features, including `Ctrl/Cmd+V` import into the active feature layer.
 - Clicking KML/KMZ features now opens a read-only details view with attached properties, including richer HTML description rendering.
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
 - Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over. 
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Added a "Paste from clipboard" entry to the Edit menu for scenario and GeoJSON clipboard imports.
 - KML/KMZ features with labels are now decluttered by default.
 - Moved the dark mode toggle into the main menu on mobile devices.
 - Reworked the ORBAT panel footer recording controls into compact direct toggles for hierarchy and position recording.

@@ -6,8 +6,11 @@ import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-rout
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { useSelectedItems } from "@/stores/selectedStore";
+import type { TScenario } from "@/scenariostore";
 
-const { send } = vi.hoisted(() => ({
+const { loadScenarioMock, send } = vi.hoisted(() => ({
+  loadScenarioMock: vi.fn(),
   send: vi.fn(),
 }));
 
@@ -69,6 +72,12 @@ vi.mock("@/composables/scenarioShare", () => ({
   useScenarioShare: vi.fn(),
 }));
 
+vi.mock("@/composables/browserScenarios", () => ({
+  useBrowserScenarios: () => ({
+    loadScenario: loadScenarioMock,
+  }),
+}));
+
 vi.mock("@/stores/timeFormatStore", () => ({
   useTimeFormatterProvider: vi.fn(),
 }));
@@ -114,15 +123,19 @@ const routes: RouteRecordRaw[] = [
 ];
 
 function createActiveScenario() {
+  const addFeature = vi.fn((feature) => feature.id);
   return {
     store: {
       state: {
         id: "scenario-1",
         info: { name: "Scenario" },
         mapSettings: { baseMapId: "default" },
-        layerStack: [],
-        layerStackMap: {},
+        layerStack: ["layer-1"],
+        layerStackMap: {
+          "layer-1": { id: "layer-1", kind: "overlay", name: "Features", items: [] },
+        },
       },
+      groupUpdate: (fn: () => void) => fn(),
       undo: vi.fn(),
       redo: vi.fn(),
       canUndo: false,
@@ -141,15 +154,25 @@ function createActiveScenario() {
     helpers: {
       getUnitById: vi.fn(() => ({ sidc: "10031000001211000000" })),
     },
-    geo: {},
-  } as any;
+    geo: {
+      addFeature,
+    },
+  } as unknown as TScenario;
 }
 
 describe("ScenarioEditor", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     send.mockReset();
+    loadScenarioMock.mockReset();
+    useSelectedItems().clear();
     sessionStorage.clear();
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        readText: vi.fn(),
+      },
+    });
   });
 
   it("shows a temporary warning when entering maplibre mode", async () => {
@@ -262,5 +285,85 @@ describe("ScenarioEditor", () => {
     await flushPromises();
 
     expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads the clipboard when the main menu emits pasteFromClipboard", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes,
+    });
+
+    await router.push({
+      name: MAP_EDIT_MODE_ROUTE,
+      params: { scenarioId: "scenario-1" },
+    });
+    await router.isReady();
+
+    const readText = vi.fn().mockResolvedValue(
+      JSON.stringify({
+        type: "Feature",
+        properties: { title: "Bridge" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+      }),
+    );
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { readText },
+    });
+
+    const activeScenario = createActiveScenario();
+    const wrapper = mount(ScenarioEditor, {
+      props: {
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia, router],
+        stubs: {
+          MainMenu: defineComponent({
+            emits: ["action", "uiAction"],
+            template:
+              '<button data-testid="paste-menu" @click="$emit(\'action\', \'pasteFromClipboard\')">paste</button>',
+          }),
+          RecordingState: true,
+          PlaybackMenu: true,
+          GlobalEvents: true,
+          ShortcutsModal: true,
+          MainViewSlideOver: true,
+          CommandPalette: true,
+          DebugInfo: true,
+          Button: true,
+          Select: true,
+          SelectTrigger: true,
+          SelectValue: true,
+          SelectContent: true,
+          SelectItem: true,
+          UseDark: true,
+          DecryptScenarioModal: true,
+          RouterLink: defineComponent({
+            name: "RouterLink",
+            template: "<a><slot /></a>",
+          }),
+        },
+      },
+    });
+
+    await wrapper.get('[data-testid="paste-menu"]').trigger("click");
+    await flushPromises();
+
+    expect(readText).toHaveBeenCalledTimes(1);
+    expect(activeScenario.geo.addFeature).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _pid: "layer-1",
+        name: "Bridge",
+        geometryMeta: { geometryKind: "Point" },
+      }),
+      "layer-1",
+    );
+    expect(send).toHaveBeenCalledWith({
+      message: "Pasted 1 GeoJSON feature",
+      type: "success",
+    });
   });
 });

@@ -35,17 +35,9 @@ import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioAction
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
-import type { LoadableScenario } from "@/scenariostore/upgrade";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
-import { useNotifications } from "@/composables/notifications";
-import { useSelectedItems } from "@/stores/selectedStore";
-import {
-  convertGeoJSONFeatureToScenarioFeature,
-  findLikelyNameColumn,
-  getGeoJSONPropertyNames,
-  getGeoJSONFeatures,
-} from "@/importexport/geojsonScenarioFeatures";
+import { useScenarioClipboardImport } from "@/modules/scenarioeditor/useScenarioClipboardImport";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -54,12 +46,9 @@ const DecryptScenarioModal = defineAsyncComponent(
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
-const { send } = useNotifications();
-const { clear: clearSelection, selectedFeatureIds, activeFeatureId } = useSelectedItems();
 
 const {
-  store: { state, groupUpdate },
-  geo,
+  store: { state },
 } = activeScenario;
 const {
   time: { setCurrentTime },
@@ -189,71 +178,22 @@ function onDecrypted(scenario: Scenario) {
   currentEncryptedScenario.value = null;
 }
 
+const { handlePastedText } = useScenarioClipboardImport({
+  activeScenario,
+  activeLayerId,
+  onScenarioLoaded: browserLoadScenario,
+  onEncryptedScenario(scenario) {
+    currentEncryptedScenario.value = scenario;
+    showDecryptModal.value = true;
+  },
+});
+
 const mapReady = computed(() => Boolean(nativeMapRef.value));
 const headerControlsStyle = computed(() =>
   !isMobile.value && showDetailsPanel.value && ui.detailsPanelMode === "overlay"
     ? { marginRight: `${detailsWidth.value + 16}px` }
     : undefined,
 );
-
-function getTargetLayerId() {
-  if (activeLayerId.value && state.layerStackMap[activeLayerId.value]?.kind === "overlay") {
-    return activeLayerId.value;
-  }
-
-  return state.layerStack.find((layerId) => state.layerStackMap[layerId]?.kind === "overlay");
-}
-
-function pasteGeoJSON(data: unknown) {
-  const clipboardFeatures = getGeoJSONFeatures(data);
-  if (!clipboardFeatures) return false;
-
-  const targetLayerId = getTargetLayerId();
-  if (!targetLayerId) {
-    send({
-      message: "No scenario feature layer available for pasted GeoJSON",
-      type: "error",
-    });
-    return false;
-  }
-
-  const nameColumn = findLikelyNameColumn(
-    getGeoJSONPropertyNames({
-      type: "FeatureCollection",
-      features: clipboardFeatures,
-    }),
-  );
-  const importedFeatures = clipboardFeatures
-    .map((feature) =>
-      convertGeoJSONFeatureToScenarioFeature(feature, targetLayerId, { nameColumn }),
-    )
-    .filter((feature) => !!feature);
-  if (!importedFeatures.length) {
-    send({
-      message: "Clipboard GeoJSON has no importable features",
-      type: "error",
-    });
-    return false;
-  }
-
-  const addedFeatureIds: string[] = [];
-  groupUpdate(() => {
-    importedFeatures.forEach((feature) => {
-      addedFeatureIds.push(geo.addFeature(feature, targetLayerId));
-    });
-  });
-
-  clearSelection();
-  activeFeatureId.value = addedFeatureIds[0];
-  addedFeatureIds.slice(1).forEach((featureId) => selectedFeatureIds.value.add(featureId));
-  send({
-    message: `Pasted ${addedFeatureIds.length} GeoJSON feature${
-      addedFeatureIds.length === 1 ? "" : "s"
-    }`,
-    type: "success",
-  });
-  return true;
-}
 
 useEventListener(document, "paste", (e: ClipboardEvent) => {
   if (!inputEventFilter(e)) return;
@@ -262,24 +202,8 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
   const text = e.clipboardData?.getData("text/plain");
   if (!text) return;
 
-  try {
-    const scenarioData = JSON.parse(text) as LoadableScenario | EncryptedScenario;
-    if (scenarioData?.type === "ORBAT-mapper") {
-      browserLoadScenario(scenarioData);
-      e.preventDefault();
-      return;
-    }
-    if (scenarioData?.type === "ORBAT-mapper-encrypted") {
-      currentEncryptedScenario.value = scenarioData as EncryptedScenario;
-      showDecryptModal.value = true;
-      e.preventDefault();
-      return;
-    }
-    if (pasteGeoJSON(scenarioData)) {
-      e.preventDefault();
-    }
-  } catch {
-    // Not a valid JSON or not a scenario, ignore
+  if (handlePastedText(text)) {
+    e.preventDefault();
   }
 });
 </script>

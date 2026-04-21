@@ -47,6 +47,12 @@ const propertyNames = computed(() => new Set(getGeoJSONPropertyNames(props.data)
 const propertyNameItems = computed(() =>
   Array.from(propertyNames.value).map((key) => ({ label: key, value: key })),
 );
+const resolvedNameColumn = computed(
+  () => nameColumn.value ?? findLikelyNameColumn([...propertyNames.value]),
+);
+const resolvedSymbolColumn = computed(
+  () => symbolColumn.value ?? findLikelySymbolColumn([...propertyNames.value]),
+);
 
 const computedColumns = computed((): (ColumnDef<GeoJSONFeature, unknown> | false)[] => {
   const items = Array.from(propertyNames.value).map(
@@ -62,19 +68,24 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, unknown> | false
       header: "Icon",
       enableSorting: false,
       accessorFn: (f) =>
-        f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000",
+        (resolvedSymbolColumn.value
+          ? f.properties?.[resolvedSymbolColumn.value]?.trim()
+          : undefined) || "10031000000000000000",
       id: "sidc",
       cell: ({ getValue }) => {
         return h(MilitarySymbol, {
-          sidc: getValue(),
+          sidc: String(getValue()),
           size: 20,
-          "data-sidc": getValue(),
+          "data-sidc": String(getValue()),
         });
       },
     },
     {
       accessorFn: (f) =>
-        normalizeImportedName(f.properties?.[nameColumn.value], "Feature"),
+        normalizeImportedName(
+          resolvedNameColumn.value ? f.properties?.[resolvedNameColumn.value] : undefined,
+          "Feature",
+        ),
       id: "name",
       header: "Name",
     },
@@ -87,8 +98,8 @@ const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   // This is a hack to force the computed to re-run when we change column assignments
   // See https://github.com/TanStack/table/issues/5363
-  void nameColumn.value;
-  void symbolColumn.value;
+  void resolvedNameColumn.value;
+  void resolvedSymbolColumn.value;
   return getGeoJSONFeatures(props.data) ?? [];
 });
 
@@ -139,10 +150,16 @@ function loadAsUnits() {
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
   const units: NUnit[] = selectedFeatures.value.map((f) => {
-    const sidc = f.properties?.[symbolColumn.value]?.trim() || "10031000000000000000";
+    const sidc =
+      (resolvedSymbolColumn.value
+        ? f.properties?.[resolvedSymbolColumn.value]?.trim()
+        : undefined) || "10031000000000000000";
     return {
       id: nanoid(),
-      name: normalizeImportedName(f.properties?.[nameColumn.value], "New unit"),
+      name: normalizeImportedName(
+        resolvedNameColumn.value ? f.properties?.[resolvedNameColumn.value] : undefined,
+        "New unit",
+      ),
       sidc: setCharAt(sidc, SID_INDEX, side.standardIdentity),
       subUnits: [],
       _pid: "",
@@ -163,7 +180,7 @@ function loadAsFeatures() {
   const features = selectedFeatures.value
     .map((feature) =>
       convertGeoJSONFeatureToScenarioFeature(feature, activeLayer.value, {
-        nameColumn: nameColumn.value,
+        nameColumn: resolvedNameColumn.value,
       }),
     )
     .filter((feature) => !!feature);

@@ -69,6 +69,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useBrowserScenarios } from "@/composables/browserScenarios";
+import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
+import { useScenarioClipboardImport } from "@/modules/scenarioeditor/useScenarioClipboardImport";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
@@ -95,6 +98,9 @@ const ShareScenarioModal = defineAsyncComponent(
 
 const EncryptScenarioModal = defineAsyncComponent(
   () => import("@/components/EncryptScenarioModal.vue"),
+);
+const DecryptScenarioModal = defineAsyncComponent(
+  () => import("@/components/DecryptScenarioModal.vue"),
 );
 
 const dropZoneRef = ref<HTMLDivElement>();
@@ -188,6 +194,8 @@ const showImportModal = ref(false);
 const showShareUrlModal = ref(false);
 const showShareModal = ref(false);
 const showEncryptModal = ref(false);
+const showDecryptModal = ref(false);
+const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
@@ -200,6 +208,7 @@ mapStore.baseLayerName = state.mapSettings.baseMapId;
 const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
+const { loadScenario: browserLoadScenario } = useBrowserScenarios();
 const MAPLIBRE_MODE_WARNING_SESSION_KEY = "maplibre-mode-warning-shown";
 
 watch(
@@ -282,6 +291,22 @@ import RecordingState from "@/components/RecordingState.vue";
 
 useScenarioShare();
 
+function onDecrypted(scenario: Scenario) {
+  void browserLoadScenario(scenario);
+  showDecryptModal.value = false;
+  currentEncryptedScenario.value = null;
+}
+
+const { pasteFromClipboard } = useScenarioClipboardImport({
+  activeScenario: props.activeScenario,
+  activeLayerId,
+  onScenarioLoaded: browserLoadScenario,
+  onEncryptedScenario(scenario) {
+    currentEncryptedScenario.value = scenario;
+    showDecryptModal.value = true;
+  },
+});
+
 async function onScenarioAction(action: ScenarioActions) {
   if (action === "addSide") {
     unitActions.addSide();
@@ -311,6 +336,8 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "exportToClipboard") {
     await copyToClipboard(io.stringifyScenario());
     if (copied.value) send({ message: "Scenario copied to clipboard", type: "success" });
+  } else if (action === "pasteFromClipboard") {
+    await pasteFromClipboard();
   } else if (action === "shareAsUrl") {
     showShareUrlModal.value = true;
   } else if (action === "share") {
@@ -633,6 +660,12 @@ if (firstOverlayLayerId) {
     <ShareScenarioUrlModal v-if="showShareUrlModal" v-model="showShareUrlModal" />
     <ShareScenarioModal v-if="showShareModal" v-model="showShareModal" />
     <EncryptScenarioModal v-if="showEncryptModal" v-model="showEncryptModal" />
+    <DecryptScenarioModal
+      v-if="showDecryptModal && currentEncryptedScenario"
+      v-model="showDecryptModal"
+      :encrypted-scenario="currentEncryptedScenario"
+      @decrypted="onDecrypted"
+    />
     <div
       v-if="isOverDropZone"
       class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"

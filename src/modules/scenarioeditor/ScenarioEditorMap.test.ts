@@ -307,7 +307,7 @@ describe("ScenarioEditorMap", () => {
     expect([...useSelectedItems().selectedFeatureIds.value]).toHaveLength(2);
     expect(useSelectedItems().activeFeatureId.value).toBeDefined();
     expect(pasteEvent.defaultPrevented).toBe(true);
-    expect(useNotifications().notifications.value.at(-1)?.message).toBe(
+    expect(useNotifications().notifications.value.slice(-1)[0]?.message).toBe(
       "Pasted 2 GeoJSON features",
     );
   });
@@ -412,7 +412,7 @@ describe("ScenarioEditorMap", () => {
     });
 
     expect(addFeature).not.toHaveBeenCalled();
-    expect(useNotifications().notifications.value.at(-1)?.message).toBe(
+    expect(useNotifications().notifications.value.slice(-1)[0]?.message).toBe(
       "No scenario feature layer available for pasted GeoJSON",
     );
     expect(pasteEvent.defaultPrevented).toBe(false);

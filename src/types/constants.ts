@@ -65,6 +65,7 @@ export type ScenarioActions =
   | "exportToClipboard"
   | "exportToImage"
   | "import"
+  | "pasteFromClipboard"
   | "load"
   | "loadNew"
   | "restoreOriginal"

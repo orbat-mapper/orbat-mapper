@@ -202,6 +202,10 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <DropdownMenuItem @select="emit('action', 'exportToClipboard')">
             Copy scenario to clipboard
           </DropdownMenuItem>
+          <DropdownMenuItem @select="emit('action', 'pasteFromClipboard')">
+            Paste from clipboard
+            <DropdownMenuShortcut class="ml-4">Ctrl/⌘ V</DropdownMenuShortcut>
+          </DropdownMenuItem>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
       <DropdownMenuSub>
