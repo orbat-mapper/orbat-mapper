@@ -7,16 +7,13 @@ import BaseButton from "@/components/BaseButton.vue";
 import { injectStrict, nanoid } from "@/utils";
 import {
   activeLayerKey,
-  activeNativeMapKey,
   activeScenarioKey,
+  activeScenarioMapEngineKey,
 } from "@/components/injects";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import type { Feature } from "geojson";
 import { useDebounceFn } from "@vueuse/core";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import { useTransformSettingsStore } from "@/stores/transformStore";
 import { storeToRefs } from "pinia";
 import InputCheckbox from "@/components/InputCheckbox.vue";
@@ -40,9 +37,9 @@ const isUnitMode = props.unitMode;
 
 const scn = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
-
-const olMapRef = injectStrict(activeNativeMapKey);
+const scenarioMapEngineRef = injectStrict(activeScenarioMapEngineKey);
 const fmt = useTimeFormatStore();
+const previewOverlayId = `transform-preview-${nanoid()}`;
 
 const formattedTime = computed(() =>
   fmt.scenarioFormatter.format(+scn.time.scenarioTime.value),
@@ -67,29 +64,31 @@ const { showPreview, transformations, updateActiveFeature, updateAtTime } = stor
 
 const toggleRedraw = ref(true);
 const addActiveLayer = ref(activeLayerId.value!);
-
-const previewLayer = new VectorLayer({
-  source: new VectorSource({}),
-  style: {
-    "stroke-color": "red",
-    "stroke-width": 3,
-    "stroke-line-dash": [10, 10],
-    "fill-color": "rgba(188,35,65,0.2)",
-    "circle-radius": 5,
-    "circle-fill-color": "red",
-    "circle-stroke-color": "red",
-  },
-});
-
-olMapRef.value.addLayer(previewLayer);
+let previewMap = scenarioMapEngineRef.value?.map;
 
 const calculatePreview = useDebounceFn(
-  (features: NGeometryLayerItem[] | NUnit[], ops: TransformationOperation[]) => {
+  (
+    features: NGeometryLayerItem[] | NUnit[],
+    ops: TransformationOperation[],
+    map = scenarioMapEngineRef.value?.map,
+  ) => {
+    if (!map) return;
     const geometry = isUnitMode
       ? doUnitTransformations(features as NUnit[], ops)
       : doScenarioFeatureTransformation(features as NGeometryLayerItem[], ops);
 
-    drawGeoJsonLayer(previewLayer, geometry);
+    previewMap = map;
+    map.addGeoJsonOverlay(previewOverlayId, geometry, {
+      style: {
+        strokeColor: "red",
+        strokeWidth: 3,
+        strokeLineDash: [10, 10],
+        fillColor: "rgba(188,35,65,0.2)",
+        circleRadius: 5,
+        circleFillColor: "red",
+        circleStrokeColor: "red",
+      },
+    });
   },
   200,
 );
@@ -123,6 +122,21 @@ if (!props.unitMode) {
   );
 }
 
+function updatePreview() {
+  if (showPreview.value && transformations.value && selectedItems.value.length) {
+    const currentItems = props.unitMode
+      ? (selectedItems.value as NUnit[])
+      : (selectedItems.value.filter(Boolean) as NGeometryLayerItem[]);
+    calculatePreview(
+      currentItems,
+      transformations.value.filter((v) => !!v),
+      scenarioMapEngineRef.value?.map,
+    );
+  } else {
+    clearPreview();
+  }
+}
+
 watch(
   [
     transformations,
@@ -131,20 +145,16 @@ watch(
     () => scn.store.state.unitStateCounter,
     () => scn.store.state.currentTime,
   ],
-  () => {
-    if (showPreview.value && transformations.value) {
-      const currentItems = props.unitMode
-        ? (selectedItems.value as NUnit[])
-        : (selectedItems.value.filter(Boolean) as NGeometryLayerItem[]);
-      calculatePreview(
-        currentItems,
-        transformations.value.filter((v) => !!v),
-      );
-    } else {
-      previewLayer.getSource()?.clear();
-    }
-  },
+  updatePreview,
   { deep: true },
+);
+
+watch(
+  () => scenarioMapEngineRef.value?.map,
+  () => {
+    clearPreview();
+    updatePreview();
+  },
 );
 
 function onSubmit(updateMode = false) {
@@ -187,13 +197,10 @@ function onSubmit(updateMode = false) {
     scenarioFeature.name = `${featureName} (${filteredTrans[0].transform})`;
     scn.geo.addFeature(scenarioFeature, layerId!);
   }
-  previewLayer.getSource()?.clear();
+  clearPreview();
 }
 
-onUnmounted(() => {
-  previewLayer.getSource()?.clear();
-  olMapRef.value.removeLayer(previewLayer);
-});
+onUnmounted(() => clearPreview());
 
 function addTransformation() {
   transformations.value.push(createDefaultTransformationOperation());
@@ -201,6 +208,15 @@ function addTransformation() {
 
 function deleteTransformation(index: number) {
   transformations.value.splice(index, 1);
+}
+
+function clearPreview() {
+  const currentMap = scenarioMapEngineRef.value?.map;
+  previewMap?.removeGeoJsonOverlay(previewOverlayId);
+  if (currentMap && currentMap !== previewMap) {
+    currentMap.removeGeoJsonOverlay(previewOverlayId);
+  }
+  previewMap = currentMap;
 }
 </script>
 <template>

@@ -1,16 +1,19 @@
 import type OLMap from "ol/Map";
 import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import type { AllGeoJSON } from "@turf/helpers";
-import type { Position } from "geojson";
-import GeoJSON from "ol/format/GeoJSON";
+import type { GeoJSON as GeoJsonObject, Position } from "geojson";
+import GeoJSONFormat from "ol/format/GeoJSON";
 import Feature from "ol/Feature";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
 import turfEnvelope from "@turf/envelope";
 import { unByKey } from "ol/Observable";
 import View from "ol/View";
 import type {
   AnimateOptions,
   FitOptions,
+  GeoJsonOverlayOptions,
   MapAdapter,
   MapEventHandler,
   MapEventType,
@@ -19,6 +22,7 @@ import type {
 
 export class OlMapAdapter implements MapAdapter {
   private _viewConstraints: ViewConstraints = {};
+  private readonly geoJsonOverlayLayers = new Map<string, VectorLayer<VectorSource>>();
 
   constructor(private olMap: OLMap) {}
 
@@ -43,7 +47,7 @@ export class OlMapAdapter implements MapAdapter {
 
   fitGeometry(geojson: AllGeoJSON, options: FitOptions = {}): void {
     const { duration = 900, maxZoom = 15, padding } = options;
-    const bb = new GeoJSON().readFeature(turfEnvelope(geojson), {
+    const bb = new GeoJSONFormat().readFeature(turfEnvelope(geojson), {
       featureProjection: this.projection,
       dataProjection: "EPSG:4326",
     }) as Feature;
@@ -172,7 +176,63 @@ export class OlMapAdapter implements MapAdapter {
     return () => unByKey(key);
   }
 
+  addGeoJsonOverlay(
+    id: string,
+    geojson: GeoJsonObject | null | undefined,
+    options: GeoJsonOverlayOptions = {},
+  ): void {
+    const layer = this.getOrCreateGeoJsonOverlayLayer(id, options);
+    layer.getSource()?.clear();
+    if (!geojson) return;
+    layer.getSource()?.addFeatures(
+      new GeoJSONFormat().readFeatures(geojson, {
+        featureProjection: this.projection,
+        dataProjection: "EPSG:4326",
+      }),
+    );
+  }
+
+  removeGeoJsonOverlay(id: string): void {
+    const layer = this.geoJsonOverlayLayers.get(id);
+    if (!layer) return;
+    layer.setMap(null);
+    this.geoJsonOverlayLayers.delete(id);
+  }
+
   getNativeMap(): OLMap {
     return this.olMap;
   }
+
+  private getOrCreateGeoJsonOverlayLayer(
+    id: string,
+    options: GeoJsonOverlayOptions,
+  ): VectorLayer<VectorSource> {
+    const existingLayer = this.geoJsonOverlayLayers.get(id);
+    if (existingLayer) {
+      existingLayer.setStyle(createOlGeoJsonOverlayStyle(options));
+      return existingLayer;
+    }
+
+    const layer = new VectorLayer({
+      source: new VectorSource(),
+      style: createOlGeoJsonOverlayStyle(options),
+    });
+    layer.setMap(this.olMap);
+    this.geoJsonOverlayLayers.set(id, layer);
+    return layer;
+  }
+}
+
+function createOlGeoJsonOverlayStyle(options: GeoJsonOverlayOptions = {}) {
+  const style = options.style ?? {};
+  return {
+    "stroke-color": style.strokeColor ?? "red",
+    "stroke-width": style.strokeWidth ?? 3,
+    "stroke-line-dash": style.strokeLineDash ?? [10, 10],
+    "fill-color": style.fillColor ?? "rgba(188,35,65,0.2)",
+    "circle-radius": style.circleRadius ?? 5,
+    "circle-fill-color": style.circleFillColor ?? "red",
+    "circle-stroke-color": style.circleStrokeColor ?? "red",
+    "circle-stroke-width": 1,
+  };
 }

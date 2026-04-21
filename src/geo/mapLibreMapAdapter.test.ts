@@ -4,6 +4,8 @@ import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 
 function createMockMap() {
   const listeners = new Map<string, (event: any) => void>();
+  const sources = new Map<string, any>();
+  const layers = new Map<string, any>();
 
   const mlMap = {
     on: vi.fn((event: string, handler: (event: any) => void) => {
@@ -29,9 +31,27 @@ function createMockMap() {
     setMaxBounds: vi.fn(),
     setMinZoom: vi.fn(),
     setMaxZoom: vi.fn(),
+    addSource: vi.fn((id: string, spec: any) => {
+      const source = {
+        ...spec,
+        setData: vi.fn(),
+      };
+      sources.set(id, source);
+    }),
+    getSource: vi.fn((id: string) => sources.get(id)),
+    removeSource: vi.fn((id: string) => {
+      sources.delete(id);
+    }),
+    addLayer: vi.fn((spec: any) => {
+      layers.set(spec.id, spec);
+    }),
+    getLayer: vi.fn((id: string) => layers.get(id)),
+    removeLayer: vi.fn((id: string) => {
+      layers.delete(id);
+    }),
   };
 
-  return { mlMap, listeners };
+  return { mlMap, listeners, sources, layers };
 }
 
 describe("MapLibreMapAdapter", () => {
@@ -112,6 +132,109 @@ describe("MapLibreMapAdapter", () => {
 
       expect(mlMap.setMinZoom).toHaveBeenCalledWith(3);
       expect(mlMap.setMaxZoom).toHaveBeenCalledWith(18);
+    });
+  });
+
+  describe("geojson overlays", () => {
+    it("creates a source and preview layers and writes overlay data", () => {
+      const { mlMap, sources, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+      const geojson = {
+        type: "FeatureCollection" as const,
+        features: [],
+      };
+
+      adapter.addGeoJsonOverlay("preview", geojson, {
+        style: { strokeColor: "#ff0000" },
+      });
+
+      expect(mlMap.addSource).toHaveBeenCalledWith(
+        "geojson-overlay-source-preview",
+        expect.objectContaining({ type: "geojson" }),
+      );
+      expect(mlMap.addLayer).toHaveBeenCalledTimes(3);
+      expect(layers.has("geojson-overlay-fill-preview")).toBe(true);
+      expect(layers.has("geojson-overlay-line-preview")).toBe(true);
+      expect(layers.has("geojson-overlay-circle-preview")).toBe(true);
+      expect(sources.get("geojson-overlay-source-preview").setData).toHaveBeenCalledWith(
+        geojson,
+      );
+    });
+
+    it("omits line-dasharray when the computed dash pattern is undefined", () => {
+      const { mlMap, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.addGeoJsonOverlay(
+        "preview",
+        {
+          type: "FeatureCollection",
+          features: [],
+        },
+        {
+          style: {
+            strokeWidth: 0,
+            strokeLineDash: [],
+          },
+        },
+      );
+
+      expect(layers.get("geojson-overlay-line-preview").paint).not.toHaveProperty(
+        "line-dasharray",
+      );
+    });
+
+    it("removes overlay layers and source", () => {
+      const { mlMap, sources, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.addGeoJsonOverlay("preview", {
+        type: "FeatureCollection",
+        features: [],
+      });
+      adapter.removeGeoJsonOverlay("preview");
+
+      expect(mlMap.removeLayer).toHaveBeenCalledWith("geojson-overlay-circle-preview");
+      expect(mlMap.removeLayer).toHaveBeenCalledWith("geojson-overlay-line-preview");
+      expect(mlMap.removeLayer).toHaveBeenCalledWith("geojson-overlay-fill-preview");
+      expect(mlMap.removeSource).toHaveBeenCalledWith("geojson-overlay-source-preview");
+      expect(sources.size).toBe(0);
+      expect(layers.size).toBe(0);
+    });
+
+    it("rebuilds overlays after a style reload", () => {
+      const { mlMap, listeners, sources, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+      const geojson = {
+        type: "FeatureCollection" as const,
+        features: [],
+      };
+
+      adapter.addGeoJsonOverlay("preview", geojson);
+      sources.clear();
+      layers.clear();
+
+      listeners.get("style.load")?.({});
+
+      expect(mlMap.addSource).toHaveBeenCalledTimes(2);
+      expect(mlMap.addLayer).toHaveBeenCalledTimes(6);
+      expect(sources.get("geojson-overlay-source-preview").setData).toHaveBeenCalledWith(
+        geojson,
+      );
+    });
+
+    it("tolerates overlay cleanup after the native map is gone", () => {
+      const { mlMap } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.addGeoJsonOverlay("preview", {
+        type: "FeatureCollection",
+        features: [],
+      });
+
+      (adapter as any).mlMap = undefined;
+
+      expect(() => adapter.removeGeoJsonOverlay("preview")).not.toThrow();
     });
   });
 });

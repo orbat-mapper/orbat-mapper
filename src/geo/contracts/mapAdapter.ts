@@ -1,5 +1,5 @@
 import type { AllGeoJSON } from "@turf/helpers";
-import type { Position } from "geojson";
+import type { GeoJSON, Position } from "geojson";
 
 export interface FitOptions {
   maxZoom?: number;
@@ -17,6 +17,20 @@ export interface ViewConstraints {
   extent?: [number, number, number, number] | null;
   minZoom?: number | null;
   maxZoom?: number | null;
+}
+
+export interface GeoJsonOverlayStyle {
+  strokeColor?: string;
+  strokeWidth?: number;
+  strokeLineDash?: number[];
+  fillColor?: string;
+  circleRadius?: number;
+  circleFillColor?: string;
+  circleStrokeColor?: string;
+}
+
+export interface GeoJsonOverlayOptions {
+  style?: GeoJsonOverlayStyle;
 }
 
 export type MapEventType = "moveend" | "click" | "pointermove" | "singleclick";
@@ -56,6 +70,14 @@ export interface MapAdapter {
   // Map events
   on(event: MapEventType, handler: MapEventHandler): () => void;
   once(event: MapEventType, handler: MapEventHandler): () => void;
+
+  // Transient GeoJSON overlays for shared editor UI such as previews.
+  addGeoJsonOverlay(
+    id: string,
+    geojson: GeoJSON | null | undefined,
+    options?: GeoJsonOverlayOptions,
+  ): void;
+  removeGeoJsonOverlay(id: string): void;
 
   // Escape hatch for incremental migration — returns the underlying
   // library-specific map object. Callers using this are still coupled
