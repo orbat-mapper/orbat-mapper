@@ -3,7 +3,7 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
 import { MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -122,7 +122,7 @@ const routes: RouteRecordRaw[] = [
   },
 ];
 
-function createActiveScenario() {
+function createActiveScenario(options: { stateOverrides?: Record<string, unknown> } = {}) {
   const addFeature = vi.fn((feature) => feature.id);
   return {
     store: {
@@ -134,6 +134,7 @@ function createActiveScenario() {
         layerStackMap: {
           "layer-1": { id: "layer-1", kind: "overlay", name: "Features", items: [] },
         },
+        ...(options.stateOverrides ?? {}),
       },
       groupUpdate: (fn: () => void) => fn(),
       undo: vi.fn(),
@@ -160,7 +161,20 @@ function createActiveScenario() {
   } as unknown as TScenario;
 }
 
+function createPasteEvent(options: { text?: string; types?: string[] }) {
+  const event = new Event("paste", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "clipboardData", {
+    value: {
+      types: options.types ?? ["text/plain"],
+      getData: (type: string) => (type === "text/plain" ? options.text ?? "" : ""),
+    },
+  });
+  return event;
+}
+
 describe("ScenarioEditor", () => {
+  let mountedWrappers: Array<{ unmount: () => void }> = [];
+
   beforeEach(() => {
     setActivePinia(createPinia());
     send.mockReset();
@@ -174,6 +188,67 @@ describe("ScenarioEditor", () => {
       },
     });
   });
+
+  afterEach(() => {
+    mountedWrappers.forEach((wrapper) => wrapper.unmount());
+    mountedWrappers = [];
+    document.body.innerHTML = "";
+  });
+
+  async function mountScenarioEditor(options: {
+    routeName?: typeof MAP_EDIT_MODE_ROUTE | typeof MAPLIBRE_ROUTE;
+    activeScenario?: TScenario;
+    mainMenuStub?: unknown;
+  } = {}) {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes,
+    });
+
+    await router.push({
+      name: options.routeName ?? MAP_EDIT_MODE_ROUTE,
+      params: { scenarioId: "scenario-1" },
+    });
+    await router.isReady();
+
+    const wrapper = mount(ScenarioEditor, {
+      props: {
+        activeScenario: options.activeScenario ?? createActiveScenario(),
+      },
+      global: {
+        plugins: [pinia, router],
+        stubs: {
+          MainMenu: options.mainMenuStub ?? true,
+          RecordingState: true,
+          PlaybackMenu: true,
+          GlobalEvents: true,
+          ShortcutsModal: true,
+          MainViewSlideOver: true,
+          CommandPalette: true,
+          DebugInfo: true,
+          Button: true,
+          Select: true,
+          SelectTrigger: true,
+          SelectValue: true,
+          SelectContent: true,
+          SelectItem: true,
+          UseDark: true,
+          DecryptScenarioModal: true,
+          RouterLink: defineComponent({
+            name: "RouterLink",
+            template: "<a><slot /></a>",
+          }),
+        },
+      },
+    });
+    mountedWrappers.push(wrapper);
+
+    await flushPromises();
+
+    return { pinia, router, wrapper };
+  }
 
   it("shows a temporary warning when entering maplibre mode", async () => {
     const pinia = createPinia();
@@ -189,7 +264,7 @@ describe("ScenarioEditor", () => {
     });
     await router.isReady();
 
-    mount(ScenarioEditor, {
+    const wrapper = mount(ScenarioEditor, {
       props: {
         activeScenario: createActiveScenario(),
       },
@@ -218,6 +293,7 @@ describe("ScenarioEditor", () => {
         },
       },
     });
+    mountedWrappers.push(wrapper);
 
     expect(send).not.toHaveBeenCalled();
 
@@ -244,7 +320,7 @@ describe("ScenarioEditor", () => {
     });
     await router.isReady();
 
-    mount(ScenarioEditor, {
+    const wrapper = mount(ScenarioEditor, {
       props: {
         activeScenario: createActiveScenario(),
       },
@@ -273,6 +349,7 @@ describe("ScenarioEditor", () => {
         },
       },
     });
+    mountedWrappers.push(wrapper);
 
     await router.push({ name: MAPLIBRE_ROUTE, params: { scenarioId: "scenario-1" } });
     await flushPromises();
@@ -287,20 +364,192 @@ describe("ScenarioEditor", () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
+  it("imports pasted geojson from the shared editor shell in openlayers mode", async () => {
+    const activeScenario = createActiveScenario();
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { name: "Alpha", category: "one" },
+            geometry: { type: "Point", coordinates: [10, 20] },
+          },
+          {
+            type: "Feature",
+            properties: { title: "Bravo", category: "two" },
+            geometry: { type: "LineString", coordinates: [[10, 20], [30, 40]] },
+          },
+        ],
+      }),
+    });
+
+    await mountScenarioEditor({ activeScenario });
+
+    document.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        _pid: "layer-1",
+        name: "Alpha",
+        geometryMeta: { geometryKind: "Point" },
+        userData: { category: "one" },
+      }),
+      "layer-1",
+    );
+    expect(activeScenario.geo.addFeature).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        _pid: "layer-1",
+        name: "New feature",
+        geometryMeta: { geometryKind: "LineString" },
+        userData: { category: "two", title: "Bravo" },
+      }),
+      "layer-1",
+    );
+    expect([...useSelectedItems().selectedFeatureIds.value]).toHaveLength(2);
+    expect(useSelectedItems().activeFeatureId.value).toBeDefined();
+    expect(send).toHaveBeenCalledWith({
+      message: "Pasted 2 GeoJSON features",
+      type: "success",
+    });
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("imports pasted geojson from the shared editor shell in maplibre mode", async () => {
+    const activeScenario = createActiveScenario();
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "Feature",
+        properties: { title: "Bridge" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+      }),
+    });
+
+    await mountScenarioEditor({ routeName: MAPLIBRE_ROUTE, activeScenario });
+    send.mockClear();
+
+    document.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _pid: "layer-1",
+        name: "Bridge",
+        geometryMeta: { geometryKind: "Point" },
+      }),
+      "layer-1",
+    );
+    expect(send).toHaveBeenCalledWith({
+      message: "Pasted 1 GeoJSON feature",
+      type: "success",
+    });
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("keeps scenario json paste taking precedence over geojson handling", async () => {
+    const activeScenario = createActiveScenario();
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "ORBAT-mapper",
+        id: "scenario-1",
+        sides: [],
+        events: [],
+        layerStack: [],
+        mapLayers: [],
+      }),
+    });
+
+    await mountScenarioEditor({ activeScenario });
+
+    document.dispatchEvent(event);
+
+    expect(loadScenarioMock).toHaveBeenCalledTimes(1);
+    expect(activeScenario.geo.addFeature).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("ignores application/orbat clipboard data", async () => {
+    const activeScenario = createActiveScenario();
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "Feature",
+        properties: { name: "Alpha" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+      }),
+      types: ["application/orbat", "text/plain"],
+    });
+
+    await mountScenarioEditor({ activeScenario });
+
+    document.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("ignores paste events from inputs and textareas", async () => {
+    const activeScenario = createActiveScenario();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "Feature",
+        properties: { name: "Alpha" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+      }),
+    });
+
+    await mountScenarioEditor({ activeScenario });
+
+    input.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    input.remove();
+  });
+
+  it("ignores invalid plain text", async () => {
+    const activeScenario = createActiveScenario();
+    const event = createPasteEvent({ text: "not json" });
+
+    await mountScenarioEditor({ activeScenario });
+
+    document.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("shows an error when geojson is pasted without an overlay layer", async () => {
+    const activeScenario = createActiveScenario({
+      stateOverrides: {
+        layerStack: [],
+        layerStackMap: {},
+      },
+    });
+    const event = createPasteEvent({
+      text: JSON.stringify({
+        type: "Feature",
+        properties: { name: "Alpha" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+      }),
+    });
+
+    await mountScenarioEditor({ activeScenario });
+
+    document.dispatchEvent(event);
+
+    expect(activeScenario.geo.addFeature).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalledWith({
+      message: "No scenario feature layer available for pasted GeoJSON",
+      type: "error",
+    });
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it("reads the clipboard when the main menu emits pasteFromClipboard", async () => {
-    const pinia = createPinia();
-    setActivePinia(pinia);
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes,
-    });
-
-    await router.push({
-      name: MAP_EDIT_MODE_ROUTE,
-      params: { scenarioId: "scenario-1" },
-    });
-    await router.isReady();
-
     const readText = vi.fn().mockResolvedValue(
       JSON.stringify({
         type: "Feature",
@@ -314,39 +563,13 @@ describe("ScenarioEditor", () => {
     });
 
     const activeScenario = createActiveScenario();
-    const wrapper = mount(ScenarioEditor, {
-      props: {
-        activeScenario,
-      },
-      global: {
-        plugins: [pinia, router],
-        stubs: {
-          MainMenu: defineComponent({
-            emits: ["action", "uiAction"],
-            template:
-              '<button data-testid="paste-menu" @click="$emit(\'action\', \'pasteFromClipboard\')">paste</button>',
-          }),
-          RecordingState: true,
-          PlaybackMenu: true,
-          GlobalEvents: true,
-          ShortcutsModal: true,
-          MainViewSlideOver: true,
-          CommandPalette: true,
-          DebugInfo: true,
-          Button: true,
-          Select: true,
-          SelectTrigger: true,
-          SelectValue: true,
-          SelectContent: true,
-          SelectItem: true,
-          UseDark: true,
-          DecryptScenarioModal: true,
-          RouterLink: defineComponent({
-            name: "RouterLink",
-            template: "<a><slot /></a>",
-          }),
-        },
-      },
+    const { wrapper } = await mountScenarioEditor({
+      activeScenario,
+      mainMenuStub: defineComponent({
+        emits: ["action", "uiAction"],
+        template:
+          '<button data-testid="paste-menu" @click="$emit(\'action\', \'pasteFromClipboard\')">paste</button>',
+      }),
     });
 
     await wrapper.get('[data-testid="paste-menu"]').trigger("click");

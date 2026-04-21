@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
-import { computed, defineComponent, h, nextTick, onMounted } from "vue";
+import { computed, defineComponent, h, nextTick, onMounted, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
-import { activeScenarioKey } from "@/components/injects";
+import { activeLayerKey, activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const { mapModeState } = vi.hoisted(() => ({
@@ -136,6 +136,25 @@ const ScenarioMapModeShellStub = defineComponent({
 });
 
 describe("ScenarioEditorMaplibre", () => {
+  function createActiveScenario() {
+    return {
+      store: {
+        state: {
+          id: "scenario-1",
+          mapSettings: {},
+          layerStack: ["layer-1"],
+          layerStackMap: {
+            "layer-1": { id: "layer-1", kind: "overlay", name: "Features", items: [] },
+          },
+        },
+        groupUpdate: (fn: () => void) => fn(),
+      },
+      geo: {
+        addFeature: vi.fn((feature) => feature.id),
+      },
+    };
+  }
+
   beforeEach(() => {
     setActivePinia(createPinia());
     mapModeState.isMobile = false;
@@ -151,9 +170,8 @@ describe("ScenarioEditorMaplibre", () => {
       global: {
         plugins: [createPinia()],
         provide: {
-          [activeScenarioKey as symbol]: {
-            store: { state: { id: "scenario-1", mapSettings: {} } },
-          },
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
@@ -192,9 +210,8 @@ describe("ScenarioEditorMaplibre", () => {
       global: {
         plugins: [pinia],
         provide: {
-          [activeScenarioKey as symbol]: {
-            store: { state: { id: "scenario-1", mapSettings: {} } },
-          },
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
@@ -250,9 +267,8 @@ describe("ScenarioEditorMaplibre", () => {
       global: {
         plugins: [pinia],
         provide: {
-          [activeScenarioKey as symbol]: {
-            store: { state: { id: "scenario-1", mapSettings: {} } },
-          },
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,

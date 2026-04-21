@@ -20,7 +20,13 @@ import {
   IconUndoVariant as IconUndo,
 } from "@iconify-prerendered/vue-mdi";
 
-import { createEventHook, useClipboard, useTitle, watchOnce } from "@vueuse/core";
+import {
+  createEventHook,
+  useClipboard,
+  useEventListener,
+  useTitle,
+  watchOnce,
+} from "@vueuse/core";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import { type ScenarioActions, TAB_LAYERS, type UiAction } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";
@@ -297,7 +303,7 @@ function onDecrypted(scenario: Scenario) {
   currentEncryptedScenario.value = null;
 }
 
-const { pasteFromClipboard } = useScenarioClipboardImport({
+const { handlePastedText, pasteFromClipboard } = useScenarioClipboardImport({
   activeScenario: props.activeScenario,
   activeLayerId,
   onScenarioLoaded: browserLoadScenario,
@@ -305,6 +311,18 @@ const { pasteFromClipboard } = useScenarioClipboardImport({
     currentEncryptedScenario.value = scenario;
     showDecryptModal.value = true;
   },
+});
+
+useEventListener(document, "paste", (e: ClipboardEvent) => {
+  if (!inputEventFilter(e)) return;
+  if (e.clipboardData?.types.includes("application/orbat")) return;
+
+  const text = e.clipboardData?.getData("text/plain");
+  if (!text) return;
+
+  if (handlePastedText(text)) {
+    e.preventDefault();
+  }
 });
 
 async function onScenarioAction(action: ScenarioActions) {

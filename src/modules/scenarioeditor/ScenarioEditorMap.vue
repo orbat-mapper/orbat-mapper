@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import {
-  defineAsyncComponent,
   onActivated,
   onUnmounted,
   provide,
   type ShallowRef,
   shallowRef,
   watch,
-  ref,
   computed,
 } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
-  activeLayerKey,
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
   activeScenarioKey,
@@ -20,7 +17,6 @@ import {
 } from "@/components/injects";
 import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
-import { useBrowserScenarios } from "@/composables/browserScenarios";
 import { injectStrict } from "@/utils";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -29,23 +25,15 @@ import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/ScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import Select from "ol/interaction/Select";
-import { useEventListener, useRafFn } from "@vueuse/core";
-import { inputEventFilter } from "@/components/helpers";
+import { useRafFn } from "@vueuse/core";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import { usePlaybackStore } from "@/stores/playbackStore";
-import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
-import { useScenarioClipboardImport } from "@/modules/scenarioeditor/useScenarioClipboardImport";
-
-const DecryptScenarioModal = defineAsyncComponent(
-  () => import("@/components/DecryptScenarioModal.vue"),
-);
 
 const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const activeLayerId = injectStrict(activeLayerKey);
 
 const {
   store: { state },
@@ -167,45 +155,12 @@ watch(
   { immediate: true },
 );
 
-const showDecryptModal = ref(false);
-const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
-
-const { loadScenario: browserLoadScenario } = useBrowserScenarios();
-
-function onDecrypted(scenario: Scenario) {
-  browserLoadScenario(scenario);
-  showDecryptModal.value = false;
-  currentEncryptedScenario.value = null;
-}
-
-const { handlePastedText } = useScenarioClipboardImport({
-  activeScenario,
-  activeLayerId,
-  onScenarioLoaded: browserLoadScenario,
-  onEncryptedScenario(scenario) {
-    currentEncryptedScenario.value = scenario;
-    showDecryptModal.value = true;
-  },
-});
-
 const mapReady = computed(() => Boolean(nativeMapRef.value));
 const headerControlsStyle = computed(() =>
   !isMobile.value && showDetailsPanel.value && ui.detailsPanelMode === "overlay"
     ? { marginRight: `${detailsWidth.value + 16}px` }
     : undefined,
 );
-
-useEventListener(document, "paste", (e: ClipboardEvent) => {
-  if (!inputEventFilter(e)) return;
-  if (e.clipboardData?.types.includes("application/orbat")) return;
-
-  const text = e.clipboardData?.getData("text/plain");
-  if (!text) return;
-
-  if (handlePastedText(text)) {
-    e.preventDefault();
-  }
-});
 </script>
 
 <template>
@@ -285,14 +240,6 @@ useEventListener(document, "paste", (e: ClipboardEvent) => {
     </template>
     <template #after-keyboard>
       <SearchScenarioActions v-if="nativeMapRef" />
-    </template>
-    <template #modals>
-      <DecryptScenarioModal
-        v-if="showDecryptModal && currentEncryptedScenario"
-        v-model="showDecryptModal"
-        :encrypted-scenario="currentEncryptedScenario"
-        @decrypted="onDecrypted"
-      />
     </template>
   </ScenarioMapModeShell>
 </template>
