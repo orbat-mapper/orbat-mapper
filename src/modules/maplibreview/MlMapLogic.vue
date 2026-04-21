@@ -42,6 +42,7 @@ import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useMaplibreRotateInteraction } from "@/modules/maplibreview/useMaplibreRotateInteraction";
+import { useMaplibreBoxSelect } from "@/composables/useMaplibreBoxSelect";
 import {
   useMapSettingsStore,
   type MapLibreUnitRotationMode,
@@ -95,6 +96,14 @@ const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
   onPreviewEnd: () => addUnits(),
+});
+const boxSelect = useMaplibreBoxSelect(mlMap, {
+  getUnitLayerIds: () => [...unitLayerIds],
+  onBoxStart: () => clearSelectedItems(),
+  onBoxEnd: (ids) => ids.forEach((id) => selectedUnitIds.value.add(id)),
+  isEnabled: () => !moveUnitEnabled.value && !rotateUnitEnabled.value,
+  suspend: suspendMapDragInteractions,
+  restore: restoreMapDragInteractions,
 });
 const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
 const recordingStore = useRecordingStore();
@@ -649,6 +658,7 @@ function addUnits(
 
 onUnmounted(() => {
   if (!mlMap) return;
+  boxSelect.cleanup();
   disposeUnitHistory();
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);

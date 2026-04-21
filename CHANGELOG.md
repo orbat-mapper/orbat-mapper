@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Added a sort direction control to the stored scenario browser dropdown, with an icon indicating ascending or descending order.
 - Added a recording control dropdown to the navbar.
 - Added recovery drafts for scenario editing, along with "Revert to opened state" and "Revert to saved version" actions.
+- Added Ctrl/Cmd + drag box select for units in MapLibre mode.
 
 ### Changed
 
