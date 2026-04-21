@@ -64,6 +64,7 @@ const { showPreview, transformations, updateActiveFeature, updateAtTime } = stor
 
 const toggleRedraw = ref(true);
 const addActiveLayer = ref(activeLayerId.value!);
+const activeTab = ref("add");
 let previewMap = scenarioMapEngineRef.value?.map;
 
 const calculatePreview = useDebounceFn(
@@ -157,6 +158,12 @@ watch(
   },
 );
 
+watch(activeTab, (tab) => {
+  if (tab !== "update" || isUnitMode) return;
+  const firstSelected = selectedFeatureIds.value.values().next().value;
+  if (firstSelected) updateActiveFeature.value = firstSelected;
+});
+
 function onSubmit(updateMode = false) {
   if (selectedItems.value.length === 0) return;
   const activeFeature = selectedItems.value[0];
@@ -238,7 +245,7 @@ function clearPreview() {
         <InputCheckbox v-model="showPreview" label="Show preview" class="" />
       </div>
     </div>
-    <Tabs defaultValue="add" class="border-border mt-4 border-t pt-4">
+    <Tabs v-model="activeTab" class="border-border mt-4 border-t pt-4">
       <TabsList class="w-full">
         <TabsTrigger value="add">New feature</TabsTrigger>
         <TabsTrigger value="update">Update existing</TabsTrigger>
