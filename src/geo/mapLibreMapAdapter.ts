@@ -1,10 +1,18 @@
-import type { Map as MlMap, MapMouseEvent } from "maplibre-gl";
+import type { GeoJSON, Position } from "geojson";
+import type {
+  CircleLayerSpecification,
+  FillLayerSpecification,
+  GeoJSONSource,
+  LineLayerSpecification,
+  Map as MlMap,
+  MapMouseEvent,
+} from "maplibre-gl";
 import type { AllGeoJSON } from "@turf/helpers";
-import type { Position } from "geojson";
 import turfBbox from "@turf/bbox";
 import type {
   AnimateOptions,
   FitOptions,
+  GeoJsonOverlayOptions,
   MapAdapter,
   MapEventHandler,
   MapEventType,
@@ -34,8 +42,14 @@ function toMapEventPayload(e: MapMouseEvent) {
 
 export class MapLibreMapAdapter implements MapAdapter {
   private _viewConstraints: ViewConstraints = {};
+  private readonly geoJsonOverlays = new Map<
+    string,
+    { geojson: GeoJSON | null; options: GeoJsonOverlayOptions }
+  >();
 
-  constructor(private mlMap: MlMap) {}
+  constructor(private mlMap: MlMap) {
+    this.mlMap.on("style.load", this.handleStyleLoad);
+  }
 
   animateView(options: AnimateOptions): void {
     this.mlMap.flyTo({
@@ -158,7 +172,148 @@ export class MapLibreMapAdapter implements MapAdapter {
     };
   }
 
+  addGeoJsonOverlay(
+    id: string,
+    geojson: GeoJSON | null | undefined,
+    options: GeoJsonOverlayOptions = {},
+  ): void {
+    const normalizedGeoJson = geojson ?? null;
+    this.geoJsonOverlays.set(id, { geojson: normalizedGeoJson, options });
+    this.ensureGeoJsonOverlay(id, options);
+    const source = this.mlMap.getSource(this.getGeoJsonOverlaySourceId(id)) as
+      | GeoJSONSource
+      | undefined;
+    source?.setData(
+      normalizedGeoJson ?? {
+        type: "FeatureCollection",
+        features: [],
+      },
+    );
+  }
+
+  removeGeoJsonOverlay(id: string): void {
+    this.geoJsonOverlays.delete(id);
+    this.removeGeoJsonOverlayFromMap(id);
+  }
+
   getNativeMap(): MlMap {
     return this.mlMap;
   }
+
+  private readonly handleStyleLoad = () => {
+    for (const [id, overlay] of this.geoJsonOverlays.entries()) {
+      this.ensureGeoJsonOverlay(id, overlay.options);
+      const source = this.mlMap.getSource(this.getGeoJsonOverlaySourceId(id)) as
+        | GeoJSONSource
+        | undefined;
+      source?.setData(
+        overlay.geojson ?? {
+          type: "FeatureCollection",
+          features: [],
+        },
+      );
+    }
+  };
+
+  private ensureGeoJsonOverlay(id: string, options: GeoJsonOverlayOptions) {
+    const sourceId = this.getGeoJsonOverlaySourceId(id);
+    if (!this.mlMap.getSource(sourceId)) {
+      this.mlMap.addSource(sourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+    }
+
+    const fillLayerId = this.getGeoJsonOverlayLayerId(id, "fill");
+    const lineLayerId = this.getGeoJsonOverlayLayerId(id, "line");
+    const circleLayerId = this.getGeoJsonOverlayLayerId(id, "circle");
+    const style = options.style ?? {};
+    const lineDashArray = toMapLibreLineDashArray(
+      style.strokeLineDash ?? [10, 10],
+      style.strokeWidth ?? 3,
+    );
+
+    this.upsertLayer(fillLayerId, {
+      id: fillLayerId,
+      type: "fill",
+      source: sourceId,
+      paint: {
+        "fill-color": style.fillColor ?? "rgba(188,35,65,0.2)",
+      },
+    } satisfies FillLayerSpecification);
+
+    this.upsertLayer(lineLayerId, {
+      id: lineLayerId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": style.strokeColor ?? "red",
+        "line-width": style.strokeWidth ?? 3,
+        ...(lineDashArray ? { "line-dasharray": lineDashArray } : {}),
+      },
+    } satisfies LineLayerSpecification);
+
+    this.upsertLayer(circleLayerId, {
+      id: circleLayerId,
+      type: "circle",
+      source: sourceId,
+      paint: {
+        "circle-radius": style.circleRadius ?? 5,
+        "circle-color": style.circleFillColor ?? "red",
+        "circle-stroke-color": style.circleStrokeColor ?? "red",
+        "circle-stroke-width": 1,
+      },
+    } satisfies CircleLayerSpecification);
+  }
+
+  private upsertLayer(
+    id: string,
+    spec: FillLayerSpecification | LineLayerSpecification | CircleLayerSpecification,
+  ) {
+    if (this.mlMap.getLayer(id)) {
+      this.mlMap.removeLayer(id);
+    }
+    this.mlMap.addLayer(spec as any);
+  }
+
+  private removeGeoJsonOverlayFromMap(id: string) {
+    const map = this.mlMap;
+    if (
+      !map ||
+      typeof map.getLayer !== "function" ||
+      typeof map.getSource !== "function"
+    ) {
+      return;
+    }
+
+    const fillLayerId = this.getGeoJsonOverlayLayerId(id, "fill");
+    const lineLayerId = this.getGeoJsonOverlayLayerId(id, "line");
+    const circleLayerId = this.getGeoJsonOverlayLayerId(id, "circle");
+    for (const layerId of [circleLayerId, lineLayerId, fillLayerId]) {
+      if (map.getLayer(layerId)) {
+        map.removeLayer(layerId);
+      }
+    }
+
+    const sourceId = this.getGeoJsonOverlaySourceId(id);
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+  }
+
+  private getGeoJsonOverlaySourceId(id: string) {
+    return `geojson-overlay-source-${id}`;
+  }
+
+  private getGeoJsonOverlayLayerId(id: string, kind: "fill" | "line" | "circle") {
+    return `geojson-overlay-${kind}-${id}`;
+  }
+}
+
+function toMapLibreLineDashArray(lineDash: number[], lineWidth: number) {
+  if (!lineDash.length || lineWidth <= 0) return undefined;
+  return lineDash.map((segment) => segment / lineWidth);
 }

@@ -105,6 +105,8 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     getNativeMap() {
       return undefined;
     },
+    addGeoJsonOverlay() {},
+    removeGeoJsonOverlay() {},
     emit(event: MapEventType, payload?: { coordinate?: [number, number] }) {
       const mapEvent = {
         coordinate: payload?.coordinate,

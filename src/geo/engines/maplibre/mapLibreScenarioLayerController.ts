@@ -258,7 +258,7 @@ export function createMapLibreScenarioLayerController(
       panToFeature: true,
       zoomToScenarioLayer: true,
       zoomToMapLayer: true,
-      featureTransform: false,
+      featureTransform: true,
       mapLayerTransform: false,
       mapLayerExtent: true,
     },

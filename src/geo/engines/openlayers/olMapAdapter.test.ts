@@ -1,6 +1,19 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
+import VectorLayer from "ol/layer/Vector";
+
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+  configurable: true,
+  value: vi.fn(() => ({
+    fillStyle: "",
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    getImageData: vi.fn(() => ({
+      data: new Uint8ClampedArray([255, 0, 0, 255]),
+    })),
+  })),
+});
 
 function createMockView(overrides: Record<string, any> = {}) {
   return {
@@ -23,6 +36,9 @@ function createMockMap(viewOverrides: Record<string, any> = {}) {
     getView: vi.fn(() => view),
     setView: vi.fn(),
     updateSize: vi.fn(),
+    render: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
     on: vi.fn(),
     once: vi.fn(),
     getSize: vi.fn(() => [800, 600]),
@@ -90,6 +106,26 @@ describe("OlMapAdapter", () => {
       adapter.setViewConstraints({ minZoom: 5 });
 
       expect(olMap.setView).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("geojson overlays", () => {
+    it("creates and removes a managed overlay layer", () => {
+      const { olMap } = createMockMap();
+      const adapter = new OlMapAdapter(olMap as any);
+      const setMapSpy = vi.spyOn(VectorLayer.prototype, "setMap");
+
+      adapter.addGeoJsonOverlay("preview", {
+        type: "FeatureCollection",
+        features: [],
+      });
+
+      expect(setMapSpy).toHaveBeenCalledWith(olMap);
+
+      adapter.removeGeoJsonOverlay("preview");
+
+      expect(setMapSpy).toHaveBeenCalledWith(null);
+      setMapSpy.mockRestore();
     });
   });
 });

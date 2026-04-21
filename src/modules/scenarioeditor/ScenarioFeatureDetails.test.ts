@@ -101,4 +101,76 @@ describe("ScenarioFeatureDetails", () => {
       style: { "marker-symbol": "square" },
     });
   });
+
+  it("shows the transform tab when the active map engine supports feature transforms", () => {
+    const feature = {
+      id: "feature-1",
+      kind: "geometry",
+      _pid: "layer-1",
+      geometry: {
+        type: "Point",
+        coordinates: [10, 20],
+      },
+      geometryMeta: {
+        geometryKind: "Point",
+      },
+      name: "Alpha",
+      style: {},
+    };
+
+    const wrapper = mount(ScenarioFeatureDetails, {
+      props: {
+        selectedIds: new Set(["feature-1"]),
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioKey as symbol]: {
+            geo: {
+              getGeometryLayerItemById: vi.fn(() => ({ layerItem: feature })),
+              updateFeature: vi.fn(),
+            },
+            store: {
+              groupUpdate: (callback: () => void) => callback(),
+            },
+          },
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            layers: {
+              capabilities: {
+                featureTransform: true,
+              },
+            },
+            suspendFeatureSelection: vi.fn(),
+            resumeFeatureSelection: vi.fn(),
+          } as any),
+        },
+        stubs: {
+          GlobalEvents: true,
+          EditableLabel: true,
+          IconButton: true,
+          ItemMedia: true,
+          ScenarioFeatureDropdownMenu: true,
+          ScenarioFeatureState: true,
+          EditMetaForm: true,
+          EditMediaForm: true,
+          FeatureTransformations: true,
+          PanelDataGrid: { template: "<div><slot /></div>" },
+          ScrollTabs: {
+            props: ["items"],
+            template: "<div><slot /></div>",
+          },
+          TabsContent: { template: "<div><slot /></div>" },
+          Button: { template: "<button><slot /></button>" },
+          ScenarioFeatureVisibilitySettings: true,
+          ScenarioFeatureStrokeSettings: true,
+          ScenarioFeatureArrowSettings: true,
+          ScenarioFeatureFillSettings: true,
+          ScenarioFeatureTextSettings: true,
+          ScenarioFeatureMarkerSettings: true,
+        },
+      },
+    });
+
+    expect(wrapper.find("feature-transformations-stub").exists()).toBe(true);
+  });
 });
