@@ -26,9 +26,7 @@ const editorKey = computed(
 
 const currentDemo = "";
 const selectedItems = useSelectedItems();
-let resolveLeavePrompt:
-  | ((choice: "save" | "discard" | "cancel") => void)
-  | undefined;
+let resolveLeavePrompt: ((choice: "save" | "discard" | "cancel") => void) | undefined;
 
 watch(
   () => props.scenarioId,
@@ -47,9 +45,7 @@ function showScenarioInfo() {
   selectedItems.showScenarioInfo.value = true;
 }
 
-async function maybePromptForDraftRecovery(
-  savedScenario: Scenario | null,
-) {
+async function maybePromptForDraftRecovery(savedScenario: Scenario | null) {
   if (!savedScenario) return;
   const draft = await scenario.value.io.getNewerDraft(savedScenario.id, savedScenario);
   if (!draft) return;

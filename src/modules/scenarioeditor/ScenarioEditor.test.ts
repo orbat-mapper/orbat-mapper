@@ -122,7 +122,9 @@ const routes: RouteRecordRaw[] = [
   },
 ];
 
-function createActiveScenario(options: { stateOverrides?: Record<string, unknown> } = {}) {
+function createActiveScenario(
+  options: { stateOverrides?: Record<string, unknown> } = {},
+) {
   const addFeature = vi.fn((feature) => feature.id);
   return {
     store: {
@@ -166,7 +168,7 @@ function createPasteEvent(options: { text?: string; types?: string[] }) {
   Object.defineProperty(event, "clipboardData", {
     value: {
       types: options.types ?? ["text/plain"],
-      getData: (type: string) => (type === "text/plain" ? options.text ?? "" : ""),
+      getData: (type: string) => (type === "text/plain" ? (options.text ?? "") : ""),
     },
   });
   return event;
@@ -195,11 +197,13 @@ describe("ScenarioEditor", () => {
     document.body.innerHTML = "";
   });
 
-  async function mountScenarioEditor(options: {
-    routeName?: typeof MAP_EDIT_MODE_ROUTE | typeof MAPLIBRE_ROUTE;
-    activeScenario?: TScenario;
-    mainMenuStub?: unknown;
-  } = {}) {
+  async function mountScenarioEditor(
+    options: {
+      routeName?: typeof MAP_EDIT_MODE_ROUTE | typeof MAPLIBRE_ROUTE;
+      activeScenario?: TScenario;
+      mainMenuStub?: unknown;
+    } = {},
+  ) {
     const pinia = createPinia();
     setActivePinia(pinia);
     const router = createRouter({
@@ -378,7 +382,13 @@ describe("ScenarioEditor", () => {
           {
             type: "Feature",
             properties: { title: "Bravo", category: "two" },
-            geometry: { type: "LineString", coordinates: [[10, 20], [30, 40]] },
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [10, 20],
+                [30, 40],
+              ],
+            },
           },
         ],
       }),
@@ -568,7 +578,7 @@ describe("ScenarioEditor", () => {
       mainMenuStub: defineComponent({
         emits: ["action", "uiAction"],
         template:
-          '<button data-testid="paste-menu" @click="$emit(\'action\', \'pasteFromClipboard\')">paste</button>',
+          "<button data-testid=\"paste-menu\" @click=\"$emit('action', 'pasteFromClipboard')\">paste</button>",
       }),
     });
 

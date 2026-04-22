@@ -35,8 +35,7 @@ function updateValue(name: keyof FillStyleSpec, value: string | number) {
 
 const opacity = computed({
   get: () => [marker.value["fill-opacity"]],
-  set: ([v]) =>
-    emit("update", { style: { "fill-opacity": v } }, { undoable: false }),
+  set: ([v]) => emit("update", { style: { "fill-opacity": v } }, { undoable: false }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value[0]! * 100).toFixed(0));

@@ -40,7 +40,7 @@ const propertyEntries = computed(() =>
         </p>
         <div
           v-if="entry.kind === 'html'"
-          class="reference-feature-html prose prose-sm dark:prose-invert max-w-none break-words overflow-x-auto"
+          class="reference-feature-html prose prose-sm dark:prose-invert max-w-none overflow-x-auto break-words"
           v-html="entry.value"
         />
         <pre v-else class="font-sans text-sm break-words whitespace-pre-wrap">{{
@@ -65,7 +65,9 @@ const propertyEntries = computed(() =>
   vertical-align: top;
 }
 
-:global(.dark) .reference-feature-html :deep(
+:global(.dark)
+  .reference-feature-html
+  :deep(
     p,
     div,
     span,

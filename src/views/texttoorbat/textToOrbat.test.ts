@@ -34,7 +34,6 @@ const ICON_ARTILLERY = iconCode("Artillery");
 const ICON_INFANTRY = iconCode("Infantry");
 const ICON_MECHANIZED_INFANTRY = iconCode("Mechanized Infantry");
 
-
 describe("convertParsedUnitsToOrbatMapperScenario", () => {
   it("creates a canonical v3 scenario with a default overlay layer", () => {
     const scenario = convertParsedUnitsToOrbatMapperScenario([]);
@@ -450,7 +449,6 @@ describe("getEchelonFromSidc", () => {
     expect(getEchelonFromSidc(sidc)).toBe("21");
   });
 });
-
 
 describe("buildSidc with icon detection", () => {
   it("sets infantry icon for infantry units", () => {

@@ -25,9 +25,7 @@ export function isGeoJSONFeatureCollection(data: unknown): data is FeatureCollec
   );
 }
 
-export function getGeoJSONFeatures(
-  data: unknown,
-): GeoJSONFeature[] | null {
+export function getGeoJSONFeatures(data: unknown): GeoJSONFeature[] | null {
   if (isGeoJSONFeatureCollection(data)) return data.features;
   if (isGeoJSONFeature(data)) return [data];
   return null;
@@ -58,7 +56,9 @@ export function normalizeImportedName(rawName: unknown, fallback: string): strin
   return String(rawName ?? fallback);
 }
 
-export function getGeoJSONPropertyNames(data: GeoJSONFeature | FeatureCollection): string[] {
+export function getGeoJSONPropertyNames(
+  data: GeoJSONFeature | FeatureCollection,
+): string[] {
   const propertyNames = new Set<string>();
   getGeoJSONFeatures(data)?.forEach((feature) => {
     const properties = clonePropertiesRecord(feature.properties);
@@ -79,8 +79,7 @@ export function convertGeoJSONFeatureToScenarioFeature(
   if (!feature.geometry) return null;
 
   const properties = clonePropertiesRecord(feature.properties) ?? {};
-  const nameColumn =
-    options.nameColumn ?? findLikelyNameColumn(Object.keys(properties));
+  const nameColumn = options.nameColumn ?? findLikelyNameColumn(Object.keys(properties));
   const name = normalizeImportedName(
     nameColumn ? properties[nameColumn] : undefined,
     options.fallbackName ?? "New feature",

@@ -21,8 +21,11 @@ interface ScenarioClipboardImportOptions {
 
 export function useScenarioClipboardImport(options: ScenarioClipboardImportOptions) {
   const { send } = useNotifications();
-  const { clear: clearSelection, selectedFeatureIds, activeFeatureId } =
-    useSelectedItems();
+  const {
+    clear: clearSelection,
+    selectedFeatureIds,
+    activeFeatureId,
+  } = useSelectedItems();
   const {
     activeScenario: {
       store: { state, groupUpdate },
@@ -88,7 +91,9 @@ export function useScenarioClipboardImport(options: ScenarioClipboardImportOptio
 
     clearSelection();
     activeFeatureId.value = addedFeatureIds[0];
-    addedFeatureIds.slice(1).forEach((featureId) => selectedFeatureIds.value.add(featureId));
+    addedFeatureIds
+      .slice(1)
+      .forEach((featureId) => selectedFeatureIds.value.add(featureId));
     send({
       message: `Pasted ${addedFeatureIds.length} GeoJSON feature${
         addedFeatureIds.length === 1 ? "" : "s"

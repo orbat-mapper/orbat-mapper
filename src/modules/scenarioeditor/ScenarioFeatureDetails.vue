@@ -230,8 +230,7 @@ function doCommitFeature() {
   const ids = [...finalStyles.keys()];
   if (ids.length > 1) {
     groupUpdate(
-      () =>
-        ids.forEach((id) => geo.updateFeature(id, { style: finalStyles.get(id)! })),
+      () => ids.forEach((id) => geo.updateFeature(id, { style: finalStyles.get(id)! })),
       { label: "batchLayer", value: "nil" },
     );
   } else if (ids.length === 1) {

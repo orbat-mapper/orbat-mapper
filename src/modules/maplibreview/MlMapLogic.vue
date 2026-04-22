@@ -160,7 +160,9 @@ function isUnitLayerId(layerId: string | undefined | null) {
   return layerId === UNIT_LAYER_ID || layerId?.startsWith(UNIT_LAYER_PREFIX);
 }
 
-function getUnitVisibilityGroup(unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number]) {
+function getUnitVisibilityGroup(
+  unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number],
+) {
   const style = unit.style ?? {};
   if (!style.limitVisibility) {
     return { id: ALWAYS_VISIBLE_UNIT_GROUP_ID } satisfies UnitVisibilityGroup;
@@ -187,7 +189,7 @@ function createUnitLayerSpec(
   layerId: string,
   group: UnitVisibilityGroup,
   alignment: ReturnType<typeof getUnitRotationAlignment>,
-) : AddLayerObject {
+): AddLayerObject {
   return {
     id: layerId,
     type: "symbol" as const,
@@ -424,17 +426,17 @@ function onMapMouseMove(e: MapMouseEvent) {
   }
   if (rotateUnitEnabled.value) {
     const topHit = queryInteractiveFeatures(e.point)[0];
-    const rotatableUnitIds =
-      isUnitLayerId(topHit?.layer.id)
-        ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
-        : [];
+    const rotatableUnitIds = isUnitLayerId(topHit?.layer.id)
+      ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
+      : [];
     mlMap.getCanvas().style.cursor = rotatableUnitIds.length ? "grab" : "";
     return;
   }
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
     const topHit = queryInteractiveFeatures(e.point)[0];
-    const movableUnitIds =
-      isUnitLayerId(topHit?.layer.id) ? getMovableUnitIds(topHit.properties?.id) : [];
+    const movableUnitIds = isUnitLayerId(topHit?.layer.id)
+      ? getMovableUnitIds(topHit.properties?.id)
+      : [];
     mlMap.getCanvas().style.cursor = movableUnitIds.length ? "move" : "";
     return;
   }

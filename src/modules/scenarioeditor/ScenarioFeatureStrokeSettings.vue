@@ -41,14 +41,12 @@ function updateValue(
 
 const width = computed({
   get: () => [marker.value["stroke-width"]],
-  set: ([v]) =>
-    emit("update", { style: { "stroke-width": v } }, { undoable: false }),
+  set: ([v]) => emit("update", { style: { "stroke-width": v } }, { undoable: false }),
 });
 
 const opacity = computed({
   get: () => [marker.value["stroke-opacity"]],
-  set: ([v]) =>
-    emit("update", { style: { "stroke-opacity": v } }, { undoable: false }),
+  set: ([v]) => emit("update", { style: { "stroke-opacity": v } }, { undoable: false }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value[0]! * 100).toFixed(0));

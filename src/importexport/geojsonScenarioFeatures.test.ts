@@ -51,7 +51,13 @@ describe("geojsonScenarioFeatures", () => {
           {
             type: "Feature",
             properties: { name: "Bravo", category: "two" },
-            geometry: { type: "LineString", coordinates: [[1, 2], [3, 4]] },
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [1, 2],
+                [3, 4],
+              ],
+            },
           },
         ],
       },

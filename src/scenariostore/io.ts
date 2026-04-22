@@ -515,10 +515,13 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   function syncRevisionState(currentRevision = store.value.revision.value) {
-    const dirty = hasSavedBaseline.value ? currentRevision !== savedRevision.value : false;
+    const dirty = hasSavedBaseline.value
+      ? currentRevision !== savedRevision.value
+      : false;
     savedDirty.value = dirty;
     draftDirty.value =
-      dirty && (lastDraftRevision.value === null || currentRevision !== lastDraftRevision.value);
+      dirty &&
+      (lastDraftRevision.value === null || currentRevision !== lastDraftRevision.value);
     return { currentRevision, dirty };
   }
 
@@ -676,7 +679,10 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     }
   }
 
-  function loadFromObject(data: LoadableScenario | Scenario, options: LoadScenarioOptions = {}) {
+  function loadFromObject(
+    data: LoadableScenario | Scenario,
+    options: LoadScenarioOptions = {},
+  ) {
     if (!applyScenarioObject(data)) return;
     const currentScenario = serializeToObject();
     const nextLoadedBaseline = options.loadedBaseline ?? currentScenario;
