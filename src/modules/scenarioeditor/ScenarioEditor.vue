@@ -445,7 +445,7 @@ if (firstOverlayLayerId) {
         </div>
       </div>
       <div class="flex shrink-0 items-center gap-0.5 overflow-clip sm:gap-2">
-        <Button variant="ghost" class="hidden sm:inline-flex" asChild
+        <Button variant="ghost" class="hidden lg:inline-flex" asChild
           ><a
             :href="
               route.meta.helpUrl ||
@@ -480,7 +480,7 @@ if (firstOverlayLayerId) {
           />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
-              class="bg-muted-foreground/20 border-0 sm:hidden"
+              class="bg-muted-foreground/20 border-0 lg:hidden"
               aria-label="Edit mode"
             >
               <SelectValue>
@@ -512,7 +512,7 @@ if (firstOverlayLayerId) {
           </Select>
           <div
             id="mode-switcher"
-            class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 hidden items-center rounded-lg px-1 sm:flex"
+            class="bg-muted-foreground/20 dark:bg-foreground/15 text-muted-foreground/80 hidden items-center rounded-lg px-1 lg:flex"
           >
             <router-link
               :to="{ name: MAP_EDIT_MODE_ROUTE }"

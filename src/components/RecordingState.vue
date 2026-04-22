@@ -63,7 +63,7 @@ const toggleRecordingPrefix = () => {
       type="button"
       variant="ghost"
       size="sm"
-      class="h-8 gap-1.5 rounded-none px-2 transition-colors sm:h-9 sm:gap-2 sm:px-3"
+      class="h-8 gap-1.5 rounded-none px-2 transition-colors lg:h-9 lg:gap-2 lg:px-3"
       :class="{ 'bg-red-50/50 dark:bg-red-950/20': isAnyRecording }"
       :aria-label="
         isAnyRecording
@@ -91,7 +91,7 @@ const toggleRecordingPrefix = () => {
       >
         Rec
       </span>
-      <span class="text-muted-foreground hidden items-center gap-1 sm:inline-flex">
+      <span class="text-muted-foreground hidden items-center gap-1 lg:inline-flex">
         <Workflow
           v-if="store.isRecordingHierarchy"
           class="h-3.5 w-3.5"
@@ -116,12 +116,12 @@ const toggleRecordingPrefix = () => {
           type="button"
           variant="ghost"
           size="sm"
-          class="h-8 rounded-none border-l px-1.5 sm:h-9 sm:px-2"
+          class="h-8 rounded-none border-l px-1.5 lg:h-9 lg:px-2"
           aria-label="Choose recording modes"
           title="Choose recording modes"
         >
-          <Settings2 class="text-muted-foreground hidden h-4 w-4 sm:block" />
-          <ChevronDown class="text-muted-foreground/50 h-3 w-3 sm:ml-1" />
+          <Settings2 class="text-muted-foreground hidden h-4 w-4 lg:block" />
+          <ChevronDown class="text-muted-foreground/50 h-3 w-3 lg:ml-1" />
         </Button>
       </DropdownMenuTrigger>
 
