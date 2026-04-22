@@ -7,13 +7,19 @@ import {
   defaultStrokeWidth,
 } from "@/geo/simplestyle";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
+import type { UpdateOptions } from "@/scenariostore/geo";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
 import NewSelect from "@/components/NewSelect.vue";
 
 const props = defineProps<{ feature: GeometryLayerItem }>();
 const emit = defineEmits<{
-  (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
+  (
+    e: "update",
+    value: { style: Partial<SimpleStyleSpec> },
+    options?: UpdateOptions,
+  ): void;
+  (e: "commit"): void;
 }>();
 
 const marker = computed(() => {
@@ -35,17 +41,17 @@ function updateValue(
 
 const width = computed({
   get: () => [marker.value["stroke-width"]],
-  set: ([v]) => emit("update", { style: { "stroke-width": v } }),
+  set: ([v]) =>
+    emit("update", { style: { "stroke-width": v } }, { undoable: false }),
 });
 
 const opacity = computed({
   get: () => [marker.value["stroke-opacity"]],
-  set: ([v]) => emit("update", { style: { "stroke-opacity": v } }),
+  set: ([v]) =>
+    emit("update", { style: { "stroke-opacity": v } }, { undoable: false }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value[0]! * 100).toFixed(0));
-
-function onChange(e: any) {}
 </script>
 
 <template>
@@ -64,8 +70,8 @@ function onChange(e: any) {}
       :min="1"
       :max="10"
       :step="1"
-      @change="onChange($event)"
       class="min-w-20"
+      @value-commit="emit('commit')"
     />
     <span class="">{{ marker["stroke-width"] }} px</span>
   </div>
@@ -77,8 +83,8 @@ function onChange(e: any) {}
       :min="0"
       :max="1"
       :step="0.01"
-      @change="onChange($event)"
       class="min-w-20"
+      @value-commit="emit('commit')"
     />
     <span>{{ opacityAsPercent }}%</span>
   </div>

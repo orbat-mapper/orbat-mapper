@@ -7,12 +7,18 @@ import {
   type SimpleStyleSpec,
 } from "@/geo/simplestyle";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
+import type { UpdateOptions } from "@/scenariostore/geo";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
 
 const props = defineProps<{ feature: GeometryLayerItem }>();
 const emit = defineEmits<{
-  (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
+  (
+    e: "update",
+    value: { style: Partial<SimpleStyleSpec> },
+    options?: UpdateOptions,
+  ): void;
+  (e: "commit"): void;
 }>();
 
 const marker = computed(() => {
@@ -29,12 +35,11 @@ function updateValue(name: keyof FillStyleSpec, value: string | number) {
 
 const opacity = computed({
   get: () => [marker.value["fill-opacity"]],
-  set: ([v]) => emit("update", { style: { "fill-opacity": v } }),
+  set: ([v]) =>
+    emit("update", { style: { "fill-opacity": v } }, { undoable: false }),
 });
 
 const opacityAsPercent = computed(() => (opacity.value[0]! * 100).toFixed(0));
-
-function onChange(e: any) {}
 </script>
 
 <template>
@@ -54,7 +59,7 @@ function onChange(e: any) {}
       :max="1"
       :step="0.01"
       class="min-w-20"
-      @change="onChange($event)"
+      @value-commit="emit('commit')"
     />
     <span class="ml-2">{{ opacityAsPercent }}%</span>
   </div>

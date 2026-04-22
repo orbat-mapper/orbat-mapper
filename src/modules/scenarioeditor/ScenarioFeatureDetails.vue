@@ -30,6 +30,7 @@ import { renderMarkdown } from "@/composables/formatting";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import type { GeometryLayerItemUpdate, MediaUpdate } from "@/types/internalModels";
+import type { UpdateOptions } from "@/scenariostore/geo";
 import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
@@ -170,23 +171,72 @@ const debouncedResetMap = useDebounceFn(
   3000,
 );
 
-function doUpdateFeature(data: GeometryLayerItemUpdate) {
-  const featureOrFeatures = isMultiMode.value
-    ? [...props.selectedIds.values()]
-    : feature.value?.id;
+let previewSnapshots: Map<string | number, Record<string, any>> | null = null;
+
+function selectedFeatureIdList(): (string | number)[] {
+  if (isMultiMode.value) return [...props.selectedIds.values()];
+  return feature.value?.id ? [feature.value.id] : [];
+}
+
+function doUpdateFeature(data: GeometryLayerItemUpdate, options?: UpdateOptions) {
+  const ids = selectedFeatureIdList();
   engineRef.value?.suspendFeatureSelection();
-  if (Array.isArray(featureOrFeatures)) {
-    groupUpdate(() => featureOrFeatures.forEach((f) => geo.updateFeature(f, data)), {
-      label: "batchLayer",
-      value: "nil",
-    });
-  } else {
-    featureOrFeatures && geo.updateFeature(featureOrFeatures, data);
+
+  if (options?.undoable === false && data.style && !previewSnapshots) {
+    previewSnapshots = new Map();
+    for (const id of ids) {
+      const item = geo.getGeometryLayerItemById(id)?.layerItem;
+      if (item) previewSnapshots.set(id, { ...item.style });
+    }
+  }
+
+  const callUpdate = options
+    ? (f: string | number) => geo.updateFeature(f, data, options)
+    : (f: string | number) => geo.updateFeature(f, data);
+
+  if (ids.length > 1) {
+    if (options?.undoable === false) {
+      ids.forEach(callUpdate);
+    } else {
+      groupUpdate(() => ids.forEach(callUpdate), {
+        label: "batchLayer",
+        value: "nil",
+      });
+    }
+  } else if (ids.length === 1) {
+    callUpdate(ids[0]);
   }
   if (feature.value) {
     toolbarStore.currentDrawStyle = { ...feature.value.style };
   }
   debouncedResetMap();
+}
+
+function doCommitFeature() {
+  if (!previewSnapshots) return;
+  const snapshots = previewSnapshots;
+  previewSnapshots = null;
+
+  const finalStyles = new Map<string | number, Record<string, any>>();
+  for (const id of snapshots.keys()) {
+    const item = geo.getGeometryLayerItemById(id)?.layerItem;
+    if (item) finalStyles.set(id, { ...item.style });
+  }
+
+  for (const [id, orig] of snapshots) {
+    geo.updateFeature(id, { style: orig }, { undoable: false, noEmit: true });
+  }
+
+  const ids = [...finalStyles.keys()];
+  if (ids.length > 1) {
+    groupUpdate(
+      () =>
+        ids.forEach((id) => geo.updateFeature(id, { style: finalStyles.get(id)! })),
+      { label: "batchLayer", value: "nil" },
+    );
+  } else if (ids.length === 1) {
+    geo.updateFeature(ids[0], { style: finalStyles.get(ids[0])! });
+  }
 }
 
 function doMetaUpdate(
@@ -285,6 +335,7 @@ function onAction(action: ScenarioFeatureActions) {
               v-if="feature && hasStroke"
               :feature="feature"
               @update="doUpdateFeature"
+              @commit="doCommitFeature"
             />
             <ScenarioFeatureArrowSettings
               v-if="feature && hasArrows"
@@ -295,6 +346,7 @@ function onAction(action: ScenarioFeatureActions) {
               v-if="feature && hasFill"
               :feature="feature"
               @update="doUpdateFeature"
+              @commit="doCommitFeature"
             />
             <ScenarioFeatureTextSettings
               v-if="feature && geometryType !== 'Circle'"
