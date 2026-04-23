@@ -40,6 +40,8 @@ import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayer
 import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
+import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
+import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeaturesGeometryStats.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Button } from "@/components/ui/button";
 import type { NGeometryLayerItem } from "@/types/internalModels";
@@ -73,6 +75,13 @@ const feature = computed(() => {
       .layerItem as NGeometryLayerItem | undefined;
   }
   return null;
+});
+
+const selectedFeatures = computed<NGeometryLayerItem[]>(() => {
+  if (props.selectedIds.size <= 1) return [];
+  return [...props.selectedIds]
+    .map((id) => geo.getGeometryLayerItemById(id)?.layerItem)
+    .filter((f): f is NGeometryLayerItem => !!f);
 });
 
 const featureName = ref("DD");
@@ -355,7 +364,15 @@ function onAction(action: ScenarioFeatureActions) {
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
-          <div v-if="!isEditing" class="prose dark:prose-invert mt-4">
+          <ScenarioFeatureGeometryStats v-if="feature && !isEditing" :feature="feature" />
+          <ScenarioFeaturesGeometryStats
+            v-else-if="isMultiMode && selectedFeatures.length"
+            :features="selectedFeatures"
+          />
+          <div
+            v-if="!isEditing && feature?.description"
+            class="prose dark:prose-invert mt-4"
+          >
             <div class="prose prose-sm dark:prose-invert" v-html="hDescription"></div>
           </div>
           <div v-else-if="isEditMode" class="mt-4">

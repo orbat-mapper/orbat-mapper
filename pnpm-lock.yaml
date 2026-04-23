@@ -62,6 +62,9 @@ importers:
       '@turf/along':
         specifier: ^7.3.4
         version: 7.3.4
+      '@turf/area':
+        specifier: ^7.3.4
+        version: 7.3.4
       '@turf/bbox':
         specifier: ^7.3.4
         version: 7.3.4

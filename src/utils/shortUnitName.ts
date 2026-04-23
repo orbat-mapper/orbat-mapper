@@ -280,7 +280,7 @@ function collectAbbreviationCandidates(
     candidates.push(candidate);
   };
 
-  let preferredContributions = [...baseContributions];
+  const preferredContributions = [...baseContributions];
   if (shouldExpand) {
     let remaining =
       limit -

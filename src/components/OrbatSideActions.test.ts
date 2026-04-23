@@ -189,7 +189,7 @@ describe("OrbatSide/OrbatSideGroup expand-collapse actions", () => {
     });
 
     const calls1 = dropTargetForElementsMock.mock.calls;
-    let firstGroupConfig = calls1[calls1.length - 1]?.[0] as any;
+    const firstGroupConfig = calls1[calls1.length - 1]?.[0] as any;
     firstGroupConfig.getData({ input: {} as any, element: {} as any, source });
     expect(attachInstructionMock).toHaveBeenLastCalledWith(
       expect.anything(),

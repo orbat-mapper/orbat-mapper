@@ -38,6 +38,7 @@
     "@tanstack/vue-virtual": "^3.13.23",
     "@tmcw/togeojson": "^7.1.2",
     "@turf/along": "^7.3.4",
+    "@turf/area": "^7.3.4",
     "@turf/bbox": "^7.3.4",
     "@turf/bbox-polygon": "^7.3.4",
     "@turf/bearing": "^7.3.4",
