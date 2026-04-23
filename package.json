@@ -67,7 +67,7 @@
     "@vueuse/core": "^14.2.1",
     "@vueuse/integrations": "^14.2.1",
     "@vvo/tzdb": "^6.198.0",
-    "@xmldom/xmldom": "^0.8.12",
+    "@xmldom/xmldom": "^0.8.13",
     "audit": "^0.0.6",
     "browser-fs-access": "^0.38.0",
     "class-variance-authority": "^0.7.1",
