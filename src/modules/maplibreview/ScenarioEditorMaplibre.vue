@@ -49,8 +49,18 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
 import { useMgrsGrid } from "@/modules/maplibreview/mgrsgrid";
+import {
+  getScenarioMapViewSnapshot,
+  type ScenarioMapViewSnapshot,
+} from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
-const emit = defineEmits(["show-settings"]);
+const props = defineProps<{
+  initialMapView?: ScenarioMapViewSnapshot;
+}>();
+const emit = defineEmits<{
+  "show-settings": [];
+  "map-view-change": [snapshot: ScenarioMapViewSnapshot];
+}>();
 
 const activeScenario = injectStrict(activeScenarioKey);
 const toolbarStore = useMainToolbarStore();
@@ -276,6 +286,10 @@ function disposeMaplibreBinding() {
 }
 
 onBeforeUnmount(() => {
+  const snapshot = getScenarioMapViewSnapshot(scenarioMapEngineRef.value?.map);
+  if (snapshot) {
+    emit("map-view-change", snapshot);
+  }
   disposeMaplibreBinding();
 });
 
@@ -312,9 +326,11 @@ const headerControlsStyle = computed(() =>
         <MaplibreMap
           @ready="onMapReady"
           :basemap-id="activeMaplibreBasemap.id"
+          :initial-view="props.initialMapView"
           :style-spec="activeMaplibreBasemap.style"
           :projection="effectiveProjection"
           @update:projection="onProjectionUpdate"
+          @map-view-change="emit('map-view-change', $event)"
           class="flex-auto bg-radial from-gray-800 to-gray-950"
         />
       </MaplibreContextMenu>
@@ -322,6 +338,7 @@ const headerControlsStyle = computed(() =>
         v-if="mlMap"
         :mlMap="mlMap"
         :active-scenario="activeScenario"
+        :initial-map-view="props.initialMapView"
         :key="state.id"
       />
     </template>

@@ -12,11 +12,13 @@ import { useOlEvent } from "@/composables/openlayersHelpers";
 import { createBaseLayerInstances } from "@/geo/baseLayers";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import type { LayerConfigFile } from "@/geo/layerConfigTypes";
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 interface Props {
   center?: Coordinate;
   zoom?: number;
   baseLayerName?: string;
+  initialView?: ScenarioMapViewSnapshot;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,8 +38,9 @@ const moveendHandler = (evt: MapEvent) => {
 
 onMounted(async () => {
   const view = new View({
-    zoom: props.zoom,
-    center: fromLonLat(props.center),
+    zoom: props.initialView?.zoom ?? props.zoom,
+    center: fromLonLat(props.initialView?.center ?? props.center),
+    rotation: props.initialView?.rotation ?? 0,
     showFullExtent: true,
   });
 

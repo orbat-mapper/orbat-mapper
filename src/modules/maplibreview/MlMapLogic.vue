@@ -58,9 +58,12 @@ type UnitVisibilityGroup = {
   maxzoom?: number;
 };
 
-const { mlMap, activeScenario } = defineProps<{
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+
+const { mlMap, activeScenario, initialMapView } = defineProps<{
   mlMap: MlMap;
   activeScenario: TScenario;
+  initialMapView?: ScenarioMapViewSnapshot;
 }>();
 
 provide(activeScenarioKey, activeScenario);
@@ -76,7 +79,7 @@ type SymbolCacheEntry = {
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
-let shouldCenterOnNextStyleLoad = true;
+let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
 const uiStore = useUiStore();

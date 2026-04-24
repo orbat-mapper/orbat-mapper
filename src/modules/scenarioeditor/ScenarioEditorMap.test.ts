@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMap from "@/modules/scenarioeditor/ScenarioEditorMap.vue";
 import { activeLayerKey, activeParentKey, activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 const { mapModeState } = vi.hoisted(() => ({
   mapModeState: { isMobile: false },
@@ -16,6 +17,15 @@ vi.mock("@/geo/engines/openlayers/olMapAdapter", () => ({
     constructor(public map: unknown) {}
     setViewConstraints() {}
     updateSize() {}
+    getCenter() {
+      return [30, 40];
+    }
+    getZoom() {
+      return 6;
+    }
+    getRotation() {
+      return 0.8;
+    }
   },
 }));
 
@@ -40,6 +50,31 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
   }),
 }));
 
+vi.mock("@/components/ScenarioMap.vue", () => ({
+  default: defineComponent({
+    name: "NewScenarioMap",
+    props: {
+      initialView: {
+        type: Object,
+        required: false,
+      },
+    },
+    emits: ["mapReady", "map-view-change"],
+    setup(_, { emit }) {
+      onMounted(() => {
+        emit("mapReady", {
+          olMap: {},
+          featureSelectInteraction: {
+            setMap: vi.fn(),
+          },
+          scenarioLayerController: {},
+        });
+      });
+      return () => null;
+    },
+  }),
+}));
+
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
   template: `
@@ -51,23 +86,6 @@ const ScenarioMapModeShellStub = defineComponent({
       <div data-test="modals-slot"><slot name="modals" /></div>
     </div>
   `,
-});
-
-const NewScenarioMapStub = defineComponent({
-  name: "NewScenarioMap",
-  emits: ["mapReady"],
-  setup(_, { emit }) {
-    onMounted(() => {
-      emit("mapReady", {
-        olMap: {},
-        featureSelectInteraction: {
-          setMap: vi.fn(),
-        },
-        scenarioLayerController: {},
-      });
-    });
-    return () => null;
-  },
 });
 
 describe("ScenarioEditorMap", () => {
@@ -111,6 +129,48 @@ describe("ScenarioEditorMap", () => {
     };
   }
 
+  it("forwards the initial map view snapshot and emits one on unmount", async () => {
+    const initialMapView: ScenarioMapViewSnapshot = {
+      center: [1, 2],
+      zoom: 3,
+      rotation: 0.2,
+    };
+    const wrapper = mount(ScenarioEditorMap, {
+      props: {
+        initialMapView,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeParentKey as symbol]: ref(null),
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario().scenario,
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          SearchScenarioActions: true,
+          MapEditorMainToolbar: true,
+          MapEditorMeasurementToolbar: true,
+          MapEditorDrawToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(wrapper.getComponent({ name: "NewScenarioMap" }).props("initialView")).toEqual(
+      initialMapView,
+    );
+    expect(wrapper.emitted("map-view-change")).toBeUndefined();
+
+    wrapper.unmount();
+
+    expect(wrapper.emitted("map-view-change")).toEqual([
+      [{ center: [30, 40], zoom: 6, rotation: 0.8 }],
+    ]);
+  });
+
   it("docks the main toolbar and draw toolbar outside the map overlay on mobile", async () => {
     mapModeState.isMobile = true;
     const pinia = createPinia();
@@ -128,7 +188,6 @@ describe("ScenarioEditorMap", () => {
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
-          NewScenarioMap: NewScenarioMapStub,
           SearchScenarioActions: true,
           DecryptScenarioModal: true,
           MapEditorMainToolbar: defineComponent({

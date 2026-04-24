@@ -18,6 +18,12 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import type { Position } from "geojson";
+import {
+  bearingDegreesToRadians,
+  radiansToBearingDegrees,
+  toLngLatPair,
+  type ScenarioMapViewSnapshot,
+} from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 defineOptions({
   inheritAttrs: false,
@@ -27,10 +33,12 @@ const props = defineProps<{
   basemapId: string;
   styleSpec: MaplibreBasemapStyle;
   projection: MapProjection;
+  initialView?: ScenarioMapViewSnapshot;
 }>();
 const emit = defineEmits<{
   ready: [map: MlMap];
   "update:projection": [projection: MapProjection];
+  "map-view-change": [snapshot: ScenarioMapViewSnapshot];
 }>();
 const attrs = useAttrs();
 
@@ -102,6 +110,15 @@ function handleProjectionTransition(event: MapProjectionEvent) {
   }
 }
 
+function emitMapViewChange() {
+  const center = mlMap.getCenter();
+  emit("map-view-change", {
+    center: [center.lng, center.lat],
+    zoom: mlMap.getZoom(),
+    rotation: bearingDegreesToRadians(mlMap.getBearing()),
+  });
+}
+
 function handleContextMenu(event: MapMouseEvent) {
   if (replayingContextMenu || !mapContainerElement.value) return;
 
@@ -134,8 +151,9 @@ onMounted(async () => {
   mlMap = new MlMap({
     container: mapContainerElement.value as HTMLElement,
     style: props.styleSpec,
-    center: [0, 0], // starting position [lng, lat]
-    zoom: 3, // starting zoom
+    center: props.initialView ? toLngLatPair(props.initialView.center) : [0, 0],
+    zoom: props.initialView?.zoom ?? 3,
+    bearing: radiansToBearingDegrees(props.initialView?.rotation ?? 0),
     canvasContextAttributes: {
       preserveDrawingBuffer: true,
     },
@@ -161,6 +179,7 @@ onMounted(async () => {
   mlMap.on("projectiontransition", handleProjectionTransition);
   mlMap.on("load", handleMapLoad);
   mlMap.on("mousemove", handleMouseMove);
+  mlMap.on("moveend", emitMapViewChange);
   mlMap.on("contextmenu", handleContextMenu);
 
   mouseLeaveHandler = () => {
@@ -217,6 +236,7 @@ onUnmounted(() => {
   mlMap?.off("projectiontransition", handleProjectionTransition);
   mlMap?.off("load", handleMapLoad);
   mlMap?.off("mousemove", handleMouseMove);
+  mlMap?.off("moveend", emitMapViewChange);
   mlMap?.off("contextmenu", handleContextMenu);
   mlMap?.remove();
 });

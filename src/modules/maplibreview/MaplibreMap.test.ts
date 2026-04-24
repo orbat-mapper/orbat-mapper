@@ -18,6 +18,9 @@ const listeners = new Map<string, Array<(event?: unknown) => void>>();
 const mapConstructor = vi.fn();
 const scaleControlSetUnit = vi.fn();
 const off = vi.fn();
+const getCenter = vi.fn(() => ({ lng: 10, lat: 20 }));
+const getZoom = vi.fn(() => 4);
+const getBearing = vi.fn(() => 0);
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -29,6 +32,9 @@ vi.mock("maplibre-gl", () => {
     removeControl = removeControl;
     boxZoom = { disable: boxZoomDisable };
     off = off;
+    getCenter = getCenter;
+    getZoom = getZoom;
+    getBearing = getBearing;
 
     on(event: string, handler: (event?: unknown) => void) {
       const handlers = listeners.get(event) ?? [];
@@ -70,10 +76,16 @@ const defaultProps: {
   basemapId: string;
   styleSpec: MaplibreBasemapStyle;
   projection: MapProjection;
+  initialView?: {
+    center: [number, number];
+    zoom: number;
+    rotation: number;
+  };
 } = {
   basemapId: "osm",
   styleSpec: { version: 8 as const, sources: {}, layers: [] },
   projection: "globe" as const,
+  initialView: undefined,
 };
 
 function mountMap(props = defaultProps) {
@@ -100,6 +112,9 @@ describe("MaplibreMap", () => {
     mapConstructor.mockClear();
     scaleControlSetUnit.mockClear();
     off.mockClear();
+    getCenter.mockClear();
+    getZoom.mockClear();
+    getBearing.mockClear();
     listeners.clear();
   });
 
@@ -152,6 +167,25 @@ describe("MaplibreMap", () => {
     expect(mapConstructor).toHaveBeenCalledWith(
       expect.objectContaining({
         canvasContextAttributes: expect.objectContaining({ preserveDrawingBuffer: true }),
+      }),
+    );
+  });
+
+  it("initializes the constructor from an initial center, zoom, and converted bearing", () => {
+    mountMap({
+      ...defaultProps,
+      initialView: {
+        center: [13, 57],
+        zoom: 6.5,
+        rotation: Math.PI / 4,
+      },
+    });
+
+    expect(mapConstructor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        center: [13, 57],
+        zoom: 6.5,
+        bearing: 45,
       }),
     );
   });

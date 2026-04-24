@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
 import { activeLayerKey, activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 const { mapModeState } = vi.hoisted(() => ({
   mapModeState: { isMobile: false },
@@ -20,6 +21,15 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
     constructor(public map: unknown) {}
     setViewConstraints() {}
+    getCenter() {
+      return [33, 44];
+    }
+    getZoom() {
+      return 8;
+    }
+    getRotation() {
+      return 0.75;
+    }
   },
 }));
 
@@ -82,6 +92,25 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
   }),
 }));
 
+vi.mock("@/modules/maplibreview/MaplibreMap.vue", () => ({
+  default: defineComponent({
+    name: "MaplibreMap",
+    props: {
+      initialView: {
+        type: Object,
+        required: false,
+      },
+    },
+    emits: ["ready", "map-view-change"],
+    setup(_, { emit }) {
+      onMounted(() => {
+        emit("ready", { resize: vi.fn() });
+      });
+      return () => h("div");
+    },
+  }),
+}));
+
 vi.mock("@/modules/maplibreview/maplibreBasemaps", () => ({
   MAPLIBRE_VECTOR_BASEMAP_ID: "vector",
   resolveMaplibreBasemap: () => ({
@@ -111,17 +140,6 @@ vi.mock("@/modules/maplibreview/mgrsgrid", () => ({
     currentAccuracy: { value: 0 },
   }),
 }));
-
-const MaplibreMapStub = defineComponent({
-  name: "MaplibreMap",
-  emits: ["ready"],
-  setup(_, { emit }) {
-    onMounted(() => {
-      emit("ready", { resize: vi.fn() });
-    });
-    return () => h("div");
-  },
-});
 
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
@@ -165,6 +183,54 @@ describe("ScenarioEditorMaplibre", () => {
     initializeMaplibreLayers.mockReset();
   });
 
+  it("forwards the initial map view snapshot and emits one on unmount", async () => {
+    const initialMapView: ScenarioMapViewSnapshot = {
+      center: [1, 2],
+      zoom: 3,
+      rotation: 0.25,
+    };
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      props: {
+        initialMapView,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(wrapper.getComponent({ name: "MaplibreMap" }).props("initialView")).toEqual(
+      initialMapView,
+    );
+    expect(wrapper.emitted("map-view-change")).toBeUndefined();
+
+    wrapper.unmount();
+
+    expect(wrapper.emitted("map-view-change")).toEqual([
+      [{ center: [33, 44], zoom: 8, rotation: 0.75 }],
+    ]);
+  });
+
   it("cleans up the scenario binding when the maplibre view unmounts", () => {
     const wrapper = mount(ScenarioEditorMaplibre, {
       global: {
@@ -178,7 +244,6 @@ describe("ScenarioEditorMaplibre", () => {
           MaplibreContextMenu: { template: "<div><slot /></div>" },
           MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
-          MaplibreMap: MaplibreMapStub,
           MapEditorMainToolbar: true,
           MapEditorUnitTrackToolbar: true,
           ToggleField: true,
@@ -218,7 +283,6 @@ describe("ScenarioEditorMaplibre", () => {
           MaplibreContextMenu: { template: "<div><slot /></div>" },
           MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
-          MaplibreMap: MaplibreMapStub,
           MapEditorMainToolbar: defineComponent({
             name: "MapEditorMainToolbar",
             props: [
@@ -275,7 +339,6 @@ describe("ScenarioEditorMaplibre", () => {
           MaplibreContextMenu: { template: "<div><slot /></div>" },
           MaplibreSearchScenarioActions: true,
           MlMapLogic: true,
-          MaplibreMap: MaplibreMapStub,
           MapEditorMainToolbar: defineComponent({
             name: "MapEditorMainToolbar",
             template: "<div data-test='map-toolbar' />",
