@@ -10,6 +10,7 @@ import {
   activeScenarioMapEngineKey,
 } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useTransformSettingsStore } from "@/stores/transformStore";
 
 describe("FeatureTransformations", () => {
   beforeEach(() => {
@@ -181,4 +182,106 @@ describe("FeatureTransformations", () => {
 
     wrapper.unmount();
   });
+
+  it.each([
+    [
+      "Point",
+      {
+        type: "Point",
+        coordinates: [10, 20],
+      },
+    ],
+    [
+      "LineString",
+      {
+        type: "LineString",
+        coordinates: [
+          [10, 20],
+          [11, 21],
+        ],
+      },
+    ],
+  ] as const)(
+    "updates geometryKind when updating an existing %s feature with transformed geometry",
+    async (geometryKind, geometry) => {
+      const pinia = createPinia();
+      setActivePinia(pinia);
+      const selected = useSelectedItems();
+      selected.selectedFeatureIds.value.add("source-feature");
+
+      const transformStore = useTransformSettingsStore();
+      transformStore.updateActiveFeature = "target-feature";
+      transformStore.showPreview = false;
+
+      const updateFeature = vi.fn();
+
+      const wrapper = mount(FeatureTransformations, {
+        global: {
+          plugins: [pinia],
+          provide: {
+            [activeScenarioKey as symbol]: {
+              helpers: {
+                getUnitById: vi.fn(),
+              },
+              geo: {
+                addFeature: vi.fn(),
+                updateFeature,
+                addFeatureStateGeometry: vi.fn(),
+                getGeometryLayerItemById: vi.fn((id: string) =>
+                  id === "source-feature"
+                    ? {
+                        layerItem: {
+                          kind: "geometry",
+                          id,
+                          name: `Source ${geometryKind}`,
+                          geometry,
+                          geometryMeta: { geometryKind },
+                          style: {},
+                        },
+                      }
+                    : { layerItem: undefined },
+                ),
+              },
+              time: {
+                scenarioTime: ref(1000),
+              },
+              store: {
+                state: reactive({
+                  currentTime: 1000,
+                  unitStateCounter: 0,
+                }),
+              },
+            },
+            [activeLayerKey as symbol]: ref("layer-1"),
+            [activeScenarioMapEngineKey as symbol]: shallowRef({
+              map: {
+                addGeoJsonOverlay: vi.fn(),
+                removeGeoJsonOverlay: vi.fn(),
+              },
+            }),
+          },
+          stubs: {
+            Tabs: { template: "<div><slot /></div>" },
+            TabsList: { template: "<div><slot /></div>" },
+            TabsTrigger: { template: "<button><slot /></button>" },
+            TabsContent: { template: "<div><slot /></div>" },
+            TransformForm: { template: "<div />" },
+            Button: { template: "<button><slot /></button>" },
+            BaseButton: { template: '<button v-bind="$attrs"><slot /></button>' },
+            InputCheckbox: { template: "<label />" },
+            ScenarioFeatureSelect: { template: "<div />" },
+            Label: { template: "<label><slot /></label>" },
+          },
+        },
+      });
+
+      const buttons = wrapper.findAll("button");
+      await buttons[buttons.length - 1].trigger("click");
+
+      expect(updateFeature).toHaveBeenCalledWith("target-feature", {
+        geometry: expect.objectContaining({ type: "Polygon" }),
+        geometryMeta: { geometryKind: "Polygon" },
+      });
+    },
+  );
 });

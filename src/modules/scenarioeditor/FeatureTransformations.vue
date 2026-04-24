@@ -192,6 +192,7 @@ function onSubmit(updateMode = false) {
     } else {
       scn.geo.updateFeature(updateActiveFeature.value, {
         geometry: scenarioFeature.geometry,
+        geometryMeta: scenarioFeature.geometryMeta,
       });
     }
   } else {

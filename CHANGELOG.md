@@ -38,6 +38,7 @@ All notable changes to this project will be documented in this file.
 - Fixed blank map clicks so they clear selected scenario features.
 - Fixed shift-click selection on the map so it only extends the current selection type instead of switching between units and scenario features.
 - Fixed KMZ/KML feature clicks in the OpenLayers editor so imported reference features no longer crash the map renderer. 
+- Fixed transform tool updates so existing features update their geometry kind when a transformation changes the geometry type.
 
 ## March 2026
 
