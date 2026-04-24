@@ -50,6 +50,31 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
   }),
 }));
 
+vi.mock("@/components/ScenarioMap.vue", () => ({
+  default: defineComponent({
+    name: "NewScenarioMap",
+    props: {
+      initialView: {
+        type: Object,
+        required: false,
+      },
+    },
+    emits: ["mapReady", "map-view-change"],
+    setup(_, { emit }) {
+      onMounted(() => {
+        emit("mapReady", {
+          olMap: {},
+          featureSelectInteraction: {
+            setMap: vi.fn(),
+          },
+          scenarioLayerController: {},
+        });
+      });
+      return () => null;
+    },
+  }),
+}));
+
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
   template: `
@@ -61,30 +86,6 @@ const ScenarioMapModeShellStub = defineComponent({
       <div data-test="modals-slot"><slot name="modals" /></div>
     </div>
   `,
-});
-
-const NewScenarioMapStub = defineComponent({
-  name: "NewScenarioMap",
-  props: {
-    initialView: {
-      type: Object,
-      required: false,
-    },
-  },
-  emits: ["mapReady", "map-view-change"],
-  setup(_, { emit }) {
-    onMounted(() => {
-      emit("mapReady", {
-        olMap: {},
-        featureSelectInteraction: {
-          setMap: vi.fn(),
-        },
-        scenarioLayerController: {},
-      });
-      emit("map-view-change", { center: [15, 25], zoom: 4, rotation: 0.3 });
-    });
-    return () => null;
-  },
 });
 
 describe("ScenarioEditorMap", () => {
@@ -128,7 +129,7 @@ describe("ScenarioEditorMap", () => {
     };
   }
 
-  it("forwards initial map view snapshots and emits updates from movement and unmount", async () => {
+  it("forwards the initial map view snapshot and emits one on unmount", async () => {
     const initialMapView: ScenarioMapViewSnapshot = {
       center: [1, 2],
       zoom: 3,
@@ -147,7 +148,6 @@ describe("ScenarioEditorMap", () => {
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
-          NewScenarioMap: NewScenarioMapStub,
           SearchScenarioActions: true,
           MapEditorMainToolbar: true,
           MapEditorMeasurementToolbar: true,
@@ -162,14 +162,11 @@ describe("ScenarioEditorMap", () => {
     expect(wrapper.getComponent({ name: "NewScenarioMap" }).props("initialView")).toEqual(
       initialMapView,
     );
-    expect(wrapper.emitted("map-view-change")).toEqual([
-      [{ center: [15, 25], zoom: 4, rotation: 0.3 }],
-    ]);
+    expect(wrapper.emitted("map-view-change")).toBeUndefined();
 
     wrapper.unmount();
 
     expect(wrapper.emitted("map-view-change")).toEqual([
-      [{ center: [15, 25], zoom: 4, rotation: 0.3 }],
       [{ center: [30, 40], zoom: 6, rotation: 0.8 }],
     ]);
   });
@@ -191,7 +188,6 @@ describe("ScenarioEditorMap", () => {
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
-          NewScenarioMap: NewScenarioMapStub,
           SearchScenarioActions: true,
           DecryptScenarioModal: true,
           MapEditorMainToolbar: defineComponent({

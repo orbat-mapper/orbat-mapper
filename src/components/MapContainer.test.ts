@@ -3,14 +3,25 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MapContainer from "@/components/MapContainer.vue";
 
-const addLayer = vi.fn();
-const mapOn = vi.fn(() => "moveend-key");
-const setTarget = vi.fn();
-const viewConstructor = vi.fn();
-const fromLonLat = vi.fn((coordinate) => ["projected", ...coordinate]);
-const selectLayer = vi.fn();
-const initializeBaseLayers = vi.fn().mockResolvedValue(undefined);
-const createBaseLayerInstances = vi.fn(() => []);
+const {
+  addLayer,
+  mapOn,
+  setTarget,
+  viewConstructor,
+  fromLonLat,
+  selectLayer,
+  initializeBaseLayers,
+  createBaseLayerInstances,
+} = vi.hoisted(() => ({
+  addLayer: vi.fn(),
+  mapOn: vi.fn(() => "moveend-key"),
+  setTarget: vi.fn(),
+  viewConstructor: vi.fn(),
+  fromLonLat: vi.fn((coordinate) => ["projected", ...coordinate]),
+  selectLayer: vi.fn(),
+  initializeBaseLayers: vi.fn().mockResolvedValue(undefined),
+  createBaseLayerInstances: vi.fn(() => []),
+}));
 
 vi.mock("ol/Map", () => ({
   default: class MockMap {

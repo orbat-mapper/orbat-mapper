@@ -12,6 +12,10 @@ type ScenarioMapViewSource = Pick<MapAdapter, "getCenter" | "getZoom" | "getRota
 export function getScenarioMapViewSnapshot(
   source: ScenarioMapViewSource | null | undefined,
 ): ScenarioMapViewSnapshot | undefined {
+  if (!source) {
+    return undefined;
+  }
+
   const center = source?.getCenter();
   const zoom = source?.getZoom();
 

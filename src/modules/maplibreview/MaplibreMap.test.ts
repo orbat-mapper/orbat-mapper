@@ -76,6 +76,11 @@ const defaultProps: {
   basemapId: string;
   styleSpec: MaplibreBasemapStyle;
   projection: MapProjection;
+  initialView?: {
+    center: [number, number];
+    zoom: number;
+    rotation: number;
+  };
 } = {
   basemapId: "osm",
   styleSpec: { version: 8 as const, sources: {}, layers: [] },
