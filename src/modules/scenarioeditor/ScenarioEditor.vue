@@ -204,6 +204,11 @@ const showEncryptModal = ref(false);
 const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 const sharedMapView = ref<ScenarioMapViewSnapshot>();
+const mapRouteProps = computed(() =>
+  route.name === MAP_EDIT_MODE_ROUTE || route.name === MAPLIBRE_ROUTE
+    ? { initialMapView: sharedMapView.value }
+    : {},
+);
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
@@ -613,11 +618,7 @@ if (firstOverlayLayerId) {
       <component
         :is="Component"
         :key="route.fullPath"
-        v-bind="
-          route.name === MAP_EDIT_MODE_ROUTE || route.name === MAPLIBRE_ROUTE
-            ? { initialMapView: sharedMapView }
-            : {}
-        "
+        v-bind="mapRouteProps"
         @map-view-change="sharedMapView = $event"
         @show-export="showExportModal = true"
         @show-load="showLoadModal = true"

@@ -16,8 +16,8 @@ export function getScenarioMapViewSnapshot(
     return undefined;
   }
 
-  const center = source?.getCenter();
-  const zoom = source?.getZoom();
+  const center = source.getCenter();
+  const zoom = source.getZoom();
 
   if (!center || zoom === undefined) {
     return undefined;
@@ -36,4 +36,18 @@ export function radiansToBearingDegrees(rotation: number): number {
 
 export function bearingDegreesToRadians(bearing: number): number {
   return (bearing * Math.PI) / 180;
+}
+
+export function toScenarioMapViewCenter(
+  coordinate: readonly number[] | null | undefined,
+): Position | undefined {
+  if (!coordinate || coordinate.length < 2) {
+    return undefined;
+  }
+
+  return [coordinate[0], coordinate[1]];
+}
+
+export function toLngLatPair(position: Position): [number, number] {
+  return [position[0], position[1]];
 }

@@ -11,8 +11,10 @@ import type View from "ol/View";
 import type { ScenarioLayerController } from "@/geo/contracts/scenarioLayerController";
 import ScenarioMapLogic from "@/components/ScenarioMapLogic.vue";
 import MapContextMenu from "@/components/MapContextMenu.vue";
-import type { Position } from "geojson";
-import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import {
+  toScenarioMapViewCenter,
+  type ScenarioMapViewSnapshot,
+} from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 const props = defineProps<{
   initialView?: ScenarioMapViewSnapshot;
@@ -51,8 +53,13 @@ function onMapMoveEnd({ view }: { view: View }) {
     return;
   }
 
+  const lonLatCenter = toScenarioMapViewCenter(toLonLat(center, view.getProjection()));
+  if (!lonLatCenter) {
+    return;
+  }
+
   emit("map-view-change", {
-    center: toLonLat(center, view.getProjection()) as Position,
+    center: lonLatCenter,
     zoom,
     rotation: view.getRotation(),
   });

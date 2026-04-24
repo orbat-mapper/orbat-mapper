@@ -21,6 +21,7 @@ import type { Position } from "geojson";
 import {
   bearingDegreesToRadians,
   radiansToBearingDegrees,
+  toLngLatPair,
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
@@ -150,7 +151,7 @@ onMounted(async () => {
   mlMap = new MlMap({
     container: mapContainerElement.value as HTMLElement,
     style: props.styleSpec,
-    center: (props.initialView?.center ?? [0, 0]) as [number, number],
+    center: props.initialView ? toLngLatPair(props.initialView.center) : [0, 0],
     zoom: props.initialView?.zoom ?? 3,
     bearing: radiansToBearingDegrees(props.initialView?.rotation ?? 0),
     canvasContextAttributes: {
