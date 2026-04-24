@@ -338,6 +338,7 @@ const headerControlsStyle = computed(() =>
         v-if="mlMap"
         :mlMap="mlMap"
         :active-scenario="activeScenario"
+        :initial-map-view="props.initialMapView"
         :key="state.id"
       />
     </template>

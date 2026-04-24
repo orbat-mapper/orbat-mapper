@@ -48,7 +48,9 @@ import { useRecordingStore } from "@/stores/recordingStore";
 import { useOlScenarioLayerController } from "@/geo/engines/openlayers/olScenarioLayerController";
 import { extractReferenceFeatureSelection } from "@/modules/scenarioeditor/referenceFeatureUtils";
 
-const props = defineProps<{ olMap: OLMap }>();
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+
+const props = defineProps<{ olMap: OLMap; initialView?: ScenarioMapViewSnapshot }>();
 const emit = defineEmits<{
   (
     e: "map-ready",
@@ -202,19 +204,21 @@ drawUnits();
 drawHistory();
 //loadScenarioLayers();
 
-// Set initial view: prioritize bounding box, then fall back to unit extent
-if (state.boundingBox && state.boundingBox.length === 4) {
-  const padding: [number, number, number, number] = [20, 20, 20, 20];
+// Set initial view only when there's no snapshot to restore
+if (!props.initialView) {
+  if (state.boundingBox && state.boundingBox.length === 4) {
+    const padding: [number, number, number, number] = [20, 20, 20, 20];
 
-  geoStore.zoomToBbox(state.boundingBox as [number, number, number, number], {
-    duration: 0,
-    maxZoom: 16,
-    padding,
-  });
-} else {
-  const extent = unitLayer.getSource()?.getExtent();
-  if (extent && !unitLayer.getSource()?.isEmpty())
-    olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
+    geoStore.zoomToBbox(state.boundingBox as [number, number, number, number], {
+      duration: 0,
+      maxZoom: 16,
+      padding,
+    });
+  } else {
+    const extent = unitLayer.getSource()?.getExtent();
+    if (extent && !unitLayer.getSource()?.isEmpty())
+      olMap.getView().fit(extent, { padding: [100, 100, 150, 100], maxZoom: 16 });
+  }
 }
 
 function toggleUnitInteractions(event: ObjectEvent) {

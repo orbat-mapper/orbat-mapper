@@ -90,6 +90,7 @@ onUnmounted(() => {
         ref="mapLogicComponent"
         v-if="mapRef"
         :ol-map="mapRef"
+        :initial-view="props.initialView"
         @map-ready="emit('map-ready', $event)"
       />
       <slot />
