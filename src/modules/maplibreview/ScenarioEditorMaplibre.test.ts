@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
 import { activeLayerKey, activeScenarioKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 const { mapModeState } = vi.hoisted(() => ({
   mapModeState: { isMobile: false },
@@ -20,6 +21,15 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
     constructor(public map: unknown) {}
     setViewConstraints() {}
+    getCenter() {
+      return [33, 44];
+    }
+    getZoom() {
+      return 8;
+    }
+    getRotation() {
+      return 0.75;
+    }
   },
 }));
 
@@ -114,10 +124,17 @@ vi.mock("@/modules/maplibreview/mgrsgrid", () => ({
 
 const MaplibreMapStub = defineComponent({
   name: "MaplibreMap",
-  emits: ["ready"],
+  props: {
+    initialView: {
+      type: Object,
+      required: false,
+    },
+  },
+  emits: ["ready", "map-view-change"],
   setup(_, { emit }) {
     onMounted(() => {
       emit("ready", { resize: vi.fn() });
+      emit("map-view-change", { center: [11, 22], zoom: 5, rotation: 0.5 });
     });
     return () => h("div");
   },
@@ -163,6 +180,58 @@ describe("ScenarioEditorMaplibre", () => {
     cleanupScenarioBinding.mockReset();
     setMapAdapter.mockReset();
     initializeMaplibreLayers.mockReset();
+  });
+
+  it("forwards initial map view snapshots and emits updates from movement and unmount", async () => {
+    const initialMapView: ScenarioMapViewSnapshot = {
+      center: [1, 2],
+      zoom: 3,
+      rotation: 0.25,
+    };
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      props: {
+        initialMapView,
+      },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MaplibreMap: MaplibreMapStub,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(wrapper.getComponent({ name: "MaplibreMap" }).props("initialView")).toEqual(
+      initialMapView,
+    );
+    expect(wrapper.emitted("map-view-change")).toEqual([
+      [{ center: [11, 22], zoom: 5, rotation: 0.5 }],
+    ]);
+
+    wrapper.unmount();
+
+    expect(wrapper.emitted("map-view-change")).toEqual([
+      [{ center: [11, 22], zoom: 5, rotation: 0.5 }],
+      [{ center: [33, 44], zoom: 8, rotation: 0.75 }],
+    ]);
   });
 
   it("cleans up the scenario binding when the maplibre view unmounts", () => {

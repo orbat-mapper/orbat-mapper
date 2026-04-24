@@ -31,8 +31,18 @@ import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTra
 import { usePlaybackStore } from "@/stores/playbackStore";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
+import {
+  getScenarioMapViewSnapshot,
+  type ScenarioMapViewSnapshot,
+} from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
-const emit = defineEmits(["showExport", "showLoad", "show-settings"]);
+const props = defineProps<{
+  initialMapView?: ScenarioMapViewSnapshot;
+}>();
+const emit = defineEmits<{
+  "show-settings": [];
+  "map-view-change": [snapshot: ScenarioMapViewSnapshot];
+}>();
 const activeScenario = injectStrict(activeScenarioKey);
 
 const {
@@ -115,6 +125,10 @@ watch(
 );
 
 onUnmounted(() => {
+  const snapshot = getScenarioMapViewSnapshot(scenarioMapEngineRef.value?.map);
+  if (snapshot) {
+    emit("map-view-change", snapshot);
+  }
   activeUnitStore.clearActiveUnit();
   playback.playbackRunning = false;
 });
@@ -182,7 +196,12 @@ const headerControlsStyle = computed(() =>
     @close-details-panel="onCloseDetailsPanel()"
   >
     <template #map>
-      <NewScenarioMap class="flex-auto" @mapReady="onMapReady" />
+      <NewScenarioMap
+        class="flex-auto"
+        :initial-view="props.initialMapView"
+        @mapReady="onMapReady"
+        @map-view-change="emit('map-view-change', $event)"
+      />
     </template>
     <template #footer-overlays>
       <footer
