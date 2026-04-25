@@ -9,8 +9,10 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { DrawType } from "@/composables/geoEditing";
 
 const DRAW_PREVIEW_OVERLAY_ID = "maplibre-draw-preview";
-const DRAW_HANDLES_OVERLAY_ID = "maplibre-draw-handles";
-const DRAW_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_HANDLES_OVERLAY_ID}`;
+const DRAW_VERTEX_HANDLES_OVERLAY_ID = "maplibre-draw-vertex-handles";
+const DRAW_MIDPOINT_HANDLES_OVERLAY_ID = "maplibre-draw-midpoint-handles";
+const DRAW_VERTEX_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_VERTEX_HANDLES_OVERLAY_ID}`;
+const DRAW_MIDPOINT_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_MIDPOINT_HANDLES_OVERLAY_ID}`;
 
 interface DrawUpdate {
   featureId: FeatureId;
@@ -34,13 +36,15 @@ interface DragState {
   mode: "translate" | "vertex";
   start: Position;
   features: GeometryLayerItem[];
-  vertex?: VertexHandle;
+  handle?: EditHandle;
   interactions: MapDragInteractionState;
 }
 
-interface VertexHandle {
+interface EditHandle {
   featureId: FeatureId;
+  kind: "vertex" | "midpoint";
   path: number[];
+  position?: Position;
 }
 
 interface MapDragInteractionState {
@@ -89,7 +93,8 @@ export function useMapLibreDrawInteraction(
     isModifying.value = false;
     dragState = null;
     options.onModifyingChange?.(false);
-    mapAdapter.removeGeoJsonOverlay(DRAW_HANDLES_OVERLAY_ID);
+    mapAdapter.removeGeoJsonOverlay(DRAW_VERTEX_HANDLES_OVERLAY_ID);
+    mapAdapter.removeGeoJsonOverlay(DRAW_MIDPOINT_HANDLES_OVERLAY_ID);
   }
 
   function cancelDrawing() {
@@ -211,7 +216,7 @@ export function useMapLibreDrawInteraction(
         mode: "vertex",
         start: position,
         features: selectedFeatures,
-        vertex: handle,
+        handle,
         interactions: suspendMapDragInteractions(),
       };
     } else if (unref(options.translate)) {
@@ -343,40 +348,18 @@ export function useMapLibreDrawInteraction(
 
   function renderHandles() {
     if (!isModifying.value) return;
-    const handleFeatures = options.getSelectedFeatures().flatMap((feature) =>
-      getVertexHandles(feature).map((handle) => ({
-        type: "Feature" as const,
-        geometry: point(getVertexAtPath(feature.geometry, handle.path)!).geometry,
-        properties: {
-          featureId: handle.featureId,
-          path: JSON.stringify(handle.path),
-        },
-      })),
-    );
-    mapAdapter.addGeoJsonOverlay(
-      DRAW_HANDLES_OVERLAY_ID,
-      featureCollection(handleFeatures),
-      {
-        style: {
-          strokeColor: "#facc15",
-          strokeWidth: 2,
-          fillColor: "rgba(250,204,21,0.2)",
-          circleRadius: 6,
-          circleFillColor: "#facc15",
-          circleStrokeColor: "#111827",
-        },
-      },
-    );
+    renderHandleOverlays(options.getSelectedFeatures());
   }
 
-  function getTopDrawHandle(pointLike: PointLike): VertexHandle | undefined {
+  function getTopDrawHandle(pointLike: PointLike): EditHandle | undefined {
     const hits = mlMap.queryRenderedFeatures(pointLike, {
-      layers: [DRAW_HANDLE_LAYER_ID],
+      layers: [DRAW_VERTEX_HANDLE_LAYER_ID, DRAW_MIDPOINT_HANDLE_LAYER_ID],
     });
     const hit = hits[0];
     if (!hit?.properties?.featureId || !hit.properties.path) return;
     return {
       featureId: String(hit.properties.featureId),
+      kind: hit.properties.kind === "midpoint" ? "midpoint" : "vertex",
       path:
         typeof hit.properties.path === "string"
           ? JSON.parse(hit.properties.path)
@@ -413,18 +396,84 @@ export function useMapLibreDrawInteraction(
   function renderHandlePreview(updates: DrawUpdate[]) {
     if (!isModifying.value) return;
     const updatedById = new Map(updates.map((update) => [update.featureId, update]));
-    const features = options.getSelectedFeatures().flatMap((feature) => {
-      const geometry = updatedById.get(feature.id)?.geometry ?? feature.geometry;
-      return getVertexHandles({ ...feature, geometry }).map((handle) => ({
-        type: "Feature" as const,
-        geometry: point(getVertexAtPath(geometry, handle.path)!).geometry,
-        properties: {
-          featureId: handle.featureId,
-          path: JSON.stringify(handle.path),
+    renderHandleOverlays(
+      options.getSelectedFeatures().map((feature) => ({
+        ...feature,
+        geometry: updatedById.get(feature.id)?.geometry ?? feature.geometry,
+      })),
+    );
+  }
+
+  function renderHandleOverlays(
+    features: Array<Pick<GeometryLayerItem, "id" | "geometry">>,
+  ) {
+    const handleFeatures = features.flatMap((feature) =>
+      getEditHandles(feature, getRenderedMidpoint).flatMap((handle) => {
+        const coordinate =
+          handle.position ?? getVertexAtPath(feature.geometry, handle.path);
+        if (!coordinate) return [];
+        return [
+          {
+            type: "Feature" as const,
+            geometry: point(coordinate).geometry,
+            properties: {
+              featureId: handle.featureId,
+              kind: handle.kind,
+              path: JSON.stringify(handle.path),
+            },
+          },
+        ];
+      }),
+    );
+    const vertexFeatures: GeoJsonFeature[] = handleFeatures.filter(
+      (feature) => feature.properties.kind === "vertex",
+    );
+    const midpointFeatures: GeoJsonFeature[] = handleFeatures.filter(
+      (feature) => feature.properties.kind === "midpoint",
+    );
+
+    mapAdapter.addGeoJsonOverlay(
+      DRAW_VERTEX_HANDLES_OVERLAY_ID,
+      featureCollection(vertexFeatures),
+      {
+        style: {
+          strokeColor: "#facc15",
+          strokeWidth: 2,
+          fillColor: "rgba(250,204,21,0.2)",
+          circleRadius: 6,
+          circleFillColor: "#facc15",
+          circleStrokeColor: "#111827",
         },
-      }));
-    });
-    mapAdapter.addGeoJsonOverlay(DRAW_HANDLES_OVERLAY_ID, featureCollection(features));
+      },
+    );
+    mapAdapter.addGeoJsonOverlay(
+      DRAW_MIDPOINT_HANDLES_OVERLAY_ID,
+      featureCollection(midpointFeatures),
+      {
+        style: {
+          strokeColor: "#2563eb",
+          strokeWidth: 1.5,
+          fillColor: "rgba(37,99,235,0.12)",
+          circleRadius: 4,
+          circleFillColor: "#60a5fa",
+          circleStrokeColor: "#1e3a8a",
+        },
+      },
+    );
+  }
+
+  function getRenderedMidpoint(a: Position, b: Position): Position {
+    try {
+      const projectedA = mlMap.project(a as [number, number]);
+      const projectedB = mlMap.project(b as [number, number]);
+      const renderedMidpoint = mlMap.unproject([
+        (projectedA.x + projectedB.x) / 2,
+        (projectedA.y + projectedB.y) / 2,
+      ]);
+      return [renderedMidpoint.lng, renderedMidpoint.lat];
+    } catch {
+      return midpoint(a, b);
+    }
   }
 
   function suspendMapDragInteractions(): MapDragInteractionState {
@@ -572,12 +621,15 @@ function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] 
       geometryMeta: feature.geometryMeta,
     }));
   }
-  if (!dragState.vertex) return [];
+  if (!dragState.handle) return [];
   return dragState.features
-    .filter((feature) => feature.id === dragState.vertex?.featureId)
+    .filter((feature) => feature.id === dragState.handle?.featureId)
     .map((feature) => ({
       featureId: feature.id,
-      geometry: updateVertexAtPath(feature.geometry, dragState.vertex!.path, position),
+      geometry:
+        dragState.handle!.kind === "midpoint"
+          ? insertVertexAtPath(feature.geometry, dragState.handle!.path, position)
+          : updateVertexAtPath(feature.geometry, dragState.handle!.path, position),
       geometryMeta: feature.geometryMeta,
     }));
 }
@@ -621,12 +673,40 @@ function mapGeometryCoordinates(
   return geometry;
 }
 
+type MidpointCalculator = (a: Position, b: Position) => Position;
+
+function getEditHandles(
+  feature: Pick<GeometryLayerItem, "id" | "geometry">,
+  midpointCalculator: MidpointCalculator = midpoint,
+): EditHandle[] {
+  return [
+    ...getVertexHandles(feature),
+    ...getMidpointHandles(feature, midpointCalculator),
+  ];
+}
+
 function getVertexHandles(
   feature: Pick<GeometryLayerItem, "id" | "geometry">,
-): VertexHandle[] {
-  const handles: VertexHandle[] = [];
+): EditHandle[] {
+  const handles: EditHandle[] = [];
   visitGeometryVertices(feature.geometry, (path) => {
-    handles.push({ featureId: feature.id, path });
+    handles.push({ featureId: feature.id, kind: "vertex", path });
+  });
+  return handles;
+}
+
+function getMidpointHandles(
+  feature: Pick<GeometryLayerItem, "id" | "geometry">,
+  midpointCalculator: MidpointCalculator,
+): EditHandle[] {
+  const handles: EditHandle[] = [];
+  visitGeometryEdges(feature.geometry, (insertPath, a, b) => {
+    handles.push({
+      featureId: feature.id,
+      kind: "midpoint",
+      path: insertPath,
+      position: midpointCalculator(a, b),
+    });
   });
   return handles;
 }
@@ -653,6 +733,47 @@ function visitGeometryVertices(geometry: Geometry, visit: (path: number[]) => vo
       });
     });
   }
+}
+
+function visitGeometryEdges(
+  geometry: Geometry,
+  visit: (insertPath: number[], a: Position, b: Position) => void,
+) {
+  if (geometry.type === "LineString") {
+    geometry.coordinates.forEach((coordinate, index) => {
+      const next = geometry.coordinates[index + 1];
+      if (next) visit([index + 1], coordinate, next);
+    });
+  } else if (geometry.type === "Polygon") {
+    geometry.coordinates.forEach((ring, ringIndex) => {
+      ring.forEach((coordinate, coordinateIndex) => {
+        const next = ring[coordinateIndex + 1];
+        if (next) visit([ringIndex, coordinateIndex + 1], coordinate, next);
+      });
+    });
+  } else if (geometry.type === "MultiLineString") {
+    geometry.coordinates.forEach((line, lineIndex) => {
+      line.forEach((coordinate, coordinateIndex) => {
+        const next = line[coordinateIndex + 1];
+        if (next) visit([lineIndex, coordinateIndex + 1], coordinate, next);
+      });
+    });
+  } else if (geometry.type === "MultiPolygon") {
+    geometry.coordinates.forEach((polygon, polygonIndex) => {
+      polygon.forEach((ring, ringIndex) => {
+        ring.forEach((coordinate, coordinateIndex) => {
+          const next = ring[coordinateIndex + 1];
+          if (next) {
+            visit([polygonIndex, ringIndex, coordinateIndex + 1], coordinate, next);
+          }
+        });
+      });
+    });
+  }
+}
+
+function midpoint(a: Position, b: Position): Position {
+  return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 }
 
 function getVertexAtPath(geometry: Geometry, path: number[]): Position | undefined {
@@ -684,4 +805,34 @@ function updateVertexAtPath(
     if (ring.length > 1 && path[2] === 0) ring[ring.length - 1] = position;
   }
   return clone;
+}
+
+function insertVertexAtPath(
+  geometry: Geometry,
+  path: number[],
+  position: Position,
+): Geometry {
+  if (geometry.type === "LineString") {
+    const coordinates = [...geometry.coordinates];
+    coordinates.splice(path[0], 0, position);
+    return { ...geometry, coordinates };
+  }
+  if (geometry.type === "Polygon") {
+    const coordinates = geometry.coordinates.map((ring) => [...ring]);
+    coordinates[path[0]].splice(path[1], 0, position);
+    return { ...geometry, coordinates };
+  }
+  if (geometry.type === "MultiLineString") {
+    const coordinates = geometry.coordinates.map((line) => [...line]);
+    coordinates[path[0]].splice(path[1], 0, position);
+    return { ...geometry, coordinates };
+  }
+  if (geometry.type === "MultiPolygon") {
+    const coordinates = geometry.coordinates.map((polygon) =>
+      polygon.map((ring) => [...ring]),
+    );
+    coordinates[path[0]][path[1]].splice(path[2], 0, position);
+    return { ...geometry, coordinates };
+  }
+  return updateVertexAtPath(geometry, path, position);
 }

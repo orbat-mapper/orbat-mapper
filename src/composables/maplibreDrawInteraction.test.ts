@@ -39,6 +39,8 @@ function createHarness(
     }),
     off: vi.fn(),
     getCanvas: () => ({ style: { cursor: "" } }),
+    project: vi.fn(([lng, lat]: [number, number]) => ({ x: lng, y: lat * lat })),
+    unproject: vi.fn(([x, y]: [number, number]) => ({ lng: x, lat: Math.sqrt(y) })),
     queryRenderedFeatures: vi.fn(() => options.queryRenderedFeatures?.() ?? []),
     dragPan: {
       isEnabled: vi.fn(() => true),
@@ -208,7 +210,13 @@ describe("useMapLibreDrawInteraction", () => {
     const harness = createHarness({
       selectedFeatures: [feature],
       queryRenderedFeatures: () => [
-        { properties: { featureId: "feature-1", path: JSON.stringify([1]) } },
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([1]),
+          },
+        },
       ],
     });
     harness.draw.startModify();
@@ -223,6 +231,60 @@ describe("useMapLibreDrawInteraction", () => {
           coordinates: [
             [10, 20],
             [12, 24],
+          ],
+        },
+      }),
+    ]);
+  });
+
+  it("inserts a point by dragging an edge midpoint in modify mode", () => {
+    const feature = selectedLine();
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "midpoint",
+            path: JSON.stringify([1]),
+          },
+        },
+      ],
+    });
+    harness.draw.startModify();
+
+    expect(harness.mapAdapter.addGeoJsonOverlay).toHaveBeenCalledWith(
+      "maplibre-draw-midpoint-handles",
+      expect.objectContaining({
+        features: expect.arrayContaining([
+          expect.objectContaining({
+            geometry: {
+              type: "Point",
+              coordinates: [10.5, Math.sqrt((20 * 20 + 21 * 21) / 2)],
+            },
+          }),
+        ]),
+      }),
+      expect.objectContaining({
+        style: expect.objectContaining({
+          circleRadius: 4,
+          circleFillColor: "#60a5fa",
+        }),
+      }),
+    );
+
+    harness.trigger("mousedown", createEvent(10.5, 20.5));
+    harness.trigger("mouseup", createEvent(10.25, 22));
+
+    expect(harness.updateFeatures).toHaveBeenCalledWith([
+      expect.objectContaining({
+        featureId: "feature-1",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [10, 20],
+            [10.25, 22],
+            [11, 21],
           ],
         },
       }),
