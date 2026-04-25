@@ -31,7 +31,6 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import type { GeometryLayerItemUpdate, MediaUpdate } from "@/types/internalModels";
 import type { UpdateOptions } from "@/scenariostore/geo";
-import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import type { ScenarioFeatureActions } from "@/types/constants";
@@ -45,6 +44,8 @@ import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeat
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Button } from "@/components/ui/button";
 import type { NGeometryLayerItem } from "@/types/internalModels";
+import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
+import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -286,42 +287,43 @@ function onAction(action: ScenarioFeatureActions) {
 </script>
 <template>
   <div>
-    <ItemMedia v-if="media" :media="media" />
-    <header class="">
-      <div v-if="isMultiMode" class="mt-6 mb-2 flex items-center justify-between">
-        <p class="font-medium">{{ selectedFeatureIds.size }} features selected</p>
-        <Button variant="outline" type="button" size="sm" @click="clearSelection()">
+    <DetailsPanelHeader :media="media" leading-align="center">
+      <template v-if="feature" #leading>
+        <component :is="getGeometryIcon(feature)" class="text-muted-foreground size-6" />
+      </template>
+      <template #title>
+        <EditableLabel v-if="feature" v-model="featureName" @update-value="updateValue" />
+        <PanelTitle v-else-if="isMultiMode">
+          {{ selectedFeatureIds.size }} features selected
+        </PanelTitle>
+      </template>
+      <template #trailing>
+        <Button
+          v-if="isMultiMode"
+          variant="outline"
+          type="button"
+          size="sm"
+          @click="clearSelection()"
+        >
           Clear
         </Button>
-      </div>
-      <div v-if="feature" class="">
-        <EditableLabel v-model="featureName" @update-value="updateValue" />
-      </div>
-
-      <nav class="flex items-center justify-between">
-        <div class="flex items-center">
-          <component
-            :is="getGeometryIcon(feature!)"
-            class="text-muted-foreground mr-2 size-6"
-          />
-          <IconButton @click="doZoom()" title="Zoom to feature">
-            <ZoomIcon class="size-5" />
-          </IconButton>
-          <IconButton @click="showStylePanel()" title="Change feature style">
-            <StyleIcon class="size-5" />
-          </IconButton>
-          <IconButton title="Edit feature data" @click="toggleEditMode()">
-            <EditIcon class="size-5" />
-          </IconButton>
-          <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
-            <ImageIcon class="size-5" />
-          </IconButton>
-        </div>
-        <div>
-          <ScenarioFeatureDropdownMenu @action="onAction" />
-        </div>
-      </nav>
-    </header>
+        <ScenarioFeatureDropdownMenu @action="onAction" />
+      </template>
+      <template #actions>
+        <IconButton @click="doZoom()" title="Zoom to feature">
+          <ZoomIcon class="size-5" />
+        </IconButton>
+        <IconButton @click="showStylePanel()" title="Change feature style">
+          <StyleIcon class="size-5" />
+        </IconButton>
+        <IconButton title="Edit feature data" @click="toggleEditMode()">
+          <EditIcon class="size-5" />
+        </IconButton>
+        <IconButton title="Add/modify image" @click="toggleEditMediaMode()">
+          <ImageIcon class="size-5" />
+        </IconButton>
+      </template>
+    </DetailsPanelHeader>
     <div class="-mx-4">
       <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4">

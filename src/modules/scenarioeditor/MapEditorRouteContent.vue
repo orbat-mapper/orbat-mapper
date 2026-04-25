@@ -31,6 +31,8 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { convertSpeedToMetric } from "@/utils/convert";
 import type { NUnit } from "@/types/internalModels";
 import type { SpeedUnitOfMeasure, UnitProperty } from "@/types/scenarioModels";
+import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
+import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -232,12 +234,14 @@ const showObstacleWarning = computed(
 
 <template>
   <div class="flex flex-col gap-3">
-    <div class="flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
+    <DetailsPanelHeader leading-align="center">
+      <template #leading>
         <RouteIcon class="text-muted-foreground size-5" />
-        <p class="text-sm font-medium">Route</p>
-      </div>
-      <div class="flex min-w-14 items-center justify-end gap-2">
+      </template>
+      <template #title>
+        <PanelTitle>Route</PanelTitle>
+      </template>
+      <template #trailing>
         <span class="flex size-5 items-center justify-center">
           <Spinner v-if="routingStore.isBusy" class="text-muted-foreground size-4" />
           <TriangleAlertIcon
@@ -254,8 +258,8 @@ const showObstacleWarning = computed(
         >
           <CloseIcon class="size-5" />
         </MainToolbarButton>
-      </div>
-    </div>
+      </template>
+    </DetailsPanelHeader>
 
     <Tabs
       :model-value="routingStore.outcome ?? undefined"

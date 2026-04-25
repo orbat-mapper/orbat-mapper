@@ -8,6 +8,7 @@ import ScenarioInfoDetails from "@/modules/scenarioeditor/ScenarioInfoDetails.vu
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import { TabsContent } from "@/components/ui/tabs";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
+import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 
 const { store } = injectStrict(activeScenarioKey);
 const { state } = store;
@@ -39,13 +40,15 @@ function updateScenarioInfo(data: Partial<ScenarioInfo>) {
 </script>
 
 <template>
-  <div class="">
-    <header class="pr-4">
-      <EditableLabel
-        v-model="scenarioName"
-        @update-value="updateScenarioInfo({ name: $event })"
-      />
-    </header>
+  <div>
+    <DetailsPanelHeader>
+      <template #title>
+        <EditableLabel
+          v-model="scenarioName"
+          @update-value="updateScenarioInfo({ name: $event })"
+        />
+      </template>
+    </DetailsPanelHeader>
     <div class="-mx-4">
       <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4 pt-4"
