@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added support for route planning with obstacles.
 - Added support for pasting GeoJSON from the clipboard directly into the scenario editor as scenario features, including `Ctrl/Cmd+V` import into the active feature layer.
 - Clicking KML/KMZ features now opens a read-only details view with attached properties, including richer HTML description rendering.
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.

@@ -229,7 +229,7 @@ onUnmounted(() => {
       />
     </template>
     <template #right>
-      <div class="flex items-center">
+      <div class="-mr-2 flex items-center">
         <Button
           variant="ghost"
           size="icon"
