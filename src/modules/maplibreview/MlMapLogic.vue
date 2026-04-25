@@ -94,7 +94,8 @@ const {
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
-const { hoverEnabled } = storeToRefs(useMapSelectStore());
+const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
+  storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
 const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
@@ -396,6 +397,7 @@ function restoreMapDragInteractions(interactions: {
 function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
+  if (!unitSelectEnabled.value && !featureSelectEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
   const topHit = queryInteractiveFeatures(e.point)[0];
   const additive = e.originalEvent.shiftKey;
@@ -404,6 +406,7 @@ function onMapClick(e: MapMouseEvent) {
     return;
   }
   if (isUnitLayerId(topHit.layer.id)) {
+    if (!unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     if (!unitId) return;
     if (additive) {
@@ -413,6 +416,7 @@ function onMapClick(e: MapMouseEvent) {
     onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
     return;
   }
+  if (!featureSelectEnabled.value) return;
   const featureId = getFeatureIdFromRenderedFeature(topHit);
   const layerId = getLayerIdFromRenderedFeature(topHit);
   if (!(featureId && layerId)) return;
@@ -431,6 +435,7 @@ function onMapMouseMove(e: MapMouseEvent) {
     return;
   }
   if (rotateUnitEnabled.value) {
+    if (!unitSelectEnabled.value) return;
     const topHit = queryInteractiveFeatures(e.point)[0];
     const rotatableUnitIds = isUnitLayerId(topHit?.layer.id)
       ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
@@ -439,6 +444,7 @@ function onMapMouseMove(e: MapMouseEvent) {
     return;
   }
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
+    if (!unitSelectEnabled.value) return;
     const topHit = queryInteractiveFeatures(e.point)[0];
     const movableUnitIds = isUnitLayerId(topHit?.layer.id)
       ? getMovableUnitIds(topHit.properties?.id)
@@ -463,6 +469,7 @@ function onMapTouchMove(e: MapTouchEvent) {
 
 function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   if (!moveUnitEnabled.value || !recordingStore.isRecordingLocation) return;
+  if (!unitSelectEnabled.value) return;
 
   const topHit = queryInteractiveFeatures(e.point)[0];
   if (!topHit || !isUnitLayerId(topHit.layer.id)) return;

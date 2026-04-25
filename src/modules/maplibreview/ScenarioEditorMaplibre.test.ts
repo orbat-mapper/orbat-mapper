@@ -235,6 +235,7 @@ describe("ScenarioEditorMaplibre", () => {
           MlMapLogic: true,
           MapEditorMainToolbar: true,
           MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
@@ -275,6 +276,7 @@ describe("ScenarioEditorMaplibre", () => {
           MlMapLogic: true,
           MapEditorMainToolbar: true,
           MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
@@ -326,6 +328,7 @@ describe("ScenarioEditorMaplibre", () => {
             template: "<div data-test='map-toolbar' />",
           }),
           MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
@@ -344,7 +347,7 @@ describe("ScenarioEditorMaplibre", () => {
     expect(toolbar.props("canMoveUnits")).toBe(true);
     expect(toolbar.props("canRotateUnits")).toBe(true);
     expect(toolbar.props("canMeasure")).toBe(false);
-    expect(toolbar.props("canDraw")).toBe(false);
+    expect(toolbar.props("canDraw")).toBe(true);
     expect(toolbar.props("canTrack")).toBe(true);
     expect(toolbar.props("canAddUnits")).toBe(true);
     expect(toolbar.props("locationPickerEventSource")).toBe("dom");
@@ -373,6 +376,7 @@ describe("ScenarioEditorMaplibre", () => {
             template: "<div data-test='map-toolbar' />",
           }),
           MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
@@ -398,5 +402,51 @@ describe("ScenarioEditorMaplibre", () => {
         .find("[data-test='map-toolbar']")
         .exists(),
     ).toBe(false);
+  });
+
+  it("renders the draw toolbar in maplibre mode", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const toolbarStore = useMainToolbarStore();
+    toolbarStore.currentToolbar = "draw";
+
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: defineComponent({
+            name: "MapEditorDrawToolbar",
+            template: "<div data-test='draw-toolbar' />",
+          }),
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='draw-toolbar']")
+        .exists(),
+    ).toBe(true);
+    expect(toolbarStore.currentToolbar).toBe("draw");
   });
 });

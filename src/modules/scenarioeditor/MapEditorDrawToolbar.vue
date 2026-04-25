@@ -16,155 +16,35 @@ import {
 import FloatingPanel from "@/components/FloatingPanel.vue";
 
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import {
-  activeFeatureSelectInteractionKey,
-  activeLayerKey,
-  activeNativeMapKey,
-  activeScenarioKey,
-} from "@/components/injects";
-import { injectStrict, nanoid } from "@/utils";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { onKeyStroke, useToggle } from "@vueuse/core";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
-import { useEditingInteraction } from "@/composables/geoEditing";
-import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useRecordingStore } from "@/stores/recordingStore";
-import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
-import Feature from "ol/Feature";
-import { type AnyVectorLayer } from "@/geo/types";
-import { convertOlFeatureToScenarioFeature } from "@/modules/scenarioeditor/scenarioFeatureLayers";
+import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
 
-const {
-  store: { groupUpdate },
-  geo,
-} = injectStrict(activeScenarioKey);
+const { selectedFeatureIds } = useSelectedItems();
 
-const mapRef = injectStrict(activeNativeMapKey);
-const featureSelectInteractionRef = injectStrict(activeFeatureSelectInteractionKey);
-const activeLayerIdRef = injectStrict(activeLayerKey);
-
-const { getOlLayerById } = useFeatureLayerUtils(mapRef.value);
-const { selectedFeatureIds, activeFeatureId } = useSelectedItems();
-
-const { addMultiple, currentDrawStyle } = storeToRefs(useMainToolbarStore());
 const recordStore = useRecordingStore();
 const { isRecordingGeometry } = storeToRefs(recordStore);
 const { toggleRecordingGeometry } = recordStore;
-const [snap, toggleSnap] = useToggle(true);
-const [translate, toggleTranslate] = useToggle(false);
-const [freehand, toggleFreehand] = useToggle(false);
 
-const layer = ref<any>();
-
-watch(
-  activeLayerIdRef,
-  (layerId) => {
-    if (layerId) {
-      layer.value = getOlLayerById(layerId);
-    } else if (geo.layerItemsLayers.value?.length > 0) {
-      layer.value = getOlLayerById(geo.layerItemsLayers.value[0].id);
-    }
-  },
-  { immediate: true },
-);
-
-function updateFeatureGeometryFromOlFeature(olFeature: Feature, updateState = false) {
-  const t = convertOlFeatureToScenarioFeature(olFeature);
-  const id = olFeature.getId();
-  if (!id) return;
-  const { layerItem: feature, layer } = geo.getGeometryLayerItemById(id) || {};
-  if (!(feature && layer)) return;
-  const dataUpdate = {
-    geometryMeta: { ...feature.geometryMeta, ...t.geometryMeta },
-    userData: { ...(feature.userData ?? {}), ...(t.userData ?? {}) },
-    geometry: t.geometry,
-  };
-  if (updateState) {
-    geo.addFeatureStateGeometry(id, t.geometry);
-  } else {
-    geo.updateFeature(id, dataUpdate, { noEmit: true });
-  }
-}
-
-function addOlFeature(olFeature: Feature, olLayer: AnyVectorLayer) {
-  if (!olFeature.getId()) olFeature.setId(nanoid());
-
-  const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
-  const scenarioLayer = geo.getLayerById(olLayer.get("id"))!;
-
-  const { layerItem: lastFeatureInLayer } = geo.getGeometryLayerItemById(
-    scenarioLayer.items[scenarioLayer.items.length - 1],
-  );
-
-  const _zIndex = Math.max(
-    scenarioLayer.items.length,
-    (lastFeatureInLayer?._zIndex || 0) + 1,
-  );
-  scenarioFeature.name = `${scenarioFeature.geometryMeta.geometryKind} ${_zIndex + 1}`;
-  scenarioFeature._zIndex = _zIndex;
-  scenarioFeature.style = currentDrawStyle.value ?? {};
-
-  olFeature.set("_zIndex", _zIndex);
-  scenarioLayer && geo.addFeature(scenarioFeature, scenarioLayer.id);
-  return scenarioFeature;
-}
-
-const { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing } =
-  useEditingInteraction(mapRef.value, layer.value, {
-    addMultiple: addMultiple,
-    select: featureSelectInteractionRef.value,
-    addHandler: (olFeature, olLayer) => {
-      const newFeature = addOlFeature(olFeature, olLayer);
-      activeFeatureId.value = newFeature.id;
-    },
-    modifyHandler: (olFeatures) => {
-      olFeatures.forEach((f) =>
-        updateFeatureGeometryFromOlFeature(f, isRecordingGeometry.value),
-      );
-    },
-    snap,
-    translate,
-    freehand,
-  });
+const {
+  startDrawing,
+  currentDrawType,
+  startModify,
+  isModifying,
+  cancel,
+  deleteSelected,
+  snap,
+  translate,
+  freehand,
+} = useScenarioDraw();
 
 const store = useMainToolbarStore();
-const selectStore = useMapSelectStore();
-
-watch(isDrawing, (isDrawing) => {
-  if (isDrawing) {
-    translate.value = false;
-    selectStore.unitSelectEnabled = false;
-    selectStore.featureSelectEnabled = false;
-  } else {
-    selectStore.unitSelectEnabled = true;
-    selectStore.featureSelectEnabled = true;
-  }
-});
-
-watch(isModifying, (isModifying) => {
-  if (isModifying) {
-    translate.value = false;
-  }
-});
-
-watch(translate, (translate) => {
-  if (translate) {
-    cancel();
-  }
-});
-
-function onFeatureDelete() {
-  groupUpdate(
-    () => {
-      [...selectedFeatureIds.value.values()].forEach((featureId) =>
-        geo.deleteFeature(featureId),
-      );
-    },
-    { label: "batchLayer", value: "dummy" },
-  );
-}
+const toggleSnap = useToggle(snap);
+const toggleTranslate = useToggle(translate);
+const toggleFreehand = useToggle(freehand);
 
 onKeyStroke("Escape", (event) => {
   cancel();
@@ -238,7 +118,7 @@ onKeyStroke("Escape", (event) => {
         <MainToolbarButton
           title="Delete"
           :disabled="selectedFeatureIds.size === 0"
-          @click="onFeatureDelete()"
+          @click="deleteSelected()"
         >
           <DeleteIcon class="size-5" />
         </MainToolbarButton>
