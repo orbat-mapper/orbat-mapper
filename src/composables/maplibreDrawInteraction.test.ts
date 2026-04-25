@@ -244,6 +244,29 @@ describe("useMapLibreDrawInteraction", () => {
     );
   });
 
+  it("creates a freehand line from drag samples", () => {
+    const harness = createHarness({ freehand: true });
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("mousedown", createEvent(1, 2));
+    harness.trigger("mousemove", createEvent(2, 3, { buttons: 1 }));
+    harness.trigger("mousemove", createEvent(3, 4, { buttons: 1 }));
+    harness.trigger("mouseup", createEvent(3, 4));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [1, 2],
+            [2, 3],
+            [3, 4],
+          ],
+        },
+      }),
+    );
+  });
+
   it("updates a dragged vertex in modify mode", () => {
     const feature = selectedLine();
     const harness = createHarness({

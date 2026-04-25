@@ -1,7 +1,7 @@
 import type Select from "ol/interaction/Select";
 import type OLMap from "ol/Map";
 import type VectorLayer from "ol/layer/Vector";
-import { computed, ref, shallowRef, watch, type ShallowRef } from "vue";
+import { computed, nextTick, ref, shallowRef, watch, type ShallowRef } from "vue";
 import { storeToRefs } from "pinia";
 import {
   activeFeatureSelectInteractionKey,
@@ -55,26 +55,34 @@ export function useScenarioDraw() {
   const layer = shallowRef<VectorLayer<any>>();
   const mapAdapter = computed(() => engineRef.value?.map);
   const nativeMap = computed(() => mapAdapter.value?.getNativeMap());
+  const openLayersInteraction = shallowRef<ReturnType<
+    typeof useEditingInteraction
+  > | null>(null);
+  const mapLibreInteraction = shallowRef<ReturnType<
+    typeof useMapLibreDrawInteraction
+  > | null>(null);
+  const interaction = computed(
+    () => openLayersInteraction.value ?? mapLibreInteraction.value,
+  );
 
   const setSelectionEnabled = (enabled: boolean) => {
     mapSelectStore.unitSelectEnabled = enabled;
     mapSelectStore.featureSelectEnabled = enabled;
   };
 
-  if (nativeOpenLayersMapRef.value) {
-    const { getOlLayerById } = useFeatureLayerUtils(nativeOpenLayersMapRef.value);
-    watch(
-      activeLayerIdRef,
-      (layerId) => {
-        if (layerId) {
-          layer.value = getOlLayerById(layerId);
-        } else if (activeScenario.geo.layerItemsLayers.value?.length > 0) {
-          layer.value = getOlLayerById(activeScenario.geo.layerItemsLayers.value[0].id);
-        }
-      },
-      { immediate: true },
-    );
-  }
+  watch(
+    [nativeOpenLayersMapRef, activeLayerIdRef],
+    ([olMap, layerId]) => {
+      if (!olMap) return;
+      const { getOlLayerById } = useFeatureLayerUtils(olMap, { activeScenario });
+      if (layerId) {
+        layer.value = getOlLayerById(layerId);
+      } else if (activeScenario.geo.layerItemsLayers.value?.length > 0) {
+        layer.value = getOlLayerById(activeScenario.geo.layerItemsLayers.value[0].id);
+      }
+    },
+    { immediate: true },
+  );
 
   const selectedGeometryFeatures = () =>
     [...selectedFeatureIds.value]
@@ -118,56 +126,65 @@ export function useScenarioDraw() {
     );
   };
 
-  const openLayersInteraction =
-    isOpenLayersMap(nativeMap.value) && layer.value
-      ? useEditingInteraction(nativeMap.value, layer.value, {
-          addMultiple,
-          select: featureSelectInteractionRef.value ?? undefined,
-          addHandler: (olFeature, olLayer) => {
-            const newFeature = addOlDrawFeature(
+  watch(
+    [nativeMap, layer],
+    ([native, activeLayer]) => {
+      if (openLayersInteraction.value || !isOpenLayersMap(native) || !activeLayer) {
+        return;
+      }
+      openLayersInteraction.value = useEditingInteraction(native, activeLayer, {
+        addMultiple,
+        select: featureSelectInteractionRef.value ?? undefined,
+        addHandler: (olFeature, olLayer) => {
+          const newFeature = addOlDrawFeature(
+            activeScenario,
+            olFeature,
+            olLayer,
+            currentDrawStyle.value ?? {},
+          );
+          if (newFeature) activeFeatureId.value = newFeature.id;
+        },
+        modifyHandler: (olFeatures) => {
+          olFeatures.forEach((feature) =>
+            updateScenarioFeatureGeometryFromOlFeature(
               activeScenario,
-              olFeature,
-              olLayer,
-              currentDrawStyle.value ?? {},
-            );
-            if (newFeature) activeFeatureId.value = newFeature.id;
-          },
-          modifyHandler: (olFeatures) => {
-            olFeatures.forEach((feature) =>
-              updateScenarioFeatureGeometryFromOlFeature(
-                activeScenario,
-                feature,
-                isRecordingGeometry.value,
-              ),
-            );
-          },
-          snap,
-          translate,
-          freehand,
-        })
-      : null;
+              feature,
+              isRecordingGeometry.value,
+            ),
+          );
+        },
+        snap,
+        translate,
+        freehand,
+      });
+    },
+    { immediate: true },
+  );
 
-  const mapLibreInteraction =
-    mapAdapter.value && !isOpenLayersMap(nativeMap.value)
-      ? useMapLibreDrawInteraction(mapAdapter.value, {
-          addMultiple,
-          snap,
-          translate,
-          freehand,
-          getSelectedFeatures: selectedGeometryFeatures,
-          addFeature,
-          updateFeatures,
-          onDrawingChange: (drawing) => setSelectionEnabled(!drawing),
-          onModifyingChange: (modifying) => {
-            if (modifying) translate.value = false;
-          },
-        })
-      : null;
+  watch(
+    [mapAdapter, nativeMap],
+    ([adapter, native]) => {
+      if (mapLibreInteraction.value || !adapter || isOpenLayersMap(native)) {
+        return;
+      }
+      mapLibreInteraction.value = useMapLibreDrawInteraction(adapter, {
+        addMultiple,
+        snap,
+        translate,
+        freehand,
+        getSelectedFeatures: selectedGeometryFeatures,
+        addFeature,
+        updateFeatures,
+      });
+    },
+    { immediate: true },
+  );
 
-  const interaction = openLayersInteraction ?? mapLibreInteraction;
-  const currentDrawType = interaction?.currentDrawType ?? ref<DrawType | null>(null);
-  const isDrawing = interaction?.isDrawing ?? ref(false);
-  const isModifying = interaction?.isModifying ?? ref(false);
+  const currentDrawType = computed(
+    () => interaction.value?.currentDrawType.value ?? null,
+  );
+  const isDrawing = computed(() => interaction.value?.isDrawing.value ?? false);
+  const isModifying = computed(() => interaction.value?.isModifying.value ?? false);
 
   watch(isDrawing, (drawing) => {
     if (drawing) {
@@ -183,8 +200,20 @@ export function useScenarioDraw() {
   });
 
   watch(translate, (enabled) => {
-    if (enabled) interaction?.cancel();
+    if (enabled) interaction.value?.cancel();
   });
+
+  function withInteraction(
+    action: (activeInteraction: NonNullable<typeof interaction.value>) => void,
+  ) {
+    if (interaction.value) {
+      action(interaction.value);
+      return;
+    }
+    void nextTick(() => {
+      if (interaction.value) action(interaction.value);
+    });
+  }
 
   function deleteSelected() {
     activeScenario.store.groupUpdate(
@@ -198,11 +227,13 @@ export function useScenarioDraw() {
   }
 
   return {
-    startDrawing: interaction?.startDrawing ?? (() => {}),
+    startDrawing: (drawType: DrawType) =>
+      withInteraction((activeInteraction) => activeInteraction.startDrawing(drawType)),
     currentDrawType,
-    startModify: interaction?.startModify ?? (() => {}),
+    startModify: () =>
+      withInteraction((activeInteraction) => activeInteraction.startModify()),
     isModifying,
-    cancel: interaction?.cancel ?? (() => {}),
+    cancel: () => withInteraction((activeInteraction) => activeInteraction.cancel()),
     isDrawing,
     deleteSelected,
     snap,
