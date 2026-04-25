@@ -24,6 +24,7 @@ import { type LayerUpdateOptions } from "@/composables/geoMapLayers";
 import { useUiStore } from "@/stores/uiStore";
 import MapLayerMetaSettings from "@/modules/scenarioeditor/MapLayerMetaSettings.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
+import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 
 interface Props {
   layerId: FeatureId;
@@ -125,40 +126,44 @@ function toggleLayerVisibility() {
 </script>
 <template>
   <div v-if="mapLayer">
-    <header>
-      <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
-      <div class="flex">
-        <div class="flex flex-auto items-center">
-          <component
-            :is="getMapLayerIcon(mapLayer)"
-            class="text-muted-foreground mr-2 h-7 w-7"
-          />
-          <input
-            v-model.number="opacity"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            class="transparent h-1 w-full cursor-pointer appearance-none rounded-lg border-transparent bg-red-800"
-          />
-          <span class="ml-2 w-8 shrink-0 text-sm">{{ opacityAsPercent }}%</span>
-        </div>
-        <div class="ml-2 flex shrink-0 items-center">
-          <IconButton
-            v-if="canZoomMapLayer"
-            @click="engineRef?.layers.zoomToMapLayer(layerId)"
-            title="Zoom to layer extent"
-          >
-            <ZoomIcon class="h-6 w-6" />
-          </IconButton>
-          <IconButton @click="toggleLayerVisibility()" title="Toggle visibility">
-            <IconEye v-if="isVisible" class="h-6 w-6" />
-            <IconEyeOff v-else class="h-6 w-6" />
-          </IconButton>
-          <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
-        </div>
-      </div>
-    </header>
+    <DetailsPanelHeader leading-align="center">
+      <template #leading>
+        <component
+          :is="getMapLayerIcon(mapLayer)"
+          class="text-muted-foreground h-7 w-7"
+        />
+      </template>
+      <template #title>
+        <EditableLabel v-model="layerName" @update-value="updateValue('name', $event)" />
+      </template>
+      <template #trailing>
+        <DotsMenu :items="imageLayerMenuItems" @action="onImageLayerAction" />
+      </template>
+      <template #actions>
+        <IconButton
+          v-if="canZoomMapLayer"
+          @click="engineRef?.layers.zoomToMapLayer(layerId)"
+          title="Zoom to layer extent"
+        >
+          <ZoomIcon class="size-5" />
+        </IconButton>
+        <IconButton @click="toggleLayerVisibility()" title="Toggle visibility">
+          <IconEye v-if="isVisible" class="size-5" />
+          <IconEyeOff v-else class="size-5" />
+        </IconButton>
+        <input
+          v-model.number="opacity"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          class="transparent h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-lg border-transparent bg-red-800"
+        />
+        <span class="text-muted-foreground w-8 shrink-0 text-right text-sm">
+          {{ opacityAsPercent }}%
+        </span>
+      </template>
+    </DetailsPanelHeader>
     <div class="-mx-4">
       <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4 pt-4"

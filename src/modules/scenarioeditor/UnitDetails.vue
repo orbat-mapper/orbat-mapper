@@ -47,7 +47,6 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
-import ItemMedia from "@/modules/scenarioeditor/ItemMedia.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
 import UnitDetailsSymbol from "@/modules/scenarioeditor/UnitDetailsSymbol.vue";
 import { Button } from "@/components/ui/button";
@@ -57,6 +56,8 @@ import UnitSymbol from "@/components/UnitSymbol.vue";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import { Badge } from "@/components/ui/badge";
 import { useRecordingStore } from "@/stores/recordingStore";
+import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
+import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -404,12 +405,11 @@ function locateInOrbat() {
 </script>
 <template>
   <div v-if="unit" class="@container" :key="unit.id">
-    <ItemMedia v-if="media" :media="media" />
-    <header class="-mx-4 px-2 pt-2">
-      <div v-if="!isMultiMode" class="flex">
+    <DetailsPanelHeader :media="media" density="compact">
+      <template v-if="!isMultiMode" #leading>
         <button
           type="button"
-          class="mr-2 inline-flex w-16 justify-start"
+          class="inline-flex w-16 justify-start"
           @click="handleChangeSymbol()"
           ref="elRef"
         >
@@ -420,34 +420,41 @@ function locateInOrbat() {
             :options="combinedSymbolOptions"
           />
         </button>
-        <div class="-mt-1.5 flex-auto pr-4">
-          <EditableLabel
-            v-model="unitName"
-            @update-value="updateUnit(unitId, { name: $event })"
-            class="relative z-10 bg-transparent"
-            :disabled="isLocked"
-          />
-          <EditableLabel
-            class="relative -top-4"
-            v-model="shortName"
-            @update-value="updateUnit(unitId, { shortName: $event })"
-            text-class="text-sm text-muted-foreground"
-            :disabled="isLocked"
-          />
-        </div>
+      </template>
+      <template v-if="!isMultiMode" #title>
+        <EditableLabel
+          v-model="unitName"
+          @update-value="updateUnit(unitId, { name: $event })"
+          class="relative z-10 bg-transparent"
+          :disabled="isLocked"
+        />
+      </template>
+      <template v-else #title>
+        <PanelTitle> {{ selectedUnitIds.size }} units selected </PanelTitle>
+      </template>
+      <template v-if="!isMultiMode" #subtitle>
+        <EditableLabel
+          v-model="shortName"
+          @update-value="updateUnit(unitId, { shortName: $event })"
+          text-class="text-sm text-muted-foreground"
+          :disabled="isLocked"
+        />
+      </template>
+      <template #trailing>
         <IconLockOutline v-if="isLocked" class="text-muted-foreground size-5" />
-        <div v-if="unitStatus">
-          <Badge>{{ unitStatus }}</Badge>
-        </div>
-      </div>
-      <div v-else>
-        <div class="flex items-center justify-between">
-          <p class="font-medium">{{ selectedUnitIds.size }} units selected</p>
-          <Button type="button" size="sm" variant="outline" @click="clearSelection()"
-            >Clear
-          </Button>
-        </div>
-        <ul class="relative my-4 flex w-full flex-wrap gap-1 pb-4">
+        <Badge v-if="unitStatus">{{ unitStatus }}</Badge>
+        <Button
+          v-if="isMultiMode"
+          type="button"
+          size="sm"
+          variant="outline"
+          @click="clearSelection()"
+        >
+          Clear
+        </Button>
+      </template>
+      <template v-if="isMultiMode" #summary>
+        <ul class="relative mt-2 flex w-full flex-wrap gap-1 pb-4">
           <li v-for="sUnit in visibleSelectedUnits" class="relative flex">
             <UnitSymbol
               :sidc="sUnit.sidc"
@@ -467,9 +474,9 @@ function locateInOrbat() {
             </button>
           </li>
         </ul>
-      </div>
-      <nav class="-mt-2 mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-0.5">
+      </template>
+      <template #actions>
+        <div class="flex min-w-0 flex-1 items-center gap-0.5">
           <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
             <ZoomIcon class="size-5" />
           </IconButton>
@@ -513,11 +520,9 @@ function locateInOrbat() {
             v-model:active-item="uiStore.activeItem"
           />
         </div>
-        <div>
-          <DotsMenu :items="unitMenuItems" />
-        </div>
-      </nav>
-    </header>
+        <DotsMenu :items="unitMenuItems" />
+      </template>
+    </DetailsPanelHeader>
     <div class="-mx-4">
       <ScrollTabs :items="tabList" v-model="selectedTabString" class="">
         <TabsContent value="0" class="mx-4 pt-4">
