@@ -15,9 +15,6 @@ const recordStore = useRecordingStore();
       variant="ghost"
       size="sm"
       class="text-muted-foreground h-8 gap-1.5 px-1.5"
-      :class="{
-        'text-red-700 dark:text-red-300': recordStore.isRecordingHierarchy,
-      }"
       @click="recordStore.isRecordingHierarchy = !recordStore.isRecordingHierarchy"
       :title="
         recordStore.isRecordingHierarchy
@@ -32,12 +29,7 @@ const recordStore = useRecordingStore();
     >
       <Workflow class="size-4" />
       <span
-        class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-        :class="
-          recordStore.isRecordingHierarchy
-            ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300'
-            : 'border-border bg-background text-muted-foreground'
-        "
+        class="border-border bg-background text-muted-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
       >
         <span
           class="size-1.5 rounded-full"
@@ -52,9 +44,6 @@ const recordStore = useRecordingStore();
       variant="ghost"
       size="sm"
       class="text-muted-foreground -ml-1 h-8 gap-1.5 px-1.5"
-      :class="{
-        'text-red-700 dark:text-red-300': recordStore.isRecordingLocation,
-      }"
       @click="recordStore.isRecordingLocation = !recordStore.isRecordingLocation"
       :title="
         recordStore.isRecordingLocation
@@ -69,12 +58,7 @@ const recordStore = useRecordingStore();
     >
       <MapPinned class="size-4" />
       <span
-        class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
-        :class="
-          recordStore.isRecordingLocation
-            ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300'
-            : 'border-border bg-background text-muted-foreground'
-        "
+        class="border-border bg-background text-muted-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
       >
         <span
           class="size-1.5 rounded-full"

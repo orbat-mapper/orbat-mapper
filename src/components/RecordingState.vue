@@ -64,7 +64,6 @@ const toggleRecordingPrefix = () => {
       variant="ghost"
       size="sm"
       class="h-8 gap-1.5 rounded-none px-2 transition-colors lg:h-9 lg:gap-2 lg:px-3"
-      :class="{ 'bg-red-50/50 dark:bg-red-950/20': isAnyRecording }"
       :aria-label="
         isAnyRecording
           ? `Stop recording. Currently recording ${recordingSummary}.`
@@ -79,16 +78,9 @@ const toggleRecordingPrefix = () => {
     >
       <span
         class="h-2 w-2 rounded-full transition-all duration-500"
-        :class="
-          isAnyRecording ? 'bg-red-600 ring-2 ring-red-500/20' : 'bg-muted-foreground/40'
-        "
+        :class="isAnyRecording ? 'bg-red-600' : 'bg-muted-foreground/40'"
       />
-      <span
-        class="text-xs font-bold tracking-widest uppercase transition-colors"
-        :class="
-          isAnyRecording ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
-        "
-      >
+      <span class="text-muted-foreground text-xs font-bold tracking-widest uppercase">
         Rec
       </span>
       <span class="text-muted-foreground hidden items-center gap-1 lg:inline-flex">
