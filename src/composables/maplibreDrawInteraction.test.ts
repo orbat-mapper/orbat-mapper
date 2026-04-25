@@ -205,6 +205,45 @@ describe("useMapLibreDrawInteraction", () => {
     ]);
   });
 
+  it("unwraps draw vertices across the antimeridian", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("click", createEvent(179, 10));
+    harness.trigger("mousemove", createEvent(-179.5, 10));
+    harness.trigger("click", createEvent(-179, 11));
+    harness.trigger("dblclick", createEvent(-179, 11));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [179, 10],
+            [181, 11],
+          ],
+        },
+      }),
+    );
+    expect(harness.mapAdapter.addGeoJsonOverlay).toHaveBeenCalledWith(
+      "maplibre-draw-preview",
+      expect.objectContaining({
+        features: expect.arrayContaining([
+          expect.objectContaining({
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [179, 10],
+                [180.5, 10],
+              ],
+            },
+          }),
+        ]),
+      }),
+      expect.anything(),
+    );
+  });
+
   it("updates a dragged vertex in modify mode", () => {
     const feature = selectedLine();
     const harness = createHarness({

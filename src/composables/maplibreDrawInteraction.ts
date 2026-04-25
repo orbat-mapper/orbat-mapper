@@ -7,6 +7,7 @@ import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { DrawType } from "@/composables/geoEditing";
+import { unwrapPositionRelative } from "@/geo/longitude";
 
 const DRAW_PREVIEW_OVERLAY_ID = "maplibre-draw-preview";
 const DRAW_VERTEX_HANDLES_OVERLAY_ID = "maplibre-draw-vertex-handles";
@@ -149,7 +150,7 @@ export function useMapLibreDrawInteraction(
     }
 
     appendClickVertex(position);
-    renderPathPreview(position);
+    renderPathPreview(getPreviewPosition(position));
   }
 
   function onDoubleClick(e: MapMouseEvent) {
@@ -184,7 +185,7 @@ export function useMapLibreDrawInteraction(
         (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon") &&
         vertices.value.length
       ) {
-        renderPathPreview(position);
+        renderPathPreview(getPreviewPosition(position));
       }
       return;
     }
@@ -315,16 +316,28 @@ export function useMapLibreDrawInteraction(
   }
 
   function appendFreehandVertex(position: Position) {
+    const unwrappedPosition = unwrapDrawPosition(position);
     const last = vertices.value[vertices.value.length - 1];
-    if (last && distanceMeters(last, position) < 3) return;
-    vertices.value = [...vertices.value, position];
-    renderPathPreview(position);
+    if (last && distanceMeters(last, unwrappedPosition) < 3) return;
+    vertices.value = [...vertices.value, unwrappedPosition];
+    renderPathPreview(unwrappedPosition);
   }
 
   function appendClickVertex(position: Position) {
+    const unwrappedPosition = unwrapDrawPosition(position);
     const last = vertices.value[vertices.value.length - 1];
-    if (last && samePosition(last, position)) return;
-    vertices.value = [...vertices.value, position];
+    if (last && samePosition(last, unwrappedPosition)) return;
+    vertices.value = [...vertices.value, unwrappedPosition];
+  }
+
+  function getPreviewPosition(position: Position): Position {
+    const last = vertices.value[vertices.value.length - 1];
+    return last ? unwrapPositionRelative(last, position) : position;
+  }
+
+  function unwrapDrawPosition(position: Position): Position {
+    const last = vertices.value[vertices.value.length - 1];
+    return last ? unwrapPositionRelative(last, position) : position;
   }
 
   function renderPreview(geometry: Geometry, options: { fill?: boolean } = {}) {
