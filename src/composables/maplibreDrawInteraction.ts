@@ -627,9 +627,10 @@ function radiansToDegrees(value: number) {
 
 function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] {
   if (dragState.mode === "translate") {
+    const unwrappedPosition = unwrapPositionRelative(dragState.start, position);
     const delta: Position = [
-      position[0] - dragState.start[0],
-      position[1] - dragState.start[1],
+      unwrappedPosition[0] - dragState.start[0],
+      unwrappedPosition[1] - dragState.start[1],
     ];
     return dragState.features.map((feature) => ({
       featureId: feature.id,
@@ -640,14 +641,33 @@ function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] 
   if (!dragState.handle) return [];
   return dragState.features
     .filter((feature) => feature.id === dragState.handle?.featureId)
-    .map((feature) => ({
-      featureId: feature.id,
-      geometry:
-        dragState.handle!.kind === "midpoint"
-          ? insertVertexAtPath(feature.geometry, dragState.handle!.path, position)
-          : updateVertexAtPath(feature.geometry, dragState.handle!.path, position),
-      geometryMeta: feature.geometryMeta,
-    }));
+    .map((feature) => {
+      const unwrappedPosition = unwrapPositionRelative(
+        getDragPositionReference(feature.geometry, dragState.handle!),
+        position,
+      );
+      return {
+        featureId: feature.id,
+        geometry:
+          dragState.handle!.kind === "midpoint"
+            ? insertVertexAtPath(
+                feature.geometry,
+                dragState.handle!.path,
+                unwrappedPosition,
+              )
+            : updateVertexAtPath(
+                feature.geometry,
+                dragState.handle!.path,
+                unwrappedPosition,
+              ),
+        geometryMeta: feature.geometryMeta,
+      };
+    });
+}
+
+function getDragPositionReference(geometry: Geometry, handle: EditHandle): Position {
+  if (handle.position) return handle.position;
+  return getVertexAtPath(geometry, handle.path) ?? [0, 0];
 }
 
 function translateGeometry(geometry: Geometry, delta: Position): Geometry {

@@ -301,6 +301,49 @@ describe("useMapLibreDrawInteraction", () => {
     ]);
   });
 
+  it("keeps vertex drags continuous across the antimeridian", () => {
+    const feature: GeometryLayerItem = {
+      ...selectedLine(),
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [179, 0],
+          [181, 1],
+        ],
+      },
+    };
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      projection: "globe",
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([0]),
+          },
+        },
+      ],
+    });
+
+    harness.draw.startModify();
+    harness.trigger("mousedown", createEvent(179, 0));
+    harness.trigger("mouseup", createEvent(-179.5, 0.5));
+
+    expect(harness.updateFeatures).toHaveBeenCalledWith([
+      expect.objectContaining({
+        featureId: "feature-1",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [180.5, 0.5],
+            [181, 1],
+          ],
+        },
+      }),
+    ]);
+  });
+
   it("inserts a point by dragging an edge midpoint in modify mode", () => {
     const feature = selectedLine();
     const harness = createHarness({
@@ -349,6 +392,50 @@ describe("useMapLibreDrawInteraction", () => {
             [10, 20],
             [10.25, 22],
             [11, 21],
+          ],
+        },
+      }),
+    ]);
+  });
+
+  it("keeps inserted midpoint drags continuous across the antimeridian", () => {
+    const feature: GeometryLayerItem = {
+      ...selectedLine(),
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [179, 0],
+          [181, 1],
+        ],
+      },
+    };
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      projection: "globe",
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "midpoint",
+            path: JSON.stringify([1]),
+          },
+        },
+      ],
+    });
+
+    harness.draw.startModify();
+    harness.trigger("mousedown", createEvent(180, 0.5));
+    harness.trigger("mouseup", createEvent(-179.5, 0.75));
+
+    expect(harness.updateFeatures).toHaveBeenCalledWith([
+      expect.objectContaining({
+        featureId: "feature-1",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [179, 0],
+            [180.5, 0.75],
+            [181, 1],
           ],
         },
       }),
