@@ -20,6 +20,15 @@ interface DrawTargetLayer {
   items: FeatureId[];
 }
 
+function toDrawTargetLayer(layer: { id: FeatureId; items: unknown[] }): DrawTargetLayer {
+  return {
+    id: layer.id,
+    items: layer.items.map((item) =>
+      typeof item === "string" ? item : (item as { id: FeatureId }).id,
+    ),
+  };
+}
+
 export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
@@ -60,17 +69,12 @@ export function getActiveDrawLayer(
 ): DrawTargetLayer | undefined {
   if (activeLayerId) {
     const activeLayer = scenario.geo.getLayerById(activeLayerId);
-    if (activeLayer) return activeLayer as DrawTargetLayer;
+    if (activeLayer && "items" in activeLayer) {
+      return toDrawTargetLayer(activeLayer as { id: FeatureId; items: unknown[] });
+    }
   }
   const firstLayer = scenario.geo.layerItemsLayers.value?.[0];
-  return firstLayer
-    ? {
-        id: firstLayer.id,
-        items: firstLayer.items.map((item) =>
-          typeof item === "string" ? item : item.id,
-        ),
-      }
-    : undefined;
+  return firstLayer ? toDrawTargetLayer(firstLayer) : undefined;
 }
 
 export function addScenarioDrawFeature(

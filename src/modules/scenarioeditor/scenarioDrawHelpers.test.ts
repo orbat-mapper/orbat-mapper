@@ -62,6 +62,19 @@ describe("scenarioDrawHelpers", () => {
     });
   });
 
+  it("normalizes active draw layer items to ids", () => {
+    const scenario = createScenario();
+    scenario.geo.getLayerById = vi.fn(() => ({
+      id: "layer-1",
+      items: [createFeature("feature-object")],
+    }));
+
+    expect(getActiveDrawLayer(scenario, "layer-1")).toEqual({
+      id: "layer-1",
+      items: ["feature-object"],
+    });
+  });
+
   it("assigns draw feature name, z-index, style, and target layer", () => {
     const scenario = createScenario();
     const feature = createFeature("");

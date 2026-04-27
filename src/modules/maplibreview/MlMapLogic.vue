@@ -397,8 +397,8 @@ function restoreMapDragInteractions(interactions: {
 function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
-  if (!unitSelectEnabled.value && !featureSelectEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
+  if (!unitSelectEnabled.value && !featureSelectEnabled.value) return;
   const topHit = queryInteractiveFeatures(e.point)[0];
   const additive = e.originalEvent.shiftKey;
   if (!topHit) {

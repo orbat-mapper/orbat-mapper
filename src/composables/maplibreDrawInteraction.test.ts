@@ -26,6 +26,7 @@ function createHarness(
     translate?: boolean;
     freehand?: boolean;
     projection?: "mercator" | "globe";
+    doubleClickZoomEnabled?: boolean;
   } = {},
 ) {
   const handlers = new Map<string, Function[]>();
@@ -34,6 +35,7 @@ function createHarness(
   const overlays = new Map<string, unknown>();
   const translate = ref(options.translate ?? false);
   const freehand = ref(options.freehand ?? false);
+  let doubleClickZoomEnabled = options.doubleClickZoomEnabled ?? true;
   const mlMap = {
     on: vi.fn((name: string, handler: Function) => {
       handlers.set(name, [...(handlers.get(name) ?? []), handler]);
@@ -55,9 +57,13 @@ function createHarness(
       enable: vi.fn(),
     },
     doubleClickZoom: {
-      isEnabled: vi.fn(() => true),
-      disable: vi.fn(),
-      enable: vi.fn(),
+      isEnabled: vi.fn(() => doubleClickZoomEnabled),
+      disable: vi.fn(() => {
+        doubleClickZoomEnabled = false;
+      }),
+      enable: vi.fn(() => {
+        doubleClickZoomEnabled = true;
+      }),
     },
   };
   const mapAdapter = {
@@ -116,6 +122,16 @@ function selectedLine(): GeometryLayerItem {
 }
 
 describe("useMapLibreDrawInteraction", () => {
+  it("preserves disabled double-click zoom after drawing is cancelled", () => {
+    const harness = createHarness({ doubleClickZoomEnabled: false });
+
+    harness.draw.startDrawing("LineString");
+    harness.draw.cancel();
+
+    expect(harness.mlMap.doubleClickZoom.disable).not.toHaveBeenCalled();
+    expect(harness.mlMap.doubleClickZoom.enable).not.toHaveBeenCalled();
+  });
+
   it("creates point, line, polygon, and circle features", () => {
     const harness = createHarness();
     expect(harness.mlMap.on).toHaveBeenCalled();
@@ -167,6 +183,10 @@ describe("useMapLibreDrawInteraction", () => {
         },
       }),
     );
+    const polygonFeature = harness.addFeature.mock.lastCall?.[0] as GeometryLayerItem;
+    const ring = (polygonFeature.geometry as any).coordinates[0];
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    expect(ring[0]).not.toBe(ring[ring.length - 1]);
 
     harness.draw.startDrawing("Circle");
     harness.trigger("click", createEvent(10, 20));

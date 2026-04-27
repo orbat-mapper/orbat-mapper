@@ -126,6 +126,9 @@ export function useScenarioDraw() {
     );
   };
 
+  // These watchers create map interaction composables once the corresponding
+  // engine is ready. The guards keep the lifecycle/event registrations scoped
+  // to this setup call while still allowing delayed map initialization.
   watch(
     [nativeMap, layer],
     ([native, activeLayer]) => {

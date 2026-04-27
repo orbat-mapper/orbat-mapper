@@ -66,6 +66,7 @@ export function useMapLibreDrawInteraction(
   const vertices = ref<Position[]>([]);
   let dragState: DragState | null = null;
   let circleCenter: Position | null = null;
+  let drawingDoubleClickZoomEnabled: boolean | null = null;
   let cleanupEsc: (() => void) | undefined;
   let cleanupEnter: (() => void) | undefined;
 
@@ -75,7 +76,8 @@ export function useMapLibreDrawInteraction(
     isDrawing.value = true;
     options.onDrawingChange?.(true);
     mlMap.getCanvas().style.cursor = "crosshair";
-    if (mlMap.doubleClickZoom.isEnabled()) mlMap.doubleClickZoom.disable();
+    drawingDoubleClickZoomEnabled = mlMap.doubleClickZoom.isEnabled();
+    if (drawingDoubleClickZoomEnabled) mlMap.doubleClickZoom.disable();
   }
 
   function startModify() {
@@ -115,7 +117,10 @@ export function useMapLibreDrawInteraction(
   }
 
   function restoreDoubleClickZoom() {
-    if (!mlMap.doubleClickZoom.isEnabled()) mlMap.doubleClickZoom.enable();
+    if (drawingDoubleClickZoomEnabled && !mlMap.doubleClickZoom.isEnabled()) {
+      mlMap.doubleClickZoom.enable();
+    }
+    drawingDoubleClickZoomEnabled = null;
   }
 
   function onClick(e: MapMouseEvent) {
@@ -150,7 +155,7 @@ export function useMapLibreDrawInteraction(
     }
 
     appendClickVertex(position);
-    renderPathPreview(getPreviewPosition(position));
+    renderPathPreview(unwrapDrawPosition(position));
   }
 
   function onDoubleClick(e: MapMouseEvent) {
@@ -185,7 +190,7 @@ export function useMapLibreDrawInteraction(
         (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon") &&
         vertices.value.length
       ) {
-        renderPathPreview(getPreviewPosition(position));
+        renderPathPreview(unwrapDrawPosition(position));
       }
       return;
     }
@@ -328,11 +333,6 @@ export function useMapLibreDrawInteraction(
     const last = vertices.value[vertices.value.length - 1];
     if (last && samePosition(last, unwrappedPosition)) return;
     vertices.value = [...vertices.value, unwrappedPosition];
-  }
-
-  function getPreviewPosition(position: Position): Position {
-    const last = vertices.value[vertices.value.length - 1];
-    return last ? unwrapPositionRelative(last, position) : position;
   }
 
   function unwrapDrawPosition(position: Position): Position {
@@ -557,7 +557,7 @@ function closeRing(coordinates: Position[]): Position[] {
   const first = coordinates[0];
   const last = coordinates[coordinates.length - 1];
   if (first && last && samePosition(first, last)) return coordinates;
-  return [...coordinates, first];
+  return first ? [...coordinates, [...first]] : coordinates;
 }
 
 function withoutTrailingDuplicate(coordinates: Position[]): Position[] {
