@@ -25,6 +25,7 @@ function createHarness(
     queryRenderedFeatures?: () => any[];
     translate?: boolean;
     freehand?: boolean;
+    projection?: "mercator" | "globe";
   } = {},
 ) {
   const handlers = new Map<string, Function[]>();
@@ -41,6 +42,7 @@ function createHarness(
     getCanvas: () => ({ style: { cursor: "" } }),
     project: vi.fn(([lng, lat]: [number, number]) => ({ x: lng, y: lat * lat })),
     unproject: vi.fn(([x, y]: [number, number]) => ({ lng: x, lat: Math.sqrt(y) })),
+    getProjection: vi.fn(() => ({ type: options.projection ?? "mercator" })),
     queryRenderedFeatures: vi.fn(() => options.queryRenderedFeatures?.() ?? []),
     dragPan: {
       isEnabled: vi.fn(() => true),
@@ -351,5 +353,33 @@ describe("useMapLibreDrawInteraction", () => {
         },
       }),
     ]);
+  });
+
+  it("places midpoint handles on projected Mercator segments in globe mode", () => {
+    const feature: GeometryLayerItem = {
+      ...selectedLine(),
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [0, 0],
+          [90, 60],
+        ],
+      },
+    };
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      projection: "globe",
+    });
+
+    harness.draw.startModify();
+
+    const midpointOverlay = harness.overlays.get("maplibre-draw-midpoint-handles") as any;
+    const coordinates = midpointOverlay.geojson.features[0].geometry.coordinates as [
+      number,
+      number,
+    ];
+
+    expect(coordinates[0]).toBeCloseTo(55.968, 3);
+    expect(coordinates[1]).toBeCloseTo(42.415, 3);
   });
 });
