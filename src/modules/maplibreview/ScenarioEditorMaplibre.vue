@@ -5,6 +5,7 @@ import {
   onMounted,
   provide,
   ref,
+  markRaw,
   shallowRef,
   watch,
 } from "vue";
@@ -150,15 +151,16 @@ const activeMaplibreBasemap = computed(() =>
 
 function onMapReady(mapInstance: MlMap) {
   cleanupScenarioBinding?.();
-  mlMap.value = mapInstance;
-  const adapter = new MapLibreMapAdapter(mapInstance);
-  const layers = createMapLibreScenarioLayerController(adapter);
-  scenarioMapEngineRef.value = {
+  const rawMap = markRaw(mapInstance);
+  mlMap.value = rawMap;
+  const adapter = markRaw(new MapLibreMapAdapter(rawMap));
+  const layers = markRaw(createMapLibreScenarioLayerController(adapter));
+  scenarioMapEngineRef.value = markRaw({
     map: adapter,
     layers,
     suspendFeatureSelection() {},
     resumeFeatureSelection() {},
-  };
+  });
   cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
 }
