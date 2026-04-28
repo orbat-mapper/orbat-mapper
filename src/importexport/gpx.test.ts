@@ -42,6 +42,63 @@ describe("convertGpxToGeoJSON", () => {
     });
   });
 
+  it("preserves GPX track point timestamps as coordinate properties", () => {
+    const result = convertGpxToGeoJSON(`
+      <gpx version="1.1" creator="orbat-mapper">
+        <trk>
+          <name>Timed track</name>
+          <trkseg>
+            <trkpt lat="59.91" lon="10.75">
+              <time>2026-04-28T10:00:00Z</time>
+            </trkpt>
+            <trkpt lat="59.92" lon="10.76">
+              <time>2026-04-28T10:05:00Z</time>
+            </trkpt>
+          </trkseg>
+        </trk>
+      </gpx>
+    `);
+
+    expect(result.features[0].properties).toMatchObject({
+      coordinateProperties: {
+        times: ["2026-04-28T10:00:00Z", "2026-04-28T10:05:00Z"],
+      },
+    });
+  });
+
+  it("preserves GPX route point timestamps as coordinate properties", () => {
+    const result = convertGpxToGeoJSON(`
+      <gpx version="1.1" creator="orbat-mapper">
+        <rte>
+          <name>Timed route</name>
+          <rtept lat="59.91" lon="10.75">
+            <time>2026-04-28T10:00:00Z</time>
+          </rtept>
+          <rtept lat="59.92" lon="10.76">
+            <time>2026-04-28T10:05:00Z</time>
+          </rtept>
+        </rte>
+      </gpx>
+    `);
+
+    expect(result.features[0]).toMatchObject({
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [10.75, 59.91],
+          [10.76, 59.92],
+        ],
+      },
+      properties: {
+        _gpxType: "rte",
+        name: "Timed route",
+        coordinateProperties: {
+          times: ["2026-04-28T10:00:00Z", "2026-04-28T10:05:00Z"],
+        },
+      },
+    });
+  });
+
   it("throws a clear error for invalid XML", () => {
     expect(() => convertGpxToGeoJSON("<gpx><wpt></gpx>")).toThrow(
       "Could not parse GPX XML",
