@@ -471,6 +471,8 @@ function assignFeatureToUnit() {
               label="Assign track/route to unit"
               :units="rootUnitIds"
               :unit-map="store.state.unitMap"
+              :side-map="store.state.sideMap"
+              :side-group-map="store.state.sideGroupMap"
               v-model="assignmentUnitId"
             />
             <Button

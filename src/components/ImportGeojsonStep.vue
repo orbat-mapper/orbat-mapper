@@ -148,7 +148,9 @@ function findLikelySymbolColumn(columnNames: string[]) {
 const activeLayer = ref(existingLayers.value[0].value);
 const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
 const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
-const parentUnitId = ref<string | undefined>(rootUnitItems.value[0]?.code as string | undefined);
+const parentUnitId = ref<string | undefined>(
+  rootUnitItems.value[0]?.code as string | undefined,
+);
 const { send } = useNotifications();
 
 async function onLoad() {

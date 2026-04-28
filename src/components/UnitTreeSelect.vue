@@ -7,7 +7,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import type { EntityId } from "@/types/base";
-import type { NUnit } from "@/types/internalModels";
+import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import type { UnitSymbolOptions } from "@/types/scenarioModels";
 import { shouldVirtualizeTree } from "@/components/orbatTreeVirtualization";
 
@@ -15,6 +15,8 @@ interface Props {
   label?: string;
   units: EntityId[];
   unitMap: Record<EntityId, NUnit>;
+  sideMap?: Record<EntityId, NSide>;
+  sideGroupMap?: Record<EntityId, NSideGroup>;
   symbolOptions?: UnitSymbolOptions;
   placeholder?: string;
   virtualizationThreshold?: number;
@@ -95,6 +97,20 @@ const rowVirtualizer = useVirtualizer(rowVirtualizerOptions);
 const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 
+function unitSymbolOptions(unit: NUnit): UnitSymbolOptions {
+  const sideOptions = props.sideMap?.[unit._sid]?.symbolOptions ?? {};
+  const groupOptions = unit._gid
+    ? (props.sideGroupMap?.[unit._gid]?.symbolOptions ?? {})
+    : {};
+  return {
+    outlineWidth: 8,
+    ...sideOptions,
+    ...groupOptions,
+    ...props.symbolOptions,
+    ...unit.symbolOptions,
+  };
+}
+
 function selectUnit(unitId: EntityId) {
   selectedUnitId.value = unitId;
   open.value = false;
@@ -116,11 +132,7 @@ function selectUnit(unitId: EntityId) {
               class="size-6 shrink-0"
               :sidc="selectedUnit.sidc"
               :size="18"
-              :options="{
-                outlineWidth: 8,
-                ...symbolOptions,
-                ...selectedUnit.symbolOptions,
-              }"
+              :options="unitSymbolOptions(selectedUnit)"
             />
             <span class="truncate">{{ selectedUnit.name }}</span>
           </template>
@@ -161,11 +173,9 @@ function selectUnit(unitId: EntityId) {
                 class="size-6 shrink-0"
                 :sidc="unitMap[visibleRows[virtualRow.index].unitId].sidc"
                 :size="18"
-                :options="{
-                  outlineWidth: 8,
-                  ...symbolOptions,
-                  ...unitMap[visibleRows[virtualRow.index].unitId].symbolOptions,
-                }"
+                :options="
+                  unitSymbolOptions(unitMap[visibleRows[virtualRow.index].unitId])
+                "
               />
               <span class="truncate">{{
                 unitMap[visibleRows[virtualRow.index].unitId].name
@@ -186,11 +196,7 @@ function selectUnit(unitId: EntityId) {
                 class="size-6 shrink-0"
                 :sidc="unitMap[row.unitId].sidc"
                 :size="18"
-                :options="{
-                  outlineWidth: 8,
-                  ...symbolOptions,
-                  ...unitMap[row.unitId].symbolOptions,
-                }"
+                :options="unitSymbolOptions(unitMap[row.unitId])"
               />
               <span class="truncate">{{ unitMap[row.unitId].name }}</span>
             </button>
