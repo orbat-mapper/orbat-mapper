@@ -5,6 +5,7 @@ import { activeScenarioKey } from "@/components/injects";
 import type { NUnit } from "@/types/internalModels";
 import type { Feature as GeoJSONFeature, FeatureCollection, Point } from "geojson";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import UnitTreeSelect from "@/components/UnitTreeSelect.vue";
 import { setCharAt } from "@/components/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import { type SelectItem } from "@/components/types";
@@ -15,7 +16,7 @@ import DataGrid from "@/modules/grid/DataGrid.vue";
 import type { ColumnDef } from "@tanstack/vue-table";
 import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import AlertWarning from "@/components/AlertWarning.vue";
-import { useRootUnits } from "@/composables/scenarioUtils.ts";
+import { useRootUnitIds, useRootUnits } from "@/composables/scenarioUtils.ts";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import {
@@ -25,6 +26,11 @@ import {
   getGeoJSONPropertyNames,
   normalizeImportedName,
 } from "@/importexport/geojsonScenarioFeatures";
+import {
+  createUnitTrackStatesFromFeature,
+  isAssignableTrackFeature,
+} from "@/importexport/unitTrackAssignment";
+import { useNotifications } from "@/composables/notifications";
 
 interface Props {
   data: GeoJSONFeature | FeatureCollection;
@@ -33,14 +39,16 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 
-const { unitActions, store: scnStore, geo } = injectStrict(activeScenarioKey);
+const { unitActions, store: scnStore, geo, time } = injectStrict(activeScenarioKey);
 
-type GeoJsonImportMode = "units" | "features";
+type GeoJsonImportMode = "units" | "features" | "unit-tracks";
 
 const importMode = ref<GeoJsonImportMode>("features");
 const isFeatureMode = computed(() => importMode.value === "features");
+const isTrackAssignmentMode = computed(() => importMode.value === "unit-tracks");
 
 const selectedFeatures = ref<GeoJSONFeature[]>([]);
+const trackAssignmentUnitIds = ref<Record<string, string>>({});
 
 const propertyNames = computed(() => new Set(getGeoJSONPropertyNames(props.data)));
 
@@ -94,6 +102,7 @@ const computedColumns = computed((): (ColumnDef<GeoJSONFeature, unknown> | false
 });
 
 const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
+const { rootUnitIds } = useRootUnitIds();
 
 const geoJSONFeatures = computed((): GeoJSONFeature[] => {
   // This is a hack to force the computed to re-run when we change column assignments
@@ -105,6 +114,10 @@ const geoJSONFeatures = computed((): GeoJSONFeature[] => {
 
 const geoJSONPointFeatures = computed(() => {
   return geoJSONFeatures.value.filter((f) => f.geometry?.type === "Point");
+});
+
+const geoJSONTrackFeatures = computed(() => {
+  return geoJSONFeatures.value.filter(isAssignableTrackFeature);
 });
 
 const existingLayers = computed((): SelectItem[] => {
@@ -135,11 +148,14 @@ function findLikelySymbolColumn(columnNames: string[]) {
 const activeLayer = ref(existingLayers.value[0].value);
 const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
 const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
-const parentUnitId = ref(rootUnitItems.value[0].code as string);
+const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
+const { send } = useNotifications();
 
 async function onLoad() {
   if (importMode.value === "units") {
     loadAsUnits();
+  } else if (importMode.value === "unit-tracks") {
+    loadAsUnitTracks();
   } else {
     loadAsFeatures();
   }
@@ -176,17 +192,82 @@ function loadAsUnits() {
 }
 
 function loadAsFeatures() {
-  if (!activeLayer.value) return;
-  const features = selectedFeatures.value
+  const features = getSelectedScenarioFeatures();
+  scnStore.groupUpdate(() => {
+    features.forEach((feature) => geo.addFeature(feature, feature._pid));
+  });
+}
+
+function loadAsUnitTracks() {
+  const trackFeatures = selectedFeatures.value.filter(isAssignableTrackFeature);
+  if (!trackFeatures.length) return;
+
+  let stateCount = 0;
+  let skippedPointCount = 0;
+  scnStore.groupUpdate(() => {
+    getSelectedScenarioFeatures().forEach((feature) =>
+      geo.addFeature(feature, feature._pid),
+    );
+    trackFeatures.forEach((feature) => {
+      const unitId = getTrackAssignmentUnitId(feature);
+      if (!unitId) return;
+      const result = createUnitTrackStatesFromFeature(
+        feature,
+        scnStore.state.currentTime,
+      );
+      skippedPointCount += result.skippedPoints;
+      result.states.forEach((state) => {
+        unitActions.addUnitStateEntry(unitId, state, true);
+        stateCount++;
+      });
+    });
+  });
+
+  if (stateCount > 0) {
+    time.setCurrentTime(scnStore.state.currentTime);
+  }
+  const skippedMessage = skippedPointCount
+    ? ` ${skippedPointCount} route points were skipped.`
+    : "";
+  send({
+    message: `Assigned ${stateCount} track positions to unit.${skippedMessage}`,
+    type: stateCount ? "success" : "warning",
+  });
+}
+
+function getSelectedScenarioFeatures() {
+  if (!activeLayer.value) return [];
+  return selectedFeatures.value
     .map((feature) =>
       convertGeoJSONFeatureToScenarioFeature(feature, activeLayer.value, {
         nameColumn: resolvedNameColumn.value,
       }),
     )
     .filter((feature) => !!feature);
-  scnStore.groupUpdate(() => {
-    features.forEach((feature) => geo.addFeature(feature, feature._pid));
-  });
+}
+
+function getFeatureKey(feature: GeoJSONFeature): string {
+  const index = geoJSONFeatures.value.indexOf(feature);
+  if (index >= 0) return String(index);
+  return `${feature.geometry?.type ?? "feature"}-${selectedFeatures.value.indexOf(feature)}`;
+}
+
+function getTrackAssignmentUnitId(feature: GeoJSONFeature): string | undefined {
+  return (
+    trackAssignmentUnitIds.value[getFeatureKey(feature)] ?? rootUnitItems.value[0]?.code
+  );
+}
+
+function setTrackAssignmentUnitId(feature: GeoJSONFeature, unitId: string | null) {
+  if (!unitId) return;
+  trackAssignmentUnitIds.value[getFeatureKey(feature)] = unitId;
+}
+
+function getFeatureName(feature: GeoJSONFeature): string {
+  return normalizeImportedName(
+    resolvedNameColumn.value ? feature.properties?.[resolvedNameColumn.value] : undefined,
+    "Track/route",
+  );
 }
 </script>
 <template>
@@ -211,10 +292,13 @@ function loadAsFeatures() {
         <MRadioGroup class="flex flex-col gap-2">
           <InputRadio v-model="importMode" value="features">Scenario features</InputRadio>
           <InputRadio v-model="importMode" value="units">Units</InputRadio>
+          <InputRadio v-model="importMode" value="unit-tracks"
+            >Assign tracks/routes to unit</InputRadio
+          >
         </MRadioGroup>
       </fieldset>
 
-      <section class="space-y-4">
+      <section v-if="!isTrackAssignmentMode" class="space-y-4">
         <SimpleSelect
           label="Name column"
           :items="propertyNameItems"
@@ -230,18 +314,35 @@ function loadAsFeatures() {
 
       <section class="space-y-4">
         <SimpleSelect
-          v-if="isFeatureMode"
+          v-if="isFeatureMode || isTrackAssignmentMode"
           label="Layer"
           description="Which layer should the features be added to?"
           :items="existingLayers"
           v-model="activeLayer"
         />
-        <SymbolCodeSelect
-          v-else
-          label="Parent unit"
-          :items="rootUnitItems"
-          :groups="groupedRootUnitItems"
-          v-model="parentUnitId"
+        <template v-else>
+          <SymbolCodeSelect
+            label="Parent unit"
+            :items="rootUnitItems"
+            :groups="groupedRootUnitItems"
+            v-model="parentUnitId"
+          />
+        </template>
+      </section>
+
+      <section v-if="isTrackAssignmentMode" class="space-y-4">
+        <p class="text-foreground text-sm leading-6 font-semibold">Track assignments</p>
+        <p v-if="!selectedFeatures.length" class="text-muted-foreground text-sm">
+          Select tracks or routes to choose target units.
+        </p>
+        <UnitTreeSelect
+          v-for="feature in selectedFeatures.filter(isAssignableTrackFeature)"
+          :key="getFeatureKey(feature)"
+          :label="getFeatureName(feature)"
+          :units="rootUnitIds"
+          :unit-map="scnStore.state.unitMap"
+          :model-value="getTrackAssignmentUnitId(feature)"
+          @update:model-value="(unitId) => setTrackAssignmentUnitId(feature, unitId)"
         />
       </section>
     </template>
@@ -251,7 +352,13 @@ function loadAsFeatures() {
         Select which features you want to import
       </p>
       <DataGrid
-        :data="isFeatureMode ? geoJSONFeatures : geoJSONPointFeatures"
+        :data="
+          isTrackAssignmentMode
+            ? geoJSONTrackFeatures
+            : isFeatureMode
+              ? geoJSONFeatures
+              : geoJSONPointFeatures
+        "
         :columns="computedColumns"
         :row-height="40"
         select
@@ -261,11 +368,18 @@ function loadAsFeatures() {
         class="flex-1"
       />
       <AlertWarning
-        v-if="!isFeatureMode && geoJSONPointFeatures.length === 0"
+        v-if="importMode === 'units' && geoJSONPointFeatures.length === 0"
         title="No point geometries found"
         class="mt-4 shrink-0"
       >
         A unit must have a point geometry to be imported.
+      </AlertWarning>
+      <AlertWarning
+        v-if="isTrackAssignmentMode && geoJSONTrackFeatures.length === 0"
+        title="No line geometries found"
+        class="mt-4 shrink-0"
+      >
+        A unit track must have a LineString or MultiLineString geometry to be assigned.
       </AlertWarning>
     </div>
   </ImportStepLayout>

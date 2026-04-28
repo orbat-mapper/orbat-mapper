@@ -99,6 +99,54 @@ describe("convertGpxToGeoJSON", () => {
     });
   });
 
+  it("preserves null placeholders for untimed GPX route points", () => {
+    const result = convertGpxToGeoJSON(`
+      <gpx version="1.1" creator="orbat-mapper">
+        <rte>
+          <name>Partly timed route</name>
+          <rtept lat="59.91" lon="10.75">
+            <time>2026-04-28T10:00:00Z</time>
+          </rtept>
+          <rtept lat="59.92" lon="10.76" />
+          <rtept lat="59.93" lon="10.77">
+            <time>2026-04-28T10:10:00Z</time>
+          </rtept>
+        </rte>
+      </gpx>
+    `);
+
+    expect(result.features[0].properties).toMatchObject({
+      coordinateProperties: {
+        times: ["2026-04-28T10:00:00Z", null, "2026-04-28T10:10:00Z"],
+      },
+    });
+  });
+
+  it("preserves null placeholders for untimed GPX track points", () => {
+    const result = convertGpxToGeoJSON(`
+      <gpx version="1.1" creator="orbat-mapper">
+        <trk>
+          <name>Partly timed track</name>
+          <trkseg>
+            <trkpt lat="59.91" lon="10.75">
+              <time>2026-04-28T10:00:00Z</time>
+            </trkpt>
+            <trkpt lat="59.92" lon="10.76" />
+            <trkpt lat="59.93" lon="10.77">
+              <time>2026-04-28T10:10:00Z</time>
+            </trkpt>
+          </trkseg>
+        </trk>
+      </gpx>
+    `);
+
+    expect(result.features[0].properties).toMatchObject({
+      coordinateProperties: {
+        times: ["2026-04-28T10:00:00Z", null, "2026-04-28T10:10:00Z"],
+      },
+    });
+  });
+
   it("throws a clear error for invalid XML", () => {
     expect(() => convertGpxToGeoJSON("<gpx><wpt></gpx>")).toThrow(
       "Could not parse GPX XML",

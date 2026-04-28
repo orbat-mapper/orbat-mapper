@@ -1,5 +1,11 @@
 import { gpx } from "@tmcw/togeojson";
-import type { Feature, FeatureCollection, GeoJsonProperties, LineString } from "geojson";
+import type {
+  Feature,
+  FeatureCollection,
+  GeoJsonProperties,
+  LineString,
+  MultiLineString,
+} from "geojson";
 import { isGeoJSONFeatureCollection } from "@/importexport/geojsonScenarioFeatures";
 
 export function convertGpxToGeoJSON(gpxString: string): FeatureCollection {
@@ -19,9 +25,37 @@ export function convertGpxToGeoJSON(gpxString: string): FeatureCollection {
     throw new Error("GPX did not contain any importable features");
   }
 
-  addRoutePointTimes(document, converted);
+  addPointTimes(document, converted);
 
   return converted;
+}
+
+function addPointTimes(document: Document, converted: FeatureCollection) {
+  addTrackPointTimes(document, converted);
+  addRoutePointTimes(document, converted);
+}
+
+function addTrackPointTimes(document: Document, converted: FeatureCollection) {
+  const trackFeatures = converted.features.filter(isTrackLineFeature);
+  if (!trackFeatures.length) return;
+
+  const tracks = Array.from(document.getElementsByTagName("trk"));
+  trackFeatures.forEach((feature, index) => {
+    const track = tracks[index];
+    if (!track) return;
+
+    const segmentTimes = Array.from(track.getElementsByTagName("trkseg")).map((segment) =>
+      getChildPointTimes(segment, "trkpt"),
+    );
+    const times =
+      feature.geometry.type === "MultiLineString" ? segmentTimes : segmentTimes[0];
+
+    if (!hasAnyTime(times)) return;
+
+    const properties = getMutableProperties(feature);
+    const coordinateProperties = getCoordinateProperties(properties);
+    coordinateProperties.times = times;
+  });
 }
 
 function addRoutePointTimes(document: Document, converted: FeatureCollection) {
@@ -33,18 +67,35 @@ function addRoutePointTimes(document: Document, converted: FeatureCollection) {
     const route = routes[index];
     if (!route) return;
 
-    const times = Array.from(route.getElementsByTagName("rtept"))
-      .map((routePoint) =>
-        routePoint.getElementsByTagName("time")[0]?.textContent?.trim(),
-      )
-      .filter((time): time is string => !!time);
+    const times = getChildPointTimes(route, "rtept");
 
-    if (!times.length) return;
+    if (!hasAnyTime(times)) return;
 
     const properties = getMutableProperties(feature);
     const coordinateProperties = getCoordinateProperties(properties);
     coordinateProperties.times = times;
   });
+}
+
+function getChildPointTimes(element: Element, pointTagName: string): (string | null)[] {
+  return Array.from(element.getElementsByTagName(pointTagName)).map(
+    (point) => point.getElementsByTagName("time")[0]?.textContent?.trim() || null,
+  );
+}
+
+function hasAnyTime(times: unknown): boolean {
+  if (!Array.isArray(times)) return false;
+  return times.flat(Infinity).some((time) => typeof time === "string" && !!time);
+}
+
+function isTrackLineFeature(
+  feature: Feature,
+): feature is Feature<LineString | MultiLineString, GeoJsonProperties> {
+  return (
+    (feature.geometry?.type === "LineString" ||
+      feature.geometry?.type === "MultiLineString") &&
+    feature.properties?._gpxType === "trk"
+  );
 }
 
 function isRouteLineFeature(
