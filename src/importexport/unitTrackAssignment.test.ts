@@ -105,6 +105,58 @@ describe("unitTrackAssignment", () => {
     });
   });
 
+  it("adds a current-time start state for untimestamped lines when requested", () => {
+    const feature: Feature<LineString> = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [10, 60],
+          [11, 61],
+          [12, 62],
+        ],
+      },
+    };
+
+    const result = createUnitTrackStatesFromFeature(feature, 123, {
+      addStartPosition: true,
+    });
+
+    expect(result).toEqual({
+      skippedPoints: 0,
+      states: [
+        { t: 123, location: [10, 60], interpolate: false },
+        { t: 123, location: [12, 62], via: [[11, 61]], viaStartTime: 123 },
+      ],
+    });
+  });
+
+  it("calculates end time based on average speed when provided", () => {
+    const feature: Feature<LineString> = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [10, 60],
+          [10, 61], // 1 degree of latitude is roughly 111 km
+        ],
+      },
+    };
+
+    const result = createUnitTrackStatesFromFeature(feature, 1000, {
+      addStartPosition: true,
+      averageSpeed: 10, // 10 m/s
+    });
+
+    expect(result.states).toHaveLength(2);
+    expect(result.states[0].t).toBe(1000);
+    // 111km at 10m/s is 11100s = 11,100,000 ms.
+    expect(result.states[1].t).toBeGreaterThan(10000000);
+    expect(result.states[1].location).toEqual([10, 61]);
+  });
+
   it("skips malformed times without throwing", () => {
     const feature: Feature<LineString> = {
       type: "Feature",

@@ -1,11 +1,17 @@
 import type { Feature, LineString, MultiLineString, Position } from "geojson";
 import type { StateAdd } from "@/types/scenarioModels";
+import length from "@turf/length";
 
 type LineFeature = Feature<LineString | MultiLineString>;
 
 export interface TrackAssignmentResult {
   states: StateAdd[];
   skippedPoints: number;
+}
+
+export interface TrackAssignmentOptions {
+  addStartPosition?: boolean;
+  averageSpeed?: number;
 }
 
 export function isAssignableTrackFeature(feature: Feature): feature is LineFeature {
@@ -18,32 +24,59 @@ export function isAssignableTrackFeature(feature: Feature): feature is LineFeatu
 export function createUnitTrackStatesFromFeature(
   feature: LineFeature,
   currentTime: number,
+  options: TrackAssignmentOptions = {},
 ): TrackAssignmentResult {
-  const timedStates = getTimedStates(feature);
+  const coordinates = flattenCoordinates(feature);
+  const timedStates = getTimedStates(feature, coordinates);
   if (timedStates.states.length) return timedStates;
 
-  const coordinates = flattenCoordinates(feature);
   if (!coordinates.length) return { states: [], skippedPoints: 0 };
 
   const finalCoordinate = coordinates[coordinates.length - 1];
+  const startCoordinate = coordinates[0];
   const via = coordinates.length > 2 ? coordinates.slice(1, -1) : undefined;
+
+  let endTime = currentTime;
+  if (options.averageSpeed && options.averageSpeed > 0) {
+    const distanceMeters = length(feature, { units: "meters" });
+    endTime = Math.round(currentTime + (distanceMeters / options.averageSpeed) * 1000);
+  }
+
+  console.log(
+    "Creating track states for feature with",
+    coordinates.length,
+    "points",
+    options,
+  );
   return {
     states: [
+      ...(options.addStartPosition
+        ? [
+            {
+              t: currentTime,
+              location: startCoordinate,
+              interpolate: false,
+            },
+          ]
+        : []),
       {
-        t: currentTime,
+        t: endTime,
         location: finalCoordinate,
         ...(via?.length ? { via } : {}),
+        ...(options.addStartPosition ? { viaStartTime: currentTime } : {}),
       },
     ],
     skippedPoints: 0,
   };
 }
 
-function getTimedStates(feature: LineFeature): TrackAssignmentResult {
+function getTimedStates(
+  feature: LineFeature,
+  coordinates: Position[],
+): TrackAssignmentResult {
   const times = getCoordinateTimes(feature);
   if (!times) return { states: [], skippedPoints: 0 };
 
-  const coordinates = flattenCoordinates(feature);
   const flatTimes = flattenTimes(times);
   const count = Math.min(coordinates.length, flatTimes.length);
   const states: StateAdd[] = [];

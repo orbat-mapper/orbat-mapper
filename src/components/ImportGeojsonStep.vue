@@ -211,9 +211,13 @@ function loadAsUnitTracks() {
     trackFeatures.forEach((feature) => {
       const unitId = getTrackAssignmentUnitId(feature);
       if (!unitId) return;
+      const unit = scnStore.state.unitMap[unitId];
       const result = createUnitTrackStatesFromFeature(
         feature,
         scnStore.state.currentTime,
+        {
+          addStartPosition: !unit?.location && !unit?._state?.location,
+        },
       );
       skippedPointCount += result.skippedPoints;
       result.states.forEach((state) => {

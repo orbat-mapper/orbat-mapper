@@ -53,6 +53,7 @@ import {
   isAssignableTrackFeature,
 } from "@/importexport/unitTrackAssignment";
 import type { Feature } from "geojson";
+import { convertSpeedToMetric } from "@/utils/convert";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -314,9 +315,21 @@ function assignFeatureToUnit() {
   const geoJsonFeature = toGeoJSONFeature(feature.value);
   if (!isAssignableTrackFeature(geoJsonFeature)) return;
 
+  const unit = store.state.unitMap[assignmentUnitId.value];
+  if (!unit) return;
+
+  const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
+  const averageSpeed = speedValue
+    ? convertSpeedToMetric(speedValue.value, speedValue.uom)
+    : convertSpeedToMetric(30, "km/h");
+
   const result = createUnitTrackStatesFromFeature(
     geoJsonFeature,
     store.state.currentTime,
+    {
+      addStartPosition: !unit.location && !unit._state?.location,
+      averageSpeed,
+    },
   );
   if (!result.states.length) {
     notify({ message: "No track positions were available to assign.", type: "warning" });
@@ -421,26 +434,6 @@ function assignFeatureToUnit() {
         </TabsContent>
         <TabsContent value="1" class="mx-4">
           <ScenarioFeatureGeometryStats v-if="feature && !isEditing" :feature="feature" />
-          <div
-            v-if="feature && !isEditing && canAssignFeatureToUnit"
-            class="border-border mt-4 space-y-3 border-t pt-4"
-          >
-            <UnitTreeSelect
-              label="Assign track/route to unit"
-              :units="rootUnitIds"
-              :unit-map="store.state.unitMap"
-              v-model="assignmentUnitId"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              :disabled="!assignmentUnitId"
-              @click="assignFeatureToUnit"
-            >
-              Assign to unit
-            </Button>
-          </div>
           <ScenarioFeaturesGeometryStats
             v-else-if="isMultiMode && selectedFeatures.length"
             :features="selectedFeatures"
@@ -466,9 +459,29 @@ function assignFeatureToUnit() {
             />
           </div>
         </TabsContent>
-        <TabsContent value="2" class="mx-4"
-          ><ScenarioFeatureState v-if="feature" :feature="feature"
-        /></TabsContent>
+        <TabsContent value="2" class="mx-4">
+          <ScenarioFeatureState v-if="feature" :feature="feature" />
+          <div
+            v-if="feature && canAssignFeatureToUnit"
+            class="border-border mt-4 space-y-3 border-t pt-4"
+          >
+            <UnitTreeSelect
+              label="Assign track/route to unit"
+              :units="rootUnitIds"
+              :unit-map="store.state.unitMap"
+              v-model="assignmentUnitId"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              :disabled="!assignmentUnitId"
+              @click="assignFeatureToUnit"
+            >
+              Assign to unit
+            </Button>
+          </div>
+        </TabsContent>
         <TabsContent v-if="canTransformFeature" value="3" class="mx-4">
           <FeatureTransformations class="mt-4" />
         </TabsContent>
