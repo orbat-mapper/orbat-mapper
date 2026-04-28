@@ -6,7 +6,7 @@ import { useRoutingStore } from "@/stores/routingStore";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
-import { type ProjectionLike, toLonLat } from "ol/proj";
+import { type ProjectionLike } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import {
   createScenarioLayerItemFeatures,
@@ -15,14 +15,9 @@ import {
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import { type ActionLabel } from "@/scenariostore/newScenarioStore";
 import VectorSource from "ol/source/Vector";
-import { getFeatureAndLayerById, isCircle } from "@/composables/openlayersHelpers";
+import { getFeatureAndLayerById } from "@/composables/openlayersHelpers";
 import Feature from "ol/Feature";
-import Circle from "ol/geom/Circle";
-import { add as addCoordinate } from "ol/coordinate";
-import { getLength } from "ol/sphere";
-import LineString from "ol/geom/LineString";
-import { point } from "@turf/helpers";
-import GeoJSON from "ol/format/GeoJSON";
+import { convertOlFeatureToScenarioFeature } from "@/modules/scenarioeditor/scenarioDrawHelpers";
 import {
   type FullScenarioLayerItemsLayer,
   type GeometryLayerItem,
@@ -266,37 +261,4 @@ export function useScenarioFeatureLayers(olMap: OLMap) {
   };
 }
 
-// Fixme: Should only return properties needed to represent the geometry
-export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
-  if (isCircle(olFeature)) {
-    const circle = olFeature.getGeometry() as Circle;
-    const { geometry, properties = {} } = olFeature.getProperties();
-    const center = circle.getCenter();
-    const r = addCoordinate([...center], [0, circle.getRadius()]);
-
-    return {
-      kind: "geometry",
-      id: String(olFeature.getId() || nanoid()),
-      geometry: point(toLonLat(circle.getCenter())).geometry,
-      geometryMeta: {
-        geometryKind: "Circle",
-        radius: getLength(new LineString([center, r])),
-      },
-      userData: properties,
-      style: {},
-    };
-  }
-
-  const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
-    olFeature,
-  );
-
-  return {
-    kind: "geometry",
-    id: String(gj.id ?? nanoid()),
-    geometry: gj.geometry,
-    userData: gj.properties ?? {},
-    style: {},
-    geometryMeta: { geometryKind: gj.geometry.type },
-  };
-}
+export { convertOlFeatureToScenarioFeature };

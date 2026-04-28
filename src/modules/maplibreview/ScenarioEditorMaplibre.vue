@@ -5,6 +5,7 @@ import {
   onMounted,
   provide,
   ref,
+  markRaw,
   shallowRef,
   watch,
 } from "vue";
@@ -46,6 +47,7 @@ import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearchScenarioActions.vue";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
+import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
@@ -149,15 +151,16 @@ const activeMaplibreBasemap = computed(() =>
 
 function onMapReady(mapInstance: MlMap) {
   cleanupScenarioBinding?.();
-  mlMap.value = mapInstance;
-  const adapter = new MapLibreMapAdapter(mapInstance);
-  const layers = createMapLibreScenarioLayerController(adapter);
-  scenarioMapEngineRef.value = {
+  const rawMap = markRaw(mapInstance);
+  mlMap.value = rawMap;
+  const adapter = markRaw(new MapLibreMapAdapter(rawMap));
+  const layers = markRaw(createMapLibreScenarioLayerController(adapter));
+  scenarioMapEngineRef.value = markRaw({
     map: adapter,
     layers,
     suspendFeatureSelection() {},
     resumeFeatureSelection() {},
-  };
+  });
   cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
 }
@@ -293,10 +296,7 @@ const mgrsPrecisionLabel = computed(() => {
 
 onMounted(() => {
   void maplibreLayersStore.initialize();
-  if (
-    toolbarStore.currentToolbar === "measurements" ||
-    toolbarStore.currentToolbar === "draw"
-  ) {
+  if (toolbarStore.currentToolbar === "measurements") {
     toolbarStore.clearToolbar();
   }
 });
@@ -385,7 +385,7 @@ function onCloseActiveDetailsPanel() {
           :can-move-units="true"
           :can-rotate-units="true"
           :can-measure="false"
-          :can-draw="false"
+          :can-draw="true"
           :can-track="true"
           :can-add-units="true"
           location-picker-event-source="dom"
@@ -400,6 +400,10 @@ function onCloseActiveDetailsPanel() {
           v-if="toolbarStore.currentToolbar === 'track'"
           class="absolute bottom-14 sm:bottom-16"
         />
+        <MapEditorDrawToolbar
+          v-if="toolbarStore.currentToolbar === 'draw'"
+          class="absolute bottom-14 sm:bottom-16"
+        />
       </footer>
     </template>
     <template #mobile-toolbar>
@@ -411,7 +415,7 @@ function onCloseActiveDetailsPanel() {
           :can-move-units="true"
           :can-rotate-units="true"
           :can-measure="false"
-          :can-draw="false"
+          :can-draw="true"
           :can-track="true"
           :can-add-units="true"
           location-picker-event-source="dom"
@@ -424,6 +428,10 @@ function onCloseActiveDetailsPanel() {
         />
         <MapEditorUnitTrackToolbar
           v-if="toolbarStore.currentToolbar === 'track'"
+          class="mt-2"
+        />
+        <MapEditorDrawToolbar
+          v-if="toolbarStore.currentToolbar === 'draw'"
           class="mt-2"
         />
       </div>
