@@ -46,6 +46,14 @@ import { Button } from "@/components/ui/button";
 import type { NGeometryLayerItem } from "@/types/internalModels";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
+import UnitTreeSelect from "@/components/UnitTreeSelect.vue";
+import { useRootUnitIds } from "@/composables/scenarioUtils";
+import {
+  createUnitTrackStatesFromFeature,
+  isAssignableTrackFeature,
+} from "@/importexport/unitTrackAssignment";
+import type { Feature } from "geojson";
+import { convertSpeedToMetric } from "@/utils/convert";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -57,10 +65,8 @@ const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
 );
 
-const {
-  geo,
-  store: { groupUpdate },
-} = injectStrict(activeScenarioKey);
+const { geo, store, time, unitActions } = injectStrict(activeScenarioKey);
+const { groupUpdate } = store;
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 
 const { send: notify } = useNotifications();
@@ -69,6 +75,9 @@ const { selectedFeatureIds, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
 const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const toolbarStore = useMainToolbarStore();
+const { rootUnitIds } = useRootUnitIds();
+
+const DEFAULT_ASSIGN_SPEED_M_S = convertSpeedToMetric(30, "km/h");
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
@@ -135,6 +144,16 @@ const hasFill = computed(
 const canTransformFeature = computed(() =>
   Boolean(engineRef.value?.layers.capabilities.featureTransform),
 );
+const canAssignFeatureToUnit = computed(
+  () => !!feature.value && isAssignableTrackFeature(toGeoJSONFeature(feature.value)),
+);
+const selectedAssignmentUnitId = ref<string | null>(null);
+const assignmentUnitId = computed({
+  get: () => selectedAssignmentUnitId.value ?? rootUnitIds.value[0] ?? null,
+  set: (unitId: string | null) => {
+    selectedAssignmentUnitId.value = unitId;
+  },
+});
 
 watch(canTransformFeature, (enabled) => {
   if (!enabled && selectedTab.value === 3) {
@@ -284,6 +303,56 @@ function onAction(action: ScenarioFeatureActions) {
   }
   featureActions.onFeatureAction([...props.selectedIds], action);
 }
+
+function toGeoJSONFeature(item: NGeometryLayerItem): Feature {
+  return {
+    type: "Feature",
+    properties: item.userData ?? {},
+    geometry: item.geometry,
+  };
+}
+
+function assignFeatureToUnit() {
+  if (!feature.value || !assignmentUnitId.value) return;
+  const geoJsonFeature = toGeoJSONFeature(feature.value);
+  if (!isAssignableTrackFeature(geoJsonFeature)) return;
+
+  const unit = store.state.unitMap[assignmentUnitId.value];
+  if (!unit) return;
+
+  const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
+  const averageSpeed = speedValue
+    ? convertSpeedToMetric(speedValue.value, speedValue.uom)
+    : DEFAULT_ASSIGN_SPEED_M_S;
+
+  const result = createUnitTrackStatesFromFeature(
+    geoJsonFeature,
+    store.state.currentTime,
+    {
+      addStartPosition: !unit.location && !unit._state?.location,
+      averageSpeed,
+    },
+  );
+  if (!result.states.length) {
+    notify({ message: "No track positions were available to assign.", type: "warning" });
+    return;
+  }
+
+  groupUpdate(() => {
+    result.states.forEach((state) => {
+      unitActions.addUnitStateEntry(assignmentUnitId.value!, state, true);
+    });
+  });
+  time.setCurrentTime(store.state.currentTime);
+
+  const skippedMessage = result.skippedPoints
+    ? ` ${result.skippedPoints} route points were skipped.`
+    : "";
+  notify({
+    message: `Assigned ${result.states.length} track positions to unit.${skippedMessage}`,
+    type: "success",
+  });
+}
 </script>
 <template>
   <div>
@@ -392,9 +461,29 @@ function onAction(action: ScenarioFeatureActions) {
             />
           </div>
         </TabsContent>
-        <TabsContent value="2" class="mx-4"
-          ><ScenarioFeatureState v-if="feature" :feature="feature"
-        /></TabsContent>
+        <TabsContent value="2" class="mx-4">
+          <ScenarioFeatureState v-if="feature" :feature="feature" />
+          <div
+            v-if="feature && canAssignFeatureToUnit"
+            class="border-border mt-4 space-y-3 border-t pt-4"
+          >
+            <UnitTreeSelect
+              label="Assign track/route to unit"
+              :units="rootUnitIds"
+              :unit-map="store.state.unitMap"
+              v-model="assignmentUnitId"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              :disabled="!assignmentUnitId"
+              @click="assignFeatureToUnit"
+            >
+              Assign to unit
+            </Button>
+          </div>
+        </TabsContent>
         <TabsContent v-if="canTransformFeature" value="3" class="mx-4">
           <FeatureTransformations class="mt-4" />
         </TabsContent>

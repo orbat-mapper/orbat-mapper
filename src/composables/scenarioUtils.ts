@@ -72,3 +72,16 @@ export function useRootUnits() {
 
   return { rootUnitItems, groupedRootUnitItems };
 }
+
+export function useRootUnitIds() {
+  const {
+    store: { state },
+  } = useActiveScenario();
+
+  const rootUnitIds = computed(() => [
+    ...Object.values(state.sideMap).flatMap((side) => side.subUnits ?? []),
+    ...Object.values(state.sideGroupMap).flatMap((group) => group.subUnits ?? []),
+  ]);
+
+  return { rootUnitIds };
+}

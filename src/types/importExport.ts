@@ -16,6 +16,7 @@ export type ExportFormat =
 export type ImportFormat =
   | "milx"
   | "geojson"
+  | "gpx"
   | "unitgenerator"
   | "orbatgenerator"
   | "image"

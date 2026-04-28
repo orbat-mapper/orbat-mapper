@@ -94,10 +94,7 @@ export function addScenarioDrawFeature(
   const zIndex =
     scenarioLayer.items.length === 0
       ? 0
-      : Math.max(
-          scenarioLayer.items.length,
-          (lastFeatureInLayer?._zIndex ?? -1) + 1,
-        );
+      : Math.max(scenarioLayer.items.length, (lastFeatureInLayer?._zIndex ?? -1) + 1);
   const scenarioFeature: GeometryLayerItem = {
     ...feature,
     id: feature.id || nanoid(),

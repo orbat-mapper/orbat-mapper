@@ -120,6 +120,12 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     return guess;
   }
 
+  if (isGpxFileType(file)) {
+    guess.format = "gpx";
+    guess.dataAsString = text;
+    return guess;
+  }
+
   // is it json
   try {
     const json = JSON.parse(text);
@@ -252,6 +258,12 @@ function isKMFileType(file: File): boolean {
   const kmlTypes = ["application/vnd.google-earth.kml+xml"];
   if (kmlTypes.includes(file.type)) return true;
   return file.name.endsWith(".kml");
+}
+
+function isGpxFileType(file: File): boolean {
+  const gpxTypes = ["application/gpx+xml", "application/gpx"];
+  if (gpxTypes.includes(file.type)) return true;
+  return file.name.toLowerCase().endsWith(".gpx");
 }
 
 function hasImageFileType(file: File): boolean {
