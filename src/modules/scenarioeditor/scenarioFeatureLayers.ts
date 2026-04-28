@@ -17,9 +17,7 @@ import { type ActionLabel } from "@/scenariostore/newScenarioStore";
 import VectorSource from "ol/source/Vector";
 import { getFeatureAndLayerById } from "@/composables/openlayersHelpers";
 import Feature from "ol/Feature";
-import LineString from "ol/geom/LineString";
 import { convertOlFeatureToScenarioFeature } from "@/modules/scenarioeditor/scenarioDrawHelpers";
-import GeoJSON from "ol/format/GeoJSON";
 import {
   type FullScenarioLayerItemsLayer,
   type GeometryLayerItem,

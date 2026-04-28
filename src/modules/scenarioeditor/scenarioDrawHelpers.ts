@@ -32,7 +32,7 @@ function toDrawTargetLayer(layer: { id: FeatureId; items: unknown[] }): DrawTarg
 export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
   if (isCircle(olFeature)) {
     const circle = olFeature.getGeometry() as Circle;
-    const { geometry, properties = {} } = olFeature.getProperties();
+    const { properties = {} } = olFeature.getProperties();
     const center = circle.getCenter();
     const r = addCoordinate([...center], [0, circle.getRadius()]);
 
@@ -86,14 +86,18 @@ export function addScenarioDrawFeature(
   const scenarioLayer = getActiveDrawLayer(scenario, activeLayerId);
   if (!scenarioLayer) return;
 
-  const { layerItem: lastFeatureInLayer } = scenario.geo.getGeometryLayerItemById(
-    scenarioLayer.items[scenarioLayer.items.length - 1],
-  );
+  const lastItemId = scenarioLayer.items[scenarioLayer.items.length - 1];
+  const lastFeatureInLayer = lastItemId
+    ? scenario.geo.getGeometryLayerItemById(lastItemId).layerItem
+    : undefined;
 
-  const zIndex = Math.max(
-    scenarioLayer.items.length,
-    (lastFeatureInLayer?._zIndex || 0) + 1,
-  );
+  const zIndex =
+    scenarioLayer.items.length === 0
+      ? 0
+      : Math.max(
+          scenarioLayer.items.length,
+          (lastFeatureInLayer?._zIndex ?? -1) + 1,
+        );
   const scenarioFeature: GeometryLayerItem = {
     ...feature,
     id: feature.id || nanoid(),

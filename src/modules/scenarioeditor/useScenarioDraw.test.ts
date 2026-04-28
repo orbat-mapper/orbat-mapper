@@ -56,10 +56,13 @@ function createScenario() {
 function mountHarness({
   engineRef = shallowRef(),
   scenario = createScenario(),
+  pinia = createPinia(),
 }: {
   engineRef?: ReturnType<typeof shallowRef>;
   scenario?: ReturnType<typeof createScenario>;
+  pinia?: ReturnType<typeof createPinia>;
 } = {}) {
+  setActivePinia(pinia);
   const activeLayer = ref("layer-1");
   const nativeMap = shallowRef(null);
   const featureSelect = shallowRef(null);
@@ -74,7 +77,7 @@ function mountHarness({
     }),
     {
       global: {
-        plugins: [createPinia()],
+        plugins: [pinia],
         provide: {
           [activeScenarioKey as symbol]: scenario,
           [activeScenarioMapEngineKey as symbol]: engineRef,
@@ -90,7 +93,6 @@ function mountHarness({
 
 describe("useScenarioDraw", () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
     vi.clearAllMocks();
     mocks.useMapLibreDrawInteraction.mockReturnValue(createInteraction());
   });
