@@ -70,6 +70,39 @@ describe("guessImportFormat", () => {
     expect(result.format).not.toBe("csv");
     expect(result.format).not.toBe("tsv");
   });
+
+  it("detects GPX files by extension", async () => {
+    const gpxContent = '<gpx version="1.1"><wpt lat="59.91" lon="10.75" /></gpx>';
+    const file = createMockFile(gpxContent, "track.gpx", {
+      type: "application/octet-stream",
+    });
+
+    const result = await guessImportFormat(file);
+
+    expect(result.format).toBe("gpx");
+    expect(result.dataAsString).toBe(gpxContent);
+  });
+
+  it("detects GPX files by common MIME type", async () => {
+    const gpxContent = '<gpx version="1.1"><wpt lat="59.91" lon="10.75" /></gpx>';
+    const file = createMockFile(gpxContent, "track", {
+      type: "application/gpx+xml",
+    });
+
+    const result = await guessImportFormat(file);
+
+    expect(result.format).toBe("gpx");
+  });
+
+  it("leaves non-GPX XML as unknown", async () => {
+    const file = createMockFile("<root><name>Not GPX</name></root>", "data.xml", {
+      type: "text/xml",
+    });
+
+    const result = await guessImportFormat(file);
+
+    expect(result.format).toBe("unknown");
+  });
 });
 
 describe("KMZ image cache cleanup", () => {

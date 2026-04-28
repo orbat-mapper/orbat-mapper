@@ -15,6 +15,7 @@ import { useDropZone } from "@vueuse/core";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
 import { guessImportFormat, type ImportedFileInfo } from "@/importexport/fileHandling";
+import { convertGpxToGeoJSON } from "@/importexport/gpx";
 import { useDragStore } from "@/stores/dragStore";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import { isUrl } from "@/utils";
@@ -40,13 +41,18 @@ import BaseButton from "@/components/BaseButton.vue";
 
 const emit = defineEmits<{
   cancel: [];
-  loaded: [format: ImportFormat, data: any, info: ImportedFileInfo | undefined];
+  loaded: [
+    format: Exclude<ImportFormat, "gpx">,
+    data: any,
+    info: ImportedFileInfo | undefined,
+  ];
   lod: [importData: ImportData];
 }>();
 
 const formatItems: SelectItem<ImportFormat>[] = [
   { label: "MilX", value: "milx" },
   { label: "GeoJSON", value: "geojson" },
+  { label: "GPX", value: "gpx" },
   { label: "Spatial Illusions ORBAT builder", value: "unitgenerator" },
   { label: "Order of Battle Generator", value: "orbatgenerator" },
   { label: "KML/KMZ", value: "kml" },
@@ -94,6 +100,7 @@ const { send } = useNotifications();
 
 const isMilx = computed(() => form.value.format === "milx");
 const isGeojson = computed(() => form.value.format === "geojson");
+const isGpx = computed(() => form.value.format === "gpx");
 const isUnitGenerator = computed(() => form.value.format === "unitgenerator");
 const isOrbatGenerator = computed(() => form.value.format === "orbatgenerator");
 const { importMilxString, importJsonString } = useScenarioImport();
@@ -146,6 +153,13 @@ async function onLoad() {
 
   if (format === "geojson" && stringSource.value) {
     const data = importJsonString<FeatureCollection>(stringSource.value);
+    send({ message: `Loaded data as ${format}` });
+    NProgress.done();
+    emit("loaded", "geojson", data, fileInfo.value);
+  }
+
+  if (format === "gpx" && stringSource.value) {
+    const data = convertGpxToGeoJSON(stringSource.value);
     send({ message: `Loaded data as ${format}` });
     NProgress.done();
     emit("loaded", "geojson", data, fileInfo.value);
@@ -324,6 +338,7 @@ onMounted(() => {
             <a href="https://www.map.army/">map.army</a>
           </p>
           <p v-else-if="isGeojson">Import units and features.</p>
+          <p v-else-if="isGpx">Import GPX tracks, routes, and waypoints.</p>
           <p v-else-if="isUnitGenerator">
             Import ORBAT generated with
             <a href="https://spatialillusions.com/unitgenerator2/" target="_blank"
