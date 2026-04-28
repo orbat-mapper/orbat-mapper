@@ -148,7 +148,7 @@ function findLikelySymbolColumn(columnNames: string[]) {
 const activeLayer = ref(existingLayers.value[0].value);
 const nameColumn = ref(findLikelyNameColumn([...propertyNames.value]));
 const symbolColumn = ref(findLikelySymbolColumn([...propertyNames.value]));
-const parentUnitId = ref(rootUnitItems.value[0]?.code as string);
+const parentUnitId = ref<string | undefined>(rootUnitItems.value[0]?.code as string | undefined);
 const { send } = useNotifications();
 
 async function onLoad() {
@@ -163,6 +163,7 @@ async function onLoad() {
 }
 
 function loadAsUnits() {
+  if (!parentUnitId.value) return;
   const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
 
   const units: NUnit[] = selectedFeatures.value.map((f) => {
@@ -186,8 +187,9 @@ function loadAsUnits() {
       personnel: [],
     };
   });
+  const targetParentId = parentUnitId.value;
   scnStore.groupUpdate(() => {
-    units.forEach((unit) => unitActions.addUnit(unit, parentUnitId.value));
+    units.forEach((unit) => unitActions.addUnit(unit, targetParentId));
   });
 }
 

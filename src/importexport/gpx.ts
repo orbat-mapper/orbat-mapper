@@ -40,6 +40,8 @@ function addTrackPointTimes(document: Document, converted: FeatureCollection) {
   if (!trackFeatures.length) return;
 
   const tracks = Array.from(document.getElementsByTagName("trk"));
+  // Positional alignment is only safe when togeojson emitted one feature per <trk>.
+  if (tracks.length !== trackFeatures.length) return;
   trackFeatures.forEach((feature, index) => {
     const track = tracks[index];
     if (!track) return;
@@ -63,6 +65,7 @@ function addRoutePointTimes(document: Document, converted: FeatureCollection) {
   if (!routeFeatures.length) return;
 
   const routes = Array.from(document.getElementsByTagName("rte"));
+  if (routes.length !== routeFeatures.length) return;
   routeFeatures.forEach((feature, index) => {
     const route = routes[index];
     if (!route) return;

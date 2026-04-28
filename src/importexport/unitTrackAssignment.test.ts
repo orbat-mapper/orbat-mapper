@@ -11,9 +11,22 @@ describe("unitTrackAssignment", () => {
       isAssignableTrackFeature({
         type: "Feature",
         properties: {},
-        geometry: { type: "LineString", coordinates: [] },
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [10, 60],
+            [11, 61],
+          ],
+        },
       }),
     ).toBe(true);
+    expect(
+      isAssignableTrackFeature({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: [] },
+      }),
+    ).toBe(false);
     expect(
       isAssignableTrackFeature({
         type: "Feature",

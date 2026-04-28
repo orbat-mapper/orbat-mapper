@@ -15,10 +15,13 @@ export interface TrackAssignmentOptions {
 }
 
 export function isAssignableTrackFeature(feature: Feature): feature is LineFeature {
-  return (
-    feature.geometry?.type === "LineString" ||
-    feature.geometry?.type === "MultiLineString"
-  );
+  if (feature.geometry?.type === "LineString") {
+    return feature.geometry.coordinates.length >= 2;
+  }
+  if (feature.geometry?.type === "MultiLineString") {
+    return feature.geometry.coordinates.some((line) => line.length >= 2);
+  }
+  return false;
 }
 
 export function createUnitTrackStatesFromFeature(
@@ -42,12 +45,6 @@ export function createUnitTrackStatesFromFeature(
     endTime = Math.round(currentTime + (distanceMeters / options.averageSpeed) * 1000);
   }
 
-  console.log(
-    "Creating track states for feature with",
-    coordinates.length,
-    "points",
-    options,
-  );
   return {
     states: [
       ...(options.addStartPosition

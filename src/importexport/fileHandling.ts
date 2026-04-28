@@ -261,11 +261,9 @@ function isKMFileType(file: File): boolean {
 }
 
 function isGpxFileType(file: File): boolean {
-  const fileName = file.name.toLowerCase();
   const gpxTypes = ["application/gpx+xml", "application/gpx"];
   if (gpxTypes.includes(file.type)) return true;
-  if (file.type === "text/xml" && fileName.endsWith(".gpx")) return true;
-  return fileName.endsWith(".gpx");
+  return file.name.toLowerCase().endsWith(".gpx");
 }
 
 function hasImageFileType(file: File): boolean {

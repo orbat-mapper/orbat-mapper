@@ -77,6 +77,8 @@ const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const toolbarStore = useMainToolbarStore();
 const { rootUnitIds } = useRootUnitIds();
 
+const DEFAULT_ASSIGN_SPEED_M_S = convertSpeedToMetric(30, "km/h");
+
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
     return geo.getGeometryLayerItemById(props.selectedIds.values().next().value!)
@@ -321,7 +323,7 @@ function assignFeatureToUnit() {
   const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
   const averageSpeed = speedValue
     ? convertSpeedToMetric(speedValue.value, speedValue.uom)
-    : convertSpeedToMetric(30, "km/h");
+    : DEFAULT_ASSIGN_SPEED_M_S;
 
   const result = createUnitTrackStatesFromFeature(
     geoJsonFeature,
