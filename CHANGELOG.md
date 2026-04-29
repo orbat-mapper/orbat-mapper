@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Added support for route planning with obstacles.
 - Added support for pasting GeoJSON from the clipboard directly into the scenario editor as scenario features, including `Ctrl/Cmd+V` import into the active feature layer.
+- Added GPX import support, including track conversion and unit track assignment.
+- Added draw and modify support for scenario features in MapLibre mode.
+- Added measurement tools to MapLibre mode.
+- Added symbol text amplifier rendering in MapLibre mode.
+- Added geometry statistics to scenario feature details.
 - Clicking KML/KMZ features now opens a read-only details view with attached properties, including richer HTML description rendering.
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
 - Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over. 
@@ -27,9 +32,13 @@ All notable changes to this project will be documented in this file.
 - KML/KMZ features with labels are now decluttered by default.
 - Moved the dark mode toggle into the main menu on mobile devices.
 - Reworked the ORBAT panel footer recording controls into compact direct toggles for hierarchy and position recording.
+- Simplified recording button and indicator styling so active states no longer rely on dynamic red styling.
 - The stored scenario browser now keeps its header controls visible while long scenario lists scroll within a capped results area.
 - The stored scenario browser sort dropdown now shows the active sort field with radio-item selection.
 - Scenario editing now uses a hybrid save model: "Save scenario" updates the stored scenario, autosave writes recovery drafts, and leaving or reloading warns only about changes not explicitly saved.
+- Switching between OpenLayers and MapLibre now preserves the in-memory map view.
+- Feature style slider drags now collapse into a single undo entry.
+- The Transform tab now defaults its update target to the selected feature.
 
 ### Fixed
 
@@ -40,6 +49,7 @@ All notable changes to this project will be documented in this file.
 - Fixed shift-click selection on the map so it only extends the current selection type instead of switching between units and scenario features.
 - Fixed KMZ/KML feature clicks in the OpenLayers editor so imported reference features no longer crash the map renderer. 
 - Fixed transform tool updates so existing features update their geometry kind when a transformation changes the geometry type.
+- Fixed the MapLibre scale control so it responds to dynamic measurement unit changes.
 
 ## March 2026
 
