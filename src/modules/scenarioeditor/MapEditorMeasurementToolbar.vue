@@ -13,15 +13,18 @@ import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { onKeyDown } from "@vueuse/core";
-import { activeNativeMapKey } from "@/components/injects";
+import { activeNativeMapKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
+import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { onUnmounted } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
+import OLMap from "ol/Map";
 
 const mapRef = injectStrict(activeNativeMapKey);
+const mapEngineRef = injectStrict(activeScenarioMapEngineKey);
 
 const store = useMainToolbarStore();
 const selectStore = useMapSelectStore();
@@ -33,13 +36,24 @@ const {
   snap,
   showCircle,
 } = storeToRefs(useMeasurementsStore());
-const { clear } = useMeasurementInteraction(mapRef.value, measurementType, {
+const activeMapAdapter = mapEngineRef.value?.map;
+const nativeMap = activeMapAdapter?.getNativeMap();
+const interactionOptions = {
   showSegments,
   clearPrevious,
   measurementUnit,
   snap,
   showCircle,
-});
+};
+const { clear } = nativeMap
+  ? nativeMap instanceof OLMap
+    ? useMeasurementInteraction(mapRef.value, measurementType, interactionOptions)
+    : useMapLibreMeasurementInteraction(
+        activeMapAdapter!,
+        measurementType,
+        interactionOptions,
+      )
+  : { clear: () => {} };
 
 selectStore.unitSelectEnabled = false;
 selectStore.featureSelectEnabled = false;

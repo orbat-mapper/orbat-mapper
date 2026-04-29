@@ -296,7 +296,7 @@ describe("ScenarioEditorMaplibre", () => {
     expect(setMapAdapter).toHaveBeenLastCalledWith(null);
   });
 
-  it("shows the shared map toolbar in maplibre mode with unsupported tools disabled", async () => {
+  it("shows the shared map toolbar in maplibre mode with measurements enabled", async () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const toolbarStore = useMainToolbarStore();
@@ -329,6 +329,10 @@ describe("ScenarioEditorMaplibre", () => {
           }),
           MapEditorUnitTrackToolbar: true,
           MapEditorDrawToolbar: true,
+          MapEditorMeasurementToolbar: defineComponent({
+            name: "MapEditorMeasurementToolbar",
+            template: "<div data-test='measurement-toolbar' />",
+          }),
           ToggleField: true,
           Button: true,
           Label: true,
@@ -346,12 +350,18 @@ describe("ScenarioEditorMaplibre", () => {
 
     expect(toolbar.props("canMoveUnits")).toBe(true);
     expect(toolbar.props("canRotateUnits")).toBe(true);
-    expect(toolbar.props("canMeasure")).toBe(false);
+    expect(toolbar.props("canMeasure")).toBe(true);
     expect(toolbar.props("canDraw")).toBe(true);
     expect(toolbar.props("canTrack")).toBe(true);
     expect(toolbar.props("canAddUnits")).toBe(true);
     expect(toolbar.props("locationPickerEventSource")).toBe("dom");
-    expect(toolbarStore.currentToolbar).toBeNull();
+    expect(toolbarStore.currentToolbar).toBe("measurements");
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='measurement-toolbar']")
+        .exists(),
+    ).toBe(true);
   });
 
   it("docks the toolbar outside the map overlay on mobile", async () => {
@@ -377,6 +387,7 @@ describe("ScenarioEditorMaplibre", () => {
           }),
           MapEditorUnitTrackToolbar: true,
           MapEditorDrawToolbar: true,
+          MapEditorMeasurementToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
@@ -428,6 +439,7 @@ describe("ScenarioEditorMaplibre", () => {
             name: "MapEditorDrawToolbar",
             template: "<div data-test='draw-toolbar' />",
           }),
+          MapEditorMeasurementToolbar: true,
           ToggleField: true,
           Button: true,
           Label: true,
