@@ -48,6 +48,7 @@ import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearch
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
@@ -296,9 +297,6 @@ const mgrsPrecisionLabel = computed(() => {
 
 onMounted(() => {
   void maplibreLayersStore.initialize();
-  if (toolbarStore.currentToolbar === "measurements") {
-    toolbarStore.clearToolbar();
-  }
 });
 
 function disposeMaplibreBinding() {
@@ -384,7 +382,7 @@ function onCloseActiveDetailsPanel() {
         <MapEditorMainToolbar
           :can-move-units="true"
           :can-rotate-units="true"
-          :can-measure="false"
+          :can-measure="true"
           :can-draw="true"
           :can-track="true"
           :can-add-units="true"
@@ -398,6 +396,10 @@ function onCloseActiveDetailsPanel() {
         />
         <MapEditorUnitTrackToolbar
           v-if="toolbarStore.currentToolbar === 'track'"
+          class="absolute bottom-14 sm:bottom-16"
+        />
+        <MapEditorMeasurementToolbar
+          v-if="toolbarStore.currentToolbar === 'measurements'"
           class="absolute bottom-14 sm:bottom-16"
         />
         <MapEditorDrawToolbar
@@ -414,7 +416,7 @@ function onCloseActiveDetailsPanel() {
         <MapEditorMainToolbar
           :can-move-units="true"
           :can-rotate-units="true"
-          :can-measure="false"
+          :can-measure="true"
           :can-draw="true"
           :can-track="true"
           :can-add-units="true"
@@ -428,6 +430,10 @@ function onCloseActiveDetailsPanel() {
         />
         <MapEditorUnitTrackToolbar
           v-if="toolbarStore.currentToolbar === 'track'"
+          class="mt-2"
+        />
+        <MapEditorMeasurementToolbar
+          v-if="toolbarStore.currentToolbar === 'measurements'"
           class="mt-2"
         />
         <MapEditorDrawToolbar
