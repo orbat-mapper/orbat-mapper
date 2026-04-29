@@ -81,6 +81,7 @@ function syncScaleControl() {
   if (showScaleLine.value && !scaleControlAttached) {
     mlMap.addControl(scaleControl, "bottom-left");
     scaleControlAttached = true;
+    scaleControl.setUnit(measurementUnit.value);
     return;
   }
   if (!showScaleLine.value && scaleControlAttached) {
@@ -212,6 +213,7 @@ watch(coordinateFormat, () => {
 });
 
 watch(measurementUnit, (unit) => {
+  if (!scaleControlAttached) return;
   scaleControl?.setUnit(unit);
 });
 

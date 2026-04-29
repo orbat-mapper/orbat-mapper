@@ -282,6 +282,27 @@ describe("MaplibreMap", () => {
     expect(removeControl).toHaveBeenCalledWith(expect.anything());
   });
 
+  it("defers scale unit updates while the scale control is detached", async () => {
+    mountMap();
+    const mapSettingsStore = useMapSettingsStore();
+    const measurementsStore = useMeasurementsStore();
+
+    mapSettingsStore.showScaleLine = false;
+    await nextTick();
+    scaleControlSetUnit.mockClear();
+
+    measurementsStore.measurementUnit = "imperial";
+    await nextTick();
+
+    expect(scaleControlSetUnit).not.toHaveBeenCalled();
+
+    mapSettingsStore.showScaleLine = true;
+    await nextTick();
+
+    expect(addControl).toHaveBeenLastCalledWith(expect.anything(), "bottom-left");
+    expect(scaleControlSetUnit).toHaveBeenCalledWith("imperial");
+  });
+
   it("shows the formatted pointer location when enabled", async () => {
     const { wrapper } = mountMap();
     const mapSettingsStore = useMapSettingsStore();
