@@ -9,6 +9,7 @@ import {
   type PointLike,
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
+import type { TextAmplifiers } from "@/types/scenarioModels";
 import { computed, onUnmounted, provide, watch } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
@@ -75,6 +76,8 @@ const getUnitById = activeScenario.helpers?.getUnitById ?? (() => undefined);
 type SymbolCacheEntry = {
   sidc: string;
   symbolOptions: ReturnType<typeof unitActions.getCombinedSymbolOptions>;
+  textAmplifiers: Omit<TextAmplifiers, "uniqueDesignation">;
+  uniqueDesignation: string;
 };
 
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
@@ -289,14 +292,21 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   const isSelected = e.id.startsWith("sel-");
   const symbolCode = isSelected ? e.id.slice(4) : e.id;
 
-  const { sidc = "xxxxxxx", symbolOptions = {} } = symbolCache.get(symbolCode) ?? {};
+  const {
+    sidc = "xxxxxxx",
+    symbolOptions = {},
+    textAmplifiers = {},
+    uniqueDesignation = "",
+  } = symbolCache.get(symbolCode) ?? {};
 
   const options = isSelected
     ? { outlineWidth: 20, outlineColor: "yellow" }
     : { outlineWidth: 7, outlineColor: "white" };
   const symb = symbolGenerator(sidc, {
     size: 25,
+    uniqueDesignation,
     ...options,
+    ...textAmplifiers,
     ...symbolOptions,
   });
   const { width, height } = symb.getSize();
@@ -578,6 +588,11 @@ watch(
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
 
+watch(
+  () => mapSettings.mapUnitLabelBelow,
+  () => addUnits(),
+);
+
 watch(mapLibreUnitRotationMode, () => {
   applyUnitLayerRotationAlignment();
 });
@@ -618,20 +633,37 @@ function addUnits(
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
   const visibilityGroups = new Map<string, UnitVisibilityGroup>();
+  const activeImageIds = new Set<string>();
 
   const features = featureCollection(
     visibleUnits.map((unit) => {
       const visibilityGroup = getUnitVisibilityGroup(unit);
       visibilityGroups.set(visibilityGroup.id, visibilityGroup);
-      const symbolData = {
+      const rawTextAmplifiers = unit.textAmplifiers || {};
+      const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
+        rawTextAmplifiers,
+        "uniqueDesignation",
+      );
+      const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
+      const resolvedUniqueDesignation =
+        uniqueDesignation ?? unit.shortName ?? unit.name ?? "";
+      const symbolUniqueDesignation =
+        mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
+          ? ""
+          : resolvedUniqueDesignation;
+      const symbolData: SymbolCacheEntry = {
         sidc: unit.sidc,
         symbolOptions: unitActions.getCombinedSymbolOptions(unit),
+        textAmplifiers,
+        uniqueDesignation: symbolUniqueDesignation,
       };
       const symbolKey = hashObject(symbolData);
       if (!symbolCache.has(symbolKey)) {
         symbolCache.set(symbolKey, symbolData);
       }
       const isSelected = selectedUnitIds.value.has(unit.id);
+      const imageId = isSelected ? `sel-${symbolKey}` : symbolKey;
+      activeImageIds.add(imageId);
       const rotationOverride = rotationOverrides?.get(unit.id);
       const symbolRotation =
         rotationOverride !== undefined
@@ -646,9 +678,11 @@ function addUnits(
         properties: {
           id: unit.id,
           visibilityGroup: visibilityGroup.id,
-          symbolKey: isSelected ? `sel-${symbolKey}` : symbolKey,
+          symbolKey: imageId,
           sidc: unit.sidc,
-          label: unit.shortName || unit.name || "Unnamed Unit",
+          label: mapSettings.mapUnitLabelBelow
+            ? unit.shortName || unit.name || "Unnamed Unit"
+            : "",
           symbolRotation,
         },
       } as Feature;
@@ -669,6 +703,27 @@ function addUnits(
     }
   }
   source.setData(features);
+  pruneSymbolImages(activeImageIds);
+}
+
+// Skip the scan when stale entries can't have grown past this many — keeps
+// playback/keystroke-driven `addUnits` calls cheap; one big sweep amortizes.
+const PRUNE_THRESHOLD = 32;
+
+function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
+  if (usedImageIds.size <= activeImageIds.size + PRUNE_THRESHOLD) return;
+  for (const imageId of usedImageIds) {
+    if (activeImageIds.has(imageId)) continue;
+    if (mlMap.hasImage(imageId)) mlMap.removeImage(imageId);
+    usedImageIds.delete(imageId);
+  }
+  const activeSymbolKeys = new Set<string>();
+  for (const imageId of activeImageIds) {
+    activeSymbolKeys.add(imageId.startsWith("sel-") ? imageId.slice(4) : imageId);
+  }
+  for (const key of symbolCache.keys()) {
+    if (!activeSymbolKeys.has(key)) symbolCache.delete(key);
+  }
 }
 
 onUnmounted(() => {
