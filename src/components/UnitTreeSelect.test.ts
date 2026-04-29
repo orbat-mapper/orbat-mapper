@@ -56,6 +56,14 @@ describe("UnitTreeSelect", () => {
     });
 
     expect(wrapper.text()).toContain("Alpha");
+    expect(wrapper.text()).not.toContain("Alpha Child");
+
+    const expandToggle = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Alpha"))!
+      .find("svg")!;
+    await expandToggle.trigger("click");
+
     expect(wrapper.text()).toContain("Alpha Child");
   });
 

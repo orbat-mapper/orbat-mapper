@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import UnitSymbol from "@/components/UnitSymbol.vue";
+import UnitTreeSelectRow, {
+  type UnitTreeHeaderRow,
+  type UnitTreeUnitRow,
+  type UnitTreeVisibleRow,
+} from "@/components/UnitTreeSelectRow.vue";
 import type { EntityId } from "@/types/base";
 import type { NSide, NSideGroup, NUnit } from "@/types/internalModels";
 import type { UnitSymbolOptions } from "@/types/scenarioModels";
@@ -36,6 +41,11 @@ const selectedUnitId = defineModel<EntityId | null>({ default: null });
 const open = ref(false);
 const filterQuery = ref("");
 const viewportRef = ref<HTMLElement | null>(null);
+// Defaults differ between the two sets: sides/groups are open by default
+// (tracked via `collapsedRows`), units are closed by default (tracked via
+// `expandedUnits`). Don't merge them without flipping one set's semantics.
+const collapsedRows = ref(new Set<string>());
+const expandedUnits = ref(new Set<EntityId>());
 
 const selectedUnit = computed(() =>
   selectedUnitId.value ? props.unitMap[selectedUnitId.value] : null,
@@ -44,41 +54,151 @@ const selectedUnit = computed(() =>
 function unitMatches(unit: NUnit, query: string): boolean {
   if (!query) return true;
   const q = query.toLowerCase();
+  const side = props.sideMap?.[unit._sid]?.name;
+  const group = unit._gid ? props.sideGroupMap?.[unit._gid]?.name : undefined;
   return (
     unit.name.toLowerCase().includes(q) ||
-    unit.shortName?.toLowerCase().includes(q) ||
-    unit.sidc.toLowerCase().includes(q)
+    !!unit.shortName?.toLowerCase().includes(q) ||
+    unit.sidc.toLowerCase().includes(q) ||
+    !!side?.toLowerCase().includes(q) ||
+    !!group?.toLowerCase().includes(q)
   );
 }
 
-function unitOrDescendantMatches(unitId: EntityId, query: string): boolean {
-  const unit = props.unitMap[unitId];
-  if (!unit) return false;
-  if (unitMatches(unit, query)) return true;
-  return unit.subUnits.some((childId) => unitOrDescendantMatches(childId, query));
+interface SideBucket {
+  directUnits: EntityId[];
+  groupOrder: EntityId[];
+  groups: Map<EntityId, EntityId[]>;
 }
 
-function isVisible(unitId: EntityId): boolean {
-  return unitOrDescendantMatches(unitId, filterQuery.value.trim());
+function unitSymbolOptions(unit: NUnit): UnitSymbolOptions {
+  const sideOptions = props.sideMap?.[unit._sid]?.symbolOptions ?? {};
+  const groupOptions = unit._gid
+    ? (props.sideGroupMap?.[unit._gid]?.symbolOptions ?? {})
+    : {};
+  return {
+    outlineWidth: 8,
+    ...sideOptions,
+    ...groupOptions,
+    ...props.symbolOptions,
+    ...unit.symbolOptions,
+  };
 }
 
-interface UnitTreeRow {
-  unitId: EntityId;
-  level: number;
+function sideRowKey(sideId: EntityId): string {
+  return `side-${sideId}`;
 }
 
-const visibleRows = computed(() => {
-  const rows: UnitTreeRow[] = [];
+function groupRowKey(groupId: EntityId): string {
+  return `group-${groupId}`;
+}
+
+function rowKey(row: UnitTreeVisibleRow): string {
+  if (row.type === "unit") return `unit-${row.unitId}`;
+  return row.type === "side" ? sideRowKey(row.id) : groupRowKey(row.id);
+}
+
+const visibleRows = computed<UnitTreeVisibleRow[]>(() => {
+  const rows: UnitTreeVisibleRow[] = [];
   const query = filterQuery.value.trim();
-  const walk = (unitIds: EntityId[], level: number) => {
+  const sideOrder: EntityId[] = [];
+  const sideBuckets = new Map<EntityId, SideBucket>();
+
+  // Memoize the recursive descendant match per visibleRows pass — without
+  // this, deep trees re-walk subtrees O(N²) on every keystroke.
+  const matchMemo = new Map<EntityId, boolean>();
+  const matches = (unitId: EntityId): boolean => {
+    const cached = matchMemo.get(unitId);
+    if (cached !== undefined) return cached;
+    const unit = props.unitMap[unitId];
+    if (!unit) {
+      matchMemo.set(unitId, false);
+      return false;
+    }
+    const result = unitMatches(unit, query) || unit.subUnits.some((id) => matches(id));
+    matchMemo.set(unitId, result);
+    return result;
+  };
+
+  const sideBucket = (sideId: EntityId) => {
+    let bucket = sideBuckets.get(sideId);
+    if (!bucket) {
+      bucket = { directUnits: [], groupOrder: [], groups: new Map() };
+      sideBuckets.set(sideId, bucket);
+      sideOrder.push(sideId);
+    }
+    return bucket;
+  };
+
+  props.units.forEach((unitId) => {
+    const unit = props.unitMap[unitId];
+    if (!unit || !matches(unitId)) return;
+    const bucket = sideBucket(unit._sid);
+    if (!unit._gid) {
+      bucket.directUnits.push(unitId);
+      return;
+    }
+
+    if (!bucket.groups.has(unit._gid)) {
+      bucket.groups.set(unit._gid, []);
+      bucket.groupOrder.push(unit._gid);
+    }
+    bucket.groups.get(unit._gid)!.push(unitId);
+  });
+
+  const appendUnits = (unitIds: EntityId[], level: number) => {
     unitIds.forEach((unitId) => {
       const unit = props.unitMap[unitId];
-      if (!unit || !unitOrDescendantMatches(unitId, query)) return;
-      rows.push({ unitId, level });
-      walk(unit.subUnits, level + 1);
+      if (!unit || !matches(unitId)) return;
+      const hasChildren = unit.subUnits.some((id) => matches(id));
+      const unitRow: UnitTreeUnitRow = {
+        type: "unit",
+        unitId,
+        level,
+        unit,
+        symbolOptions: unitSymbolOptions(unit),
+        hasChildren,
+      };
+      rows.push(unitRow);
+      if (!query && !expandedUnits.value.has(unitId)) return;
+      appendUnits(unit.subUnits, level + 1);
     });
   };
-  walk(props.units, 0);
+
+  sideOrder.forEach((sideId) => {
+    const bucket = sideBuckets.get(sideId);
+    if (!bucket) return;
+    const side = props.sideMap?.[sideId];
+    if (side) {
+      const headerRow: UnitTreeHeaderRow = {
+        type: "side",
+        id: side.id,
+        label: side.name,
+        level: 0,
+      };
+      rows.push(headerRow);
+    }
+
+    if (side && collapsedRows.value.has(sideRowKey(side.id))) return;
+
+    appendUnits(bucket.directUnits, side ? 1 : 0);
+
+    bucket.groupOrder.forEach((groupId) => {
+      const group = props.sideGroupMap?.[groupId];
+      if (group) {
+        const headerRow: UnitTreeHeaderRow = {
+          type: "group",
+          id: group.id,
+          label: group.name,
+          level: side ? 1 : 0,
+        };
+        rows.push(headerRow);
+      }
+      if (group && collapsedRows.value.has(groupRowKey(group.id))) return;
+      appendUnits(bucket.groups.get(groupId) ?? [], side || group ? 2 : 0);
+    });
+  });
+
   return rows;
 });
 
@@ -97,18 +217,31 @@ const rowVirtualizer = useVirtualizer(rowVirtualizerOptions);
 const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 
-function unitSymbolOptions(unit: NUnit): UnitSymbolOptions {
-  const sideOptions = props.sideMap?.[unit._sid]?.symbolOptions ?? {};
-  const groupOptions = unit._gid
-    ? (props.sideGroupMap?.[unit._gid]?.symbolOptions ?? {})
-    : {};
-  return {
-    outlineWidth: 8,
-    ...sideOptions,
-    ...groupOptions,
-    ...props.symbolOptions,
-    ...unit.symbolOptions,
-  };
+function rowIsOpen(row: UnitTreeVisibleRow): boolean {
+  if (row.type === "unit") return expandedUnits.value.has(row.unitId);
+  return !collapsedRows.value.has(rowKey(row));
+}
+
+function toggleRow(row: UnitTreeVisibleRow) {
+  if (row.type === "unit") {
+    const next = new Set(expandedUnits.value);
+    if (next.has(row.unitId)) {
+      next.delete(row.unitId);
+    } else {
+      next.add(row.unitId);
+    }
+    expandedUnits.value = next;
+    return;
+  }
+
+  const next = new Set(collapsedRows.value);
+  const key = rowKey(row);
+  if (next.has(key)) {
+    next.delete(key);
+  } else {
+    next.add(key);
+  }
+  collapsedRows.value = next;
 }
 
 function selectUnit(unitId: EntityId) {
@@ -152,56 +285,44 @@ function selectUnit(unitId: EntityId) {
             :style="{ height: `${totalSize}px` }"
             class="relative"
           >
-            <button
+            <div
               v-for="virtualRow in virtualRows"
-              :key="visibleRows[virtualRow.index].unitId"
-              type="button"
-              class="hover:bg-accent absolute left-0 flex min-h-8 w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm"
-              :class="
-                selectedUnitId === visibleRows[virtualRow.index].unitId
-                  ? 'bg-accent font-semibold'
-                  : ''
-              "
+              :key="rowKey(visibleRows[virtualRow.index])"
+              class="absolute left-0 w-full"
               :style="{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
-                paddingLeft: `${0.5 + visibleRows[virtualRow.index].level * 1}rem`,
               }"
-              @click="selectUnit(visibleRows[virtualRow.index].unitId)"
             >
-              <UnitSymbol
-                class="size-6 shrink-0"
-                :sidc="unitMap[visibleRows[virtualRow.index].unitId].sidc"
-                :size="18"
-                :options="
-                  unitSymbolOptions(unitMap[visibleRows[virtualRow.index].unitId])
+              <UnitTreeSelectRow
+                :row="visibleRows[virtualRow.index]"
+                :selected="
+                  visibleRows[virtualRow.index].type === 'unit' &&
+                  selectedUnitId ===
+                    (visibleRows[virtualRow.index] as UnitTreeUnitRow).unitId
                 "
+                :is-open="rowIsOpen(visibleRows[virtualRow.index])"
+                virtualized
+                @select="selectUnit"
+                @toggle="toggleRow(visibleRows[virtualRow.index])"
               />
-              <span class="truncate">{{
-                unitMap[visibleRows[virtualRow.index].unitId].name
-              }}</span>
-            </button>
+            </div>
           </div>
           <template v-else>
-            <button
+            <UnitTreeSelectRow
               v-for="row in visibleRows"
-              :key="row.unitId"
-              type="button"
-              class="hover:bg-accent flex min-h-8 w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm"
-              :class="selectedUnitId === row.unitId ? 'bg-accent font-semibold' : ''"
-              :style="{ paddingLeft: `${0.5 + row.level * 1}rem` }"
-              @click="selectUnit(row.unitId)"
-            >
-              <UnitSymbol
-                class="size-6 shrink-0"
-                :sidc="unitMap[row.unitId].sidc"
-                :size="18"
-                :options="unitSymbolOptions(unitMap[row.unitId])"
-              />
-              <span class="truncate">{{ unitMap[row.unitId].name }}</span>
-            </button>
+              :key="rowKey(row)"
+              :row="row"
+              :selected="row.type === 'unit' && selectedUnitId === row.unitId"
+              :is-open="rowIsOpen(row)"
+              @select="selectUnit"
+              @toggle="toggleRow(row)"
+            />
           </template>
-          <p v-if="!visibleRows.length" class="text-muted-foreground px-2 py-3 text-sm">
+          <p
+            v-if="!visibleRows.some((row) => row.type === 'unit')"
+            class="text-muted-foreground px-2 py-3 text-sm"
+          >
             No units found.
           </p>
         </div>
