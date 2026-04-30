@@ -30,6 +30,13 @@ import {
 import { formatArea, formatLength } from "@/geo/utils";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import { GLOBE_SCENARIO_FEATURE_PREFIX } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import {
+  createTouchDoubleTapTracker,
+  getPreviousDistinctVertex,
+  isZeroLengthSegment,
+  normalizePathCoordinates,
+  suppressMapEvent,
+} from "@/composables/maplibreTouchDrawing";
 
 const MEASUREMENT_SOURCE_ID = "maplibre-measurement";
 const MEASUREMENT_LABEL_SOURCE_ID = "maplibre-measurement-labels";
@@ -96,6 +103,7 @@ export function useMapLibreMeasurementInteraction(
   let cleanupEnter: (() => void) | undefined;
   let disposed = false;
   let layersInitialized = false;
+  const touchDoubleTap = createTouchDoubleTapTracker();
 
   function onStyleLoad() {
     layersInitialized = false;
@@ -105,9 +113,7 @@ export function useMapLibreMeasurementInteraction(
   function onClick(e: MapMouseEvent) {
     if (!unref(enableRef)) return;
     if (dragState) return;
-    e.preventDefault();
-    e.originalEvent.preventDefault();
-    e.originalEvent.stopPropagation();
+    suppressMapEvent(e);
 
     if (!drawInProgress) {
       drawInProgress = true;
@@ -122,9 +128,7 @@ export function useMapLibreMeasurementInteraction(
 
   function onDoubleClick(e: MapMouseEvent) {
     if (!unref(enableRef)) return;
-    e.preventDefault();
-    e.originalEvent.preventDefault();
-    e.originalEvent.stopPropagation();
+    suppressMapEvent(e);
     finishDrawing();
   }
 
@@ -156,9 +160,7 @@ export function useMapLibreMeasurementInteraction(
       position: null,
       interactions: suspendMapDragInteractions(mlMap),
     };
-    e.preventDefault();
-    e.originalEvent.preventDefault();
-    e.originalEvent.stopPropagation();
+    suppressMapEvent(e);
     mlMap.getCanvas().style.cursor = "grabbing";
   }
 
@@ -171,6 +173,19 @@ export function useMapLibreMeasurementInteraction(
     render();
   }
 
+  function onTouchEnd(e: MapTouchEvent) {
+    if (dragState) {
+      onMouseUp();
+      return;
+    }
+    if (!unref(enableRef) || !drawInProgress) return;
+
+    if (!touchDoubleTap.isDoubleTap(e, vertices.value.length >= 2)) return;
+
+    suppressMapEvent(e);
+    finishDrawing();
+  }
+
   function getEventPosition(e: MapMouseEvent | MapTouchEvent): Position {
     const raw: Position = [e.lngLat.lng, e.lngLat.lat];
     if (!unref(snapRef)) return raw;
@@ -180,7 +195,7 @@ export function useMapLibreMeasurementInteraction(
   function appendVertex(position: Position) {
     const unwrappedPosition = unwrapDrawPosition(position);
     const last = vertices.value[vertices.value.length - 1];
-    if (last && samePosition(last, unwrappedPosition)) return;
+    if (last && isZeroLengthSegment(last, unwrappedPosition)) return;
     vertices.value = [...vertices.value, unwrappedPosition];
   }
 
@@ -191,7 +206,7 @@ export function useMapLibreMeasurementInteraction(
 
   function finishDrawing() {
     const type = unref(measurementTypeRef);
-    const coordinates = withoutTrailingDuplicate(vertices.value);
+    const coordinates = normalizePathCoordinates(vertices.value);
     if (type === "LineString" && coordinates.length >= 2) {
       measurements.value = [
         ...measurements.value,
@@ -212,6 +227,7 @@ export function useMapLibreMeasurementInteraction(
     drawInProgress = false;
     vertices.value = [];
     activePointer = null;
+    touchDoubleTap.reset();
   }
 
   function clear() {
@@ -296,7 +312,7 @@ export function useMapLibreMeasurementInteraction(
     if (!drawInProgress) return null;
     const pointer = activePointer;
     const coordinates = pointer ? [...vertices.value, pointer] : vertices.value;
-    const pathCoordinates = withoutTrailingDuplicate(coordinates);
+    const pathCoordinates = normalizePathCoordinates(coordinates);
     if (unref(measurementTypeRef) === "LineString" && pathCoordinates.length >= 2) {
       return lineString(pathCoordinates).geometry;
     }
@@ -314,17 +330,37 @@ export function useMapLibreMeasurementInteraction(
       !drawInProgress ||
       unref(measurementTypeRef) !== "LineString" ||
       !unref(showCircleRef) ||
-      vertices.value.length < 1 ||
-      !activePointer
+      vertices.value.length < 1
     ) {
       return null;
     }
-    const center = vertices.value[vertices.value.length - 1]!;
-    const radius = turfLength(lineString([center, activePointer]), {
+    const endpoints = getRangeCircleEndpoints();
+    if (!endpoints) return null;
+    const radius = turfLength(lineString([endpoints.center, endpoints.edge]), {
       units: "kilometers",
     });
     if (radius === 0) return null;
-    return turfCircle(center, radius, { steps: 128, units: "kilometers" }).geometry;
+    return turfCircle(endpoints.center, radius, {
+      steps: 128,
+      units: "kilometers",
+    }).geometry;
+  }
+
+  function getRangeCircleEndpoints(): { center: Position; edge: Position } | null {
+    const lastVertex = vertices.value[vertices.value.length - 1]!;
+    const previousVertex = getPreviousDistinctVertex(
+      vertices.value,
+      vertices.value.length - 1,
+    );
+    if (!activePointer) {
+      return previousVertex ? { center: previousVertex, edge: lastVertex } : null;
+    }
+    if (previousVertex && isZeroLengthSegment(lastVertex, activePointer)) {
+      return { center: previousVertex, edge: lastVertex };
+    }
+    return isZeroLengthSegment(lastVertex, activePointer)
+      ? null
+      : { center: lastVertex, edge: activePointer };
   }
 
   function getLabelFeatures(
@@ -386,6 +422,7 @@ export function useMapLibreMeasurementInteraction(
       for (let index = 0; index < lineCoordinates.length - 1; index += 1) {
         const a = lineCoordinates[index]!;
         const b = lineCoordinates[index + 1]!;
+        if (isZeroLengthSegment(a, b)) continue;
         features.push({
           type: "Feature",
           geometry: point(midpoint(a, b)).geometry,
@@ -587,7 +624,7 @@ export function useMapLibreMeasurementInteraction(
     mlMap.off("mousedown", onMouseDown);
     mlMap.off("touchstart", onMouseDown);
     mlMap.off("mouseup", onMouseUp);
-    mlMap.off("touchend", onMouseUp);
+    mlMap.off("touchend", onTouchEnd);
     mlMap.off("touchmove", onMouseMove);
     mlMap.off("touchcancel", onMouseUp);
     mlMap.off("style.load", onStyleLoad);
@@ -603,7 +640,7 @@ export function useMapLibreMeasurementInteraction(
   mlMap.on("mousedown", onMouseDown);
   mlMap.on("touchstart", onMouseDown);
   mlMap.on("mouseup", onMouseUp);
-  mlMap.on("touchend", onMouseUp);
+  mlMap.on("touchend", onTouchEnd);
   mlMap.on("touchmove", onMouseMove);
   mlMap.on("touchcancel", onMouseUp);
   mlMap.on("style.load", onStyleLoad);
@@ -821,20 +858,8 @@ function visitGeometryLines(
 function closeRing(coordinates: Position[]): Position[] {
   const first = coordinates[0];
   const last = coordinates[coordinates.length - 1];
-  if (first && last && samePosition(first, last)) return coordinates;
+  if (first && last && isZeroLengthSegment(first, last)) return coordinates;
   return first ? [...coordinates, [...first]] : coordinates;
-}
-
-function withoutTrailingDuplicate(coordinates: Position[]): Position[] {
-  if (coordinates.length < 2) return coordinates;
-  const previous = coordinates[coordinates.length - 2];
-  const last = coordinates[coordinates.length - 1];
-  if (!previous || !last || !samePosition(previous, last)) return coordinates;
-  return coordinates.slice(0, -1);
-}
-
-function samePosition(a: Position, b: Position) {
-  return a[0] === b[0] && a[1] === b[1];
 }
 
 function midpoint(a: Position, b: Position): Position {

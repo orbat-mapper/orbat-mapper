@@ -8,6 +8,13 @@ import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { DrawType } from "@/composables/geoEditing";
 import { unwrapPositionRelative } from "@/geo/longitude";
+import {
+  createTouchDoubleTapTracker,
+  distanceMeters,
+  isZeroLengthSegment,
+  normalizePathCoordinates,
+  suppressMapEvent,
+} from "@/composables/maplibreTouchDrawing";
 
 const DRAW_PREVIEW_OVERLAY_ID = "maplibre-draw-preview";
 const DRAW_VERTEX_HANDLES_OVERLAY_ID = "maplibre-draw-vertex-handles";
@@ -69,11 +76,13 @@ export function useMapLibreDrawInteraction(
   let drawingDoubleClickZoomEnabled: boolean | null = null;
   let cleanupEsc: (() => void) | undefined;
   let cleanupEnter: (() => void) | undefined;
+  const touchDoubleTap = createTouchDoubleTapTracker();
 
   function startDrawing(drawType: DrawType) {
     cancel();
     currentDrawType.value = drawType;
     isDrawing.value = true;
+    touchDoubleTap.reset();
     options.onDrawingChange?.(true);
     mlMap.getCanvas().style.cursor = "crosshair";
     drawingDoubleClickZoomEnabled = mlMap.doubleClickZoom.isEnabled();
@@ -105,6 +114,7 @@ export function useMapLibreDrawInteraction(
     isDrawing.value = false;
     vertices.value = [];
     circleCenter = null;
+    touchDoubleTap.reset();
     mapAdapter.removeGeoJsonOverlay(DRAW_PREVIEW_OVERLAY_ID);
     options.onDrawingChange?.(false);
     restoreDoubleClickZoom();
@@ -125,9 +135,7 @@ export function useMapLibreDrawInteraction(
 
   function onClick(e: MapMouseEvent) {
     if (!isDrawing.value || !currentDrawType.value) return;
-    e.preventDefault();
-    e.originalEvent.preventDefault();
-    e.originalEvent.stopPropagation();
+    suppressMapEvent(e);
     const position: Position = [e.lngLat.lng, e.lngLat.lat];
 
     if (currentDrawType.value === "Point") {
@@ -160,9 +168,7 @@ export function useMapLibreDrawInteraction(
 
   function onDoubleClick(e: MapMouseEvent) {
     if (!isDrawing.value || !currentDrawType.value) return;
-    e.preventDefault();
-    e.originalEvent.preventDefault();
-    e.originalEvent.stopPropagation();
+    suppressMapEvent(e);
     finishPathDrawing();
   }
 
@@ -205,9 +211,7 @@ export function useMapLibreDrawInteraction(
       unref(options.freehand) &&
       (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon")
     ) {
-      e.preventDefault();
-      e.originalEvent.preventDefault();
-      e.originalEvent.stopPropagation();
+      suppressMapEvent(e);
       vertices.value = [[e.lngLat.lng, e.lngLat.lat]];
       return;
     }
@@ -234,9 +238,7 @@ export function useMapLibreDrawInteraction(
       };
     }
     if (dragState) {
-      e.preventDefault();
-      e.originalEvent.preventDefault();
-      e.originalEvent.stopPropagation();
+      suppressMapEvent(e);
       mlMap.getCanvas().style.cursor = "grabbing";
     }
   }
@@ -263,6 +265,32 @@ export function useMapLibreDrawInteraction(
     }
   }
 
+  function onTouchEnd(e: MapTouchEvent) {
+    if (
+      isDrawing.value &&
+      unref(options.freehand) &&
+      (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon")
+    ) {
+      onMouseUp(e);
+      return;
+    }
+    if (dragState) {
+      onMouseUp(e);
+      return;
+    }
+    if (
+      !isDrawing.value ||
+      (currentDrawType.value !== "LineString" && currentDrawType.value !== "Polygon")
+    ) {
+      return;
+    }
+
+    if (!touchDoubleTap.isDoubleTap(e, vertices.value.length >= 2)) return;
+
+    suppressMapEvent(e);
+    finishPathDrawing();
+  }
+
   function commitFeature(input: {
     geometry: Geometry;
     geometryMeta: GeometryLayerItem["geometryMeta"];
@@ -286,7 +314,7 @@ export function useMapLibreDrawInteraction(
 
   function finishPathDrawing() {
     const drawType = currentDrawType.value;
-    const coordinates = withoutTrailingDuplicate(vertices.value);
+    const coordinates = normalizePathCoordinates(vertices.value);
     if (drawType === "LineString" && coordinates.length >= 2) {
       commitFeature({
         geometry: lineString(coordinates).geometry,
@@ -304,14 +332,14 @@ export function useMapLibreDrawInteraction(
 
   function renderPathPreview(pointer: Position) {
     if (currentDrawType.value === "LineString") {
-      const coordinates = [...vertices.value, pointer];
+      const coordinates = normalizePathCoordinates([...vertices.value, pointer]);
       if (coordinates.length >= 2) {
         renderPreview(lineString(coordinates).geometry, { fill: false });
       }
       return;
     }
     if (currentDrawType.value === "Polygon") {
-      const coordinates = [...vertices.value, pointer];
+      const coordinates = normalizePathCoordinates([...vertices.value, pointer]);
       if (coordinates.length >= 3) {
         renderPreview(polygon([closeRing(coordinates)]).geometry);
       } else if (coordinates.length >= 2) {
@@ -331,7 +359,7 @@ export function useMapLibreDrawInteraction(
   function appendClickVertex(position: Position) {
     const unwrappedPosition = unwrapDrawPosition(position);
     const last = vertices.value[vertices.value.length - 1];
-    if (last && samePosition(last, unwrappedPosition)) return;
+    if (last && isZeroLengthSegment(last, unwrappedPosition)) return;
     vertices.value = [...vertices.value, unwrappedPosition];
   }
 
@@ -518,7 +546,7 @@ export function useMapLibreDrawInteraction(
   mlMap.on("mousedown", onMouseDown);
   mlMap.on("touchstart", onMouseDown);
   mlMap.on("mouseup", onMouseUp);
-  mlMap.on("touchend", onMouseUp);
+  mlMap.on("touchend", onTouchEnd);
   mlMap.on("touchcancel", onMouseUp);
 
   cleanupEsc = onKeyStroke("Escape", () => cancel());
@@ -536,7 +564,7 @@ export function useMapLibreDrawInteraction(
     mlMap.off("mousedown", onMouseDown);
     mlMap.off("touchstart", onMouseDown);
     mlMap.off("mouseup", onMouseUp);
-    mlMap.off("touchend", onMouseUp);
+    mlMap.off("touchend", onTouchEnd);
     mlMap.off("touchcancel", onMouseUp);
     cleanupEsc?.();
     cleanupEnter?.();
@@ -556,20 +584,8 @@ export function useMapLibreDrawInteraction(
 function closeRing(coordinates: Position[]): Position[] {
   const first = coordinates[0];
   const last = coordinates[coordinates.length - 1];
-  if (first && last && samePosition(first, last)) return coordinates;
+  if (first && last && isZeroLengthSegment(first, last)) return coordinates;
   return first ? [...coordinates, [...first]] : coordinates;
-}
-
-function withoutTrailingDuplicate(coordinates: Position[]): Position[] {
-  if (coordinates.length < 2) return coordinates;
-  const previous = coordinates[coordinates.length - 2];
-  const last = coordinates[coordinates.length - 1];
-  if (!previous || !last || !samePosition(previous, last)) return coordinates;
-  return coordinates.slice(0, -1);
-}
-
-function samePosition(a: Position, b: Position) {
-  return a[0] === b[0] && a[1] === b[1];
 }
 
 function createCirclePreview(center: Position, edge: Position): Geometry {
@@ -581,18 +597,6 @@ function createCirclePreview(center: Position, edge: Position): Geometry {
     coordinates.push(destination(center, radius, bearing));
   }
   return polygon([coordinates]).geometry;
-}
-
-function distanceMeters(a: Position, b: Position) {
-  const earthRadius = 6_371_008.8;
-  const phi1 = degreesToRadians(a[1]);
-  const phi2 = degreesToRadians(b[1]);
-  const deltaPhi = degreesToRadians(b[1] - a[1]);
-  const deltaLambda = degreesToRadians(b[0] - a[0]);
-  const h =
-    Math.sin(deltaPhi / 2) ** 2 +
-    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
-  return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
 function destination(

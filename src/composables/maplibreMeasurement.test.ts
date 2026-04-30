@@ -5,12 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 
-function createEvent(lng: number, lat: number) {
+function createEvent(lng: number, lat: number, options: { timeStamp?: number } = {}) {
   return {
     lngLat: { lng, lat },
     point: { x: lng, y: lat },
     preventDefault: vi.fn(),
     originalEvent: {
+      timeStamp: options.timeStamp,
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
     },
@@ -156,6 +157,12 @@ describe("useMapLibreMeasurementInteraction", () => {
     ).toBe(true);
 
     harness.trigger("click", createEvent(0, 1));
+    expect(
+      harness
+        .sourceData("maplibre-measurement")
+        .features.some((feature: any) => feature.id === "range-circle"),
+    ).toBe(true);
+
     harness.trigger("dblclick", createEvent(0, 1));
     expect(harness.sourceData("maplibre-measurement").features).toEqual([
       expect.objectContaining({
@@ -184,6 +191,70 @@ describe("useMapLibreMeasurementInteraction", () => {
           coordinates: [
             [1, 1],
             [1, 2],
+          ],
+        },
+      }),
+    ]);
+  });
+
+  it("keeps the range circle visible when touch events do not provide a live pointer", () => {
+    const harness = createHarness();
+
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("click", createEvent(0, 1));
+    harness.trigger("touchend", createEvent(0, 1));
+
+    expect(
+      harness
+        .sourceData("maplibre-measurement")
+        .features.some((feature: any) => feature.id === "range-circle"),
+    ).toBe(true);
+  });
+
+  it("ignores effectively zero-length line segments from touch jitter", () => {
+    const harness = createHarness();
+
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("click", createEvent(0, 0.00000000001));
+    harness.trigger("click", createEvent(0, 1));
+    harness.trigger("dblclick", createEvent(0, 1));
+
+    expect(harness.sourceData("maplibre-measurement").features[0]).toEqual(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [0, 0],
+            [0, 1],
+          ],
+        },
+      }),
+    );
+    expect(
+      harness
+        .sourceData("maplibre-measurement-labels")
+        .features.some((feature: any) => feature.properties.text === "0 m"),
+    ).toBe(false);
+  });
+
+  it("finishes a line measurement with a mobile double tap", () => {
+    const harness = createHarness();
+
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("touchend", createEvent(0, 0, { timeStamp: 0 }));
+    harness.trigger("click", createEvent(0, 1));
+    harness.trigger("touchend", createEvent(0, 1, { timeStamp: 1000 }));
+    harness.trigger("click", createEvent(0, 1));
+    harness.trigger("touchend", createEvent(0, 1, { timeStamp: 1200 }));
+
+    expect(harness.sourceData("maplibre-measurement").features).toEqual([
+      expect.objectContaining({
+        id: "measurement-1",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [0, 0],
+            [0, 1],
           ],
         },
       }),

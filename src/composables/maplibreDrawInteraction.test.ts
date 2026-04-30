@@ -5,13 +5,25 @@ import { describe, expect, it, vi } from "vitest";
 import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 
-function createEvent(lng: number, lat: number, options: { buttons?: number } = {}) {
+function createEvent(
+  lng: number,
+  lat: number,
+  options: {
+    buttons?: number;
+    timeStamp?: number;
+    cancelable?: boolean;
+    type?: string;
+  } = {},
+) {
   return {
     lngLat: { lng, lat },
     point: { x: lng, y: lat },
     preventDefault: vi.fn(),
     originalEvent: {
       buttons: options.buttons ?? 0,
+      timeStamp: options.timeStamp,
+      cancelable: options.cancelable,
+      type: options.type,
       shiftKey: false,
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
@@ -289,6 +301,52 @@ describe("useMapLibreDrawInteraction", () => {
     );
   });
 
+  it("finishes a line drawing with a mobile double tap", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("click", createEvent(1, 2));
+    harness.trigger("touchend", createEvent(1, 2, { timeStamp: 0 }));
+    harness.trigger("click", createEvent(3, 4));
+    harness.trigger("touchend", createEvent(3, 4, { timeStamp: 1000 }));
+    harness.trigger("click", createEvent(3, 4));
+    harness.trigger("touchend", createEvent(3, 4, { timeStamp: 1200 }));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [1, 2],
+            [3, 4],
+          ],
+        },
+      }),
+    );
+  });
+
+  it("ignores effectively zero-length line drawing segments from touch jitter", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("click", createEvent(0, 0.00000000001));
+    harness.trigger("click", createEvent(0, 1));
+    harness.trigger("dblclick", createEvent(0, 1));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [0, 0],
+            [0, 1],
+          ],
+        },
+      }),
+    );
+  });
+
   it("updates a dragged vertex in modify mode", () => {
     const feature = selectedLine();
     const harness = createHarness({
@@ -319,6 +377,54 @@ describe("useMapLibreDrawInteraction", () => {
         },
       }),
     ]);
+  });
+
+  it("does not call DOM preventDefault for passive touch vertex drags", () => {
+    const feature = selectedLine();
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([1]),
+          },
+        },
+      ],
+    });
+    const event = createEvent(11, 21, { cancelable: false });
+
+    harness.draw.startModify();
+    harness.trigger("touchstart", event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.originalEvent.preventDefault).not.toHaveBeenCalled();
+    expect(event.originalEvent.stopPropagation).toHaveBeenCalled();
+  });
+
+  it("does not call DOM preventDefault for touch vertex drags even when cancelable is true", () => {
+    const feature = selectedLine();
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([1]),
+          },
+        },
+      ],
+    });
+    const event = createEvent(11, 21, { cancelable: true, type: "touchstart" });
+
+    harness.draw.startModify();
+    harness.trigger("touchstart", event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.originalEvent.preventDefault).not.toHaveBeenCalled();
+    expect(event.originalEvent.stopPropagation).toHaveBeenCalled();
   });
 
   it("keeps vertex drags continuous across the antimeridian", () => {
