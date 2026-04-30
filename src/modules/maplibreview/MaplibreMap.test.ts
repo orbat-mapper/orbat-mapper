@@ -13,7 +13,6 @@ const setProjection = vi.fn();
 const addControl = vi.fn();
 const removeControl = vi.fn();
 const remove = vi.fn();
-const boxZoomDisable = vi.fn();
 const listeners = new Map<string, Array<(event?: unknown) => void>>();
 const mapConstructor = vi.fn();
 const scaleControlSetUnit = vi.fn();
@@ -30,7 +29,6 @@ vi.mock("maplibre-gl", () => {
 
     addControl = addControl;
     removeControl = removeControl;
-    boxZoom = { disable: boxZoomDisable };
     off = off;
     getCenter = getCenter;
     getZoom = getZoom;
@@ -108,7 +106,6 @@ describe("MaplibreMap", () => {
     addControl.mockClear();
     removeControl.mockClear();
     remove.mockClear();
-    boxZoomDisable.mockClear();
     mapConstructor.mockClear();
     scaleControlSetUnit.mockClear();
     off.mockClear();
@@ -163,7 +160,6 @@ describe("MaplibreMap", () => {
       expect.objectContaining({ diff: false }),
     );
     expect(setProjection).toHaveBeenCalledWith({ type: "globe" });
-    expect(boxZoomDisable).toHaveBeenCalled();
     expect(mapConstructor).toHaveBeenCalledWith(
       expect.objectContaining({
         canvasContextAttributes: expect.objectContaining({ preserveDrawingBuffer: true }),

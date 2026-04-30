@@ -159,7 +159,6 @@ onMounted(async () => {
       preserveDrawingBuffer: true,
     },
   });
-  mlMap.boxZoom.disable();
   scaleControl = new ScaleControl({
     maxWidth: 100,
     unit: measurementUnit.value,
