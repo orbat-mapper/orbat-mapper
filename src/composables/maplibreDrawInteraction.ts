@@ -15,6 +15,7 @@ import {
   normalizePathCoordinates,
   suppressMapEvent,
 } from "@/composables/maplibreTouchDrawing";
+import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 
 const DRAW_PREVIEW_OVERLAY_ID = "maplibre-draw-preview";
 const DRAW_VERTEX_HANDLES_OVERLAY_ID = "maplibre-draw-vertex-handles";
@@ -136,7 +137,7 @@ export function useMapLibreDrawInteraction(
   function onClick(e: MapMouseEvent) {
     if (!isDrawing.value || !currentDrawType.value) return;
     suppressMapEvent(e);
-    const position: Position = [e.lngLat.lng, e.lngLat.lat];
+    const position = getEventPosition(e);
 
     if (currentDrawType.value === "Point") {
       commitFeature({
@@ -173,12 +174,13 @@ export function useMapLibreDrawInteraction(
   }
 
   function onMouseMove(e: MapMouseEvent) {
-    const position: Position = [e.lngLat.lng, e.lngLat.lat];
     if (dragState) {
+      const position = getDragEventPosition(e, dragState);
       previewDrag(position);
       return;
     }
     if (isDrawing.value) {
+      const position = getEventPosition(e);
       mlMap.getCanvas().style.cursor = "crosshair";
       if (
         unref(options.freehand) &&
@@ -212,7 +214,7 @@ export function useMapLibreDrawInteraction(
       (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon")
     ) {
       suppressMapEvent(e);
-      vertices.value = [[e.lngLat.lng, e.lngLat.lat]];
+      vertices.value = [getEventPosition(e)];
       return;
     }
     if (isDrawing.value) return;
@@ -243,6 +245,21 @@ export function useMapLibreDrawInteraction(
     }
   }
 
+  function getEventPosition(e: MapMouseEvent | MapTouchEvent): Position {
+    const raw: Position = [e.lngLat.lng, e.lngLat.lat];
+    if (!unref(options.snap)) return raw;
+    return getMapLibreSnapPosition(mlMap, e.point) ?? raw;
+  }
+
+  function getDragEventPosition(
+    e: MapMouseEvent | MapTouchEvent,
+    state: DragState,
+  ): Position {
+    const raw: Position = [e.lngLat.lng, e.lngLat.lat];
+    if (state.mode !== "vertex" || !unref(options.snap)) return raw;
+    return getMapLibreSnapPosition(mlMap, e.point) ?? raw;
+  }
+
   function onMouseUp(e: MapMouseEvent | MapTouchEvent) {
     if (
       isDrawing.value &&
@@ -253,7 +270,7 @@ export function useMapLibreDrawInteraction(
       return;
     }
     if (!dragState) return;
-    const position: Position = [e.lngLat.lng, e.lngLat.lat];
+    const position = getDragEventPosition(e, dragState);
     const updates = getDragUpdates(dragState, position);
     restoreMapDragInteractions(dragState.interactions);
     dragState = null;
