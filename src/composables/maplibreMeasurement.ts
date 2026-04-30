@@ -29,7 +29,7 @@ import {
 } from "@/composables/geoMeasurement";
 import { formatArea, formatLength } from "@/geo/utils";
 import { unwrapPositionRelative } from "@/geo/longitude";
-import { GLOBE_SCENARIO_FEATURE_PREFIX } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
   createTouchDoubleTapTracker,
   getPreviousDistinctVertex,
@@ -47,7 +47,6 @@ const MEASUREMENT_LINE_LAYER_ID = "maplibre-measurement-line";
 const MEASUREMENT_POINT_LAYER_ID = "maplibre-measurement-point";
 const MEASUREMENT_LABEL_LAYER_ID = "maplibre-measurement-label";
 const MEASUREMENT_HANDLE_LAYER_ID = "maplibre-measurement-handle";
-const SNAP_TOLERANCE_PX = 12;
 
 interface MeasurementFeature {
   id: string;
@@ -189,7 +188,7 @@ export function useMapLibreMeasurementInteraction(
   function getEventPosition(e: MapMouseEvent | MapTouchEvent): Position {
     const raw: Position = [e.lngLat.lng, e.lngLat.lat];
     if (!unref(snapRef)) return raw;
-    return getSnapPosition(raw, e.point) ?? raw;
+    return getMapLibreSnapPosition(mlMap, e.point) ?? raw;
   }
 
   function appendVertex(position: Position) {
@@ -498,40 +497,6 @@ export function useMapLibreMeasurementInteraction(
     });
   }
 
-  function getSnapPosition(position: Position, pointLike: PointLike): Position | null {
-    const renderedFeatures = mlMap.queryRenderedFeatures(pointLike).filter((feature) => {
-      const layerId = feature.layer?.id;
-      return (
-        typeof layerId === "string" &&
-        layerId.startsWith(GLOBE_SCENARIO_FEATURE_PREFIX) &&
-        feature.geometry
-      );
-    });
-    const projectedPointer = toXY(mlMap.project(position as [number, number]));
-    const candidates = renderedFeatures.flatMap((feature) =>
-      getSnapCandidates(feature.geometry, mlMap, projectedPointer),
-    );
-    let best: { position: Position; distance: number; rank: number } | null = null;
-    for (const candidate of candidates) {
-      const projectedCandidate = toXY(
-        mlMap.project(candidate.position as [number, number]),
-      );
-      const distance = Math.hypot(
-        projectedCandidate.x - projectedPointer.x,
-        projectedCandidate.y - projectedPointer.y,
-      );
-      if (distance > SNAP_TOLERANCE_PX) continue;
-      if (
-        !best ||
-        candidate.rank < best.rank ||
-        (candidate.rank === best.rank && distance < best.distance)
-      ) {
-        best = { position: candidate.position, distance, rank: candidate.rank };
-      }
-    }
-    return best?.position ?? null;
-  }
-
   function ensureLayers(force = false) {
     if (layersInitialized && !force) return;
     ensureSource(MEASUREMENT_SOURCE_ID);
@@ -791,70 +756,6 @@ function insertVertexAtPath(
   return { ...geometry, coordinates };
 }
 
-function getSnapCandidates(
-  geometry: Geometry,
-  mlMap: MlMap,
-  projectedPointer: { x: number; y: number },
-): Array<{ position: Position; rank: number }> {
-  const vertices: Array<{ position: Position; rank: number }> = [];
-  const segments: Array<{ position: Position; rank: number }> = [];
-  visitGeometryLines(geometry, (coordinates) => {
-    coordinates.forEach((coordinate) => vertices.push({ position: coordinate, rank: 0 }));
-    for (let index = 0; index < coordinates.length - 1; index += 1) {
-      const a = coordinates[index]!;
-      const b = coordinates[index + 1]!;
-      segments.push({
-        position: closestRenderedSegmentPosition(mlMap, projectedPointer, a, b),
-        rank: 1,
-      });
-    }
-  });
-  return [...vertices, ...segments];
-}
-
-function closestRenderedSegmentPosition(
-  mlMap: MlMap,
-  projectedPointer: { x: number; y: number },
-  a: Position,
-  b: Position,
-): Position {
-  const projectedA = toXY(mlMap.project(a as [number, number]));
-  const projectedB = toXY(mlMap.project(b as [number, number]));
-  const dx = projectedB.x - projectedA.x;
-  const dy = projectedB.y - projectedA.y;
-  const lengthSquared = dx * dx + dy * dy;
-  const ratio =
-    lengthSquared === 0
-      ? 0
-      : Math.max(
-          0,
-          Math.min(
-            1,
-            ((projectedPointer.x - projectedA.x) * dx +
-              (projectedPointer.y - projectedA.y) * dy) /
-              lengthSquared,
-          ),
-        );
-  return [a[0] + (b[0] - a[0]) * ratio, a[1] + (b[1] - a[1]) * ratio];
-}
-
-function visitGeometryLines(
-  geometry: Geometry,
-  visit: (coordinates: Position[]) => void,
-) {
-  if (geometry.type === "LineString" || geometry.type === "MultiPoint") {
-    visit(geometry.coordinates);
-  } else if (geometry.type === "Polygon" || geometry.type === "MultiLineString") {
-    geometry.coordinates.forEach(visit);
-  } else if (geometry.type === "MultiPolygon") {
-    geometry.coordinates.forEach((poly) => poly.forEach(visit));
-  } else if (geometry.type === "Point") {
-    visit([geometry.coordinates]);
-  } else if (geometry.type === "GeometryCollection") {
-    geometry.geometries.forEach((child) => visitGeometryLines(child, visit));
-  }
-}
-
 function closeRing(coordinates: Position[]): Position[] {
   const first = coordinates[0];
   const last = coordinates[coordinates.length - 1];
@@ -864,11 +765,6 @@ function closeRing(coordinates: Position[]): Position[] {
 
 function midpoint(a: Position, b: Position): Position {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-}
-
-function toXY(pointLike: { x: number; y: number } | { 0: number; 1: number }) {
-  if ("x" in pointLike) return pointLike;
-  return { x: pointLike[0], y: pointLike[1] };
 }
 
 function suspendMapDragInteractions(mlMap: MlMap): MapDragInteractionState {

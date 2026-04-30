@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added snapping support to MapLibre draw and modify tools.
 - Added support for route planning with obstacles.
 - Added support for pasting GeoJSON from the clipboard directly into the scenario editor as scenario features, including `Ctrl/Cmd+V` import into the active feature layer.
 - Added GPX import support, including track conversion and unit track assignment.
