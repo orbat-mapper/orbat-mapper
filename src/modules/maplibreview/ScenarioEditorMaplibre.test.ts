@@ -368,6 +368,8 @@ describe("ScenarioEditorMaplibre", () => {
     mapModeState.isMobile = true;
     const pinia = createPinia();
     setActivePinia(pinia);
+    const toolbarStore = useMainToolbarStore();
+    toolbarStore.currentToolbar = "measurements";
 
     const wrapper = mount(ScenarioEditorMaplibre, {
       global: {
@@ -383,11 +385,14 @@ describe("ScenarioEditorMaplibre", () => {
           MlMapLogic: true,
           MapEditorMainToolbar: defineComponent({
             name: "MapEditorMainToolbar",
-            template: "<div data-test='map-toolbar' />",
+            template: "<div data-test='map-toolbar'>map-toolbar</div>",
           }),
           MapEditorUnitTrackToolbar: true,
           MapEditorDrawToolbar: true,
-          MapEditorMeasurementToolbar: true,
+          MapEditorMeasurementToolbar: defineComponent({
+            name: "MapEditorMeasurementToolbar",
+            template: "<div data-test='measurement-toolbar'>measurement-toolbar</div>",
+          }),
           ToggleField: true,
           Button: true,
           Label: true,
@@ -407,6 +412,9 @@ describe("ScenarioEditorMaplibre", () => {
         .find("[data-test='map-toolbar']")
         .exists(),
     ).toBe(true);
+    expect(wrapper.get("[data-test='mobile-toolbar-slot']").text()).toMatch(
+      /^measurement-toolbar\s*map-toolbar$/,
+    );
     expect(
       wrapper
         .get("[data-test='footer-overlays-slot']")

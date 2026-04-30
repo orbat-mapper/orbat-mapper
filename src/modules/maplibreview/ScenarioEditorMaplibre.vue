@@ -413,6 +413,18 @@ function onCloseActiveDetailsPanel() {
         v-if="mlMap && ui.showToolbar && isMobile"
         class="border-border bg-background pointer-events-auto border-t px-2 py-2"
       >
+        <MapEditorUnitTrackToolbar
+          v-if="toolbarStore.currentToolbar === 'track'"
+          class="mb-2"
+        />
+        <MapEditorMeasurementToolbar
+          v-if="toolbarStore.currentToolbar === 'measurements'"
+          class="mb-2"
+        />
+        <MapEditorDrawToolbar
+          v-if="toolbarStore.currentToolbar === 'draw'"
+          class="mb-2"
+        />
         <MapEditorMainToolbar
           :can-move-units="true"
           :can-rotate-units="true"
@@ -427,18 +439,6 @@ function onCloseActiveDetailsPanel() {
           @next-event="goToNextScenarioEvent()"
           @prev-event="goToPrevScenarioEvent()"
           @show-settings="emit('show-settings')"
-        />
-        <MapEditorUnitTrackToolbar
-          v-if="toolbarStore.currentToolbar === 'track'"
-          class="mt-2"
-        />
-        <MapEditorMeasurementToolbar
-          v-if="toolbarStore.currentToolbar === 'measurements'"
-          class="mt-2"
-        />
-        <MapEditorDrawToolbar
-          v-if="toolbarStore.currentToolbar === 'draw'"
-          class="mt-2"
         />
       </div>
     </template>

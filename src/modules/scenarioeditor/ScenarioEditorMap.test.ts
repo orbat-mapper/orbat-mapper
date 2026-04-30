@@ -223,19 +223,19 @@ describe("ScenarioEditorMap", () => {
           DecryptScenarioModal: true,
           MapEditorMainToolbar: defineComponent({
             name: "MapEditorMainToolbar",
-            template: "<div data-test='map-toolbar' />",
+            template: "<div data-test='map-toolbar'>map-toolbar</div>",
           }),
           MapEditorMeasurementToolbar: defineComponent({
             name: "MapEditorMeasurementToolbar",
-            template: "<div data-test='measurement-toolbar' />",
+            template: "<div data-test='measurement-toolbar'>measurement-toolbar</div>",
           }),
           MapEditorDrawToolbar: defineComponent({
             name: "MapEditorDrawToolbar",
-            template: "<div data-test='draw-toolbar' />",
+            template: "<div data-test='draw-toolbar'>draw-toolbar</div>",
           }),
           MapEditorUnitTrackToolbar: defineComponent({
             name: "MapEditorUnitTrackToolbar",
-            template: "<div data-test='track-toolbar' />",
+            template: "<div data-test='track-toolbar'>track-toolbar</div>",
           }),
         },
       },
@@ -256,6 +256,9 @@ describe("ScenarioEditorMap", () => {
         .find("[data-test='draw-toolbar']")
         .exists(),
     ).toBe(true);
+    expect(wrapper.get("[data-test='mobile-toolbar-slot']").text()).toMatch(
+      /^draw-toolbar\s*map-toolbar$/,
+    );
     expect(
       wrapper
         .get("[data-test='footer-overlays-slot']")

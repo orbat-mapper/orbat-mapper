@@ -266,6 +266,18 @@ function onCloseActiveDetailsPanel() {
         v-if="nativeMapRef && ui.showToolbar && isMobile"
         class="border-border bg-background pointer-events-auto border-t px-2 py-2"
       >
+        <MapEditorMeasurementToolbar
+          class="mb-2"
+          v-if="toolbarStore.currentToolbar === 'measurements'"
+        />
+        <MapEditorDrawToolbar
+          class="mb-2"
+          v-if="toolbarStore.currentToolbar === 'draw'"
+        />
+        <MapEditorUnitTrackToolbar
+          class="mb-2"
+          v-if="toolbarStore.currentToolbar === 'track'"
+        />
         <MapEditorMainToolbar
           @open-time-modal="openTimeDialog()"
           @inc-day="onIncDay()"
@@ -273,18 +285,6 @@ function onCloseActiveDetailsPanel() {
           @next-event="goToNextScenarioEvent()"
           @prev-event="goToPrevScenarioEvent()"
           @show-settings="emit('show-settings')"
-        />
-        <MapEditorMeasurementToolbar
-          class="mt-2"
-          v-if="toolbarStore.currentToolbar === 'measurements'"
-        />
-        <MapEditorDrawToolbar
-          class="mt-2"
-          v-if="toolbarStore.currentToolbar === 'draw'"
-        />
-        <MapEditorUnitTrackToolbar
-          class="mt-2"
-          v-if="toolbarStore.currentToolbar === 'track'"
         />
       </div>
     </template>
