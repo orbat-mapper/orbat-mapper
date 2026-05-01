@@ -658,7 +658,11 @@ function createLayerDefinitions(
         id: `${prefix}-polygon-fill-${suffix}`,
         type: "fill",
         source: sourceId,
-        filter: createRenderFilter(group.id, "polygon"),
+        filter: [
+          "all",
+          createRenderFilter(group.id, "polygon"),
+          [">", ["get", "fillOpacity"], 0],
+        ],
         layout: { visibility: layoutVisibility },
         paint: {
           "fill-color": ["get", "fillColor"],
