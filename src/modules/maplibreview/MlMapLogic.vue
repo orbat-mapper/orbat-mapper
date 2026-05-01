@@ -31,6 +31,10 @@ import {
   getLayerIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
 } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import {
+  isMapLibreKmlRenderedLayerId,
+  toReferenceFeatureSelection,
+} from "@/geo/kml/maplibre";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
@@ -103,6 +107,7 @@ const { onUnitSelectHook, onFeatureSelectHook, onScenarioActionHook } =
 const {
   selectedFeatureIds,
   selectedUnitIds,
+  activeReferenceFeature,
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
@@ -386,6 +391,7 @@ function queryInteractiveFeatures(point: PointLike) {
       (feature) =>
         isUnitLayerId(feature.layer.id) ||
         UNIT_HISTORY_LAYER_IDS.includes(feature.layer.id) ||
+        isMapLibreKmlRenderedLayerId(feature.layer.id) ||
         isManagedScenarioFeatureLayerId(feature.layer.id),
     );
 }
@@ -456,7 +462,6 @@ function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
-  if (!unitSelectEnabled.value && !featureSelectEnabled.value) return;
   const topHit = queryInteractiveFeatures(e.point)[0];
   const additive = e.originalEvent.shiftKey;
   if (!topHit) {
@@ -472,6 +477,10 @@ function onMapClick(e: MapMouseEvent) {
       return;
     }
     onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
+    return;
+  }
+  if (isMapLibreKmlRenderedLayerId(topHit.layer.id)) {
+    activeReferenceFeature.value = toReferenceFeatureSelection(topHit);
     return;
   }
   if (!featureSelectEnabled.value) return;

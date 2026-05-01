@@ -843,6 +843,47 @@ describe("MlMapLogic", () => {
     });
   });
 
+  it("opens rendered KML features as reference feature details on click", () => {
+    const mockMap = createMockMap();
+    useMapSelectStore().unitSelectEnabled = false;
+    useMapSelectStore().featureSelectEnabled = false;
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({ layerItem: undefined })),
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        id: "rendered-kml-feature",
+        layer: { id: "scenario-kml-layer-kml-1-point-circle" },
+        properties: {
+          __kmlLayerId: "kml-1",
+          __kmlLayerName: "KML Layer",
+          __kmlFeatureId: "feature-1",
+          __kmlName: "KML point",
+          description: "<p>Description</p>",
+          category: "reference",
+        },
+      },
+    ]);
+
+    mockMap.emit("click", {
+      point: { x: 12, y: 20 },
+      originalEvent: { shiftKey: false },
+    });
+
+    expect(useSelectedItems().activeReferenceFeature.value).toEqual({
+      layerId: "kml-1",
+      layerName: "KML Layer",
+      featureId: "feature-1",
+      name: "KML point",
+      properties: {
+        description: "<p>Description</p>",
+        category: "reference",
+      },
+    });
+  });
+
   it("shows hover tooltip for a named rendered scenario feature", async () => {
     vi.useFakeTimers();
     const mockMap = createMockMap();

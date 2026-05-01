@@ -29,6 +29,7 @@ import type {
 import type {
   FeatureId,
   ScenarioImageLayer,
+  ScenarioKMLLayer,
   ScenarioMapLayer,
   ScenarioTileJSONLayer,
   ScenarioXYZLayer,
@@ -38,6 +39,7 @@ import {
   type NGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
 import { fixExtent } from "@/utils/geoConvert";
+import { createMapLibreKmlLayerRenderer } from "@/geo/kml/maplibre";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -127,6 +129,10 @@ function isGeometryLayerItem(
 
 function isImageLayer(layer: ScenarioMapLayer | undefined): layer is ScenarioImageLayer {
   return layer?.type === "ImageLayer";
+}
+
+function isKmlLayer(layer: ScenarioMapLayer | undefined): layer is ScenarioKMLLayer {
+  return layer?.type === "KMLLayer";
 }
 
 function isRasterTileLayer(
@@ -255,6 +261,10 @@ export function createMapLibreScenarioLayerController(
   } | null = null;
   let currentFilterVisible = true;
   let cleanupScenarioBinding = () => {};
+  const kmlLayerRenderer = createMapLibreKmlLayerRenderer(mlMap, {
+    onStatus: updateMapLayerStatus,
+    onExtent: updateKmlLayerExtent,
+  });
 
   function emitLayerEvent(event: ScenarioLayerControllerEvent) {
     layerEventHandlers.forEach((handler) => handler(event));
@@ -444,6 +454,23 @@ export function createMapLibreScenarioLayerController(
     emitLayerEvent({ type: "map-layer-updated", layerId, data });
   }
 
+  function updateKmlLayerExtent(
+    layerId: FeatureId,
+    extent: [number, number, number, number],
+  ) {
+    const scenario = activeScenario;
+    if (!scenario) return;
+    const data: ScenarioMapLayerUpdate = {
+      extent,
+      _isNew: false,
+    };
+    scenario.geo.updateMapLayer(layerId, data, {
+      noEmit: true,
+      undoable: false,
+    });
+    emitLayerEvent({ type: "map-layer-updated", layerId, data });
+  }
+
   function loadImageSize(url: string) {
     const cached = imageSizes.get(url);
     if (cached) return Promise.resolve(cached);
@@ -551,6 +578,12 @@ export function createMapLibreScenarioLayerController(
     updateMapLayerStatus(layer.id, "initialized");
   }
 
+  function addKmlLayer(layerId: FeatureId) {
+    const layer = activeScenario?.geo.getMapLayerById(layerId);
+    if (!isKmlLayer(layer)) return;
+    void kmlLayerRenderer.addLayer(layer);
+  }
+
   function refreshMapLayers() {
     for (const layerId of [...activeImageLayerIds]) {
       removeImageLayer(layerId);
@@ -560,10 +593,13 @@ export function createMapLibreScenarioLayerController(
     }
     const scenario = activeScenario;
     if (!scenario) return;
+    const kmlLayers: ScenarioKMLLayer[] = [];
     for (const mapLayer of scenario.geo.mapLayers?.value ?? []) {
       if (isImageLayer(mapLayer)) addImageLayer(mapLayer.id);
       if (isRasterTileLayer(mapLayer)) addRasterTileLayer(mapLayer.id);
+      if (isKmlLayer(mapLayer)) kmlLayers.push(mapLayer);
     }
+    kmlLayerRenderer.refreshAll(kmlLayers);
   }
 
   function updateImageLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
@@ -623,6 +659,12 @@ export function createMapLibreScenarioLayerController(
     }
   }
 
+  function updateKmlLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
+    const layer = activeScenario?.geo.getMapLayerById(layerId);
+    if (!isKmlLayer(layer)) return;
+    kmlLayerRenderer.updateLayer(layer, data);
+  }
+
   function refreshActiveTransform(layerId: FeatureId) {
     if (activeTransform?.layerId === layerId) {
       void startMapLayerTransform(layerId);
@@ -639,9 +681,11 @@ export function createMapLibreScenarioLayerController(
         if (activeTransform?.layerId === layerId) endMapLayerTransform();
         removeImageLayer(layerId);
         removeRasterTileLayer(layerId);
+        kmlLayerRenderer.removeLayer(String(layerId));
       } else {
         addImageLayer(layerId);
         addRasterTileLayer(layerId);
+        addKmlLayer(layerId);
       }
       return;
     }
@@ -649,10 +693,12 @@ export function createMapLibreScenarioLayerController(
       if (action === "undo") {
         addImageLayer(layerId);
         addRasterTileLayer(layerId);
+        addKmlLayer(layerId);
       } else {
         if (activeTransform?.layerId === layerId) endMapLayerTransform();
         removeImageLayer(layerId);
         removeRasterTileLayer(layerId);
+        kmlLayerRenderer.removeLayer(String(layerId));
       }
       return;
     }
@@ -664,6 +710,8 @@ export function createMapLibreScenarioLayerController(
         refreshActiveTransform(layerId);
       } else if (isRasterTileLayer(layer)) {
         updateRasterTileLayer(layerId, layer);
+      } else if (isKmlLayer(layer)) {
+        updateKmlLayer(layerId, layer);
       }
       return;
     }
@@ -967,15 +1015,18 @@ export function createMapLibreScenarioLayerController(
       if (event.type === "add") {
         addImageLayer(event.id);
         addRasterTileLayer(event.id);
+        addKmlLayer(event.id);
       } else if (event.type === "remove") {
         if (activeTransform?.layerId === event.id) {
           endMapLayerTransform();
         }
         removeImageLayer(event.id);
         removeRasterTileLayer(event.id);
+        kmlLayerRenderer.removeLayer(String(event.id));
       } else if (event.type === "update") {
         updateImageLayer(event.id, event.data);
         updateRasterTileLayer(event.id, event.data);
+        updateKmlLayer(event.id, event.data);
         emitLayerEvent({
           type: "map-layer-updated",
           layerId: event.id,
@@ -1031,6 +1082,7 @@ export function createMapLibreScenarioLayerController(
       for (const layerId of [...activeRasterTileLayerIds]) {
         removeRasterTileLayer(layerId);
       }
+      kmlLayerRenderer.destroy();
       endMapLayerTransform();
       featureManager?.destroy();
       featureManager = null;
