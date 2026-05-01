@@ -410,7 +410,7 @@ function buildFeatureData(
       style["stroke-opacity"] ?? 1,
       "#555555",
     );
-    const fillOpacity = style["fill-opacity"] ?? 0.25;
+    const fillOpacity = style.fill === null ? 0 : (style["fill-opacity"] ?? 0.25);
     const fillColor = toRgbaColor(style.fill, fillOpacity, "#555555");
     const markerColor = toRgbaColor(style["marker-color"], 1, "#7e7e7e");
     const markerSize = getMarkerSize(style);

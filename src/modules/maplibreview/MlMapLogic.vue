@@ -404,9 +404,11 @@ function updateHoveredScenarioFeatures(
     .flatMap((feature) => {
       const featureId = getFeatureIdFromRenderedFeature(feature);
       if (!featureId) return [];
-      return [{
-        getId: () => featureId,
-      } satisfies HoverFeatureLike];
+      return [
+        {
+          getId: () => featureId,
+        } satisfies HoverFeatureLike,
+      ];
     });
 
   setHoveredFeatures(features, [e.point.x, e.point.y] as Pixel);

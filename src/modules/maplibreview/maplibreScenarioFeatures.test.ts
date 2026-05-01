@@ -36,6 +36,46 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(plan.featureData.features[0].geometry.type).toBe("Polygon");
   });
 
+  it("treats null fill as no polygon fill", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-fill-null",
+        kind: "overlay",
+        name: "Layer Fill Null",
+        items: [
+          {
+            id: "polygon-1",
+            kind: "geometry",
+            _pid: "layer-fill-null",
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [0, 0],
+                  [1, 0],
+                  [1, 1],
+                  [0, 1],
+                  [0, 0],
+                ],
+              ],
+            },
+            geometryMeta: { geometryKind: "Polygon" },
+            style: {
+              fill: null,
+              "fill-opacity": 0.5,
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    expect(plan.featureData.features[0].properties?.fillOpacity).toBe(0);
+  });
+
   it("filters hidden items and emits label, marker, and arrow layers from feature styles", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {
