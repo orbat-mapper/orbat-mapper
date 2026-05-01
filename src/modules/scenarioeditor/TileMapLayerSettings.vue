@@ -20,6 +20,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(["update"]);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const { status, isInitialized, layerTypeLabel } = useMapLayerInfo(props.layer);
+const hasLoadFailed = computed(() => status.value === "error" && !props.layer._isNew);
 const canZoomMapLayer = () =>
   Boolean(engineRef.value?.layers.capabilities.zoomToMapLayer) &&
   Boolean(engineRef.value?.layers.capabilities.mapLayerExtent);
@@ -61,6 +62,9 @@ function updateData(formData: ScenarioTileJSONLayerUpdate | ScenarioXYZLayerUpda
     <header class="flex justify-end">
       <span class="badge">{{ layerTypeLabel }}</span>
     </header>
+    <p class="text-muted-foreground mt-3 text-sm">
+      Only raster tiles are supported for TileJSON and XYZ map layers.
+    </p>
     <TileMapLayerSettingsForm
       v-if="editMode"
       :key="layer.id"
@@ -79,8 +83,6 @@ function updateData(formData: ScenarioTileJSONLayerUpdate | ScenarioXYZLayerUpda
     <p v-if="!isInitialized" class="text-muted-foreground mt-2 text-sm">
       This layer has not been initialized yet.
     </p>
-    <p v-if="status === 'error'" class="mt-2 text-sm text-red-600">
-      Failed to load layer.
-    </p>
+    <p v-if="hasLoadFailed" class="mt-2 text-sm text-red-600">Failed to load layer.</p>
   </section>
 </template>

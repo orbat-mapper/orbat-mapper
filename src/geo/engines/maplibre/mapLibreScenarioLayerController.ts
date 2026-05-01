@@ -5,6 +5,7 @@ import type {
   ImageSourceSpecification,
   LayerSpecification,
   Map as MlMap,
+  RasterSourceSpecification,
 } from "maplibre-gl";
 import { fromLonLat, toLonLat, transformExtent } from "ol/proj";
 import type { Feature as GeoJsonFeature, Position } from "geojson";
@@ -29,6 +30,8 @@ import type {
   FeatureId,
   ScenarioImageLayer,
   ScenarioMapLayer,
+  ScenarioTileJSONLayer,
+  ScenarioXYZLayer,
 } from "@/types/scenarioGeoModels";
 import {
   isNGeometryLayerItem,
@@ -57,6 +60,15 @@ const mapLayerUndoActionLabels = [
 
 const MAPLIBRE_IMAGE_SOURCE_PREFIX = "scenario-image-source-";
 const MAPLIBRE_IMAGE_LAYER_PREFIX = "scenario-image-layer-";
+const MAPLIBRE_RASTER_SOURCE_PREFIX = "scenario-raster-source-";
+const MAPLIBRE_RASTER_LAYER_PREFIX = "scenario-raster-layer-";
+
+type ImageCoordinates = [
+  [number, number],
+  [number, number],
+  [number, number],
+  [number, number],
+];
 
 function normalizeMapLayerExtent(
   extent: number[] | undefined,
@@ -117,12 +129,26 @@ function isImageLayer(layer: ScenarioMapLayer | undefined): layer is ScenarioIma
   return layer?.type === "ImageLayer";
 }
 
+function isRasterTileLayer(
+  layer: ScenarioMapLayer | undefined,
+): layer is ScenarioTileJSONLayer | ScenarioXYZLayer {
+  return layer?.type === "TileJSONLayer" || layer?.type === "XYZLayer";
+}
+
 function getImageSourceId(layerId: FeatureId) {
   return `${MAPLIBRE_IMAGE_SOURCE_PREFIX}${layerId}`;
 }
 
 function getImageLayerId(layerId: FeatureId) {
   return `${MAPLIBRE_IMAGE_LAYER_PREFIX}${layerId}`;
+}
+
+function getRasterSourceId(layerId: FeatureId) {
+  return `${MAPLIBRE_RASTER_SOURCE_PREFIX}${layerId}`;
+}
+
+function getRasterLayerId(layerId: FeatureId) {
+  return `${MAPLIBRE_RASTER_LAYER_PREFIX}${layerId}`;
 }
 
 function toPairScale(
@@ -146,7 +172,9 @@ function rotatePoint(
   return [centerX + dx * cos - dy * sin, centerY + dx * sin + dy * cos];
 }
 
-function extentToImageCoordinates(extent: [number, number, number, number]) {
+function extentToImageCoordinates(
+  extent: [number, number, number, number],
+): ImageCoordinates {
   const [minX, minY, maxX, maxY] = extent;
   return [
     [minX, maxY],
@@ -162,17 +190,21 @@ function projectedImageCoordinates(
   rotation: number,
   width: number,
   height: number,
-) {
+): ImageCoordinates {
   const [centerX, centerY] = center;
   const [scaleX, scaleY] = scale;
   const halfWidth = (width * scaleX) / 2;
   const halfHeight = (height * scaleY) / 2;
-  return [
-    [centerX - halfWidth, centerY + halfHeight],
-    [centerX + halfWidth, centerY + halfHeight],
-    [centerX + halfWidth, centerY - halfHeight],
-    [centerX - halfWidth, centerY - halfHeight],
-  ].map(([x, y]) => toLonLat(rotatePoint(x, y, centerX, centerY, rotation)));
+  return (
+    [
+      [centerX - halfWidth, centerY + halfHeight],
+      [centerX + halfWidth, centerY + halfHeight],
+      [centerX + halfWidth, centerY - halfHeight],
+      [centerX - halfWidth, centerY - halfHeight],
+    ] as ImageCoordinates
+  ).map(([x, y]) =>
+    toLonLat(rotatePoint(x, y, centerX, centerY, rotation)),
+  ) as ImageCoordinates;
 }
 
 function getImageLayerCoordinates(
@@ -206,6 +238,7 @@ export function createMapLibreScenarioLayerController(
   let activeScenario: TScenario | null = null;
   let featureManager: MapLibreScenarioFeatureManager | null = null;
   const activeImageLayerIds = new Set<FeatureId>();
+  const activeRasterTileLayerIds = new Set<FeatureId>();
   const imageSizes = new Map<string, { width: number; height: number }>();
   const imageSizePromises = new Map<string, Promise<{ width: number; height: number }>>();
   let activeTransform: {
@@ -340,9 +373,21 @@ export function createMapLibreScenarioLayerController(
     activeImageLayerIds.delete(layerId);
   }
 
+  function removeRasterTileLayer(layerId: FeatureId) {
+    const mlLayerId = getRasterLayerId(layerId);
+    const sourceId = getRasterSourceId(layerId);
+    try {
+      if (safeGetLayer(mlLayerId)) mlMap.removeLayer(mlLayerId);
+      if (safeGetSource(sourceId)) mlMap.removeSource(sourceId);
+    } catch {
+      // MapLibre can throw while a style is being replaced; the next style load rebuilds.
+    }
+    activeRasterTileLayerIds.delete(layerId);
+  }
+
   function addImageLayerWithCoordinates(
     layer: ScenarioImageLayer,
-    coordinates: number[][],
+    coordinates: ImageCoordinates,
   ) {
     const sourceId = getImageSourceId(layer.id);
     const mlLayerId = getImageLayerId(layer.id);
@@ -372,6 +417,20 @@ export function createMapLibreScenarioLayerController(
   }
 
   function updateImageLayerStatus(
+    layerId: FeatureId,
+    status: NonNullable<ScenarioMapLayer["_status"]>,
+  ) {
+    const scenario = activeScenario;
+    if (!scenario) return;
+    const data: ScenarioMapLayerUpdate = { _status: status };
+    scenario.geo.updateMapLayer(layerId, data, {
+      noEmit: true,
+      undoable: false,
+    });
+    emitLayerEvent({ type: "map-layer-updated", layerId, data });
+  }
+
+  function updateMapLayerStatus(
     layerId: FeatureId,
     status: NonNullable<ScenarioMapLayer["_status"]>,
   ) {
@@ -448,14 +507,62 @@ export function createMapLibreScenarioLayerController(
       });
   }
 
-  function refreshImageLayers() {
+  function addRasterTileLayer(layerId: FeatureId) {
+    const scenario = activeScenario;
+    const layer = scenario?.geo.getMapLayerById(layerId);
+    if (!isRasterTileLayer(layer)) return;
+    if (!layer.url) {
+      updateMapLayerStatus(layerId, "error");
+      return;
+    }
+
+    const sourceId = getRasterSourceId(layer.id);
+    const mlLayerId = getRasterLayerId(layer.id);
+    if (!safeGetSource(sourceId)) {
+      const source =
+        layer.type === "TileJSONLayer"
+          ? ({
+              type: "raster",
+              url: layer.url,
+            } satisfies RasterSourceSpecification)
+          : ({
+              type: "raster",
+              tiles: [layer.url],
+              tileSize: 256,
+              attribution: layer.attributions,
+            } satisfies RasterSourceSpecification);
+      mlMap.addSource(sourceId, source);
+    }
+    if (!safeGetLayer(mlLayerId)) {
+      const rasterLayer = {
+        id: mlLayerId,
+        type: "raster",
+        source: sourceId,
+        layout: {
+          visibility: layer.isHidden ? "none" : "visible",
+        },
+        paint: {
+          "raster-opacity": layer.opacity ?? 0.7,
+        },
+      } satisfies LayerSpecification;
+      mlMap.addLayer(rasterLayer);
+    }
+    activeRasterTileLayerIds.add(layer.id);
+    updateMapLayerStatus(layer.id, "initialized");
+  }
+
+  function refreshMapLayers() {
     for (const layerId of [...activeImageLayerIds]) {
       removeImageLayer(layerId);
+    }
+    for (const layerId of [...activeRasterTileLayerIds]) {
+      removeRasterTileLayer(layerId);
     }
     const scenario = activeScenario;
     if (!scenario) return;
     for (const mapLayer of scenario.geo.mapLayers?.value ?? []) {
       if (isImageLayer(mapLayer)) addImageLayer(mapLayer.id);
+      if (isRasterTileLayer(mapLayer)) addRasterTileLayer(mapLayer.id);
     }
   }
 
@@ -494,6 +601,28 @@ export function createMapLibreScenarioLayerController(
     }
   }
 
+  function updateRasterTileLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
+    const layer = activeScenario?.geo.getMapLayerById(layerId);
+    if (!isRasterTileLayer(layer)) return;
+    const mlLayerId = getRasterLayerId(layerId);
+
+    if ("url" in data || "attributions" in data) {
+      removeRasterTileLayer(layerId);
+      addRasterTileLayer(layerId);
+      return;
+    }
+    if (data.isHidden !== undefined && safeGetLayer(mlLayerId)) {
+      mlMap.setLayoutProperty(
+        mlLayerId,
+        "visibility",
+        data.isHidden ? "none" : "visible",
+      );
+    }
+    if (data.opacity !== undefined && safeGetLayer(mlLayerId)) {
+      mlMap.setPaintProperty(mlLayerId, "raster-opacity", data.opacity);
+    }
+  }
+
   function refreshActiveTransform(layerId: FeatureId) {
     if (activeTransform?.layerId === layerId) {
       void startMapLayerTransform(layerId);
@@ -509,17 +638,21 @@ export function createMapLibreScenarioLayerController(
       if (action === "undo") {
         if (activeTransform?.layerId === layerId) endMapLayerTransform();
         removeImageLayer(layerId);
+        removeRasterTileLayer(layerId);
       } else {
         addImageLayer(layerId);
+        addRasterTileLayer(layerId);
       }
       return;
     }
     if (label === "deleteMapLayer") {
       if (action === "undo") {
         addImageLayer(layerId);
+        addRasterTileLayer(layerId);
       } else {
         if (activeTransform?.layerId === layerId) endMapLayerTransform();
         removeImageLayer(layerId);
+        removeRasterTileLayer(layerId);
       }
       return;
     }
@@ -529,11 +662,13 @@ export function createMapLibreScenarioLayerController(
       if (isImageLayer(layer)) {
         updateImageLayer(layerId, layer);
         refreshActiveTransform(layerId);
+      } else if (isRasterTileLayer(layer)) {
+        updateRasterTileLayer(layerId, layer);
       }
       return;
     }
     if (label === "moveMapLayer") {
-      refreshImageLayers();
+      refreshMapLayers();
     }
   }
 
@@ -812,7 +947,7 @@ export function createMapLibreScenarioLayerController(
         featureIds: routingStore.obstacleFeatureIds,
       }),
     );
-    refreshImageLayers();
+    refreshMapLayers();
     refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
 
     const stopObstacleHighlightWatch = watch(
@@ -823,7 +958,7 @@ export function createMapLibreScenarioLayerController(
     );
 
     const onStyleLoad = () => {
-      refreshImageLayers();
+      refreshMapLayers();
       refreshScenarioFeatureLayers({ doClearCache: true });
     };
     mlMap.on("style.load", onStyleLoad);
@@ -831,20 +966,23 @@ export function createMapLibreScenarioLayerController(
     const cleanupMapLayers = scenario.geo.onMapLayerEvent((event) => {
       if (event.type === "add") {
         addImageLayer(event.id);
+        addRasterTileLayer(event.id);
       } else if (event.type === "remove") {
         if (activeTransform?.layerId === event.id) {
           endMapLayerTransform();
         }
         removeImageLayer(event.id);
+        removeRasterTileLayer(event.id);
       } else if (event.type === "update") {
         updateImageLayer(event.id, event.data);
+        updateRasterTileLayer(event.id, event.data);
         emitLayerEvent({
           type: "map-layer-updated",
           layerId: event.id,
           data: event.data,
         });
       } else if (event.type === "move") {
-        refreshImageLayers();
+        refreshMapLayers();
       }
     });
 
@@ -889,6 +1027,9 @@ export function createMapLibreScenarioLayerController(
       mlMap.off("style.load", onStyleLoad);
       for (const layerId of [...activeImageLayerIds]) {
         removeImageLayer(layerId);
+      }
+      for (const layerId of [...activeRasterTileLayerIds]) {
+        removeRasterTileLayer(layerId);
       }
       endMapLayerTransform();
       featureManager?.destroy();
