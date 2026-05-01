@@ -169,9 +169,9 @@ function getStrokeWidth(style: StyleLike) {
 
 function getMarkerSize(style: StyleLike) {
   const markerSize = style["marker-size"] || "medium";
-  if (markerSize === "small") return 8;
-  if (markerSize === "large") return 14;
-  return 11;
+  if (markerSize === "small") return 3.75;
+  if (markerSize === "large") return 7.5;
+  return 5;
 }
 
 function normalizeTextAnchor(textAlign: string | undefined) {
