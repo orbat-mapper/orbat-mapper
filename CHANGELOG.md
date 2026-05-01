@@ -4,11 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## May 2026
 
+### Added
+
+- Added raster tile layer rendering and management to MapLibre mode.
+- Added image layer rendering and transform support to MapLibre mode.
+
 ### Fixed
 
 - Added a day/night terminator overlay to MapLibre mode.
 - Added box zoom support to MapLibre mode.
 - Added feature hover tooltips to MapLibre mode.
+- Fixed MapLibre scenario feature marker sizes so point features match OpenLayers sizing.
+- Fixed MapLibre scenario feature rendering for null polygon fills and zero-opacity fills.
 
 ## April 2026
 
