@@ -372,7 +372,7 @@ function onCloseActiveDetailsPanel() {
       />
     </template>
     <template #after-keyboard>
-      <MaplibreSearchScenarioActions />
+      <MaplibreSearchScenarioActions :ml-map="mlMap" />
     </template>
     <template #footer-overlays>
       <footer
