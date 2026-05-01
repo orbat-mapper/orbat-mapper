@@ -4,6 +4,76 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { toLonLat } from "ol/proj";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
+import { toReferenceFeatureSelection } from "@/geo/kml/maplibre";
+
+const testKml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Style id="lineStyle">
+      <LineStyle><color>ff0000ff</color><width>3</width></LineStyle>
+    </Style>
+    <Placemark id="kml-feature-1">
+      <name>KML point</name>
+      <description>Point description</description>
+      <styleUrl>#lineStyle</styleUrl>
+      <ExtendedData><Data name="category"><value>reference</value></Data></ExtendedData>
+      <Point><coordinates>10,20,0</coordinates></Point>
+    </Placemark>
+    <Placemark id="kml-feature-2">
+      <name>KML line</name>
+      <styleUrl>#lineStyle</styleUrl>
+      <LineString><coordinates>10,20,0 12,22,0</coordinates></LineString>
+    </Placemark>
+  </Document>
+</kml>`;
+
+const iconKml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Style id="iconStyle">
+      <IconStyle><Icon><href>icons/marker.png</href></Icon></IconStyle>
+    </Style>
+    <Placemark id="kml-icon-feature">
+      <name>KML icon</name>
+      <styleUrl>#iconStyle</styleUrl>
+      <Point><coordinates>10,20,0</coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>`;
+
+const mixedGeometryKml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark id="mixed-1">
+      <name>Mixed placemark</name>
+      <MultiGeometry>
+        <Point><coordinates>10,20,0</coordinates></Point>
+        <Point><coordinates>12,22,0</coordinates></Point>
+        <Point><coordinates>13,23,0</coordinates></Point>
+        <LineString><coordinates>10,20,0 11,21,0</coordinates></LineString>
+      </MultiGeometry>
+    </Placemark>
+  </Document>
+</kml>`;
+
+function flushPromises() {
+  return new Promise<void>((resolve) => setTimeout(resolve, 0));
+}
+
+function createPointLabelKml(count: number) {
+  const placemarks = Array.from(
+    { length: count },
+    (_, index) => `
+    <Placemark id="point-${index}">
+      <name>Point ${index}</name>
+      <Point><coordinates>${10 + index / 1000},20,0</coordinates></Point>
+    </Placemark>`,
+  ).join("");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>${placemarks}</Document>
+</kml>`;
+}
 
 function createMockMap() {
   const listeners = new Map<string, Set<(event?: unknown) => void>>();
@@ -52,6 +122,7 @@ function createMockMap() {
       layers.delete(id);
     }),
     hasImage: vi.fn(() => false),
+    loadImage: vi.fn(),
     addImage: vi.fn(),
     setLayoutProperty: vi.fn(),
     setPaintProperty: vi.fn(),
@@ -525,6 +596,342 @@ describe("createMapLibreScenarioLayerController", () => {
       "scenario-raster-source-xyz-1",
       expect.objectContaining({ type: "raster" }),
     );
+  });
+
+  it("renders scenario KMLLayers as MapLibre GeoJSON reference layers", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+        extractStyles: true,
+        showPointNames: true,
+        opacity: 0.5,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith(
+      "scenario-kml-source-kml-1",
+      expect.objectContaining({
+        type: "geojson",
+        data: expect.objectContaining({
+          type: "FeatureCollection",
+          features: expect.arrayContaining([
+            expect.objectContaining({
+              id: "kml-feature-1",
+              properties: expect.objectContaining({
+                __kmlLayerId: "kml-1",
+                __kmlLabel: "KML point",
+                __kmlStrokeColor: "#ff0000",
+                category: "reference",
+              }),
+            }),
+          ]),
+        }),
+      }),
+    );
+    expect(mockMap.map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "scenario-kml-layer-kml-1-line",
+        type: "line",
+      }),
+    );
+    expect(mockMap.map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "scenario-kml-layer-kml-1-label",
+        type: "symbol",
+        source: "scenario-kml-label-source-kml-1",
+        minzoom: 0,
+      }),
+    );
+    expect(scenario.geo.updateMapLayer).toHaveBeenCalledWith(
+      "kml-1",
+      { _status: "initialized" },
+      { noEmit: true, undoable: false },
+    );
+    expect(scenario.geo.updateMapLayer).toHaveBeenCalledWith(
+      "kml-1",
+      { extent: [10, 20, 12, 22], _isNew: false },
+      { noEmit: true, undoable: false },
+    );
+  });
+
+  it("renders labels from a point-only label source for mixed KML geometries", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Mixed KML",
+        url: mixedGeometryKml,
+        showPointNames: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith(
+      "scenario-kml-label-source-kml-1",
+      expect.objectContaining({
+        type: "geojson",
+        data: expect.objectContaining({
+          features: [
+            expect.objectContaining({
+              id: "mixed-1-label-0",
+              geometry: {
+                type: "Point",
+                coordinates: [10, 20, 0],
+              },
+              properties: expect.objectContaining({
+                __kmlLabel: "Mixed placemark",
+              }),
+            }),
+            expect.objectContaining({
+              id: "mixed-1-label-1",
+              geometry: {
+                type: "Point",
+                coordinates: [12, 22, 0],
+              },
+              properties: expect.objectContaining({
+                __kmlLabel: "Mixed placemark",
+              }),
+            }),
+            expect.objectContaining({
+              id: "mixed-1-label-2",
+              geometry: {
+                type: "Point",
+                coordinates: [13, 23, 0],
+              },
+              properties: expect.objectContaining({
+                __kmlLabel: "Mixed placemark",
+              }),
+            }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it("defers labels on dense KML layers to avoid MapLibre glyph tile limits", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Dense KML",
+        url: createPointLabelKml(750),
+        showPointNames: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    expect(mockMap.map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "scenario-kml-layer-kml-1-label",
+        type: "symbol",
+        minzoom: 8,
+      }),
+    );
+  });
+
+  it("unwraps MapLibre loadImage responses before registering KML icons", async () => {
+    const mockMap = createMockMap();
+    const imageData = {
+      width: 2,
+      height: 2,
+      data: new Uint8ClampedArray(16),
+    };
+    mockMap.map.loadImage.mockResolvedValue({ data: imageData });
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: iconKml,
+        extractStyles: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    expect(mockMap.map.loadImage).toHaveBeenCalledWith("icons/marker.png");
+    expect(mockMap.map.addImage).toHaveBeenCalledWith(
+      expect.stringMatching(/^kml-icon-kml-1-/),
+      imageData,
+      undefined,
+    );
+  });
+
+  it("registers large KML icons with a pixel ratio so they render at normal size", async () => {
+    const mockMap = createMockMap();
+    const imageData = {
+      width: 256,
+      height: 128,
+      data: new Uint8ClampedArray(256 * 128 * 4),
+    };
+    mockMap.map.loadImage.mockResolvedValue({ data: imageData });
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: iconKml,
+        extractStyles: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    expect(mockMap.map.addImage).toHaveBeenCalledWith(
+      expect.stringMatching(/^kml-icon-kml-1-/),
+      imageData,
+      { pixelRatio: 8 },
+    );
+  });
+
+  it("updates KMLLayer visibility and opacity without rebuilding the source", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers, mapLayerHook } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+        opacity: 0.7,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    await flushPromises();
+    mockMap.map.addSource.mockClear();
+    mapLayers.value[0].opacity = 0.25;
+
+    await mapLayerHook.trigger({
+      type: "update",
+      id: "kml-1",
+      data: { isHidden: true, opacity: 0.25 },
+    });
+
+    expect(mockMap.map.addSource).not.toHaveBeenCalled();
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "scenario-kml-layer-kml-1-line",
+      "visibility",
+      "none",
+    );
+    expect(mockMap.map.setPaintProperty).toHaveBeenCalledWith(
+      "scenario-kml-layer-kml-1-line",
+      "line-opacity",
+      ["*", 0.25, ["coalesce", ["get", "__kmlStrokeOpacity"], 1]],
+    );
+  });
+
+  it("rebuilds KMLLayers after a MapLibre style reload", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    await flushPromises();
+    mockMap.clearStyle();
+    mockMap.map.addSource.mockClear();
+
+    mockMap.emit("style.load");
+    await flushPromises();
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith(
+      "scenario-kml-source-kml-1",
+      expect.objectContaining({ type: "geojson" }),
+    );
+  });
+
+  it("converts rendered KML features to reference feature selections", () => {
+    const selection = toReferenceFeatureSelection({
+      id: "rendered-1",
+      layer: { id: "scenario-kml-layer-kml-1-point-circle" },
+      properties: {
+        __kmlLayerId: "kml-1",
+        __kmlLayerName: "Reference KML",
+        __kmlFeatureId: "feature-1",
+        __kmlName: "KML point",
+        __kmlStrokeColor: "#ff0000",
+        description: "<p>Description</p>",
+        category: "reference",
+      },
+    } as any);
+
+    expect(selection).toEqual({
+      layerId: "kml-1",
+      layerName: "Reference KML",
+      featureId: "feature-1",
+      name: "KML point",
+      properties: {
+        description: "<p>Description</p>",
+        category: "reference",
+      },
+    });
   });
 
   it("updates ImageLayers immediately when map layer changes are undone", async () => {
