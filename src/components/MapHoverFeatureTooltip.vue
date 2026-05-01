@@ -20,6 +20,7 @@ const SHOW_DELAY_MS = 150;
 const { features: hoveredFeatures, pixel: hoveredPixel } = useMapHover();
 
 const rawHoveredFeatureName = computed(() => {
+  if (typeof geo.getGeometryLayerItemById !== "function") return "";
   for (const hoveredFeature of hoveredFeatures.value) {
     const featureId = hoveredFeature?.getId?.();
     if (featureId === undefined || featureId === null) continue;

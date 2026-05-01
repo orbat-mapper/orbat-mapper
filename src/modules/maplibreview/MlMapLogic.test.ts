@@ -191,11 +191,70 @@ function getAddedUnitLayers(mockMap: ReturnType<typeof createMockMap>) {
     );
 }
 
+function createHoverScenario(
+  getGeometryLayerItemById: (id: string) => { layerItem?: { name?: string } },
+) {
+  return {
+    store: {
+      state: {
+        id: "scenario-hover",
+        currentTime: 0,
+        featureStateCounter: 0,
+      },
+    },
+    unitActions: {
+      getCombinedSymbolOptions: vi.fn(() => ({})),
+    },
+    geo: {
+      everyVisibleUnit: computed(() => []),
+      getGeometryLayerItemById: vi.fn(getGeometryLayerItemById),
+    },
+    time: {
+      setCurrentTime: vi.fn(),
+    },
+    helpers: {
+      getUnitById: vi.fn(),
+    },
+  } as any;
+}
+
+function mountMlMapLogic({
+  mockMap,
+  activeScenario,
+  pinia = createPinia(),
+  refreshScenarioFeatureLayers = vi.fn(),
+}: {
+  mockMap: ReturnType<typeof createMockMap>;
+  activeScenario: any;
+  pinia?: ReturnType<typeof createPinia>;
+  refreshScenarioFeatureLayers?: ReturnType<typeof vi.fn>;
+}) {
+  setActivePinia(pinia);
+  return mount(MlMapLogic, {
+    props: {
+      mlMap: mockMap.map,
+      activeScenario,
+    },
+    global: {
+      plugins: [pinia],
+      provide: {
+        [activeScenarioMapEngineKey as symbol]: shallowRef({
+          map: {},
+          layers: { refreshScenarioFeatureLayers },
+        } as any),
+        [searchActionsKey as symbol]: createSearchActions(),
+      },
+    },
+  });
+}
+
 describe("MlMapLogic", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     saveMapLibreMapAsPng.mockReset();
     useMapSettingsStore().mapLibreUnitRotationMode = "screen";
+    useMapSettingsStore().showFeatureTooltip = true;
+    useMapSelectStore().hoverEnabled = true;
   });
 
   it("creates the unit layer immediately when mounted after the initial map load", () => {
@@ -782,6 +841,287 @@ describe("MlMapLogic", () => {
       layerId: "layer-1",
       options: { noZoom: true },
     });
+  });
+
+  it("shows hover tooltip for a named rendered scenario feature", async () => {
+    vi.useFakeTimers();
+    const mockMap = createMockMap();
+    const wrapper = mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario((id) => ({
+        layerItem: id === "feature-1" ? { name: "Bridge Alpha" } : undefined,
+      })),
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+
+    const tooltip = wrapper.find("[data-test='hover-feature-tooltip']");
+    expect(tooltip.exists()).toBe(true);
+    expect(tooltip.text()).toBe("Bridge Alpha");
+    expect(tooltip.attributes("style")).toContain("left: 112px");
+    expect(tooltip.attributes("style")).toContain("top: 212px");
+    vi.useRealTimers();
+  });
+
+  it("hides hover tooltip for unnamed rendered scenario features", async () => {
+    vi.useFakeTimers();
+    const mockMap = createMockMap();
+    const wrapper = mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({ layerItem: { name: "" } })),
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-empty",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("uses the first named rendered scenario feature and ignores unit hits", async () => {
+    vi.useFakeTimers();
+    const mockMap = createMockMap();
+    const wrapper = mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario((id) => {
+        if (id === "feature-empty") return { layerItem: { name: "" } };
+        if (id === "feature-1") return { layerItem: { name: "Bridge Alpha" } };
+        return { layerItem: undefined };
+      }),
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-empty",
+          layerId: "layer-1",
+        },
+      },
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+
+    const tooltip = wrapper.find("[data-test='hover-feature-tooltip']");
+    expect(tooltip.exists()).toBe(true);
+    expect(tooltip.text()).toBe("Bridge Alpha");
+    vi.useRealTimers();
+  });
+
+  it("does not show hover tooltip when feature tooltips or hover mode are disabled", async () => {
+    vi.useFakeTimers();
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSettingsStore(pinia).showFeatureTooltip = false;
+    const wrapper = mountMlMapLogic({
+      mockMap,
+      pinia,
+      activeScenario: createHoverScenario(() => ({
+        layerItem: { name: "Bridge Alpha" },
+      })),
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+
+    useMapSettingsStore(pinia).showFeatureTooltip = true;
+    useMapSelectStore(pinia).hoverEnabled = false;
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("clears hover tooltip during unit drag and when the pointer leaves the map", async () => {
+    vi.useFakeTimers();
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const unitSettings = useUnitSettingsStore(pinia);
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      shortName: "A1",
+      name: "Alpha 1",
+      _state: {
+        location: [10, 20],
+      },
+    };
+    const wrapper = mountMlMapLogic({
+      mockMap,
+      pinia,
+      activeScenario: {
+        ...createHoverScenario((id) => ({
+          layerItem: id === "feature-1" ? { name: "Bridge Alpha" } : undefined,
+        })),
+        store: {
+          state: {
+            id: "scenario-hover-clear",
+            currentTime: 0,
+            featureStateCounter: 0,
+          },
+          groupUpdate: (fn: () => void) => fn(),
+        },
+        unitActions: {
+          getCombinedSymbolOptions: vi.fn(() => ({})),
+          isUnitLocked: vi.fn(() => false),
+        },
+        geo: {
+          everyVisibleUnit: computed(() => [unit]),
+          addUnitPosition: vi.fn(),
+          getGeometryLayerItemById: vi.fn((id: string) => ({
+            layerItem: id === "feature-1" ? { name: "Bridge Alpha" } : undefined,
+          })),
+        },
+        helpers: {
+          getUnitById: vi.fn((id: string) => (id === unit.id ? unit : undefined)),
+        },
+        time: {
+          setCurrentTime: vi.fn(),
+        },
+      } as any,
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(true);
+
+    unitSettings.moveUnitEnabled = true;
+    await nextTick();
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+    mockMap.emit("mousedown", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: {
+        shiftKey: false,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      },
+    });
+    mockMap.emit("mousemove", {
+      point: { x: 2, y: 3 },
+      lngLat: { lng: 11, lat: 21 },
+    });
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+    mockMap.emit("mouseup", {
+      lngLat: { lng: 11, lat: 21 },
+    });
+    unitSettings.moveUnitEnabled = false;
+    await nextTick();
+    mockMap.emit("mousemove", {
+      point: { x: 100, y: 200 },
+      lngLat: { lng: 10, lat: 20 },
+    });
+    await nextTick();
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(true);
+
+    mockMap.emit("mouseleave");
+    await nextTick();
+    expect(wrapper.find("[data-test='hover-feature-tooltip']").exists()).toBe(false);
+    vi.useRealTimers();
   });
 
   it("keeps unit clicks above feature clicks and updates the pointer cursor for hits", () => {

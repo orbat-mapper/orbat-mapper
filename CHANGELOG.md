@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Added a day/night terminator overlay to MapLibre mode.
 - Added box zoom support to MapLibre mode.
+- Added feature hover tooltips to MapLibre mode.
 
 ## April 2026
 

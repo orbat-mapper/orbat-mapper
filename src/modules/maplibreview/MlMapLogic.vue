@@ -2,6 +2,7 @@
 import {
   type AddLayerObject,
   type GeoJSONSource,
+  type MapGeoJSONFeature,
   type MapMouseEvent,
   type MapStyleImageMissingEvent,
   type MapTouchEvent,
@@ -12,6 +13,7 @@ import type { TScenario } from "@/scenariostore";
 import type { TextAmplifiers } from "@/types/scenarioModels";
 import { computed, onUnmounted, provide, watch } from "vue";
 import type { Feature, Position } from "geojson";
+import type { Pixel } from "ol/pixel";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
@@ -54,6 +56,8 @@ import {
   DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
   getDayNightTerminatorGeoJson,
 } from "@/geo/dayNightTerminator";
+import { provideMapHoverContext, type HoverFeatureLike } from "@/composables/geoHover";
+import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
@@ -107,6 +111,7 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
 const { mapLibreUnitRotationMode, showDayNightTerminator } = storeToRefs(mapSettings);
+const { setHoveredFeatures, clearHoveredFeatures } = provideMapHoverContext();
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
   onPreviewEnd: () => addUnits(),
@@ -385,6 +390,28 @@ function queryInteractiveFeatures(point: PointLike) {
     );
 }
 
+function updateHoveredScenarioFeatures(
+  renderedFeatures: MapGeoJSONFeature[],
+  e: MapMouseEvent,
+) {
+  if (!hoverEnabled.value) {
+    clearHoveredFeatures();
+    return;
+  }
+
+  const features = renderedFeatures
+    .filter((feature) => isManagedScenarioFeatureLayerId(feature.layer.id))
+    .flatMap((feature) => {
+      const featureId = getFeatureIdFromRenderedFeature(feature);
+      if (!featureId) return [];
+      return [{
+        getId: () => featureId,
+      } satisfies HoverFeatureLike];
+    });
+
+  setHoveredFeatures(features, [e.point.x, e.point.y] as Pixel);
+}
+
 function getMovableUnitIds(clickedUnitId: string | undefined): string[] {
   if (!clickedUnitId || unitActions.isUnitLocked(clickedUnitId)) return [];
 
@@ -457,13 +484,18 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
-  if (rotateInteraction.isRotating.value) return;
+  if (rotateInteraction.isRotating.value) {
+    clearHoveredFeatures();
+    return;
+  }
   if (unitDragState) {
+    clearHoveredFeatures();
     previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
     mlMap.getCanvas().style.cursor = "grabbing";
     return;
   }
   if (rotateUnitEnabled.value) {
+    clearHoveredFeatures();
     if (!unitSelectEnabled.value) return;
     const topHit = queryInteractiveFeatures(e.point)[0];
     const rotatableUnitIds = isUnitLayerId(topHit?.layer.id)
@@ -473,6 +505,7 @@ function onMapMouseMove(e: MapMouseEvent) {
     return;
   }
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
+    clearHoveredFeatures();
     if (!unitSelectEnabled.value) return;
     const topHit = queryInteractiveFeatures(e.point)[0];
     const movableUnitIds = isUnitLayerId(topHit?.layer.id)
@@ -482,12 +515,17 @@ function onMapMouseMove(e: MapMouseEvent) {
     return;
   }
   if (!hoverEnabled.value) {
+    clearHoveredFeatures();
     mlMap.getCanvas().style.cursor = "crosshair";
     return;
   }
-  mlMap.getCanvas().style.cursor = queryInteractiveFeatures(e.point).length
-    ? "pointer"
-    : "";
+  const features = queryInteractiveFeatures(e.point);
+  mlMap.getCanvas().style.cursor = features.length ? "pointer" : "";
+  updateHoveredScenarioFeatures(features, e);
+}
+
+function onMapMouseLeave() {
+  clearHoveredFeatures();
 }
 
 function onMapTouchMove(e: MapTouchEvent) {
@@ -578,6 +616,7 @@ mlMap.on("click", onMapClick);
 mlMap.on("mousedown", onUnitDragStart);
 mlMap.on("touchstart", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
+mlMap.on("mouseleave", onMapMouseLeave);
 mlMap.on("touchmove", onMapTouchMove);
 mlMap.on("mouseup", onUnitDragEnd);
 mlMap.on("touchend", onUnitDragEnd);
@@ -766,6 +805,7 @@ onUnmounted(() => {
   mlMap.off("mousedown", onUnitDragStart);
   mlMap.off("touchstart", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);
+  mlMap.off("mouseleave", onMapMouseLeave);
   mlMap.off("touchmove", onMapTouchMove);
   mlMap.off("mouseup", onUnitDragEnd);
   mlMap.off("touchend", onUnitDragEnd);
@@ -802,8 +842,13 @@ watch(
   },
   { immediate: true },
 );
+
+watch(hoverEnabled, (enabled) => {
+  if (!enabled) clearHoveredFeatures();
+});
 </script>
 <template>
+  <MapHoverFeatureTooltip :is-dragging="isDragging" />
   <div v-if="isDragging" class="pointer-events-none absolute inset-0 z-10">
     <p
       class="text-foreground bg-background absolute bottom-1 left-2 rounded px-1 text-base tracking-tighter tabular-nums"

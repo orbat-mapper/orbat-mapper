@@ -24,6 +24,8 @@ export interface MapHoverContext {
   globalHoveredPixel: Ref<Pixel | null>;
 }
 
+export type HoverFeatureLike = Pick<FeatureLike, "getId">;
+
 export const MapHoverKey: InjectionKey<MapHoverContext> = Symbol("MapHover");
 
 export interface UseMapHoverOptions {
@@ -38,13 +40,35 @@ export interface ProvideMapHoverOptions {
   enable?: MaybeRef<boolean>;
 }
 
+export function provideMapHoverContext() {
+  const globalHoveredFeatures = shallowRef<FeatureLike[]>([]);
+  const globalHoveredPixel = ref<Pixel | null>(null);
+
+  const setHoveredFeatures = (features: HoverFeatureLike[], pixel: Pixel | null) => {
+    globalHoveredFeatures.value = features as FeatureLike[];
+    globalHoveredPixel.value = features.length && pixel ? pixel : null;
+  };
+
+  const clearHoveredFeatures = () => {
+    globalHoveredFeatures.value = [];
+    globalHoveredPixel.value = null;
+  };
+
+  const context: MapHoverContext = { globalHoveredFeatures, globalHoveredPixel };
+  provide(MapHoverKey, context);
+
+  return {
+    ...context,
+    setHoveredFeatures,
+    clearHoveredFeatures,
+  };
+}
+
 export function provideMapHover(
   mapRef: Ref<OLMap | null | undefined>,
   options: ProvideMapHoverOptions = {},
 ) {
-  // Use shallowRef for complex OL objects to avoid deep reactivity overhead
-  const globalHoveredFeatures = shallowRef<FeatureLike[]>([]);
-  const globalHoveredPixel = ref<Pixel | null>(null);
+  const { globalHoveredFeatures, globalHoveredPixel } = provideMapHoverContext();
   const rawPixel = ref<Pixel | null>(null);
 
   watchThrottled(
@@ -110,9 +134,7 @@ export function provideMapHover(
     { immediate: true },
   );
 
-  const context: MapHoverContext = { globalHoveredFeatures, globalHoveredPixel };
-  provide(MapHoverKey, context);
-  return context;
+  return { globalHoveredFeatures, globalHoveredPixel };
 }
 
 export function useMapHover(options: UseMapHoverOptions = {}) {
