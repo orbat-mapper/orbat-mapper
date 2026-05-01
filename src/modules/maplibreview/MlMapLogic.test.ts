@@ -10,6 +10,11 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import {
+  DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+  DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+  getDayNightTerminatorGeoJson,
+} from "@/geo/dayNightTerminator";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -465,6 +470,85 @@ describe("MlMapLogic", () => {
       "icon-rotation-alignment": "map",
       "text-rotation-alignment": "map",
     });
+  });
+
+  it("syncs the day/night terminator overlay with MapLibre map settings and time", async () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const refreshScenarioFeatureLayers = vi.fn();
+    const addGeoJsonOverlay = vi.fn();
+    const removeGeoJsonOverlay = vi.fn();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.showDayNightTerminator = true;
+    const currentTime = ref(Date.parse("2025-01-01T00:00:00Z"));
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-day-night-overlay",
+          get currentTime() {
+            return currentTime.value;
+          },
+          set currentTime(value: number) {
+            currentTime.value = value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {
+              addGeoJsonOverlay,
+              removeGeoJsonOverlay,
+            },
+            layers: { refreshScenarioFeatureLayers },
+          } as any),
+          [searchActionsKey as symbol]: searchActions,
+        },
+      },
+    });
+
+    expect(addGeoJsonOverlay).toHaveBeenCalledWith(
+      DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+      getDayNightTerminatorGeoJson(currentTime.value),
+      DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+    );
+
+    currentTime.value = Date.parse("2025-06-01T12:00:00Z");
+    await nextTick();
+
+    expect(addGeoJsonOverlay).toHaveBeenLastCalledWith(
+      DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+      getDayNightTerminatorGeoJson(currentTime.value),
+      DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+    );
+
+    mapSettings.showDayNightTerminator = false;
+    await nextTick();
+
+    expect(removeGeoJsonOverlay).toHaveBeenCalledWith(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
   });
 
   it("renders units that become visible right after mount without needing further interaction", async () => {

@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
+import {
+  DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+  DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+  getDayNightTerminatorGeoJson,
+} from "@/geo/dayNightTerminator";
 
 function createMockMap() {
   const listeners = new Map<string, (event: any) => void>();
@@ -212,6 +217,25 @@ describe("MapLibreMapAdapter", () => {
       expect(layers.get("geojson-overlay-line-preview").paint).not.toHaveProperty(
         "line-dasharray",
       );
+    });
+
+    it("keeps day/night overlays from rendering circle markers", () => {
+      const { mlMap, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.addGeoJsonOverlay(
+        DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+        getDayNightTerminatorGeoJson("2025-01-01T00:00:00Z"),
+        DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+      );
+
+      expect(
+        layers.get("geojson-overlay-circle-day-night-terminator").paint,
+      ).toMatchObject({
+        "circle-radius": 0,
+        "circle-color": "rgba(0, 0, 0, 0)",
+        "circle-stroke-color": "rgba(0, 0, 0, 0)",
+      });
     });
 
     it("removes overlay layers and source", () => {

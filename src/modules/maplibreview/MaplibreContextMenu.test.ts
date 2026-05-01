@@ -387,6 +387,8 @@ describe("MaplibreContextMenu", () => {
     uiStore.showToolbar = true;
     uiStore.showTimeline = true;
     uiStore.showOrbatBreadcrumbs = true;
+    const mapSettings = useMapSettingsStore();
+    mapSettings.showDayNightTerminator = false;
 
     const { wrapper } = mountMenu();
     const buttons = wrapper.findAll("button");
@@ -396,10 +398,14 @@ describe("MaplibreContextMenu", () => {
     await buttons
       .find((button) => button.text() === "Unit breadcrumbs")
       ?.trigger("click");
+    await buttons
+      .find((button) => button.text() === "Day/night terminator")
+      ?.trigger("click");
 
     expect(uiStore.showToolbar).toBe(false);
     expect(uiStore.showTimeline).toBe(false);
     expect(uiStore.showOrbatBreadcrumbs).toBe(false);
+    expect(mapSettings.showDayNightTerminator).toBe(true);
   });
 
   it("controls playback from the maplibre context menu", async () => {

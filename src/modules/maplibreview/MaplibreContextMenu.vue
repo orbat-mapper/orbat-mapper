@@ -79,6 +79,7 @@ const {
   showLocation,
   showScaleLine,
   showFeatureTooltip,
+  showDayNightTerminator,
   mapLibreUnitRotationMode,
 } = storeToRefs(mapSettings);
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
@@ -495,6 +496,9 @@ function onContextMenu(event: MouseEvent) {
           </ContextMenuCheckboxItem>
           <ContextMenuCheckboxItem v-model="showFeatureTooltip" @select.prevent>
             Feature tooltip
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="showDayNightTerminator" @select.prevent>
+            Day/night terminator
           </ContextMenuCheckboxItem>
           <ContextMenuSeparator />
           <ContextMenuCheckboxItem

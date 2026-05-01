@@ -49,6 +49,11 @@ import {
   type MapLibreUnitRotationMode,
 } from "@/stores/mapSettingsStore";
 import { useRoutingStore } from "@/stores/routingStore";
+import {
+  DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+  DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+  getDayNightTerminatorGeoJson,
+} from "@/geo/dayNightTerminator";
 
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
@@ -101,7 +106,7 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
   storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
-const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
+const { mapLibreUnitRotationMode, showDayNightTerminator } = storeToRefs(mapSettings);
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
   onPreviewEnd: () => addUnits(),
@@ -351,6 +356,20 @@ function onStyleLoad() {
   shouldCenterOnNextStyleLoad = false;
 }
 
+function syncDayNightTerminator() {
+  const mapAdapter = engineRef.value?.map;
+  if (!showDayNightTerminator.value) {
+    mapAdapter?.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
+    return;
+  }
+
+  mapAdapter?.addGeoJsonOverlay?.(
+    DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+    getDayNightTerminatorGeoJson(activeScenario.store.state.currentTime),
+    DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+  );
+}
+
 mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
@@ -598,6 +617,16 @@ watch(mapLibreUnitRotationMode, () => {
 });
 
 watch(
+  [
+    showDayNightTerminator,
+    () => activeScenario.store.state.currentTime,
+    () => engineRef.value?.map,
+  ],
+  () => syncDayNightTerminator(),
+  { immediate: true },
+);
+
+watch(
   [() => activeScenario.store.state.featureStateCounter, doNotFilterLayers],
   () => {
     engineRef.value?.layers.refreshScenarioFeatureLayers({
@@ -730,6 +759,7 @@ onUnmounted(() => {
   if (!mlMap) return;
   boxSelect.cleanup();
   disposeUnitHistory();
+  engineRef.value?.map.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
