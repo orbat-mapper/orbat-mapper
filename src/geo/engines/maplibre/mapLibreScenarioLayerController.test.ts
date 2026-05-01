@@ -380,6 +380,153 @@ describe("createMapLibreScenarioLayerController", () => {
     );
   });
 
+  it("renders scenario XYZLayers as MapLibre raster tile layers", () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+        attributions: "Example tiles",
+        opacity: 0.5,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith("scenario-raster-source-xyz-1", {
+      type: "raster",
+      tiles: ["https://example.test/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "Example tiles",
+    });
+    expect(mockMap.map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "scenario-raster-layer-xyz-1",
+        type: "raster",
+        source: "scenario-raster-source-xyz-1",
+        paint: { "raster-opacity": 0.5 },
+      }),
+    );
+    expect(scenario.geo.updateMapLayer).toHaveBeenCalledWith(
+      "xyz-1",
+      { _status: "initialized" },
+      { noEmit: true, undoable: false },
+    );
+  });
+
+  it("renders scenario TileJSONLayers as MapLibre raster tilejson sources", () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "tilejson-1",
+        type: "TileJSONLayer",
+        name: "TileJSON",
+        url: "https://example.test/tilejson.json",
+        isHidden: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith(
+      "scenario-raster-source-tilejson-1",
+      {
+        type: "raster",
+        url: "https://example.test/tilejson.json",
+      },
+    );
+    expect(mockMap.map.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "scenario-raster-layer-tilejson-1",
+        layout: { visibility: "none" },
+      }),
+    );
+  });
+
+  it("updates XYZLayer visibility and opacity without rebuilding the source", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers, mapLayerHook } = createScenario();
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    mockMap.map.addSource.mockClear();
+
+    await mapLayerHook.trigger({
+      type: "update",
+      id: "xyz-1",
+      data: { isHidden: true, opacity: 0.25 },
+    });
+
+    expect(mockMap.map.addSource).not.toHaveBeenCalled();
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "scenario-raster-layer-xyz-1",
+      "visibility",
+      "none",
+    );
+    expect(mockMap.map.setPaintProperty).toHaveBeenCalledWith(
+      "scenario-raster-layer-xyz-1",
+      "raster-opacity",
+      0.25,
+    );
+  });
+
+  it("rebuilds raster tile layers after a MapLibre style reload", () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    mockMap.clearStyle();
+    mockMap.map.addSource.mockClear();
+
+    mockMap.emit("style.load");
+
+    expect(mockMap.map.addSource).toHaveBeenCalledWith(
+      "scenario-raster-source-xyz-1",
+      expect.objectContaining({ type: "raster" }),
+    );
+  });
+
   it("updates ImageLayers immediately when map layer changes are undone", async () => {
     const mockMap = createMockMap();
     const { scenario, mapLayers, undoRedoHook } = createScenario();

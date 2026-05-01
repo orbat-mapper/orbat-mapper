@@ -2,7 +2,7 @@
 import type { ScenarioImageLayer } from "@/types/scenarioGeoModels";
 import { activeScenarioMapEngineKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import type {
   ScenarioImageLayerUpdate,
   ScenarioMapLayerUpdate,
@@ -25,6 +25,7 @@ const engineRef = injectStrict(activeScenarioMapEngineKey);
 const editMode = ref((props.layer._isNew && !props.layer._isTemporary) ?? false);
 
 const { layerTypeLabel, status, isInitialized } = useMapLayerInfo(props.layer);
+const hasLoadFailed = computed(() => status.value === "error" && !props.layer._isNew);
 const canTransformMapLayer = () =>
   Boolean(engineRef.value?.layers.capabilities.mapLayerTransform);
 const canZoomMapLayer = () =>
@@ -98,9 +99,7 @@ function updateData(formData: ScenarioImageLayerUpdate) {
     <p v-if="!isInitialized" class="text-muted-foreground mt-2 text-sm">
       This layer has not been initialized yet.
     </p>
-    <p v-if="status === 'error'" class="mt-2 text-sm text-red-600">
-      Failed to load layer.
-    </p>
+    <p v-if="hasLoadFailed" class="mt-2 text-sm text-red-600">Failed to load layer.</p>
     <p
       v-if="isInitialized && !canTransformMapLayer()"
       class="text-muted-foreground mt-2 text-sm"
