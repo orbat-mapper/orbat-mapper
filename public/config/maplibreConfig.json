@@ -18,6 +18,18 @@
     "styleUrl": "https://tiles.openfreemap.org/styles/bright"
   },
   {
+    "name": "openFreeMapDark",
+    "title": "OpenFreeMap Dark",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.openfreemap.org/styles/dark"
+  },
+  {
+    "name": "openFreeMapFiord",
+    "title": "OpenFreeMap Fiord",
+    "sourceType": "style",
+    "styleUrl": "https://tiles.openfreemap.org/styles/fiord"
+  },
+  {
     "name": "versaTilesEclipse",
     "title": "VersaTiles Eclipse (dark)",
     "sourceType": "style",
