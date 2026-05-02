@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  MAPLIBRE_ROUTE,
+  MAP_EDIT_MODE_ROUTE,
   SYMBOL_BROWSER_ROUTE,
   TEXT_TO_ORBAT_ROUTE,
 } from "@/router/names";
@@ -171,7 +171,10 @@ const features = [
                 >Text to ORBAT
               </router-link>
               <router-link
-                :to="{ name: MAPLIBRE_ROUTE, params: { scenarioId: 'demo-falkland82' } }"
+                :to="{
+                  name: MAP_EDIT_MODE_ROUTE,
+                  params: { scenarioId: 'demo-falkland82' },
+                }"
                 >Globe view</router-link
               >
 

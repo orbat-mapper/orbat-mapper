@@ -9,7 +9,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 
 const routeState = vi.hoisted(() => ({
-  currentRouteName: "MaplibreRoute",
+  currentRouteName: "MapBetaModeRoute",
 }));
 
 vi.mock("vue-router", () => ({
@@ -37,7 +37,7 @@ describe("LayersPanel", () => {
   beforeEach(() => {
     localStorage.clear();
     setActivePinia(createPinia());
-    routeState.currentRouteName = "MaplibreRoute";
+    routeState.currentRouteName = "MapBetaModeRoute";
   });
 
   it("updates maplibre basemaps and scenario overlay layers", async () => {

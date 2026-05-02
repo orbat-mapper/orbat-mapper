@@ -14,7 +14,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useBaseLayersStore } from "@/stores/baseLayersStore";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { activeScenarioKey } from "@/components/injects";
-import { MAPLIBRE_ROUTE } from "@/router/names";
+import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   getSupportedMaplibreBasemaps,
@@ -47,7 +47,7 @@ const maplibreLayersStore = useMaplibreLayersStore();
 const activeScenario = inject<TScenario | null>(activeScenarioKey, null);
 
 const otherLayers = ref<LayerInfo[]>([]);
-const isMaplibreMode = computed(() => route.name === MAPLIBRE_ROUTE);
+const isMaplibreMode = computed(() => route.name === MAP_EDIT_MODE_ROUTE);
 
 const selectedBaseLayerId = computed(() => {
   if (isMaplibreMode.value) {

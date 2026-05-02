@@ -8,7 +8,7 @@ import {
 } from "@/components/keyboardShortcuts";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { GRID_EDIT_ROUTE, MAP_EDIT_MODE_ROUTE, OLD_MAP_ROUTE } from "@/router/names";
+import { GRID_EDIT_ROUTE, LEGACY_MAP_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Kbd } from "@/components/ui/kbd";
 const route = useRoute();
@@ -16,7 +16,7 @@ const route = useRoute();
 const open = defineModel<boolean>({ default: false });
 
 const shortcuts = computed((): KeyboardCategory[] => {
-  if (route.name === OLD_MAP_ROUTE || route.name === MAP_EDIT_MODE_ROUTE)
+  if (route.name === LEGACY_MAP_ROUTE || route.name === MAP_EDIT_MODE_ROUTE)
     return mapEditModeShortcuts;
   if (route.name === GRID_EDIT_ROUTE) return gridEditModeShortcuts;
   return defaultShortcuts;

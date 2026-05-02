@@ -7,6 +7,7 @@ export const GRID_EDIT_ROUTE = "GridEditRoute";
 export const CHART_EDIT_MODE_ROUTE = "ChartModeRoute";
 export const MAP_EDIT_MODE_ROUTE = "MapBetaModeRoute";
 export const MAPLIBRE_ROUTE = "MaplibreRoute";
+export const LEGACY_MAP_ROUTE = "LegacyMapRoute";
 export const TEXT_TO_ORBAT_ROUTE = "TextToOrbatRoute";
 export const IMPORT_SCENARIO_ROUTE = "ImportScenarioRoute";
 export const SYMBOL_BROWSER_ROUTE = "SymbolBrowserRoute";

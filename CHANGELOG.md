@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 - Added raster tile layer rendering and management to MapLibre mode.
 - Added image layer rendering and transform support to MapLibre mode.
 
+### Changed
+
+- MapLibre is now the default map mode.
+
+
 ### Fixed
 
 - Added a day/night terminator overlay to MapLibre mode.

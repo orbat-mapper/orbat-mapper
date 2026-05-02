@@ -4,6 +4,7 @@ import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
 import {
   CHART_EDIT_MODE_ROUTE,
+  LEGACY_MAP_ROUTE,
   MAPLIBRE_ROUTE,
   GRID_EDIT_ROUTE,
   IMPORT_SCENARIO_ROUTE,
@@ -36,7 +37,7 @@ const ChartEditView = () => import("@/modules/scenarioeditor/ChartEditView.vue")
 const ScenarioEditorMap = () => import("@/modules/scenarioeditor/ScenarioEditorMap.vue");
 const ScenarioEditorMaplibre = () =>
   import("@/modules/maplibreview/ScenarioEditorMaplibre.vue");
-const routes = [
+export const routes = [
   {
     path: "/scenario/:scenarioId",
     props: true,
@@ -48,6 +49,12 @@ const routes = [
       {
         path: "",
         name: MAP_EDIT_MODE_ROUTE,
+        component: ScenarioEditorMaplibre,
+        meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
+      },
+      {
+        path: "legacy",
+        name: LEGACY_MAP_ROUTE,
         component: ScenarioEditorMap,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
@@ -66,7 +73,7 @@ const routes = [
       {
         path: "maplibre",
         name: MAPLIBRE_ROUTE,
-        component: ScenarioEditorMaplibre,
+        redirect: (to) => ({ name: MAP_EDIT_MODE_ROUTE, params: to.params }),
       },
     ],
   },
@@ -111,7 +118,7 @@ const routes = [
   },
   {
     path: "/globe/:scenarioId",
-    redirect: (to) => ({ name: MAPLIBRE_ROUTE, params: to.params }),
+    redirect: (to) => ({ name: MAP_EDIT_MODE_ROUTE, params: to.params }),
   },
   { path: "/", name: LANDING_PAGE_ROUTE, component: LandingPage },
 ] as RouteRecordRaw[];

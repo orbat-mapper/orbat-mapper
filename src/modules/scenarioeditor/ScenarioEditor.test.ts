@@ -5,7 +5,7 @@ import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
-import { MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { LEGACY_MAP_ROUTE, MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useSelectedItems } from "@/stores/selectedStore";
 import type { TScenario } from "@/scenariostore";
 
@@ -114,9 +114,14 @@ const routes: RouteRecordRaw[] = [
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
       },
       {
+        path: "legacy",
+        name: LEGACY_MAP_ROUTE,
+        component: RouteView,
+      },
+      {
         path: "maplibre",
         name: MAPLIBRE_ROUTE,
-        component: RouteView,
+        redirect: (to) => ({ name: MAP_EDIT_MODE_ROUTE, params: to.params }),
       },
     ],
   },
@@ -322,7 +327,7 @@ describe("ScenarioEditor", () => {
       }),
     });
 
-    await mountScenarioEditor({ routeName: MAPLIBRE_ROUTE, activeScenario });
+    await mountScenarioEditor({ routeName: MAP_EDIT_MODE_ROUTE, activeScenario });
     send.mockClear();
 
     document.dispatchEvent(event);

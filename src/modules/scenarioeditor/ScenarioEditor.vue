@@ -51,8 +51,8 @@ import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
+  LEGACY_MAP_ROUTE,
   MAP_EDIT_MODE_ROUTE,
-  MAPLIBRE_ROUTE,
   NEW_SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
@@ -65,7 +65,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import { FlaskConicalIcon, GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
+import { GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,7 +164,7 @@ const selectedModeRoute = computed({
       route.name === MAP_EDIT_MODE_ROUTE ||
       route.name === GRID_EDIT_ROUTE ||
       route.name === CHART_EDIT_MODE_ROUTE ||
-      route.name === MAPLIBRE_ROUTE
+      route.name === LEGACY_MAP_ROUTE
     ) {
       return route.name;
     }
@@ -178,7 +178,7 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "OpenLayers", icon: MapIcon, experimental: false },
+  { value: MAP_EDIT_MODE_ROUTE, label: "MapLibre", icon: GlobeIcon },
   { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, experimental: false },
   {
     value: CHART_EDIT_MODE_ROUTE,
@@ -186,7 +186,11 @@ const modeOptions = [
     icon: IconSitemap,
     experimental: false,
   },
-  { value: MAPLIBRE_ROUTE, label: "MapLibre", icon: GlobeIcon, experimental: true },
+  {
+    value: LEGACY_MAP_ROUTE,
+    label: "OpenLayers legacy",
+    icon: MapIcon,
+  },
 ] as const;
 
 const activeModeOption = computed(
@@ -207,7 +211,7 @@ const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 const sharedMapView = ref<ScenarioMapViewSnapshot>();
 const mapRouteProps = computed(() =>
-  route.name === MAP_EDIT_MODE_ROUTE || route.name === MAPLIBRE_ROUTE
+  route.name === MAP_EDIT_MODE_ROUTE || route.name === LEGACY_MAP_ROUTE
     ? { initialMapView: sharedMapView.value }
     : {},
 );
@@ -463,7 +467,7 @@ if (firstOverlayLayerId) {
         <div class="flex min-w-0 items-center gap-0.5 sm:gap-2">
           <RecordingState />
           <PlaybackMenu
-            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === MAPLIBRE_ROUTE"
+            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === LEGACY_MAP_ROUTE"
           />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
@@ -473,10 +477,6 @@ if (firstOverlayLayerId) {
               <SelectValue>
                 <span class="relative inline-flex">
                   <component :is="activeModeOption.icon" class="size-6 text-green-500" />
-                  <FlaskConicalIcon
-                    v-if="activeModeOption.experimental"
-                    class="bg-background absolute -right-1 -bottom-1 size-3.5 rounded-full p-0.5 text-amber-500"
-                  />
                 </span>
               </SelectValue>
             </SelectTrigger>
@@ -488,10 +488,6 @@ if (firstOverlayLayerId) {
               >
                 <span class="relative inline-flex">
                   <component :is="mode.icon" class="size-5" />
-                  <FlaskConicalIcon
-                    v-if="mode.experimental"
-                    class="bg-background absolute -right-1 -bottom-1 size-3 rounded-full p-0.5 text-amber-500"
-                  />
                 </span>
                 <span>{{ mode.label }}</span>
               </SelectItem>
@@ -503,11 +499,11 @@ if (firstOverlayLayerId) {
           >
             <router-link
               :to="{ name: MAP_EDIT_MODE_ROUTE }"
-              title="OpenLayers view"
+              title="MapLibre view"
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
-              <MapIcon class="size-6" />
+              <GlobeIcon class="size-6" />
             </router-link>
             <router-link
               :to="{ name: GRID_EDIT_ROUTE }"
@@ -526,17 +522,12 @@ if (firstOverlayLayerId) {
               <IconSitemap class="size-6" />
             </router-link>
             <router-link
-              :to="{ name: MAPLIBRE_ROUTE }"
-              title="MapLibre view"
+              :to="{ name: LEGACY_MAP_ROUTE }"
+              title="OpenLayers legacy view"
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
-              <span class="relative inline-flex">
-                <GlobeIcon class="size-6" />
-                <FlaskConicalIcon
-                  class="bg-background absolute -right-1 -bottom-1 size-3.5 rounded-full p-0.5 text-amber-500"
-                />
-              </span>
+              <MapIcon class="size-6" />
             </router-link>
           </div>
         </div>
