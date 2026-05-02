@@ -5,6 +5,7 @@ import type { EntityId } from "@/types/base";
 const BOX_SELECT_SOURCE = "__boxSelectSource";
 const BOX_SELECT_FILL = "__boxSelectFill";
 const BOX_SELECT_LINE = "__boxSelectLine";
+const DRAG_THRESHOLD_PX = 3;
 
 export interface MaplibreBoxSelectOptions<S> {
   getUnitLayerIds: () => string[];
@@ -34,6 +35,10 @@ export function useMaplibreBoxSelect<S>(
     startPx: [number, number];
     suspended: S;
   };
+  type PendingDrag = {
+    startPx: [number, number];
+  };
+  let pending: PendingDrag | null = null;
   let drag: ActiveDrag | null = null;
 
   function getPixel(e: MouseEvent): [number, number] {
@@ -90,12 +95,43 @@ export function useMaplibreBoxSelect<S>(
   }
 
   function onMove(e: MouseEvent) {
+    if (pending && !drag) {
+      const currentPx = getPixel(e);
+      if (
+        Math.hypot(currentPx[0] - pending.startPx[0], currentPx[1] - pending.startPx[1]) <
+        DRAG_THRESHOLD_PX
+      ) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      options.onBoxStart();
+      drag = {
+        startPx: pending.startPx,
+        suspended: options.suspend(),
+      };
+      pending = null;
+      addPreviewLayers();
+      updatePreview(currentPx);
+      mlMap.getCanvas().style.cursor = "crosshair";
+    }
     if (!drag) return;
+    e.preventDefault();
+    e.stopPropagation();
     updatePreview(getPixel(e));
   }
 
   function onUp(e: MouseEvent) {
+    if (pending && !drag) {
+      pending = null;
+      detachWindowListeners();
+      return;
+    }
     if (!drag) return;
+    e.preventDefault();
+    e.stopPropagation();
     const startPx = drag.startPx;
     const endPx = getPixel(e);
     const minX = Math.min(startPx[0], endPx[0]);
@@ -126,7 +162,10 @@ export function useMaplibreBoxSelect<S>(
   }
 
   function onKey(e: KeyboardEvent) {
-    if (e.key === "Escape") cancel();
+    if (e.key !== "Escape") return;
+    pending = null;
+    cancel();
+    detachWindowListeners();
   }
 
   function detachWindowListeners() {
@@ -154,22 +193,14 @@ export function useMaplibreBoxSelect<S>(
   }
 
   function onDown(e: MouseEvent) {
-    if (drag) return;
+    if (pending || drag) return;
     if (e.button !== 0) return;
     if (!(e.ctrlKey || e.metaKey)) return;
     if (!options.isEnabled()) return;
 
-    e.preventDefault();
-    e.stopPropagation();
-
-    options.onBoxStart();
-    drag = {
+    pending = {
       startPx: getPixel(e),
-      suspended: options.suspend(),
     };
-    addPreviewLayers();
-    updatePreview(drag.startPx);
-    mlMap.getCanvas().style.cursor = "crosshair";
 
     window.addEventListener("mousemove", onMove, true);
     window.addEventListener("mouseup", onUp, true);
