@@ -139,6 +139,7 @@ let unitDragState: {
   };
   moved: boolean;
 } | null = null;
+let suppressNextNativeClick = false;
 
 const { setupRangeRingLayers, drawRangeRings } = useMaplibreRangeRings(
   mlMap,
@@ -467,6 +468,39 @@ function restoreMapDragInteractions(interactions: {
   }
 }
 
+function getEventPixel(e: MouseEvent): [number, number] {
+  const rect = mlMap.getCanvas().getBoundingClientRect();
+  return [e.clientX - rect.left, e.clientY - rect.top];
+}
+
+function onNativeCanvasClick(e: MouseEvent) {
+  if (suppressNextNativeClick) {
+    suppressNextNativeClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+}
+
+function onNativeCanvasMouseDown(e: MouseEvent) {
+  if (!e.shiftKey) return;
+  if (e.button !== 0) return;
+  if (routingStore.active) return;
+  if (moveUnitEnabled.value) return;
+  if (!unitSelectEnabled.value) return;
+
+  const topHit = queryInteractiveFeatures(getEventPixel(e))[0];
+  if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
+
+  const unitId = topHit.properties?.id;
+  if (!unitId) return;
+
+  toggleUnitSelection(unitId);
+  suppressNextNativeClick = true;
+  e.preventDefault();
+  e.stopPropagation();
+}
+
 function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
@@ -630,6 +664,12 @@ function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
 }
 
 mlMap.on("click", onMapClick);
+mlMap.getCanvasContainer().addEventListener("mousedown", onNativeCanvasMouseDown, {
+  capture: true,
+});
+mlMap.getCanvasContainer().addEventListener("click", onNativeCanvasClick, {
+  capture: true,
+});
 mlMap.on("mousedown", onUnitDragStart);
 mlMap.on("touchstart", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
@@ -819,6 +859,12 @@ onUnmounted(() => {
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
+  mlMap.getCanvasContainer().removeEventListener("mousedown", onNativeCanvasMouseDown, {
+    capture: true,
+  });
+  mlMap.getCanvasContainer().removeEventListener("click", onNativeCanvasClick, {
+    capture: true,
+  });
   mlMap.off("mousedown", onUnitDragStart);
   mlMap.off("touchstart", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);

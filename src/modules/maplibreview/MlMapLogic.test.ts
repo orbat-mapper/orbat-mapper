@@ -165,6 +165,7 @@ function createMockMap() {
   return {
     map: map as any,
     canvas,
+    canvasContainer,
     dragPan,
     touchZoomRotate,
     getSource(id: string) {
@@ -1731,6 +1732,53 @@ describe("MlMapLogic", () => {
       },
     ]);
 
+    const firstMouseDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      button: 0,
+      clientX: 1,
+      clientY: 2,
+    });
+    const firstClick = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(firstMouseDown);
+    mockMap.canvasContainer.dispatchEvent(firstClick);
+
+    expect(firstMouseDown.defaultPrevented).toBe(true);
+    expect(firstClick.defaultPrevented).toBe(true);
+    expect(unitSelectSpy).not.toHaveBeenCalled();
+    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
+    expect(selectedUnitIds.value.has("unit-1")).toBe(true);
+
+    const secondMouseDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      button: 0,
+      clientX: 1,
+      clientY: 2,
+    });
+    const secondClick = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(secondMouseDown);
+    mockMap.canvasContainer.dispatchEvent(secondClick);
+
+    expect(secondMouseDown.defaultPrevented).toBe(true);
+    expect(secondClick.defaultPrevented).toBe(true);
+    expect(selectedUnitIds.value.has("unit-1")).toBe(false);
+    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
+
     mockMap.emit("click", {
       point: { x: 1, y: 2 },
       originalEvent: { shiftKey: true },
@@ -1739,14 +1787,6 @@ describe("MlMapLogic", () => {
     expect(unitSelectSpy).not.toHaveBeenCalled();
     expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
     expect(selectedUnitIds.value.has("unit-1")).toBe(true);
-
-    mockMap.emit("click", {
-      point: { x: 1, y: 2 },
-      originalEvent: { shiftKey: true },
-    });
-
-    expect(selectedUnitIds.value.has("unit-1")).toBe(false);
-    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
   });
 
   it("clears the selection when clicking empty map area", () => {
