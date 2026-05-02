@@ -15,6 +15,7 @@ import {
   DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
   getDayNightTerminatorGeoJson,
 } from "@/geo/dayNightTerminator";
+import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -30,9 +31,11 @@ vi.mock("@/modules/maplibreview/useMaplibreMapDrop.ts", () => ({
 vi.mock("@/symbology/milsymbwrapper.ts", () => ({
   symbolGenerator: vi.fn(() => ({
     getSize: () => ({ width: 1, height: 1 }),
+    getAnchor: () => ({ x: 0.5, y: 0.5 }),
     asCanvas: () => ({
       getContext: () => ({
-        getImageData: () => new ImageData(2, 2),
+        drawImage: vi.fn(),
+        getImageData: () => ({ width: 2, height: 2, data: new Uint8ClampedArray(16) }),
       }),
     }),
   })),
@@ -253,6 +256,11 @@ describe("MlMapLogic", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     saveMapLibreMapAsPng.mockReset();
+    vi.mocked(symbolGenerator).mockClear();
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      drawImage: vi.fn(),
+      getImageData: () => ({ width: 2, height: 2, data: new Uint8ClampedArray(16) }),
+    } as any);
     useMapSettingsStore().mapLibreUnitRotationMode = "screen";
     useMapSettingsStore().showFeatureTooltip = true;
     useMapSelectStore().hoverEnabled = true;
@@ -322,6 +330,163 @@ describe("MlMapLogic", () => {
     expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalled();
     expect(mockMap.map.setCenter).toHaveBeenCalledWith([10, 20]);
     expect(refreshScenarioFeatureLayers).toHaveBeenCalled();
+  });
+
+  it("uses the map symbol size when generating MapLibre unit images", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSettingsStore(pinia).mapIconSize = 44;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-symbol-size",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({ size: 12, fillColor: "#112233" })),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-sized",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+
+    expect(symbolGenerator).toHaveBeenCalledWith(
+      "SFGPUCI----K",
+      expect.objectContaining({
+        size: 44,
+        fillColor: "#112233",
+      }),
+    );
+  });
+
+  it("uses per-unit map symbol size overrides for MapLibre unit images", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSettingsStore(pinia).mapIconSize = 44;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-symbol-size-override",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-sized-override",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            style: {
+              mapSymbolSize: 32,
+            },
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+
+    expect(symbolGenerator).toHaveBeenCalledWith(
+      "SFGPUCI----K",
+      expect.objectContaining({ size: 32 }),
+    );
+  });
+
+  it("refreshes MapLibre units when unitStateCounter changes after a size override", async () => {
+    const mockMap = createMockMap();
+    const unitStateCounter = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-live-size-override",
+        sidc: "SFGPUCI----K",
+        shortName: "A1",
+        name: "Alpha 1",
+        _state: {
+          location: [10, 20],
+        },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-live-maplibre-symbol-size-override",
+          currentTime: 0,
+          featureStateCounter: 0,
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+
+    visibleUnits.value[0].style = { mapSymbolSize: 52 };
+    unitStateCounter.value++;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+
+    expect(symbolGenerator).toHaveBeenCalledWith(
+      "SFGPUCI----K",
+      expect.objectContaining({ size: 52 }),
+    );
   });
 
   it("updates unit rotation alignment live when the map setting changes", async () => {

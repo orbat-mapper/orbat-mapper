@@ -414,17 +414,20 @@ export function useUnitManipulations(store: NewScenarioStore) {
       invalidateUnitStyle(unit._ikey);
       unit._ikey = undefined;
     }
+    const shouldUpdateUnitStateCounter = data.style !== undefined;
 
     if (noUndo) {
       if (!unit) return;
       Object.assign(unit, { ...data });
       s.unitMap[unitId] = klona(unit);
+      if (shouldUpdateUnitStateCounter) s.unitStateCounter++;
     } else {
       update((s) => {
         const unit = s.unitMap[unitId];
         if (!unit) return;
         Object.assign(unit, { ...data });
         s.unitMap[unitId] = klona(unit);
+        if (shouldUpdateUnitStateCounter) s.unitStateCounter++;
       });
     }
     if (doUpdateUnitState) updateUnitState(unitId);

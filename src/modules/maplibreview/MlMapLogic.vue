@@ -286,6 +286,12 @@ function applyUnitLayerRotationAlignment() {
   }
 }
 
+function getUnitMapSymbolSize(unit: { style?: { mapSymbolSize?: number } }) {
+  return typeof unit.style?.mapSymbolSize === "number"
+    ? unit.style.mapSymbolSize
+    : mapSettings.mapIconSize;
+}
+
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
@@ -319,7 +325,6 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
     ? { outlineWidth: 20, outlineColor: "yellow" }
     : { outlineWidth: 7, outlineColor: "white" };
   const symb = symbolGenerator(sidc, {
-    size: 25,
     uniqueDesignation,
     ...options,
     ...textAmplifiers,
@@ -734,9 +739,8 @@ watch(
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
 
-watch(
-  () => mapSettings.mapUnitLabelBelow,
-  () => addUnits(),
+watch([() => mapSettings.mapUnitLabelBelow, () => mapSettings.mapIconSize], () =>
+  addUnits(),
 );
 
 watch(mapLibreUnitRotationMode, () => {
@@ -807,9 +811,14 @@ function addUnits(
         mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
           ? ""
           : resolvedUniqueDesignation;
+      const { size: _symbolOptionSize, ...combinedSymbolOptions } =
+        unitActions.getCombinedSymbolOptions(unit);
       const symbolData: SymbolCacheEntry = {
         sidc: unit.sidc,
-        symbolOptions: unitActions.getCombinedSymbolOptions(unit),
+        symbolOptions: {
+          size: getUnitMapSymbolSize(unit),
+          ...combinedSymbolOptions,
+        },
         textAmplifiers,
         uniqueDesignation: symbolUniqueDesignation,
       };

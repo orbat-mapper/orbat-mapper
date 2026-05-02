@@ -285,6 +285,29 @@ describe("unitManipulations settings redraw signaling", () => {
     expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(45);
   });
 
+  it("increments unitStateCounter for unit style updates and restores it on undo/redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.updateUnit("unit-1", {
+      style: {
+        mapSymbolSize: 48,
+      },
+    });
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].style?.mapSymbolSize).toBe(48);
+
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+    expect(store.state.unitMap["unit-1"].style?.mapSymbolSize).toBeUndefined();
+
+    store.redo();
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].style?.mapSymbolSize).toBe(48);
+  });
+
   it("updateSideGroup increments settingsStateCounter and updates fields", () => {
     const store = useNewScenarioStore(createScenario());
     const actions = useUnitManipulations(store);
