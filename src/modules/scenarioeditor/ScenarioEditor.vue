@@ -65,7 +65,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import { GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
+import { CircleAlertIcon, GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -178,18 +178,19 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "MapLibre", icon: GlobeIcon },
-  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, experimental: false },
+  { value: MAP_EDIT_MODE_ROUTE, label: "MapLibre", icon: GlobeIcon, obsolete: false },
+  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, obsolete: false },
   {
     value: CHART_EDIT_MODE_ROUTE,
     label: "Chart",
     icon: IconSitemap,
-    experimental: false,
+    obsolete: false,
   },
   {
     value: LEGACY_MAP_ROUTE,
     label: "OpenLayers legacy",
     icon: MapIcon,
+    obsolete: true,
   },
 ] as const;
 
@@ -477,6 +478,11 @@ if (firstOverlayLayerId) {
               <SelectValue>
                 <span class="relative inline-flex">
                   <component :is="activeModeOption.icon" class="size-6 text-green-500" />
+                  <CircleAlertIcon
+                    v-if="activeModeOption.obsolete"
+                    class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3.5 rounded-full"
+                    aria-hidden="true"
+                  />
                 </span>
               </SelectValue>
             </SelectTrigger>
@@ -488,6 +494,11 @@ if (firstOverlayLayerId) {
               >
                 <span class="relative inline-flex">
                   <component :is="mode.icon" class="size-5" />
+                  <CircleAlertIcon
+                    v-if="mode.obsolete"
+                    class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3 rounded-full"
+                    aria-hidden="true"
+                  />
                 </span>
                 <span>{{ mode.label }}</span>
               </SelectItem>
@@ -523,11 +534,17 @@ if (firstOverlayLayerId) {
             </router-link>
             <router-link
               :to="{ name: LEGACY_MAP_ROUTE }"
-              title="OpenLayers legacy view"
+              title="OpenLayers legacy view (obsolete)"
               exact-active-class="text-green-500"
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
-              <MapIcon class="size-6" />
+              <span class="relative inline-flex">
+                <MapIcon class="size-6" />
+                <CircleAlertIcon
+                  class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3.5 rounded-full"
+                  aria-hidden="true"
+                />
+              </span>
             </router-link>
           </div>
         </div>

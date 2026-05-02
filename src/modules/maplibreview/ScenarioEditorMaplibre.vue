@@ -448,7 +448,6 @@ function onCloseActiveDetailsPanel() {
         title="Work in progress"
       >
         <FlaskConicalIcon class="size-3.5 text-amber-500" />
-        <span class="hidden sm:inline">Labs</span>
       </span>
       <Button
         variant="outline"
