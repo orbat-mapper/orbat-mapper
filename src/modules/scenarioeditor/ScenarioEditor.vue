@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onUnmounted, provide, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onUnmounted, provide, ref } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { useDragStore } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -50,9 +50,9 @@ import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
-  MAPLIBRE_ROUTE,
   GRID_EDIT_ROUTE,
   MAP_EDIT_MODE_ROUTE,
+  MAPLIBRE_ROUTE,
   NEW_SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
@@ -79,6 +79,8 @@ import { useBrowserScenarios } from "@/composables/browserScenarios";
 import type { EncryptedScenario, Scenario } from "@/types/scenarioModels";
 import { useScenarioClipboardImport } from "@/modules/scenarioeditor/useScenarioClipboardImport";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import { useScenarioShare } from "@/composables/scenarioShare";
+import RecordingState from "@/components/RecordingState.vue";
 
 const props = defineProps<{ activeScenario: TScenario }>();
 
@@ -222,25 +224,6 @@ const originalTitle = useTitle().value;
 const windowTitle = computed(() => state.info.name);
 const { send } = useNotifications();
 const { loadScenario: browserLoadScenario } = useBrowserScenarios();
-const MAPLIBRE_MODE_WARNING_SESSION_KEY = "maplibre-mode-warning-shown";
-
-watch(
-  () => route.name,
-  (modeName, previousModeName) => {
-    if (
-      modeName === MAPLIBRE_ROUTE &&
-      previousModeName !== MAPLIBRE_ROUTE &&
-      sessionStorage.getItem(MAPLIBRE_MODE_WARNING_SESSION_KEY) !== "1"
-    ) {
-      sessionStorage.setItem(MAPLIBRE_MODE_WARNING_SESSION_KEY, "1");
-      send({
-        message: "MapLibre mode is a work in progress with missing functionality.",
-        duration: 5000,
-      });
-    }
-  },
-  { immediate: true },
-);
 
 useTitle(windowTitle);
 
@@ -298,9 +281,6 @@ const onEventSelect = (e: EventSearchResult) => {
 const onFeatureSelect = (featureId: FeatureId, layerId: FeatureId) => {
   onFeatureSelectHook.trigger({ featureId, layerId });
 };
-
-import { useScenarioShare } from "@/composables/scenarioShare";
-import RecordingState from "@/components/RecordingState.vue";
 
 useScenarioShare();
 
