@@ -93,6 +93,8 @@ const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
 let shouldCenterOnNextStyleLoad = !initialMapView;
+let lastDayNightTerminatorUpdateKey: string | null = null;
+let lastDayNightTerminatorMap: unknown = null;
 
 const playback = usePlaybackStore();
 const uiStore = useUiStore();
@@ -365,12 +367,25 @@ function syncDayNightTerminator() {
   const mapAdapter = engineRef.value?.map;
   if (!showDayNightTerminator.value) {
     mapAdapter?.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
+    lastDayNightTerminatorUpdateKey = null;
+    lastDayNightTerminatorMap = null;
     return;
   }
 
+  const currentTime = activeScenario.store.state.currentTime;
+  const updateKey = String(Math.floor(currentTime / 60_000));
+  if (
+    mapAdapter === lastDayNightTerminatorMap &&
+    updateKey === lastDayNightTerminatorUpdateKey
+  ) {
+    return;
+  }
+
+  lastDayNightTerminatorMap = mapAdapter;
+  lastDayNightTerminatorUpdateKey = updateKey;
   mapAdapter?.addGeoJsonOverlay?.(
     DAY_NIGHT_TERMINATOR_OVERLAY_ID,
-    getDayNightTerminatorGeoJson(activeScenario.store.state.currentTime),
+    getDayNightTerminatorGeoJson(currentTime),
     DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
   );
 }

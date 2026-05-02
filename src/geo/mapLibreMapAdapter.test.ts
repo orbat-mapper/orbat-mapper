@@ -238,6 +238,32 @@ describe("MapLibreMapAdapter", () => {
       });
     });
 
+    it("uses day/night feature properties for fill and stroke colors", () => {
+      const { mlMap, layers } = createMockMap();
+      const adapter = new MapLibreMapAdapter(mlMap as any);
+
+      adapter.addGeoJsonOverlay(
+        DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+        getDayNightTerminatorGeoJson("2025-01-01T00:00:00Z"),
+        DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+      );
+
+      expect(layers.get("geojson-overlay-fill-day-night-terminator").paint).toMatchObject(
+        {
+          "fill-color": ["coalesce", ["get", "fillColor"], "rgba(0, 0, 50, 0.4)"],
+        },
+      );
+      expect(layers.get("geojson-overlay-line-day-night-terminator").paint).toMatchObject(
+        {
+          "line-color": ["coalesce", ["get", "strokeColor"], "rgba(0, 0, 0, 0)"],
+          "line-width": 1,
+        },
+      );
+      expect(
+        layers.get("geojson-overlay-line-day-night-terminator").paint,
+      ).not.toHaveProperty("line-dasharray");
+    });
+
     it("removes overlay layers and source", () => {
       const { mlMap, sources, layers } = createMockMap();
       const adapter = new MapLibreMapAdapter(mlMap as any);

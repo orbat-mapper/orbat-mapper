@@ -21,9 +21,11 @@ export interface ViewConstraints {
 
 export interface GeoJsonOverlayStyle {
   strokeColor?: string;
+  strokeColorProperty?: string;
   strokeWidth?: number;
   strokeLineDash?: number[];
   fillColor?: string;
+  fillColorProperty?: string;
   circleRadius?: number;
   circleFillColor?: string;
   circleStrokeColor?: string;

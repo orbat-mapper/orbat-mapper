@@ -264,7 +264,13 @@ export class MapLibreMapAdapter implements MapAdapter {
       type: "fill",
       source: sourceId,
       paint: {
-        "fill-color": style.fillColor ?? "rgba(188,35,65,0.2)",
+        "fill-color": style.fillColorProperty
+          ? [
+              "coalesce",
+              ["get", style.fillColorProperty],
+              style.fillColor ?? "rgba(188,35,65,0.2)",
+            ]
+          : (style.fillColor ?? "rgba(188,35,65,0.2)"),
       },
     } satisfies FillLayerSpecification);
 
@@ -273,7 +279,9 @@ export class MapLibreMapAdapter implements MapAdapter {
       type: "line",
       source: sourceId,
       paint: {
-        "line-color": style.strokeColor ?? "red",
+        "line-color": style.strokeColorProperty
+          ? ["coalesce", ["get", style.strokeColorProperty], style.strokeColor ?? "red"]
+          : (style.strokeColor ?? "red"),
         "line-width": style.strokeWidth ?? 3,
         ...(lineDashArray ? { "line-dasharray": lineDashArray } : {}),
       },

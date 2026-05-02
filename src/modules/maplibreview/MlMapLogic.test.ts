@@ -604,10 +604,31 @@ describe("MlMapLogic", () => {
       DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
     );
 
+    const updateCount = addGeoJsonOverlay.mock.calls.length;
+    currentTime.value = Date.parse("2025-06-01T12:00:30Z");
+    await nextTick();
+
+    expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount);
+
+    currentTime.value = Date.parse("2025-06-01T12:01:00Z");
+    await nextTick();
+
+    expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount + 1);
+    expect(addGeoJsonOverlay).toHaveBeenLastCalledWith(
+      DAY_NIGHT_TERMINATOR_OVERLAY_ID,
+      getDayNightTerminatorGeoJson(currentTime.value),
+      DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
+    );
+
     mapSettings.showDayNightTerminator = false;
     await nextTick();
 
     expect(removeGeoJsonOverlay).toHaveBeenCalledWith(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
+
+    mapSettings.showDayNightTerminator = true;
+    await nextTick();
+
+    expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount + 2);
   });
 
   it("renders units that become visible right after mount without needing further interaction", async () => {
