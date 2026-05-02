@@ -6,6 +6,7 @@ import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
 import { interpolateOranges } from "d3-scale-chromatic";
 import { scaleSequential } from "d3-scale";
+import dayjs from "dayjs";
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { type NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
@@ -38,6 +39,7 @@ const ZOOM_STEP = 40;
 const {
   time: {
     scenarioTime,
+    timeZone,
     setCurrentTime,
     computeTimeHistogram,
     goToScenarioEvent,
@@ -45,6 +47,12 @@ const {
   },
   store,
 } = useActiveScenario();
+
+function getTzOffset(timestamp: number) {
+  return dayjs(timestamp)
+    .tz(timeZone.value || "UTC")
+    .utcOffset();
+}
 const fmt = useTimeFormatStore();
 
 const el = ref<HTMLDivElement | null>(null);
@@ -52,7 +60,6 @@ const isPointerInteraction = ref(false);
 const isDragging = ref(false);
 const redrawCounter = ref(0);
 const { width } = useElementSize(el);
-const tzOffset = scenarioTime.value.utcOffset();
 
 const hourFormatter = utcFormat("%H");
 function getMinorFormatter(majorWidth: number) {
@@ -189,6 +196,7 @@ let startTimestamp = 0;
 function recomputeTimelineLayout(currentScenarioTimestamp: number) {
   if (!width.value) return;
   const tt = new Date(currentScenarioTimestamp);
+  const tzOffset = getTzOffset(currentScenarioTimestamp);
 
   centerTimeStamp.value = currentScenarioTimestamp;
   animate.value = false;
@@ -203,7 +211,7 @@ function recomputeTimelineLayout(currentScenarioTimestamp: number) {
     majorWidth.value,
     minorStep.value,
   );
-  updateEvents(minDate, maxDate);
+  updateEvents(minDate, maxDate, tzOffset);
 }
 
 function onPointerDown(evt: PointerEvent) {
@@ -301,14 +309,14 @@ const events = computed(() => {
   return store.state.events.map((id) => store.state.eventMap[id]);
 });
 
-function updateEvents(minDate: Date, maxDate: Date) {
+function updateEvents(minDate: Date, maxDate: Date, tzOffsetMinutes: number) {
   const renderInputs: TimelineRenderInputs = {
     events: events.value,
     histogram,
     minTimestamp: +minDate,
     maxTimestamp: +maxDate,
     majorWidth: majorWidth.value,
-    tzOffsetMinutes: tzOffset,
+    tzOffsetMinutes,
   };
   const { eventsWithX: renderEvents, binsWithX: renderBins } =
     buildTimelineRenderData(renderInputs);
