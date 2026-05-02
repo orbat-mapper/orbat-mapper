@@ -94,6 +94,40 @@ describe("useMaplibreBoxSelect", () => {
     expect(mockMap.map.queryRenderedFeatures).not.toHaveBeenCalled();
   });
 
+  it("does not consume ctrl/cmd movement below the drag threshold", () => {
+    const mockMap = createMockMap();
+    const onBoxStart = vi.fn();
+    const onBoxEnd = vi.fn();
+    const suspend = vi.fn(() => "suspended");
+    const restore = vi.fn();
+
+    useMaplibreBoxSelect(mockMap.map, {
+      getUnitLayerIds: () => ["unitLayer"],
+      onBoxStart,
+      onBoxEnd,
+      isEnabled: () => true,
+      suspend,
+      restore,
+    });
+
+    const down = createMouseEvent("mousedown", { clientX: 10, clientY: 10 });
+    const move = createMouseEvent("mousemove", { clientX: 11, clientY: 11 });
+    const up = createMouseEvent("mouseup", { clientX: 11, clientY: 11 });
+
+    mockMap.container.dispatchEvent(down);
+    window.dispatchEvent(move);
+    window.dispatchEvent(up);
+
+    expect(down.defaultPrevented).toBe(false);
+    expect(move.defaultPrevented).toBe(false);
+    expect(up.defaultPrevented).toBe(false);
+    expect(onBoxStart).not.toHaveBeenCalled();
+    expect(onBoxEnd).not.toHaveBeenCalled();
+    expect(suspend).not.toHaveBeenCalled();
+    expect(restore).not.toHaveBeenCalled();
+    expect(mockMap.map.queryRenderedFeatures).not.toHaveBeenCalled();
+  });
+
   it("starts box selection after ctrl/cmd drag movement crosses the threshold", () => {
     const mockMap = createMockMap();
     const onBoxStart = vi.fn();
@@ -132,5 +166,38 @@ describe("useMaplibreBoxSelect", () => {
     );
     expect(onBoxEnd).toHaveBeenCalledWith(["unit-1", "unit-2"]);
     expect(restore).toHaveBeenCalledWith("suspended");
+  });
+
+  it("removes pending window listeners during cleanup", () => {
+    const mockMap = createMockMap();
+    const onBoxStart = vi.fn();
+    const onBoxEnd = vi.fn();
+    const suspend = vi.fn(() => "suspended");
+    const restore = vi.fn();
+
+    const boxSelect = useMaplibreBoxSelect(mockMap.map, {
+      getUnitLayerIds: () => ["unitLayer"],
+      onBoxStart,
+      onBoxEnd,
+      isEnabled: () => true,
+      suspend,
+      restore,
+    });
+
+    const down = createMouseEvent("mousedown", { clientX: 10, clientY: 10 });
+    const move = createMouseEvent("mousemove", { clientX: 20, clientY: 20 });
+    const up = createMouseEvent("mouseup", { clientX: 30, clientY: 30 });
+
+    mockMap.container.dispatchEvent(down);
+    boxSelect.cleanup();
+    window.dispatchEvent(move);
+    window.dispatchEvent(up);
+
+    expect(move.defaultPrevented).toBe(false);
+    expect(up.defaultPrevented).toBe(false);
+    expect(onBoxStart).not.toHaveBeenCalled();
+    expect(onBoxEnd).not.toHaveBeenCalled();
+    expect(suspend).not.toHaveBeenCalled();
+    expect(restore).not.toHaveBeenCalled();
   });
 });

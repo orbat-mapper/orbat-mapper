@@ -5,7 +5,9 @@ import type { EntityId } from "@/types/base";
 const BOX_SELECT_SOURCE = "__boxSelectSource";
 const BOX_SELECT_FILL = "__boxSelectFill";
 const BOX_SELECT_LINE = "__boxSelectLine";
+// Match OpenLayers DragBox's default minArea threshold for interaction parity.
 const DRAG_THRESHOLD_PX = 3;
+const CAPTURE_OPTIONS = { capture: true };
 
 export interface MaplibreBoxSelectOptions<S> {
   getUnitLayerIds: () => string[];
@@ -116,6 +118,7 @@ export function useMaplibreBoxSelect<S>(
       addPreviewLayers();
       updatePreview(currentPx);
       mlMap.getCanvas().style.cursor = "crosshair";
+      return;
     }
     if (!drag) return;
     e.preventDefault();
@@ -163,9 +166,12 @@ export function useMaplibreBoxSelect<S>(
 
   function onKey(e: KeyboardEvent) {
     if (e.key !== "Escape") return;
-    pending = null;
+    if (pending && !drag) {
+      pending = null;
+      detachWindowListeners();
+      return;
+    }
     cancel();
-    detachWindowListeners();
   }
 
   function detachWindowListeners() {
@@ -207,12 +213,16 @@ export function useMaplibreBoxSelect<S>(
     window.addEventListener("keydown", onKey, true);
   }
 
-  container.addEventListener("mousedown", onDown, { capture: true });
+  container.addEventListener("mousedown", onDown, CAPTURE_OPTIONS);
 
   return {
     cleanup() {
-      container.removeEventListener("mousedown", onDown, { capture: true });
+      container.removeEventListener("mousedown", onDown, CAPTURE_OPTIONS);
       if (drag) teardown();
+      else if (pending) {
+        pending = null;
+        detachWindowListeners();
+      }
     },
   };
 }

@@ -62,6 +62,8 @@ import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
 const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
+const NATIVE_CAPTURE_OPTIONS = { capture: true };
+const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
 
 type UnitVisibilityGroup = {
   id: string;
@@ -140,6 +142,7 @@ let unitDragState: {
   moved: boolean;
 } | null = null;
 let suppressNextNativeClick = false;
+let suppressNextNativeClickTimer: number | undefined;
 
 const { setupRangeRingLayers, drawRangeRings } = useMaplibreRangeRings(
   mlMap,
@@ -473,16 +476,7 @@ function getEventPixel(e: MouseEvent): [number, number] {
   return [e.clientX - rect.left, e.clientY - rect.top];
 }
 
-function onNativeCanvasClick(e: MouseEvent) {
-  if (suppressNextNativeClick) {
-    suppressNextNativeClick = false;
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-}
-
-function onNativeCanvasMouseDown(e: MouseEvent) {
+function getShiftClickUnitId(e: MouseEvent): string | undefined {
   if (!e.shiftKey) return;
   if (e.button !== 0) return;
   if (routingStore.active) return;
@@ -492,11 +486,51 @@ function onNativeCanvasMouseDown(e: MouseEvent) {
   const topHit = queryInteractiveFeatures(getEventPixel(e))[0];
   if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
 
-  const unitId = topHit.properties?.id;
+  return topHit.properties?.id;
+}
+
+function queueSuppressNextNativeClickReset() {
+  if (suppressNextNativeClickTimer !== undefined) {
+    window.clearTimeout(suppressNextNativeClickTimer);
+  }
+  suppressNextNativeClickTimer = window.setTimeout(() => {
+    clearSuppressNextNativeClick();
+  }, 0);
+}
+
+function clearSuppressNextNativeClick() {
+  suppressNextNativeClick = false;
+  if (suppressNextNativeClickTimer !== undefined) {
+    window.clearTimeout(suppressNextNativeClickTimer);
+    suppressNextNativeClickTimer = undefined;
+  }
+  window.removeEventListener("mouseup", queueSuppressNextNativeClickReset, true);
+  window.removeEventListener("blur", clearSuppressNextNativeClick, true);
+}
+
+function onNativeCanvasClick(e: MouseEvent) {
+  if (!suppressNextNativeClick) return;
+  clearSuppressNextNativeClick();
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+function onNativeCanvasMouseDown(e: MouseEvent) {
+  const unitId = getShiftClickUnitId(e);
   if (!unitId) return;
 
   toggleUnitSelection(unitId);
   suppressNextNativeClick = true;
+  window.addEventListener(
+    "mouseup",
+    queueSuppressNextNativeClickReset,
+    NATIVE_CAPTURE_ONCE_OPTIONS,
+  );
+  window.addEventListener(
+    "blur",
+    clearSuppressNextNativeClick,
+    NATIVE_CAPTURE_ONCE_OPTIONS,
+  );
   e.preventDefault();
   e.stopPropagation();
 }
@@ -516,10 +550,7 @@ function onMapClick(e: MapMouseEvent) {
     if (!unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     if (!unitId) return;
-    if (additive) {
-      toggleUnitSelection(unitId);
-      return;
-    }
+    if (additive) return;
     onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
     return;
   }
@@ -664,12 +695,12 @@ function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
 }
 
 mlMap.on("click", onMapClick);
-mlMap.getCanvasContainer().addEventListener("mousedown", onNativeCanvasMouseDown, {
-  capture: true,
-});
-mlMap.getCanvasContainer().addEventListener("click", onNativeCanvasClick, {
-  capture: true,
-});
+mlMap
+  .getCanvasContainer()
+  .addEventListener("mousedown", onNativeCanvasMouseDown, NATIVE_CAPTURE_OPTIONS);
+mlMap
+  .getCanvasContainer()
+  .addEventListener("click", onNativeCanvasClick, NATIVE_CAPTURE_OPTIONS);
 mlMap.on("mousedown", onUnitDragStart);
 mlMap.on("touchstart", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
@@ -853,18 +884,19 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
 
 onUnmounted(() => {
   if (!mlMap) return;
+  clearSuppressNextNativeClick();
   boxSelect.cleanup();
   disposeUnitHistory();
   engineRef.value?.map.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
-  mlMap.getCanvasContainer().removeEventListener("mousedown", onNativeCanvasMouseDown, {
-    capture: true,
-  });
-  mlMap.getCanvasContainer().removeEventListener("click", onNativeCanvasClick, {
-    capture: true,
-  });
+  mlMap
+    .getCanvasContainer()
+    .removeEventListener("mousedown", onNativeCanvasMouseDown, NATIVE_CAPTURE_OPTIONS);
+  mlMap
+    .getCanvasContainer()
+    .removeEventListener("click", onNativeCanvasClick, NATIVE_CAPTURE_OPTIONS);
   mlMap.off("mousedown", onUnitDragStart);
   mlMap.off("touchstart", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);

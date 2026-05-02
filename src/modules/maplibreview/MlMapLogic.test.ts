@@ -1680,7 +1680,7 @@ describe("MlMapLogic", () => {
     });
   });
 
-  it("toggles unit selection on shift+click instead of replacing it", () => {
+  it("toggles unit selection on shift+click instead of replacing it", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
@@ -1756,6 +1756,14 @@ describe("MlMapLogic", () => {
     expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
     expect(selectedUnitIds.value.has("unit-1")).toBe(true);
 
+    mockMap.emit("click", {
+      point: { x: 1, y: 2 },
+      originalEvent: { shiftKey: true },
+    });
+
+    expect(selectedUnitIds.value.has("unit-1")).toBe(true);
+    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
+
     const secondMouseDown = new MouseEvent("mousedown", {
       bubbles: true,
       cancelable: true,
@@ -1786,7 +1794,39 @@ describe("MlMapLogic", () => {
 
     expect(unitSelectSpy).not.toHaveBeenCalled();
     expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
-    expect(selectedUnitIds.value.has("unit-1")).toBe(true);
+    expect(selectedUnitIds.value.has("unit-1")).toBe(false);
+
+    mockMap.canvasContainer.dispatchEvent(
+      new MouseEvent("mousedown", {
+        bubbles: true,
+        cancelable: true,
+        shiftKey: true,
+        button: 0,
+        clientX: 1,
+        clientY: 2,
+      }),
+    );
+    window.dispatchEvent(
+      new MouseEvent("mouseup", {
+        bubbles: true,
+        cancelable: true,
+        shiftKey: true,
+        button: 0,
+        clientX: 1,
+        clientY: 2,
+      }),
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+    const unrelatedClick = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(unrelatedClick);
+
+    expect(unrelatedClick.defaultPrevented).toBe(false);
   });
 
   it("clears the selection when clicking empty map area", () => {
