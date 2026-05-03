@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { createEventHook } from "@vueuse/core";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { computed, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -56,6 +56,17 @@ vi.mock("@vueuse/core", async () => {
 vi.mock("@/modules/maplibreview/mapLibreExport", () => ({
   saveMapLibreMapAsPng,
 }));
+
+vi.mock("@/geo/dayNightTerminatorClient", async () => {
+  const { getDayNightTerminatorGeoJson } = await import("@/geo/dayNightTerminator");
+  return {
+    requestDayNightTerminator: (time: number | string | Date) => {
+      const epoch =
+        time instanceof Date ? time.getTime() : new Date(time as any).getTime();
+      return Promise.resolve(getDayNightTerminatorGeoJson(epoch));
+    },
+  };
+});
 
 function createSearchActions() {
   return {
@@ -755,6 +766,8 @@ describe("MlMapLogic", () => {
       },
     });
 
+    await flushPromises();
+
     expect(addGeoJsonOverlay).toHaveBeenCalledWith(
       DAY_NIGHT_TERMINATOR_OVERLAY_ID,
       getDayNightTerminatorGeoJson(currentTime.value),
@@ -762,7 +775,7 @@ describe("MlMapLogic", () => {
     );
 
     currentTime.value = Date.parse("2025-06-01T12:00:00Z");
-    await nextTick();
+    await flushPromises();
 
     expect(addGeoJsonOverlay).toHaveBeenLastCalledWith(
       DAY_NIGHT_TERMINATOR_OVERLAY_ID,
@@ -772,12 +785,12 @@ describe("MlMapLogic", () => {
 
     const updateCount = addGeoJsonOverlay.mock.calls.length;
     currentTime.value = Date.parse("2025-06-01T12:00:30Z");
-    await nextTick();
+    await flushPromises();
 
     expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount);
 
     currentTime.value = Date.parse("2025-06-01T12:01:00Z");
-    await nextTick();
+    await flushPromises();
 
     expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount + 1);
     expect(addGeoJsonOverlay).toHaveBeenLastCalledWith(
@@ -787,12 +800,12 @@ describe("MlMapLogic", () => {
     );
 
     mapSettings.showDayNightTerminator = false;
-    await nextTick();
+    await flushPromises();
 
     expect(removeGeoJsonOverlay).toHaveBeenCalledWith(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
 
     mapSettings.showDayNightTerminator = true;
-    await nextTick();
+    await flushPromises();
 
     expect(addGeoJsonOverlay).toHaveBeenCalledTimes(updateCount + 2);
   });

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "@/dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive, ref } from "vue";
@@ -76,6 +77,7 @@ function makeScenarioFixture() {
         valueOf: () => state.currentTime,
         utcOffset: () => 0,
       }),
+      timeZone: ref("UTC"),
       setCurrentTime,
       computeTimeHistogram: vi.fn(() => ({ histogram: [], max: 1 })),
       goToScenarioEvent: vi.fn(),
