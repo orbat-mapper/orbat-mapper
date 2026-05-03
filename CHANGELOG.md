@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 - Added feature hover tooltips to MapLibre mode.
 - Fixed MapLibre scenario feature marker sizes so point features match OpenLayers sizing.
 - Fixed MapLibre scenario feature rendering for null polygon fills and zero-opacity fills.
+- Added MapLibre support for custom unit symbols, including clearer selected-state highlighting.
+- Fixed MapLibre unit labels so they shift correctly for scaled ordinary and custom icons, including hostile diamond frames.
 
 ## April 2026
 
