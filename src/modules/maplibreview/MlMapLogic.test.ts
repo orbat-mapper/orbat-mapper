@@ -162,6 +162,7 @@ function createMockMap() {
     removeFeatureState: vi.fn(),
     hasImage: vi.fn(() => false),
     addImage: vi.fn(),
+    removeImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
     getCanvas: vi.fn(() => canvas),
     getCanvasContainer: vi.fn(() => canvasContainer),
@@ -188,6 +189,26 @@ function createMockMap() {
     emit(event: string, payload?: unknown) {
       listeners.get(event)?.forEach((handler) => handler(payload));
     },
+  };
+}
+
+function mockLoadedImage(width = 20, height = 10) {
+  const previousImage = globalThis.Image;
+  class MockImage {
+    crossOrigin = "";
+    naturalWidth = width;
+    naturalHeight = height;
+    width = width;
+    height = height;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    set src(_value: string) {
+      setTimeout(() => this.onload?.(), 0);
+    }
+  }
+  vi.stubGlobal("Image", MockImage as any);
+  return () => {
+    vi.stubGlobal("Image", previousImage);
   };
 }
 
@@ -270,7 +291,12 @@ describe("MlMapLogic", () => {
     vi.mocked(symbolGenerator).mockClear();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
       drawImage: vi.fn(),
-      getImageData: () => ({ width: 2, height: 2, data: new Uint8ClampedArray(16) }),
+      fillRect: vi.fn(),
+      getImageData: (_x: number, _y: number, width: number, height: number) => ({
+        width,
+        height,
+        data: new Uint8ClampedArray(width * height * 4),
+      }),
     } as any);
     useMapSettingsStore().mapLibreUnitRotationMode = "screen";
     useMapSettingsStore().showFeatureTooltip = true;
@@ -441,6 +467,192 @@ describe("MlMapLogic", () => {
       "SFGPUCI----K",
       expect.objectContaining({ size: 32 }),
     );
+  });
+
+  it("registers custom MapLibre unit symbols without generating milsymbols", async () => {
+    const restoreImage = mockLoadedImage();
+    const mockMap = createMockMap();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-custom-symbol",
+          currentTime: 0,
+          featureStateCounter: 0,
+          customSymbolMap: {
+            "custom-1": {
+              id: "custom-1",
+              name: "Custom",
+              src: "data:image/png;base64,custom",
+              sidc: "10031000000000000000",
+              anchor: [0.25, 0.75],
+            },
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({ fillColor: "#112233" })),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-custom",
+            sidc: "custom1:10031000000000000000:custom-1",
+            shortName: "C1",
+            name: "Custom 1",
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(symbolGenerator).not.toHaveBeenCalled();
+    expect(mockMap.map.addImage).toHaveBeenCalledWith(
+      symbolKey,
+      expect.objectContaining({ width: expect.any(Number), height: expect.any(Number) }),
+      { pixelRatio: 2 },
+    );
+    restoreImage();
+  });
+
+  it("registers selected custom MapLibre unit symbols", async () => {
+    const restoreImage = mockLoadedImage();
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useSelectedItems().selectedUnitIds.value.add("unit-custom-selected");
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-selected-custom-symbol",
+          currentTime: 0,
+          featureStateCounter: 0,
+          customSymbolMap: {
+            "custom-1": {
+              id: "custom-1",
+              name: "Custom",
+              src: "data:image/png;base64,custom",
+              sidc: "10031000000000000000",
+            },
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-custom-selected",
+            sidc: "custom1:10031000000000000000:custom-1",
+            shortName: "C1",
+            name: "Custom 1",
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    expect(symbolKey).toMatch(/^sel-/);
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(symbolGenerator).not.toHaveBeenCalled();
+    expect(mockMap.map.addImage).toHaveBeenCalledWith(symbolKey, expect.any(Object), {
+      pixelRatio: 2,
+    });
+    restoreImage();
+  });
+
+  it("uses scaled custom symbol size and refreshes when custom scale changes", async () => {
+    const restoreImage = mockLoadedImage();
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapIconSize = 40;
+    mapSettings.mapCustomIconScale = 2;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-custom-symbol-scale",
+          currentTime: 0,
+          featureStateCounter: 0,
+          customSymbolMap: {
+            "custom-1": {
+              id: "custom-1",
+              name: "Custom",
+              src: "data:image/png;base64,custom",
+              sidc: "10031000000000000000",
+            },
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-custom-scale",
+            sidc: "custom1:10031000000000000000:custom-1",
+            shortName: "C1",
+            name: "Custom 1",
+            style: { mapSymbolSize: 30 },
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const addImageCalls = mockMap.map.addImage.mock.calls;
+    expect(addImageCalls[addImageCalls.length - 1]?.[1]).toMatchObject({
+      width: 120,
+      height: 120,
+    });
+
+    mapSettings.mapCustomIconScale = 3;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
+    restoreImage();
   });
 
   it("refreshes MapLibre units when unitStateCounter changes after a size override", async () => {
