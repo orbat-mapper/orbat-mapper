@@ -53,6 +53,17 @@ const WORLD_MAX_LON = 180;
 const WORLD_MIN_LAT = -90;
 const WORLD_MAX_LAT = 90;
 const WEB_MERCATOR_MAX_LAT = 85.051129;
+const BEARING_STEP_DEG = 4;
+const BEARING_SAMPLES = 360 / BEARING_STEP_DEG;
+const POLAR_LON_STEP_DEG = 4;
+
+const SIN_BEARINGS = new Float64Array(BEARING_SAMPLES);
+const COS_BEARINGS = new Float64Array(BEARING_SAMPLES);
+for (let i = 0; i < BEARING_SAMPLES; i += 1) {
+  const bearing = i * BEARING_STEP_DEG * RAD;
+  SIN_BEARINGS[i] = Math.sin(bearing);
+  COS_BEARINGS[i] = Math.cos(bearing);
+}
 
 function clampLat(lat: number): number {
   return Math.max(-WEB_MERCATOR_MAX_LAT, Math.min(WEB_MERCATOR_MAX_LAT, lat));
@@ -79,31 +90,6 @@ function getSubsolarPoint(date: Date): { lat: number; lon: number } {
   const subsolarLon = Math.atan2(Math.sin(bearing) * Math.sin(arc), Math.cos(arc));
 
   return { lat: declination * DEG, lon: normalizeDegrees(subsolarLon * DEG) };
-}
-
-function destinationPoint(
-  centerLatDeg: number,
-  centerLonDeg: number,
-  bearingDeg: number,
-  distanceDeg: number,
-): Position {
-  const centerLat = centerLatDeg * RAD;
-  const centerLon = centerLonDeg * RAD;
-  const bearing = bearingDeg * RAD;
-  const distance = distanceDeg * RAD;
-
-  const lat = Math.asin(
-    Math.sin(centerLat) * Math.cos(distance) +
-      Math.cos(centerLat) * Math.sin(distance) * Math.cos(bearing),
-  );
-  const lon =
-    centerLon +
-    Math.atan2(
-      Math.sin(bearing) * Math.sin(distance) * Math.cos(centerLat),
-      Math.cos(distance) - Math.sin(centerLat) * Math.sin(lat),
-    );
-
-  return [normalizeLon(lon * DEG, centerLonDeg), clampLat(lat * DEG)];
 }
 
 function closeRing(ring: Position[]): Position[] {
@@ -199,9 +185,16 @@ function getContainedPoleLat(
   return null;
 }
 
+interface CenterTrig {
+  centerLatDeg: number;
+  centerLonDeg: number;
+  sinCenterLat: number;
+  cosCenterLat: number;
+  centerLonRad: number;
+}
+
 function getPolarBoundaryLat(
-  centerLatDeg: number,
-  centerLonDeg: number,
+  trig: CenterTrig,
   radiusDeg: number,
   lonDeg: number,
   poleLat: number,
@@ -209,14 +202,14 @@ function getPolarBoundaryLat(
   const capLat = poleLat > 0 ? WEB_MERCATOR_MAX_LAT : -WEB_MERCATOR_MAX_LAT;
   const oppositeLat = -capLat;
   const capDistance = getAngularDistanceDegrees(
-    centerLatDeg,
-    centerLonDeg,
+    trig.centerLatDeg,
+    trig.centerLonDeg,
     capLat,
     lonDeg,
   );
   const oppositeDistance = getAngularDistanceDegrees(
-    centerLatDeg,
-    centerLonDeg,
+    trig.centerLatDeg,
+    trig.centerLonDeg,
     oppositeLat,
     lonDeg,
   );
@@ -224,13 +217,15 @@ function getPolarBoundaryLat(
   if (capDistance > radiusDeg) return capLat;
   if (oppositeDistance <= radiusDeg) return oppositeLat;
 
+  // Bisect at full 32-iter precision (~4e-8 deg) — boundary tests assert
+  // solar altitude to 6 decimal places, so coarser bisection breaks them.
   let insideLat = capLat;
   let outsideLat = oppositeLat;
   for (let index = 0; index < 32; index += 1) {
     const midLat = (insideLat + outsideLat) / 2;
     const midDistance = getAngularDistanceDegrees(
-      centerLatDeg,
-      centerLonDeg,
+      trig.centerLatDeg,
+      trig.centerLonDeg,
       midLat,
       lonDeg,
     );
@@ -245,18 +240,20 @@ function getPolarBoundaryLat(
 }
 
 function getPolarCapPolygons(
-  centerLatDeg: number,
-  centerLonDeg: number,
+  trig: CenterTrig,
   radiusDeg: number,
   poleLat: number,
 ): Position[][][] {
   const capLat = poleLat > 0 ? WEB_MERCATOR_MAX_LAT : -WEB_MERCATOR_MAX_LAT;
   const boundary: Position[] = [];
 
-  for (let lon = WORLD_MIN_LON; lon <= WORLD_MAX_LON; lon += 1) {
+  for (let lon = WORLD_MIN_LON; lon <= WORLD_MAX_LON; lon += POLAR_LON_STEP_DEG) {
+    boundary.push([lon, getPolarBoundaryLat(trig, radiusDeg, lon, poleLat)]);
+  }
+  if (boundary[boundary.length - 1][0] !== WORLD_MAX_LON) {
     boundary.push([
-      lon,
-      getPolarBoundaryLat(centerLatDeg, centerLonDeg, radiusDeg, lon, poleLat),
+      WORLD_MAX_LON,
+      getPolarBoundaryLat(trig, radiusDeg, WORLD_MAX_LON, poleLat),
     ]);
   }
 
@@ -272,36 +269,62 @@ function getPolarCapPolygons(
   ];
 }
 
-function getDarknessCoordinates(date: Date, solarAltitudeDeg: number): Position[][][] {
-  const subsolar = getSubsolarPoint(date);
-  const antisolarLat = -subsolar.lat;
-  const antisolarLon = normalizeDegrees(subsolar.lon + 180);
+function buildBandRing(trig: CenterTrig, radiusDeg: number): Position[] {
+  // Spherical destination formula expanded so the per-vertex work is just two
+  // multiplies + asin + atan2. Center trig and the bearing sin/cos table are
+  // precomputed and shared across all bands.
+  const radius = radiusDeg * RAD;
+  const sinR = Math.sin(radius);
+  const cosR = Math.cos(radius);
+  const sinC = trig.sinCenterLat;
+  const cosC = trig.cosCenterLat;
+  const centerLonRad = trig.centerLonRad;
+  const centerLonDeg = trig.centerLonDeg;
+  const cosC_sinR = cosC * sinR;
+  const ring: Position[] = new Array(BEARING_SAMPLES);
+
+  for (let i = 0; i < BEARING_SAMPLES; i += 1) {
+    const sinB = SIN_BEARINGS[i];
+    const cosB = COS_BEARINGS[i];
+    const sinLat = sinC * cosR + cosC_sinR * cosB;
+    const lat = Math.asin(sinLat);
+    const lon =
+      centerLonRad + Math.atan2(sinB * sinR * cosC, cosR - sinC * sinLat);
+    ring[i] = [normalizeLon(lon * DEG, centerLonDeg), clampLat(lat * DEG)];
+  }
+  return ring;
+}
+
+function getDarknessCoordinates(
+  trig: CenterTrig,
+  solarAltitudeDeg: number,
+): Position[][][] {
   const radius = 90 + solarAltitudeDeg;
-  const ring: Position[] = [];
-
-  for (let bearing = 0; bearing < 360; bearing += 1) {
-    ring.push(destinationPoint(antisolarLat, antisolarLon, bearing, radius));
-  }
-  const containedPoleLat = getContainedPoleLat(antisolarLat, antisolarLon, radius);
+  const containedPoleLat = getContainedPoleLat(
+    trig.centerLatDeg,
+    trig.centerLonDeg,
+    radius,
+  );
   if (containedPoleLat !== null) {
-    return getPolarCapPolygons(antisolarLat, antisolarLon, radius, containedPoleLat);
+    return getPolarCapPolygons(trig, radius, containedPoleLat);
   }
 
+  const ring = buildBandRing(trig, radius);
   const closedRing = closeRing(ring);
   let minLon = Infinity;
   let maxLon = -Infinity;
   for (const [lon] of closedRing) {
-    minLon = Math.min(minLon, lon);
-    maxLon = Math.max(maxLon, lon);
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
   }
   const minWorld = Math.floor((minLon + 180) / 360);
   const maxWorld = Math.floor((maxLon + 180) / 360);
   const polygons: Position[][][] = [];
 
   for (let world = minWorld; world <= maxWorld; world += 1) {
-    const minLon = world * 360 - 180;
-    const maxLon = world * 360 + 180;
-    const clipped = clipRingToLongitudeWindow(closedRing, minLon, maxLon);
+    const windowMin = world * 360 - 180;
+    const windowMax = world * 360 + 180;
+    const clipped = clipRingToLongitudeWindow(closedRing, windowMin, windowMax);
     if (clipped.length < 4) continue;
     polygons.push([shiftRingLongitude(clipped, -world * 360)]);
   }
@@ -312,6 +335,17 @@ export function getDayNightTerminatorGeoJson(
   time: number | string | Date,
 ): FeatureCollection<MultiPolygon> {
   const date = time instanceof Date ? time : new Date(time);
+  const subsolar = getSubsolarPoint(date);
+  const antisolarLat = -subsolar.lat;
+  const antisolarLon = normalizeDegrees(subsolar.lon + 180);
+  const centerLatRad = antisolarLat * RAD;
+  const trig: CenterTrig = {
+    centerLatDeg: antisolarLat,
+    centerLonDeg: antisolarLon,
+    sinCenterLat: Math.sin(centerLatRad),
+    cosCenterLat: Math.cos(centerLatRad),
+    centerLonRad: antisolarLon * RAD,
+  };
 
   return {
     type: "FeatureCollection",
@@ -325,7 +359,7 @@ export function getDayNightTerminatorGeoJson(
       },
       geometry: {
         type: "MultiPolygon",
-        coordinates: getDarknessCoordinates(date, band.altitude),
+        coordinates: getDarknessCoordinates(trig, band.altitude),
       },
     })),
   };

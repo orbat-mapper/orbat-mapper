@@ -11,7 +11,7 @@ import {
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import type { TextAmplifiers } from "@/types/scenarioModels";
-import { computed, onUnmounted, provide, watch } from "vue";
+import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import type { Pixel } from "ol/pixel";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
@@ -51,11 +51,7 @@ import {
   type MapLibreUnitRotationMode,
 } from "@/stores/mapSettingsStore";
 import { useRoutingStore } from "@/stores/routingStore";
-import {
-  DAY_NIGHT_TERMINATOR_OVERLAY_ID,
-  DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
-  getDayNightTerminatorGeoJson,
-} from "@/geo/dayNightTerminator";
+import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTerminator";
 import { provideMapHoverContext, type HoverFeatureLike } from "@/composables/geoHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 
@@ -95,8 +91,6 @@ const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
 let shouldCenterOnNextStyleLoad = !initialMapView;
-let lastDayNightTerminatorUpdateKey: string | null = null;
-let lastDayNightTerminatorMap: unknown = null;
 
 const playback = usePlaybackStore();
 const uiStore = useUiStore();
@@ -114,7 +108,7 @@ const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
   storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
-const { mapLibreUnitRotationMode, showDayNightTerminator } = storeToRefs(mapSettings);
+const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const { setHoveredFeatures, clearHoveredFeatures } = provideMapHoverContext();
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
   onPreview: (overrides) => addUnits(false, undefined, overrides),
@@ -372,32 +366,7 @@ function onStyleLoad() {
   shouldCenterOnNextStyleLoad = false;
 }
 
-function syncDayNightTerminator() {
-  const mapAdapter = engineRef.value?.map;
-  if (!showDayNightTerminator.value) {
-    mapAdapter?.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
-    lastDayNightTerminatorUpdateKey = null;
-    lastDayNightTerminatorMap = null;
-    return;
-  }
-
-  const currentTime = activeScenario.store.state.currentTime;
-  const updateKey = String(Math.floor(currentTime / 60_000));
-  if (
-    mapAdapter === lastDayNightTerminatorMap &&
-    updateKey === lastDayNightTerminatorUpdateKey
-  ) {
-    return;
-  }
-
-  lastDayNightTerminatorMap = mapAdapter;
-  lastDayNightTerminatorUpdateKey = updateKey;
-  mapAdapter?.addGeoJsonOverlay?.(
-    DAY_NIGHT_TERMINATOR_OVERLAY_ID,
-    getDayNightTerminatorGeoJson(currentTime),
-    DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
-  );
-}
+useMaplibreDayNightTerminator(engineRef, activeScenario);
 
 mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
@@ -748,16 +717,6 @@ watch(mapLibreUnitRotationMode, () => {
 });
 
 watch(
-  [
-    showDayNightTerminator,
-    () => activeScenario.store.state.currentTime,
-    () => engineRef.value?.map,
-  ],
-  () => syncDayNightTerminator(),
-  { immediate: true },
-);
-
-watch(
   [() => activeScenario.store.state.featureStateCounter, doNotFilterLayers],
   () => {
     engineRef.value?.layers.refreshScenarioFeatureLayers({
@@ -896,7 +855,6 @@ onUnmounted(() => {
   clearSuppressNextNativeClick();
   boxSelect.cleanup();
   disposeUnitHistory();
-  engineRef.value?.map.removeGeoJsonOverlay?.(DAY_NIGHT_TERMINATOR_OVERLAY_ID);
   mlMap.off("styleimagemissing", styleImageMissing);
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
