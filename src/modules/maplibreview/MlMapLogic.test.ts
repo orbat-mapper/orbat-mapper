@@ -862,6 +862,64 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("refreshes MapLibre units when unitStateCounter changes after text amplifier updates", async () => {
+    const mockMap = createMockMap();
+    const unitStateCounter = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-live-text-amplifier",
+        sidc: "SFGPUCI----K",
+        shortName: "A1",
+        name: "Alpha 1",
+        textAmplifiers: {},
+        _state: {
+          location: [10, 20],
+        },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-live-maplibre-text-amplifier",
+          currentTime: 0,
+          featureStateCounter: 0,
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+
+    visibleUnits.value[0].textAmplifiers = { additionalInformation: "Ready" };
+    unitStateCounter.value++;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+
+    expect(symbolGenerator).toHaveBeenCalledWith(
+      "SFGPUCI----K",
+      expect.objectContaining({ additionalInformation: "Ready" }),
+    );
+  });
+
   it("updates unit rotation alignment live when the map setting changes", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();

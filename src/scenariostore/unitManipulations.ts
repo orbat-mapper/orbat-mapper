@@ -414,7 +414,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
       invalidateUnitStyle(unit._ikey);
       unit._ikey = undefined;
     }
-    const shouldUpdateUnitStateCounter = data.style !== undefined;
+    const shouldUpdateUnitStateCounter =
+      data.style !== undefined || data.textAmplifiers !== undefined;
 
     if (noUndo) {
       if (!unit) return;

@@ -308,6 +308,35 @@ describe("unitManipulations settings redraw signaling", () => {
     expect(store.state.unitMap["unit-1"].style?.mapSymbolSize).toBe(48);
   });
 
+  it("increments unitStateCounter for text amplifier updates and restores it on undo/redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.updateUnit("unit-1", {
+      textAmplifiers: {
+        additionalInformation: "Ready",
+      },
+    });
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].textAmplifiers?.additionalInformation).toBe(
+      "Ready",
+    );
+
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+    expect(
+      store.state.unitMap["unit-1"].textAmplifiers?.additionalInformation,
+    ).toBeUndefined();
+
+    store.redo();
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].textAmplifiers?.additionalInformation).toBe(
+      "Ready",
+    );
+  });
+
   it("updateSideGroup increments settingsStateCounter and updates fields", () => {
     const store = useNewScenarioStore(createScenario());
     const actions = useUnitManipulations(store);
