@@ -10,7 +10,7 @@ import {
   type PointLike,
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
-import type { TextAmplifiers } from "@/types/scenarioModels";
+import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
 import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import type { Pixel } from "ol/pixel";
@@ -54,6 +54,7 @@ import { useRoutingStore } from "@/stores/routingStore";
 import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTerminator";
 import { provideMapHoverContext, type HoverFeatureLike } from "@/composables/geoHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
+import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
@@ -80,12 +81,22 @@ provide(activeScenarioKey, activeScenario);
 const { unitActions } = activeScenario;
 const getUnitById = activeScenario.helpers?.getUnitById ?? (() => undefined);
 
-type SymbolCacheEntry = {
+type MilSymbolCacheEntry = {
+  kind: "milsymbol";
   sidc: string;
   symbolOptions: ReturnType<typeof unitActions.getCombinedSymbolOptions>;
   textAmplifiers: Omit<TextAmplifiers, "uniqueDesignation">;
   uniqueDesignation: string;
 };
+
+type CustomSymbolCacheEntry = {
+  kind: "custom";
+  customSymbol: CustomSymbol;
+  size: number;
+  color?: string;
+};
+
+type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
@@ -286,6 +297,69 @@ function getUnitMapSymbolSize(unit: { style?: { mapSymbolSize?: number } }) {
     : mapSettings.mapIconSize;
 }
 
+function getCustomSymbolId(sidc: string) {
+  return sidc.startsWith(CUSTOM_SYMBOL_PREFIX) ? sidc.slice(CUSTOM_SYMBOL_SLICE) : "";
+}
+
+function createCustomSymbolImage(
+  imageId: string,
+  { customSymbol, size, color }: CustomSymbolCacheEntry,
+) {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.onload = () => {
+    if (mlMap.hasImage(imageId)) return;
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    if (!(width > 0 && height > 0)) return;
+
+    const pixelRatio = 2;
+    const anchor = customSymbol.anchor ?? [0.5, 0.5];
+    const anchorX = anchor[0] * size;
+    const anchorY = anchor[1] * size;
+    const halfW = Math.max(anchorX, size - anchorX);
+    const halfH = Math.max(anchorY, size - anchorY);
+    const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
+    const paddedHeight = Math.ceil(2 * halfH * pixelRatio);
+    const drawX = Math.round((halfW - anchorX) * pixelRatio);
+    const drawY = Math.round((halfH - anchorY) * pixelRatio);
+    const drawSize = Math.round(size * pixelRatio);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = paddedWidth;
+    canvas.height = paddedHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const isSelected = imageId.startsWith("sel-");
+    if (isSelected) {
+      ctx.shadowColor = "yellow";
+      ctx.shadowBlur = Math.max(6, Math.round(size * 0.2));
+      ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
+      ctx.shadowBlur = 0;
+    }
+    ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
+    if (color && typeof ctx.fillRect === "function") {
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.fillStyle = color;
+      ctx.fillRect(drawX, drawY, drawSize, drawSize);
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    try {
+      const data = ctx.getImageData(0, 0, paddedWidth, paddedHeight);
+      if (data) {
+        mlMap.addImage(imageId, data, { pixelRatio });
+        usedImageIds.add(imageId);
+      }
+    } catch {
+      mlMap.addImage(imageId, image);
+      usedImageIds.add(imageId);
+    }
+  };
+  image.onerror = () => {};
+  image.src = customSymbol.src;
+}
+
 function setupMapLayers() {
   !mlMap.getSource("unitSource") &&
     mlMap.addSource("unitSource", {
@@ -307,13 +381,18 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
 
   const isSelected = e.id.startsWith("sel-");
   const symbolCode = isSelected ? e.id.slice(4) : e.id;
+  const cachedSymbol = symbolCache.get(symbolCode);
+  if (cachedSymbol?.kind === "custom") {
+    createCustomSymbolImage(e.id, cachedSymbol);
+    return;
+  }
 
   const {
     sidc = "xxxxxxx",
     symbolOptions = {},
     textAmplifiers = {},
     uniqueDesignation = "",
-  } = symbolCache.get(symbolCode) ?? {};
+  } = cachedSymbol?.kind === "milsymbol" ? cachedSymbol : {};
 
   const options = isSelected
     ? { outlineWidth: 20, outlineColor: "yellow" }
@@ -708,8 +787,13 @@ watch(
 
 watch(selectedUnitIds, () => addUnits(), { deep: true });
 
-watch([() => mapSettings.mapUnitLabelBelow, () => mapSettings.mapIconSize], () =>
-  addUnits(),
+watch(
+  [
+    () => mapSettings.mapUnitLabelBelow,
+    () => mapSettings.mapIconSize,
+    () => mapSettings.mapCustomIconScale,
+  ],
+  () => addUnits(),
 );
 
 watch(mapLibreUnitRotationMode, () => {
@@ -772,15 +856,28 @@ function addUnits(
           : resolvedUniqueDesignation;
       const { size: _symbolOptionSize, ...combinedSymbolOptions } =
         unitActions.getCombinedSymbolOptions(unit);
-      const symbolData: SymbolCacheEntry = {
-        sidc: unit.sidc,
-        symbolOptions: {
-          size: getUnitMapSymbolSize(unit),
-          ...combinedSymbolOptions,
-        },
-        textAmplifiers,
-        uniqueDesignation: symbolUniqueDesignation,
-      };
+      const customSymbolId = getCustomSymbolId(unit.sidc);
+      const customSymbol = customSymbolId
+        ? activeScenario.store.state.customSymbolMap[customSymbolId]
+        : undefined;
+      const symbolData: SymbolCacheEntry =
+        customSymbol && customSymbolId
+          ? {
+              kind: "custom",
+              customSymbol,
+              size: getUnitMapSymbolSize(unit) * (mapSettings.mapCustomIconScale || 1.7),
+              color: combinedSymbolOptions.fillColor,
+            }
+          : {
+              kind: "milsymbol",
+              sidc: unit.sidc,
+              symbolOptions: {
+                size: getUnitMapSymbolSize(unit),
+                ...combinedSymbolOptions,
+              },
+              textAmplifiers,
+              uniqueDesignation: symbolUniqueDesignation,
+            };
       const symbolKey = hashObject(symbolData);
       if (!symbolCache.has(symbolKey)) {
         symbolCache.set(symbolKey, symbolData);
