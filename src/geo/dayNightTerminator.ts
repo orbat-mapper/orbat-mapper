@@ -288,8 +288,7 @@ function buildBandRing(trig: CenterTrig, radiusDeg: number): Position[] {
     const cosB = COS_BEARINGS[i];
     const sinLat = sinC * cosR + cosC_sinR * cosB;
     const lat = Math.asin(sinLat);
-    const lon =
-      centerLonRad + Math.atan2(sinB * sinR * cosC, cosR - sinC * sinLat);
+    const lon = centerLonRad + Math.atan2(sinB * sinR * cosC, cosR - sinC * sinLat);
     ring[i] = [normalizeLon(lon * DEG, centerLonDeg), clampLat(lat * DEG)];
   }
   return ring;
