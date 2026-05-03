@@ -84,8 +84,9 @@ const ui = useUiStore();
                 v-if="showSearchButton"
                 @click.stop="emit('showPlaceSearch')"
                 title="Search"
+                class="size-7"
               >
-                <MagnifyingGlassIcon class="h-5 w-5" />
+                <MagnifyingGlassIcon class="h-4 w-4" />
               </IconButton>
               <slot name="header-right-after-search" />
             </div>

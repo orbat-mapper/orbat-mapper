@@ -353,6 +353,7 @@ watchEffect(() => {
           :add-unit="addUnit"
         />
       </div>
+      <slot name="extra-tools" />
     </section>
     <section class="flex shrink-0 items-center">
       <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
