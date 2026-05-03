@@ -55,6 +55,7 @@ import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTer
 import { provideMapHoverContext, type HoverFeatureLike } from "@/composables/geoHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
+import { SID_INDEX } from "@/symbology/sidc";
 
 const UNIT_LAYER_ID = "unitLayer";
 const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
@@ -232,7 +233,7 @@ function createUnitLayerSpec(
       "text-rotate": ["get", "symbolRotation"],
       "text-rotation-alignment": alignment.text,
       "text-font": ["Noto Sans Italic"],
-      "text-offset": [0, 1.5],
+      "text-offset": ["get", "textOffset"],
       "text-anchor": "top",
       "text-size": 12,
       "icon-allow-overlap": true,
@@ -295,6 +296,15 @@ function getUnitMapSymbolSize(unit: { style?: { mapSymbolSize?: number } }) {
   return typeof unit.style?.mapSymbolSize === "number"
     ? unit.style.mapSymbolSize
     : mapSettings.mapIconSize;
+}
+
+function isHostileSidc(sidc: string) {
+  return sidc[SID_INDEX] === "6";
+}
+
+function getUnitLabelOffsetY(symbolSize: number, sidc: string) {
+  const frameMultiplier = isHostileSidc(sidc) ? 1.25 : 1;
+  return Math.max(1.5, (symbolSize / 20) * frameMultiplier);
 }
 
 function getCustomSymbolId(sidc: string) {
@@ -883,19 +893,24 @@ function addUnits(
       const customSymbol = customSymbolId
         ? activeScenario.store.state.customSymbolMap[customSymbolId]
         : undefined;
+      const baseSymbolSize = getUnitMapSymbolSize(unit);
+      const renderedSymbolSize =
+        customSymbol && customSymbolId
+          ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
+          : baseSymbolSize;
       const symbolData: SymbolCacheEntry =
         customSymbol && customSymbolId
           ? {
               kind: "custom",
               customSymbol,
-              size: getUnitMapSymbolSize(unit) * (mapSettings.mapCustomIconScale || 1.7),
+              size: renderedSymbolSize,
               color: combinedSymbolOptions.fillColor,
             }
           : {
               kind: "milsymbol",
               sidc: unit.sidc,
               symbolOptions: {
-                size: getUnitMapSymbolSize(unit),
+                size: renderedSymbolSize,
                 ...combinedSymbolOptions,
               },
               textAmplifiers,
@@ -927,6 +942,7 @@ function addUnits(
           label: mapSettings.mapUnitLabelBelow
             ? unit.shortName || unit.name || "Unnamed Unit"
             : "",
+          textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, unit.sidc)],
           symbolRotation,
         },
       } as Feature;

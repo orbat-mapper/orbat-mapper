@@ -363,6 +363,7 @@ describe("MlMapLogic", () => {
     expect(getAddedLayerSpec(mockMap, "unitLayer")?.layout).toMatchObject({
       "icon-rotation-alignment": "viewport",
       "text-rotation-alignment": "viewport",
+      "text-offset": ["get", "textOffset"],
     });
     expect(mockMap.getSource("unitSource")?.setData).toHaveBeenCalled();
     expect(mockMap.map.setCenter).toHaveBeenCalledWith([10, 20]);
@@ -467,6 +468,100 @@ describe("MlMapLogic", () => {
       "SFGPUCI----K",
       expect.objectContaining({ size: 32 }),
     );
+  });
+
+  it("scales MapLibre unit label offset with ordinary icon size overrides", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSettingsStore(pinia).mapUnitLabelBelow = true;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-label-offset-size-override",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-label-offset",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            style: {
+              mapSymbolSize: 60,
+            },
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].properties).toMatchObject({
+      label: "A1",
+      textOffset: [0, 3],
+    });
+  });
+
+  it("adds extra MapLibre unit label clearance for scaled hostile diamond icons", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSettingsStore(pinia).mapUnitLabelBelow = true;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-hostile-label-offset",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-hostile-label-offset",
+            sidc: "10061000000000000000",
+            shortName: "H1",
+            name: "Hostile 1",
+            style: {
+              mapSymbolSize: 60,
+            },
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].properties).toMatchObject({
+      label: "H1",
+      textOffset: [0, 3.75],
+    });
   });
 
   it("registers custom MapLibre unit symbols without generating milsymbols", async () => {
@@ -653,6 +748,61 @@ describe("MlMapLogic", () => {
 
     expect(source?.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
     restoreImage();
+  });
+
+  it("scales MapLibre unit label offset with custom icon scale", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapUnitLabelBelow = true;
+    mapSettings.mapIconSize = 40;
+    mapSettings.mapCustomIconScale = 2;
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-custom-label-offset",
+          currentTime: 0,
+          featureStateCounter: 0,
+          customSymbolMap: {
+            "custom-1": {
+              id: "custom-1",
+              name: "Custom",
+              src: "data:image/png;base64,custom",
+              sidc: "10031000000000000000",
+            },
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-custom-label-offset",
+            sidc: "custom1:10031000000000000000:custom-1",
+            shortName: "C1",
+            name: "Custom 1",
+            _state: {
+              location: [10, 20],
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].properties).toMatchObject({
+      label: "C1",
+      textOffset: [0, 4],
+    });
   });
 
   it("refreshes MapLibre units when unitStateCounter changes after a size override", async () => {
