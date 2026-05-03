@@ -1,5 +1,6 @@
 import type { Map as MlMap, MapMouseEvent, MapTouchEvent, PointLike } from "maplibre-gl";
 import { featureCollection, lineString, point, polygon } from "@turf/helpers";
+import turfCircle from "@turf/circle";
 import type { Feature as GeoJsonFeature, Geometry, Point, Position } from "geojson";
 import { onKeyStroke, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, toValue, unref, watch, type MaybeRef, type MaybeRefOrGetter } from "vue";
@@ -157,7 +158,10 @@ export function useMapLibreDrawInteraction(
         geometry: point(circleCenter).geometry,
         geometryMeta: {
           geometryKind: "Circle",
-          radius: distanceMeters(circleCenter, position),
+          radius: distanceMeters(
+            circleCenter,
+            unwrapPositionRelative(circleCenter, position),
+          ),
         },
       });
       return;
@@ -191,7 +195,12 @@ export function useMapLibreDrawInteraction(
         return;
       }
       if (currentDrawType.value === "Circle" && circleCenter) {
-        renderPreview(createCirclePreview(circleCenter, position));
+        renderPreview(
+          createCirclePreview(
+            circleCenter,
+            unwrapPositionRelative(circleCenter, position),
+          ),
+        );
         return;
       }
       if (
@@ -607,43 +616,10 @@ function closeRing(coordinates: Position[]): Position[] {
 
 function createCirclePreview(center: Position, edge: Position): Geometry {
   const radius = distanceMeters(center, edge);
-  const steps = 64;
-  const coordinates: Position[] = [];
-  for (let i = 0; i <= steps; i += 1) {
-    const bearing = (i / steps) * Math.PI * 2;
-    coordinates.push(destination(center, radius, bearing));
-  }
-  return polygon([coordinates]).geometry;
-}
-
-function destination(
-  center: Position,
-  distance: number,
-  bearingRadians: number,
-): Position {
-  const earthRadius = 6_371_008.8;
-  const angularDistance = distance / earthRadius;
-  const longitude1 = degreesToRadians(center[0]);
-  const latitude1 = degreesToRadians(center[1]);
-  const latitude2 = Math.asin(
-    Math.sin(latitude1) * Math.cos(angularDistance) +
-      Math.cos(latitude1) * Math.sin(angularDistance) * Math.cos(bearingRadians),
-  );
-  const longitude2 =
-    longitude1 +
-    Math.atan2(
-      Math.sin(bearingRadians) * Math.sin(angularDistance) * Math.cos(latitude1),
-      Math.cos(angularDistance) - Math.sin(latitude1) * Math.sin(latitude2),
-    );
-  return [radiansToDegrees(longitude2), radiansToDegrees(latitude2)];
-}
-
-function degreesToRadians(value: number) {
-  return (value * Math.PI) / 180;
-}
-
-function radiansToDegrees(value: number) {
-  return (value * 180) / Math.PI;
+  return turfCircle(center, radius / 1000, {
+    steps: 128,
+    units: "kilometers",
+  }).geometry;
 }
 
 function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] {

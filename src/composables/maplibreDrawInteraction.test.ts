@@ -371,6 +371,41 @@ describe("useMapLibreDrawInteraction", () => {
     );
   });
 
+  it("unwraps circle preview and radius across the antimeridian", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("Circle");
+    harness.trigger("click", createEvent(179, 10));
+    harness.trigger("mousemove", createEvent(-179, 10));
+    harness.trigger("click", createEvent(-179, 10));
+
+    expect(harness.mapAdapter.addGeoJsonOverlay).toHaveBeenCalledWith(
+      "maplibre-draw-preview",
+      expect.objectContaining({
+        features: expect.arrayContaining([
+          expect.objectContaining({
+            geometry: expect.objectContaining({
+              type: "Polygon",
+              coordinates: expect.arrayContaining([
+                expect.arrayContaining([
+                  expect.arrayContaining([
+                    expect.toSatisfy((longitude: number) => longitude > 180),
+                    expect.any(Number),
+                  ]),
+                ]),
+              ]),
+            }),
+          }),
+        ]),
+      }),
+      expect.anything(),
+    );
+
+    const feature = harness.addFeature.mock.lastCall?.[0] as GeometryLayerItem;
+    expect(feature.geometryMeta.radius).toBeGreaterThan(200_000);
+    expect(feature.geometryMeta.radius).toBeLessThan(250_000);
+  });
+
   it("creates a freehand line from drag samples", () => {
     const harness = createHarness({ freehand: true });
 

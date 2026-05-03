@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Circle drawing now works in MapLibre mode.
 - Fixed scenario timeline alignment across daylight saving time transitions by recomputing the timezone offset from the current scenario time.
 - Map symbol sizes can now be adjusted in MapLibre mode.
 - Added a day/night terminator overlay to MapLibre mode.
