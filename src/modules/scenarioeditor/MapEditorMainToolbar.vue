@@ -244,9 +244,9 @@ watchEffect(() => {
 
 <template>
   <nav
-    class="bg-sidebar border-border pointer-events-auto flex w-full items-center justify-between border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto"
+    class="no-scrollbar bg-sidebar border-border pointer-events-auto flex w-full items-center justify-between gap-2 overflow-x-auto overscroll-x-contain border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto md:overflow-visible"
   >
-    <section class="flex items-center justify-between">
+    <section class="flex shrink-0 items-center justify-between">
       <MainToolbarButton
         title="Keep selected tool active after drawing"
         @click="toggleAddMultiple()"
@@ -354,7 +354,7 @@ watchEffect(() => {
         />
       </div>
     </section>
-    <section class="flex items-center">
+    <section class="flex shrink-0 items-center">
       <div class="border-border -mx-1 h-7 border-l-2 sm:mx-1" />
       <MainToolbarButton title="Undo" @click="undo()" :disabled="!canUndo">
         <UndoIcon class="size-6" />

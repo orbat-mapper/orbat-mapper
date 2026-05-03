@@ -53,7 +53,7 @@ onKeyStroke("Escape", (event) => {
 
 <template>
   <FloatingPanel
-    class="no-scrollbar pointer-events-auto max-w-[calc(100vw-1rem)] overflow-x-auto rounded-md p-1 sm:max-w-none sm:overflow-visible"
+    class="no-scrollbar pointer-events-auto max-w-[calc(100vw-0.5rem)] overflow-x-auto rounded-md p-1 sm:max-w-none sm:overflow-visible"
   >
     <div class="flex min-w-max items-center space-x-0">
       <p class="text-muted-foreground hidden px-2 text-sm font-medium sm:block">Draw</p>

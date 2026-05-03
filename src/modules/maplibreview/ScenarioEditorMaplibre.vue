@@ -411,7 +411,7 @@ function onCloseActiveDetailsPanel() {
     <template #mobile-toolbar>
       <div
         v-if="mlMap && ui.showToolbar && isMobile"
-        class="border-border bg-background pointer-events-auto border-t px-2 py-2"
+        class="border-border bg-background pointer-events-auto border-t px-1 py-2"
       >
         <MapEditorUnitTrackToolbar
           v-if="toolbarStore.currentToolbar === 'track'"
