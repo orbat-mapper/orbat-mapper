@@ -314,15 +314,17 @@ function createCustomSymbolImage(
     if (!(width > 0 && height > 0)) return;
 
     const pixelRatio = 2;
+    const isSelected = imageId.startsWith("sel-");
+    const highlightPadding = isSelected ? Math.max(8, Math.ceil(size * 0.3)) : 0;
     const anchor = customSymbol.anchor ?? [0.5, 0.5];
     const anchorX = anchor[0] * size;
     const anchorY = anchor[1] * size;
     const halfW = Math.max(anchorX, size - anchorX);
     const halfH = Math.max(anchorY, size - anchorY);
-    const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
-    const paddedHeight = Math.ceil(2 * halfH * pixelRatio);
-    const drawX = Math.round((halfW - anchorX) * pixelRatio);
-    const drawY = Math.round((halfH - anchorY) * pixelRatio);
+    const paddedWidth = Math.ceil((2 * halfW + highlightPadding * 2) * pixelRatio);
+    const paddedHeight = Math.ceil((2 * halfH + highlightPadding * 2) * pixelRatio);
+    const drawX = Math.round((halfW - anchorX + highlightPadding) * pixelRatio);
+    const drawY = Math.round((halfH - anchorY + highlightPadding) * pixelRatio);
     const drawSize = Math.round(size * pixelRatio);
 
     const canvas = document.createElement("canvas");
@@ -330,14 +332,35 @@ function createCustomSymbolImage(
     canvas.height = paddedHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const isSelected = imageId.startsWith("sel-");
     if (isSelected) {
+      const outlineCanvas = document.createElement("canvas");
+      outlineCanvas.width = drawSize;
+      outlineCanvas.height = drawSize;
+      const outlineCtx = outlineCanvas.getContext("2d");
+      if (outlineCtx) {
+        outlineCtx.drawImage(image, 0, 0, drawSize, drawSize);
+        outlineCtx.globalCompositeOperation = "source-in";
+        outlineCtx.fillStyle = "yellow";
+        outlineCtx.fillRect(0, 0, drawSize, drawSize);
+        const outlineWidth = Math.max(4, Math.round(size * 0.12 * pixelRatio));
+        for (const [offsetX, offsetY] of [
+          [-outlineWidth, 0],
+          [outlineWidth, 0],
+          [0, -outlineWidth],
+          [0, outlineWidth],
+          [-outlineWidth, -outlineWidth],
+          [outlineWidth, -outlineWidth],
+          [-outlineWidth, outlineWidth],
+          [outlineWidth, outlineWidth],
+        ]) {
+          ctx.drawImage(outlineCanvas, drawX + offsetX, drawY + offsetY);
+        }
+      }
       ctx.shadowColor = "yellow";
-      ctx.shadowBlur = Math.max(6, Math.round(size * 0.2));
-      ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur = Math.max(10, Math.round(size * 0.35));
     }
     ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
+    ctx.shadowBlur = 0;
     if (color && typeof ctx.fillRect === "function") {
       ctx.globalCompositeOperation = "source-atop";
       ctx.fillStyle = color;
