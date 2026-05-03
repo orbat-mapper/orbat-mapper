@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added an unsaved changes indicator and quick save button to the navbar.
 - Added twilight zones to the day/night terminator overlay (MapLibre mode only).
 - Added raster tile layer rendering and management to MapLibre mode.
 - Added image layer rendering and transform support to MapLibre mode.

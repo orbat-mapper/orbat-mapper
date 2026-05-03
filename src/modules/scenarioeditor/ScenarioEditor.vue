@@ -226,7 +226,9 @@ const mapStore = useMapSettingsStore();
 mapStore.baseLayerName = state.mapSettings.baseMapId;
 
 const originalTitle = useTitle().value;
-const windowTitle = computed(() => state.info.name);
+const windowTitle = computed(() =>
+  io.savedDirty.value ? `${state.info.name} *` : state.info.name,
+);
 const { send } = useNotifications();
 const { loadScenario: browserLoadScenario } = useBrowserScenarios();
 
@@ -323,7 +325,7 @@ async function onScenarioAction(action: ScenarioActions) {
   } else if (action === "save") {
     const preId = state.id;
     const newId = await io.saveToIndexedDb();
-    send({ message: "Scenario saved to IndexedDb" });
+    send({ message: "Scenario saved in browser" });
     if (preId !== newId) {
       await router.push({ name: MAP_EDIT_MODE_ROUTE, params: { scenarioId: newId } });
     }
@@ -433,6 +435,16 @@ if (firstOverlayLayerId) {
             @click="showInfo()"
           >
             {{ activeScenario.store.state.info.name }}
+          </Button>
+          <Button
+            v-if="io.savedDirty.value"
+            variant="outline"
+            class="hidden h-6 shrink-0 gap-1 rounded-full px-2 py-0 text-xs sm:inline-flex"
+            title="Save scenario"
+            @click="onScenarioAction('save')"
+          >
+            <span class="mr-1 size-2 rounded-full bg-amber-500" />
+            Save
           </Button>
         </div>
       </div>
