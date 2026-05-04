@@ -16,7 +16,9 @@ const unitSettings = useUnitSettingsStore();
 const store = useMainToolbarStore();
 </script>
 <template>
-  <FloatingPanel class="pointer-events-auto flex items-center space-x-1 rounded-md p-1">
+  <FloatingPanel
+    class="no-scrollbar pointer-events-auto flex max-w-full items-center space-x-1 overflow-x-auto rounded-md p-1"
+  >
     <p class="text-muted-foreground px-2 text-sm font-medium">Track</p>
     <div class="border-border h-5 border-l" />
 

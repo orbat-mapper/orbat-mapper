@@ -248,15 +248,15 @@ function onCloseActiveDetailsPanel() {
           @show-settings="emit('show-settings')"
         />
         <MapEditorMeasurementToolbar
-          class="absolute bottom-14 sm:bottom-16"
+          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'measurements'"
         />
         <MapEditorDrawToolbar
-          class="absolute bottom-14 sm:bottom-16"
+          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'draw'"
         />
         <MapEditorUnitTrackToolbar
-          class="absolute bottom-14 sm:bottom-16"
+          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
           v-if="toolbarStore.currentToolbar === 'track'"
         />
       </footer>

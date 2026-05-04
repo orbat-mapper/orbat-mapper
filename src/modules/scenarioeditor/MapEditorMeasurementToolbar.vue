@@ -67,7 +67,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <FloatingPanel class="pointer-events-auto flex items-center space-x-0.5 rounded-md p-1">
+  <FloatingPanel
+    class="no-scrollbar pointer-events-auto flex max-w-full items-center space-x-0.5 overflow-x-auto rounded-md p-1"
+  >
     <p class="text-muted-foreground px-2 text-sm font-medium">Measure</p>
     <MainToolbarButton
       title="Length"
