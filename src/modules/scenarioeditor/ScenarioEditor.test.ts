@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
@@ -153,6 +153,7 @@ function createActiveScenario(
       addSide: vi.fn(),
     },
     io: {
+      savedDirty: ref(false),
       saveToIndexedDb: vi.fn(),
       loadFromLocalStorage: vi.fn(),
       downloadAsJson: vi.fn(),
