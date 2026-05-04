@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added twilight zones to the day/night terminator overlay (MapLibre mode only).
 - Added raster tile layer rendering and management to MapLibre mode.
 - Added image layer rendering and transform support to MapLibre mode.
+- Added line-placement label rendering in MapLibre mode so labels with `text-placement: line` follow the line geometry.
 
 ### Changed
 
@@ -18,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- MapLibre scenario feature labels now honor the configured `text-offset-x`/`text-offset-y` (previously a fixed offset was used). Pixel values are converted to ems to match OpenLayers sizing.
 - Circle drawing now works in MapLibre mode.
 - Fixed scenario timeline alignment across daylight saving time transitions by recomputing the timezone offset from the current scenario time.
 - Map symbol sizes can now be adjusted in MapLibre mode.

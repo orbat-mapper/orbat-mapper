@@ -81,8 +81,7 @@ type LabelFeatureProperties = {
   textHaloWidth: number;
   textAlign: string;
   textAnchor: string;
-  textOffsetX: number;
-  textOffsetY: number;
+  textOffset: [number, number];
   sourceOpacity: number;
 };
 
@@ -111,6 +110,14 @@ type GroupDefinition = {
 type ArrowGroupDefinition = GroupDefinition & {
   iconAnchor: "center" | "right";
   iconOffset: [number, number];
+};
+
+const LABEL_TEXT_SIZE = 13;
+
+type LabelPlacement = "point" | "line";
+
+type LabelGroupDefinition = GroupDefinition & {
+  placement: LabelPlacement;
 };
 
 type ScenarioLayerRenderPlan = {
@@ -251,28 +258,36 @@ function getArrowVisibilityGroup(
   } satisfies ArrowGroupDefinition;
 }
 
-function getTextVisibilityGroup(style: StyleLike, layerId: string) {
+function getTextVisibilityGroup(
+  style: StyleLike,
+  layerId: string,
+  placement: LabelPlacement,
+) {
   if (!style.showLabel) return undefined;
   if (typeof style.textMinZoom !== "number" && typeof style.textMaxZoom !== "number") {
     return {
       id: hashObject({
         layerId,
         suffix: "label",
+        placement,
         type: "always",
       }),
-    } satisfies GroupDefinition;
+      placement,
+    } satisfies LabelGroupDefinition;
   }
 
   return {
     id: hashObject({
       layerId,
       suffix: "label",
+      placement,
       minZoom: style.textMinZoom ?? 0,
       maxZoom: style.textMaxZoom ?? 24,
     }),
     minzoom: style.textMinZoom ?? 0,
     maxzoom: style.textMaxZoom ?? 24,
-  } satisfies GroupDefinition;
+    placement,
+  } satisfies LabelGroupDefinition;
 }
 
 function convertCircleFeature(feature: NGeometryLayerItem) {
@@ -388,7 +403,7 @@ function buildFeatureData(
   const renderGroups = new Set<string>();
   const labelGroups = new Set<string>();
   const renderGroupDefs = new Map<string, GroupDefinition>();
-  const labelGroupDefs = new Map<string, GroupDefinition>();
+  const labelGroupDefs = new Map<string, LabelGroupDefinition>();
   const arrowGroupDefs = new Map<string, ArrowGroupDefinition>();
   const imageDefinitions = new Map<string, ImageDefinition>();
 
@@ -465,9 +480,14 @@ function buildFeatureData(
       });
 
       const labelText = getLabelText(item);
-      const labelGroup = getTextVisibilityGroup(style, layerId);
+      const labelPlacement: LabelPlacement =
+        style["text-placement"] === "line" && geometryKind === "line" ? "line" : "point";
+      const labelGroup = getTextVisibilityGroup(style, layerId, labelPlacement);
       if (style.showLabel && labelText && labelGroup) {
-        const labelGeometry = getLabelGeometry(normalizedGeometry);
+        const labelGeometry =
+          labelPlacement === "line"
+            ? normalizedGeometry
+            : getLabelGeometry(normalizedGeometry);
         if (labelGeometry) {
           labelGroups.add(labelGroup.id);
           labelGroupDefs.set(labelGroup.id, labelGroup);
@@ -487,8 +507,13 @@ function buildFeatureData(
               textHaloWidth: 2,
               textAlign: normalizeTextAlign(style["text-align"]),
               textAnchor: normalizeTextAnchor(style["text-align"]),
-              textOffsetX: style["text-offset-x"] ?? 1.15,
-              textOffsetY: style["text-offset-y"] ?? 0,
+              textOffset:
+                labelPlacement === "line"
+                  ? [0, (style["text-offset-y"] ?? 0) / LABEL_TEXT_SIZE]
+                  : [
+                      (style["text-offset-x"] ?? 15) / LABEL_TEXT_SIZE,
+                      (style["text-offset-y"] ?? 0) / LABEL_TEXT_SIZE,
+                    ],
               sourceOpacity,
             },
           });
@@ -893,6 +918,24 @@ function createLayerDefinitions(
       ...(typeof group.minzoom === "number" ? { minzoom: group.minzoom } : {}),
       ...(typeof group.maxzoom === "number" ? { maxzoom: group.maxzoom } : {}),
     };
+    const isLinePlacement = group.placement === "line";
+    const labelLayout: Record<string, unknown> = {
+      visibility: layoutVisibility,
+      "text-field": ["get", "textField"],
+      "text-font": ["Noto Sans Italic"],
+      "text-size": LABEL_TEXT_SIZE,
+      "text-allow-overlap": false,
+      "text-ignore-placement": false,
+      "symbol-sort-key": ["get", "zIndex"],
+      "symbol-placement": group.placement,
+    };
+    labelLayout["text-offset"] = ["get", "textOffset"];
+    if (isLinePlacement) {
+      labelLayout["text-rotation-alignment"] = "map";
+      labelLayout["text-pitch-alignment"] = "viewport";
+    } else {
+      labelLayout["text-anchor"] = ["get", "textAnchor"];
+    }
     layerDefinitions.push({
       id: `${prefix}-labels-${group.id}`,
       spec: {
@@ -900,17 +943,7 @@ function createLayerDefinitions(
         type: "symbol",
         source: labelSourceId,
         filter: createLabelFilter(group.id),
-        layout: {
-          visibility: layoutVisibility,
-          "text-field": ["get", "textField"],
-          "text-font": ["Noto Sans Italic"],
-          "text-size": 13,
-          "text-anchor": ["get", "textAnchor"],
-          "text-offset": ["literal", [1, 0]],
-          "text-allow-overlap": false,
-          "text-ignore-placement": false,
-          "symbol-sort-key": ["get", "zIndex"],
-        },
+        layout: labelLayout,
         paint: {
           "text-color": ["get", "textColor"],
           "text-opacity": ["get", "sourceOpacity"],

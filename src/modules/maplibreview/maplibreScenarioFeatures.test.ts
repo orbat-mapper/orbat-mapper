@@ -320,6 +320,85 @@ describe("buildScenarioFeatureRenderPlan", () => {
     });
   });
 
+  it("renders line-placement labels along the line geometry", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-line-label",
+        kind: "overlay",
+        name: "Layer line label",
+        items: [
+          {
+            id: "line-label-1",
+            kind: "geometry",
+            _pid: "layer-line-label",
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [1, 0],
+                [2, 0],
+              ],
+            },
+            geometryMeta: { geometryKind: "LineString" },
+            name: "Phase Line Alpha",
+            style: {
+              showLabel: true,
+              "text-placement": "line",
+            },
+          },
+          {
+            id: "point-label-1",
+            kind: "geometry",
+            _pid: "layer-line-label",
+            geometry: {
+              type: "Point",
+              coordinates: [10, 10],
+            },
+            geometryMeta: { geometryKind: "Point" },
+            name: "Bravo",
+            style: {
+              showLabel: true,
+              "text-placement": "line",
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const lineLabel = plan.labelData.features.find(
+      (feature) => feature.properties?.featureId === "line-label-1",
+    );
+    expect(lineLabel?.geometry.type).toBe("LineString");
+
+    const pointLabel = plan.labelData.features.find(
+      (feature) => feature.properties?.featureId === "point-label-1",
+    );
+    expect(pointLabel?.geometry.type).toBe("Point");
+
+    const labelLayers = plan.layerDefinitions.filter((layer) =>
+      layer.id.includes("labels"),
+    );
+    const linePlacementLayer = labelLayers.find(
+      (layer) => (layer.spec.layout as any)?.["symbol-placement"] === "line",
+    );
+    const pointPlacementLayer = labelLayers.find(
+      (layer) => (layer.spec.layout as any)?.["symbol-placement"] === "point",
+    );
+    expect(linePlacementLayer).toBeDefined();
+    expect(pointPlacementLayer).toBeDefined();
+    expect((linePlacementLayer?.spec.layout as any)["text-rotation-alignment"]).toBe(
+      "map",
+    );
+    expect((pointPlacementLayer?.spec.layout as any)["text-anchor"]).toEqual([
+      "get",
+      "textAnchor",
+    ]);
+  });
+
   it("uses per-arrow maplibre placement metadata for open hand-drawn heads", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {
