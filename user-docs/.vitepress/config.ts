@@ -11,6 +11,17 @@ export default defineConfig({
     ssr: {
       noExternal: ["milsymbol"],
     },
+    build: {
+      target: "esnext",
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: "esnext",
+      },
+    },
+    esbuild: {
+      target: "esnext",
+    },
   },
   themeConfig: {
     outline: "deep",

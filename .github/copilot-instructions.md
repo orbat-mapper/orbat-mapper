@@ -184,7 +184,7 @@ Uses Prettier with Tailwind CSS plugin. Configuration in `.prettierrc`.
 
 ## Documentation
 
-- Documentation source is in `docs/` directory
+- Documentation source is in `user-docs/` directory
 - Uses VitePress
 - Run docs dev server: `pnpm run docs:dev`
 - Build docs: `pnpm run docs:build`

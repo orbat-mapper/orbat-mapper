@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
+      - "user-docs/**"
 
 permissions:
   contents: read
