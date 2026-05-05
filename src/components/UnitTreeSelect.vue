@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,8 @@ const viewportRef = ref<HTMLElement | null>(null);
 // Defaults differ between the two sets: sides/groups are open by default
 // (tracked via `collapsedRows`), units are closed by default (tracked via
 // `expandedUnits`). Don't merge them without flipping one set's semantics.
-const collapsedRows = ref(new Set<string>());
-const expandedUnits = ref(new Set<EntityId>());
+const collapsedRows = shallowRef(new Set<string>());
+const expandedUnits = shallowRef(new Set<EntityId>());
 
 const selectedUnit = computed(() =>
   selectedUnitId.value ? props.unitMap[selectedUnitId.value] : null,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, ref, shallowRef, watch, watchEffect } from "vue";
 import OrbatTreeItem from "./OrbatTreeItem.vue";
 import { type UnitAction, UnitActions } from "@/types/constants";
 import type { EntityId } from "@/types/base";
@@ -88,7 +88,7 @@ const onTreeItemKeydown = (
 };
 
 const expandedKeys = ref<EntityId[]>([]);
-const expandableUnitsById = ref(new Map<EntityId, NUnit>());
+const expandableUnitsById = shallowRef(new Map<EntityId, NUnit>());
 let previousExpandedSet = new Set<EntityId>();
 const { orbatRevealUnitId } = useSelectedItems();
 const orbatIconSize = useLocalStorage("orbatIconSize", 20);
