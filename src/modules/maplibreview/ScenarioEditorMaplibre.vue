@@ -225,18 +225,20 @@ function onCloseActiveDetailsPanel() {
     @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
-      <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
-        <MaplibreMap
-          @ready="onMapReady"
-          :basemap-id="activeMaplibreBasemap.id"
-          :initial-view="props.initialMapView"
-          :style-spec="activeMaplibreBasemap.style"
-          :projection="effectiveProjection"
-          @update:projection="onProjectionUpdate"
-          @map-view-change="emit('map-view-change', $event)"
-          class="flex-auto bg-radial from-gray-800 to-gray-950"
-        />
-      </MaplibreContextMenu>
+      <div class="@container flex flex-auto">
+        <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
+          <MaplibreMap
+            @ready="onMapReady"
+            :basemap-id="activeMaplibreBasemap.id"
+            :initial-view="props.initialMapView"
+            :style-spec="activeMaplibreBasemap.style"
+            :projection="effectiveProjection"
+            @update:projection="onProjectionUpdate"
+            @map-view-change="emit('map-view-change', $event)"
+            class="flex-auto bg-radial from-gray-800 to-gray-950"
+          />
+        </MaplibreContextMenu>
+      </div>
       <MlMapLogic
         v-if="mlMap"
         :mlMap="mlMap"
