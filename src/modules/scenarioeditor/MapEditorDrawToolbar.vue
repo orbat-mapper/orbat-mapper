@@ -30,12 +30,12 @@ const recordStore = useRecordingStore();
 const { isRecordingGeometry } = storeToRefs(recordStore);
 const { toggleRecordingGeometry } = recordStore;
 
-  const {
-    startDrawing,
-    startDrawingAnnotationArrow,
-    currentDrawType,
-    currentDrawMode,
-    startModify,
+const {
+  startDrawing,
+  startDrawingAnnotationArrow,
+  currentDrawType,
+  currentDrawMode,
+  startModify,
   isModifying,
   cancel,
   deleteSelected,
@@ -49,7 +49,7 @@ const toggleSnap = useToggle(snap);
 const toggleTranslate = useToggle(translate);
 const toggleFreehand = useToggle(freehand);
 
-onKeyStroke("Escape", (event) => {
+onKeyStroke("Escape", () => {
   cancel();
 });
 </script>
@@ -81,7 +81,9 @@ onKeyStroke("Escape", (event) => {
       <MainToolbarButton
         title="Annotation arrow"
         @click="startDrawingAnnotationArrow()"
-        :active="currentDrawType === 'LineString' && currentDrawMode === 'annotation-arrow'"
+        :active="
+          currentDrawType === 'LineString' && currentDrawMode === 'annotation-arrow'
+        "
       >
         <AnnotationArrowIcon class="size-5" />
       </MainToolbarButton>

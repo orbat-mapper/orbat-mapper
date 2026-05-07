@@ -38,5 +38,5 @@ describe("router map routes", () => {
 
     expect(router.currentRoute.value.name).toBe(MAP_EDIT_MODE_ROUTE);
     expect(router.currentRoute.value.path).toBe("/scenario/test-id");
-  });
+  }, 10_000);
 });

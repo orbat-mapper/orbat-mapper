@@ -126,7 +126,9 @@ export type LoadableOverlayLayer =
   | ScenarioLayerItemsLayer
   | (Omit<ScenarioLayer, "features"> & {
       features?: ScenarioFeature[];
-      items?: Array<LoadableGeometryLayerItem | LoadableAnnotationItem | UnsupportedLayerItem>;
+      items?: Array<
+        LoadableGeometryLayerItem | LoadableAnnotationItem | UnsupportedLayerItem
+      >;
     });
 
 export type LoadableScenarioLayer =
@@ -205,7 +207,10 @@ function canonicalizeArrowAnnotationStates(
         annotationKind: "arrow",
       } satisfies ArrowAnnotationState;
     }
-    const legacyState = state as Omit<ArrowAnnotationState, "annotationKind" | "patch"> & {
+    const legacyState = state as Omit<
+      ArrowAnnotationState,
+      "annotationKind" | "patch"
+    > & {
       geometry?: ArrowAnnotation["geometry"];
       style?: ArrowAnnotation["style"];
       name?: string;
@@ -230,7 +235,9 @@ function canonicalizeArrowAnnotationStates(
   });
 }
 
-function upgradeAnnotationItemToSharedBase(item: LoadableAnnotationItem): AnnotationLayerItem {
+function upgradeAnnotationItemToSharedBase(
+  item: LoadableAnnotationItem,
+): AnnotationLayerItem {
   const base = {
     id: String(item.id),
     kind: "annotation" as const,

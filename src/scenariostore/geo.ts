@@ -11,7 +11,6 @@ import type { EntityId } from "@/types/base";
 import type {
   NScenarioLayerItem,
   NScenarioLayer,
-  NScenarioMapStackLayer,
   ScenarioLayerUpdate,
   ScenarioMapLayerUpdate,
   NGeometryLayerItem,
@@ -20,13 +19,9 @@ import type {
 import type {
   AnnotationLayerItem,
   AnnotationLayerItemUpdate,
-  ArrowAnnotation,
   CurrentGeometryLayerItemState,
   FullScenarioLayerItemsLayer,
-  GeometryLayerItem,
   NAnnotationLayerItem,
-  ScenarioLayerItem,
-  TextAnnotation,
 } from "@/types/scenarioLayerItems";
 import {
   createInitialAnnotationLayerItemState,
@@ -738,7 +733,13 @@ export function useGeo(store: NewScenarioStore) {
       if (data.userData) {
         layerItem.userData = mergeGeometryUserData(layerItem.userData, data.userData);
       }
-      const { geometry, geometryMeta, style, userData, ...topLevelData } = data;
+      const {
+        geometry: _geometry,
+        geometryMeta: _geometryMeta,
+        style: _style,
+        userData: _userData,
+        ...topLevelData
+      } = data;
       Object.assign(layerItem, topLevelData);
       updateGeometryItemHidden(layerItem, state.currentTime);
     }
@@ -833,12 +834,13 @@ export function useGeo(store: NewScenarioStore) {
         }
       }
 
-      if (data.state !== undefined) annotation.state = data.state as typeof annotation.state;
+      if (data.state !== undefined)
+        annotation.state = data.state as typeof annotation.state;
       const {
-        anchor,
-        content,
-        geometry,
-        style,
+        anchor: _anchor,
+        content: _content,
+        geometry: _geometry,
+        style: _style,
         state: _state,
         ...topLevelData
       } = data;
@@ -860,7 +862,7 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(featureId);
   }
 
-  function updateFeatureState(featureId: FeatureId, _undoable = false) {
+  function updateFeatureState(featureId: FeatureId) {
     const timestamp = state.currentTime;
     const geometryFeature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
     if (geometryFeature) {

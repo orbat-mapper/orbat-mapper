@@ -28,7 +28,10 @@ const range = computed({
   },
 });
 
-function updateStyle(name: "textSize" | "textColor", value: number | string | null | undefined) {
+function updateStyle(
+  name: "textSize" | "textColor",
+  value: number | string | null | undefined,
+) {
   emit("update", { style: { [name]: value } });
 }
 </script>

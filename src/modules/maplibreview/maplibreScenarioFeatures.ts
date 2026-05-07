@@ -394,12 +394,7 @@ function quantizeArrowSpriteScale(scale: number) {
 }
 
 function buildMapLockedScaleExpression(baseScale: number | Array<unknown>) {
-  return [
-    "case",
-    ["has", "anchorZoom"],
-    buildAnchorZoomScaleExpression(baseScale, "anchorZoom"),
-    baseScale,
-  ];
+  return buildAnchorZoomScaleExpression(baseScale, "anchorZoom");
 }
 
 function buildFeatureData(
@@ -625,7 +620,9 @@ function buildFeatureData(
   features.push(...(annotationRender.features as typeof features));
   labels.push(...(annotationRender.labels as typeof labels));
   arrows.push(...(annotationRender.arrows as typeof arrows));
-  annotationRender.renderGroupDefs.forEach((value, key) => renderGroupDefs.set(key, value));
+  annotationRender.renderGroupDefs.forEach((value, key) =>
+    renderGroupDefs.set(key, value),
+  );
   annotationRender.labelGroupDefs.forEach((value, key) => labelGroupDefs.set(key, value));
   annotationRender.arrowGroupDefs.forEach((value, key) => arrowGroupDefs.set(key, value));
   annotationRender.imageDefinitions.forEach((value, key) =>

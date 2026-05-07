@@ -28,7 +28,8 @@ const engineRef = injectStrict(activeScenarioMapEngineKey);
 
 const annotation = computed(() => {
   if (props.selectedIds.size !== 1) return undefined;
-  return geo.getAnnotationLayerItemById(props.selectedIds.values().next().value!).layerItem;
+  return geo.getAnnotationLayerItemById(props.selectedIds.values().next().value!)
+    .layerItem;
 });
 
 function updateAnnotation(data: AnnotationLayerItemUpdate, options?: UpdateOptions) {
@@ -58,7 +59,10 @@ function reanchorToCurrentZoom() {
   <div>
     <DetailsPanelHeader>
       <template v-if="annotation" #leading>
-        <component :is="getGeometryIcon(annotation)" class="text-muted-foreground size-6" />
+        <component
+          :is="getGeometryIcon(annotation)"
+          class="text-muted-foreground size-6"
+        />
       </template>
       <template #title>
         <EditableLabel
@@ -75,7 +79,10 @@ function reanchorToCurrentZoom() {
     </DetailsPanelHeader>
 
     <PanelDataGrid v-if="annotation" class="mt-4">
-      <ScenarioFeatureVisibilitySettings :feature="annotation" @update="updateAnnotation" />
+      <ScenarioFeatureVisibilitySettings
+        :feature="annotation"
+        @update="updateAnnotation"
+      />
       <ScenarioFeatureStrokeSettings
         v-if="isArrowAnnotation(annotation)"
         :feature="annotation"

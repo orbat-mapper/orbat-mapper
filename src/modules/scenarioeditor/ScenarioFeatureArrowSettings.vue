@@ -8,21 +8,16 @@ const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();
 
-const arrowSettings = computed({
-  get: () => {
-    const style = props.feature.style ?? {};
-    return {
-      "arrow-start": style["arrow-start"] ?? "none",
-      "arrow-end": style["arrow-end"] ?? "none",
-    };
-  },
-  set: (val) => {
-    // This setter is not used since we use updateValue explicitly or v-model with computed is tricky here
-  },
+const arrowSettings = computed(() => {
+  const style = props.feature.style ?? {};
+  return {
+    "arrow-start": style["arrow-start"] ?? "none",
+    "arrow-end": style["arrow-end"] ?? "none",
+  };
 });
 
 function updateValue(name: keyof ArrowStyleSpec, value: string | null | undefined) {
-  emit("update", { style: { [name]: value as any } });
+  emit("update", { style: { [name]: value as ArrowStyleSpec[keyof ArrowStyleSpec] } });
 }
 </script>
 

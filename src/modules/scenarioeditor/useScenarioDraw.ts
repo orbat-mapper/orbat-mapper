@@ -53,7 +53,7 @@ export function useScenarioDraw() {
   const snap = ref(true);
   const translate = ref(false);
   const freehand = ref(false);
-  const layer = shallowRef<VectorLayer<any>>();
+  const layer = shallowRef<VectorLayer>();
   const mapAdapter = computed(() => engineRef.value?.map);
   const nativeMap = computed(() => mapAdapter.value?.getNativeMap());
   const openLayersInteraction = shallowRef<ReturnType<

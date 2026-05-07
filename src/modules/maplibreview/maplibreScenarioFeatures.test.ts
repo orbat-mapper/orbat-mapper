@@ -171,10 +171,23 @@ describe("buildScenarioFeatureRenderPlan", () => {
       "icon-anchor": "right",
       "icon-offset": ["literal", [((24 - 20) / 24) * 28, 0]],
       "icon-size": [
-        "case",
-        ["has", "anchorZoom"],
-        ["*", ["get", "iconScale"], ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]]],
-        ["get", "iconScale"],
+        "interpolate",
+        ["exponential", 2],
+        ["zoom"],
+        0,
+        [
+          "case",
+          ["has", "anchorZoom"],
+          ["*", ["get", "iconScale"], ["^", 2, ["-", 0, ["get", "anchorZoom"]]]],
+          ["get", "iconScale"],
+        ],
+        24,
+        [
+          "case",
+          ["has", "anchorZoom"],
+          ["*", ["get", "iconScale"], ["^", 2, ["-", 24, ["get", "anchorZoom"]]]],
+          ["get", "iconScale"],
+        ],
       ],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
@@ -472,24 +485,52 @@ describe("buildScenarioFeatureRenderPlan", () => {
 
     const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
     expect((arrowLayer?.spec.layout as any)["icon-size"]).toEqual([
-      "case",
-      ["has", "anchorZoom"],
-      ["*", ["get", "iconScale"], ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]]],
-      ["get", "iconScale"],
+      "interpolate",
+      ["exponential", 2],
+      ["zoom"],
+      0,
+      [
+        "case",
+        ["has", "anchorZoom"],
+        ["*", ["get", "iconScale"], ["^", 2, ["-", 0, ["get", "anchorZoom"]]]],
+        ["get", "iconScale"],
+      ],
+      24,
+      [
+        "case",
+        ["has", "anchorZoom"],
+        ["*", ["get", "iconScale"], ["^", 2, ["-", 24, ["get", "anchorZoom"]]]],
+        ["get", "iconScale"],
+      ],
     ]);
 
-    const textLayer = plan.layerDefinitions.find((layer) =>
-      layer.id.includes("labels"),
-    );
+    const textLayer = plan.layerDefinitions.find((layer) => layer.id.includes("labels"));
     expect((textLayer?.spec.layout as any)["text-size"]).toEqual([
-      "case",
-      ["has", "anchorZoom"],
+      "interpolate",
+      ["exponential", 2],
+      ["zoom"],
+      0,
       [
-        "*",
+        "case",
+        ["has", "anchorZoom"],
+        [
+          "*",
+          ["coalesce", ["get", "textSize"], 13],
+          ["^", 2, ["-", 0, ["get", "anchorZoom"]]],
+        ],
         ["coalesce", ["get", "textSize"], 13],
-        ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]],
       ],
-      ["coalesce", ["get", "textSize"], 13],
+      24,
+      [
+        "case",
+        ["has", "anchorZoom"],
+        [
+          "*",
+          ["coalesce", ["get", "textSize"], 13],
+          ["^", 2, ["-", 24, ["get", "anchorZoom"]]],
+        ],
+        ["coalesce", ["get", "textSize"], 13],
+      ],
     ]);
     expect(textLayer?.spec.minzoom).toBe(4);
     expect(textLayer?.spec.maxzoom).toBe(10);

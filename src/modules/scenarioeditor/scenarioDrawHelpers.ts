@@ -144,7 +144,7 @@ export function addScenarioArrowAnnotation(
 export function addOlDrawFeature(
   scenario: TScenario,
   olFeature: Feature,
-  olLayer: VectorLayer<any>,
+  olLayer: VectorLayer,
   style: Partial<SimpleStyleSpec> = {},
 ): GeometryLayerItem | undefined {
   if (!olFeature.getId()) olFeature.setId(nanoid());

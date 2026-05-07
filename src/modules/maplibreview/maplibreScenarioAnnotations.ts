@@ -2,10 +2,9 @@ import turfAlong from "@turf/along";
 import bearing from "@turf/bearing";
 import centerOfMass from "@turf/center-of-mass";
 import turfLength from "@turf/length";
-import { featureCollection, lineString, point } from "@turf/helpers";
+import { lineString, point } from "@turf/helpers";
 import type {
   Feature as GeoJsonFeature,
-  FeatureCollection,
   GeoJsonProperties,
   Geometry,
   Position,
@@ -22,7 +21,6 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type {
   ArrowAnnotation,
   FullScenarioLayerItemsLayer,
-  NAnnotationLayerItem,
   NScenarioLayerItem,
   TextAnnotation,
 } from "@/types/scenarioLayerItems";
@@ -206,23 +204,31 @@ function getArrowVisibilityGroup(
   } satisfies ArrowGroupDefinition;
 }
 
-function getRepresentativePosition(item: NScenarioLayerItem | undefined): Position | undefined {
+function getRepresentativePosition(
+  item: NScenarioLayerItem | undefined,
+): Position | undefined {
   if (!item) return;
   if (isArrowAnnotation(item)) {
-    const feature = lineString(item._state?.geometry?.coordinates ?? item.geometry.coordinates);
+    const feature = lineString(
+      item._state?.geometry?.coordinates ?? item.geometry.coordinates,
+    );
     return centerOfMass(feature).geometry.coordinates as Position;
   }
   if (!isGeometryLayerItem(item)) return;
   const geometry = item._state?.geometry ?? item.geometry;
   if (geometry.type === "Point") return geometry.coordinates;
   if (geometry.type === "LineString") {
-    return centerOfMass(lineString(geometry.coordinates)).geometry.coordinates as Position;
+    return centerOfMass(lineString(geometry.coordinates)).geometry
+      .coordinates as Position;
   }
   return centerOfMass({ type: "Feature", geometry, properties: {} }).geometry
     .coordinates as Position;
 }
 
-function getLinePosition(item: NScenarioLayerItem | undefined, distance: number): Position | undefined {
+function getLinePosition(
+  item: NScenarioLayerItem | undefined,
+  distance: number,
+): Position | undefined {
   if (!item) return;
   let coordinates: Position[] | undefined;
   if (isArrowAnnotation(item)) {
@@ -239,7 +245,8 @@ function getLinePosition(item: NScenarioLayerItem | undefined, distance: number)
   const line = lineString(coordinates);
   const totalKilometers = turfLength(line, { units: "kilometers" });
   if (totalKilometers <= 0) return coordinates[0];
-  const alongDistance = distance >= 0 && distance <= 1 ? totalKilometers * distance : distance;
+  const alongDistance =
+    distance >= 0 && distance <= 1 ? totalKilometers * distance : distance;
   return turfAlong(line, Math.max(0, Math.min(alongDistance, totalKilometers)), {
     units: "kilometers",
   }).geometry.coordinates as Position;
@@ -251,7 +258,8 @@ function resolveTextAnnotationPosition(
 ): Position | undefined {
   const anchor = annotation._state?.anchor ?? annotation.anchor;
   if (anchor.type === "point") return anchor.position;
-  if (anchor.type === "layerItem") return getRepresentativePosition(itemLookup.get(anchor.layerItemId));
+  if (anchor.type === "layerItem")
+    return getRepresentativePosition(itemLookup.get(anchor.layerItemId));
   return getLinePosition(itemLookup.get(anchor.layerItemId), anchor.distance);
 }
 
@@ -288,151 +296,155 @@ export function buildAnnotationRenderData(
   const labelGroups = new Set<string>();
   const arrowGroups = new Set<string>();
 
-  layer.items
-    .filter(isNAnnotationLayerItem)
-    .forEach((item, index) => {
-      if (options.filterVisible && item._hidden) return;
+  layer.items.filter(isNAnnotationLayerItem).forEach((item, index) => {
+    if (options.filterVisible && item._hidden) return;
 
-      const layerId = String(layer.id);
-      const featureId = String(item.id);
-      const selected = options.selectedFeatureIds.has(item.id);
-      const zIndex = index;
-      const anchorZoom = item._state?.anchorZoom ?? item.anchorZoom;
+    const layerId = String(layer.id);
+    const featureId = String(item.id);
+    const selected = options.selectedFeatureIds.has(item.id);
+    const zIndex = index;
+    const anchorZoom = item._state?.anchorZoom ?? item.anchorZoom;
 
-      if (isArrowAnnotation(item)) {
-        const geometry = item._state?.geometry ?? item.geometry;
-        const style = item._state?.style ?? item.style ?? {};
-        const strokeColor = toRgbaColor(style.stroke, style["stroke-opacity"] ?? 1);
-        const strokeWidth = typeof style["stroke-width"] === "number" ? style["stroke-width"] : 2;
-        const renderGroup = getVisibilityGroup(style, "annotation-render", layerId);
-        renderGroups.add(renderGroup.id);
-        renderGroupDefs.set(renderGroup.id, renderGroup);
-
-        features.push({
-          type: "Feature",
-          id: `${featureId}-annotation-line`,
-          geometry,
-          properties: {
-            featureId,
-            layerId,
-            geometryKind: "line",
-            renderGroup: renderGroup.id,
-            selected,
-            obstacleHighlighted: false,
-            zIndex,
-            strokeColor,
-            strokeWidth,
-            strokeStyle: style["stroke-style"] || "solid",
-            fillColor: "rgba(0,0,0,0)",
-            fillOpacity: 0,
-            markerColor: "rgba(0,0,0,0)",
-            markerSize: 0,
-            markerSymbol: "circle",
-            markerRenderKind: "circle",
-            sourceOpacity: options.sourceOpacity,
-            anchorZoom,
-          },
-        });
-
-        const coordinates = geometry.coordinates;
-        if (coordinates.length < 2) return;
-        const arrowScale = getArrowRenderScale(strokeWidth);
-        const arrowSpriteScale = quantizeArrowSpriteScale(arrowScale);
-        const arrowIconScale = arrowScale / arrowSpriteScale;
-
-        [
-          {
-            key: "arrow-start" as const,
-            idSuffix: "start",
-            point: coordinates[0],
-            adjacent: coordinates[1],
-          },
-          {
-            key: "arrow-end" as const,
-            idSuffix: "end",
-            point: coordinates[coordinates.length - 1],
-            adjacent: coordinates[coordinates.length - 2],
-          },
-        ].forEach(({ key, idSuffix, point: anchorPoint, adjacent }) => {
-          const arrowType = style[key];
-          if (!arrowType || arrowType === "none") return;
-          const symbolDefinition = getArrowSymbolDefinition(arrowType);
-          const group = getArrowVisibilityGroup(
-            style,
-            layerId,
-            `annotation-${idSuffix}`,
-            symbolDefinition,
-            arrowSpriteScale,
-          );
-          arrowGroups.add(group.id);
-          arrowGroupDefs.set(group.id, group);
-          const imageId = arrowImageId(arrowType, strokeColor, arrowSpriteScale);
-          imageDefinitions.set(imageId, {
-            kind: "arrow",
-            arrowType,
-            color: strokeColor,
-            spriteScale: arrowSpriteScale,
-          });
-          arrows.push({
-            type: "Feature",
-            id: `${featureId}-annotation-arrow-${idSuffix}`,
-            geometry: point(anchorPoint).geometry,
-            properties: {
-              featureId,
-              layerId,
-              arrowGroup: group.id,
-              selected,
-              zIndex,
-              arrowImageId: imageId,
-              iconAnchor: group.iconAnchor,
-              iconScale: arrowIconScale,
-              rotation: getLineRotation(adjacent, anchorPoint),
-              sourceOpacity: options.sourceOpacity,
-              anchorZoom,
-            },
-          });
-        });
-        return;
-      }
-
-      if (!isTextAnnotation(item)) return;
-
+    if (isArrowAnnotation(item)) {
+      const geometry = item._state?.geometry ?? item.geometry;
       const style = item._state?.style ?? item.style ?? {};
-      const position = resolveTextAnnotationPosition(item, itemLookup);
-      const textField =
-        item._state?.content?.text ??
-        item._state?.content?.markdown ??
-        item.content.text ??
-        item.content.markdown ??
-        "";
-      if (!position || !textField) return;
+      const strokeColor = toRgbaColor(style.stroke, style["stroke-opacity"] ?? 1);
+      const strokeWidth =
+        typeof style["stroke-width"] === "number" ? style["stroke-width"] : 2;
+      const renderGroup = getVisibilityGroup(style, "annotation-render", layerId);
+      renderGroups.add(renderGroup.id);
+      renderGroupDefs.set(renderGroup.id, renderGroup);
 
-      const labelGroup = getTextVisibilityGroup(style, layerId);
-      labelGroups.add(labelGroup.id);
-      labelGroupDefs.set(labelGroup.id, labelGroup);
-      labels.push({
+      features.push({
         type: "Feature",
-        id: `${featureId}-annotation-label`,
-        geometry: point(position).geometry,
+        id: `${featureId}-annotation-line`,
+        geometry,
         properties: {
           featureId,
           layerId,
-          labelGroup: labelGroup.id,
+          geometryKind: "line",
+          renderGroup: renderGroup.id,
           selected,
+          obstacleHighlighted: false,
           zIndex,
-          textField,
-          textColor: style.textColor ?? "#111827",
-          textHaloColor: style.textHaloColor ?? "#ffffff",
-          textHaloWidth: style.textHaloWidth ?? 2,
-          textAlign: style.textAlign ?? "left",
-          textAnchor: style.textAlign === "center" ? "center" : style.textAlign === "right" ? "right" : "left",
-          textOffset: [0, 0],
-          textSize: style.textSize ?? DEFAULT_TEXT_SIZE,
+          strokeColor,
+          strokeWidth,
+          strokeStyle: style["stroke-style"] || "solid",
+          fillColor: "rgba(0,0,0,0)",
+          fillOpacity: 0,
+          markerColor: "rgba(0,0,0,0)",
+          markerSize: 0,
+          markerSymbol: "circle",
+          markerRenderKind: "circle",
           sourceOpacity: options.sourceOpacity,
           anchorZoom,
         },
       });
+
+      const coordinates = geometry.coordinates;
+      if (coordinates.length < 2) return;
+      const arrowScale = getArrowRenderScale(strokeWidth);
+      const arrowSpriteScale = quantizeArrowSpriteScale(arrowScale);
+      const arrowIconScale = arrowScale / arrowSpriteScale;
+
+      [
+        {
+          key: "arrow-start" as const,
+          idSuffix: "start",
+          point: coordinates[0],
+          adjacent: coordinates[1],
+        },
+        {
+          key: "arrow-end" as const,
+          idSuffix: "end",
+          point: coordinates[coordinates.length - 1],
+          adjacent: coordinates[coordinates.length - 2],
+        },
+      ].forEach(({ key, idSuffix, point: anchorPoint, adjacent }) => {
+        const arrowType = style[key];
+        if (!arrowType || arrowType === "none") return;
+        const symbolDefinition = getArrowSymbolDefinition(arrowType);
+        const group = getArrowVisibilityGroup(
+          style,
+          layerId,
+          `annotation-${idSuffix}`,
+          symbolDefinition,
+          arrowSpriteScale,
+        );
+        arrowGroups.add(group.id);
+        arrowGroupDefs.set(group.id, group);
+        const imageId = arrowImageId(arrowType, strokeColor, arrowSpriteScale);
+        imageDefinitions.set(imageId, {
+          kind: "arrow",
+          arrowType,
+          color: strokeColor,
+          spriteScale: arrowSpriteScale,
+        });
+        arrows.push({
+          type: "Feature",
+          id: `${featureId}-annotation-arrow-${idSuffix}`,
+          geometry: point(anchorPoint).geometry,
+          properties: {
+            featureId,
+            layerId,
+            arrowGroup: group.id,
+            selected,
+            zIndex,
+            arrowImageId: imageId,
+            iconAnchor: group.iconAnchor,
+            iconScale: arrowIconScale,
+            rotation: getLineRotation(adjacent, anchorPoint),
+            sourceOpacity: options.sourceOpacity,
+            anchorZoom,
+          },
+        });
+      });
+      return;
+    }
+
+    if (!isTextAnnotation(item)) return;
+
+    const style = item._state?.style ?? item.style ?? {};
+    const position = resolveTextAnnotationPosition(item, itemLookup);
+    const textField =
+      item._state?.content?.text ??
+      item._state?.content?.markdown ??
+      item.content.text ??
+      item.content.markdown ??
+      "";
+    if (!position || !textField) return;
+
+    const labelGroup = getTextVisibilityGroup(style, layerId);
+    labelGroups.add(labelGroup.id);
+    labelGroupDefs.set(labelGroup.id, labelGroup);
+    labels.push({
+      type: "Feature",
+      id: `${featureId}-annotation-label`,
+      geometry: point(position).geometry,
+      properties: {
+        featureId,
+        layerId,
+        labelGroup: labelGroup.id,
+        selected,
+        zIndex,
+        textField,
+        textColor: style.textColor ?? "#111827",
+        textHaloColor: style.textHaloColor ?? "#ffffff",
+        textHaloWidth: style.textHaloWidth ?? 2,
+        textAlign: style.textAlign ?? "left",
+        textAnchor:
+          style.textAlign === "center"
+            ? "center"
+            : style.textAlign === "right"
+              ? "right"
+              : "left",
+        textOffset: [0, 0],
+        textSize: style.textSize ?? DEFAULT_TEXT_SIZE,
+        sourceOpacity: options.sourceOpacity,
+        anchorZoom,
+      },
     });
+  });
 
   return {
     features,
@@ -450,10 +462,10 @@ export function buildAnnotationRenderData(
   };
 }
 
-export function createAnnotationItemLookup(
-  layers: FullScenarioLayerItemsLayer[],
-) {
+export function createAnnotationItemLookup(layers: FullScenarioLayerItemsLayer[]) {
   return new Map(
-    layers.flatMap((layer) => layer.items.map((item) => [String(item.id), item] as const)),
+    layers.flatMap((layer) =>
+      layer.items.map((item) => [String(item.id), item] as const),
+    ),
   );
 }

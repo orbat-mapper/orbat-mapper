@@ -295,7 +295,9 @@ function getStoredOverlayLayers(state: ScenarioState): ScenarioOverlayLayer[] {
     layers.push({
       ...rest,
       kind: "overlay",
-      items: items.map((itemId: string) => state.layerItemMap[itemId] as ScenarioLayerItem),
+      items: items.map(
+        (itemId: string) => state.layerItemMap[itemId] as ScenarioLayerItem,
+      ),
     });
   });
   return layers;

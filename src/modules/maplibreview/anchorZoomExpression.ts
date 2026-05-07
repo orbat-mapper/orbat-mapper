@@ -5,8 +5,22 @@ export function buildAnchorZoomScaleExpression(
   anchorZoomProperty: string,
 ): MapLibreExpression {
   return [
-    "*",
-    baseScale,
-    ["^", 2, ["-", ["zoom"], ["get", anchorZoomProperty]]],
+    "interpolate",
+    ["exponential", 2],
+    ["zoom"],
+    0,
+    [
+      "case",
+      ["has", anchorZoomProperty],
+      ["*", baseScale, ["^", 2, ["-", 0, ["get", anchorZoomProperty]]]],
+      baseScale,
+    ],
+    24,
+    [
+      "case",
+      ["has", anchorZoomProperty],
+      ["*", baseScale, ["^", 2, ["-", 24, ["get", anchorZoomProperty]]]],
+      baseScale,
+    ],
   ];
 }
