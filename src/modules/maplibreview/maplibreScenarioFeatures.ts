@@ -1033,7 +1033,7 @@ function createLayerDefinitions(
 
 export function buildScenarioFeatureRenderPlan(
   layer: FullScenarioLayerItemsLayer,
-  itemLookupOrOptions:
+  itemLookupOrRenderOptions:
     | Map<string, any>
     | {
         filterVisible: boolean;
@@ -1050,8 +1050,8 @@ export function buildScenarioFeatureRenderPlan(
   const itemLookup =
     maybeOptions === undefined
       ? createAnnotationItemLookup([layer])
-      : (itemLookupOrOptions as Map<string, any>);
-  const options = (maybeOptions ?? itemLookupOrOptions) as {
+      : (itemLookupOrRenderOptions as Map<string, any>);
+  const options = (maybeOptions ?? itemLookupOrRenderOptions) as {
     filterVisible: boolean;
     selectedFeatureIds: Set<FeatureId>;
     obstacleHighlight?: ObstacleHighlightState;

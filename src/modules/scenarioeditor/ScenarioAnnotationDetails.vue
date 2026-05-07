@@ -41,8 +41,6 @@ function updateAnnotation(data: AnnotationLayerItemUpdate, options?: UpdateOptio
   geo.updateAnnotation(annotation.value.id, data);
 }
 
-function commitAnnotation() {}
-
 function updateName(value: string) {
   updateAnnotation({ name: value });
 }
@@ -87,7 +85,6 @@ function reanchorToCurrentZoom() {
         v-if="isArrowAnnotation(annotation)"
         :feature="annotation"
         @update="updateAnnotation"
-        @commit="commitAnnotation"
       />
       <ScenarioFeatureArrowSettings
         v-if="isArrowAnnotation(annotation)"
