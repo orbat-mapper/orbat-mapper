@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { SimpleStyleSpec, VisibilityStyleSpec } from "@/geo/simplestyle";
-import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import ToggleField from "@/components/ToggleField.vue";
 import ZoomSelector from "@/components/ZoomSelector.vue";
 
-const props = defineProps<{ feature: GeometryLayerItem }>();
+const props = defineProps<{ feature: { style?: Partial<SimpleStyleSpec> } }>();
 const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();
 
 const marker = computed((): Partial<VisibilityStyleSpec> => {
-  const { style } = props.feature;
+  const style = props.feature.style ?? {};
   return {
     limitVisibility: style["limitVisibility"] ?? false,
     minZoom: style["minZoom"] ?? 0,

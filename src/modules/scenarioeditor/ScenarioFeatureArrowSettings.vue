@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { ArrowStyleSpec, SimpleStyleSpec } from "@/geo/simplestyle";
-import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import ScenarioFeatureArrowSelect from "./ScenarioFeatureArrowSelect.vue";
 
-const props = defineProps<{ feature: GeometryLayerItem }>();
+const props = defineProps<{ feature: { style?: Partial<SimpleStyleSpec> } }>();
 const emit = defineEmits<{
   (e: "update", value: { style: Partial<SimpleStyleSpec> }): void;
 }>();
 
 const arrowSettings = computed({
   get: () => {
-    const { style } = props.feature;
+    const style = props.feature.style ?? {};
     return {
       "arrow-start": style["arrow-start"] ?? "none",
       "arrow-end": style["arrow-end"] ?? "none",

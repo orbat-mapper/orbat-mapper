@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  IconArrowTopRight as AnnotationArrowIcon,
   IconClose as CloseIcon,
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
@@ -29,10 +30,12 @@ const recordStore = useRecordingStore();
 const { isRecordingGeometry } = storeToRefs(recordStore);
 const { toggleRecordingGeometry } = recordStore;
 
-const {
-  startDrawing,
-  currentDrawType,
-  startModify,
+  const {
+    startDrawing,
+    startDrawingAnnotationArrow,
+    currentDrawType,
+    currentDrawMode,
+    startModify,
   isModifying,
   cancel,
   deleteSelected,
@@ -71,9 +74,16 @@ onKeyStroke("Escape", (event) => {
       <MainToolbarButton
         title="Line"
         @click="startDrawing('LineString')"
-        :active="currentDrawType === 'LineString'"
+        :active="currentDrawType === 'LineString' && currentDrawMode === 'geometry'"
       >
         <LineStringIcon class="size-5" />
+      </MainToolbarButton>
+      <MainToolbarButton
+        title="Annotation arrow"
+        @click="startDrawingAnnotationArrow()"
+        :active="currentDrawType === 'LineString' && currentDrawMode === 'annotation-arrow'"
+      >
+        <AnnotationArrowIcon class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton
         title="Polygon"

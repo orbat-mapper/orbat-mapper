@@ -129,7 +129,7 @@ describe("upgradeScenarioIfNecessary", () => {
     expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
-  it("skips unsupported item kinds and warns with layer details and counts", () => {
+  it("migrates legacy text annotations and still warns for unsupported item kinds", () => {
     const feature = createFeature();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const scenario = createScenario({
@@ -143,6 +143,7 @@ describe("upgradeScenarioIfNecessary", () => {
               id: "annotation-1",
               kind: "annotation",
               annotationType: "label",
+              anchorZoom: 6,
               anchor: { type: "point", position: [10, 60] },
               content: { text: "Note" },
             },
@@ -168,10 +169,31 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(getOverlayLayers(upgraded)[0].items).toEqual([createExpectedGeometryItem()]);
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([
+      createExpectedGeometryItem(),
+      {
+        id: "annotation-1",
+        kind: "annotation",
+        annotationKind: "text",
+        textType: "label",
+        anchorZoom: 6,
+        anchor: { type: "point", position: [10, 60] },
+        content: { text: "Note" },
+        style: undefined,
+        state: undefined,
+        name: undefined,
+        description: undefined,
+        externalUrl: undefined,
+        locked: undefined,
+        isHidden: undefined,
+        visibleFromT: undefined,
+        visibleUntilT: undefined,
+        media: undefined,
+        userData: undefined,
+      },
+    ]);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0][0]).toContain('layer "Features" (layer-1)');
-    expect(warnSpy.mock.calls[0][0]).toContain("annotation=1");
     expect(warnSpy.mock.calls[0][0]).toContain("measurement=1");
   });
 

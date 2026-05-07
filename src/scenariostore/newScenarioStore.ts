@@ -468,8 +468,14 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       } as NScenarioOverlayLayer;
       layer.items.forEach((item) => {
         if (item.kind !== "geometry") {
+          const tmp = { ...item };
+          tmp.state = tmp.state?.map((s) => ({
+            ...s,
+            t: +dayjs(s.t),
+            id: s.id || nanoid(),
+          }));
           layerItemMap[item.id] = {
-            ...item,
+            ...mapVisibility(tmp),
             _pid: layer.id,
           } as NScenarioLayerItem;
           return;

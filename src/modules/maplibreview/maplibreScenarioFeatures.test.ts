@@ -170,7 +170,12 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(arrowLayer?.spec.layout).toMatchObject({
       "icon-anchor": "right",
       "icon-offset": ["literal", [((24 - 20) / 24) * 28, 0]],
-      "icon-size": ["get", "iconScale"],
+      "icon-size": [
+        "case",
+        ["has", "anchorZoom"],
+        ["*", ["get", "iconScale"], ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]]],
+        ["get", "iconScale"],
+      ],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
     });
@@ -397,6 +402,97 @@ describe("buildScenarioFeatureRenderPlan", () => {
       "get",
       "textAnchor",
     ]);
+  });
+
+  it("renders annotation arrows and text with anchor-zoom scaling metadata", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-annotation",
+        kind: "overlay",
+        name: "Layer annotation",
+        items: [
+          {
+            id: "annotation-arrow-1",
+            kind: "annotation",
+            annotationKind: "arrow",
+            _pid: "layer-annotation",
+            anchorZoom: 6,
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [0, 0],
+                [1, 1],
+              ],
+            },
+            style: {
+              "stroke-width": 4,
+              "arrow-end": "arrow",
+            },
+          },
+          {
+            id: "annotation-text-1",
+            kind: "annotation",
+            annotationKind: "text",
+            textType: "label",
+            _pid: "layer-annotation",
+            anchorZoom: 5,
+            anchor: { type: "point", position: [10, 10] },
+            content: { text: "Note" },
+            style: {
+              textSize: 18,
+              textMinZoom: 4,
+              textMaxZoom: 10,
+            },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    expect(
+      plan.featureData.features.find(
+        (feature) => feature.properties?.featureId === "annotation-arrow-1",
+      )?.properties,
+    ).toMatchObject({
+      anchorZoom: 6,
+      strokeWidth: 4,
+    });
+    expect(
+      plan.labelData.features.find(
+        (feature) => feature.properties?.featureId === "annotation-text-1",
+      )?.properties,
+    ).toMatchObject({
+      anchorZoom: 5,
+      textField: "Note",
+      textSize: 18,
+    });
+
+    const arrowLayer = plan.layerDefinitions.find((layer) => layer.id.includes("arrows"));
+    expect((arrowLayer?.spec.layout as any)["icon-size"]).toEqual([
+      "case",
+      ["has", "anchorZoom"],
+      ["*", ["get", "iconScale"], ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]]],
+      ["get", "iconScale"],
+    ]);
+
+    const textLayer = plan.layerDefinitions.find((layer) =>
+      layer.id.includes("labels"),
+    );
+    expect((textLayer?.spec.layout as any)["text-size"]).toEqual([
+      "case",
+      ["has", "anchorZoom"],
+      [
+        "*",
+        ["coalesce", ["get", "textSize"], 13],
+        ["^", 2, ["-", ["zoom"], ["get", "anchorZoom"]]],
+      ],
+      ["coalesce", ["get", "textSize"], 13],
+    ]);
+    expect(textLayer?.spec.minzoom).toBe(4);
+    expect(textLayer?.spec.maxzoom).toBe(10);
   });
 
   it("uses per-arrow maplibre placement metadata for open hand-drawn heads", () => {

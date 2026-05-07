@@ -41,6 +41,11 @@ import {
   isObstacleHighlighted,
   type ObstacleHighlightState,
 } from "@/geo/routing/obstacleHighlight";
+import { buildAnchorZoomScaleExpression } from "@/modules/maplibreview/anchorZoomExpression";
+import {
+  buildAnnotationRenderData,
+  createAnnotationItemLookup,
+} from "@/modules/maplibreview/maplibreScenarioAnnotations";
 
 export const GLOBE_SCENARIO_FEATURE_PREFIX = "scenario-feature";
 
@@ -67,6 +72,7 @@ type RenderFeatureProperties = {
   markerRenderKind: MarkerRenderKind;
   markerImageId?: string;
   sourceOpacity: number;
+  anchorZoom?: number;
 };
 
 type LabelFeatureProperties = {
@@ -82,7 +88,9 @@ type LabelFeatureProperties = {
   textAlign: string;
   textAnchor: string;
   textOffset: [number, number];
+  textSize?: number;
   sourceOpacity: number;
+  anchorZoom?: number;
 };
 
 type ArrowFeatureProperties = {
@@ -96,6 +104,7 @@ type ArrowFeatureProperties = {
   iconScale: number;
   rotation: number;
   sourceOpacity: number;
+  anchorZoom?: number;
 };
 
 type RenderableGeoJsonFeature<T extends GeoJsonProperties = GeoJsonProperties> =
@@ -384,8 +393,18 @@ function quantizeArrowSpriteScale(scale: number) {
   return Math.max(1, Math.ceil(scale * 2) / 2);
 }
 
+function buildMapLockedScaleExpression(baseScale: number | Array<unknown>) {
+  return [
+    "case",
+    ["has", "anchorZoom"],
+    buildAnchorZoomScaleExpression(baseScale, "anchorZoom"),
+    baseScale,
+  ];
+}
+
 function buildFeatureData(
   layer: FullScenarioLayerItemsLayer,
+  itemLookup: Map<string, any>,
   {
     filterVisible,
     selectedFeatureIds,
@@ -598,6 +617,21 @@ function buildFeatureData(
     }
   }
 
+  const annotationRender = buildAnnotationRenderData(layer, itemLookup, {
+    filterVisible,
+    selectedFeatureIds,
+    sourceOpacity,
+  });
+  features.push(...(annotationRender.features as typeof features));
+  labels.push(...(annotationRender.labels as typeof labels));
+  arrows.push(...(annotationRender.arrows as typeof arrows));
+  annotationRender.renderGroupDefs.forEach((value, key) => renderGroupDefs.set(key, value));
+  annotationRender.labelGroupDefs.forEach((value, key) => labelGroupDefs.set(key, value));
+  annotationRender.arrowGroupDefs.forEach((value, key) => arrowGroupDefs.set(key, value));
+  annotationRender.imageDefinitions.forEach((value, key) =>
+    imageDefinitions.set(key, value as ImageDefinition),
+  );
+
   return {
     featureData: featureCollection(features),
     labelData: featureCollection(labels),
@@ -610,6 +644,7 @@ function buildFeatureData(
       renderGroups: Array.from(renderGroups).sort(),
       labelGroups: Array.from(labelGroups).sort(),
       arrowGroups: Array.from(arrowGroupDefs.keys()).sort(),
+      annotationStructure: annotationRender.structureKey,
       isHidden: layer.isHidden ?? false,
     }),
   };
@@ -671,7 +706,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": "#facc15",
-          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-width": ["+", buildMapLockedScaleExpression(["get", "strokeWidth"]), 5],
           "line-opacity": ["get", "sourceOpacity"],
         },
         ...zoomBounds,
@@ -710,7 +745,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": ["get", "strokeColor"],
-          "line-width": ["get", "strokeWidth"],
+          "line-width": buildMapLockedScaleExpression(["get", "strokeWidth"]),
           "line-opacity": ["get", "sourceOpacity"],
           "line-dasharray": [
             "case",
@@ -742,7 +777,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": "#facc15",
-          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-width": ["+", buildMapLockedScaleExpression(["get", "strokeWidth"]), 5],
           "line-opacity": ["get", "sourceOpacity"],
         },
         ...zoomBounds,
@@ -762,7 +797,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": ["get", "strokeColor"],
-          "line-width": ["get", "strokeWidth"],
+          "line-width": buildMapLockedScaleExpression(["get", "strokeWidth"]),
           "line-opacity": ["get", "sourceOpacity"],
           "line-dasharray": [
             "case",
@@ -859,7 +894,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": "#facc15",
-          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-width": ["+", buildMapLockedScaleExpression(["get", "strokeWidth"]), 5],
           "line-opacity": 0.95,
         },
         ...zoomBounds,
@@ -883,7 +918,7 @@ function createLayerDefinitions(
         },
         paint: {
           "line-color": "#facc15",
-          "line-width": ["+", ["get", "strokeWidth"], 5],
+          "line-width": ["+", buildMapLockedScaleExpression(["get", "strokeWidth"]), 5],
           "line-opacity": 0.95,
         },
         ...zoomBounds,
@@ -923,7 +958,11 @@ function createLayerDefinitions(
       visibility: layoutVisibility,
       "text-field": ["get", "textField"],
       "text-font": ["Noto Sans Italic"],
-      "text-size": LABEL_TEXT_SIZE,
+      "text-size": buildMapLockedScaleExpression([
+        "coalesce",
+        ["get", "textSize"],
+        LABEL_TEXT_SIZE,
+      ]),
       "text-allow-overlap": false,
       "text-ignore-placement": false,
       "symbol-sort-key": ["get", "zIndex"],
@@ -948,7 +987,7 @@ function createLayerDefinitions(
           "text-color": ["get", "textColor"],
           "text-opacity": ["get", "sourceOpacity"],
           "text-halo-color": ["get", "textHaloColor"],
-          "text-halo-width": ["get", "textHaloWidth"],
+          "text-halo-width": buildMapLockedScaleExpression(["get", "textHaloWidth"]),
         },
         ...zoomBounds,
       },
@@ -970,7 +1009,7 @@ function createLayerDefinitions(
         layout: {
           visibility: layoutVisibility,
           "icon-image": ["get", "arrowImageId"],
-          "icon-size": ["get", "iconScale"],
+          "icon-size": buildMapLockedScaleExpression(["get", "iconScale"]),
           "icon-rotate": ["get", "rotation"],
           "icon-anchor": group.iconAnchor,
           "icon-offset": ["literal", group.iconOffset],
@@ -997,14 +1036,30 @@ function createLayerDefinitions(
 
 export function buildScenarioFeatureRenderPlan(
   layer: FullScenarioLayerItemsLayer,
-  options: {
+  itemLookupOrOptions:
+    | Map<string, any>
+    | {
+        filterVisible: boolean;
+        selectedFeatureIds: Set<FeatureId>;
+        obstacleHighlight?: ObstacleHighlightState;
+      },
+  maybeOptions?: {
     filterVisible: boolean;
     selectedFeatureIds: Set<FeatureId>;
     obstacleHighlight?: ObstacleHighlightState;
   },
 ): ScenarioLayerRenderPlan {
   const layerId = String(layer.id);
-  const renderResult = buildFeatureData(layer, options);
+  const itemLookup =
+    maybeOptions === undefined
+      ? createAnnotationItemLookup([layer])
+      : (itemLookupOrOptions as Map<string, any>);
+  const options = (maybeOptions ?? itemLookupOrOptions) as {
+    filterVisible: boolean;
+    selectedFeatureIds: Set<FeatureId>;
+    obstacleHighlight?: ObstacleHighlightState;
+  };
+  const renderResult = buildFeatureData(layer, itemLookup, options);
   const definitions = createLayerDefinitions(layer, renderResult);
 
   return {
@@ -1206,10 +1261,11 @@ export class MapLibreScenarioFeatureManager {
     const selectedFeatureIds = this.getSelectedFeatureIds();
     const obstacleHighlight = this.getObstacleHighlight();
     const desiredPlans = new Map<string, ScenarioLayerRenderPlan>();
+    const itemLookup = createAnnotationItemLookup(layers);
 
     layers.forEach((layer) => {
       if (filterVisible && layer._hidden) return;
-      const plan = buildScenarioFeatureRenderPlan(layer, {
+      const plan = buildScenarioFeatureRenderPlan(layer, itemLookup, {
         filterVisible,
         selectedFeatureIds,
         obstacleHighlight,

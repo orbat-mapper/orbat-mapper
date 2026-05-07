@@ -20,6 +20,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   addOlDrawFeature,
+  addScenarioArrowAnnotation,
   addScenarioDrawFeature,
   updateScenarioFeatureGeometry,
   updateScenarioFeatureGeometryFromOlFeature,
@@ -61,6 +62,7 @@ export function useScenarioDraw() {
   const mapLibreInteraction = shallowRef<ReturnType<
     typeof useMapLibreDrawInteraction
   > | null>(null);
+  const currentDrawMode = ref<"geometry" | "annotation-arrow">("geometry");
   const interaction = computed(
     () => openLayersInteraction.value ?? mapLibreInteraction.value,
   );
@@ -92,6 +94,21 @@ export function useScenarioDraw() {
       .filter(Boolean) as GeometryLayerItem[];
 
   const addFeature = (feature: GeometryLayerItem) => {
+    if (
+      currentDrawMode.value === "annotation-arrow" &&
+      feature.geometry.type === "LineString" &&
+      mapAdapter.value?.getZoom() !== undefined
+    ) {
+      const addedAnnotation = addScenarioArrowAnnotation(
+        activeScenario,
+        feature.geometry,
+        mapAdapter.value.getZoom()!,
+        activeLayerIdRef.value,
+        currentDrawStyle.value ?? {},
+      );
+      if (addedAnnotation) activeFeatureId.value = addedAnnotation.id;
+      return;
+    }
     const addedFeature = addScenarioDrawFeature(
       activeScenario,
       feature,
@@ -231,12 +248,25 @@ export function useScenarioDraw() {
 
   return {
     startDrawing: (drawType: DrawType) =>
-      withInteraction((activeInteraction) => activeInteraction.startDrawing(drawType)),
+      withInteraction((activeInteraction) => {
+        currentDrawMode.value = "geometry";
+        activeInteraction.startDrawing(drawType);
+      }),
+    startDrawingAnnotationArrow: () =>
+      withInteraction((activeInteraction) => {
+        currentDrawMode.value = "annotation-arrow";
+        activeInteraction.startDrawing("LineString");
+      }),
     currentDrawType,
+    currentDrawMode,
     startModify: () =>
       withInteraction((activeInteraction) => activeInteraction.startModify()),
     isModifying,
-    cancel: () => withInteraction((activeInteraction) => activeInteraction.cancel()),
+    cancel: () =>
+      withInteraction((activeInteraction) => {
+        currentDrawMode.value = "geometry";
+        activeInteraction.cancel();
+      }),
     isDrawing,
     deleteSelected,
     snap,

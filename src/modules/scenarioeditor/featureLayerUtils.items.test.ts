@@ -19,7 +19,9 @@ const geometryItem: GeometryLayerItem = {
 const annotationItem: AnnotationLayerItem = {
   id: "annotation-1",
   kind: "annotation",
-  annotationType: "label",
+  annotationKind: "text",
+  textType: "label",
+  anchorZoom: 5,
   anchor: { type: "point", position: [10, 60] },
   content: { text: "Note" },
 };

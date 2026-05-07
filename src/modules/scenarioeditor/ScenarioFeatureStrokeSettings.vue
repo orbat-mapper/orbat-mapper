@@ -6,13 +6,12 @@ import {
   defaultStrokeOpacity,
   defaultStrokeWidth,
 } from "@/geo/simplestyle";
-import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { UpdateOptions } from "@/scenariostore/geo";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
 import NewSelect from "@/components/NewSelect.vue";
 
-const props = defineProps<{ feature: GeometryLayerItem }>();
+const props = defineProps<{ feature: { style?: Partial<SimpleStyleSpec> } }>();
 const emit = defineEmits<{
   (
     e: "update",
@@ -23,7 +22,7 @@ const emit = defineEmits<{
 }>();
 
 const marker = computed(() => {
-  const { style } = props.feature;
+  const style = props.feature.style ?? {};
   return {
     stroke: style["stroke"] ?? defaultStrokeColor,
     "stroke-width": style["stroke-width"] ?? defaultStrokeWidth,

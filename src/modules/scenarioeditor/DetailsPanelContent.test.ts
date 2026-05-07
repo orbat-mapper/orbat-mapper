@@ -21,6 +21,7 @@ function createScenarioMock(currentTime = 3_600_000) {
     },
     geo: {
       layerItemsLayers: computed(() => []),
+      getLayerItemById: vi.fn(() => ({ layerItem: undefined })),
     },
     helpers: {
       getUnitById: vi.fn((id: string) =>
@@ -256,5 +257,46 @@ describe("DetailsPanelContent", () => {
     expect(wrapper.text()).toContain(
       "Click a unit on the map or select a single unit with a known location.",
     );
+  });
+
+  it("routes annotation selections to the annotation details panel", () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const { activeFeatureId } = useSelectedItems();
+    activeFeatureId.value = "annotation-1";
+
+    const wrapper = mount(DetailsPanelContent, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioKey as symbol]: {
+            ...createScenarioMock(),
+            geo: {
+              layerItemsLayers: computed(() => []),
+              getLayerItemById: vi.fn(() => ({
+                layerItem: { id: "annotation-1", kind: "annotation" },
+              })),
+            },
+          } as any,
+          [routeDetailsPanelKey as symbol]: {
+            activeRoutingUnitName: computed(() => null),
+            addRouteLeg: vi.fn(),
+            clearCurrentLeg: vi.fn(),
+            finishRoute: vi.fn(),
+            closeRouting: vi.fn(),
+            endRouting: vi.fn(),
+            handleEscape: vi.fn(),
+          },
+        },
+        stubs: {
+          ScenarioAnnotationDetails: defineComponent({
+            name: "ScenarioAnnotationDetails",
+            template: "<div>Annotation details</div>",
+          }),
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Annotation details");
   });
 });
