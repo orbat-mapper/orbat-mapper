@@ -27,7 +27,6 @@ const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
 const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
-const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
 const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const ImportScenarioView = () => import("@/views/ImportScenarioView.vue");
 const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
@@ -91,10 +90,6 @@ export const routes = [
     beforeEnter: (to, from) => {
       NProgress.start();
     },
-  },
-  {
-    path: "/testcomponents",
-    component: ComponentsTestView,
   },
   {
     path: "/text-to-orbat",
