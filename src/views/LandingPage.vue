@@ -171,22 +171,10 @@ const features = [
                 >Text to ORBAT
               </router-link>
               <router-link
-                :to="{
-                  name: MAP_EDIT_MODE_ROUTE,
-                  params: { scenarioId: 'demo-falkland82' },
-                }"
-                >Globe view</router-link
-              >
-
-              <router-link
                 :to="{ name: SYMBOL_BROWSER_ROUTE }"
                 class="text-muted-foreground"
                 >Symbol Browser
               </router-link>
-
-              <router-link to="/storymode" class="text-muted-foreground"
-                >Story mode test</router-link
-              >
             </ul>
           </div>
         </ProseSection>

@@ -11,7 +11,6 @@ import {
   LANDING_PAGE_ROUTE,
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
-  STORY_MODE_ROUTE,
   SYMBOL_BROWSER_ROUTE,
   TEXT_TO_ORBAT_ROUTE,
 } from "@/router/names";
@@ -26,7 +25,6 @@ declare module "vue-router" {
 const ScenarioEditorWrapper = () =>
   import("../modules/scenarioeditor/ScenarioEditorWrapper.vue");
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
-const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
 const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const ImportScenarioView = () => import("@/views/ImportScenarioView.vue");
 const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
@@ -79,14 +77,6 @@ export const routes = [
     path: "/newscenario",
     name: NEW_SCENARIO_ROUTE,
     component: NewScenarioView,
-    beforeEnter: (to, from) => {
-      NProgress.start();
-    },
-  },
-  {
-    path: "/storymode",
-    name: STORY_MODE_ROUTE,
-    component: StoryModeView,
     beforeEnter: (to, from) => {
       NProgress.start();
     },
