@@ -28,7 +28,6 @@ const ScenarioEditorWrapper = () =>
 const NewScenarioView = () => import("../modules/scenarioeditor/NewScenarioView.vue");
 const StoryModeView = () => import("../modules/storymode/StoryModeWrapper.vue");
 const ComponentsTestView = () => import("../views/ComponentsTestView.vue");
-const GeoTestView = () => import("../views/GeoTestView.vue");
 const TextToOrbatView = () => import("@/views/texttoorbat/TextToOrbatView.vue");
 const ImportScenarioView = () => import("@/views/ImportScenarioView.vue");
 const SymbolBrowserView = () => import("@/views/SymbolBrowserView.vue");
@@ -96,10 +95,6 @@ export const routes = [
   {
     path: "/testcomponents",
     component: ComponentsTestView,
-  },
-  {
-    path: "/testgeo",
-    component: GeoTestView,
   },
   {
     path: "/text-to-orbat",
