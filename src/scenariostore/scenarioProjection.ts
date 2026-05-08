@@ -46,11 +46,43 @@ export function createInitialState(unit: NUnit): CurrentState | null {
   return null;
 }
 
-function updateCurrentUnitState(
-  unit: NUnit,
-  timestamp: number,
-  state: ScenarioState,
-) {
+type CountedItem = { id: EntityId; count?: number; onHand?: number };
+const COUNTED_FIELDS = ["equipment", "personnel", "supplies"] as const;
+
+function applyUpdate(items: CountedItem[], updates: CountedItem[], label: string) {
+  for (const u of updates) {
+    const idx = items.findIndex((it) => it.id === u.id);
+    if (idx !== -1) {
+      items[idx] = { ...items[idx], ...u };
+    } else {
+      console.warn(`${label} not found`, u);
+    }
+  }
+}
+
+function applyDiff(items: CountedItem[], diffs: CountedItem[], label: string) {
+  for (const d of diffs) {
+    const idx = items.findIndex((it) => it.id === d.id);
+    if (idx !== -1) {
+      const it = items[idx];
+      const onHand = (it?.onHand ?? it.count ?? 0) + (d.onHand ?? 0);
+      items[idx] = { ...it, onHand };
+    } else {
+      console.warn(`${label} not found`, d);
+    }
+  }
+}
+
+function invalidateUnitStyleCache(unit: NUnit, state: ScenarioState) {
+  if (unit._ikey) {
+    invalidateUnitStyle(unit._ikey);
+    unit._ikey = undefined;
+  }
+  invalidateUnitStyle(unit.id);
+  state.isMapStylesDirty = true;
+}
+
+function updateCurrentUnitState(unit: NUnit, timestamp: number, state: ScenarioState) {
   if (!unit.state || !unit.state.length) {
     if (!unit._state) {
       unit._state = createInitialState(unit);
@@ -61,74 +93,10 @@ function updateCurrentUnitState(
   for (const s of unit.state) {
     if (s.t <= timestamp) {
       const { diff, update, ...rest } = s;
-      if (update?.equipment && currentState?.equipment) {
-        for (const e of update.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (update?.personnel && currentState?.personnel) {
-        for (const p of update.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (update?.supplies && currentState?.supplies) {
-        for (const p of update.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.supplies[idx] = { ...currentState.supplies[idx], ...p };
-          } else {
-            console.warn("Supplies not found", p);
-          }
-        }
-      }
-
-      if (diff?.equipment && currentState?.equipment) {
-        for (const e of diff.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            const eq = currentState.equipment[idx];
-            const onHand = (eq?.onHand ?? eq.count) + (e.onHand ?? 0);
-            currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (diff?.personnel && currentState?.personnel) {
-        for (const p of diff.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.personnel[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (diff?.supplies && currentState?.supplies) {
-        for (const p of diff.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.supplies[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.supplies[idx] = { ...currentState.supplies[idx], onHand };
-          } else {
-            console.warn("Supplies not found", p);
-          }
-        }
+      for (const field of COUNTED_FIELDS) {
+        const items = currentState?.[field];
+        if (update?.[field] && items) applyUpdate(items, update[field]!, field);
+        if (diff?.[field] && items) applyDiff(items, diff[field]!, field);
       }
       currentState = { ...currentState, ...rest };
     } else {
@@ -165,12 +133,7 @@ function updateCurrentUnitState(
     currentState?.symbolRotation !== unit._state?.symbolRotation ||
     currentState?.reinforcedStatus !== unit._state?.reinforcedStatus
   ) {
-    if (unit._ikey) {
-      invalidateUnitStyle(unit._ikey);
-    }
-    unit._ikey = undefined;
-    invalidateUnitStyle(unit.id);
-    state.isMapStylesDirty = true;
+    invalidateUnitStyleCache(unit, state);
   }
   unit._state = currentState;
 }
@@ -192,10 +155,7 @@ type TimedHierarchyEntry = {
   };
 };
 
-function getEntityById(
-  id: EntityId,
-  state: ScenarioState,
-): HierarchyParent | undefined {
+function getEntityById(id: EntityId, state: ScenarioState): HierarchyParent | undefined {
   if (id in state.unitMap) return state.unitMap[id];
   if (id in state.sideGroupMap) return state.sideGroupMap[id];
   if (id in state.sideMap) return state.sideMap[id];
@@ -226,7 +186,7 @@ function getContextFromParent(
   return { side, sideGroup };
 }
 
-function syncProjectedUnitSidc(unit: NUnit, side: NSide) {
+function syncProjectedUnitSidc(unit: NUnit, side: NSide, state: ScenarioState) {
   const previousSidc = unit._state?.sidc ?? unit.sidc;
   const projectedSidc = setSid(previousSidc, side.standardIdentity);
   if (projectedSidc === previousSidc) return false;
@@ -239,11 +199,7 @@ function syncProjectedUnitSidc(unit: NUnit, side: NSide) {
     type: unit._state?.type ?? "initial",
   };
 
-  if (unit._ikey) {
-    invalidateUnitStyle(unit._ikey);
-    unit._ikey = undefined;
-  }
-  invalidateUnitStyle(unit.id);
+  invalidateUnitStyleCache(unit, state);
   return true;
 }
 
@@ -262,16 +218,9 @@ function setSubtreeContext(
   unit._sid = side.id;
   unit._gid = sideGroup?.id;
   if (previousSideId !== side.id || previousGroupId !== sideGroup?.id) {
-    if (unit._ikey) {
-      invalidateUnitStyle(unit._ikey);
-      unit._ikey = undefined;
-    }
-    invalidateUnitStyle(unit.id);
-    state.isMapStylesDirty = true;
+    invalidateUnitStyleCache(unit, state);
   }
-  if (syncProjectedUnitSidc(unit, side)) {
-    state.isMapStylesDirty = true;
-  }
+  syncProjectedUnitSidc(unit, side, state);
   unit.subUnits.forEach((childId) =>
     setSubtreeContext(childId, unit.id, side, sideGroup, state),
   );
@@ -440,10 +389,7 @@ function collectHierarchyChangeTimestamps(state: ScenarioState): number[] {
   return timestamps.sort((a, b) => a - b);
 }
 
-function getHierarchyProjectionBucket(
-  timestamps: number[],
-  timestamp: number,
-): number {
+function getHierarchyProjectionBucket(timestamps: number[], timestamp: number): number {
   let low = 0;
   let high = timestamps.length;
   while (low < high) {
@@ -520,7 +466,6 @@ export function projectScenarioToTime(state: ScenarioState, timestamp: number) {
 export function reprojectUnit(state: ScenarioState, unitId: EntityId) {
   const unit = state.unitMap[unitId];
   if (!unit) return;
-  unit._state = null;
   updateCurrentUnitState(unit, state.currentTime, state);
   state.unitStateCounter++;
 }
@@ -541,7 +486,7 @@ export function reprojectHierarchy(
   ) {
     Object.values(state.unitMap).forEach((unit) => {
       const side = state.sideMap[unit._sid];
-      if (side) syncProjectedUnitSidc(unit, side);
+      if (side) syncProjectedUnitSidc(unit, side, state);
     });
     return false;
   }
