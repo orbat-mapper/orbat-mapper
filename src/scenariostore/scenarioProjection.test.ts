@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useScenarioTime } from "@/scenariostore/time";
 import {
-  createInitialState,
+  initializeUnitProjection,
   projectScenarioToTime,
   reprojectHierarchy,
 } from "@/scenariostore/scenarioProjection";
@@ -41,7 +41,7 @@ function createStoreWithUnit(unitData: any) {
   } as any);
 }
 
-describe("createInitialState", () => {
+describe("initializeUnitProjection", () => {
   it("sets symbolRotation to 0 for initial state", () => {
     const store = createStoreWithUnit({
       id: "unit-1",
@@ -51,8 +51,8 @@ describe("createInitialState", () => {
       location: [10, 60],
     });
     const unit = store.state.unitMap["unit-1"];
-    const initialState = createInitialState(unit);
-    expect(initialState?.symbolRotation).toBe(0);
+    initializeUnitProjection(unit);
+    expect(unit._state?.symbolRotation).toBe(0);
   });
 
   it("seeds initial state with base reinforcedStatus", () => {
@@ -64,8 +64,8 @@ describe("createInitialState", () => {
       reinforcedStatus: "Reinforced",
     });
     const unit = store.state.unitMap["unit-1"];
-    const initialState = createInitialState(unit);
-    expect(initialState?.reinforcedStatus).toBe("Reinforced");
+    initializeUnitProjection(unit);
+    expect(unit._state?.reinforcedStatus).toBe("Reinforced");
   });
 });
 

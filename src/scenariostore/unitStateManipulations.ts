@@ -4,7 +4,7 @@ import { mergeArray, nanoid } from "@/utils";
 import { klona } from "klona";
 import type { EntityId, HistoryAction } from "@/types/base";
 import {
-  createInitialState,
+  initializeUnitProjection,
   reprojectUnit,
   reprojectHierarchy,
   refreshHierarchyTimeline,
@@ -79,7 +79,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         const _unit = s.unitMap[unitId];
         if (!_unit) return;
         _unit.state = [];
-        _unit._state = createInitialState(_unit);
+        initializeUnitProjection(_unit);
         refreshHierarchyTimeline(s);
       },
       { label: "clearUnitState", value: unitId },
@@ -184,7 +184,6 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
       refreshHierarchyTimeline(s);
     });
-    state.unitStateCounter++;
 
     updateUnitState(unitId);
   }

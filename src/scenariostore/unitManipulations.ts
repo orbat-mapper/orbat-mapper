@@ -36,7 +36,7 @@ import {
 } from "@/scenariostore/unitStateManipulations";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import {
-  createInitialState,
+  initializeUnitProjection,
   reprojectHierarchy,
   refreshHierarchyTimeline,
 } from "@/scenariostore/scenarioProjection";
@@ -821,7 +821,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unit.subUnits = unit.subUnits ?? [];
     unit._baseSubUnits = unit._baseSubUnits ?? [...unit.subUnits];
     if (!unit.state || !unit.state.length) {
-      unit._state = createInitialState(unit);
+      initializeUnitProjection(unit);
     }
     if (noUndo) {
       s.unitMap[unit.id] = unit;
@@ -942,7 +942,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
               _isOpen: false,
             };
             if (!newUnit.state || !newUnit.state.length) {
-              unit._state = createInitialState(unit);
+              initializeUnitProjection(newUnit);
             }
             s.unitMap[newUnit.id] = newUnit;
             clonedUnitIds.push(newUnit.id);

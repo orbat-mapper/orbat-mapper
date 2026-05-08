@@ -24,7 +24,7 @@ import { setSid } from "@/symbology/helpers";
 // Unit state projection
 // ---------------------------------------------------------------------------
 
-export function createInitialState(unit: NUnit): CurrentState | null {
+function createInitialState(unit: NUnit): CurrentState | null {
   if (
     unit.location ||
     unit.reinforcedStatus !== undefined ||
@@ -468,6 +468,10 @@ export function reprojectUnit(state: ScenarioState, unitId: EntityId) {
   if (!unit) return;
   updateCurrentUnitState(unit, state.currentTime, state);
   state.unitStateCounter++;
+}
+
+export function initializeUnitProjection(unit: NUnit) {
+  unit._state = createInitialState(unit);
 }
 
 export function reprojectHierarchy(
