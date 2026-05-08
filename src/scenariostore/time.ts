@@ -1,30 +1,14 @@
 import type { NewScenarioStore } from "./newScenarioStore";
 import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
-import type {
-  NScenarioEvent,
-  NGeometryLayerItem,
-  NUnit,
-  ScenarioEventUpdate,
-} from "@/types/internalModels";
+import type { NScenarioEvent, ScenarioEventUpdate } from "@/types/internalModels";
 import dayjs, { type ManipulateType } from "dayjs";
 import { computed } from "vue";
-import turfLength from "@turf/length";
-import turfAlong from "@turf/along";
-import { lineString } from "@turf/helpers";
 import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
-import { invalidateUnitStyle } from "@/geo/unitStyles";
 import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
-import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
-import {
-  createInitialGeometryLayerItemState,
-  type CurrentGeometryLayerItemState,
-  isNGeometryLayerItem,
-  projectGeometryLayerItemState,
-} from "@/types/scenarioLayerItems";
-import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import { projectScenarioToTime } from "@/scenariostore/scenarioProjection";
 
 export type GoToScenarioEventOptions = {
   silent?: boolean;
@@ -34,212 +18,13 @@ export type GoToScenarioEventEvent = {
   event: NScenarioEvent;
 };
 
-export function createInitialState(unit: NUnit): CurrentState | null {
-  if (
-    unit.location ||
-    unit.reinforcedStatus !== undefined ||
-    unit.equipment?.length ||
-    unit.personnel?.length ||
-    unit.supplies?.length
-  )
-    return {
-      t: Number.MIN_SAFE_INTEGER,
-      location: unit.location,
-      type: "initial",
-      sidc: unit.sidc,
-      symbolRotation: 0,
-      reinforcedStatus: unit.reinforcedStatus,
-      equipment: klona(unit.equipment),
-      personnel: klona(unit.personnel),
-      supplies: klona(unit.supplies),
-    };
-  return null;
-}
-
-export function updateCurrentUnitState(
-  unit: NUnit,
-  timestamp: number,
-  options: { markMapStylesDirty?: () => void } = {},
-) {
-  if (!unit.state || !unit.state.length) {
-    if (!unit._state) {
-      unit._state = createInitialState(unit);
-    }
-    return;
-  }
-  let currentState = createInitialState(unit);
-  for (const s of unit.state) {
-    if (s.t <= timestamp) {
-      const { diff, update, ...rest } = s;
-      if (update?.equipment && currentState?.equipment) {
-        for (const e of update.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (update?.personnel && currentState?.personnel) {
-        for (const p of update.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (update?.supplies && currentState?.supplies) {
-        for (const p of update.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.supplies[idx] = { ...currentState.supplies[idx], ...p };
-          } else {
-            console.warn("Supplies not found", p);
-          }
-        }
-      }
-
-      if (diff?.equipment && currentState?.equipment) {
-        for (const e of diff.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            const eq = currentState.equipment[idx];
-            const onHand = (eq?.onHand ?? eq.count) + (e.onHand ?? 0);
-            currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (diff?.personnel && currentState?.personnel) {
-        for (const p of diff.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.personnel[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (diff?.supplies && currentState?.supplies) {
-        for (const p of diff.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.supplies[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.supplies[idx] = { ...currentState.supplies[idx], onHand };
-          } else {
-            console.warn("Supplies not found", p);
-          }
-        }
-      }
-      currentState = { ...currentState, ...rest };
-    } else {
-      if (
-        currentState?.location &&
-        s.location &&
-        !(s.interpolate === false) &&
-        (s.viaStartTime ?? -Infinity) <= timestamp
-      ) {
-        const n = lineString(
-          s.via
-            ? [currentState.location, ...s.via, s.location]
-            : [currentState.location, s.location],
-        );
-        const timeDiff = s.t - (s.viaStartTime ?? currentState.t);
-        const pathLength = turfLength(n);
-        const averageSpeed = pathLength / timeDiff;
-        const p = turfAlong(
-          n,
-          averageSpeed * (timestamp - (s.viaStartTime ?? currentState.t)),
-        );
-        currentState = {
-          ...currentState,
-          t: timestamp,
-          location: p.geometry.coordinates,
-          type: "interpolated",
-        };
-      }
-      break;
-    }
-  }
-  if (
-    currentState?.sidc !== unit._state?.sidc ||
-    currentState?.symbolRotation !== unit._state?.symbolRotation ||
-    currentState?.reinforcedStatus !== unit._state?.reinforcedStatus
-  ) {
-    if (unit._ikey) {
-      invalidateUnitStyle(unit._ikey);
-    }
-    unit._ikey = undefined;
-    invalidateUnitStyle(unit.id);
-    options.markMapStylesDirty?.();
-  }
-  unit._state = currentState;
-}
-
 export function useScenarioTime(store: NewScenarioStore) {
   const { state, update } = store;
 
   const goToScenarioEventHook = createEventHook<GoToScenarioEventEvent>();
 
   function setCurrentTime(timestamp: number) {
-    Object.values(state.unitMap).forEach((unit) =>
-      updateCurrentUnitState(unit, timestamp, {
-        markMapStylesDirty: () => {
-          state.isMapStylesDirty = true;
-        },
-      }),
-    );
-    syncTimedHierarchyProjection(state, timestamp);
-    (
-      Object.values(state.layerStackMap).filter(
-        isScenarioOverlayLayer,
-      ) as import("@/types/scenarioStackLayers").NScenarioOverlayLayer[]
-    ).forEach((layer) => {
-      const visibleFromT = layer.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-      const visibleUntilT = layer.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-      const oldHidden = layer._hidden;
-      layer._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
-      if (oldHidden !== layer._hidden) {
-        state.featureStateCounter++;
-      }
-      layer.items.forEach((featureId) => {
-        const feature = state.layerItemMap[featureId];
-        if (!feature || !isNGeometryLayerItem(feature)) return;
-        const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-        const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-        const oldHidden = feature._hidden;
-        feature._hidden =
-          timestamp <= visibleFromT || timestamp >= visibleUntilT || !!feature.isHidden;
-        if (oldHidden !== feature._hidden) {
-          state.featureStateCounter++;
-        }
-        if (feature.state?.length) {
-          let currentState = createInitialGeometryLayerItemState(feature);
-          for (const s of feature.state) {
-            if (s.t <= timestamp) {
-              currentState = {
-                ...currentState,
-                ...projectGeometryLayerItemState(s),
-              };
-            } else {
-              break;
-            }
-          }
-          feature._state = currentState;
-          state.featureStateCounter++;
-        }
-      });
-    });
-    state.currentTime = timestamp;
+    projectScenarioToTime(state, timestamp);
   }
 
   function add(amount: number, unit: ManipulateType, normalize = false) {
@@ -308,7 +93,7 @@ export function useScenarioTime(store: NewScenarioStore) {
     });
 
     Object.values(state.layerItemMap)
-      .filter(isNGeometryLayerItem)
+      .filter((f) => f && f.kind === "geometry")
       .forEach((feature) => {
         (feature?.state || []).forEach((s) => {
           // round to nearest hour

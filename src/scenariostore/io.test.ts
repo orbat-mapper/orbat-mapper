@@ -3,7 +3,7 @@ import { createEmptyScenario, useScenarioIO } from "./io";
 import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { shallowRef } from "vue";
 import { useNewScenarioStore } from "./newScenarioStore";
-import { updateCurrentUnitState } from "./time";
+import { projectScenarioToTime } from "./scenarioProjection";
 import "@/dayjs";
 
 // Mock the stores that might be used
@@ -447,10 +447,10 @@ describe("Scenario IO", () => {
     const store = useNewScenarioStore(scenario);
     const unit = store.state.unitMap["unit-1"];
 
-    updateCurrentUnitState(unit, +new Date("2025-01-01T01:30:00Z"));
+    projectScenarioToTime(store.state, +new Date("2025-01-01T01:30:00Z"));
     expect(unit._state?.symbolRotation).toBe(45);
 
-    updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
+    projectScenarioToTime(store.state, +new Date("2025-01-01T02:30:00Z"));
     expect(unit._state?.symbolRotation).toBe(180);
   });
 
@@ -506,10 +506,10 @@ describe("Scenario IO", () => {
     const store = useNewScenarioStore(scenario);
     const unit = store.state.unitMap["unit-1"];
 
-    updateCurrentUnitState(unit, +new Date("2025-01-01T01:30:00Z"));
+    projectScenarioToTime(store.state, +new Date("2025-01-01T01:30:00Z"));
     expect(unit._state?.reinforcedStatus).toBe("Reduced");
 
-    updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
+    projectScenarioToTime(store.state, +new Date("2025-01-01T02:30:00Z"));
     expect(unit._state?.reinforcedStatus).toBe("None");
   });
 
