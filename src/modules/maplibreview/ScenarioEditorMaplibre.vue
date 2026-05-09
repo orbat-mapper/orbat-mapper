@@ -88,17 +88,14 @@ const {
   handleEscape,
 } = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 let cleanupScenarioBinding: (() => void) | null = null;
-const nativeMapStub = shallowRef(null);
-const featureSelectStub = shallowRef(null);
+const nativeMapStub = shallowRef<never>(null as never);
+const featureSelectStub = shallowRef<never>(null as never);
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
 );
-provide(activeNativeMapKey, nativeMapStub as unknown as ShallowRef<never>);
-provide(
-  activeFeatureSelectInteractionKey,
-  featureSelectStub as unknown as ShallowRef<never>,
-);
+provide(activeNativeMapKey, nativeMapStub);
+provide(activeFeatureSelectInteractionKey, featureSelectStub);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

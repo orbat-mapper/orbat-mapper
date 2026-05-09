@@ -12,6 +12,16 @@ function clampAlpha(n: number) {
   return Math.max(0, Math.min(1, n));
 }
 
+export function toRgbaColor(
+  color: string | null | undefined,
+  opacity: number,
+  fallback: string,
+): string {
+  const [r, g, b, a = 1] = parseCssColor(color || fallback) ?? [0, 0, 0, 1];
+  const nextOpacity = Math.max(0, Math.min(1, a * opacity));
+  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${nextOpacity})`;
+}
+
 export function parseCssColor(input: string): Rgba | null {
   const value = input.trim().toLowerCase();
   if (value === "transparent") return [0, 0, 0, 0];
