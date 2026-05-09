@@ -33,10 +33,10 @@ import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
   createTouchDoubleTapTracker,
   getPreviousDistinctVertex,
-  isZeroLengthSegment,
   normalizePathCoordinates,
   suppressMapEvent,
 } from "@/composables/maplibreTouchDrawing";
+import { isZeroLengthSegment } from "@/geo/distance";
 
 const MEASUREMENT_SOURCE_ID = "maplibre-measurement";
 const MEASUREMENT_LABEL_SOURCE_ID = "maplibre-measurement-labels";

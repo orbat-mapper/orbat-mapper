@@ -16,7 +16,7 @@ import type {
   MapGeoJSONFeature,
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
-import { parseCssColor } from "@/utils/cssColor";
+import { toRgbaColor } from "@/utils/cssColor";
 import {
   drawArrowSymbol,
   getArrowGlobeIconOffset,
@@ -146,18 +146,6 @@ type ImageDefinition =
       color: string;
       spriteScale: number;
     };
-
-function toRgbaColor(
-  color: string | null | undefined,
-  opacity = 1,
-  fallback = "#555555",
-) {
-  const parsed = parseCssColor(color || fallback) ??
-    parseCssColor(fallback) ?? [0, 0, 0, 1];
-  const [r, g, b, a = 1] = parsed;
-  const nextOpacity = Math.max(0, Math.min(1, a * opacity));
-  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${nextOpacity})`;
-}
 
 function getLabelText(feature: NGeometryLayerItem) {
   return getGeometryLayerItemLabelText(feature);

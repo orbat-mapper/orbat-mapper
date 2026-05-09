@@ -4,7 +4,7 @@ import union from "@turf/union";
 import { featureCollection } from "@turf/helpers";
 import { clusterEach } from "@turf/clusters";
 import type { Feature, MultiPolygon, Polygon } from "geojson";
-import { parseCssColor } from "@/utils/cssColor";
+import { toRgbaColor } from "@/utils/cssColor";
 import type { TScenario } from "@/scenariostore";
 import type { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
@@ -22,18 +22,6 @@ type RingFeatureProperties = {
   strokeWidth: number;
   fillColor: string;
 };
-
-function toRgbaColor(
-  color: string | null | undefined,
-  opacity: number,
-  fallback: string,
-) {
-  const parsed = parseCssColor(color || fallback) ??
-    parseCssColor(fallback) ?? [0, 0, 0, 1];
-  const [r, g, b, a = 1] = parsed;
-  const nextOpacity = Math.max(0, Math.min(1, a * opacity));
-  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${nextOpacity})`;
-}
 
 type RingIdProperties = { id: string; isGroup: boolean };
 

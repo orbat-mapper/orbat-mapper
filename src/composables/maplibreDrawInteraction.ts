@@ -11,11 +11,10 @@ import type { DrawType } from "@/composables/geoEditing";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import {
   createTouchDoubleTapTracker,
-  distanceMeters,
-  isZeroLengthSegment,
   normalizePathCoordinates,
   suppressMapEvent,
 } from "@/composables/maplibreTouchDrawing";
+import { distanceMeters, isZeroLengthSegment } from "@/geo/distance";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 
 const DRAW_PREVIEW_OVERLAY_ID = "maplibre-draw-preview";

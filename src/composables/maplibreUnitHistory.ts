@@ -7,8 +7,7 @@ import type {
 import type { FeatureCollection } from "geojson";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
-import { distance } from "@turf/turf";
-import { point } from "@turf/helpers";
+import { distanceMeters } from "@/geo/distance";
 import type { TScenario } from "@/scenariostore";
 import { createUnitPathGeoJson } from "@/geo/history";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -253,14 +252,12 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       let newTime: number | undefined;
       if (lastLocationEntry) {
         const { location, t } = lastLocationEntry;
-        const distanceMeters = distance(point(location!), point(lngLat), {
-          units: "meters",
-        });
+        const travelDistance = distanceMeters(location!, lngLat);
         const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
         const speed = speedValue
           ? convertSpeedToMetric(speedValue.value, speedValue.uom)
           : convertSpeedToMetric(30, "km/h");
-        const travel = distanceMeters / speed;
+        const travel = travelDistance / speed;
         newTime = Math.round(t + travel * 1000);
       }
       geo.addUnitPosition(unitId, lngLat, newTime);
