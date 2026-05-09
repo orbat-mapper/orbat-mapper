@@ -4,7 +4,7 @@ import union from "@turf/union";
 import { featureCollection } from "@turf/helpers";
 import { clusterEach } from "@turf/clusters";
 import type { Feature, MultiPolygon, Polygon } from "geojson";
-import { fromString as parseColor } from "ol/color";
+import { parseCssColor } from "@/utils/cssColor";
 import type { TScenario } from "@/scenariostore";
 import type { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
@@ -28,8 +28,9 @@ function toRgbaColor(
   opacity: number,
   fallback: string,
 ) {
-  const parsed = parseColor(color || fallback);
-  const [r, g, b, a = 1] = Array.isArray(parsed) ? parsed : parseColor(fallback);
+  const parsed = parseCssColor(color || fallback) ??
+    parseCssColor(fallback) ?? [0, 0, 0, 1];
+  const [r, g, b, a = 1] = parsed;
   const nextOpacity = Math.max(0, Math.min(1, a * opacity));
   return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${nextOpacity})`;
 }

@@ -13,7 +13,6 @@ import type { TScenario } from "@/scenariostore";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
 import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
-import type { Pixel } from "ol/pixel";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
 import { centerOfMass } from "@turf/turf";
@@ -522,7 +521,7 @@ function updateHoveredScenarioFeatures(
       ];
     });
 
-  setHoveredFeatures(features, [e.point.x, e.point.y] as Pixel);
+  setHoveredFeatures(features, [e.point.x, e.point.y]);
 }
 
 function getMovableUnitIds(clickedUnitId: string | undefined): string[] {

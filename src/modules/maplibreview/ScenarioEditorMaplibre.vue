@@ -10,8 +10,6 @@ import {
 } from "vue";
 import type { ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
-import type OLMap from "ol/Map";
-import type Select from "ol/interaction/Select";
 import { injectStrict } from "@/utils";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
@@ -90,14 +88,17 @@ const {
   handleEscape,
 } = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 let cleanupScenarioBinding: (() => void) | null = null;
-const nativeMapStub = shallowRef(null) as unknown as ShallowRef<OLMap>;
-const featureSelectStub = shallowRef(null) as unknown as ShallowRef<Select>;
+const nativeMapStub = shallowRef(null);
+const featureSelectStub = shallowRef(null);
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
 );
-provide(activeNativeMapKey, nativeMapStub);
-provide(activeFeatureSelectInteractionKey, featureSelectStub);
+provide(activeNativeMapKey, nativeMapStub as unknown as ShallowRef<never>);
+provide(
+  activeFeatureSelectInteractionKey,
+  featureSelectStub as unknown as ShallowRef<never>,
+);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

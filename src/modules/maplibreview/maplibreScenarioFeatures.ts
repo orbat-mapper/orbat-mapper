@@ -16,7 +16,7 @@ import type {
   MapGeoJSONFeature,
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
-import { fromString as parseColor } from "ol/color";
+import { parseCssColor } from "@/utils/cssColor";
 import {
   drawArrowSymbol,
   getArrowGlobeIconOffset,
@@ -152,8 +152,9 @@ function toRgbaColor(
   opacity = 1,
   fallback = "#555555",
 ) {
-  const parsed = parseColor(color || fallback);
-  const [r, g, b, a = 1] = Array.isArray(parsed) ? parsed : parseColor(fallback);
+  const parsed = parseCssColor(color || fallback) ??
+    parseCssColor(fallback) ?? [0, 0, 0, 1];
+  const [r, g, b, a = 1] = parsed;
   const nextOpacity = Math.max(0, Math.min(1, a * opacity));
   return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${nextOpacity})`;
 }
