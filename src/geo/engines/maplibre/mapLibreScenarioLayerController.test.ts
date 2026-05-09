@@ -2,7 +2,7 @@
 import { createEventHook } from "@vueuse/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { mercatorToLonLat } from "@/geo/utils/webMercator";
+import { toWgs84 } from "@turf/turf";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { toReferenceFeatureSelection } from "@/geo/kml/maplibre";
 
@@ -1023,10 +1023,10 @@ describe("createMapLibreScenarioLayerController", () => {
       await new Promise<void>((resolve) => queueMicrotask(resolve));
 
       const expectedCoordinates = [
-        mercatorToLonLat([30, 10]),
-        mercatorToLonLat([30, -10]),
-        mercatorToLonLat([-30, -10]),
-        mercatorToLonLat([-30, 10]),
+        toWgs84([30, 10]),
+        toWgs84([30, -10]),
+        toWgs84([-30, -10]),
+        toWgs84([-30, 10]),
       ];
       expect(mockMap.map.addSource).toHaveBeenCalledWith(
         "scenario-image-source-image-1",

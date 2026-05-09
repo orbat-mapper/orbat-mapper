@@ -7,11 +7,7 @@ import type {
   Map as MlMap,
   RasterSourceSpecification,
 } from "maplibre-gl";
-import {
-  lonLatToMercator,
-  mercatorToLonLat,
-  transformExtent3857To4326,
-} from "@/geo/utils/webMercator";
+import { toMercator, toWgs84 } from "@turf/turf";
 import type { Feature as GeoJsonFeature, Position } from "geojson";
 import type {
   RefreshScenarioFeatureLayersOptions,
@@ -90,7 +86,9 @@ function normalizeMapLayerExtent(
   if (looksLikeLonLat) {
     return fixedExtent as [number, number, number, number];
   }
-  return transformExtent3857To4326(fixedExtent as [number, number, number, number]);
+  const [minLon, minLat] = toWgs84([fixedExtent[0], fixedExtent[1]]);
+  const [maxLon, maxLat] = toWgs84([fixedExtent[2], fixedExtent[3]]);
+  return [minLon, minLat, maxLon, maxLat];
 }
 
 function toCurrentFeature(feature: NGeometryLayerItem): GeoJsonFeature | undefined {
@@ -209,7 +207,7 @@ function projectedImageCoordinates(
       [centerX - halfWidth, centerY - halfHeight],
     ] as ImageCoordinates
   ).map(([x, y]) =>
-    mercatorToLonLat(rotatePoint(x, y, centerX, centerY, rotation)),
+    toWgs84(rotatePoint(x, y, centerX, centerY, rotation)),
   ) as ImageCoordinates;
 }
 
@@ -220,7 +218,7 @@ function getImageLayerCoordinates(
   if (layer.imageCenter && layer.imageScale !== undefined) {
     if (imageSize) {
       return projectedImageCoordinates(
-        lonLatToMercator(layer.imageCenter),
+        toMercator(layer.imageCenter),
         toPairScale(layer.imageScale),
         -(layer.imageRotate ?? 0),
         imageSize.width,
@@ -514,7 +512,7 @@ export function createMapLibreScenarioLayerController(
         const currentLayer = activeScenario?.geo.getMapLayerById(layerId);
         if (!isImageLayer(currentLayer)) return;
         const loadedCoordinates = projectedImageCoordinates(
-          lonLatToMercator(
+          toMercator(
             currentLayer.imageCenter ?? getMapLayerCenter(currentLayer) ?? [0, 0],
           ),
           toPairScale(currentLayer.imageScale),
@@ -726,7 +724,7 @@ export function createMapLibreScenarioLayerController(
   ) {
     if (layer.imageCenter && layer.imageScale !== undefined) {
       return {
-        center: lonLatToMercator(layer.imageCenter),
+        center: toMercator(layer.imageCenter),
         scale: toPairScale(layer.imageScale),
         rotation: layer.imageRotate ?? 0,
         imageSize,
@@ -734,8 +732,8 @@ export function createMapLibreScenarioLayerController(
     }
     const extent = normalizeMapLayerExtent(layer.extent);
     if (extent) {
-      const topLeft = lonLatToMercator([extent[0], extent[3]]);
-      const bottomRight = lonLatToMercator([extent[2], extent[1]]);
+      const topLeft = toMercator([extent[0], extent[3]]);
+      const bottomRight = toMercator([extent[2], extent[1]]);
       return {
         center: [(topLeft[0] + bottomRight[0]) / 2, (topLeft[1] + bottomRight[1]) / 2],
         scale: [
@@ -747,9 +745,7 @@ export function createMapLibreScenarioLayerController(
       };
     }
     return {
-      center: lonLatToMercator(
-        getMapLayerCenter(layer) ?? mapAdapter.getCenter() ?? [0, 0],
-      ),
+      center: toMercator(getMapLayerCenter(layer) ?? mapAdapter.getCenter() ?? [0, 0]),
       scale: toPairScale(layer.imageScale),
       rotation: layer.imageRotate ?? 0,
       imageSize,
@@ -771,7 +767,7 @@ export function createMapLibreScenarioLayerController(
     const scenario = activeScenario;
     if (!(transform && scenario)) return;
     const data: ScenarioImageLayerUpdate = {
-      imageCenter: mercatorToLonLat(transform.state.center) as Position,
+      imageCenter: toWgs84(transform.state.center) as Position,
       imageScale: transform.state.scale,
       imageRotate: transform.state.rotation,
     };
@@ -833,7 +829,7 @@ export function createMapLibreScenarioLayerController(
   function getProjectedPointer(event: PointerEvent) {
     const rect = mlMap.getCanvas().getBoundingClientRect();
     const lngLat = mlMap.unproject([event.clientX - rect.left, event.clientY - rect.top]);
-    return lonLatToMercator([lngLat.lng, lngLat.lat]);
+    return toMercator([lngLat.lng, lngLat.lat]);
   }
 
   async function startMapLayerTransform(layerId: FeatureId) {
