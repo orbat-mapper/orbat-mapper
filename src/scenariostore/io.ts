@@ -55,6 +55,7 @@ import type {
   ScenarioStackLayer,
 } from "@/types/scenarioStackLayers";
 import {
+  isScenarioDataLayer,
   isScenarioOverlayLayer,
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
@@ -326,12 +327,13 @@ function getLayerStack(state: ScenarioState): ScenarioStackLayer[] {
     getStoredReferenceLayers(state).map((layer) => [layer.id, layer] as const),
   );
   return state.layerStack
-    .map(
-      (id) =>
-        overlayLayers.get(String(id)) ??
-        referenceLayers.get(String(id)) ??
-        state.layerStackMap[id],
-    )
+    .map((id) => {
+      const layer = state.layerStackMap[id];
+      if (isScenarioOverlayLayer(layer)) return overlayLayers.get(String(id));
+      if (isScenarioReferenceLayer(layer)) return referenceLayers.get(String(id));
+      if (isScenarioDataLayer(layer)) return layer;
+      return undefined;
+    })
     .filter(Boolean) as ScenarioStackLayer[];
 }
 

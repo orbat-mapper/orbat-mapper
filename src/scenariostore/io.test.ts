@@ -61,6 +61,10 @@ function getOverlayLayers(scenario: { layerStack: any[] }) {
   return scenario.layerStack.filter((layer) => layer.kind === "overlay");
 }
 
+function getReferenceLayers(scenario: { layerStack: any[] }) {
+  return scenario.layerStack.filter((layer) => layer.kind === "reference");
+}
+
 describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
@@ -69,6 +73,46 @@ describe("Scenario IO", () => {
     expect(getOverlayLayers(scenario)[0]).toHaveProperty("items");
     expect(getOverlayLayers(scenario)[0]).not.toHaveProperty("features");
     expect((getOverlayLayers(scenario)[0] as any).items).toEqual([]);
+  });
+
+  it("does not serialize temporary reference layers", () => {
+    const state = createMinimalState({
+      layerStack: ["temporary-kml-layer", "persistent-image-layer"],
+      layerStackMap: {
+        "temporary-kml-layer": {
+          id: "temporary-kml-layer",
+          kind: "reference",
+          name: "Dropped KML",
+          source: {
+            id: "temporary-kml-layer",
+            type: "KMLLayer",
+            name: "Dropped KML",
+            url: "blob:http://localhost/temporary-kml",
+            _isTemporary: true,
+          },
+        },
+        "persistent-image-layer": {
+          id: "persistent-image-layer",
+          kind: "reference",
+          name: "Saved image",
+          source: {
+            id: "persistent-image-layer",
+            type: "ImageLayer",
+            name: "Saved image",
+            url: "https://example.test/map.png",
+          },
+        },
+      },
+    });
+
+    const store = { state } as NewScenarioStore;
+    const storeRef = shallowRef(store);
+    const { serializeToObject } = useScenarioIO(storeRef);
+    const serialized = serializeToObject();
+
+    expect(getReferenceLayers(serialized).map((layer) => layer.id)).toEqual([
+      "persistent-image-layer",
+    ]);
   });
 
   it("loads geometry items[] into the same normalized store state as legacy features[]", () => {
