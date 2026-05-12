@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Temporary KML/KMZ reference layers are no longer saved into serialized scenarios.
 - MapLibre scenario feature labels now honor the configured `text-offset-x`/`text-offset-y` (previously a fixed offset was used). Pixel values are converted to ems to match OpenLayers sizing.
 - Circle drawing now works in MapLibre mode.
 - Fixed scenario timeline alignment across daylight saving time transitions by recomputing the timezone offset from the current scenario time.
