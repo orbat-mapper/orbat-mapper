@@ -34,6 +34,11 @@ import {
   isMapLibreKmlRenderedLayerId,
   toReferenceFeatureSelection,
 } from "@/geo/kml/maplibre";
+import {
+  isUnitLayerId,
+  UNIT_LAYER_ID,
+  UNIT_LAYER_PREFIX,
+} from "@/geo/engines/maplibre/unitLayer";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
@@ -60,8 +65,6 @@ import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 import { SID_INDEX } from "@/symbology/sidc";
 
-const UNIT_LAYER_ID = "unitLayer";
-const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
 const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
 const NATIVE_CAPTURE_OPTIONS = { capture: true };
 const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
@@ -189,10 +192,6 @@ function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
     default:
       return { icon: "viewport", text: "viewport" };
   }
-}
-
-function isUnitLayerId(layerId: string | undefined | null) {
-  return layerId === UNIT_LAYER_ID || layerId?.startsWith(UNIT_LAYER_PREFIX);
 }
 
 function getUnitVisibilityGroup(
@@ -489,21 +488,23 @@ mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
 function queryInteractiveFeatures(point: PointLike) {
-  const hits = mlMap
-    .queryRenderedFeatures(point)
-    .filter(
-      (feature) =>
-        isUnitLayerId(feature.layer.id) ||
-        UNIT_HISTORY_LAYER_IDS.includes(feature.layer.id) ||
-        isMapLibreKmlRenderedLayerId(feature.layer.id) ||
-        isManagedScenarioFeatureLayerId(feature.layer.id),
-    );
   // Units must take precedence over reference layers (KML) even when those
   // layers happen to render above the unit symbols.
-  const unitHits = hits.filter((feature) => isUnitLayerId(feature.layer.id));
-  if (!unitHits.length || unitHits.length === hits.length) return hits;
-  const otherHits = hits.filter((feature) => !isUnitLayerId(feature.layer.id));
-  return [...unitHits, ...otherHits];
+  const unitHits: MapGeoJSONFeature[] = [];
+  const otherHits: MapGeoJSONFeature[] = [];
+  for (const feature of mlMap.queryRenderedFeatures(point)) {
+    const layerId = feature.layer.id;
+    if (isUnitLayerId(layerId)) {
+      unitHits.push(feature);
+    } else if (
+      UNIT_HISTORY_LAYER_IDS.includes(layerId) ||
+      isMapLibreKmlRenderedLayerId(layerId) ||
+      isManagedScenarioFeatureLayerId(layerId)
+    ) {
+      otherHits.push(feature);
+    }
+  }
+  return unitHits.length ? unitHits.concat(otherHits) : otherHits;
 }
 
 function updateHoveredScenarioFeatures(

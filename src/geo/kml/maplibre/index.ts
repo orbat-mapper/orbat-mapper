@@ -9,12 +9,11 @@ import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
 import type { ScenarioKMLLayer } from "@/types/scenarioGeoModels";
 import type { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import { loadKmlLayerData, type ParsedKmlLayerData } from "@/geo/kml";
+import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 
 const KML_SOURCE_PREFIX = "scenario-kml-source-";
 const KML_LABEL_SOURCE_PREFIX = "scenario-kml-label-source-";
 const KML_LAYER_PREFIX = "scenario-kml-layer-";
-const UNIT_LAYER_ID = "unitLayer";
-const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
 
 const KML_LAYER_SUFFIXES = [
   "polygon-fill",
@@ -370,7 +369,7 @@ export function createMapLibreKmlLayerRenderer(
           mlMap.addLayer(spec, beforeId);
           continue;
         } catch {
-          // Fallback if beforeId was removed between lookup and addLayer.
+          // beforeId may have been removed between lookup and addLayer.
         }
       }
       mlMap.addLayer(spec);
@@ -491,21 +490,6 @@ export function createMapLibreKmlLayerRenderer(
       image.src = href;
     });
   }
-}
-
-function findFirstUnitLayerId(mlMap: MlMap): string | undefined {
-  try {
-    const styleLayers = mlMap.getStyle?.()?.layers;
-    if (!Array.isArray(styleLayers)) return undefined;
-    for (const layer of styleLayers) {
-      const id = (layer as { id?: unknown }).id;
-      if (typeof id !== "string") continue;
-      if (id === UNIT_LAYER_ID || id.startsWith(UNIT_LAYER_PREFIX)) return id;
-    }
-  } catch {
-    // MapLibre may throw if the style is still loading.
-  }
-  return undefined;
 }
 
 function stringProp(value: unknown): string | undefined {

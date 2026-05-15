@@ -18,6 +18,7 @@ import type {
   MapEventType,
   ViewConstraints,
 } from "@/geo/contracts/mapAdapter";
+import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 
 const ML_EVENT_MAP: Record<MapEventType, string> = {
   moveend: "moveend",
@@ -26,13 +27,6 @@ const ML_EVENT_MAP: Record<MapEventType, string> = {
   singleclick: "click",
   dblclick: "dblclick",
 };
-
-const UNIT_LAYER_ID = "unitLayer";
-const UNIT_LAYER_PREFIX = `${UNIT_LAYER_ID}-`;
-
-function isUnitLayerId(layerId: string | undefined) {
-  return layerId === UNIT_LAYER_ID || layerId?.startsWith(UNIT_LAYER_PREFIX);
-}
 
 function toMapEventPayload(mlMap: MlMap, e: MapMouseEvent, includeUnitHit: boolean) {
   const originalEvent = e.originalEvent as Event | undefined;
