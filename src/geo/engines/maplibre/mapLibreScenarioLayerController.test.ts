@@ -133,6 +133,21 @@ function createMockMap() {
     removeLayer: vi.fn((id: string) => {
       layers.delete(id);
     }),
+    moveLayer: vi.fn((id: string, beforeId?: string) => {
+      const value = layers.get(id);
+      if (!value) return;
+      layers.delete(id);
+      if (beforeId !== undefined && layers.has(beforeId)) {
+        const entries = [...layers.entries()];
+        layers.clear();
+        for (const [layerId, layerValue] of entries) {
+          if (layerId === beforeId) layers.set(id, value);
+          layers.set(layerId, layerValue);
+        }
+        return;
+      }
+      layers.set(id, value);
+    }),
     hasImage: vi.fn(() => false),
     loadImage: vi.fn(),
     addImage: vi.fn(),
@@ -721,6 +736,64 @@ describe("createMapLibreScenarioLayerController", () => {
     );
     expect(firstKmlIndex).toBeGreaterThanOrEqual(0);
     expect(firstKmlIndex).toBeLessThan(firstUnitIndex);
+  });
+
+  it("restacks already-loaded KML layers on reorder without re-fetching", async () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, mapLayers, mapLayerHook } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-a",
+        type: "KMLLayer",
+        name: "KML A",
+        url: testKml,
+        extractStyles: true,
+        showPointNames: true,
+      },
+      {
+        id: "kml-b",
+        type: "KMLLayer",
+        name: "KML B",
+        url: testKml,
+        extractStyles: true,
+        showPointNames: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    const addLayerCallsBefore = mockMap.map.addLayer.mock.calls.length;
+    mockMap.map.moveLayer.mockClear();
+
+    mapLayers.value = [mapLayers.value[1], mapLayers.value[0]];
+    await mapLayerHook.trigger({ type: "move", id: "kml-b" });
+    await flushPromises();
+
+    expect(mockMap.map.addLayer).toHaveBeenCalledTimes(addLayerCallsBefore);
+    const movedKmlLayerIds = mockMap.map.moveLayer.mock.calls
+      .map(([id]: [string]) => id)
+      .filter((id: string) => id.startsWith("scenario-kml-layer-"));
+    expect(movedKmlLayerIds.length).toBeGreaterThan(0);
+    for (const call of mockMap.map.moveLayer.mock.calls) {
+      if (typeof call[0] === "string" && call[0].startsWith("scenario-kml-layer-")) {
+        expect(call[1]).toBe("unitLayer");
+      }
+    }
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const firstAIndex = orderedLayerIds.findIndex((id) => id.includes("kml-a"));
+    const firstBIndex = orderedLayerIds.findIndex((id) => id.includes("kml-b"));
+    // After reorder to [B, A] in panel order, A is iterated last and ends up
+    // closest to (just below) the unit layer, i.e. visually above B.
+    expect(firstBIndex).toBeLessThan(firstAIndex);
+    expect(firstAIndex).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
   });
 
   it("renders labels from a point-only label source for mixed KML geometries", async () => {

@@ -441,8 +441,38 @@ export function createMapLibreKmlLayerRenderer(
   }
 
   function refreshAll(layers: ScenarioKMLLayer[]) {
-    for (const layerId of [...activeLayers.keys()]) removeLayer(layerId);
-    layers.forEach((layer) => void addLayer(layer));
+    const desiredIds = new Set(layers.map((layer) => String(layer.id)));
+    for (const layerId of [...activeLayers.keys()]) {
+      if (!desiredIds.has(layerId)) removeLayer(layerId);
+    }
+    const beforeId = findFirstUnitLayerId(mlMap);
+    for (const layer of layers) {
+      const layerId = String(layer.id);
+      const existing = activeLayers.get(layerId);
+      const stillRendered =
+        existing &&
+        Boolean(safeGetLayer(getMapLibreKmlLayerId(layerId, KML_LAYER_SUFFIXES[0])));
+      if (!existing || !stillRendered || hasParseOptionsChanged(existing.layer, layer)) {
+        if (existing) removeLayer(layerId);
+        void addLayer(layer);
+        continue;
+      }
+      existing.layer = layer;
+      restackLayer(layerId, beforeId);
+    }
+  }
+
+  function restackLayer(layerId: string, beforeId: string | undefined) {
+    for (const suffix of KML_LAYER_SUFFIXES) {
+      const mlLayerId = getMapLibreKmlLayerId(layerId, suffix);
+      if (!safeGetLayer(mlLayerId)) continue;
+      try {
+        mlMap.moveLayer(mlLayerId, beforeId);
+      } catch {
+        // beforeId may have been removed mid-restack; layer order will be
+        // recomputed on the next refresh.
+      }
+    }
   }
 
   function destroy() {
@@ -490,6 +520,14 @@ export function createMapLibreKmlLayerRenderer(
       image.src = href;
     });
   }
+}
+
+function hasParseOptionsChanged(a: ScenarioKMLLayer, b: ScenarioKMLLayer): boolean {
+  return (
+    a.url !== b.url ||
+    (a.extractStyles ?? false) !== (b.extractStyles ?? false) ||
+    (a.showPointNames ?? true) !== (b.showPointNames ?? true)
+  );
 }
 
 function stringProp(value: unknown): string | undefined {
