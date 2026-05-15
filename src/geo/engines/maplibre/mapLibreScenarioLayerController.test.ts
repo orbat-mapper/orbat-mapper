@@ -115,7 +115,19 @@ function createMockMap() {
       sources.delete(id);
     }),
     getLayer: vi.fn((id: string) => layers.get(id)),
-    addLayer: vi.fn((layer: { id: string }) => {
+    getStyle: vi.fn(() => ({
+      layers: [...layers.values()],
+    })),
+    addLayer: vi.fn((layer: { id: string }, beforeId?: string) => {
+      if (beforeId !== undefined && layers.has(beforeId)) {
+        const entries = [...layers.entries()];
+        layers.clear();
+        for (const [id, value] of entries) {
+          if (id === beforeId) layers.set(layer.id, layer);
+          layers.set(id, value);
+        }
+        return;
+      }
       layers.set(layer.id, layer);
     }),
     removeLayer: vi.fn((id: string) => {
@@ -666,6 +678,49 @@ describe("createMapLibreScenarioLayerController", () => {
       { extent: [10, 20, 12, 22], _isNew: false },
       { noEmit: true, undoable: false },
     );
+  });
+
+  it("inserts KML layers below pre-existing unit layers so units stay topmost", async () => {
+    const mockMap = createMockMap();
+    // Simulate the unit layer registered by MlMapLogic before KML loads.
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    mockMap.map.addLayer({ id: "unitLayer-always" } as any);
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+        extractStyles: true,
+        showPointNames: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    const kmlAddCalls = mockMap.map.addLayer.mock.calls.filter(
+      ([spec]: [any]) =>
+        typeof spec?.id === "string" && spec.id.startsWith("scenario-kml-layer-"),
+    );
+    expect(kmlAddCalls.length).toBeGreaterThan(0);
+    for (const call of kmlAddCalls) {
+      expect(call[1]).toBe("unitLayer");
+    }
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const firstUnitIndex = orderedLayerIds.indexOf("unitLayer");
+    const firstKmlIndex = orderedLayerIds.findIndex((id) =>
+      id.startsWith("scenario-kml-layer-"),
+    );
+    expect(firstKmlIndex).toBeGreaterThanOrEqual(0);
+    expect(firstKmlIndex).toBeLessThan(firstUnitIndex);
   });
 
   it("renders labels from a point-only label source for mixed KML geometries", async () => {

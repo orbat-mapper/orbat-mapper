@@ -489,7 +489,7 @@ mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
 function queryInteractiveFeatures(point: PointLike) {
-  return mlMap
+  const hits = mlMap
     .queryRenderedFeatures(point)
     .filter(
       (feature) =>
@@ -498,6 +498,12 @@ function queryInteractiveFeatures(point: PointLike) {
         isMapLibreKmlRenderedLayerId(feature.layer.id) ||
         isManagedScenarioFeatureLayerId(feature.layer.id),
     );
+  // Units must take precedence over reference layers (KML) even when those
+  // layers happen to render above the unit symbols.
+  const unitHits = hits.filter((feature) => isUnitLayerId(feature.layer.id));
+  if (!unitHits.length || unitHits.length === hits.length) return hits;
+  const otherHits = hits.filter((feature) => !isUnitLayerId(feature.layer.id));
+  return [...unitHits, ...otherHits];
 }
 
 function updateHoveredScenarioFeatures(
