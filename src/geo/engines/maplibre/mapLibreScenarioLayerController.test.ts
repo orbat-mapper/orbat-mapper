@@ -674,6 +674,7 @@ describe("createMapLibreScenarioLayerController", () => {
         id: "scenario-kml-layer-kml-1-line",
         type: "line",
       }),
+      expect.anything(),
     );
     expect(mockMap.map.addLayer).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -682,6 +683,7 @@ describe("createMapLibreScenarioLayerController", () => {
         source: "scenario-kml-label-source-kml-1",
         minzoom: 0,
       }),
+      expect.anything(),
     );
     expect(scenario.geo.updateMapLayer).toHaveBeenCalledWith(
       "kml-1",
@@ -727,7 +729,13 @@ describe("createMapLibreScenarioLayerController", () => {
     );
     expect(kmlAddCalls.length).toBeGreaterThan(0);
     for (const call of kmlAddCalls) {
-      expect(call[1]).toBe("unitLayer");
+      const beforeId = call[1];
+      expect(typeof beforeId).toBe("string");
+      expect(
+        beforeId === "unitLayer" ||
+          beforeId.startsWith("unitLayer-") ||
+          beforeId.startsWith("scenario-feature"),
+      ).toBe(true);
     }
     const orderedLayerIds = [...mockMap.layers.keys()];
     const firstUnitIndex = orderedLayerIds.indexOf("unitLayer");
@@ -736,6 +744,41 @@ describe("createMapLibreScenarioLayerController", () => {
     );
     expect(firstKmlIndex).toBeGreaterThanOrEqual(0);
     expect(firstKmlIndex).toBeLessThan(firstUnitIndex);
+  });
+
+  it("inserts KML layers below scenario feature layers so features stay on top", async () => {
+    const mockMap = createMockMap();
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+        extractStyles: true,
+        showPointNames: true,
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const firstFeatureIndex = orderedLayerIds.findIndex((id) =>
+      id.startsWith("scenario-feature"),
+    );
+    const firstKmlIndex = orderedLayerIds.findIndex((id) =>
+      id.startsWith("scenario-kml-layer-"),
+    );
+    expect(firstFeatureIndex).toBeGreaterThanOrEqual(0);
+    expect(firstKmlIndex).toBeGreaterThanOrEqual(0);
+    expect(firstKmlIndex).toBeLessThan(firstFeatureIndex);
   });
 
   it("restacks already-loaded KML layers on reorder without re-fetching", async () => {
@@ -784,7 +827,13 @@ describe("createMapLibreScenarioLayerController", () => {
     expect(movedKmlLayerIds.length).toBeGreaterThan(0);
     for (const call of mockMap.map.moveLayer.mock.calls) {
       if (typeof call[0] === "string" && call[0].startsWith("scenario-kml-layer-")) {
-        expect(call[1]).toBe("unitLayer");
+        const beforeId = call[1];
+        expect(typeof beforeId).toBe("string");
+        expect(
+          beforeId === "unitLayer" ||
+            beforeId.startsWith("unitLayer-") ||
+            beforeId.startsWith("scenario-feature"),
+        ).toBe(true);
       }
     }
     const orderedLayerIds = [...mockMap.layers.keys()];
@@ -888,6 +937,7 @@ describe("createMapLibreScenarioLayerController", () => {
         type: "symbol",
         minzoom: 8,
       }),
+      expect.anything(),
     );
   });
 

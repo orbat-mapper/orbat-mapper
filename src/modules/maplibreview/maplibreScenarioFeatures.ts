@@ -42,7 +42,12 @@ import {
   type ObstacleHighlightState,
 } from "@/geo/routing/obstacleHighlight";
 
-export const GLOBE_SCENARIO_FEATURE_PREFIX = "scenario-feature";
+import {
+  SCENARIO_FEATURE_LAYER_PREFIX,
+  isScenarioFeatureMlLayerId,
+} from "@/geo/engines/maplibre/unitLayer";
+
+export const GLOBE_SCENARIO_FEATURE_PREFIX = SCENARIO_FEATURE_LAYER_PREFIX;
 
 type GeometryKind = "point" | "line" | "polygon";
 type MarkerRenderKind = "circle" | "icon";
@@ -1010,9 +1015,7 @@ export function buildScenarioFeatureRenderPlan(
   };
 }
 
-export function isManagedScenarioFeatureLayerId(layerId: string | undefined | null) {
-  return typeof layerId === "string" && layerId.startsWith(GLOBE_SCENARIO_FEATURE_PREFIX);
-}
+export const isManagedScenarioFeatureLayerId = isScenarioFeatureMlLayerId;
 
 export function getFeatureIdFromRenderedFeature(
   feature: MapGeoJSONFeature | { properties?: GeoJsonProperties } | undefined,

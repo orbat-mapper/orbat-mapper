@@ -9,7 +9,7 @@ import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
 import type { ScenarioKMLLayer } from "@/types/scenarioGeoModels";
 import type { ScenarioMapLayerUpdate } from "@/types/internalModels";
 import { loadKmlLayerData, type ParsedKmlLayerData } from "@/geo/kml";
-import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import { findFirstOverlayLayerId } from "@/geo/engines/maplibre/unitLayer";
 
 const KML_SOURCE_PREFIX = "scenario-kml-source-";
 const KML_LABEL_SOURCE_PREFIX = "scenario-kml-label-source-";
@@ -361,7 +361,7 @@ export function createMapLibreKmlLayerRenderer(
       },
     ];
 
-    const beforeId = findFirstUnitLayerId(mlMap);
+    const beforeId = findFirstOverlayLayerId(mlMap);
     for (const spec of layers) {
       if (safeGetLayer(spec.id)) continue;
       if (beforeId) {
@@ -445,7 +445,7 @@ export function createMapLibreKmlLayerRenderer(
     for (const layerId of [...activeLayers.keys()]) {
       if (!desiredIds.has(layerId)) removeLayer(layerId);
     }
-    const beforeId = findFirstUnitLayerId(mlMap);
+    const beforeId = findFirstOverlayLayerId(mlMap);
     for (const layer of layers) {
       const layerId = String(layer.id);
       const existing = activeLayers.get(layerId);
