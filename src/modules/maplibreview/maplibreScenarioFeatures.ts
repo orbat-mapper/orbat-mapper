@@ -1165,6 +1165,10 @@ export class MapLibreScenarioFeatureManager {
     this.imageDefinitions.clear();
   }
 
+  getLayerIds(layerId: string) {
+    return this.plans.get(layerId)?.layerDefinitions.map(({ id }) => id) ?? [];
+  }
+
   private getLayerSafe(layerId: string) {
     try {
       return this.mlMap.getLayer(layerId);

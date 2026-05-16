@@ -40,6 +40,12 @@ import {
 } from "@/types/scenarioLayerItems";
 import { fixExtent } from "@/utils/geoConvert";
 import { createMapLibreKmlLayerRenderer } from "@/geo/kml/maplibre";
+import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import {
+  isScenarioOverlayLayer,
+  isScenarioReferenceLayer,
+} from "@/types/scenarioStackLayers";
+import { RANGE_RING_FILL_LAYER_ID } from "@/composables/maplibreRangeRings";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -262,6 +268,7 @@ export function createMapLibreScenarioLayerController(
   const kmlLayerRenderer = createMapLibreKmlLayerRenderer(mlMap, {
     onStatus: updateMapLayerStatus,
     onExtent: updateKmlLayerExtent,
+    onRendered: () => reorderScenarioStackLayers(),
   });
 
   function emitLayerEvent(event: ScenarioLayerControllerEvent) {
@@ -338,9 +345,10 @@ export function createMapLibreScenarioLayerController(
       doClearCache: options.doClearCache ?? false,
       filterVisible: currentFilterVisible,
     });
+    reorderScenarioStackLayers();
   }
 
-  function refreshAfterFeatureUpdate(_featureId: FeatureId) {
+  function refreshAfterFeatureUpdate() {
     refreshScenarioFeatureLayers({ doClearCache: false });
   }
 
@@ -582,6 +590,55 @@ export function createMapLibreScenarioLayerController(
     void kmlLayerRenderer.addLayer(layer);
   }
 
+  function getRenderedStackLayerIds(layerId: FeatureId) {
+    const scenario = activeScenario;
+    if (!scenario) return [];
+    const stackLayer = scenario.geo.stackLayers?.value?.find(
+      (layer: { id?: FeatureId }) => layer.id === layerId,
+    );
+    if (!stackLayer) return [];
+    if (isScenarioOverlayLayer(stackLayer)) {
+      return featureManager?.getLayerIds(String(layerId)) ?? [];
+    }
+    if (!isScenarioReferenceLayer(stackLayer)) return [];
+    const mapLayer = scenario.geo.getMapLayerById(layerId);
+    if (isImageLayer(mapLayer)) return [getImageLayerId(layerId)];
+    if (isRasterTileLayer(mapLayer)) return [getRasterLayerId(layerId)];
+    if (isKmlLayer(mapLayer)) return kmlLayerRenderer.getLayerIds(String(layerId));
+    return [];
+  }
+
+  function moveLayerBefore(layerId: string, beforeId: string | undefined) {
+    if (!safeGetLayer(layerId)) return;
+    try {
+      mlMap.moveLayer(layerId, beforeId);
+    } catch {
+      // Layers can disappear during style reloads; a later refresh will re-place them.
+    }
+  }
+
+  function getScenarioStackAnchorLayerId() {
+    if (safeGetLayer(RANGE_RING_FILL_LAYER_ID)) return RANGE_RING_FILL_LAYER_ID;
+    return findFirstUnitLayerId(mlMap);
+  }
+
+  function reorderScenarioStackLayers() {
+    const scenario = activeScenario;
+    if (!scenario) return;
+    const orderedBlocks = scenario.geo.stackLayers.value
+      .map((layer: { id: FeatureId }) =>
+        getRenderedStackLayerIds(layer.id).filter((layerId) => safeGetLayer(layerId)),
+      )
+      .filter((ids) => ids.length > 0);
+    let beforeId = getScenarioStackAnchorLayerId();
+    for (const block of [...orderedBlocks].reverse()) {
+      for (const layerId of [...block].reverse()) {
+        moveLayerBefore(layerId, beforeId);
+        beforeId = layerId;
+      }
+    }
+  }
+
   function refreshMapLayers() {
     for (const layerId of [...activeImageLayerIds]) {
       removeImageLayer(layerId);
@@ -598,6 +655,7 @@ export function createMapLibreScenarioLayerController(
       if (isKmlLayer(mapLayer)) kmlLayers.push(mapLayer);
     }
     kmlLayerRenderer.refreshAll(kmlLayers);
+    reorderScenarioStackLayers();
   }
 
   function updateImageLayer(layerId: FeatureId, data: ScenarioMapLayerUpdate) {
@@ -684,6 +742,7 @@ export function createMapLibreScenarioLayerController(
         addImageLayer(layerId);
         addRasterTileLayer(layerId);
         addKmlLayer(layerId);
+        reorderScenarioStackLayers();
       }
       return;
     }
@@ -692,6 +751,7 @@ export function createMapLibreScenarioLayerController(
         addImageLayer(layerId);
         addRasterTileLayer(layerId);
         addKmlLayer(layerId);
+        reorderScenarioStackLayers();
       } else {
         if (activeTransform?.layerId === layerId) endMapLayerTransform();
         removeImageLayer(layerId);
@@ -711,6 +771,7 @@ export function createMapLibreScenarioLayerController(
       } else if (isKmlLayer(layer)) {
         updateKmlLayer(layerId, layer);
       }
+      reorderScenarioStackLayers();
       return;
     }
     if (label === "moveMapLayer") {
@@ -1014,6 +1075,7 @@ export function createMapLibreScenarioLayerController(
         addImageLayer(event.id);
         addRasterTileLayer(event.id);
         addKmlLayer(event.id);
+        reorderScenarioStackLayers();
       } else if (event.type === "remove") {
         if (activeTransform?.layerId === event.id) {
           endMapLayerTransform();
@@ -1021,10 +1083,12 @@ export function createMapLibreScenarioLayerController(
         removeImageLayer(event.id);
         removeRasterTileLayer(event.id);
         kmlLayerRenderer.removeLayer(String(event.id));
+        reorderScenarioStackLayers();
       } else if (event.type === "update") {
         updateImageLayer(event.id, event.data);
         updateRasterTileLayer(event.id, event.data);
         updateKmlLayer(event.id, event.data);
+        reorderScenarioStackLayers();
         emitLayerEvent({
           type: "map-layer-updated",
           layerId: event.id,
@@ -1050,7 +1114,7 @@ export function createMapLibreScenarioLayerController(
         case "updateFeature":
         case "deleteFeature":
         case "addFeature":
-          refreshAfterFeatureUpdate(event.id);
+          refreshAfterFeatureUpdate();
           break;
       }
     });
