@@ -35,6 +35,7 @@ type KmlLayerSuffix = (typeof KML_LAYER_SUFFIXES)[number];
 type RendererCallbacks = {
   onStatus?: (layerId: string, status: NonNullable<ScenarioKMLLayer["_status"]>) => void;
   onExtent?: (layerId: string, extent: [number, number, number, number]) => void;
+  onRendered?: (layerId: string) => void;
 };
 
 type ActiveKmlLayer = {
@@ -208,6 +209,7 @@ export function createMapLibreKmlLayerRenderer(
     });
     await registerIcons(layerId, data);
     addStyleLayers(layer, data);
+    callbacks.onRendered?.(layerId);
   }
 
   function removeMapLibreLayerObjects(layerId: string) {

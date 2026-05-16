@@ -5,6 +5,11 @@ import { createPinia, setActivePinia } from "pinia";
 import { toWgs84 } from "@turf/turf";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { toReferenceFeatureSelection } from "@/geo/kml/maplibre";
+import { hashObject } from "@/utils";
+import {
+  RANGE_RING_FILL_LAYER_ID,
+  RANGE_RING_LINE_LAYER_ID,
+} from "@/composables/maplibreRangeRings";
 
 const testKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -41,6 +46,22 @@ const iconKml = `<?xml version="1.0" encoding="UTF-8"?>
   </Document>
 </kml>`;
 
+function createIconKml(href: string) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Style id="iconStyle">
+      <IconStyle><Icon><href>${href}</href></Icon></IconStyle>
+    </Style>
+    <Placemark id="kml-icon-feature">
+      <name>KML icon</name>
+      <styleUrl>#iconStyle</styleUrl>
+      <Point><coordinates>10,20,0</coordinates></Point>
+    </Placemark>
+  </Document>
+</kml>`;
+}
+
 const mixedGeometryKml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -60,6 +81,16 @@ function flushPromises() {
   return new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
 function createPointLabelKml(count: number) {
   const placemarks = Array.from(
     { length: count },
@@ -73,6 +104,20 @@ function createPointLabelKml(count: number) {
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>${placemarks}</Document>
 </kml>`;
+}
+
+function mapLibreFeatureSourceId(layerId: string) {
+  return `scenario-feature-${hashObject({ layerId })}`;
+}
+
+function firstLayerIndexForSource(
+  layerIds: string[],
+  layers: Map<string, unknown>,
+  sourceId: string,
+) {
+  return layerIds.findIndex(
+    (id) => (layers.get(id) as { source?: unknown } | undefined)?.source === sourceId,
+  );
 }
 
 function createMockMap() {
@@ -133,6 +178,21 @@ function createMockMap() {
     removeLayer: vi.fn((id: string) => {
       layers.delete(id);
     }),
+    moveLayer: vi.fn((id: string, beforeId?: string) => {
+      const layer = layers.get(id);
+      if (!layer) return;
+      layers.delete(id);
+      if (beforeId !== undefined && layers.has(beforeId)) {
+        const entries = [...layers.entries()];
+        layers.clear();
+        for (const [entryId, value] of entries) {
+          if (entryId === beforeId) layers.set(id, layer);
+          layers.set(entryId, value);
+        }
+        return;
+      }
+      layers.set(id, layer);
+    }),
     hasImage: vi.fn(() => false),
     loadImage: vi.fn(),
     addImage: vi.fn(),
@@ -176,6 +236,19 @@ function createScenario() {
   const undoRedoHook = createEventHook<any>();
   const mapLayers = {
     value: [] as any[],
+  };
+  const stackLayers = {
+    get value() {
+      return [
+        ...layerItemsLayers.value,
+        ...mapLayers.value.map((layer) => ({
+          id: layer.id,
+          kind: "reference",
+          name: layer.name,
+          source: layer,
+        })),
+      ];
+    },
   };
   const layerItemsLayers = {
     value: [
@@ -229,6 +302,7 @@ function createScenario() {
           mapLayers.value.find((layer: any) => layer.id === layerId),
         ),
         mapLayers,
+        stackLayers,
         updateMapLayer: vi.fn(),
       },
       store: {
@@ -237,6 +311,7 @@ function createScenario() {
     } as any,
     layerItemsLayers,
     mapLayers,
+    stackLayers,
     mapLayerHook,
     featureLayerHook,
     undoRedoHook,
@@ -423,6 +498,72 @@ describe("createMapLibreScenarioLayerController", () => {
     );
   });
 
+  it("keeps image and raster map layers below unit layers", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, mapLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "image-1",
+        type: "ImageLayer",
+        name: "Overlay",
+        url: "/overlay.png",
+        extent: [10, 20, 12, 22],
+      },
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    expect(orderedLayerIds.indexOf("scenario-image-layer-image-1")).toBeLessThan(
+      orderedLayerIds.indexOf("unitLayer"),
+    );
+    expect(orderedLayerIds.indexOf("scenario-raster-layer-xyz-1")).toBeLessThan(
+      orderedLayerIds.indexOf("unitLayer"),
+    );
+  });
+
+  it("keeps scenario stack layers below range ring layers", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: RANGE_RING_FILL_LAYER_ID } as any);
+    mockMap.map.addLayer({ id: RANGE_RING_LINE_LAYER_ID } as any);
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario } = createScenario();
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const featureIndex = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-1"),
+    );
+    expect(featureIndex).toBeGreaterThanOrEqual(0);
+    expect(featureIndex).toBeLessThan(orderedLayerIds.indexOf(RANGE_RING_FILL_LAYER_ID));
+    expect(featureIndex).toBeLessThan(orderedLayerIds.indexOf(RANGE_RING_LINE_LAYER_ID));
+    expect(orderedLayerIds.indexOf(RANGE_RING_LINE_LAYER_ID)).toBeLessThan(
+      orderedLayerIds.indexOf("unitLayer"),
+    );
+  });
+
   it("updates ImageLayer visibility and opacity without rebuilding the source", async () => {
     const mockMap = createMockMap();
     const { scenario, mapLayers, mapLayerHook } = createScenario();
@@ -542,6 +683,139 @@ describe("createMapLibreScenarioLayerController", () => {
     );
   });
 
+  it("preserves mixed stack order for feature and raster blocks", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, layerItemsLayers, mapLayers, stackLayers } = createScenario();
+    const layer2 = {
+      ...layerItemsLayers.value[0],
+      id: "layer-2",
+      name: "Layer 2",
+      items: [
+        {
+          ...layerItemsLayers.value[0].items[0],
+          id: "feature-2",
+          _pid: "layer-2",
+        },
+      ],
+    };
+    layerItemsLayers.value = [layerItemsLayers.value[0], layer2];
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      value: [
+        layerItemsLayers.value[0],
+        {
+          id: "xyz-1",
+          kind: "reference",
+          name: "Tiles",
+          source: mapLayers.value[0],
+        },
+        layer2,
+      ],
+    });
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const layer1Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-1"),
+    );
+    const rasterIndex = orderedLayerIds.indexOf("scenario-raster-layer-xyz-1");
+    const layer2Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-2"),
+    );
+    expect(layer1Index).toBeGreaterThanOrEqual(0);
+    expect(layer2Index).toBeGreaterThanOrEqual(0);
+    expect(layer1Index).toBeLessThan(rasterIndex);
+    expect(rasterIndex).toBeLessThan(layer2Index);
+    expect(layer2Index).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
+  });
+
+  it("reorders rendered blocks when a reference layer is moved", async () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, layerItemsLayers, mapLayers, stackLayers, mapLayerHook } =
+      createScenario();
+    const layer2 = {
+      ...layerItemsLayers.value[0],
+      id: "layer-2",
+      name: "Layer 2",
+      items: [
+        {
+          ...layerItemsLayers.value[0].items[0],
+          id: "feature-2",
+          _pid: "layer-2",
+        },
+      ],
+    };
+    layerItemsLayers.value = [layerItemsLayers.value[0], layer2];
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    let stackOrder = [
+      layerItemsLayers.value[0],
+      layer2,
+      {
+        id: "xyz-1",
+        kind: "reference",
+        name: "Tiles",
+        source: mapLayers.value[0],
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      get: () => stackOrder,
+    });
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+
+    stackOrder = [layerItemsLayers.value[0], stackOrder[2], layer2];
+    await mapLayerHook.trigger({ type: "move", id: "xyz-1", index: 1 });
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const layer1Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-1"),
+    );
+    const rasterIndex = orderedLayerIds.indexOf("scenario-raster-layer-xyz-1");
+    const layer2Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-2"),
+    );
+    expect(layer1Index).toBeLessThan(rasterIndex);
+    expect(rasterIndex).toBeLessThan(layer2Index);
+  });
+
   it("updates XYZLayer visibility and opacity without rebuilding the source", async () => {
     const mockMap = createMockMap();
     const { scenario, mapLayers, mapLayerHook } = createScenario();
@@ -608,6 +882,73 @@ describe("createMapLibreScenarioLayerController", () => {
       "scenario-raster-source-xyz-1",
       expect.objectContaining({ type: "raster" }),
     );
+  });
+
+  it("restores mixed stack order after a MapLibre style reload", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, layerItemsLayers, mapLayers, stackLayers } = createScenario();
+    const layer2 = {
+      ...layerItemsLayers.value[0],
+      id: "layer-2",
+      name: "Layer 2",
+      items: [
+        {
+          ...layerItemsLayers.value[0].items[0],
+          id: "feature-2",
+          _pid: "layer-2",
+        },
+      ],
+    };
+    layerItemsLayers.value = [layerItemsLayers.value[0], layer2];
+    mapLayers.value = [
+      {
+        id: "xyz-1",
+        type: "XYZLayer",
+        name: "Tiles",
+        url: "https://example.test/{z}/{x}/{y}.png",
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      value: [
+        layerItemsLayers.value[0],
+        {
+          id: "xyz-1",
+          kind: "reference",
+          name: "Tiles",
+          source: mapLayers.value[0],
+        },
+        layer2,
+      ],
+    });
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    mockMap.clearStyle();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+
+    mockMap.emit("style.load");
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const layer1Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-1"),
+    );
+    const rasterIndex = orderedLayerIds.indexOf("scenario-raster-layer-xyz-1");
+    const layer2Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-2"),
+    );
+    expect(layer1Index).toBeLessThan(rasterIndex);
+    expect(rasterIndex).toBeLessThan(layer2Index);
+    expect(layer2Index).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
   });
 
   it("renders scenario KMLLayers as MapLibre GeoJSON reference layers", async () => {
@@ -721,6 +1062,138 @@ describe("createMapLibreScenarioLayerController", () => {
     );
     expect(firstKmlIndex).toBeGreaterThanOrEqual(0);
     expect(firstKmlIndex).toBeLessThan(firstUnitIndex);
+  });
+
+  it("preserves mixed stack order when KML finishes loading asynchronously", async () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, layerItemsLayers, mapLayers, stackLayers } = createScenario();
+    const layer2 = {
+      ...layerItemsLayers.value[0],
+      id: "layer-2",
+      name: "Layer 2",
+      items: [
+        {
+          ...layerItemsLayers.value[0].items[0],
+          id: "feature-2",
+          _pid: "layer-2",
+        },
+      ],
+    };
+    layerItemsLayers.value = [layerItemsLayers.value[0], layer2];
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "Reference KML",
+        url: testKml,
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      value: [
+        layerItemsLayers.value[0],
+        {
+          id: "kml-1",
+          kind: "reference",
+          name: "Reference KML",
+          source: mapLayers.value[0],
+        },
+        layer2,
+      ],
+    });
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const layer1Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-1"),
+    );
+    const kmlIndex = orderedLayerIds.indexOf("scenario-kml-layer-kml-1-polygon-fill");
+    const layer2Index = firstLayerIndexForSource(
+      orderedLayerIds,
+      mockMap.layers,
+      mapLibreFeatureSourceId("layer-2"),
+    );
+    expect(layer1Index).toBeGreaterThanOrEqual(0);
+    expect(kmlIndex).toBeGreaterThanOrEqual(0);
+    expect(layer2Index).toBeGreaterThanOrEqual(0);
+    expect(layer1Index).toBeLessThan(kmlIndex);
+    expect(kmlIndex).toBeLessThan(layer2Index);
+    expect(layer2Index).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
+  });
+
+  it("orders KML layers by scenario stack when they finish loading in reverse order", async () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const firstIcon = deferred<any>();
+    const secondIcon = deferred<any>();
+    const imageData = {
+      width: 2,
+      height: 2,
+      data: new Uint8ClampedArray(16),
+    };
+    mockMap.map.loadImage.mockImplementation((href: string) => {
+      if (href === "icons/first.png") return firstIcon.promise;
+      if (href === "icons/second.png") return secondIcon.promise;
+      return Promise.resolve({ data: imageData });
+    });
+    const { scenario, mapLayers, stackLayers } = createScenario();
+    mapLayers.value = [
+      {
+        id: "kml-1",
+        type: "KMLLayer",
+        name: "First KML",
+        url: createIconKml("icons/first.png"),
+        extractStyles: true,
+      },
+      {
+        id: "kml-2",
+        type: "KMLLayer",
+        name: "Second KML",
+        url: createIconKml("icons/second.png"),
+        extractStyles: true,
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      value: mapLayers.value.map((layer) => ({
+        id: layer.id,
+        kind: "reference",
+        name: layer.name,
+        source: layer,
+      })),
+    });
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+
+    controller.bindScenario(scenario);
+    await flushPromises();
+    secondIcon.resolve({ data: imageData });
+    await flushPromises();
+    firstIcon.resolve({ data: imageData });
+    await flushPromises();
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    const kml1Index = orderedLayerIds.indexOf("scenario-kml-layer-kml-1-polygon-fill");
+    const kml2Index = orderedLayerIds.indexOf("scenario-kml-layer-kml-2-polygon-fill");
+    expect(kml1Index).toBeGreaterThanOrEqual(0);
+    expect(kml2Index).toBeGreaterThanOrEqual(0);
+    expect(kml1Index).toBeLessThan(kml2Index);
+    expect(kml2Index).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
   });
 
   it("renders labels from a point-only label source for mixed KML geometries", async () => {

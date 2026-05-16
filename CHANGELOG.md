@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - Fixed MapLibre scenario feature rendering for null polygon fills and zero-opacity fills.
 - Added MapLibre support for custom unit symbols, including clearer selected-state highlighting.
 - Fixed MapLibre unit labels so they shift correctly for scaled ordinary and custom icons, including hostile diamond frames.
+- Fixed MapLibre scenario layer ordering so feature, raster, image, and KML reference layers stay below unit and range ring layers and respect the scenario stack order.
 
 ## April 2026
 

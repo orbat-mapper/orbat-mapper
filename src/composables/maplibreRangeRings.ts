@@ -10,8 +10,8 @@ import type { NUnit } from "@/types/internalModels";
 import { convertToMetric } from "@/utils/convert";
 
 const RANGE_RING_SOURCE_ID = "rangeRingSource";
-const RANGE_RING_FILL_LAYER_ID = "rangeRingFillLayer";
-const RANGE_RING_LINE_LAYER_ID = "rangeRingLineLayer";
+export const RANGE_RING_FILL_LAYER_ID = "rangeRingFillLayer";
+export const RANGE_RING_LINE_LAYER_ID = "rangeRingLineLayer";
 
 const DEFAULT_STROKE = "#f43f5e";
 
