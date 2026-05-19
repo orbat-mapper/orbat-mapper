@@ -5,6 +5,22 @@ import { describe, expect, it, vi } from "vitest";
 import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 
+function expectLineEndpoints(coords: any[], start: number[], end: number[]) {
+  expect(coords[0]).toEqual(start);
+  expect(coords[coords.length - 1]).toEqual(end);
+}
+
+function expectLineThroughVertices(coords: any[], vertices: number[][]) {
+  for (const vertex of vertices) {
+    expect(
+      coords.some(
+        (c: number[]) =>
+          Math.abs(c[0]! - vertex[0]!) < 1e-9 && Math.abs(c[1]! - vertex[1]!) < 1e-9,
+      ),
+    ).toBe(true);
+  }
+}
+
 function createEvent(lng: number, lat: number, options: { timeStamp?: number } = {}) {
   return {
     lngLat: { lng, lat },
@@ -164,18 +180,11 @@ describe("useMapLibreMeasurementInteraction", () => {
     ).toBe(true);
 
     harness.trigger("dblclick", createEvent(0, 1));
-    expect(harness.sourceData("maplibre-measurement").features).toEqual([
-      expect.objectContaining({
-        id: "measurement-1",
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [0, 0],
-            [0, 1],
-          ],
-        },
-      }),
-    ]);
+    let features = harness.sourceData("maplibre-measurement").features;
+    expect(features).toHaveLength(1);
+    expect(features[0].id).toBe("measurement-1");
+    expect(features[0].geometry.type).toBe("LineString");
+    expectLineEndpoints(features[0].geometry.coordinates, [0, 0], [0, 1]);
     expect(
       harness.sourceData("maplibre-measurement-labels").features[0].properties.text,
     ).toMatch(/km$/);
@@ -183,18 +192,11 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("click", createEvent(1, 1));
     harness.trigger("click", createEvent(1, 2));
     harness.trigger("dblclick", createEvent(1, 2));
-    expect(harness.sourceData("maplibre-measurement").features).toEqual([
-      expect.objectContaining({
-        id: "measurement-2",
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [1, 1],
-            [1, 2],
-          ],
-        },
-      }),
-    ]);
+    features = harness.sourceData("maplibre-measurement").features;
+    expect(features).toHaveLength(1);
+    expect(features[0].id).toBe("measurement-2");
+    expect(features[0].geometry.type).toBe("LineString");
+    expectLineEndpoints(features[0].geometry.coordinates, [1, 1], [1, 2]);
   });
 
   it("keeps the range circle visible when touch events do not provide a live pointer", () => {
@@ -219,17 +221,9 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("click", createEvent(0, 1));
     harness.trigger("dblclick", createEvent(0, 1));
 
-    expect(harness.sourceData("maplibre-measurement").features[0]).toEqual(
-      expect.objectContaining({
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [0, 0],
-            [0, 1],
-          ],
-        },
-      }),
-    );
+    const feature = harness.sourceData("maplibre-measurement").features[0];
+    expect(feature.geometry.type).toBe("LineString");
+    expectLineEndpoints(feature.geometry.coordinates, [0, 0], [0, 1]);
     expect(
       harness
         .sourceData("maplibre-measurement-labels")
@@ -247,18 +241,11 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("click", createEvent(0, 1));
     harness.trigger("touchend", createEvent(0, 1, { timeStamp: 1200 }));
 
-    expect(harness.sourceData("maplibre-measurement").features).toEqual([
-      expect.objectContaining({
-        id: "measurement-1",
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [0, 0],
-            [0, 1],
-          ],
-        },
-      }),
-    ]);
+    const features = harness.sourceData("maplibre-measurement").features;
+    expect(features).toHaveLength(1);
+    expect(features[0].id).toBe("measurement-1");
+    expect(features[0].geometry.type).toBe("LineString");
+    expectLineEndpoints(features[0].geometry.coordinates, [0, 0], [0, 1]);
   });
 
   it("preserves multiple measurements when clearPrevious is false", () => {
@@ -281,21 +268,16 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("click", createEvent(1, 0));
     harness.trigger("click", createEvent(1, 1));
     harness.trigger("dblclick", createEvent(1, 1));
-    expect(harness.sourceData("maplibre-measurement").features[0]).toEqual(
-      expect.objectContaining({
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              [0, 0],
-              [1, 0],
-              [1, 1],
-              [0, 0],
-            ],
-          ],
-        },
-      }),
-    );
+    const feature = harness.sourceData("maplibre-measurement").features[0];
+    expect(feature.geometry.type).toBe("Polygon");
+    const ring = feature.geometry.coordinates[0];
+    expect(ring[0]).toEqual([0, 0]);
+    expect(ring[ring.length - 1]).toEqual([0, 0]);
+    expectLineThroughVertices(ring, [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+    ]);
     expect(
       harness
         .sourceData("maplibre-measurement-labels")
@@ -346,9 +328,10 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("dblclick", createEvent(10, 0));
     harness.trigger("mousedown", createEvent(5, 0));
     harness.trigger("mousemove", createEvent(5, 5));
-    expect(
-      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates,
-    ).toEqual([
+    let coords =
+      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+    expectLineEndpoints(coords, [0, 0], [10, 0]);
+    expectLineThroughVertices(coords, [
       [0, 0],
       [5, 5],
       [10, 0],
@@ -357,9 +340,9 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("mousemove", createEvent(7, 7));
     harness.trigger("mouseup", createEvent(5, 5));
 
-    expect(
-      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates,
-    ).toEqual([
+    coords = harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+    expectLineEndpoints(coords, [0, 0], [10, 0]);
+    expectLineThroughVertices(coords, [
       [0, 0],
       [7, 7],
       [10, 0],
@@ -389,12 +372,9 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("touchmove", createEvent(10, 5));
     harness.trigger("touchend", createEvent(10, 5));
 
-    expect(
-      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates,
-    ).toEqual([
-      [0, 0],
-      [10, 5],
-    ]);
+    const coords =
+      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+    expectLineEndpoints(coords, [0, 0], [10, 5]);
   });
 
   it("uses distinct styling for measurement midpoint handles", () => {
@@ -441,16 +421,15 @@ describe("useMapLibreMeasurementInteraction", () => {
     harness.trigger("mousemove", createEvent(5, 5));
     harness.trigger("mouseup", createEvent(5, 5));
 
-    expect(
-      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates,
-    ).toEqual([
-      [
-        [0, 0],
-        [5, 5],
-        [10, 0],
-        [10, 10],
-        [0, 0],
-      ],
+    const ring =
+      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates[0];
+    expect(ring[0]).toEqual([0, 0]);
+    expect(ring[ring.length - 1]).toEqual([0, 0]);
+    expectLineThroughVertices(ring, [
+      [0, 0],
+      [5, 5],
+      [10, 0],
+      [10, 10],
     ]);
   });
 
@@ -508,6 +487,115 @@ describe("useMapLibreMeasurementInteraction", () => {
     expect(
       harness.sourceData("maplibre-measurement").features[0].geometry.coordinates[0],
     ).toEqual([40, 0]);
+  });
+
+  describe("great-circle densification", () => {
+    it("leaves short segments un-densified", () => {
+      const harness = createHarness();
+      // ~22 km at the equator — well under the 100 km threshold.
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(0.2, 0));
+      harness.trigger("dblclick", createEvent(0.2, 0));
+
+      const coords =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+      // Below the densification threshold: exactly the two raw vertices.
+      expect(coords).toHaveLength(2);
+      expect(coords[0]).toEqual([0, 0]);
+      expect(coords[1][0]).toBeCloseTo(0.2, 10);
+      expect(coords[1][1]).toEqual(0);
+    });
+
+    it("densifies long segments and keeps a monotonic arc", () => {
+      const harness = createHarness();
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(60, 30));
+      harness.trigger("dblclick", createEvent(60, 30));
+
+      const coords =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+      expect(coords.length).toBeGreaterThan(8);
+      expectLineEndpoints(coords, [0, 0], [60, 30]);
+      for (let i = 1; i < coords.length; i++) {
+        expect(coords[i][0]).toBeGreaterThanOrEqual(coords[i - 1][0]);
+      }
+      // Great-circle from equator to (60, 30) bows north of the chord midpoint.
+      const midLat = coords[Math.floor(coords.length / 2)][1];
+      expect(midLat).toBeGreaterThan(15);
+    });
+
+    it("densifies in the unwrapped frame across the antimeridian", () => {
+      const harness = createHarness();
+      harness.trigger("click", createEvent(170, 0));
+      // Crossing the antimeridian eastward; unwrapped second vertex is lng 200.
+      harness.trigger("click", createEvent(-160, 0));
+      harness.trigger("dblclick", createEvent(-160, 0));
+
+      const coords =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+      // The crossing segment must actually densify, not fall back to a chord.
+      expect(coords.length).toBeGreaterThan(8);
+      expect(coords[0]).toEqual([170, 0]);
+      expect(coords[coords.length - 1][0]).toBeCloseTo(200, 6);
+      // Longitudes are monotonically non-decreasing in the unwrapped frame
+      // (a duplicate at the antimeridian seam is allowed; reverses are not).
+      for (let i = 1; i < coords.length; i++) {
+        expect(coords[i][0]).toBeGreaterThanOrEqual(coords[i - 1][0]);
+        expect(Math.abs(coords[i][0] - coords[i - 1][0])).toBeLessThan(180);
+      }
+    });
+
+    it("places the segment label at the great-circle midpoint, not the chord midpoint", () => {
+      const harness = createHarness({ clearPrevious: false });
+      // Three-vertex line so segment labels are emitted (lineCoordinates.length > 2).
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(60, 30));
+      harness.trigger("click", createEvent(120, 0));
+      harness.trigger("dblclick", createEvent(120, 0));
+
+      const segmentLabels = harness
+        .sourceData("maplibre-measurement-labels")
+        .features.filter((f: any) => f.properties.kind === "segment");
+      expect(segmentLabels.length).toBeGreaterThan(0);
+      const firstLabel = segmentLabels[0];
+      // Chord midpoint of (0,0)→(60,30) is (30, 15); great-circle midpoint
+      // bows north of that. Lng also shifts due to the spherical interpolation.
+      expect(firstLabel.geometry.coordinates[1]).toBeGreaterThan(15);
+      expect(firstLabel.geometry.coordinates[1]).toBeLessThan(30);
+    });
+
+    it("places midpoint edit handles on the great-circle arc", () => {
+      const harness = createHarness();
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(60, 30));
+      harness.trigger("dblclick", createEvent(60, 30));
+
+      const handles = harness.sourceData("maplibre-measurement-handles").features;
+      const midpointHandle = handles.find((f: any) => f.properties.kind === "midpoint");
+      expect(midpointHandle).toBeDefined();
+      // Chord midpoint is (30, 15); the great-circle midpoint bows north.
+      expect(midpointHandle.geometry.coordinates[1]).toBeGreaterThan(15);
+    });
+
+    it("densifies polygon ring edges", () => {
+      const harness = createHarness({ measurementType: "Polygon" });
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(60, 0));
+      harness.trigger("click", createEvent(60, 30));
+      harness.trigger("dblclick", createEvent(60, 30));
+
+      const ring =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates[0];
+      // Each long edge densifies to >8 points; the ring far exceeds the 4-vertex raw count.
+      expect(ring.length).toBeGreaterThan(20);
+      expect(ring[0]).toEqual([0, 0]);
+      expect(ring[ring.length - 1]).toEqual([0, 0]);
+      expectLineThroughVertices(ring, [
+        [0, 0],
+        [60, 0],
+        [60, 30],
+      ]);
+    });
   });
 
   it("cleans up layers, sources, and event handlers on unmount", () => {
