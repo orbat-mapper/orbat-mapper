@@ -18,6 +18,7 @@ import { featureCollection, lineString, point, polygon } from "@turf/helpers";
 import turfLength from "@turf/length";
 import turfArea from "@turf/area";
 import turfCircle from "@turf/circle";
+import turfDestination from "@turf/destination";
 import centerOfMass from "@turf/center-of-mass";
 import { onKeyStroke, tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, toValue, unref, watch, type MaybeRef, type MaybeRefOrGetter } from "vue";
@@ -28,7 +29,7 @@ import {
   type MeasurementUnit,
 } from "@/composables/geoMeasurement";
 import { formatArea, formatLength } from "@/geo/utils";
-import { unwrapPositionRelative } from "@/geo/longitude";
+import { unwindCoordinates, unwrapPositionRelative } from "@/geo/longitude";
 import { sampleGeodesicCoordinates } from "@/geo/routing/geodesicSegments";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
@@ -328,7 +329,7 @@ export function useMapLibreMeasurementInteraction(
     return null;
   }
 
-  function getRangeCircleGeometry(): Polygon | null {
+  function getRangeCircleGeometry(): Polygon | LineString | null {
     if (
       !drawInProgress ||
       unref(measurementTypeRef) !== "LineString" ||
@@ -343,10 +344,7 @@ export function useMapLibreMeasurementInteraction(
       units: "kilometers",
     });
     if (radius === 0) return null;
-    return turfCircle(endpoints.center, radius, {
-      steps: 128,
-      units: "kilometers",
-    }).geometry;
+    return geodesicCircleGeometry(endpoints.center, radius, 128);
   }
 
   function getRangeCircleEndpoints(): { center: Position; edge: Position } | null {
@@ -798,6 +796,31 @@ function greatCircleMidpoint(a: Position, b: Position): Position {
   const arc = sampleGeodesicCoordinates(a, b);
   if (arc.length <= 2) return midpoint(a, b);
   return arc[Math.floor(arc.length / 2)]!;
+}
+
+// A pole-enclosing closed polygon can't be represented as a single GeoJSON
+// ring of [-180, 180] vertices — turf/circle produces a self-tangled loop that
+// excludes the pole. For that case we drop the fill and emit just an unwrapped
+// LineString outline, which renders correctly along the geodesic.
+const EARTH_RADIUS_KM_PER_DEGREE = (Math.PI / 180) * 6371;
+
+export function geodesicCircleGeometry(
+  center: Position,
+  radiusKm: number,
+  steps: number,
+): Polygon | LineString {
+  const distToNorthKm = (90 - center[1]) * EARTH_RADIUS_KM_PER_DEGREE;
+  const distToSouthKm = (90 + center[1]) * EARTH_RADIUS_KM_PER_DEGREE;
+  if (radiusKm < distToNorthKm && radiusKm < distToSouthKm) {
+    return turfCircle(center, radiusKm, { steps, units: "kilometers" }).geometry;
+  }
+  const raw: Position[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const bearing = (i * 360) / steps;
+    const dest = turfDestination(center, radiusKm, bearing, { units: "kilometers" });
+    raw.push(dest.geometry.coordinates as Position);
+  }
+  return { type: "LineString", coordinates: unwindCoordinates(raw) };
 }
 
 function suspendMapDragInteractions(mlMap: MlMap): MapDragInteractionState {

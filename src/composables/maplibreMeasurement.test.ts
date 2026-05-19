@@ -2,7 +2,10 @@
 import { mount } from "@vue/test-utils";
 import { defineComponent, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
-import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
+import {
+  geodesicCircleGeometry,
+  useMapLibreMeasurementInteraction,
+} from "@/composables/maplibreMeasurement";
 import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
 
 function expectLineEndpoints(coords: any[], start: number[], end: number[]) {
@@ -595,6 +598,32 @@ describe("useMapLibreMeasurementInteraction", () => {
         [60, 0],
         [60, 30],
       ]);
+    });
+  });
+
+  describe("geodesicCircleGeometry", () => {
+    it("returns a turf Polygon when no pole is enclosed", () => {
+      const geom = geodesicCircleGeometry([0, 0], 100, 64);
+      expect(geom.type).toBe("Polygon");
+    });
+
+    it("returns an unwrapped LineString when the north pole is enclosed", () => {
+      // Center at 75°N, radius (~2200 km) reaches past the pole.
+      const geom = geodesicCircleGeometry([0, 75], 2200, 128);
+      expect(geom.type).toBe("LineString");
+      const coords = (geom as any).coordinates as number[][];
+      // The ring winds ~360° in unwrapped longitude as it walks past the pole.
+      const winding = coords[coords.length - 1]![0] - coords[0]![0];
+      expect(Math.abs(winding)).toBeGreaterThan(180);
+      // Adjacent points stay continuous (no antimeridian jumps).
+      for (let i = 1; i < coords.length; i += 1) {
+        expect(Math.abs(coords[i]![0] - coords[i - 1]![0])).toBeLessThan(180);
+      }
+    });
+
+    it("returns a LineString when the south pole is enclosed", () => {
+      const geom = geodesicCircleGeometry([0, -75], 2200, 128);
+      expect(geom.type).toBe("LineString");
     });
   });
 
