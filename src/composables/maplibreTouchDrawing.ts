@@ -83,6 +83,6 @@ function getEventTime(e: TouchEventLike) {
     : Date.now();
 }
 
-function distancePx(a: { x: number; y: number }, b: { x: number; y: number }) {
+export function distancePx(a: { x: number; y: number }, b: { x: number; y: number }) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }

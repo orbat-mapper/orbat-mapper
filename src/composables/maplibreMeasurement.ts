@@ -34,6 +34,7 @@ import { sampleGeodesicCoordinates } from "@/geo/routing/geodesicSegments";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
   createTouchDoubleTapTracker,
+  distancePx,
   getPreviousDistinctVertex,
   normalizePathCoordinates,
   suppressMapEvent,
@@ -105,6 +106,14 @@ export function useMapLibreMeasurementInteraction(
   let disposed = false;
   let layersInitialized = false;
   const touchDoubleTap = createTouchDoubleTapTracker();
+  // MapLibre fires a synthetic "click" after a touch whose movement stayed
+  // within ~3px. On mobile (especially globe mode) users trying to pan often
+  // produce small finger movements within that tolerance, causing every
+  // pan attempt to drop a vertex. Track touchstart/move distance ourselves
+  // and swallow the trailing click when the gesture actually moved.
+  const TOUCH_PAN_TOLERANCE_PX = 10;
+  let touchPanStart: { x: number; y: number } | null = null;
+  let suppressNextClick = false;
 
   function onStyleLoad() {
     layersInitialized = false;
@@ -114,6 +123,10 @@ export function useMapLibreMeasurementInteraction(
   function onClick(e: MapMouseEvent) {
     if (!unref(enableRef)) return;
     if (dragState) return;
+    if (suppressNextClick) {
+      suppressNextClick = false;
+      return;
+    }
     suppressMapEvent(e);
 
     if (!drawInProgress) {
@@ -133,7 +146,20 @@ export function useMapLibreMeasurementInteraction(
     finishDrawing();
   }
 
-  function onMouseMove(e: MapMouseEvent) {
+  function onTouchMove(e: MapTouchEvent) {
+    if (!unref(enableRef)) return;
+    if (dragState) {
+      onMouseMove(e);
+      return;
+    }
+    if (!touchPanStart) return;
+    if (distancePx(e.point, touchPanStart) > TOUCH_PAN_TOLERANCE_PX) {
+      suppressNextClick = true;
+      touchPanStart = null;
+    }
+  }
+
+  function onMouseMove(e: MapMouseEvent | MapTouchEvent) {
     if (!unref(enableRef)) return;
     const position = getEventPosition(e);
     if (dragState) {
@@ -151,7 +177,12 @@ export function useMapLibreMeasurementInteraction(
   }
 
   function onMouseDown(e: MapMouseEvent | MapTouchEvent) {
-    if (!unref(enableRef) || drawInProgress) return;
+    if (!unref(enableRef)) return;
+    if (isTouchEvent(e)) {
+      touchPanStart = { x: e.point.x, y: e.point.y };
+      suppressNextClick = false;
+    }
+    if (drawInProgress) return;
     const handle = getTopHandle(e.point);
     if (!handle) return;
     dragState = {
@@ -166,6 +197,7 @@ export function useMapLibreMeasurementInteraction(
   }
 
   function onMouseUp() {
+    touchPanStart = null;
     if (!dragState) return;
     commitDraggedVertex();
     restoreMapDragInteractions(mlMap, dragState.interactions);
@@ -175,6 +207,7 @@ export function useMapLibreMeasurementInteraction(
   }
 
   function onTouchEnd(e: MapTouchEvent) {
+    touchPanStart = null;
     if (dragState) {
       onMouseUp();
       return;
@@ -185,6 +218,10 @@ export function useMapLibreMeasurementInteraction(
 
     suppressMapEvent(e);
     finishDrawing();
+  }
+
+  function isTouchEvent(e: MapMouseEvent | MapTouchEvent): e is MapTouchEvent {
+    return e.originalEvent?.type?.startsWith("touch") ?? false;
   }
 
   function getEventPosition(e: MapMouseEvent | MapTouchEvent): Position {
@@ -592,7 +629,7 @@ export function useMapLibreMeasurementInteraction(
     mlMap.off("touchstart", onMouseDown);
     mlMap.off("mouseup", onMouseUp);
     mlMap.off("touchend", onTouchEnd);
-    mlMap.off("touchmove", onMouseMove);
+    mlMap.off("touchmove", onTouchMove);
     mlMap.off("touchcancel", onMouseUp);
     mlMap.off("style.load", onStyleLoad);
     cleanupEnter?.();
@@ -608,7 +645,7 @@ export function useMapLibreMeasurementInteraction(
   mlMap.on("touchstart", onMouseDown);
   mlMap.on("mouseup", onMouseUp);
   mlMap.on("touchend", onTouchEnd);
-  mlMap.on("touchmove", onMouseMove);
+  mlMap.on("touchmove", onTouchMove);
   mlMap.on("touchcancel", onMouseUp);
   mlMap.on("style.load", onStyleLoad);
   cleanupEnter = onKeyStroke("Enter", () => finishDrawing());
