@@ -265,4 +265,109 @@ onUnmounted(() => {
   font-weight: 500;
   box-shadow: none;
 }
+
+/* --- Refined navigation / globe controls --------------------------------- */
+.map-ui-root .maplibregl-ctrl-top-left {
+  top: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.map-ui-root .maplibregl-ctrl-top-left .maplibregl-ctrl {
+  margin: 0;
+}
+
+.map-ui-root .maplibregl-ctrl-group {
+  background-color: color-mix(in oklab, var(--color-card) 85%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow:
+    0 1px 2px -1px oklch(0 0 0 / 0.18),
+    0 4px 14px -6px oklch(0 0 0 / 0.25);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  overflow: hidden;
+}
+
+.map-ui-root .maplibregl-ctrl-group:not(:empty) {
+  /* Override MapLibre's default white shadow ring */
+  box-shadow:
+    0 1px 2px -1px oklch(0 0 0 / 0.18),
+    0 4px 14px -6px oklch(0 0 0 / 0.25);
+}
+
+.map-ui-root .maplibregl-ctrl-group button {
+  width: 2rem;
+  height: 2rem;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  position: relative;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.map-ui-root .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--color-border);
+}
+
+.map-ui-root .maplibregl-ctrl-group button:hover {
+  background-color: var(--color-accent);
+}
+
+.map-ui-root .maplibregl-ctrl-group button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-ring);
+}
+
+.map-ui-root .maplibregl-ctrl-group button:active {
+  background-color: color-mix(
+    in oklab,
+    var(--color-accent) 80%,
+    var(--color-foreground) 10%
+  );
+}
+
+.map-ui-root .maplibregl-ctrl-group button:disabled {
+  opacity: 0.45;
+}
+
+.map-ui-root .maplibregl-ctrl-group button:disabled:hover {
+  background-color: transparent;
+}
+
+/* Recolor MapLibre's dark SVG glyphs to follow the app foreground.
+   The default icons are encoded as dark SVGs in CSS background-image,
+   so we drop them through a filter that maps black -> currentColor. */
+.map-ui-root .maplibregl-ctrl-group .maplibregl-ctrl-icon {
+  filter: var(--ml-ctrl-icon-filter, none);
+  opacity: 0.85;
+  transition: opacity 140ms ease;
+}
+
+.map-ui-root .maplibregl-ctrl-group button:hover .maplibregl-ctrl-icon {
+  opacity: 1;
+}
+
+/* Light theme: the default icons are already dark — leave them, just soften. */
+:root .map-ui-root {
+  --ml-ctrl-icon-filter: none;
+}
+
+/* Dark theme: invert the dark glyphs to light. */
+.dark .map-ui-root {
+  --ml-ctrl-icon-filter: invert(0.92) hue-rotate(180deg) brightness(1.05);
+}
+
+/* Compass needle: snappier rotation feedback. */
+.map-ui-root .maplibregl-ctrl-compass .maplibregl-ctrl-icon {
+  transition:
+    opacity 140ms ease,
+    transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* Scale control sits in bottom-left; keep its tighter look. */
 </style>
