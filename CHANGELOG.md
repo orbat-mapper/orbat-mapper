@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
 - Added MapLibre support for custom unit symbols, including clearer selected-state highlighting.
 - Fixed MapLibre unit labels so they shift correctly for scaled ordinary and custom icons, including hostile diamond frames.
 - Fixed MapLibre scenario layer ordering so feature, raster, image, and KML reference layers stay below unit and range ring layers and respect the scenario stack order.
+- MapLibre measurement lines and polygon edges now follow great-circle paths, so paths bend correctly across the globe and across the antimeridian instead of being drawn as straight lng/lat chords.
 
 ## April 2026
 

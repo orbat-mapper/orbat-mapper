@@ -29,6 +29,7 @@ import {
 } from "@/composables/geoMeasurement";
 import { formatArea, formatLength } from "@/geo/utils";
 import { unwrapPositionRelative } from "@/geo/longitude";
+import { sampleGeodesicCoordinates } from "@/geo/routing/geodesicSegments";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
   createTouchDoubleTapTracker,
@@ -283,7 +284,7 @@ export function useMapLibreMeasurementInteraction(
     const features: GeoJsonFeature[] = renderedMeasurements.map((measurement) => ({
       type: "Feature",
       id: measurement.id,
-      geometry: measurement.geometry,
+      geometry: densifyGeometryForRender(measurement.geometry),
       properties: { kind: "measurement" },
     }));
     const preview = getPreviewGeometry();
@@ -291,7 +292,10 @@ export function useMapLibreMeasurementInteraction(
       features.push({
         type: "Feature",
         id: "preview",
-        geometry: preview,
+        geometry:
+          preview.type === "LineString" || preview.type === "Polygon"
+            ? densifyGeometryForRender(preview)
+            : preview,
         properties: { kind: "preview" },
       });
     }
@@ -424,7 +428,7 @@ export function useMapLibreMeasurementInteraction(
         if (isZeroLengthSegment(a, b)) continue;
         features.push({
           type: "Feature",
-          geometry: point(midpoint(a, b)).geometry,
+          geometry: point(greatCircleMidpoint(a, b)).geometry,
           properties: {
             text: formatLength(
               turfLength(lineString([a, b]), { units: "kilometers" }) * 1000,
@@ -707,7 +711,7 @@ function getVertexHandles(measurement: MeasurementFeature): EditHandle[] {
       (position, index) =>
         ({
           kind: "midpoint" as const,
-          position: midpoint(position, coordinates[index + 1]!),
+          position: greatCircleMidpoint(position, coordinates[index + 1]!),
           path: [index + 1],
         }) satisfies EditHandle,
     );
@@ -719,7 +723,7 @@ function getVertexHandles(measurement: MeasurementFeature): EditHandle[] {
     .map((position, index) => ({ kind: "vertex" as const, position, path: [0, index] }));
   const midpointHandles = ring.slice(0, -1).map((position, index) => ({
     kind: "midpoint" as const,
-    position: midpoint(position, ring[index + 1]!),
+    position: greatCircleMidpoint(position, ring[index + 1]!),
     path: [0, index + 1],
   }));
   return [...vertexHandles, ...midpointHandles];
@@ -765,6 +769,35 @@ function closeRing(coordinates: Position[]): Position[] {
 
 function midpoint(a: Position, b: Position): Position {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+}
+
+function densifyLineCoordinates(coordinates: Position[]): Position[] {
+  if (coordinates.length < 2) return coordinates;
+  const result: Position[] = [coordinates[0]!];
+  for (let index = 0; index < coordinates.length - 1; index += 1) {
+    const segment = sampleGeodesicCoordinates(
+      coordinates[index]!,
+      coordinates[index + 1]!,
+    );
+    for (let inner = 1; inner < segment.length; inner += 1) result.push(segment[inner]!);
+  }
+  return result;
+}
+
+function densifyGeometryForRender<G extends LineString | Polygon>(geometry: G): G {
+  if (geometry.type === "LineString") {
+    return { ...geometry, coordinates: densifyLineCoordinates(geometry.coordinates) };
+  }
+  return {
+    ...geometry,
+    coordinates: geometry.coordinates.map((ring) => densifyLineCoordinates(ring)),
+  };
+}
+
+function greatCircleMidpoint(a: Position, b: Position): Position {
+  const arc = sampleGeodesicCoordinates(a, b);
+  if (arc.length <= 2) return midpoint(a, b);
+  return arc[Math.floor(arc.length / 2)]!;
 }
 
 function suspendMapDragInteractions(mlMap: MlMap): MapDragInteractionState {
