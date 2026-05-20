@@ -405,6 +405,7 @@ export interface MeasurementInteractionOptions {
   measurementUnit?: MaybeRef<MeasurementUnit>;
   snap?: MaybeRef<boolean>;
   showCircle?: MaybeRef<boolean>;
+  showGeodesicPaths?: MaybeRef<boolean>;
 }
 
 export function useMeasurementInteraction(

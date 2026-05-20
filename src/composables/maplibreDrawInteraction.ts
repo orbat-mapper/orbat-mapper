@@ -10,6 +10,11 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { DrawType } from "@/composables/geoEditing";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import {
+  isGlobeProjection,
+  latitudeToMercatorY,
+  mercatorYToLatitude,
+} from "@/geo/mercator";
+import {
   createTouchDoubleTapTracker,
   normalizePathCoordinates,
   suppressMapEvent,
@@ -808,13 +813,6 @@ function midpoint(a: Position, b: Position): Position {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 }
 
-function isGlobeProjection(map: MlMap) {
-  const projection = (map as any).getProjection?.();
-  const projectionType =
-    typeof projection === "string" ? projection : (projection?.type ?? projection?.name);
-  return projectionType === "globe";
-}
-
 function projectedMercatorSegmentMidpoint(
   map: MlMap,
   a: Position,
@@ -876,16 +874,6 @@ function sampleMercatorSegmentCoordinates(a: Position, b: Position): Position[] 
   }
 
   return coordinates;
-}
-
-function latitudeToMercatorY(latitude: number) {
-  const clampedLatitude = Math.max(-85.05112878, Math.min(85.05112878, latitude));
-  const radians = (clampedLatitude * Math.PI) / 180;
-  return Math.log(Math.tan(Math.PI / 4 + radians / 2));
-}
-
-function mercatorYToLatitude(y: number) {
-  return (Math.atan(Math.exp(y)) * 2 - Math.PI / 2) * (180 / Math.PI);
 }
 
 function getVertexAtPath(geometry: Geometry, path: number[]): Position | undefined {

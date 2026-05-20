@@ -5,6 +5,7 @@ import {
   IconMapMarkerDistance as ShowSegmentsIcon,
   IconSelectionEllipse as ShowCircleIcon,
   IconSelectMultipleMarker as ShowMultipleIcon,
+  IconVectorRadius as GeodesicIcon,
   IconTrashCanOutline as TrashIcon,
   IconVectorLine as LengthIcon,
   IconVectorSquare as AreaIcon,
@@ -19,6 +20,8 @@ import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { computed } from "vue";
 import { onUnmounted } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import OLMap from "ol/Map";
@@ -35,15 +38,20 @@ const {
   measurementUnit,
   snap,
   showCircle,
+  showGeodesicPaths,
 } = storeToRefs(useMeasurementsStore());
 const activeMapAdapter = mapEngineRef.value?.map;
 const nativeMap = activeMapAdapter?.getNativeMap();
+const isMapLibre = !!nativeMap && !(nativeMap instanceof OLMap);
+const { mapProjection } = storeToRefs(useMapSettingsStore());
+const showGeodesicToggle = computed(() => isMapLibre && mapProjection.value !== "globe");
 const interactionOptions = {
   showSegments,
   clearPrevious,
   measurementUnit,
   snap,
   showCircle,
+  showGeodesicPaths,
 };
 const { clear } = nativeMap
   ? nativeMap instanceof OLMap
@@ -106,6 +114,14 @@ onUnmounted(() => {
       :active="showCircle"
     >
       <ShowCircleIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      v-if="showGeodesicToggle"
+      title="Show great-circle paths"
+      @click="showGeodesicPaths = !showGeodesicPaths"
+      :active="showGeodesicPaths"
+    >
+      <GeodesicIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton title="Toggle snapping" @click="snap = !snap" :active="snap">
       <SnapIcon class="size-5" />

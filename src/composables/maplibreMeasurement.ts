@@ -30,6 +30,7 @@ import {
 } from "@/composables/geoMeasurement";
 import { formatArea, formatLength } from "@/geo/utils";
 import { unwindCoordinates, unwrapPositionRelative } from "@/geo/longitude";
+import { isGlobeProjection, mercatorMidpoint } from "@/geo/mercator";
 import { sampleGeodesicCoordinates } from "@/geo/routing/geodesicSegments";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
 import {
@@ -95,6 +96,13 @@ export function useMapLibreMeasurementInteraction(
   const measurementUnitRef = ref(options.measurementUnit ?? "metric");
   const snapRef = ref(options.snap ?? true);
   const showCircleRef = ref(options.showCircle ?? true);
+  const showGeodesicPathsRef = ref(options.showGeodesicPaths ?? true);
+  // In globe projection MapLibre always renders lines along great-circle arcs,
+  // so geodesic midpoints/labels are the only ones that visually land on the
+  // line — the toggle is effectively forced on.
+  function useGeodesicRender(): boolean {
+    return !!unref(showGeodesicPathsRef) || isGlobeProjection(mlMap);
+  }
   const measurements = ref<MeasurementFeature[]>([]);
   const vertices = ref<Position[]>([]);
 
@@ -319,10 +327,13 @@ export function useMapLibreMeasurementInteraction(
   function getMeasurementGeoJsonFeatures(
     renderedMeasurements: MeasurementFeature[],
   ): GeoJsonFeature[] {
+    const densify = useGeodesicRender();
     const features: GeoJsonFeature[] = renderedMeasurements.map((measurement) => ({
       type: "Feature",
       id: measurement.id,
-      geometry: densifyGeometryForRender(measurement.geometry),
+      geometry: densify
+        ? densifyGeometryForRender(measurement.geometry)
+        : measurement.geometry,
       properties: { kind: "measurement" },
     }));
     const preview = getPreviewGeometry();
@@ -331,7 +342,7 @@ export function useMapLibreMeasurementInteraction(
         type: "Feature",
         id: "preview",
         geometry:
-          preview.type === "LineString" || preview.type === "Polygon"
+          densify && (preview.type === "LineString" || preview.type === "Polygon")
             ? densifyGeometryForRender(preview)
             : preview,
         properties: { kind: "preview" },
@@ -457,13 +468,16 @@ export function useMapLibreMeasurementInteraction(
     }
 
     if (unref(showSegmentsRef) && lineCoordinates.length > 2) {
+      const segmentMidpointFn = useGeodesicRender()
+        ? greatCircleMidpoint
+        : mercatorMidpoint;
       for (let index = 0; index < lineCoordinates.length - 1; index += 1) {
         const a = lineCoordinates[index]!;
         const b = lineCoordinates[index + 1]!;
         if (isZeroLengthSegment(a, b)) continue;
         features.push({
           type: "Feature",
-          geometry: point(greatCircleMidpoint(a, b)).geometry,
+          geometry: point(segmentMidpointFn(a, b)).geometry,
           properties: {
             text: formatLength(
               turfLength(lineString([a, b]), { units: "kilometers" }) * 1000,
@@ -481,8 +495,9 @@ export function useMapLibreMeasurementInteraction(
     renderedMeasurements: MeasurementFeature[],
   ): GeoJsonFeature<Point>[] {
     if (!unref(enableRef) || drawInProgress) return [];
+    const useGeodesic = useGeodesicRender();
     return renderedMeasurements.flatMap((measurement) =>
-      getVertexHandles(measurement).map((handle) => ({
+      getVertexHandles(measurement, useGeodesic).map((handle) => ({
         type: "Feature" as const,
         geometry: point(handle.position).geometry,
         properties: {
@@ -659,6 +674,7 @@ export function useMapLibreMeasurementInteraction(
   watch(showSegmentsRef, () => render());
   watch(measurementUnitRef, () => render(), { immediate: true });
   watch(showCircleRef, () => render());
+  watch(showGeodesicPathsRef, () => render());
   watch(enableRef, (enabled) => setActive(enabled), { immediate: true });
 
   tryOnBeforeUnmount(cleanup);
@@ -734,7 +750,11 @@ function decodePath(path: unknown): number[] {
   return typeof path === "string" ? JSON.parse(path) : (path as number[]);
 }
 
-function getVertexHandles(measurement: MeasurementFeature): EditHandle[] {
+function getVertexHandles(
+  measurement: MeasurementFeature,
+  useGeodesic: boolean,
+): EditHandle[] {
+  const midpointFn = useGeodesic ? greatCircleMidpoint : mercatorMidpoint;
   if (measurement.geometry.type === "LineString") {
     const coordinates = measurement.geometry.coordinates;
     const vertexHandles = coordinates.map((position, index) => ({
@@ -746,7 +766,7 @@ function getVertexHandles(measurement: MeasurementFeature): EditHandle[] {
       (position, index) =>
         ({
           kind: "midpoint" as const,
-          position: greatCircleMidpoint(position, coordinates[index + 1]!),
+          position: midpointFn(position, coordinates[index + 1]!),
           path: [index + 1],
         }) satisfies EditHandle,
     );
@@ -758,7 +778,7 @@ function getVertexHandles(measurement: MeasurementFeature): EditHandle[] {
     .map((position, index) => ({ kind: "vertex" as const, position, path: [0, index] }));
   const midpointHandles = ring.slice(0, -1).map((position, index) => ({
     kind: "midpoint" as const,
-    position: greatCircleMidpoint(position, ring[index + 1]!),
+    position: midpointFn(position, ring[index + 1]!),
     path: [0, index + 1],
   }));
   return [...vertexHandles, ...midpointHandles];
