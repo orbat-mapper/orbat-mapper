@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
-import { defineComponent, ref } from "vue";
+import { defineComponent, nextTick, ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 import {
   geodesicCircleGeometry,
@@ -44,6 +44,7 @@ function createHarness(
     showSegments?: boolean;
     clearPrevious?: boolean;
     showCircle?: boolean;
+    showGeodesicPaths?: boolean;
     snap?: boolean;
     queryRenderedFeatures?: (point: unknown, options?: unknown) => any[];
   } = {},
@@ -57,6 +58,7 @@ function createHarness(
   const showSegments = ref(options.showSegments ?? true);
   const clearPrevious = ref(options.clearPrevious ?? true);
   const showCircle = ref(options.showCircle ?? true);
+  const showGeodesicPaths = ref(options.showGeodesicPaths ?? true);
   const snap = ref(options.snap ?? true);
   let doubleClickZoomEnabled = true;
   const mlMap = {
@@ -125,6 +127,7 @@ function createHarness(
             showSegments,
             clearPrevious,
             showCircle,
+            showGeodesicPaths,
             snap,
           },
         );
@@ -155,6 +158,7 @@ function createHarness(
     showSegments,
     clearPrevious,
     showCircle,
+    showGeodesicPaths,
     snap,
     interaction: wrapper.vm.interaction,
   };
@@ -507,6 +511,26 @@ describe("useMapLibreMeasurementInteraction", () => {
       expect(coords[0]).toEqual([0, 0]);
       expect(coords[1][0]).toBeCloseTo(0.2, 10);
       expect(coords[1][1]).toEqual(0);
+    });
+
+    it("skips densification when showGeodesicPaths is off", async () => {
+      const harness = createHarness();
+      harness.trigger("click", createEvent(0, 0));
+      harness.trigger("click", createEvent(60, 30));
+      harness.trigger("dblclick", createEvent(60, 30));
+
+      const denseCoords =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+      expect(denseCoords.length).toBeGreaterThan(8);
+
+      harness.showGeodesicPaths.value = false;
+      await nextTick();
+
+      const straightCoords =
+        harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+      expect(straightCoords).toHaveLength(2);
+      expect(straightCoords[0]).toEqual([0, 0]);
+      expect(straightCoords[1]).toEqual([60, 30]);
     });
 
     it("densifies long segments and keeps a monotonic arc", () => {

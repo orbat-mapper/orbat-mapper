@@ -118,6 +118,7 @@ export const useMeasurementsStore = defineStore("measurements", () => {
   const measurementUnit = ref<MeasurementUnit>("metric");
   const snap = ref(true);
   const showCircle = useLocalStorage("showMeasurementCircle", true);
+  const showGeodesicPaths = useLocalStorage("showGeodesicPaths", true);
 
   return {
     measurementType,
@@ -126,6 +127,7 @@ export const useMeasurementsStore = defineStore("measurements", () => {
     measurementUnit,
     snap,
     showCircle,
+    showGeodesicPaths,
   };
 });
 
