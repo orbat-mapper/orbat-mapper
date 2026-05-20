@@ -11,7 +11,7 @@ import {
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
-import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
+import { computed, onUnmounted, provide, ref, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -49,6 +49,9 @@ import {
   useMaplibreUnitHistory,
 } from "@/composables/maplibreUnitHistory";
 import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
+import ExportImageDialog from "@/modules/maplibreview/ExportImageDialog.vue";
+import { useBoxDraw } from "@/composables/geoBoxDraw";
+import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
@@ -340,7 +343,7 @@ function createCustomSymbolImage(
     const height = image.naturalHeight || image.height;
     if (!(width > 0 && height > 0)) return;
 
-    const pixelRatio = 2;
+    const pixelRatio = getSpritePixelRatio();
     const isSelected = imageId.startsWith("sel-");
     const highlightPadding = isSelected ? Math.max(8, Math.ceil(size * 0.3)) : 0;
     const anchor = customSymbol.anchor ?? [0.5, 0.5];
@@ -455,13 +458,13 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   });
   const { width, height } = symb.getSize();
   const anchor = symb.getAnchor();
-  const sourceCanvas = symb.asCanvas(2);
+  const pixelRatio = getSpritePixelRatio();
+  const sourceCanvas = symb.asCanvas(pixelRatio);
   if (!sourceCanvas) return;
 
   // milsymbol canvases are not centered on the symbol anchor — pad the image
   // so the anchor sits at the canvas center, which is what MapLibre uses as
   // the icon's origin.
-  const pixelRatio = 2;
   const halfW = Math.max(anchor.x, width - anchor.x);
   const halfH = Math.max(anchor.y, height - anchor.y);
   const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
@@ -925,10 +928,27 @@ watch(
   },
 );
 
+const exportDialogOpen = ref(false);
+const drawnExportBounds = ref<[number, number, number, number] | null>(null);
+
+const exportBoxDraw = useBoxDraw(() => engineRef.value?.map);
+exportBoxDraw.onDrawEnd((bbox) => {
+  drawnExportBounds.value = bbox;
+  exportDialogOpen.value = true;
+});
+exportBoxDraw.onCancel(() => {
+  exportDialogOpen.value = true;
+});
+
 onScenarioActionHook.on(async ({ action }) => {
   if (action !== "exportToImage") return;
-  await saveMapLibreMapAsPng(mlMap);
+  exportDialogOpen.value = true;
 });
+
+function onRequestDrawRect() {
+  exportDialogOpen.value = false;
+  exportBoxDraw.start();
+}
 
 function addUnits(
   initial = false,
@@ -1125,4 +1145,10 @@ watch(hoverEnabled, (enabled) => {
       {{ formattedPosition }}
     </p>
   </div>
+  <ExportImageDialog
+    v-model="exportDialogOpen"
+    :map="mlMap"
+    :drawn-bounds="drawnExportBounds"
+    @request-draw-rect="onRequestDrawRect"
+  />
 </template>

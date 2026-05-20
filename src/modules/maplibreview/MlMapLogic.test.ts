@@ -2803,8 +2803,11 @@ describe("MlMapLogic", () => {
     });
 
     await searchActions.onScenarioActionHook.trigger({ action: "exportToImage" });
+    await flushPromises();
 
-    expect(saveMapLibreMapAsPng).toHaveBeenCalledWith(mockMap.map);
+    // The action now opens the export dialog rather than performing a direct
+    // PNG save, so the quick-save helper must not be called automatically.
+    expect(saveMapLibreMapAsPng).not.toHaveBeenCalled();
   });
 
   it("does not throw when history waypoint layers are temporarily missing during style reload", () => {
