@@ -257,7 +257,7 @@ watchEffect(() => {
   >
     <section class="flex shrink-0 items-center justify-between">
       <MainToolbarButton
-        title="Keep selected tool active after drawing"
+        title="Keep tool active to add multiple"
         @click="toggleAddMultiple()"
         class="hidden sm:flex"
       >

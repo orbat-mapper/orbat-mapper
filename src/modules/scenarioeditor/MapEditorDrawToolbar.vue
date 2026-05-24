@@ -2,6 +2,8 @@
 import {
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
+  IconLockOpenVariantOutline,
+  IconLockOutline,
   IconMagnet as SnapIcon,
   IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
@@ -20,8 +22,12 @@ import { useRecordingStore } from "@/stores/recordingStore";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const { selectedFeatureIds } = useSelectedItems();
+
+const { addMultiple } = storeToRefs(useMainToolbarStore());
+const toggleAddMultiple = useToggle(addMultiple);
 
 const recordStore = useRecordingStore();
 const { isRecordingGeometry } = storeToRefs(recordStore);
@@ -83,6 +89,14 @@ onKeyStroke("Escape", (event) => {
       <CircleIcon class="size-5" />
     </MainToolbarButton>
     <div class="border-border mx-1 h-5 border-l" />
+    <MainToolbarButton
+      title="Keep tool active to add multiple"
+      @click="toggleAddMultiple()"
+      :active="addMultiple"
+    >
+      <IconLockOutline v-if="addMultiple" class="size-5" />
+      <IconLockOpenVariantOutline v-else class="size-5" />
+    </MainToolbarButton>
     <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
       <SnapIcon class="size-5" />
     </MainToolbarButton>
