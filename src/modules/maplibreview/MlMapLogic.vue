@@ -515,20 +515,9 @@ function getHitTolerance(e?: MapMouseEvent | MapTouchEvent | MouseEvent): number
   return isTouch ? TOUCH_HIT_TOLERANCE_PX : MOUSE_HIT_TOLERANCE_PX;
 }
 
-function queryInteractiveFeatures(
-  point: PointLike,
-  tolerance: number = MOUSE_HIT_TOLERANCE_PX,
-) {
-  const [x, y] = pointToXY(point);
-  const geometry: PointLike | [PointLike, PointLike] =
-    tolerance > 0
-      ? [
-          [x - tolerance, y - tolerance],
-          [x + tolerance, y + tolerance],
-        ]
-      : point;
-  // Units must take precedence over reference layers (KML) even when those
-  // layers happen to render above the unit symbols.
+function collectInteractiveFeatures(
+  geometry: PointLike | [PointLike, PointLike],
+): MapGeoJSONFeature[] {
   const unitHits: MapGeoJSONFeature[] = [];
   const otherHits: MapGeoJSONFeature[] = [];
   for (const feature of mlMap.queryRenderedFeatures(geometry)) {
@@ -543,7 +532,29 @@ function queryInteractiveFeatures(
       otherHits.push(feature);
     }
   }
+  // Units must take precedence over reference layers (KML) even when those
+  // layers happen to render above the unit symbols.
   return unitHits.length ? unitHits.concat(otherHits) : otherHits;
+}
+
+function queryInteractiveFeatures(
+  point: PointLike,
+  tolerance: number = MOUSE_HIT_TOLERANCE_PX,
+) {
+  // Prefer whatever sits directly under the pointer. Because unit precedence
+  // promotes any unit ahead of other features, widening to the tolerance box
+  // up front would let a unit up to `tolerance` px away swallow a click aimed
+  // squarely at a feature/KML line. So we probe the exact point first and only
+  // expand to the buffered box when nothing is directly under the pointer,
+  // which is what makes thin features easier to grab.
+  const exactHits = collectInteractiveFeatures(point);
+  if (exactHits.length || tolerance <= 0) return exactHits;
+
+  const [x, y] = pointToXY(point);
+  return collectInteractiveFeatures([
+    [x - tolerance, y - tolerance],
+    [x + tolerance, y + tolerance],
+  ]);
 }
 
 function updateHoveredScenarioFeatures(
@@ -555,11 +566,16 @@ function updateHoveredScenarioFeatures(
     return;
   }
 
+  // A single feature can be returned more than once when its geometry is split
+  // across tile boundaries (especially via the buffered hit-test box), so dedupe
+  // by id to avoid highlighting the same feature multiple times.
+  const seenIds = new Set<string>();
   const features = renderedFeatures
     .filter((feature) => isManagedScenarioFeatureLayerId(feature.layer.id))
     .flatMap((feature) => {
       const featureId = getFeatureIdFromRenderedFeature(feature);
-      if (!featureId) return [];
+      if (!featureId || seenIds.has(featureId)) return [];
+      seenIds.add(featureId);
       return [
         {
           getId: () => featureId,
