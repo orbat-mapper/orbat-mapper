@@ -1,4 +1,10 @@
-import type { Map as MlMap, MapMouseEvent, MapTouchEvent, PointLike } from "maplibre-gl";
+import type {
+  Map as MlMap,
+  MapGeoJSONFeature,
+  MapMouseEvent,
+  MapTouchEvent,
+  PointLike,
+} from "maplibre-gl";
 import { featureCollection, lineString, point, polygon } from "@turf/helpers";
 import turfCircle from "@turf/circle";
 import type { Feature as GeoJsonFeature, Geometry, Point, Position } from "geojson";
@@ -27,6 +33,18 @@ const DRAW_VERTEX_HANDLES_OVERLAY_ID = "maplibre-draw-vertex-handles";
 const DRAW_MIDPOINT_HANDLES_OVERLAY_ID = "maplibre-draw-midpoint-handles";
 const DRAW_VERTEX_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_VERTEX_HANDLES_OVERLAY_ID}`;
 const DRAW_MIDPOINT_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_MIDPOINT_HANDLES_OVERLAY_ID}`;
+
+// Hit-test tolerance (in pixels) for grabbing vertex/midpoint handles. The
+// handle circles are only 4-6px, so a single-pixel query is nearly impossible
+// to hit with a fingertip. Buffer the tap point into a small box; touch gets a
+// wider box, mirroring the selection tolerances used by MlMapLogic.
+const HANDLE_HIT_TOLERANCE_PX = 12;
+const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
+
+const coarsePointerQuery =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(pointer: coarse)")
+    : null;
 
 interface DrawUpdate {
   featureId: FeatureId;
@@ -216,7 +234,7 @@ export function useMapLibreDrawInteraction(
       return;
     }
     if (isModifying.value || unref(options.translate)) {
-      mlMap.getCanvas().style.cursor = getTopDrawHandle(e.point) ? "grab" : "";
+      mlMap.getCanvas().style.cursor = getTopDrawHandle(e.point, e) ? "grab" : "";
     }
   }
 
@@ -235,7 +253,7 @@ export function useMapLibreDrawInteraction(
     if (!selectedFeatures.length) return;
 
     const position: Position = [e.lngLat.lng, e.lngLat.lat];
-    const handle = isModifying.value ? getTopDrawHandle(e.point) : undefined;
+    const handle = isModifying.value ? getTopDrawHandle(e.point, e) : undefined;
     if (handle) {
       dragState = {
         mode: "vertex",
@@ -293,6 +311,14 @@ export function useMapLibreDrawInteraction(
       options.updateFeatures(updates);
       renderHandles();
     }
+  }
+
+  function onTouchMove(e: MapTouchEvent) {
+    // MapLibre does not synthesize "mousemove" from touch, so without this the
+    // vertex/midpoint/translate drag has no live preview until the finger lifts.
+    if (!dragState) return;
+    suppressMapEvent(e);
+    previewDrag(getDragEventPosition(e, dragState));
   }
 
   function onTouchEnd(e: MapTouchEvent) {
@@ -422,20 +448,55 @@ export function useMapLibreDrawInteraction(
     renderHandleOverlays(options.getSelectedFeatures());
   }
 
-  function getTopDrawHandle(pointLike: PointLike): EditHandle | undefined {
-    const hits = mlMap.queryRenderedFeatures(pointLike, {
-      layers: [DRAW_VERTEX_HANDLE_LAYER_ID, DRAW_MIDPOINT_HANDLE_LAYER_ID],
+  function getTopDrawHandle(
+    pointLike: PointLike,
+    e?: MapMouseEvent | MapTouchEvent,
+  ): EditHandle | undefined {
+    const [x, y] = pointToXY(pointLike);
+    const tolerance = getHandleHitTolerance(e);
+    const hits = mlMap.queryRenderedFeatures(
+      [
+        [x - tolerance, y - tolerance],
+        [x + tolerance, y + tolerance],
+      ],
+      { layers: [DRAW_VERTEX_HANDLE_LAYER_ID, DRAW_MIDPOINT_HANDLE_LAYER_ID] },
+    );
+
+    const candidates: { handle: EditHandle; distance: number }[] = [];
+    for (const hit of hits) {
+      if (!hit.properties?.featureId || !hit.properties.path) continue;
+      candidates.push({
+        handle: {
+          featureId: String(hit.properties.featureId),
+          kind: hit.properties.kind === "midpoint" ? "midpoint" : "vertex",
+          path:
+            typeof hit.properties.path === "string"
+              ? JSON.parse(hit.properties.path)
+              : hit.properties.path,
+        },
+        distance: handleDistanceToPoint(hit, x, y),
+      });
+    }
+
+    // Pick the handle closest to the tap point; on a near-tie prefer a vertex,
+    // since dragging an existing vertex is more common than splitting an edge.
+    candidates.sort((a, b) => {
+      if (Math.abs(a.distance - b.distance) < 1 && a.handle.kind !== b.handle.kind) {
+        return a.handle.kind === "vertex" ? -1 : 1;
+      }
+      return a.distance - b.distance;
     });
-    const hit = hits[0];
-    if (!hit?.properties?.featureId || !hit.properties.path) return;
-    return {
-      featureId: String(hit.properties.featureId),
-      kind: hit.properties.kind === "midpoint" ? "midpoint" : "vertex",
-      path:
-        typeof hit.properties.path === "string"
-          ? JSON.parse(hit.properties.path)
-          : hit.properties.path,
-    };
+    return candidates[0]?.handle;
+  }
+
+  function handleDistanceToPoint(hit: MapGeoJSONFeature, x: number, y: number): number {
+    if (hit.geometry?.type !== "Point") return Number.POSITIVE_INFINITY;
+    try {
+      const projected = mlMap.project(hit.geometry.coordinates as [number, number]);
+      return Math.hypot(projected.x - x, projected.y - y);
+    } catch {
+      return Number.POSITIVE_INFINITY;
+    }
   }
 
   function previewDrag(position: Position) {
@@ -575,6 +636,7 @@ export function useMapLibreDrawInteraction(
   mlMap.on("mousemove", onMouseMove);
   mlMap.on("mousedown", onMouseDown);
   mlMap.on("touchstart", onMouseDown);
+  mlMap.on("touchmove", onTouchMove);
   mlMap.on("mouseup", onMouseUp);
   mlMap.on("touchend", onTouchEnd);
   mlMap.on("touchcancel", onMouseUp);
@@ -593,6 +655,7 @@ export function useMapLibreDrawInteraction(
     mlMap.off("mousemove", onMouseMove);
     mlMap.off("mousedown", onMouseDown);
     mlMap.off("touchstart", onMouseDown);
+    mlMap.off("touchmove", onTouchMove);
     mlMap.off("mouseup", onMouseUp);
     mlMap.off("touchend", onTouchEnd);
     mlMap.off("touchcancel", onMouseUp);
@@ -609,6 +672,20 @@ export function useMapLibreDrawInteraction(
     cancel,
     isDrawing,
   };
+}
+
+function pointToXY(point: PointLike): [number, number] {
+  if (Array.isArray(point)) return point;
+  return [point.x, point.y];
+}
+
+// A touch-driven event, or a coarse-pointer device, gets the wider tolerance.
+// `originalEvent` is absent on the synthetic events MapLibre dispatches.
+function getHandleHitTolerance(e?: MapMouseEvent | MapTouchEvent): number {
+  const isTouch =
+    (e?.originalEvent?.type?.startsWith("touch") ?? false) ||
+    (coarsePointerQuery?.matches ?? false);
+  return isTouch ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
 }
 
 function closeRing(coordinates: Position[]): Position[] {

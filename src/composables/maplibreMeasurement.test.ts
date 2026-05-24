@@ -671,4 +671,82 @@ describe("useMapLibreMeasurementInteraction", () => {
 
     expect(() => harness.interaction.clear()).not.toThrow();
   });
+
+  it("grabs the handle nearest the tap rather than the topmost hit", () => {
+    const harness = createHarness({
+      // The midpoint renders on top and is returned first, but the tap lands on
+      // the end vertex, so the closer vertex handle should win and move it
+      // rather than subdividing the segment.
+      queryRenderedFeatures: (_point, queryOptions: any) => {
+        if (!queryOptions?.layers?.includes("maplibre-measurement-handle")) return [];
+        return [
+          {
+            properties: {
+              measurementId: "measurement-1",
+              kind: "midpoint",
+              path: JSON.stringify([1]),
+            },
+            geometry: { type: "Point", coordinates: [5, 0] },
+          },
+          {
+            properties: {
+              measurementId: "measurement-1",
+              kind: "vertex",
+              path: JSON.stringify([1]),
+            },
+            geometry: { type: "Point", coordinates: [10, 0] },
+          },
+        ];
+      },
+    });
+
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("click", createEvent(10, 0));
+    harness.trigger("dblclick", createEvent(10, 0));
+    harness.trigger("mousedown", createEvent(10, 0));
+    harness.trigger("mousemove", createEvent(10, 5));
+    harness.trigger("mouseup", createEvent(10, 5));
+
+    // A vertex move shifts the end vertex to the drag target; a midpoint
+    // subdivide would instead leave the endpoints untouched at [10, 0].
+    const coords =
+      harness.sourceData("maplibre-measurement").features[0].geometry.coordinates;
+    expectLineEndpoints(coords, [0, 0], [10, 5]);
+  });
+
+  it("buffers the tap into a box so offset taps still hit a handle", () => {
+    const harness = createHarness({
+      queryRenderedFeatures: (_point, queryOptions: any) => {
+        if (!queryOptions?.layers?.includes("maplibre-measurement-handle")) return [];
+        return [
+          {
+            properties: {
+              measurementId: "measurement-1",
+              kind: "vertex",
+              path: JSON.stringify([1]),
+            },
+            geometry: { type: "Point", coordinates: [10, 0] },
+          },
+        ];
+      },
+    });
+
+    harness.trigger("click", createEvent(0, 0));
+    harness.trigger("click", createEvent(10, 0));
+    harness.trigger("dblclick", createEvent(10, 0));
+    harness.trigger("mousedown", createEvent(10, 0));
+
+    const boxQuery = harness.mlMap.queryRenderedFeatures.mock.calls.find(
+      ([geometry, queryOptions]) =>
+        (queryOptions as any)?.layers?.includes("maplibre-measurement-handle") &&
+        Array.isArray(geometry),
+    );
+    expect(boxQuery).toBeDefined();
+    const [[minX, minY], [maxX, maxY]] = boxQuery![0] as [
+      [number, number],
+      [number, number],
+    ];
+    expect(maxX - minX).toBe(24);
+    expect(maxY - minY).toBe(24);
+  });
 });
