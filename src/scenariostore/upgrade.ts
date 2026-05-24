@@ -11,12 +11,17 @@ import type { GeoJsonProperties } from "geojson";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import type {
   AnnotationLayerItem,
+  AnnotationLayerItemState,
+  ArrowAnnotation,
+  ArrowAnnotationState,
   GeometryLayerMeta,
   GeometryLayerItem,
   LoadableGeometryLayerItemState,
   MeasurementLayerItem,
   ScenarioLayerItemsLayer,
   TacticalGraphicLayerItem,
+  TextAnnotation,
+  TextAnnotationState,
 } from "@/types/scenarioLayerItems";
 import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
 import type {
@@ -49,10 +54,71 @@ export type LoadableGeometryLayerItem = {
   _state?: GeometryLayerItem["_state"];
 };
 type UnsupportedLayerItem =
-  | AnnotationLayerItem
   | TacticalGraphicLayerItem
   | MeasurementLayerItem
   | { kind?: string };
+
+type LegacyTextAnnotationItem = {
+  id: string | number;
+  kind: "annotation";
+  annotationType?: "label" | "note" | "callout" | "image";
+  anchor?: TextAnnotation["anchor"];
+  content?: TextAnnotation["content"];
+  style?: TextAnnotation["style"];
+  state?: Array<
+    | TextAnnotationState
+    | (Omit<TextAnnotationState, "annotationKind" | "patch"> & {
+        anchor?: TextAnnotation["anchor"];
+        content?: TextAnnotation["content"];
+        style?: TextAnnotation["style"];
+        name?: string;
+        description?: string;
+        isHidden?: boolean;
+        anchorZoom?: number;
+      })
+  >;
+  name?: string;
+  description?: string;
+  externalUrl?: string;
+  locked?: boolean;
+  isHidden?: boolean;
+  visibleFromT?: number | string;
+  visibleUntilT?: number | string;
+  media?: TextAnnotation["media"];
+  userData?: Record<string, unknown>;
+  anchorZoom?: number;
+};
+
+type LoadableArrowAnnotationItem = {
+  id: string | number;
+  kind: "annotation";
+  annotationKind: "arrow";
+  geometry: ArrowAnnotation["geometry"];
+  style?: ArrowAnnotation["style"];
+  state?: Array<
+    | ArrowAnnotationState
+    | (Omit<ArrowAnnotationState, "annotationKind" | "patch"> & {
+        geometry?: ArrowAnnotation["geometry"];
+        style?: ArrowAnnotation["style"];
+        name?: string;
+        description?: string;
+        isHidden?: boolean;
+        anchorZoom?: number;
+      })
+  >;
+  name?: string;
+  description?: string;
+  externalUrl?: string;
+  locked?: boolean;
+  isHidden?: boolean;
+  visibleFromT?: number | string;
+  visibleUntilT?: number | string;
+  media?: ArrowAnnotation["media"];
+  userData?: Record<string, unknown>;
+  anchorZoom?: number;
+};
+
+type LoadableAnnotationItem = LegacyTextAnnotationItem | LoadableArrowAnnotationItem;
 
 export type LegacyScenarioLayer = ScenarioLayer;
 
@@ -60,7 +126,9 @@ export type LoadableOverlayLayer =
   | ScenarioLayerItemsLayer
   | (Omit<ScenarioLayer, "features"> & {
       features?: ScenarioFeature[];
-      items?: Array<LoadableGeometryLayerItem | UnsupportedLayerItem>;
+      items?: Array<
+        LoadableGeometryLayerItem | LoadableAnnotationItem | UnsupportedLayerItem
+      >;
     });
 
 export type LoadableScenarioLayer =
@@ -75,15 +143,136 @@ export type LoadableScenario = Omit<Scenario, "layerStack"> & {
 };
 
 function isGeometryLayerItem(
-  item: LoadableGeometryLayerItem | UnsupportedLayerItem,
+  item: LoadableGeometryLayerItem | LoadableAnnotationItem | UnsupportedLayerItem,
 ): item is LoadableGeometryLayerItem {
   return item.kind === "geometry";
+}
+
+function isAnnotationLayerItem(
+  item: LoadableGeometryLayerItem | LoadableAnnotationItem | UnsupportedLayerItem,
+): item is LoadableAnnotationItem {
+  return item.kind === "annotation";
 }
 
 function canonicalizeGeometryStateEntries(
   states: LoadableGeometryLayerItemState[] | undefined,
 ): GeometryLayerItem["state"] {
   return states?.map((state) => normalizeGeometryLayerItemState(state));
+}
+
+function canonicalizeTextAnnotationStates(
+  states: LegacyTextAnnotationItem["state"],
+): TextAnnotation["state"] {
+  return states?.map((state) => {
+    if ("patch" in state && state.patch) {
+      return {
+        ...state,
+        annotationKind: "text",
+      } satisfies TextAnnotationState;
+    }
+    const legacyState = state as Omit<TextAnnotationState, "annotationKind" | "patch"> & {
+      anchor?: TextAnnotation["anchor"];
+      content?: TextAnnotation["content"];
+      style?: TextAnnotation["style"];
+      name?: string;
+      description?: string;
+      isHidden?: boolean;
+      anchorZoom?: number;
+    };
+    const { anchor, content, style, name, description, isHidden, anchorZoom, ...rest } =
+      legacyState;
+    return {
+      ...rest,
+      annotationKind: "text",
+      patch: {
+        ...(anchor !== undefined ? { anchor } : {}),
+        ...(content !== undefined ? { content } : {}),
+        ...(style !== undefined ? { style } : {}),
+        ...(name !== undefined ? { name } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(isHidden !== undefined ? { isHidden } : {}),
+        ...(anchorZoom !== undefined ? { anchorZoom } : {}),
+      },
+    } satisfies TextAnnotationState;
+  });
+}
+
+function canonicalizeArrowAnnotationStates(
+  states: LoadableArrowAnnotationItem["state"],
+): ArrowAnnotation["state"] {
+  return states?.map((state) => {
+    if ("patch" in state && state.patch) {
+      return {
+        ...state,
+        annotationKind: "arrow",
+      } satisfies ArrowAnnotationState;
+    }
+    const legacyState = state as Omit<
+      ArrowAnnotationState,
+      "annotationKind" | "patch"
+    > & {
+      geometry?: ArrowAnnotation["geometry"];
+      style?: ArrowAnnotation["style"];
+      name?: string;
+      description?: string;
+      isHidden?: boolean;
+      anchorZoom?: number;
+    };
+    const { geometry, style, name, description, isHidden, anchorZoom, ...rest } =
+      legacyState;
+    return {
+      ...rest,
+      annotationKind: "arrow",
+      patch: {
+        ...(geometry !== undefined ? { geometry } : {}),
+        ...(style !== undefined ? { style } : {}),
+        ...(name !== undefined ? { name } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(isHidden !== undefined ? { isHidden } : {}),
+        ...(anchorZoom !== undefined ? { anchorZoom } : {}),
+      },
+    } satisfies ArrowAnnotationState;
+  });
+}
+
+function upgradeAnnotationItemToSharedBase(
+  item: LoadableAnnotationItem,
+): AnnotationLayerItem {
+  const base = {
+    id: String(item.id),
+    kind: "annotation" as const,
+    name: item.name,
+    description: item.description,
+    externalUrl: item.externalUrl,
+    locked: item.locked,
+    isHidden: item.isHidden,
+    visibleFromT: item.visibleFromT as number | undefined,
+    visibleUntilT: item.visibleUntilT as number | undefined,
+    media: item.media,
+    userData: item.userData,
+    anchorZoom: item.anchorZoom ?? 0,
+  };
+
+  if ("annotationKind" in item && item.annotationKind === "arrow") {
+    return {
+      ...base,
+      annotationKind: "arrow",
+      geometry: item.geometry,
+      style: item.style,
+      state: canonicalizeArrowAnnotationStates(item.state),
+    } satisfies ArrowAnnotation;
+  }
+
+  const textItem = item as LegacyTextAnnotationItem;
+  return {
+    ...base,
+    annotationKind: "text",
+    textType: textItem.annotationType ?? "label",
+    anchor: textItem.anchor ?? { type: "point", position: [0, 0] },
+    content: textItem.content ?? {},
+    style: textItem.style,
+    state: canonicalizeTextAnnotationStates(textItem.state),
+  } satisfies TextAnnotation;
 }
 
 function inferGeometryKind(
@@ -251,6 +440,11 @@ function canonicalizeOverlayLayer(
         kind: "geometry",
         state: canonicalizeGeometryStateEntries(state),
       } as unknown as GeometryLayerItem);
+      return;
+    }
+
+    if (isAnnotationLayerItem(item)) {
+      canonicalItems.push(upgradeAnnotationItemToSharedBase(item));
       return;
     }
 

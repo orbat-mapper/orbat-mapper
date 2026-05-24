@@ -12,7 +12,7 @@ import { nanoid } from "@/utils";
 import { isCircle } from "@/composables/openlayersHelpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
+import type { ArrowAnnotation, GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { SimpleStyleSpec } from "@/geo/simplestyle";
 
 interface DrawTargetLayer {
@@ -107,10 +107,44 @@ export function addScenarioDrawFeature(
   return scenarioFeature;
 }
 
+export function addScenarioArrowAnnotation(
+  scenario: TScenario,
+  geometry: ArrowAnnotation["geometry"],
+  anchorZoom: number,
+  activeLayerId?: FeatureId | null,
+  style: Partial<SimpleStyleSpec> = {},
+): ArrowAnnotation | undefined {
+  const scenarioLayer = getActiveDrawLayer(scenario, activeLayerId);
+  if (!scenarioLayer) return;
+
+  const annotation: ArrowAnnotation = {
+    id: nanoid(),
+    kind: "annotation",
+    annotationKind: "arrow",
+    name: `Arrow annotation ${scenarioLayer.items.length + 1}`,
+    geometry,
+    anchorZoom,
+    style: {
+      stroke: style.stroke,
+      "stroke-opacity": style["stroke-opacity"],
+      "stroke-width": style["stroke-width"],
+      "stroke-style": style["stroke-style"],
+      "arrow-start": style["arrow-start"] ?? "none",
+      "arrow-end": style["arrow-end"] ?? "arrow",
+      limitVisibility: style.limitVisibility,
+      minZoom: style.minZoom,
+      maxZoom: style.maxZoom,
+    },
+  };
+
+  scenario.geo.addAnnotation(annotation, scenarioLayer.id);
+  return annotation;
+}
+
 export function addOlDrawFeature(
   scenario: TScenario,
   olFeature: Feature,
-  olLayer: VectorLayer<any>,
+  olLayer: VectorLayer,
   style: Partial<SimpleStyleSpec> = {},
 ): GeometryLayerItem | undefined {
   if (!olFeature.getId()) olFeature.setId(nanoid());

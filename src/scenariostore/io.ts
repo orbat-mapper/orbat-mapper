@@ -33,7 +33,7 @@ import dayjs from "dayjs";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import type { RangeRingGroup, ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type {
-  GeometryLayerItem,
+  ScenarioLayerItem,
   ScenarioLayerItemsLayer,
 } from "@/types/scenarioLayerItems";
 import type { LoadableScenario } from "@/scenariostore/upgrade";
@@ -296,10 +296,8 @@ function getStoredOverlayLayers(state: ScenarioState): ScenarioOverlayLayer[] {
     layers.push({
       ...rest,
       kind: "overlay",
-      // Transitional geometry-only serialization. This must become item-aware
-      // before annotation/tacticalGraphic/measurement items are persisted.
       items: items.map(
-        (itemId: string) => state.layerItemMap[itemId] as GeometryLayerItem,
+        (itemId: string) => state.layerItemMap[itemId] as ScenarioLayerItem,
       ),
     });
   });

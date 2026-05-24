@@ -120,33 +120,122 @@ export type AnnotationAnchor =
       offset?: [number, number];
     };
 
-export interface AnnotationLayerItemState {
+export interface AnnotationLayerItemBase extends ScenarioLayerItemBase {
+  kind: "annotation";
+  anchorZoom: number;
+}
+
+export interface TextAnnotationStyle extends ScenarioLayerItemStyle {
+  textAlign?: "left" | "center" | "right";
+  textSize?: number;
+  textColor?: string;
+  textHaloColor?: string;
+  textHaloWidth?: number;
+  backgroundColor?: string;
+}
+
+export interface ArrowAnnotationStyle
+  extends
+    ScenarioLayerItemStyle,
+    Pick<
+      Partial<SimpleStyleSpec>,
+      | "stroke"
+      | "stroke-opacity"
+      | "stroke-width"
+      | "stroke-style"
+      | "arrow-start"
+      | "arrow-end"
+    > {}
+
+export interface TextAnnotationState {
   id: string;
   t: ScenarioTime;
   note?: string;
+  annotationKind: "text";
   patch: Partial<
     Pick<
-      AnnotationLayerItem,
-      "anchor" | "content" | "style" | "name" | "description" | "isHidden"
+      TextAnnotation,
+      "anchor" | "content" | "style" | "name" | "description" | "isHidden" | "anchorZoom"
     >
   >;
 }
 
-export interface AnnotationLayerItem extends ScenarioLayerItemBase {
-  kind: "annotation";
-  annotationType: "label" | "note" | "callout" | "image";
+export type CurrentTextAnnotationState = Omit<
+  TextAnnotationState,
+  "id" | "annotationKind" | "patch"
+> &
+  TextAnnotationState["patch"] & {
+    type?: CurrentStateType;
+  };
+
+export interface TextAnnotation extends AnnotationLayerItemBase {
+  annotationKind: "text";
+  textType: "label" | "note" | "callout" | "image";
   anchor: AnnotationAnchor;
   content: {
     text?: string;
     markdown?: string;
     imageUrl?: string;
   };
-  style?: ScenarioLayerItemStyle & {
-    textAlign?: "left" | "center" | "right";
-    textSize?: number;
-    textColor?: string;
-    backgroundColor?: string;
+  style?: TextAnnotationStyle;
+  state?: TextAnnotationState[];
+  _state?: CurrentTextAnnotationState | null;
+}
+
+export interface ArrowAnnotationState {
+  id: string;
+  t: ScenarioTime;
+  note?: string;
+  annotationKind: "arrow";
+  patch: Partial<
+    Pick<
+      ArrowAnnotation,
+      "geometry" | "style" | "name" | "description" | "isHidden" | "anchorZoom"
+    >
+  >;
+}
+
+export type CurrentArrowAnnotationState = Omit<
+  ArrowAnnotationState,
+  "id" | "annotationKind" | "patch"
+> &
+  ArrowAnnotationState["patch"] & {
+    type?: CurrentStateType;
   };
+
+export interface ArrowAnnotation extends AnnotationLayerItemBase {
+  annotationKind: "arrow";
+  geometry: { type: "LineString"; coordinates: Position[] };
+  style?: ArrowAnnotationStyle;
+  state?: ArrowAnnotationState[];
+  _state?: CurrentArrowAnnotationState | null;
+}
+
+export type AnnotationLayerItem = TextAnnotation | ArrowAnnotation;
+export type AnnotationLayerItemState = TextAnnotationState | ArrowAnnotationState;
+export type CurrentAnnotationLayerItemState =
+  | CurrentTextAnnotationState
+  | CurrentArrowAnnotationState;
+
+export interface AnnotationLayerItemUpdate extends Partial<
+  Pick<
+    AnnotationLayerItemBase,
+    | "name"
+    | "description"
+    | "externalUrl"
+    | "locked"
+    | "isHidden"
+    | "media"
+    | "userData"
+    | "visibleFromT"
+    | "visibleUntilT"
+    | "anchorZoom"
+  >
+> {
+  anchor?: TextAnnotation["anchor"];
+  content?: TextAnnotation["content"];
+  geometry?: ArrowAnnotation["geometry"];
+  style?: TextAnnotation["style"] | ArrowAnnotation["style"];
   state?: AnnotationLayerItemState[];
 }
 
@@ -229,6 +318,11 @@ export type NGeometryLayerItem = GeometryLayerItem & {
   _pid: LayerId;
 };
 
+export type NAnnotationLayerItem = AnnotationLayerItem & {
+  _pid: LayerId;
+  _hidden?: boolean;
+};
+
 export type GeometryLayerItemLike = Omit<GeometryLayerItem, "kind"> & {
   kind?: "geometry";
 };
@@ -239,6 +333,29 @@ export function createInitialGeometryLayerItemState(
   return {
     t: Number.MIN_SAFE_INTEGER,
     geometry: feature.geometry,
+  };
+}
+
+export function createInitialAnnotationLayerItemState(
+  item: AnnotationLayerItem,
+): CurrentAnnotationLayerItemState {
+  if (isTextAnnotation(item)) {
+    const { anchor, content, style, anchorZoom } = item;
+    return {
+      t: Number.MIN_SAFE_INTEGER,
+      anchor,
+      content,
+      style,
+      anchorZoom,
+    };
+  }
+
+  const { geometry, style, anchorZoom } = item;
+  return {
+    t: Number.MIN_SAFE_INTEGER,
+    geometry,
+    style,
+    anchorZoom,
   };
 }
 
@@ -271,6 +388,28 @@ export function isNGeometryLayerItem(
   return isGeometryLayerItem(item);
 }
 
+export function isAnnotationLayerItem(item: unknown): item is AnnotationLayerItem {
+  if (!item || typeof item !== "object") return false;
+  const candidate = item as Partial<AnnotationLayerItem> & { kind?: string };
+  return candidate.kind === "annotation";
+}
+
+export function isTextAnnotation(item: unknown): item is TextAnnotation {
+  if (!isAnnotationLayerItem(item)) return false;
+  return (item as TextAnnotation | ArrowAnnotation).annotationKind === "text";
+}
+
+export function isArrowAnnotation(item: unknown): item is ArrowAnnotation {
+  if (!isAnnotationLayerItem(item)) return false;
+  return (item as TextAnnotation | ArrowAnnotation).annotationKind === "arrow";
+}
+
+export function isNAnnotationLayerItem(
+  item: NScenarioLayerItem,
+): item is NAnnotationLayerItem {
+  return isAnnotationLayerItem(item);
+}
+
 export function normalizeGeometryLayerItemState(
   state: LoadableGeometryLayerItemState,
 ): GeometryLayerItemState {
@@ -300,8 +439,33 @@ export function flattenGeometryLayerItemState(
 export function projectGeometryLayerItemState(
   state: GeometryLayerItemState,
 ): CurrentGeometryLayerItemState {
-  const { id: _id, patch, ...rest } = state;
+  const { id, patch, ...rest } = state;
+  void id;
   return { ...rest, ...patch };
+}
+
+export function projectAnnotationLayerItemState(
+  state: AnnotationLayerItemState,
+): CurrentAnnotationLayerItemState {
+  const { id, annotationKind, patch, ...rest } = state;
+  void id;
+  void annotationKind;
+  return { ...rest, ...patch };
+}
+
+export function applyAnnotationStatePatch<T extends AnnotationLayerItem>(
+  item: T,
+  state: AnnotationLayerItemState,
+): T {
+  if (isTextAnnotation(item) && state.annotationKind === "text") {
+    return { ...item, ...state.patch } as T;
+  }
+  if (isArrowAnnotation(item) && state.annotationKind === "arrow") {
+    return { ...item, ...state.patch } as T;
+  }
+  throw new Error(
+    `Annotation state kind "${state.annotationKind}" does not match annotation "${item.annotationKind}"`,
+  );
 }
 
 export type ScenarioLayerItemState =

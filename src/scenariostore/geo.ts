@@ -11,21 +11,26 @@ import type { EntityId } from "@/types/base";
 import type {
   NScenarioLayerItem,
   NScenarioLayer,
-  NScenarioMapStackLayer,
   ScenarioLayerUpdate,
   ScenarioMapLayerUpdate,
   NGeometryLayerItem,
   GeometryLayerItemUpdate,
 } from "@/types/internalModels";
 import type {
+  AnnotationLayerItem,
+  AnnotationLayerItemUpdate,
   CurrentGeometryLayerItemState,
   FullScenarioLayerItemsLayer,
-  GeometryLayerItem,
-  ScenarioLayerItem,
+  NAnnotationLayerItem,
 } from "@/types/scenarioLayerItems";
 import {
+  createInitialAnnotationLayerItemState,
   createInitialGeometryLayerItemState,
+  isAnnotationLayerItem,
+  isArrowAnnotation,
   isNGeometryLayerItem,
+  isTextAnnotation,
+  projectAnnotationLayerItemState,
   projectGeometryLayerItemState,
 } from "@/types/scenarioLayerItems";
 import type {
@@ -61,8 +66,12 @@ export type ScenarioFeatureLayerEvent =
   | { type: "removeLayer" | "moveLayer"; id: FeatureId }
   | { type: "updateLayer"; id: FeatureId; data: ScenarioLayerUpdate }
   | { type: "deleteFeature"; id: FeatureId }
-  | { type: "updateFeature"; id: FeatureId; data: GeometryLayerItemUpdate }
-  | { type: "addFeature"; id: FeatureId; data: NGeometryLayerItem }
+  | {
+      type: "updateFeature";
+      id: FeatureId;
+      data: GeometryLayerItemUpdate | AnnotationLayerItemUpdate;
+    }
+  | { type: "addFeature"; id: FeatureId; data: NScenarioLayerItem }
   | { type: "moveFeature"; id: FeatureId; fromLayer?: FeatureId; toLayer?: FeatureId };
 
 export type UpdateOptions = {
@@ -115,6 +124,16 @@ function getGeometryLayerItemFromMap(
   return layerItem?.kind === "geometry" ? (layerItem as NGeometryLayerItem) : undefined;
 }
 
+function getAnnotationLayerItemFromMap(
+  itemMap: Record<FeatureId, NScenarioLayerItem>,
+  featureId: FeatureId,
+): AnnotationLayerItem | undefined {
+  const layerItem = itemMap[featureId];
+  return layerItem && isAnnotationLayerItem(layerItem)
+    ? (layerItem as AnnotationLayerItem)
+    : undefined;
+}
+
 function getOverlayLayerFromMap(
   layerStackMap: Record<FeatureId, NScenarioStackLayer>,
   layerId: FeatureId,
@@ -132,6 +151,16 @@ function getReferenceLayerFromMap(
 }
 
 function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: number) {
+  const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+  const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
+  feature._hidden = timeHidden || !!feature.isHidden;
+}
+
+function updateAnnotationItemHidden(
+  feature: AnnotationLayerItem & { _hidden?: boolean },
+  currentTime: number,
+) {
   const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
   const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
   const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
@@ -571,14 +600,16 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function addFeature(
-    data: Omit<NGeometryLayerItem, "_pid">,
+    data:
+      | Omit<NGeometryLayerItem, "_pid">
+      | Omit<NAnnotationLayerItem, "_pid">
+      | Omit<NScenarioLayerItem, "_pid">,
     layerId: FeatureId,
     options: UpdateOptions = {},
   ) {
     const noEmit = options.noEmit ?? false;
-    const newFeature = klona(data) as NGeometryLayerItem;
+    const newFeature = klona(data) as NScenarioLayerItem;
     if (!newFeature.id) newFeature.id = nanoid();
-    if (!newFeature.kind) newFeature.kind = "geometry";
     newFeature._pid = layerId;
     update(
       (s) => {
@@ -595,11 +626,19 @@ export function useGeo(store: NewScenarioStore) {
         .trigger({
           type: "addFeature",
           id: newFeature.id,
-          data: newFeature,
+          data: newFeature as NScenarioLayerItem,
         })
         .then();
     }
     return newFeature.id;
+  }
+
+  function addAnnotation(
+    data: Omit<AnnotationLayerItem, "_pid">,
+    layerId: FeatureId,
+    options: UpdateOptions = {},
+  ) {
+    return addFeature(data as Omit<NScenarioLayerItem, "_pid">, layerId, options);
   }
 
   function deleteFeature(featureId: FeatureId, options: UpdateOptions = {}) {
@@ -694,7 +733,13 @@ export function useGeo(store: NewScenarioStore) {
       if (data.userData) {
         layerItem.userData = mergeGeometryUserData(layerItem.userData, data.userData);
       }
-      const { geometry, geometryMeta, style, userData, ...topLevelData } = data;
+      const {
+        geometry: _geometry,
+        geometryMeta: _geometryMeta,
+        style: _style,
+        userData: _userData,
+        ...topLevelData
+      } = data;
       Object.assign(layerItem, topLevelData);
       updateGeometryItemHidden(layerItem, state.currentTime);
     }
@@ -708,6 +753,105 @@ export function useGeo(store: NewScenarioStore) {
     }
   }
 
+  function updateAnnotation(
+    featureId: FeatureId,
+    data: AnnotationLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+    if (undoable) {
+      update(
+        (s) => {
+          const annotation = getAnnotationLayerItemFromMap(s.layerItemMap, featureId);
+          if (!annotation) return;
+
+          const {
+            anchor,
+            content,
+            geometry,
+            style,
+            state,
+            name,
+            description,
+            externalUrl,
+            locked,
+            isHidden,
+            media,
+            userData,
+            visibleFromT,
+            visibleUntilT,
+            anchorZoom,
+          } = data;
+
+          if (isTextAnnotation(annotation)) {
+            if (anchor !== undefined) annotation.anchor = anchor;
+            if (content !== undefined) annotation.content = content;
+            if (style !== undefined) {
+              annotation.style = { ...(annotation.style ?? {}), ...style };
+            }
+          }
+
+          if (isArrowAnnotation(annotation)) {
+            if (geometry !== undefined) annotation.geometry = geometry;
+            if (style !== undefined) {
+              annotation.style = { ...(annotation.style ?? {}), ...style };
+            }
+          }
+
+          if (state) annotation.state = state as typeof annotation.state;
+          if (name !== undefined) annotation.name = name;
+          if (description !== undefined) annotation.description = description;
+          if (externalUrl !== undefined) annotation.externalUrl = externalUrl;
+          if (locked !== undefined) annotation.locked = locked;
+          if (isHidden !== undefined) annotation.isHidden = isHidden;
+          if (media !== undefined) annotation.media = media;
+          if (userData !== undefined) annotation.userData = userData;
+          if (visibleFromT !== undefined) annotation.visibleFromT = visibleFromT;
+          if (visibleUntilT !== undefined) annotation.visibleUntilT = visibleUntilT;
+          if (anchorZoom !== undefined) annotation.anchorZoom = anchorZoom;
+
+          updateAnnotationItemHidden(annotation, s.currentTime);
+        },
+        { label: "updateFeature", value: featureId },
+      );
+    } else {
+      const annotation = getAnnotationLayerItemFromMap(state.layerItemMap, featureId);
+      if (!annotation) return;
+
+      if (isTextAnnotation(annotation)) {
+        if (data.anchor !== undefined) annotation.anchor = data.anchor;
+        if (data.content !== undefined) annotation.content = data.content;
+        if (data.style !== undefined) {
+          annotation.style = { ...(annotation.style ?? {}), ...data.style };
+        }
+      }
+
+      if (isArrowAnnotation(annotation)) {
+        if (data.geometry !== undefined) annotation.geometry = data.geometry;
+        if (data.style !== undefined) {
+          annotation.style = { ...(annotation.style ?? {}), ...data.style };
+        }
+      }
+
+      if (data.state !== undefined)
+        annotation.state = data.state as typeof annotation.state;
+      const {
+        anchor: _anchor,
+        content: _content,
+        geometry: _geometry,
+        style: _style,
+        state: _state,
+        ...topLevelData
+      } = data;
+      Object.assign(annotation, topLevelData);
+      updateAnnotationItemHidden(annotation, state.currentTime);
+    }
+
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: featureId, data }).then();
+  }
+
   function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
     update((s) => {
       const _feature = s.layerItemMap[featureId];
@@ -718,28 +862,59 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(featureId);
   }
 
-  function updateFeatureState(featureId: FeatureId, undoable = false) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
-    if (!feature) return;
+  function updateFeatureState(featureId: FeatureId) {
     const timestamp = state.currentTime;
-    if (!feature.state || !feature.state.length) {
+    const geometryFeature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+    if (geometryFeature) {
+      if (!geometryFeature.state || !geometryFeature.state.length) {
+        store.state.featureStateCounter++;
+        geometryFeature._state = undefined;
+        return;
+      }
+      let currentState = createInitialGeometryLayerItemState(geometryFeature);
+      for (const s of geometryFeature.state) {
+        if (s.t <= timestamp) {
+          currentState = {
+            ...currentState,
+            ...projectGeometryLayerItemState(s),
+          };
+        } else {
+          break;
+        }
+      }
+      geometryFeature._state = currentState;
       store.state.featureStateCounter++;
-      feature._state = undefined;
       return;
     }
-    let currentState = createInitialGeometryLayerItemState(feature);
-    for (const s of feature.state) {
+
+    const annotation = getAnnotationLayerItemFromMap(state.layerItemMap, featureId);
+    if (!annotation) return;
+    if (!annotation.state || !annotation.state.length) {
+      store.state.featureStateCounter++;
+      annotation._state = undefined;
+      return;
+    }
+    let currentState = createInitialAnnotationLayerItemState(annotation);
+    for (const s of annotation.state) {
       if (s.t <= timestamp) {
         currentState = {
           ...currentState,
-          ...projectGeometryLayerItemState(s),
+          ...projectAnnotationLayerItemState(s),
         };
       } else {
         break;
       }
     }
-    feature._state = currentState;
+    annotation._state = currentState;
     store.state.featureStateCounter++;
+  }
+
+  function getAnnotationLayerItemById(id: FeatureId) {
+    const { layerItem, layer } = getLayerItemById(id);
+    if (!layerItem || !isAnnotationLayerItem(layerItem)) {
+      return { layerItem: undefined, layer };
+    }
+    return { layerItem, layer };
   }
 
   function getLayerItemById(id: FeatureId) {
@@ -800,6 +975,7 @@ export function useGeo(store: NewScenarioStore) {
       getOverlayLayerFromMap(state.layerStackMap, id) as NScenarioLayer | undefined,
     getFullLayerItemsLayer,
     getLayerItemById,
+    getAnnotationLayerItemById,
     getGeometryLayerItemById,
     moveFeature,
     updateLayer,
@@ -807,9 +983,11 @@ export function useGeo(store: NewScenarioStore) {
     getLayerIndex: (id: FeatureId) => state.layerStack.indexOf(id),
     moveLayer,
     addFeature,
+    addAnnotation,
     duplicateFeature,
     deleteFeature,
     updateFeature,
+    updateAnnotation,
     deleteFeatureStateEntry,
     itemsInfo,
     layerItemsLayers,

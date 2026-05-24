@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { activeScenarioKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
+import ScenarioAnnotationDetails from "@/modules/scenarioeditor/ScenarioAnnotationDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
@@ -9,7 +12,6 @@ import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ReferenceFeatureDetails from "@/modules/scenarioeditor/ReferenceFeatureDetails.vue";
 import MapEditorRouteContent from "@/modules/scenarioeditor/MapEditorRouteContent.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
-import { injectStrict } from "@/utils";
 import { routeDetailsPanelKey } from "@/components/injects";
 
 const props = defineProps<{
@@ -28,6 +30,12 @@ const {
 const toolbarStore = useMainToolbarStore();
 const routeDetailsPanel = injectStrict(routeDetailsPanelKey);
 const showRouteContent = computed(() => toolbarStore.currentToolbar === "route");
+const activeScenario = injectStrict(activeScenarioKey);
+const selectedFeatureKind = computed(() => {
+  const firstSelectedId = selectedFeatureIds.value.values().next().value;
+  if (!firstSelectedId) return undefined;
+  return activeScenario.geo.getLayerItemById(firstSelectedId).layerItem?.kind;
+});
 </script>
 
 <template>
@@ -39,6 +47,11 @@ const showRouteContent = computed(() => toolbarStore.currentToolbar === "route")
     @clear-current-leg="routeDetailsPanel.clearCurrentLeg()"
     @finish="routeDetailsPanel.finishRoute()"
     @end-drawing="routeDetailsPanel.endRouting()"
+  />
+  <ScenarioAnnotationDetails
+    v-else-if="activeDetailsPanel === 'feature' && selectedFeatureKind === 'annotation'"
+    :selected-ids="selectedFeatureIds"
+    :class="props.contentClass"
   />
   <ScenarioFeatureDetails
     v-else-if="activeDetailsPanel === 'feature'"

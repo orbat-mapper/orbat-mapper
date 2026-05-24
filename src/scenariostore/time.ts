@@ -19,9 +19,12 @@ import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
+  createInitialAnnotationLayerItemState,
   createInitialGeometryLayerItemState,
   type CurrentGeometryLayerItemState,
+  isAnnotationLayerItem,
   isNGeometryLayerItem,
+  projectAnnotationLayerItemState,
   projectGeometryLayerItemState,
 } from "@/types/scenarioLayerItems";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
@@ -213,7 +216,7 @@ export function useScenarioTime(store: NewScenarioStore) {
       }
       layer.items.forEach((featureId) => {
         const feature = state.layerItemMap[featureId];
-        if (!feature || !isNGeometryLayerItem(feature)) return;
+        if (!feature) return;
         const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
         const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
         const oldHidden = feature._hidden;
@@ -222,13 +225,28 @@ export function useScenarioTime(store: NewScenarioStore) {
         if (oldHidden !== feature._hidden) {
           state.featureStateCounter++;
         }
-        if (feature.state?.length) {
+        if (isNGeometryLayerItem(feature) && feature.state?.length) {
           let currentState = createInitialGeometryLayerItemState(feature);
           for (const s of feature.state) {
             if (s.t <= timestamp) {
               currentState = {
                 ...currentState,
                 ...projectGeometryLayerItemState(s),
+              };
+            } else {
+              break;
+            }
+          }
+          feature._state = currentState;
+          state.featureStateCounter++;
+        }
+        if (isAnnotationLayerItem(feature) && feature.state?.length) {
+          let currentState = createInitialAnnotationLayerItemState(feature);
+          for (const s of feature.state) {
+            if (s.t <= timestamp) {
+              currentState = {
+                ...currentState,
+                ...projectAnnotationLayerItemState(s),
               };
             } else {
               break;
