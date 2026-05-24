@@ -1,6 +1,7 @@
 import type {
   GeoJSONSource,
   Map as MlMap,
+  MapGeoJSONFeature,
   MapMouseEvent,
   MapTouchEvent,
   PointLike,
@@ -51,6 +52,18 @@ const MEASUREMENT_LINE_LAYER_ID = "maplibre-measurement-line";
 const MEASUREMENT_POINT_LAYER_ID = "maplibre-measurement-point";
 const MEASUREMENT_LABEL_LAYER_ID = "maplibre-measurement-label";
 const MEASUREMENT_HANDLE_LAYER_ID = "maplibre-measurement-handle";
+
+// Hit-test tolerance (in pixels) for grabbing measurement vertex/midpoint
+// handles. The handle circles are small, so a single-pixel query is nearly
+// impossible to hit with a fingertip. Buffer the tap point into a small box;
+// touch gets a wider box, mirroring the selection tolerances used by MlMapLogic.
+const HANDLE_HIT_TOLERANCE_PX = 12;
+const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
+
+const coarsePointerQuery =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(pointer: coarse)")
+    : null;
 
 interface MeasurementFeature {
   id: string;
@@ -181,7 +194,7 @@ export function useMapLibreMeasurementInteraction(
       render();
       return;
     }
-    mlMap.getCanvas().style.cursor = getTopHandle(e.point) ? "grab" : "crosshair";
+    mlMap.getCanvas().style.cursor = getTopHandle(e.point, e) ? "grab" : "crosshair";
   }
 
   function onMouseDown(e: MapMouseEvent | MapTouchEvent) {
@@ -191,7 +204,7 @@ export function useMapLibreMeasurementInteraction(
       suppressNextClick = false;
     }
     if (drawInProgress) return;
-    const handle = getTopHandle(e.point);
+    const handle = getTopHandle(e.point, e);
     if (!handle) return;
     dragState = {
       measurementId: handle.measurementId,
@@ -511,17 +524,53 @@ export function useMapLibreMeasurementInteraction(
 
   function getTopHandle(
     pointLike: PointLike,
+    e?: MapMouseEvent | MapTouchEvent,
   ): { measurementId: string; kind: EditHandle["kind"]; path: number[] } | null {
-    const hits = mlMap.queryRenderedFeatures(pointLike, {
-      layers: [MEASUREMENT_HANDLE_LAYER_ID],
+    const [x, y] = pointToXY(pointLike);
+    const tolerance = getHandleHitTolerance(e);
+    const hits = mlMap.queryRenderedFeatures(
+      [
+        [x - tolerance, y - tolerance],
+        [x + tolerance, y + tolerance],
+      ],
+      { layers: [MEASUREMENT_HANDLE_LAYER_ID] },
+    );
+
+    const candidates: {
+      handle: { measurementId: string; kind: EditHandle["kind"]; path: number[] };
+      distance: number;
+    }[] = [];
+    for (const hit of hits) {
+      if (!hit.properties?.measurementId || !hit.properties.path) continue;
+      candidates.push({
+        handle: {
+          measurementId: String(hit.properties.measurementId),
+          kind: hit.properties.kind === "midpoint" ? "midpoint" : "vertex",
+          path: decodePath(hit.properties.path),
+        },
+        distance: handleDistanceToPoint(hit, x, y),
+      });
+    }
+
+    // Pick the handle closest to the tap point; on a near-tie prefer a vertex,
+    // since dragging an existing vertex is more common than splitting an edge.
+    candidates.sort((a, b) => {
+      if (Math.abs(a.distance - b.distance) < 1 && a.handle.kind !== b.handle.kind) {
+        return a.handle.kind === "vertex" ? -1 : 1;
+      }
+      return a.distance - b.distance;
     });
-    const hit = hits[0];
-    if (!hit?.properties?.measurementId || !hit.properties.path) return null;
-    return {
-      measurementId: String(hit.properties.measurementId),
-      kind: hit.properties.kind === "midpoint" ? "midpoint" : "vertex",
-      path: decodePath(hit.properties.path),
-    };
+    return candidates[0]?.handle ?? null;
+  }
+
+  function handleDistanceToPoint(hit: MapGeoJSONFeature, x: number, y: number): number {
+    if (hit.geometry?.type !== "Point") return Number.POSITIVE_INFINITY;
+    try {
+      const projected = mlMap.project(hit.geometry.coordinates as [number, number]);
+      return Math.hypot(projected.x - x, projected.y - y);
+    } catch {
+      return Number.POSITIVE_INFINITY;
+    }
   }
 
   function updateDraggedVertex(position: Position) {
@@ -740,6 +789,20 @@ export function useMapLibreMeasurementInteraction(
       return undefined;
     }
   }
+}
+
+function pointToXY(point: PointLike): [number, number] {
+  if (Array.isArray(point)) return point;
+  return [point.x, point.y];
+}
+
+// A touch-driven event, or a coarse-pointer device, gets the wider tolerance.
+// `originalEvent` is absent on the synthetic events MapLibre dispatches.
+function getHandleHitTolerance(e?: MapMouseEvent | MapTouchEvent): number {
+  const isTouch =
+    (e?.originalEvent?.type?.startsWith("touch") ?? false) ||
+    (coarsePointerQuery?.matches ?? false);
+  return isTouch ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
 }
 
 function encodePath(path: number[]) {

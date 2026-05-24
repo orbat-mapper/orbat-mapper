@@ -877,4 +877,117 @@ describe("useMapLibreDrawInteraction", () => {
     expect(coordinates[0]).toBeCloseTo(55.968, 3);
     expect(coordinates[1]).toBeCloseTo(42.415, 3);
   });
+
+  it("previews a vertex drag live on touchmove", () => {
+    const feature = selectedLine();
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      snap: false,
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([1]),
+          },
+        },
+      ],
+    });
+
+    harness.draw.startModify();
+    harness.trigger("touchstart", createEvent(11, 21, { type: "touchstart" }));
+    harness.trigger("touchmove", createEvent(12, 24, { type: "touchmove" }));
+
+    // Without a touchmove handler the drag had no feedback until the finger
+    // lifted; the preview overlay must now track the moving vertex.
+    const preview = harness.overlays.get("maplibre-draw-preview") as any;
+    expect(preview.geojson.features[0].geometry.coordinates).toEqual([
+      [10, 20],
+      [12, 24],
+    ]);
+  });
+
+  it("grabs the handle nearest the tap rather than the topmost hit", () => {
+    const feature = selectedLine();
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      snap: false,
+      // The midpoint is returned first (it renders on top) but the tap lands on
+      // the vertex, so the closer vertex handle should win.
+      queryRenderedFeatures: (_point, queryOptions) => {
+        if (!(queryOptions as any)?.layers) return [];
+        return [
+          {
+            properties: {
+              featureId: "feature-1",
+              kind: "midpoint",
+              path: JSON.stringify([1]),
+            },
+            geometry: { type: "Point", coordinates: [10.5, 20.5] },
+          },
+          {
+            properties: {
+              featureId: "feature-1",
+              kind: "vertex",
+              path: JSON.stringify([0]),
+            },
+            geometry: { type: "Point", coordinates: [10, 20] },
+          },
+        ];
+      },
+    });
+
+    harness.draw.startModify();
+    harness.trigger("mousedown", createEvent(10, 20));
+    harness.trigger("mouseup", createEvent(13, 23));
+
+    expect(harness.updateFeatures).toHaveBeenCalledWith([
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [13, 23],
+            [11, 21],
+          ],
+        },
+      }),
+    ]);
+  });
+
+  it("buffers the tap into a box so offset taps still hit a handle", () => {
+    const feature = selectedLine();
+    const queryRenderedFeatures = vi.fn((_point: unknown, queryOptions?: unknown) => {
+      if (!(queryOptions as any)?.layers) return [];
+      return [
+        {
+          properties: {
+            featureId: "feature-1",
+            kind: "vertex",
+            path: JSON.stringify([1]),
+          },
+          geometry: { type: "Point", coordinates: [11, 21] },
+        },
+      ];
+    });
+    const harness = createHarness({
+      selectedFeatures: [feature],
+      snap: false,
+      queryRenderedFeatures,
+    });
+
+    harness.draw.startModify();
+    harness.trigger("mousedown", createEvent(11, 21));
+
+    const boxQuery = queryRenderedFeatures.mock.calls.find(
+      ([geometry, queryOptions]) =>
+        (queryOptions as any)?.layers && Array.isArray(geometry),
+    );
+    expect(boxQuery).toBeDefined();
+    const [[minX, minY], [maxX, maxY]] = boxQuery![0] as [
+      [number, number],
+      [number, number],
+    ];
+    expect(maxX - minX).toBe(24);
+    expect(maxY - minY).toBe(24);
+  });
 });
