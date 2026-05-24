@@ -245,7 +245,7 @@ watchEffect(() => {
 <template>
   <FloatingPanel
     v-if="isGetLocationActive"
-    class="bg-opacity-75 absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
+    class="bg-popover/75! absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
   >
     Click on map or ORBAT to place unit.
     <Button type="button" variant="link" size="sm" @click="cancelGetLocation()">
@@ -262,7 +262,7 @@ watchEffect(() => {
         class="hidden sm:flex"
       >
         <IconLockOutline v-if="addMultiple" class="size-5" />
-        <IconLockOpenVariantOutline v-else class="size-6" />
+        <IconLockOpenVariantOutline v-else class="size-5" />
       </MainToolbarButton>
       <MainToolbarButton
         @click="setSelectMode()"
@@ -353,7 +353,7 @@ watchEffect(() => {
           "
         >
           <AddSymbolIcon
-            class="bg-opacity-70 text-muted-foreground group-hover:text-foreground bg-background absolute -right-2 bottom-0 h-4 w-4 rounded-full"
+            class="text-muted-foreground group-hover:text-foreground bg-background/70 absolute -right-2 bottom-0 h-4 w-4 rounded-full"
           />
         </PanelSymbolButton>
         <SymbolPickerPopover

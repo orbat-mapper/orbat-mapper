@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  IconClose as CloseIcon,
   IconMagnet as SnapIcon,
   IconMapMarkerDistance as ShowSegmentsIcon,
   IconSelectionEllipse as ShowCircleIcon,
@@ -10,8 +9,8 @@ import {
   IconVectorLine as LengthIcon,
   IconVectorSquare as AreaIcon,
 } from "@iconify-prerendered/vue-mdi";
-import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
+import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { onKeyDown } from "@vueuse/core";
 import { activeNativeMapKey, activeScenarioMapEngineKey } from "@/components/injects";
@@ -75,10 +74,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <FloatingPanel
-    class="no-scrollbar pointer-events-auto flex max-w-full items-center space-x-0.5 overflow-x-auto rounded-md p-1"
-  >
-    <p class="text-muted-foreground px-2 text-sm font-medium">Measure</p>
+  <MapEditorSubToolbar label="Measure">
     <MainToolbarButton
       title="Length"
       @click="measurementType = 'LineString'"
@@ -93,7 +89,7 @@ onUnmounted(() => {
     >
       <AreaIcon class="size-5" />
     </MainToolbarButton>
-    <div class="h-5 border-l border-gray-300" />
+    <div class="border-border mx-1 h-5 border-l" />
     <MainToolbarButton
       title="Show segment lengths"
       @click="showSegments = !showSegments"
@@ -129,9 +125,5 @@ onUnmounted(() => {
     <MainToolbarButton title="Clear measurements" @click="clear()">
       <TrashIcon class="size-5" />
     </MainToolbarButton>
-
-    <MainToolbarButton title="Toggle toolbar" @click="store.clearToolbar()">
-      <CloseIcon class="size-5" />
-    </MainToolbarButton>
-  </FloatingPanel>
+  </MapEditorSubToolbar>
 </template>
