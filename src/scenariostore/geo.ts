@@ -201,6 +201,9 @@ export function useGeo(store: NewScenarioStore) {
             ? { viaStartTime: options.viaStartTime }
             : {}),
         };
+        // Bump before the loop so every code path (insert/replace/append) records
+        // the change and keeps the bump inside the patch for undo/redo.
+        s.unitStateCounter++;
         if (t === s.currentTime) u._state = newState;
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
@@ -216,7 +219,6 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addUnitPosition", value: unitId },
     );
-    store.state.unitStateCounter++;
   }
 
   function addFeatureStateGeometry(

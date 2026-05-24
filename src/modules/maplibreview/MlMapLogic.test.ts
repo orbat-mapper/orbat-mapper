@@ -862,6 +862,60 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("refreshes MapLibre units when undo/redo flips unitStateCounter", async () => {
+    // Undo/redo of addUnitPosition reverts unitStateCounter (the bump is part of
+    // the patch), which drives the redraw via the unitStateCounter watcher.
+    const mockMap = createMockMap();
+    const unitStateCounter = ref(1);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-undo-redraw",
+        sidc: "SFGPUCI----K",
+        shortName: "A1",
+        name: "Alpha 1",
+        _state: {
+          location: [11, 21],
+        },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-undo-redraw",
+          currentTime: 0,
+          featureStateCounter: 0,
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+
+    // Simulate undo: the position reverts and the counter flips back.
+    visibleUnits.value[0]._state.location = [10, 20];
+    unitStateCounter.value--;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBeGreaterThan(initialCallCount);
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].geometry.coordinates).toEqual([10, 20]);
+  });
+
   it("refreshes MapLibre units when unitStateCounter changes after text amplifier updates", async () => {
     const mockMap = createMockMap();
     const unitStateCounter = ref(0);
