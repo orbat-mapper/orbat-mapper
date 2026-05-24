@@ -7,7 +7,71 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+function createUnitScenario() {
+  return {
+    id: "scenario-1",
+    type: "ORBAT-mapper",
+    version: "2.7.0",
+    name: "Scenario",
+    startTime: "2025-01-01T00:00:00Z",
+    sides: [
+      {
+        id: "side-1",
+        name: "Blue",
+        standardIdentity: "3",
+        symbolOptions: {},
+        subUnits: [],
+        groups: [
+          {
+            id: "group-1",
+            name: "Units",
+            symbolOptions: {},
+            subUnits: [
+              {
+                id: "unit-1",
+                name: "1st Unit",
+                sidc: "10031000000000000000",
+                location: [10, 60],
+                subUnits: [],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    events: [],
+    layers: [],
+    mapLayers: [],
+    settings: {
+      rangeRingGroups: [],
+      statuses: [],
+      supplyClasses: [],
+      supplyUoMs: [],
+      symbolFillColors: [],
+    },
+  } as any;
+}
+
 describe("scenario geo item accessors", () => {
+  it("keeps addUnitPosition redraw signal undo/redo aware", () => {
+    const store = useNewScenarioStore(createUnitScenario());
+    const geo = useGeo(store);
+    const before = store.state.unitStateCounter;
+
+    geo.addUnitPosition("unit-1", [11, 61]);
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
+
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+    expect(store.state.unitMap["unit-1"]._state?.location).toEqual([10, 60]);
+
+    store.redo();
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
+  });
+
   it("exposes layer-item accessors backed by the current feature store", () => {
     const store = useNewScenarioStore({
       id: "scenario-1",
