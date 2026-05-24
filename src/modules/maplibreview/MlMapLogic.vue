@@ -69,6 +69,20 @@ const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
 const NATIVE_CAPTURE_OPTIONS = { capture: true };
 const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
 
+// Hit-test tolerance (in pixels) used to buffer the click/hover point so thin
+// features such as lines are easier to select. Touch devices get a wider box
+// since fingertips are far less precise than a mouse cursor. The selection
+// values mirror the OpenLayers engine (which uses hitTolerance: 20 for picking,
+// ~3 for hover) so both map engines feel the same.
+const MOUSE_HIT_TOLERANCE_PX = 20;
+const TOUCH_HIT_TOLERANCE_PX = 26;
+const HOVER_HIT_TOLERANCE_PX = 6;
+
+const coarsePointerQuery =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(pointer: coarse)")
+    : null;
+
 type UnitVisibilityGroup = {
   id: string;
   minzoom?: number;
@@ -487,12 +501,37 @@ mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
-function queryInteractiveFeatures(point: PointLike) {
+function pointToXY(point: PointLike): [number, number] {
+  return Array.isArray(point) ? point : [point.x, point.y];
+}
+
+// A touch device, or an explicit touch-driven event, gets the wider tolerance.
+// `originalEvent` is absent on the native MouseEvent passed by shift-click.
+function getHitTolerance(e?: MapMouseEvent | MapTouchEvent | MouseEvent): number {
+  const originalType =
+    e && "originalEvent" in e ? e.originalEvent?.type : (e as MouseEvent | undefined)?.type;
+  const isTouch =
+    (originalType?.startsWith("touch") ?? false) || (coarsePointerQuery?.matches ?? false);
+  return isTouch ? TOUCH_HIT_TOLERANCE_PX : MOUSE_HIT_TOLERANCE_PX;
+}
+
+function queryInteractiveFeatures(
+  point: PointLike,
+  tolerance: number = MOUSE_HIT_TOLERANCE_PX,
+) {
+  const [x, y] = pointToXY(point);
+  const geometry: PointLike | [PointLike, PointLike] =
+    tolerance > 0
+      ? [
+          [x - tolerance, y - tolerance],
+          [x + tolerance, y + tolerance],
+        ]
+      : point;
   // Units must take precedence over reference layers (KML) even when those
   // layers happen to render above the unit symbols.
   const unitHits: MapGeoJSONFeature[] = [];
   const otherHits: MapGeoJSONFeature[] = [];
-  for (const feature of mlMap.queryRenderedFeatures(point)) {
+  for (const feature of mlMap.queryRenderedFeatures(geometry)) {
     const layerId = feature.layer.id;
     if (isUnitLayerId(layerId)) {
       unitHits.push(feature);
@@ -581,7 +620,7 @@ function getShiftClickUnitId(e: MouseEvent): string | undefined {
   if (moveUnitEnabled.value) return;
   if (!unitSelectEnabled.value) return;
 
-  const topHit = queryInteractiveFeatures(getEventPixel(e))[0];
+  const topHit = queryInteractiveFeatures(getEventPixel(e), getHitTolerance(e))[0];
   if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
 
   return topHit.properties?.id;
@@ -637,7 +676,7 @@ function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
-  const topHit = queryInteractiveFeatures(e.point)[0];
+  const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
   const additive = e.originalEvent.shiftKey;
   const selectionEnabled = unitSelectEnabled.value || featureSelectEnabled.value;
   if (!topHit) {
@@ -681,7 +720,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   if (rotateUnitEnabled.value) {
     clearHoveredFeatures();
     if (!unitSelectEnabled.value) return;
-    const topHit = queryInteractiveFeatures(e.point)[0];
+    const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
     const rotatableUnitIds = isUnitLayerId(topHit?.layer.id)
       ? rotateInteraction.getRotatableUnitIds(topHit.properties?.id)
       : [];
@@ -691,7 +730,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   if (moveUnitEnabled.value && recordingStore.isRecordingLocation) {
     clearHoveredFeatures();
     if (!unitSelectEnabled.value) return;
-    const topHit = queryInteractiveFeatures(e.point)[0];
+    const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
     const movableUnitIds = isUnitLayerId(topHit?.layer.id)
       ? getMovableUnitIds(topHit.properties?.id)
       : [];
@@ -703,7 +742,7 @@ function onMapMouseMove(e: MapMouseEvent) {
     mlMap.getCanvas().style.cursor = "crosshair";
     return;
   }
-  const features = queryInteractiveFeatures(e.point);
+  const features = queryInteractiveFeatures(e.point, HOVER_HIT_TOLERANCE_PX);
   mlMap.getCanvas().style.cursor = features.length ? "pointer" : "";
   updateHoveredScenarioFeatures(features, e);
 }
@@ -722,7 +761,7 @@ function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   if (!moveUnitEnabled.value || !recordingStore.isRecordingLocation) return;
   if (!unitSelectEnabled.value) return;
 
-  const topHit = queryInteractiveFeatures(e.point)[0];
+  const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
   if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
 
   const clickedUnitId = topHit.properties?.id;
