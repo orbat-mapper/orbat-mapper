@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added an add-multiple toggle to the draw toolbar for repeated feature drawing and unit placement.
+- Added a toolbar toggle to disable great-circle (geodesic) measurement paths in MapLibre Mercator mode.
 - Added experimental KML support for MapLibre mode.
 - Added an unsaved changes indicator and quick save button to the navbar.
 - Added twilight zones to the day/night terminator overlay (MapLibre mode only).
@@ -19,6 +21,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Improved MapLibre feature selection with a click hit tolerance and better shift+click handling.
+- Improved MapLibre draw and modify snapping.
+- Improved MapLibre geometry editing on touch devices.
+- Fixed MapLibre unit redraw after undo/redo.
 - Temporary KML/KMZ reference layers are no longer saved into serialized scenarios.
 - MapLibre scenario feature labels now honor the configured `text-offset-x`/`text-offset-y` (previously a fixed offset was used). Pixel values are converted to ems to match OpenLayers sizing.
 - Circle drawing now works in MapLibre mode.
