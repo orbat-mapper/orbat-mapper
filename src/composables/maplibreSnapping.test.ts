@@ -133,6 +133,28 @@ describe("getMapLibreSnapPosition", () => {
     expect(getMapLibreSnapPosition(mlMap, pointLike(10.1, 9.9))).toEqual([10, 10]);
   });
 
+  it("snaps to the map settings max-extent outline", () => {
+    const mlMap = createMap(() => [
+      {
+        layer: { id: "mapSettingsExtentLine" },
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+              [0, 0],
+            ],
+          ],
+        },
+      },
+    ]);
+
+    expect(getMapLibreSnapPosition(mlMap, pointLike(10.1, 9.9))).toEqual([10, 10]);
+  });
+
   it("ignores non-snappable rendered layers", () => {
     const mlMap = createMap(() => [
       {

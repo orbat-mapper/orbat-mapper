@@ -18,10 +18,11 @@ import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
 import type { ViewConstraints } from "@/geo/contracts/mapAdapter";
-
-const EXTENT_SOURCE_ID = "mapSettingsExtentSource";
-const EXTENT_FILL_LAYER_ID = "mapSettingsExtentFill";
-const EXTENT_LINE_LAYER_ID = "mapSettingsExtentLine";
+import {
+  MAX_EXTENT_FILL_LAYER_ID as EXTENT_FILL_LAYER_ID,
+  MAX_EXTENT_LINE_LAYER_ID as EXTENT_LINE_LAYER_ID,
+  MAX_EXTENT_SOURCE_ID as EXTENT_SOURCE_ID,
+} from "@/geo/engines/maplibre/bboxLayer";
 
 const scn = injectStrict(activeScenarioKey);
 const { store } = scn;
