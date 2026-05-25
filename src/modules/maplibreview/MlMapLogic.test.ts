@@ -2852,7 +2852,7 @@ describe("MlMapLogic", () => {
     expect(selectedFeatureIds.value.size).toBe(0);
   });
 
-  it("exports the maplibre map when the shared scenario action is triggered", async () => {
+  it("does not auto-save a PNG when the export scenario action is triggered", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const refreshScenarioFeatureLayers = vi.fn();
@@ -2893,8 +2893,11 @@ describe("MlMapLogic", () => {
     });
 
     await searchActions.onScenarioActionHook.trigger({ action: "exportToImage" });
+    await flushPromises();
 
-    expect(saveMapLibreMapAsPng).toHaveBeenCalledWith(mockMap.map);
+    // The action now opens the sidebar's Tools tab rather than performing a
+    // direct PNG save, so the quick-save helper must not be called automatically.
+    expect(saveMapLibreMapAsPng).not.toHaveBeenCalled();
   });
 
   it("does not throw when history waypoint layers are temporarily missing during style reload", () => {

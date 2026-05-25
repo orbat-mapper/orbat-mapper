@@ -49,6 +49,8 @@ import {
   useMaplibreUnitHistory,
 } from "@/composables/maplibreUnitHistory";
 import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
+import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
+import { TAB_TOOLS } from "@/types/constants";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
@@ -137,7 +139,7 @@ const {
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
-const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
+const { unitSelectEnabled, featureSelectEnabled, hoverEnabled, selectionSuppressed } =
   storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
@@ -340,7 +342,7 @@ function createCustomSymbolImage(
     const height = image.naturalHeight || image.height;
     if (!(width > 0 && height > 0)) return;
 
-    const pixelRatio = 2;
+    const pixelRatio = getSpritePixelRatio();
     const isSelected = imageId.startsWith("sel-");
     const highlightPadding = isSelected ? Math.max(8, Math.ceil(size * 0.3)) : 0;
     const anchor = customSymbol.anchor ?? [0.5, 0.5];
@@ -455,13 +457,13 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   });
   const { width, height } = symb.getSize();
   const anchor = symb.getAnchor();
-  const sourceCanvas = symb.asCanvas(2);
+  const pixelRatio = getSpritePixelRatio();
+  const sourceCanvas = symb.asCanvas(pixelRatio);
   if (!sourceCanvas) return;
 
   // milsymbol canvases are not centered on the symbol anchor — pad the image
   // so the anchor sits at the canvas center, which is what MapLibre uses as
   // the icon's origin.
-  const pixelRatio = 2;
   const halfW = Math.max(anchor.x, width - anchor.x);
   const halfH = Math.max(anchor.y, height - anchor.y);
   const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
@@ -710,6 +712,9 @@ function onNativeCanvasMouseDown(e: MouseEvent) {
 }
 
 function onMapClick(e: MapMouseEvent) {
+  // Another interaction (e.g. an export-area box draw) owns the clicks; don't
+  // select underneath it.
+  if (selectionSuppressed.value) return;
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
@@ -947,7 +952,11 @@ watch(
 
 onScenarioActionHook.on(async ({ action }) => {
   if (action !== "exportToImage") return;
-  await saveMapLibreMapAsPng(mlMap);
+  // The image export now lives in the sidebar's Tools tab; open it and ask the
+  // panel to expand the export form directly.
+  uiStore.showLeftPanel = true;
+  uiStore.activeTabIndex = TAB_TOOLS;
+  uiStore.requestExportTool = true;
 });
 
 function addUnits(
