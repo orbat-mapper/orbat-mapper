@@ -17,6 +17,7 @@ import type {
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
 import { toRgbaColor } from "@/utils/cssColor";
+import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
 import {
   drawArrowSymbol,
   getArrowGlobeIconOffset,
@@ -1132,7 +1133,7 @@ function ensureImage(
       ? createMarkerImage(definition)
       : createArrowImage(definition);
   if (!imageData) return;
-  mlMap.addImage(imageId, imageData, { pixelRatio: 2 });
+  mlMap.addImage(imageId, imageData, { pixelRatio: getSpritePixelRatio() });
 }
 
 export class MapLibreScenarioFeatureManager {
