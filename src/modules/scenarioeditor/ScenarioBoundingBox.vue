@@ -16,10 +16,11 @@ import VectorSource from "ol/source/Vector";
 import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useBoxDraw } from "@/composables/geoBoxDraw";
-
-const BBOX_SOURCE_ID = "scenarioBboxSource";
-const BBOX_FILL_LAYER_ID = "scenarioBboxFill";
-const BBOX_LINE_LAYER_ID = "scenarioBboxLine";
+import {
+  BBOX_FILL_LAYER_ID,
+  BBOX_LINE_LAYER_ID,
+  BBOX_SOURCE_ID,
+} from "@/geo/engines/maplibre/bboxLayer";
 
 const scn = injectStrict(activeScenarioKey);
 const { store } = scn;

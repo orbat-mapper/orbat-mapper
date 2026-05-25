@@ -6,6 +6,7 @@ import {
 } from "@/modules/maplibreview/maplibreScenarioFeatures";
 import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 import { isMapLibreKmlRenderedLayerId } from "@/geo/kml/maplibre";
+import { isScenarioBboxLayerId } from "@/geo/engines/maplibre/bboxLayer";
 
 const DEFAULT_SNAP_TOLERANCE_PX = 12;
 
@@ -83,7 +84,8 @@ function isSnappableFeature(
   if (
     !isManagedScenarioFeatureLayerId(layerId) &&
     !isUnitLayerId(layerId) &&
-    !isMapLibreKmlRenderedLayerId(layerId)
+    !isMapLibreKmlRenderedLayerId(layerId) &&
+    !isScenarioBboxLayerId(layerId)
   ) {
     return false;
   }
