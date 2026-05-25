@@ -629,17 +629,34 @@ function getEventPixel(e: MouseEvent): [number, number] {
   return [e.clientX - rect.left, e.clientY - rect.top];
 }
 
-function getShiftClickUnitId(e: MouseEvent): string | undefined {
+type ShiftClickTarget =
+  | { kind: "unit"; id: string }
+  | { kind: "feature"; id: string };
+
+// MapLibre's built-in box-zoom handler intercepts shift+mousedown, which prevents
+// the synthetic `click` event additive selection would otherwise rely on. So both
+// unit and feature shift-click selection are driven from the native mousedown
+// instead (see onNativeCanvasMouseDown).
+function getShiftClickTarget(e: MouseEvent): ShiftClickTarget | undefined {
   if (!e.shiftKey) return;
   if (e.button !== 0) return;
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
-  if (!unitSelectEnabled.value) return;
 
   const topHit = queryInteractiveFeatures(getEventPixel(e), getHitTolerance(e))[0];
-  if (!topHit || !isUnitLayerId(topHit.layer.id)) return;
+  if (!topHit) return;
 
-  return topHit.properties?.id;
+  if (isUnitLayerId(topHit.layer.id)) {
+    if (!unitSelectEnabled.value) return;
+    const unitId = topHit.properties?.id;
+    return unitId ? { kind: "unit", id: unitId } : undefined;
+  }
+
+  if (isManagedScenarioFeatureLayerId(topHit.layer.id)) {
+    if (!featureSelectEnabled.value) return;
+    const featureId = getFeatureIdFromRenderedFeature(topHit);
+    return featureId ? { kind: "feature", id: featureId } : undefined;
+  }
 }
 
 function queueSuppressNextNativeClickReset() {
@@ -669,10 +686,14 @@ function onNativeCanvasClick(e: MouseEvent) {
 }
 
 function onNativeCanvasMouseDown(e: MouseEvent) {
-  const unitId = getShiftClickUnitId(e);
-  if (!unitId) return;
+  const target = getShiftClickTarget(e);
+  if (!target) return;
 
-  toggleUnitSelection(unitId);
+  if (target.kind === "unit") {
+    toggleUnitSelection(target.id);
+  } else {
+    toggleFeatureSelection(target.id);
+  }
   suppressNextNativeClick = true;
   window.addEventListener(
     "mouseup",
@@ -715,10 +736,9 @@ function onMapClick(e: MapMouseEvent) {
   const featureId = getFeatureIdFromRenderedFeature(topHit);
   const layerId = getLayerIdFromRenderedFeature(topHit);
   if (!(featureId && layerId)) return;
-  if (additive) {
-    toggleFeatureSelection(featureId);
-    return;
-  }
+  // Additive (shift) feature selection is handled by the native mousedown path
+  // (onNativeCanvasMouseDown); the synthetic click must not toggle it again.
+  if (additive) return;
   onFeatureSelectHook.trigger({ featureId, layerId, options: { noZoom: true } });
 }
 
