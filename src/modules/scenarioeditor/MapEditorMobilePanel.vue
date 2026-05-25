@@ -21,6 +21,9 @@ import DetailsPanelContent from "@/modules/scenarioeditor/DetailsPanelContent.vu
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
 );
+const ScenarioToolsTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ScenarioToolsTabPanel.vue"),
+);
 
 const emit = defineEmits([
   "open-time-modal",
@@ -170,7 +173,7 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
     </div>
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Details']"
+      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Tools', 'Details']"
       :class="{ hidden: !showBottomPanel }"
     >
       <template #right
@@ -192,7 +195,10 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
       <TabsContent value="4" class="mt-0">
         <ScenarioFiltersTabPanel />
       </TabsContent>
-      <TabsContent value="5" class="mt-0 pb-10">
+      <TabsContent value="5" class="mt-0 p-4 pb-10">
+        <ScenarioToolsTabPanel />
+      </TabsContent>
+      <TabsContent value="6" class="mt-0 pb-10">
         <DetailsPanelContent
           v-if="activeDetailsPanel || toolbarStore.currentToolbar === 'route'"
           content-class="p-4"

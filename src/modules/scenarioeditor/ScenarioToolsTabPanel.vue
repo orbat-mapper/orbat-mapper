@@ -51,6 +51,14 @@ function onRequestDrawRect() {
   drawnExportBounds.value = null;
   exportBoxDraw.start();
 }
+
+function onCloseExport() {
+  // Cancelling while a rectangle draw is in progress must tear the interaction
+  // down; otherwise the map stays in crosshair mode with hover disabled and
+  // clicks swallowed by the dangling draw handler.
+  if (exportBoxDraw.isActive.value) exportBoxDraw.cancel();
+  showExport.value = false;
+}
 </script>
 
 <template>
@@ -76,7 +84,7 @@ function onRequestDrawRect() {
           :drawn-bounds="drawnExportBounds"
           cancelable
           @request-draw-rect="onRequestDrawRect"
-          @cancel="showExport = false"
+          @cancel="onCloseExport"
         />
       </template>
       <p v-else class="text-muted-foreground text-sm">
