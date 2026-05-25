@@ -2752,14 +2752,104 @@ describe("MlMapLogic", () => {
       },
     ]);
 
+    // MapLibre's box-zoom handler swallows the synthetic `click` for shift+click,
+    // so feature selection must be driven by the native canvas mousedown, exactly
+    // like units. Emitting the synthetic click is not enough in the real app.
+    const firstMouseDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      button: 0,
+      clientX: 1,
+      clientY: 2,
+    });
+    const firstClick = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(firstMouseDown);
+    mockMap.canvasContainer.dispatchEvent(firstClick);
+
+    expect(firstMouseDown.defaultPrevented).toBe(true);
+    expect(firstClick.defaultPrevented).toBe(true);
+    expect(featureSelectSpy).not.toHaveBeenCalled();
+    expect(selectedFeatureIds.value.has("feature-existing")).toBe(true);
+    expect(selectedFeatureIds.value.has("feature-1")).toBe(true);
+
+    // A synthetic shift+click that does slip through must not double-toggle the
+    // feature the native mousedown already handled.
     mockMap.emit("click", {
       point: { x: 1, y: 2 },
       originalEvent: { shiftKey: true },
     });
 
     expect(featureSelectSpy).not.toHaveBeenCalled();
-    expect(selectedFeatureIds.value.has("feature-existing")).toBe(true);
     expect(selectedFeatureIds.value.has("feature-1")).toBe(true);
+
+    const secondMouseDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      button: 0,
+      clientX: 1,
+      clientY: 2,
+    });
+    const secondClick = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(secondMouseDown);
+    mockMap.canvasContainer.dispatchEvent(secondClick);
+
+    expect(secondMouseDown.defaultPrevented).toBe(true);
+    expect(secondClick.defaultPrevented).toBe(true);
+    expect(selectedFeatureIds.value.has("feature-1")).toBe(false);
+    expect(selectedFeatureIds.value.has("feature-existing")).toBe(true);
+  });
+
+  it("ignores feature shift+click when feature selection is disabled", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useMapSelectStore().featureSelectEnabled = false;
+
+    const { selectedFeatureIds } = useSelectedItems();
+    selectedFeatureIds.value.clear();
+
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({ layerItem: undefined })),
+      pinia,
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "scenario-feature-layer-1-line" },
+        properties: {
+          featureId: "feature-1",
+          layerId: "layer-1",
+        },
+      },
+    ]);
+
+    const mouseDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      shiftKey: true,
+      button: 0,
+      clientX: 1,
+      clientY: 2,
+    });
+    mockMap.canvasContainer.dispatchEvent(mouseDown);
+
+    expect(mouseDown.defaultPrevented).toBe(false);
+    expect(selectedFeatureIds.value.size).toBe(0);
   });
 
   it("exports the maplibre map when the shared scenario action is triggered", async () => {
