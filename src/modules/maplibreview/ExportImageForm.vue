@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
@@ -15,10 +15,26 @@ import {
   type PaperOrientation,
   type PaperPreset,
   pixelsFromPaperPreset,
+  renderBoundsToBlob,
+  renderViewportToBlob,
 } from "@/modules/maplibreview/mapLibreExport";
 
 type Mode = "viewport" | "bounds" | "rect";
 type Bbox = [number, number, number, number];
+
+// The preview only needs to convey framing/bounds, not output quality, so it is
+// rendered downscaled and without sprite supersampling to keep it fast.
+const PREVIEW_MAX_DIMENSION = 720;
+
+function previewDimensions(width: number, height: number) {
+  const longest = Math.max(width, height);
+  if (longest <= PREVIEW_MAX_DIMENSION) return { width, height };
+  const scale = PREVIEW_MAX_DIMENSION / longest;
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
 
 const props = withDefaults(
   defineProps<{
@@ -45,6 +61,8 @@ const pixelRatio = ref(2);
 const spritePixelRatio = ref(2);
 const fileName = ref("map");
 const exporting = ref(false);
+const previewing = ref(false);
+const previewUrl = ref<string | null>(null);
 const errorMsg = ref<string | null>(null);
 
 const customBounds = ref<Bbox>([0, 0, 0, 0]);
@@ -95,9 +113,29 @@ const boundsError = computed(() => {
   return null;
 });
 
+const busy = computed(() => exporting.value || previewing.value);
+
 const canExport = computed(
-  () => !exporting.value && !sizeError.value && !boundsError.value,
+  () => !busy.value && !sizeError.value && !boundsError.value,
 );
+
+function clearPreview() {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value);
+    previewUrl.value = null;
+  }
+}
+
+// A preview reflects the framing inputs; drop it once those change so a stale
+// image can't be mistaken for the current bounds. Output-quality settings
+// (pixel/sprite ratio) don't affect the preview, so they're excluded.
+watch(
+  [mode, width, height, customBounds, () => props.drawnBounds],
+  clearPreview,
+  { deep: true },
+);
+
+onBeforeUnmount(clearPreview);
 
 watch(
   () => props.drawnBounds,
@@ -177,6 +215,49 @@ async function onSubmit() {
     errorMsg.value = err instanceof Error ? err.message : String(err);
   } finally {
     exporting.value = false;
+  }
+}
+
+async function onPreview() {
+  if (busy.value || sizeError.value || boundsError.value) return;
+  errorMsg.value = null;
+  previewing.value = true;
+  try {
+    let blob: Blob | null;
+    if (mode.value === "viewport") {
+      blob = await renderViewportToBlob(props.map, { pixelRatio: 1 });
+    } else {
+      let bbox: Bbox;
+      if (mode.value === "rect") {
+        if (!props.drawnBounds) {
+          errorMsg.value = "Draw a rectangle on the map first.";
+          return;
+        }
+        bbox = props.drawnBounds;
+      } else {
+        bbox = customBounds.value;
+      }
+      const { width: pw, height: ph } = previewDimensions(width.value, height.value);
+      blob = await renderBoundsToBlob(props.map, {
+        bounds: [
+          [bbox[0], bbox[1]],
+          [bbox[2], bbox[3]],
+        ],
+        width: pw,
+        height: ph,
+        spritePixelRatio: 1,
+      });
+    }
+    if (!blob) {
+      errorMsg.value = "Could not render a preview.";
+      return;
+    }
+    clearPreview();
+    previewUrl.value = URL.createObjectURL(blob);
+  } catch (err) {
+    errorMsg.value = err instanceof Error ? err.message : String(err);
+  } finally {
+    previewing.value = false;
   }
 }
 </script>
@@ -285,9 +366,23 @@ async function onSubmit() {
       <AlertDescription>{{ errorMsg }}</AlertDescription>
     </Alert>
 
+    <figure v-if="previewUrl" class="space-y-1">
+      <img
+        :src="previewUrl"
+        alt="Export preview"
+        class="bg-muted max-h-72 w-full rounded border object-contain"
+      />
+      <figcaption class="text-muted-foreground text-xs">
+        Preview of the exported image.
+      </figcaption>
+    </figure>
+
     <div class="flex items-center justify-end gap-2 pt-2">
       <SecondaryButton v-if="cancelable" type="button" @click="emit('cancel')">
         Cancel
+      </SecondaryButton>
+      <SecondaryButton type="button" :disabled="!canExport" @click="onPreview">
+        {{ previewing ? "Rendering…" : "Preview" }}
       </SecondaryButton>
       <PrimaryButton type="submit" :disabled="!canExport">
         {{ exporting ? "Exporting…" : "Export PNG" }}

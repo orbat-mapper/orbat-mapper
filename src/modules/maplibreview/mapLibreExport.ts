@@ -100,39 +100,49 @@ export async function saveMapLibreMapAsPng(
   await saveBlobToLocalFile(blob, fileName);
 }
 
-export async function exportViewportAtPixelRatio(
+/**
+ * Render the current viewport at a target pixel ratio and return the PNG blob,
+ * leaving the visible map's pixel ratio restored afterwards.
+ */
+export async function renderViewportToBlob(
   map: MlMap,
-  options: ViewportExportOptions = {},
-): Promise<void> {
-  const fileName = ensureFileName(options.fileName, "map.png");
+  options: { pixelRatio?: number } = {},
+): Promise<Blob | null> {
   const targetRatio = Math.max(1, options.pixelRatio ?? window.devicePixelRatio ?? 1);
 
   const restore = await applyPixelRatio(map, targetRatio);
   try {
     await waitForIdle(map);
     const canvas = map.getCanvas();
-    if (!(canvas instanceof HTMLCanvasElement)) return;
-    const blob = await canvasToBlob(canvas, "image/png");
-    if (!blob) return;
-    await saveBlobToLocalFile(blob, fileName);
+    if (!(canvas instanceof HTMLCanvasElement)) return null;
+    return await canvasToBlob(canvas, "image/png");
   } finally {
     await restore();
   }
 }
 
-/**
- * Export a geographic bounding box at explicit pixel dimensions, using a
- * hidden MapLibre map cloned from the source style so the visible map is
- * untouched.
- */
-export async function exportMapByBounds(
-  sourceMap: MlMap,
-  options: BoundsExportOptions,
+export async function exportViewportAtPixelRatio(
+  map: MlMap,
+  options: ViewportExportOptions = {},
 ): Promise<void> {
+  const fileName = ensureFileName(options.fileName, "map.png");
+  const blob = await renderViewportToBlob(map, { pixelRatio: options.pixelRatio });
+  if (!blob) return;
+  await saveBlobToLocalFile(blob, fileName);
+}
+
+/**
+ * Render a geographic bounding box at explicit pixel dimensions and return the
+ * PNG blob, using a hidden MapLibre map cloned from the source style so the
+ * visible map is untouched.
+ */
+export async function renderBoundsToBlob(
+  sourceMap: MlMap,
+  options: Omit<BoundsExportOptions, "fileName">,
+): Promise<Blob | null> {
   const sizeError = checkExportSize(options.width, options.height);
   if (sizeError) throw new Error(sizeError);
 
-  const fileName = ensureFileName(options.fileName, "map.png");
   const ratio = Math.max(1, options.spritePixelRatio ?? 2);
 
   const container = document.createElement("div");
@@ -179,14 +189,23 @@ export async function exportMapByBounds(
     await waitForIdle(hiddenMap);
 
     const canvas = hiddenMap.getCanvas();
-    if (!(canvas instanceof HTMLCanvasElement)) return;
-    const blob = await canvasToBlob(canvas, "image/png");
-    if (!blob) return;
-    await saveBlobToLocalFile(blob, fileName);
+    if (!(canvas instanceof HTMLCanvasElement)) return null;
+    return await canvasToBlob(canvas, "image/png");
   } finally {
     hiddenMap?.remove();
     container.remove();
   }
+}
+
+export async function exportMapByBounds(
+  sourceMap: MlMap,
+  options: BoundsExportOptions,
+): Promise<void> {
+  const { fileName: rawFileName, ...renderOptions } = options;
+  const fileName = ensureFileName(rawFileName, "map.png");
+  const blob = await renderBoundsToBlob(sourceMap, renderOptions);
+  if (!blob) return;
+  await saveBlobToLocalFile(blob, fileName);
 }
 
 function copyImageBetweenMaps(from: MlMap, to: MlMap, id: string) {
