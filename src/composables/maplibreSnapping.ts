@@ -1,6 +1,11 @@
 import type { PointLike } from "maplibre-gl";
 import type { Geometry, Position } from "geojson";
-import { isManagedScenarioFeatureLayerId } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import {
+  getFeatureIdFromRenderedFeature,
+  isManagedScenarioFeatureLayerId,
+} from "@/modules/maplibreview/maplibreScenarioFeatures";
+import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import { isMapLibreKmlRenderedLayerId } from "@/geo/kml/maplibre";
 
 const DEFAULT_SNAP_TOLERANCE_PX = 12;
 
@@ -8,21 +13,43 @@ type ScreenPoint = PointLike | { x: number; y: number };
 type SnapFeature = {
   layer?: { id?: string | undefined };
   geometry?: Geometry | undefined;
+  properties?: Record<string, unknown> | null;
 };
 
 type SnapMap = {
   project(position: [number, number]): ScreenPoint;
-  queryRenderedFeatures(pointLike: PointLike): SnapFeature[];
+  queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike]): SnapFeature[];
+};
+
+export type SnapOptions = {
+  /**
+   * Feature ids to exclude from snap candidates — typically the feature being
+   * edited, so a dragged vertex does not snap to its own un-dragged geometry.
+   */
+  excludeFeatureIds?: ReadonlySet<string>;
 };
 
 export function getMapLibreSnapPosition(
   mlMap: SnapMap,
   pointLike: PointLike,
+  options: SnapOptions = {},
 ): Position | null {
-  const renderedFeatures = mlMap
-    .queryRenderedFeatures(pointLike)
-    .filter(isSnappableFeature);
   const projectedPointer = toXY(pointLike);
+  // Query a tolerance-sized box around the pointer so features rendered near
+  // (but not under) the cursor are still considered, matching OpenLayers' Snap.
+  const queryBox: [PointLike, PointLike] = [
+    [
+      projectedPointer.x - DEFAULT_SNAP_TOLERANCE_PX,
+      projectedPointer.y - DEFAULT_SNAP_TOLERANCE_PX,
+    ],
+    [
+      projectedPointer.x + DEFAULT_SNAP_TOLERANCE_PX,
+      projectedPointer.y + DEFAULT_SNAP_TOLERANCE_PX,
+    ],
+  ];
+  const renderedFeatures = mlMap
+    .queryRenderedFeatures(queryBox)
+    .filter((feature) => isSnappableFeature(feature, options.excludeFeatureIds));
   const candidates = renderedFeatures.flatMap((feature) =>
     getSnapCandidates(feature.geometry, mlMap, projectedPointer),
   );
@@ -49,9 +76,22 @@ export function getMapLibreSnapPosition(
 
 function isSnappableFeature(
   feature: SnapFeature,
+  excludeFeatureIds?: ReadonlySet<string>,
 ): feature is SnapFeature & { geometry: Geometry } {
+  if (!feature.geometry) return false;
   const layerId = feature.layer?.id;
-  return isManagedScenarioFeatureLayerId(layerId) && Boolean(feature.geometry);
+  if (
+    !isManagedScenarioFeatureLayerId(layerId) &&
+    !isUnitLayerId(layerId) &&
+    !isMapLibreKmlRenderedLayerId(layerId)
+  ) {
+    return false;
+  }
+  if (excludeFeatureIds?.size) {
+    const featureId = getFeatureIdFromRenderedFeature(feature);
+    if (featureId && excludeFeatureIds.has(featureId)) return false;
+  }
+  return true;
 }
 
 function getSnapCandidates(

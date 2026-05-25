@@ -288,7 +288,12 @@ export function useMapLibreDrawInteraction(
   ): Position {
     const raw: Position = [e.lngLat.lng, e.lngLat.lat];
     if (state.mode !== "vertex" || !unref(options.snap)) return raw;
-    return getMapLibreSnapPosition(mlMap, e.point) ?? raw;
+    // Exclude the feature being edited so the dragged vertex does not snap to
+    // its own un-dragged geometry rendered underneath.
+    const excludeFeatureIds = state.handle
+      ? new Set([String(state.handle.featureId)])
+      : undefined;
+    return getMapLibreSnapPosition(mlMap, e.point, { excludeFeatureIds }) ?? raw;
   }
 
   function onMouseUp(e: MapMouseEvent | MapTouchEvent) {
