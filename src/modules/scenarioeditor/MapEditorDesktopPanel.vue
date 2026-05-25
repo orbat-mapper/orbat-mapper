@@ -18,6 +18,9 @@ import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterTo
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
 );
+const ScenarioToolsTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ScenarioToolsTabPanel.vue"),
+);
 
 const emit = defineEmits(["close"]);
 
@@ -46,7 +49,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
   >
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filters']"
+      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filters', 'Tools']"
       as="div"
       class="hover-none:mr-3 bg-sidebar"
       :class="{ hidden: !showBottomPanel }"
@@ -66,6 +69,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
       <TabsContent value="2" class="p-4 pb-10"><ScenarioLayersTabPanel /></TabsContent>
       <TabsContent value="3" class="p-4 pb-10"> <ScenarioSettingsPanel /></TabsContent>
       <TabsContent value="4" class=""> <ScenarioFiltersTabPanel /></TabsContent>
+      <TabsContent value="5" class="p-4 pb-10"> <ScenarioToolsTabPanel /></TabsContent>
     </ScrollTabs>
     <PanelResizeHandle
       :width="orbatPanelWidth"
