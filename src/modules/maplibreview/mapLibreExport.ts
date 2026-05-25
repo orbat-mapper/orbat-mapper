@@ -88,6 +88,7 @@ function cloneStyleForExport(
 
 export type ViewportExportOptions = {
   pixelRatio?: number;
+  resetRotation?: boolean;
   fileName?: string;
 };
 
@@ -96,6 +97,7 @@ export type BoundsExportOptions = {
   width: number;
   height: number;
   spritePixelRatio?: number;
+  resetRotation?: boolean;
   fileName?: string;
 };
 
@@ -117,18 +119,24 @@ export async function saveMapLibreMapAsPng(
  */
 export async function renderViewportToBlob(
   map: MlMap,
-  options: { pixelRatio?: number } = {},
+  options: { pixelRatio?: number; resetRotation?: boolean } = {},
 ): Promise<Blob | null> {
   const targetRatio = Math.max(1, options.pixelRatio ?? window.devicePixelRatio ?? 1);
 
-  const restore = await applyPixelRatio(map, targetRatio);
+  // The viewport export captures the live canvas, so to drop the current
+  // rotation/pitch we must momentarily flatten the visible map and restore it
+  // afterwards (this briefly flickers the on-screen view, like the pixel-ratio
+  // swap below).
+  const restorePixelRatio = await applyPixelRatio(map, targetRatio);
+  const restoreCamera = options.resetRotation ? resetMapRotation(map) : null;
   try {
     await waitForIdle(map);
     const canvas = map.getCanvas();
     if (!(canvas instanceof HTMLCanvasElement)) return null;
     return await canvasToBlob(canvas, "image/png");
   } finally {
-    await restore();
+    if (restoreCamera) await restoreCamera();
+    await restorePixelRatio();
   }
 }
 
@@ -137,7 +145,10 @@ export async function exportViewportAtPixelRatio(
   options: ViewportExportOptions = {},
 ): Promise<void> {
   const fileName = ensureFileName(options.fileName, "map.png");
-  const blob = await renderViewportToBlob(map, { pixelRatio: options.pixelRatio });
+  const blob = await renderViewportToBlob(map, {
+    pixelRatio: options.pixelRatio,
+    resetRotation: options.resetRotation,
+  });
   if (!blob) return;
   await saveBlobToLocalFile(blob, fileName);
 }
@@ -180,8 +191,8 @@ export async function renderBoundsToBlob(
       attributionControl: false,
       pixelRatio: ratio,
       fadeDuration: 0,
-      bearing: sourceMap.getBearing(),
-      pitch: sourceMap.getPitch(),
+      bearing: options.resetRotation ? 0 : sourceMap.getBearing(),
+      pitch: options.resetRotation ? 0 : sourceMap.getPitch(),
       canvasContextAttributes: { preserveDrawingBuffer: true },
     });
 
@@ -242,6 +253,17 @@ async function applyPixelRatio(map: MlMap, ratio: number): Promise<() => Promise
   map.setPixelRatio(ratio);
   return async () => {
     map.setPixelRatio(current);
+    await waitForIdle(map).catch(() => {});
+  };
+}
+
+/** Flatten the live map to a north-up, untilted view; returns a restore fn. */
+function resetMapRotation(map: MlMap): () => Promise<void> {
+  const bearing = map.getBearing();
+  const pitch = map.getPitch();
+  map.jumpTo({ bearing: 0, pitch: 0 });
+  return async () => {
+    map.jumpTo({ bearing, pitch });
     await waitForIdle(map).catch(() => {});
   };
 }

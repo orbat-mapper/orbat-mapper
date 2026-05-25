@@ -5,6 +5,7 @@ import bboxPolygon from "@turf/bbox-polygon";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import InputGroup from "@/components/InputGroup.vue";
+import InputCheckbox from "@/components/InputCheckbox.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -60,6 +61,7 @@ const width = ref(1920);
 const height = ref(1080);
 const pixelRatio = ref(2);
 const spritePixelRatio = ref(2);
+const resetRotation = ref(false);
 const fileName = ref("map");
 const exporting = ref(false);
 const previewing = ref(false);
@@ -129,9 +131,10 @@ function clearPreview() {
 
 // A preview reflects the framing inputs; drop it once those change so a stale
 // image can't be mistaken for the current bounds. Output-quality settings
-// (pixel/sprite ratio) don't affect the preview, so they're excluded.
+// (pixel/sprite ratio) don't affect the preview, so they're excluded;
+// resetRotation does change framing, so it's included.
 watch(
-  [mode, width, height, customBounds, () => props.drawnBounds],
+  [mode, width, height, customBounds, resetRotation, () => props.drawnBounds],
   clearPreview,
   { deep: true },
 );
@@ -258,6 +261,7 @@ async function onSubmit() {
     if (mode.value === "viewport") {
       await exportViewportAtPixelRatio(props.map, {
         pixelRatio: pixelRatio.value,
+        resetRotation: resetRotation.value,
         fileName: name,
       });
     } else {
@@ -279,6 +283,7 @@ async function onSubmit() {
         width: width.value,
         height: height.value,
         spritePixelRatio: spritePixelRatio.value,
+        resetRotation: resetRotation.value,
         fileName: name,
       });
     }
@@ -299,7 +304,10 @@ async function onPreview() {
   try {
     let blob: Blob | null;
     if (mode.value === "viewport") {
-      blob = await renderViewportToBlob(props.map, { pixelRatio: 1 });
+      blob = await renderViewportToBlob(props.map, {
+        pixelRatio: 1,
+        resetRotation: resetRotation.value,
+      });
     } else {
       let bbox: Bbox;
       if (mode.value === "rect") {
@@ -320,6 +328,7 @@ async function onPreview() {
         width: pw,
         height: ph,
         spritePixelRatio: 1,
+        resetRotation: resetRotation.value,
       });
     }
     if (!blob) {
@@ -430,6 +439,12 @@ async function onPreview() {
       :min="1"
       :max="4"
       :step="1"
+    />
+
+    <InputCheckbox
+      v-model="resetRotation"
+      label="Reset rotation (north up)"
+      description="Export with the map flattened and pointing north, ignoring the current rotation and tilt."
     />
 
     <InputGroup v-model="fileName" label="File name" />
