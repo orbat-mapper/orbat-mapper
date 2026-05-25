@@ -111,6 +111,28 @@ describe("getMapLibreSnapPosition", () => {
     expect(getMapLibreSnapPosition(mlMap, pointLike(5.1, 5.1))).toEqual([5, 5]);
   });
 
+  it("snaps to the scenario bounding box outline", () => {
+    const mlMap = createMap(() => [
+      {
+        layer: { id: "scenarioBboxLine" },
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+              [0, 0],
+            ],
+          ],
+        },
+      },
+    ]);
+
+    expect(getMapLibreSnapPosition(mlMap, pointLike(10.1, 9.9))).toEqual([10, 10]);
+  });
+
   it("ignores non-snappable rendered layers", () => {
     const mlMap = createMap(() => [
       {
