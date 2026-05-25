@@ -11,7 +11,7 @@ import {
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
-import { computed, onUnmounted, provide, ref, watch, watchEffect } from "vue";
+import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -49,9 +49,8 @@ import {
   useMaplibreUnitHistory,
 } from "@/composables/maplibreUnitHistory";
 import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
-import ExportImageDialog from "@/modules/maplibreview/ExportImageDialog.vue";
-import { useBoxDraw } from "@/composables/geoBoxDraw";
 import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
+import { TAB_TOOLS } from "@/types/constants";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
@@ -928,27 +927,14 @@ watch(
   },
 );
 
-const exportDialogOpen = ref(false);
-const drawnExportBounds = ref<[number, number, number, number] | null>(null);
-
-const exportBoxDraw = useBoxDraw(() => engineRef.value?.map);
-exportBoxDraw.onDrawEnd((bbox) => {
-  drawnExportBounds.value = bbox;
-  exportDialogOpen.value = true;
-});
-exportBoxDraw.onCancel(() => {
-  exportDialogOpen.value = true;
-});
-
 onScenarioActionHook.on(async ({ action }) => {
   if (action !== "exportToImage") return;
-  exportDialogOpen.value = true;
+  // The image export now lives in the sidebar's Tools tab; open it and ask the
+  // panel to expand the export form directly.
+  uiStore.showLeftPanel = true;
+  uiStore.activeTabIndex = TAB_TOOLS;
+  uiStore.requestExportTool = true;
 });
-
-function onRequestDrawRect() {
-  exportDialogOpen.value = false;
-  exportBoxDraw.start();
-}
 
 function addUnits(
   initial = false,
@@ -1145,10 +1131,4 @@ watch(hoverEnabled, (enabled) => {
       {{ formattedPosition }}
     </p>
   </div>
-  <ExportImageDialog
-    v-model="exportDialogOpen"
-    :map="mlMap"
-    :drawn-bounds="drawnExportBounds"
-    @request-draw-rect="onRequestDrawRect"
-  />
 </template>

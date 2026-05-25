@@ -20,6 +20,9 @@ export const useUiStore = defineStore("ui", {
     mobilePanelHeight: useLocalStorage("mobilePanelHeight", 360),
     layersPanelActive: false,
     activeTabIndex: TAB_ORBAT,
+    // Set when an external trigger (e.g. the context menu) should open the
+    // image export form in the Tools tab; the Tools panel consumes and resets it.
+    requestExportTool: false,
     showSearch: false,
     searchGeoMode: false,
     mapLayersPanelOpen: true,

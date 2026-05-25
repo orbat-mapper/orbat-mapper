@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { Map as MlMap } from "maplibre-gl";
 import { Button } from "@/components/ui/button";
 import { useGeoStore } from "@/stores/geoStore";
+import { useUiStore } from "@/stores/uiStore";
 import { useBoxDraw } from "@/composables/geoBoxDraw";
 
 // Lazy-loaded on demand: the export form and its rendering dependencies are
@@ -14,9 +15,23 @@ const ExportImageForm = defineAsyncComponent(
 type Bbox = [number, number, number, number];
 
 const geoStore = useGeoStore();
+const uiStore = useUiStore();
 
 const showExport = ref(false);
 const drawnExportBounds = ref<Bbox | null>(null);
+
+// Expand the export form when something (e.g. the map context menu) requests it.
+// `immediate` covers the case where the request was set before this lazily
+// mounted panel existed.
+watch(
+  () => uiStore.requestExportTool,
+  (requested) => {
+    if (!requested) return;
+    showExport.value = true;
+    uiStore.requestExportTool = false;
+  },
+  { immediate: true },
+);
 
 // The image export is MapLibre-specific, so only expose it when the active
 // map engine is a MapLibre map.
