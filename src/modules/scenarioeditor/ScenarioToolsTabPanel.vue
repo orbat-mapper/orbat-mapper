@@ -28,14 +28,12 @@ const mlMap = computed(() => {
 const exportBoxDraw = useBoxDraw(() => geoStore.mapAdapter);
 exportBoxDraw.onDrawEnd((bbox) => {
   drawnExportBounds.value = bbox;
-  showExport.value = true;
-});
-exportBoxDraw.onCancel(() => {
-  showExport.value = true;
 });
 
 function onRequestDrawRect() {
-  showExport.value = false;
+  // Keep the panel mounted so the form's mode stays on "rect"; clear any prior
+  // rectangle so it doesn't linger on the map while the new one is drawn.
+  drawnExportBounds.value = null;
   exportBoxDraw.start();
 }
 </script>

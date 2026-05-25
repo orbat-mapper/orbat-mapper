@@ -2,7 +2,6 @@ import maplibregl, {
   type LngLatBoundsLike,
   type Map as MlMap,
   type StyleImageData,
-  type StyleSpecification,
 } from "maplibre-gl";
 import { saveBlobToLocalFile } from "@/utils/files";
 
@@ -73,6 +72,18 @@ async function canvasToBlob(
   quality?: number,
 ): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, mimeType, quality));
+}
+
+/**
+ * Deep-copy a MapLibre style for use in a secondary map. A style is JSON by
+ * spec, but the live object returned by `getStyle()` can carry stray
+ * non-cloneable values (e.g. functions) that make `structuredClone` throw, so
+ * copy it via a JSON round-trip instead.
+ */
+function cloneStyleForExport(
+  style: ReturnType<MlMap["getStyle"]>,
+): ReturnType<MlMap["getStyle"]> {
+  return JSON.parse(JSON.stringify(style));
 }
 
 export type ViewportExportOptions = {
@@ -159,7 +170,7 @@ export async function renderBoundsToBlob(
 
   let hiddenMap: MlMap | null = null;
   try {
-    const style = structuredClone(sourceMap.getStyle());
+    const style = cloneStyleForExport(sourceMap.getStyle());
     hiddenMap = new maplibregl.Map({
       container,
       style,

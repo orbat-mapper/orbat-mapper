@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import type { Map as MlMap } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
+import bboxPolygon from "@turf/bbox-polygon";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import InputGroup from "@/components/InputGroup.vue";
@@ -137,6 +138,76 @@ watch(
 
 onBeforeUnmount(clearPreview);
 
+// --- Export-area overlay ---
+// Draw the rectangle/bounding box that will be exported on the map so the user
+// can see the selected area. Null in viewport mode (the whole canvas).
+const AREA_SOURCE = "__exportAreaSource";
+const AREA_FILL = "__exportAreaFill";
+const AREA_LINE = "__exportAreaLine";
+const EMPTY_FC: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
+
+const exportArea = computed<Bbox | null>(() => {
+  if (mode.value === "rect") return props.drawnBounds ?? null;
+  if (mode.value === "bounds") return boundsError.value ? null : customBounds.value;
+  return null;
+});
+
+function ensureAreaLayers() {
+  const map = props.map;
+  if (typeof map.getSource !== "function") return;
+  if (!map.getSource(AREA_SOURCE)) {
+    map.addSource(AREA_SOURCE, { type: "geojson", data: EMPTY_FC });
+  }
+  if (!map.getLayer(AREA_FILL)) {
+    map.addLayer({
+      id: AREA_FILL,
+      type: "fill",
+      source: AREA_SOURCE,
+      paint: { "fill-color": "rgba(37, 99, 235, 0.1)" },
+    });
+  }
+  if (!map.getLayer(AREA_LINE)) {
+    map.addLayer({
+      id: AREA_LINE,
+      type: "line",
+      source: AREA_SOURCE,
+      paint: { "line-color": "#2563eb", "line-width": 2 },
+    });
+  }
+}
+
+function drawExportArea(bbox: Bbox | null) {
+  const map = props.map;
+  if (typeof map.getSource !== "function") return;
+  if (!bbox) {
+    (map.getSource(AREA_SOURCE) as GeoJSONSource | undefined)?.setData(EMPTY_FC);
+    return;
+  }
+  ensureAreaLayers();
+  (map.getSource(AREA_SOURCE) as GeoJSONSource | undefined)?.setData(bboxPolygon(bbox));
+}
+
+// Hide the overlay while rendering so it isn't baked into the exported PNG
+// (the bounds export clones the live map style, overlay layers included).
+function setExportAreaVisible(visible: boolean) {
+  const map = props.map;
+  if (typeof map.getLayer !== "function") return;
+  const v = visible ? "visible" : "none";
+  if (map.getLayer(AREA_FILL)) map.setLayoutProperty(AREA_FILL, "visibility", v);
+  if (map.getLayer(AREA_LINE)) map.setLayoutProperty(AREA_LINE, "visibility", v);
+}
+
+function removeAreaLayers() {
+  const map = props.map;
+  if (typeof map.getLayer !== "function") return;
+  if (map.getLayer(AREA_LINE)) map.removeLayer(AREA_LINE);
+  if (map.getLayer(AREA_FILL)) map.removeLayer(AREA_FILL);
+  if (map.getSource(AREA_SOURCE)) map.removeSource(AREA_SOURCE);
+}
+
+watch(exportArea, (bbox) => drawExportArea(bbox), { immediate: true });
+onBeforeUnmount(removeAreaLayers);
+
 watch(
   () => props.drawnBounds,
   (bbox) => {
@@ -181,6 +252,7 @@ async function onSubmit() {
   if (!canExport.value) return;
   errorMsg.value = null;
   exporting.value = true;
+  setExportAreaVisible(false);
   try {
     const name = (fileName.value || "map").trim();
     if (mode.value === "viewport") {
@@ -214,6 +286,7 @@ async function onSubmit() {
   } catch (err) {
     errorMsg.value = err instanceof Error ? err.message : String(err);
   } finally {
+    setExportAreaVisible(true);
     exporting.value = false;
   }
 }
@@ -222,6 +295,7 @@ async function onPreview() {
   if (busy.value || sizeError.value || boundsError.value) return;
   errorMsg.value = null;
   previewing.value = true;
+  setExportAreaVisible(false);
   try {
     let blob: Blob | null;
     if (mode.value === "viewport") {
@@ -257,6 +331,7 @@ async function onPreview() {
   } catch (err) {
     errorMsg.value = err instanceof Error ? err.message : String(err);
   } finally {
+    setExportAreaVisible(true);
     previewing.value = false;
   }
 }
