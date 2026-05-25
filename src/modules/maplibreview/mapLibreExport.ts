@@ -1,7 +1,7 @@
 import maplibregl, {
   type LngLatBoundsLike,
   type Map as MlMap,
-  type StyleImageData,
+  type StyleImage,
 } from "maplibre-gl";
 import { saveBlobToLocalFile } from "@/utils/files";
 
@@ -221,13 +221,19 @@ export async function exportMapByBounds(
 
 function copyImageBetweenMaps(from: MlMap, to: MlMap, id: string) {
   if (to.hasImage(id)) return;
-  const img = from.getImage(id) as
-    | (StyleImageData & { pixelRatio?: number; sdf?: boolean })
-    | undefined;
+  const img = from.getImage(id) as StyleImage | undefined;
   if (!img) return;
+  // Forward the full metadata, not just pixelRatio/sdf: stretch and text-fit
+  // settings determine how stretchable/text-fit icons render, so dropping them
+  // would scale or distort those icons in the exported image.
   to.addImage(id, img.data, {
     pixelRatio: img.pixelRatio ?? 1,
     sdf: !!img.sdf,
+    stretchX: img.stretchX,
+    stretchY: img.stretchY,
+    content: img.content,
+    textFitWidth: img.textFitWidth,
+    textFitHeight: img.textFitHeight,
   });
 }
 
