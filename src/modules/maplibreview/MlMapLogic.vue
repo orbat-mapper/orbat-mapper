@@ -139,7 +139,7 @@ const {
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
-const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
+const { unitSelectEnabled, featureSelectEnabled, hoverEnabled, selectionSuppressed } =
   storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
@@ -691,6 +691,9 @@ function onNativeCanvasMouseDown(e: MouseEvent) {
 }
 
 function onMapClick(e: MapMouseEvent) {
+  // Another interaction (e.g. an export-area box draw) owns the clicks; don't
+  // select underneath it.
+  if (selectionSuppressed.value) return;
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
