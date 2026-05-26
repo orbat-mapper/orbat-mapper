@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added a rectangle tool to the draw toolbar for drawing box-shaped polygons.
 - Added an add-multiple toggle to the draw toolbar for repeated feature drawing and unit placement.
 - Added a toolbar toggle to disable great-circle (geodesic) measurement paths in MapLibre Mercator mode.
 - Added experimental KML support for MapLibre mode.

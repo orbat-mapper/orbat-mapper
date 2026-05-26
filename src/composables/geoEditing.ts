@@ -2,7 +2,7 @@ import OLMap from "ol/Map";
 import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
 import { type MaybeRef, onUnmounted, ref, unref, watch } from "vue";
-import Draw, { DrawEvent } from "ol/interaction/Draw";
+import Draw, { createBox, DrawEvent } from "ol/interaction/Draw";
 import Translate from "ol/interaction/Translate";
 import Snap from "ol/interaction/Snap";
 import Select from "ol/interaction/Select";
@@ -17,8 +17,9 @@ import {
 import type Feature from "ol/Feature";
 import Collection from "ol/Collection";
 import Geometry from "ol/geom/Geometry";
+import Polygon from "ol/geom/Polygon";
 
-export type DrawType = "Point" | "LineString" | "Polygon" | "Circle";
+export type DrawType = "Point" | "LineString" | "Polygon" | "Circle" | "Rectangle";
 
 export interface GeoEditingOptions {
   addMultiple?: MaybeRef<boolean>;
@@ -47,10 +48,8 @@ export function useEditingInteraction(
   const freehandRef = ref(options.freehand ?? false);
   let currentDrawInteraction: Draw | null | undefined;
 
-  let { lineDraw, polygonDraw, pointDraw, circleDraw } = initializeDrawInteractions(
-    source,
-    !!unref(freehandRef),
-  );
+  let { lineDraw, polygonDraw, pointDraw, circleDraw, rectangleDraw } =
+    initializeDrawInteractions(source, !!unref(freehandRef));
 
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
@@ -63,11 +62,20 @@ export function useEditingInteraction(
     olMap.addInteraction(polygonDraw);
     olMap.addInteraction(pointDraw);
     olMap.addInteraction(circleDraw);
+    olMap.addInteraction(rectangleDraw);
 
     useOlEvent(lineDraw.on("drawend", onDrawEnd));
     useOlEvent(polygonDraw.on("drawend", onDrawEnd));
     useOlEvent(pointDraw.on("drawend", onDrawEnd));
     useOlEvent(circleDraw.on("drawend", onDrawEnd));
+    useOlEvent(
+      rectangleDraw.on("drawend", (event) => {
+        // Tag the box so the editor recognizes it as a rectangle and keeps it
+        // axis-aligned. The geometry itself stays a plain Polygon.
+        event.feature.set("shape", "rectangle");
+        onDrawEnd(event);
+      }),
+    );
   }
 
   function removeInteractions() {
@@ -75,6 +83,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(polygonDraw);
     olMap.removeInteraction(pointDraw);
     olMap.removeInteraction(circleDraw);
+    olMap.removeInteraction(rectangleDraw);
   }
 
   addInteractions();
@@ -82,16 +91,16 @@ export function useEditingInteraction(
   watch(freehandRef, () => {
     const active = currentDrawInteraction?.getActive();
     removeInteractions();
-    ({ lineDraw, polygonDraw, pointDraw, circleDraw } = initializeDrawInteractions(
-      source,
-      !!unref(freehandRef),
-    ));
+    ({ lineDraw, polygonDraw, pointDraw, circleDraw, rectangleDraw } =
+      initializeDrawInteractions(source, !!unref(freehandRef)));
     addInteractions();
     if (active) {
       if (currentDrawType.value === "LineString") currentDrawInteraction = lineDraw;
       else if (currentDrawType.value === "Polygon") currentDrawInteraction = polygonDraw;
       else if (currentDrawType.value === "Point") currentDrawInteraction = pointDraw;
       else if (currentDrawType.value === "Circle") currentDrawInteraction = circleDraw;
+      else if (currentDrawType.value === "Rectangle")
+        currentDrawInteraction = rectangleDraw;
       currentDrawInteraction?.setActive(true);
     }
   });
@@ -107,10 +116,46 @@ export function useEditingInteraction(
     olMap.addInteraction(select);
     select.setActive(false);
   }
-  const modify = new Modify({ features: select.getFeatures(), pixelTolerance: 20 });
+  const isRectangleFeature = (feature: Feature) => feature.get("shape") === "rectangle";
+
+  // Snapshot of each rectangle's corners at the start of a modify gesture, used
+  // to identify the dragged corner and rebuild an axis-aligned box on release.
+  const rectangleOriginals = new Map<Feature, number[][]>();
+
+  const modify = new Modify({
+    features: select.getFeatures(),
+    pixelTolerance: 20,
+    // Don't let users insert vertices into a rectangle — that would turn it
+    // into an arbitrary polygon.
+    insertVertexCondition: () =>
+      !select.getFeatures().getArray().some(isRectangleFeature),
+  });
+
+  useOlEvent(
+    modify.on("modifystart", (event) => {
+      rectangleOriginals.clear();
+      event.features.forEach((feature) => {
+        const geometry = feature.getGeometry();
+        if (isRectangleFeature(feature) && geometry instanceof Polygon) {
+          rectangleOriginals.set(
+            feature,
+            geometry.getCoordinates()[0].map((coordinate) => [...coordinate]),
+          );
+        }
+      });
+    }),
+  );
 
   useOlEvent(
     modify.on("modifyend", (event) => {
+      event.features.forEach((feature) => {
+        const original = rectangleOriginals.get(feature);
+        const geometry = feature.getGeometry();
+        if (!original || !(geometry instanceof Polygon)) return;
+        const squared = squareRectangleRing(original, geometry.getCoordinates()[0]);
+        if (squared) geometry.setCoordinates([squared]);
+      });
+      rectangleOriginals.clear();
       emit && emit("modify", event.features.getArray());
       options.modifyHandler && options.modifyHandler(event.features.getArray());
     }),
@@ -174,6 +219,7 @@ export function useEditingInteraction(
     if (drawType === "Polygon") currentDrawInteraction = polygonDraw;
     if (drawType === "Point") currentDrawInteraction = pointDraw;
     if (drawType === "Circle") currentDrawInteraction = circleDraw;
+    if (drawType === "Rectangle") currentDrawInteraction = rectangleDraw;
 
     currentDrawInteraction?.setActive(true);
     currentDrawType.value = drawType;
@@ -213,6 +259,7 @@ export function useEditingInteraction(
     olMap.removeInteraction(lineDraw);
     olMap.removeInteraction(polygonDraw);
     olMap.removeInteraction(circleDraw);
+    olMap.removeInteraction(rectangleDraw);
     if (!options.select) olMap.removeInteraction(select);
     olMap.removeInteraction(modify);
     olMap.removeInteraction(translateInteraction);
@@ -236,6 +283,42 @@ export function useEditingInteraction(
   return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };
 }
 
+// Rebuilds an axis-aligned box ring after a single corner was dragged: the
+// dragged corner (the one that moved furthest from the original) keeps its new
+// position, the diagonally opposite corner stays anchored, and the other two
+// follow. Coordinates are in the map projection, where a rectangle is
+// axis-aligned. Returns null when the rings are not 4-corner boxes.
+function squareRectangleRing(
+  original: number[][],
+  current: number[][],
+): number[][] | null {
+  if (original.length < 5 || current.length < 5) return null;
+  const originalCorners = original.slice(0, 4);
+  const currentCorners = current.slice(0, 4);
+
+  let draggedIndex = 0;
+  let maxDistanceSq = -1;
+  for (let i = 0; i < 4; i++) {
+    const dx = currentCorners[i][0] - originalCorners[i][0];
+    const dy = currentCorners[i][1] - originalCorners[i][1];
+    const distanceSq = dx * dx + dy * dy;
+    if (distanceSq > maxDistanceSq) {
+      maxDistanceSq = distanceSq;
+      draggedIndex = i;
+    }
+  }
+
+  const [mx, my] = currentCorners[draggedIndex];
+  const [ax, ay] = originalCorners[(draggedIndex + 2) % 4];
+  return [
+    [mx, my],
+    [ax, my],
+    [ax, ay],
+    [mx, ay],
+    [mx, my],
+  ];
+}
+
 function initializeDrawInteractions(source: VectorSource<any>, freehand = false) {
   const lineDraw = new Draw({ type: "LineString", source, freehand });
   lineDraw.setActive(false);
@@ -249,5 +332,14 @@ function initializeDrawInteractions(source: VectorSource<any>, freehand = false)
   const circleDraw = new Draw({ type: "Circle", source });
   circleDraw.setActive(false);
 
-  return { lineDraw, polygonDraw, pointDraw, circleDraw };
+  // A rectangle is a box-shaped Polygon: draw with type "Circle" plus the box
+  // geometryFunction so two clicks define opposite corners.
+  const rectangleDraw = new Draw({
+    type: "Circle",
+    source,
+    geometryFunction: createBox(),
+  });
+  rectangleDraw.setActive(false);
+
+  return { lineDraw, polygonDraw, pointDraw, circleDraw, rectangleDraw };
 }

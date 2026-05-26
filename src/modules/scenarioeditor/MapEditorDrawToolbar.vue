@@ -10,7 +10,8 @@ import {
   IconTrashCanOutline as DeleteIcon,
   IconVectorCircleVariant as CircleIcon,
   IconVectorLine as LineStringIcon,
-  IconVectorSquare as PolygonIcon,
+  IconVectorPolygon as PolygonIcon,
+  IconVectorRectangle as RectangleIcon,
   IconClockEditOutline as IconClockEdit,
   IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
@@ -81,6 +82,13 @@ onKeyStroke("Escape", (event) => {
       <PolygonIcon class="size-5" />
     </MainToolbarButton>
 
+    <MainToolbarButton
+      title="Rectangle"
+      @click="startDrawing('Rectangle')"
+      :active="currentDrawType === 'Rectangle'"
+    >
+      <RectangleIcon class="size-5" />
+    </MainToolbarButton>
     <MainToolbarButton
       title="Circle"
       @click="startDrawing('Circle')"

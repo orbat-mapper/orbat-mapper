@@ -97,6 +97,7 @@ export function useMapLibreDrawInteraction(
   const vertices = ref<Position[]>([]);
   let dragState: DragState | null = null;
   let circleCenter: Position | null = null;
+  let rectangleCorner: Position | null = null;
   let drawingDoubleClickZoomEnabled: boolean | null = null;
   let cleanupEsc: (() => void) | undefined;
   let cleanupEnter: (() => void) | undefined;
@@ -138,6 +139,7 @@ export function useMapLibreDrawInteraction(
     isDrawing.value = false;
     vertices.value = [];
     circleCenter = null;
+    rectangleCorner = null;
     touchDoubleTap.reset();
     mapAdapter.removeGeoJsonOverlay(DRAW_PREVIEW_OVERLAY_ID);
     options.onDrawingChange?.(false);
@@ -189,6 +191,20 @@ export function useMapLibreDrawInteraction(
       return;
     }
 
+    if (currentDrawType.value === "Rectangle") {
+      if (!rectangleCorner) {
+        rectangleCorner = position;
+        renderPreview(point(position).geometry);
+        return;
+      }
+      const opposite = unwrapPositionRelative(rectangleCorner, position);
+      commitFeature({
+        geometry: createRectanglePolygon(rectangleCorner, opposite),
+        geometryMeta: { geometryKind: "Polygon", shape: "rectangle" },
+      });
+      return;
+    }
+
     appendClickVertex(position);
     renderPathPreview(unwrapDrawPosition(position));
   }
@@ -221,6 +237,15 @@ export function useMapLibreDrawInteraction(
           createCirclePreview(
             circleCenter,
             unwrapPositionRelative(circleCenter, position),
+          ),
+        );
+        return;
+      }
+      if (currentDrawType.value === "Rectangle" && rectangleCorner) {
+        renderPreview(
+          createRectanglePolygon(
+            rectangleCorner,
+            unwrapPositionRelative(rectangleCorner, position),
           ),
         );
         return;
@@ -367,6 +392,7 @@ export function useMapLibreDrawInteraction(
     if (unref(options.addMultiple)) {
       vertices.value = [];
       circleCenter = null;
+      rectangleCorner = null;
       mapAdapter.removeGeoJsonOverlay(DRAW_PREVIEW_OVERLAY_ID);
       return;
     }
@@ -542,7 +568,7 @@ export function useMapLibreDrawInteraction(
   }
 
   function renderHandleOverlays(
-    features: Array<Pick<GeometryLayerItem, "id" | "geometry">>,
+    features: Array<Pick<GeometryLayerItem, "id" | "geometry" | "geometryMeta">>,
   ) {
     const handleFeatures = features.flatMap((feature) =>
       getEditHandles(feature, getRenderedMidpoint).flatMap((handle) => {
@@ -708,6 +734,50 @@ function createCirclePreview(center: Position, edge: Position): Geometry {
   }).geometry;
 }
 
+// Builds an axis-aligned box Polygon from two opposite corners. `opposite` is
+// expected to already be unwrapped relative to `corner` for antimeridian-safe
+// longitudes.
+function createRectanglePolygon(corner: Position, opposite: Position): Geometry {
+  const [x1, y1] = corner;
+  const [x2, y2] = opposite;
+  return polygon([
+    [
+      [x1, y1],
+      [x2, y1],
+      [x2, y2],
+      [x1, y2],
+      [x1, y1],
+    ],
+  ]).geometry;
+}
+
+function isRectangleFeature(feature: {
+  geometryMeta?: GeometryLayerItem["geometryMeta"];
+}): boolean {
+  const meta = feature.geometryMeta;
+  return !!meta && "shape" in meta && meta.shape === "rectangle";
+}
+
+// Dragging a rectangle corner keeps the shape axis-aligned: the diagonally
+// opposite corner is the anchor and the box is rebuilt from it and the dragged
+// position. Falls back to a plain vertex move if the ring is not a 4-corner box.
+function resizeRectangleByCorner(
+  geometry: Geometry,
+  path: number[],
+  position: Position,
+): Geometry {
+  if (geometry.type !== "Polygon") {
+    return updateVertexAtPath(geometry, path, position);
+  }
+  const ring = geometry.coordinates[0];
+  const cornerIndex = path[path.length - 1];
+  if (ring.length !== 5 || cornerIndex < 0 || cornerIndex > 3) {
+    return updateVertexAtPath(geometry, path, position);
+  }
+  const anchor = unwrapPositionRelative(position, ring[(cornerIndex + 2) % 4]);
+  return createRectanglePolygon(position, anchor);
+}
+
 function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] {
   if (dragState.mode === "translate") {
     const unwrappedPosition = unwrapPositionRelative(dragState.start, position);
@@ -729,20 +799,29 @@ function getDragUpdates(dragState: DragState, position: Position): DrawUpdate[] 
         getDragPositionReference(feature.geometry, dragState.handle!),
         position,
       );
+      let geometry: Geometry;
+      if (dragState.handle!.kind === "midpoint") {
+        geometry = insertVertexAtPath(
+          feature.geometry,
+          dragState.handle!.path,
+          unwrappedPosition,
+        );
+      } else if (isRectangleFeature(feature)) {
+        geometry = resizeRectangleByCorner(
+          feature.geometry,
+          dragState.handle!.path,
+          unwrappedPosition,
+        );
+      } else {
+        geometry = updateVertexAtPath(
+          feature.geometry,
+          dragState.handle!.path,
+          unwrappedPosition,
+        );
+      }
       return {
         featureId: feature.id,
-        geometry:
-          dragState.handle!.kind === "midpoint"
-            ? insertVertexAtPath(
-                feature.geometry,
-                dragState.handle!.path,
-                unwrappedPosition,
-              )
-            : updateVertexAtPath(
-                feature.geometry,
-                dragState.handle!.path,
-                unwrappedPosition,
-              ),
+        geometry,
         geometryMeta: feature.geometryMeta,
       };
     });
@@ -795,9 +874,14 @@ function mapGeometryCoordinates(
 type MidpointCalculator = (a: Position, b: Position) => Position;
 
 function getEditHandles(
-  feature: Pick<GeometryLayerItem, "id" | "geometry">,
+  feature: Pick<GeometryLayerItem, "id" | "geometry" | "geometryMeta">,
   midpointCalculator: MidpointCalculator = midpoint,
 ): EditHandle[] {
+  // Rectangles expose only their four corners — no midpoint handles, so a
+  // vertex can never be inserted and the box keeps its shape.
+  if (isRectangleFeature(feature)) {
+    return getVertexHandles(feature);
+  }
   return [
     ...getVertexHandles(feature),
     ...getMidpointHandles(feature, midpointCalculator),
