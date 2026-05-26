@@ -644,7 +644,6 @@ export function useGeo(store: NewScenarioStore) {
           if (!feature) return;
           const {
             geometry,
-            geometryMeta = {},
             media,
             style = {},
             state,
@@ -661,7 +660,14 @@ export function useGeo(store: NewScenarioStore) {
             _state,
           } = data;
           Object.assign(feature.style, style);
-          Object.assign(feature.geometryMeta, geometryMeta);
+          // Replace, don't merge: each geometryKind is a discriminated union
+          // member with its own valid extra fields, so merging could leave a
+          // stale field behind (e.g. a transformed rectangle keeping
+          // shape:"rectangle", or radius surviving onto a non-circle). Callers
+          // that touch geometryMeta pass a complete, coherent meta.
+          if (data.geometryMeta !== undefined) {
+            feature.geometryMeta = data.geometryMeta as GeometryLayerItem["geometryMeta"];
+          }
           if (geometry) Object.assign(feature.geometry, geometry);
 
           if (state) feature.state = state;
@@ -691,7 +697,10 @@ export function useGeo(store: NewScenarioStore) {
       const layerItem = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
       if (!layerItem) return;
       Object.assign(layerItem.style, data.style ?? {});
-      Object.assign(layerItem.geometryMeta, data.geometryMeta ?? {});
+      // Replace, not merge (see undoable branch above).
+      if (data.geometryMeta !== undefined) {
+        layerItem.geometryMeta = data.geometryMeta as GeometryLayerItem["geometryMeta"];
+      }
       if (data.geometry) Object.assign(layerItem.geometry, data.geometry);
       if (data.userData) {
         layerItem.userData = mergeGeometryUserData(layerItem.userData, data.userData);
