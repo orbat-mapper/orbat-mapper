@@ -17,7 +17,10 @@ const { measurementUnit } = storeToRefs(useMeasurementsStore());
 
 const kind = computed(() => props.feature.geometryMeta.geometryKind);
 const geom = computed<Geometry>(() => props.feature.geometry);
-const radius = computed(() => props.feature.geometryMeta.radius);
+const radius = computed(() => {
+  const meta = props.feature.geometryMeta;
+  return "radius" in meta ? meta.radius : undefined;
+});
 
 const typeLabel = computed(() => {
   if (kind.value === "Circle") return "Circle";

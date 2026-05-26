@@ -14,6 +14,7 @@ import type {
   GeometryLayerMeta,
   GeometryLayerItem,
   LoadableGeometryLayerItemState,
+  LoadableGeometryLayerMeta,
   MeasurementLayerItem,
   ScenarioLayerItemsLayer,
   TacticalGraphicLayerItem,
@@ -34,7 +35,7 @@ export type LoadableGeometryLayerItem = {
   type?: "Feature";
   properties?: GeoJsonProperties;
   meta?: Partial<ScenarioFeatureMeta>;
-  geometryMeta?: Partial<GeometryLayerMeta>;
+  geometryMeta?: LoadableGeometryLayerMeta;
   name?: string;
   description?: string;
   externalUrl?: string;
@@ -172,7 +173,11 @@ function upgradeGeometryItemToSharedBase(
   item: LoadableGeometryLayerItem,
 ): GeometryLayerItem {
   const legacyMeta = item.meta ?? {};
-  const geometryMeta: GeometryLayerMeta = {
+  // The kind is only known at runtime here, so we build the loose shape and
+  // assert it as the strict union at this legacy-upgrade boundary. Pre-3.2.0
+  // data already tolerated a radius-less circle, so this preserves that
+  // behaviour while everything constructed with a literal kind stays checked.
+  const geometryMeta = {
     geometryKind: inferGeometryKind(
       item.geometry,
       item.geometryMeta?.geometryKind ?? legacyMeta.type,
@@ -182,7 +187,7 @@ function upgradeGeometryItemToSharedBase(
       : legacyMeta.radius !== undefined
         ? { radius: legacyMeta.radius }
         : {}),
-  };
+  } as GeometryLayerMeta;
 
   return {
     id: String(item.id),

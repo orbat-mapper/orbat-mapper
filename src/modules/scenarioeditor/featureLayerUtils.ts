@@ -112,7 +112,8 @@ function getGeometryKind(item: GeometryFeatureLike): string {
 }
 
 function getGeometryRadius(item: GeometryFeatureLike): number | undefined {
-  return "geometryMeta" in item ? item.geometryMeta.radius : item.meta.radius;
+  if (!("geometryMeta" in item)) return item.meta.radius;
+  return "radius" in item.geometryMeta ? item.geometryMeta.radius : undefined;
 }
 
 function getGeometryUserData(

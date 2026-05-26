@@ -71,10 +71,25 @@ export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   userData?: Record<string, unknown>;
 }
 
-export interface GeometryLayerMeta {
-  geometryKind: ScenarioFeatureType;
+// Canonical, strict geometry metadata. Each geometryKind carries only the
+// extra fields that are meaningful for it:
+// - "Circle" is stored as a Point geometry plus a required radius (metres).
+// - "Polygon" may be marked as an axis-aligned rectangle; the geometry itself
+//   stays a plain Polygon.
+// All other kinds carry no extra fields.
+export type GeometryLayerMeta =
+  | { geometryKind: "Circle"; radius: number }
+  | { geometryKind: "Polygon"; shape?: "rectangle" }
+  | { geometryKind: Exclude<ScenarioFeatureType, "Circle" | "Polygon"> };
+
+// Loose, non-discriminated counterpart for data that is still being loaded,
+// upgraded, or partially patched, where the kind and its extra fields cannot
+// yet be guaranteed to line up.
+export type LoadableGeometryLayerMeta = {
+  geometryKind?: ScenarioFeatureType;
   radius?: number;
-}
+  shape?: "rectangle";
+};
 
 export interface GeometryLayerItemStatePatch {
   geometry?: Geometry;
@@ -321,7 +336,7 @@ export interface NScenarioLayerItemsLayer extends Omit<ScenarioLayerItemsLayer, 
 export interface GeometryLayerItemUpdate extends Partial<
   Omit<NGeometryLayerItem, "id" | "geometryMeta" | "kind">
 > {
-  geometryMeta?: Partial<GeometryLayerMeta>;
+  geometryMeta?: LoadableGeometryLayerMeta;
 }
 
 export interface FullScenarioLayerItemsLayer extends Omit<
@@ -334,6 +349,7 @@ export interface FullScenarioLayerItemsLayer extends Omit<
 const RESERVED_GEOMETRY_ITEM_USERDATA_KEYS = new Set([
   "type",
   "radius",
+  "shape",
   "name",
   "description",
   "externalUrl",
@@ -397,8 +413,11 @@ export function toGeometryLayerItemGeoJsonProperties(
 ): GeoJsonProperties {
   const properties: Record<string, unknown> = {
     ...(item.geometryMeta.geometryKind ? { type: item.geometryMeta.geometryKind } : {}),
-    ...(item.geometryMeta.radius !== undefined
+    ...("radius" in item.geometryMeta && item.geometryMeta.radius !== undefined
       ? { radius: item.geometryMeta.radius }
+      : {}),
+    ...("shape" in item.geometryMeta && item.geometryMeta.shape !== undefined
+      ? { shape: item.geometryMeta.shape }
       : {}),
     ...(item.name !== undefined ? { name: item.name } : {}),
     ...(item.description !== undefined ? { description: item.description } : {}),
