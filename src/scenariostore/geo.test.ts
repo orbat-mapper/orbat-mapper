@@ -226,6 +226,81 @@ describe("scenario geo item accessors", () => {
     expect(geo.onLayerItemEvent).toBe(geo.onFeatureLayerEvent);
   });
 
+  it("replaces geometryMeta on update so a transformed rectangle drops its shape marker", () => {
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.2.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layers: [
+        {
+          id: "layer-1",
+          kind: "overlay",
+          name: "Features",
+          items: [
+            {
+              kind: "geometry",
+              id: "rect-1",
+              geometry: {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [0, 0],
+                    [2, 0],
+                    [2, 2],
+                    [0, 2],
+                    [0, 0],
+                  ],
+                ],
+              },
+              geometryMeta: { geometryKind: "Polygon", shape: "rectangle" },
+              style: {},
+            },
+          ],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const geo = useGeo(store);
+    expect(geo.getGeometryLayerItemById("rect-1").layerItem?.geometryMeta).toEqual({
+      geometryKind: "Polygon",
+      shape: "rectangle",
+    });
+
+    // A transform replaces the geometry with a fresh, complete meta that has no
+    // shape — the result is no longer an axis-aligned rectangle.
+    geo.updateFeature("rect-1", {
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [0, 0],
+            [3, 1],
+            [2, 3],
+            [0, 0],
+          ],
+        ],
+      },
+      geometryMeta: { geometryKind: "Polygon" },
+    });
+
+    const updatedMeta = geo.getGeometryLayerItemById("rect-1").layerItem?.geometryMeta;
+    expect(updatedMeta).toEqual({ geometryKind: "Polygon" });
+    // toEqual ignores undefined keys, so assert the marker is actually absent.
+    expect(updatedMeta).not.toHaveProperty("shape");
+  });
+
   it("creates patch-based geometry state entries at runtime", () => {
     const store = useNewScenarioStore({
       id: "scenario-1",
