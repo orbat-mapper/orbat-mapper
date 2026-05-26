@@ -139,6 +139,27 @@ function selectedLine(): GeometryLayerItem {
   };
 }
 
+function selectedRectangle(): GeometryLayerItem {
+  return {
+    kind: "geometry",
+    id: "rect-1",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [0, 0],
+          [2, 0],
+          [2, 2],
+          [0, 2],
+          [0, 0],
+        ],
+      ],
+    },
+    geometryMeta: { geometryKind: "Polygon", shape: "rectangle" },
+    style: {},
+  };
+}
+
 describe("useMapLibreDrawInteraction", () => {
   it("preserves disabled double-click zoom after drawing is cancelled", () => {
     const harness = createHarness({ doubleClickZoomEnabled: false });
@@ -215,6 +236,106 @@ describe("useMapLibreDrawInteraction", () => {
         geometryMeta: expect.objectContaining({ geometryKind: "Circle" }),
       }),
     );
+  });
+
+  it("creates a rectangle as a box-shaped polygon from two corner clicks", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("Rectangle");
+    harness.trigger("click", createEvent(1, 2));
+    harness.trigger("click", createEvent(5, 8));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [1, 2],
+              [5, 2],
+              [5, 8],
+              [1, 8],
+              [1, 2],
+            ],
+          ],
+        },
+        geometryMeta: { geometryKind: "Polygon", shape: "rectangle" },
+      }),
+    );
+  });
+
+  it("unwraps rectangle corners across the antimeridian", () => {
+    const harness = createHarness();
+
+    harness.draw.startDrawing("Rectangle");
+    harness.trigger("click", createEvent(179, 10));
+    harness.trigger("click", createEvent(-179, 12));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [179, 10],
+              [181, 10],
+              [181, 12],
+              [179, 12],
+              [179, 10],
+            ],
+          ],
+        },
+      }),
+    );
+  });
+
+  it("edits a rectangle with four corner handles and no midpoint handles", () => {
+    const harness = createHarness({ selectedFeatures: [selectedRectangle()] });
+
+    harness.draw.startModify();
+
+    const vertexOverlay = harness.overlays.get("maplibre-draw-vertex-handles") as any;
+    const midpointOverlay = harness.overlays.get("maplibre-draw-midpoint-handles") as any;
+    expect(vertexOverlay.geojson.features).toHaveLength(4);
+    expect(midpointOverlay.geojson.features).toHaveLength(0);
+  });
+
+  it("resizes a rectangle by dragging a corner, anchoring the opposite corner", () => {
+    const harness = createHarness({
+      selectedFeatures: [selectedRectangle()],
+      snap: false,
+      queryRenderedFeatures: () => [
+        {
+          properties: {
+            featureId: "rect-1",
+            kind: "vertex",
+            path: JSON.stringify([0, 0]),
+          },
+        },
+      ],
+    });
+
+    harness.draw.startModify();
+    harness.trigger("mousedown", createEvent(0, 0));
+    harness.trigger("mouseup", createEvent(-1, -1));
+
+    expect(harness.updateFeatures).toHaveBeenCalledWith([
+      expect.objectContaining({
+        featureId: "rect-1",
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [-1, -1],
+              [2, -1],
+              [2, 2],
+              [-1, 2],
+              [-1, -1],
+            ],
+          ],
+        },
+      }),
+    ]);
   });
 
   it("snaps point drawing to nearby rendered scenario vertices", () => {
@@ -402,8 +523,10 @@ describe("useMapLibreDrawInteraction", () => {
     );
 
     const feature = harness.addFeature.mock.lastCall?.[0] as GeometryLayerItem;
-    expect(feature.geometryMeta.radius).toBeGreaterThan(200_000);
-    expect(feature.geometryMeta.radius).toBeLessThan(250_000);
+    const meta = feature.geometryMeta;
+    if (meta.geometryKind !== "Circle") throw new Error("expected a circle");
+    expect(meta.radius).toBeGreaterThan(200_000);
+    expect(meta.radius).toBeLessThan(250_000);
   });
 
   it("creates a freehand line from drag samples", () => {

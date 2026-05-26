@@ -53,13 +53,20 @@ export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryL
     olFeature,
   );
 
+  const userData = { ...(gj.properties ?? {}) };
+  const isRectangle = userData.shape === "rectangle";
+  delete userData.shape;
+
   return {
     kind: "geometry",
     id: String(gj.id ?? nanoid()),
     geometry: gj.geometry,
-    userData: gj.properties ?? {},
+    userData,
     style: {},
-    geometryMeta: { geometryKind: gj.geometry.type },
+    geometryMeta: {
+      geometryKind: gj.geometry.type,
+      ...(isRectangle ? { shape: "rectangle" } : {}),
+    },
   };
 }
 
