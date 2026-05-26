@@ -126,9 +126,25 @@ export function useEditingInteraction(
     features: select.getFeatures(),
     pixelTolerance: 20,
     // Don't let users insert vertices into a rectangle — that would turn it
-    // into an arbitrary polygon.
-    insertVertexCondition: () =>
-      !select.getFeatures().getArray().some(isRectangleFeature),
+    // into an arbitrary polygon. Scope this to the feature under the cursor so a
+    // co-selected ordinary polygon can still gain vertices.
+    insertVertexCondition: (event) => {
+      const selected = select.getFeatures().getArray();
+      if (!selected.some(isRectangleFeature)) return true;
+      let overRectangle = false;
+      olMap.forEachFeatureAtPixel(
+        event.pixel,
+        (feature) => {
+          if (isRectangleFeature(feature as Feature) && selected.includes(feature as Feature)) {
+            overRectangle = true;
+            return true;
+          }
+          return false;
+        },
+        { layerFilter: (layer) => layer === layerRef.value, hitTolerance: 20 },
+      );
+      return !overRectangle;
+    },
   });
 
   useOlEvent(
