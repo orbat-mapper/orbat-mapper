@@ -10,12 +10,15 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useUiStore } from "@/stores/uiStore";
+import { TAB_TOOLS } from "@/types/constants";
 import {
   DAY_NIGHT_TERMINATOR_OVERLAY_ID,
   DAY_NIGHT_TERMINATOR_OVERLAY_OPTIONS,
   getDayNightTerminatorGeoJson,
 } from "@/geo/dayNightTerminator";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
+import { getSymbolImageSource } from "@/modules/maplibreview/symbolImageRegistry";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -53,7 +56,7 @@ vi.mock("@vueuse/core", async () => {
   };
 });
 
-vi.mock("@/modules/maplibreview/mapLibreExport", () => ({
+vi.mock("@/modules/maplibreview/imageExport/mapLibreExport", () => ({
   saveMapLibreMapAsPng,
 }));
 
@@ -418,6 +421,58 @@ describe("MlMapLogic", () => {
         fillColor: "#112233",
       }),
     );
+  });
+
+  it("registers a symbol image source that re-rasterizes icons at an export render scale", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-symbol-source",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-source",
+            sidc: "SFGPUCI----K",
+            shortName: "A1",
+            name: "Alpha 1",
+            _state: { location: [10, 20] },
+          },
+        ]),
+      },
+      time: { setCurrentTime: vi.fn() },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    const symbolKey = unitData.features[0].properties.symbolKey;
+    // Bake the on-screen sprite, which records the id as in-use.
+    mockMap.emit("styleimagemissing", { id: symbolKey });
+
+    const source = getSymbolImageSource(mockMap.map);
+    expect(source).toBeDefined();
+    expect([...source!.usedImageIds()]).toContain(symbolKey);
+
+    vi.mocked(symbolGenerator).mockClear();
+    const result = await source!.renderImage(symbolKey, 4);
+    // Regenerated from milsymbol at the requested scale, not copied.
+    expect(symbolGenerator).toHaveBeenCalledTimes(1);
+    expect(result?.pixelRatio).toBe(4);
+    expect(result?.data).toMatchObject({
+      width: expect.any(Number),
+      height: expect.any(Number),
+    });
   });
 
   it("uses per-unit map symbol size overrides for MapLibre unit images", () => {
@@ -2852,10 +2907,16 @@ describe("MlMapLogic", () => {
     expect(selectedFeatureIds.value.size).toBe(0);
   });
 
-  it("exports the maplibre map when the shared scenario action is triggered", async () => {
+  it("opens the export tool panel when the export scenario action is triggered", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const refreshScenarioFeatureLayers = vi.fn();
+    const pinia = createPinia();
+    const uiStore = useUiStore(pinia);
+    uiStore.showLeftPanel = false;
+    uiStore.mobilePanelOpen = false;
+    uiStore.activeTabIndex = 0;
+    uiStore.requestExportTool = false;
     const activeScenario = {
       store: {
         state: {
@@ -2881,7 +2942,7 @@ describe("MlMapLogic", () => {
         activeScenario,
       },
       global: {
-        plugins: [createPinia()],
+        plugins: [pinia],
         provide: {
           [activeScenarioMapEngineKey as symbol]: shallowRef({
             map: {},
@@ -2893,8 +2954,15 @@ describe("MlMapLogic", () => {
     });
 
     await searchActions.onScenarioActionHook.trigger({ action: "exportToImage" });
+    await flushPromises();
 
-    expect(saveMapLibreMapAsPng).toHaveBeenCalledWith(mockMap.map);
+    // The action now opens the sidebar's Tools tab rather than performing a
+    // direct PNG save, so the quick-save helper must not be called automatically.
+    expect(uiStore.showLeftPanel).toBe(true);
+    expect(uiStore.mobilePanelOpen).toBe(true);
+    expect(uiStore.activeTabIndex).toBe(TAB_TOOLS);
+    expect(uiStore.requestExportTool).toBe(true);
+    expect(saveMapLibreMapAsPng).not.toHaveBeenCalled();
   });
 
   it("does not throw when history waypoint layers are temporarily missing during style reload", () => {

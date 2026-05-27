@@ -48,7 +48,13 @@ import {
   UNIT_HISTORY_LAYER_IDS,
   useMaplibreUnitHistory,
 } from "@/composables/maplibreUnitHistory";
-import { saveMapLibreMapAsPng } from "@/modules/maplibreview/mapLibreExport";
+import { saveMapLibreMapAsPng } from "@/modules/maplibreview/imageExport/mapLibreExport";
+import {
+  registerSymbolImageSource,
+  unregisterSymbolImageSource,
+} from "@/modules/maplibreview/symbolImageRegistry";
+import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
+import { TAB_TOOLS } from "@/types/constants";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
@@ -137,7 +143,7 @@ const {
   clear: clearSelectedItems,
 } = useSelectedItems();
 const { toggleUnitSelection, toggleFeatureSelection } = useSelectionActions();
-const { unitSelectEnabled, featureSelectEnabled, hoverEnabled } =
+const { unitSelectEnabled, featureSelectEnabled, hoverEnabled, selectionSuppressed } =
   storeToRefs(useMapSelectStore());
 const { moveUnitEnabled, rotateUnitEnabled } = storeToRefs(useUnitSettingsStore());
 const routingStore = useRoutingStore();
@@ -328,75 +334,86 @@ function getCustomSymbolId(sidc: string) {
   return sidc.startsWith(CUSTOM_SYMBOL_PREFIX) ? sidc.slice(CUSTOM_SYMBOL_SLICE) : "";
 }
 
-function createCustomSymbolImage(
+// Rasterize a loaded custom-symbol image (with optional selection highlight and
+// color tint) to a canvas at the given pixel ratio. Pure draw step shared by the
+// live map and the export, which differ only in the target pixel ratio.
+function drawCustomSymbolCanvas(
+  image: HTMLImageElement,
   imageId: string,
   { customSymbol, size, color }: CustomSymbolCacheEntry,
-) {
+  pixelRatio: number,
+): HTMLCanvasElement | null {
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+  if (!(width > 0 && height > 0)) return null;
+
+  const isSelected = imageId.startsWith("sel-");
+  const highlightPadding = isSelected ? Math.max(8, Math.ceil(size * 0.3)) : 0;
+  const anchor = customSymbol.anchor ?? [0.5, 0.5];
+  const anchorX = anchor[0] * size;
+  const anchorY = anchor[1] * size;
+  const halfW = Math.max(anchorX, size - anchorX);
+  const halfH = Math.max(anchorY, size - anchorY);
+  const paddedWidth = Math.ceil((2 * halfW + highlightPadding * 2) * pixelRatio);
+  const paddedHeight = Math.ceil((2 * halfH + highlightPadding * 2) * pixelRatio);
+  const drawX = Math.round((halfW - anchorX + highlightPadding) * pixelRatio);
+  const drawY = Math.round((halfH - anchorY + highlightPadding) * pixelRatio);
+  const drawSize = Math.round(size * pixelRatio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = paddedWidth;
+  canvas.height = paddedHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  if (isSelected) {
+    const outlineCanvas = document.createElement("canvas");
+    outlineCanvas.width = drawSize;
+    outlineCanvas.height = drawSize;
+    const outlineCtx = outlineCanvas.getContext("2d");
+    if (outlineCtx) {
+      outlineCtx.drawImage(image, 0, 0, drawSize, drawSize);
+      outlineCtx.globalCompositeOperation = "source-in";
+      outlineCtx.fillStyle = "yellow";
+      outlineCtx.fillRect(0, 0, drawSize, drawSize);
+      const outlineWidth = Math.max(4, Math.round(size * 0.12 * pixelRatio));
+      for (const [offsetX, offsetY] of [
+        [-outlineWidth, 0],
+        [outlineWidth, 0],
+        [0, -outlineWidth],
+        [0, outlineWidth],
+        [-outlineWidth, -outlineWidth],
+        [outlineWidth, -outlineWidth],
+        [-outlineWidth, outlineWidth],
+        [outlineWidth, outlineWidth],
+      ]) {
+        ctx.drawImage(outlineCanvas, drawX + offsetX, drawY + offsetY);
+      }
+    }
+    ctx.shadowColor = "yellow";
+    ctx.shadowBlur = Math.max(10, Math.round(size * 0.35));
+  }
+  ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
+  ctx.shadowBlur = 0;
+  if (color && typeof ctx.fillRect === "function") {
+    ctx.globalCompositeOperation = "source-atop";
+    ctx.fillStyle = color;
+    ctx.fillRect(drawX, drawY, drawSize, drawSize);
+    ctx.globalCompositeOperation = "source-over";
+  }
+  return canvas;
+}
+
+function createCustomSymbolImage(imageId: string, entry: CustomSymbolCacheEntry) {
   const image = new Image();
   image.crossOrigin = "anonymous";
   image.onload = () => {
     if (mlMap.hasImage(imageId)) return;
-    const width = image.naturalWidth || image.width;
-    const height = image.naturalHeight || image.height;
-    if (!(width > 0 && height > 0)) return;
-
-    const pixelRatio = 2;
-    const isSelected = imageId.startsWith("sel-");
-    const highlightPadding = isSelected ? Math.max(8, Math.ceil(size * 0.3)) : 0;
-    const anchor = customSymbol.anchor ?? [0.5, 0.5];
-    const anchorX = anchor[0] * size;
-    const anchorY = anchor[1] * size;
-    const halfW = Math.max(anchorX, size - anchorX);
-    const halfH = Math.max(anchorY, size - anchorY);
-    const paddedWidth = Math.ceil((2 * halfW + highlightPadding * 2) * pixelRatio);
-    const paddedHeight = Math.ceil((2 * halfH + highlightPadding * 2) * pixelRatio);
-    const drawX = Math.round((halfW - anchorX + highlightPadding) * pixelRatio);
-    const drawY = Math.round((halfH - anchorY + highlightPadding) * pixelRatio);
-    const drawSize = Math.round(size * pixelRatio);
-
-    const canvas = document.createElement("canvas");
-    canvas.width = paddedWidth;
-    canvas.height = paddedHeight;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    if (isSelected) {
-      const outlineCanvas = document.createElement("canvas");
-      outlineCanvas.width = drawSize;
-      outlineCanvas.height = drawSize;
-      const outlineCtx = outlineCanvas.getContext("2d");
-      if (outlineCtx) {
-        outlineCtx.drawImage(image, 0, 0, drawSize, drawSize);
-        outlineCtx.globalCompositeOperation = "source-in";
-        outlineCtx.fillStyle = "yellow";
-        outlineCtx.fillRect(0, 0, drawSize, drawSize);
-        const outlineWidth = Math.max(4, Math.round(size * 0.12 * pixelRatio));
-        for (const [offsetX, offsetY] of [
-          [-outlineWidth, 0],
-          [outlineWidth, 0],
-          [0, -outlineWidth],
-          [0, outlineWidth],
-          [-outlineWidth, -outlineWidth],
-          [outlineWidth, -outlineWidth],
-          [-outlineWidth, outlineWidth],
-          [outlineWidth, outlineWidth],
-        ]) {
-          ctx.drawImage(outlineCanvas, drawX + offsetX, drawY + offsetY);
-        }
-      }
-      ctx.shadowColor = "yellow";
-      ctx.shadowBlur = Math.max(10, Math.round(size * 0.35));
-    }
-    ctx.drawImage(image, drawX, drawY, drawSize, drawSize);
-    ctx.shadowBlur = 0;
-    if (color && typeof ctx.fillRect === "function") {
-      ctx.globalCompositeOperation = "source-atop";
-      ctx.fillStyle = color;
-      ctx.fillRect(drawX, drawY, drawSize, drawSize);
-      ctx.globalCompositeOperation = "source-over";
-    }
-
+    const pixelRatio = getSpritePixelRatio();
+    const canvas = drawCustomSymbolCanvas(image, imageId, entry, pixelRatio);
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
     try {
-      const data = ctx.getImageData(0, 0, paddedWidth, paddedHeight);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
       if (data) {
         mlMap.addImage(imageId, data, { pixelRatio });
         usedImageIds.add(imageId);
@@ -407,7 +424,32 @@ function createCustomSymbolImage(
     }
   };
   image.onerror = () => {};
-  image.src = customSymbol.src;
+  image.src = entry.customSymbol.src;
+}
+
+// Export variant: load and rasterize a custom symbol at an arbitrary pixel ratio,
+// resolving to the raw ImageData rather than adding it to the live map.
+function buildCustomSymbolImageData(
+  imageId: string,
+  entry: CustomSymbolCacheEntry,
+  pixelRatio: number,
+): Promise<ImageData | null> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      const canvas = drawCustomSymbolCanvas(image, imageId, entry, pixelRatio);
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx) return resolve(null);
+      try {
+        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      } catch {
+        resolve(null);
+      }
+    };
+    image.onerror = () => resolve(null);
+    image.src = entry.customSymbol.src;
+  });
 }
 
 function setupMapLayers() {
@@ -426,17 +468,14 @@ function setupMapLayers() {
   setupUnitHistoryLayers(UNIT_LAYER_ID);
 }
 
-function styleImageMissing(e: MapStyleImageMissingEvent) {
-  if (usedImageIds.has(e.id) || mlMap.hasImage(e.id)) return;
-
-  const isSelected = e.id.startsWith("sel-");
-  const symbolCode = isSelected ? e.id.slice(4) : e.id;
-  const cachedSymbol = symbolCache.get(symbolCode);
-  if (cachedSymbol?.kind === "custom") {
-    createCustomSymbolImage(e.id, cachedSymbol);
-    return;
-  }
-
+// Rasterize a milsymbol icon to ImageData at the given pixel ratio. Pure build
+// step shared by the live map and the export.
+function buildMilSymbolImageData(
+  imageId: string,
+  cachedSymbol: SymbolCacheEntry | undefined,
+  pixelRatio: number,
+): ImageData | null {
+  const isSelected = imageId.startsWith("sel-");
   const {
     sidc = "xxxxxxx",
     symbolOptions = {},
@@ -455,13 +494,12 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   });
   const { width, height } = symb.getSize();
   const anchor = symb.getAnchor();
-  const sourceCanvas = symb.asCanvas(2);
-  if (!sourceCanvas) return;
+  const sourceCanvas = symb.asCanvas(pixelRatio);
+  if (!sourceCanvas) return null;
 
   // milsymbol canvases are not centered on the symbol anchor — pad the image
   // so the anchor sits at the canvas center, which is what MapLibre uses as
   // the icon's origin.
-  const pixelRatio = 2;
   const halfW = Math.max(anchor.x, width - anchor.x);
   const halfH = Math.max(anchor.y, height - anchor.y);
   const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
@@ -473,9 +511,38 @@ function styleImageMissing(e: MapStyleImageMissingEvent) {
   canvas.width = paddedWidth;
   canvas.height = paddedHeight;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
   ctx.drawImage(sourceCanvas, drawX, drawY);
-  const data = ctx.getImageData(0, 0, paddedWidth, paddedHeight);
+  return ctx.getImageData(0, 0, paddedWidth, paddedHeight);
+}
+
+// Re-rasterize any programmatic symbol (milsymbol or custom) at an arbitrary
+// pixel ratio for the image export, so supersampled exports get crisp icons
+// instead of upscaled copies of the on-screen bitmap.
+async function buildSymbolImageData(
+  imageId: string,
+  pixelRatio: number,
+): Promise<ImageData | null> {
+  const symbolCode = imageId.startsWith("sel-") ? imageId.slice(4) : imageId;
+  const cachedSymbol = symbolCache.get(symbolCode);
+  if (cachedSymbol?.kind === "custom") {
+    return buildCustomSymbolImageData(imageId, cachedSymbol, pixelRatio);
+  }
+  return buildMilSymbolImageData(imageId, cachedSymbol, pixelRatio);
+}
+
+function styleImageMissing(e: MapStyleImageMissingEvent) {
+  if (usedImageIds.has(e.id) || mlMap.hasImage(e.id)) return;
+
+  const symbolCode = e.id.startsWith("sel-") ? e.id.slice(4) : e.id;
+  const cachedSymbol = symbolCache.get(symbolCode);
+  if (cachedSymbol?.kind === "custom") {
+    createCustomSymbolImage(e.id, cachedSymbol);
+    return;
+  }
+
+  const pixelRatio = getSpritePixelRatio();
+  const data = buildMilSymbolImageData(e.id, cachedSymbol, pixelRatio);
   if (data) {
     mlMap.addImage(e.id, data, { pixelRatio });
     usedImageIds.add(e.id);
@@ -501,6 +568,17 @@ mlMap.on("styleimagemissing", styleImageMissing);
 mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
+// Let the image export re-rasterize symbols at its render scale (see
+// symbolImageRegistry) so supersampled exports keep crisp icons.
+registerSymbolImageSource(mlMap, {
+  usedImageIds: () => usedImageIds,
+  renderImage: async (id, pixelRatio) => {
+    const data = await buildSymbolImageData(id, pixelRatio);
+    return data ? { data, pixelRatio } : null;
+  },
+});
+onUnmounted(() => unregisterSymbolImageSource(mlMap));
+
 function pointToXY(point: PointLike): [number, number] {
   return Array.isArray(point) ? point : [point.x, point.y];
 }
@@ -509,9 +587,12 @@ function pointToXY(point: PointLike): [number, number] {
 // `originalEvent` is absent on the native MouseEvent passed by shift-click.
 function getHitTolerance(e?: MapMouseEvent | MapTouchEvent | MouseEvent): number {
   const originalType =
-    e && "originalEvent" in e ? e.originalEvent?.type : (e as MouseEvent | undefined)?.type;
+    e && "originalEvent" in e
+      ? e.originalEvent?.type
+      : (e as MouseEvent | undefined)?.type;
   const isTouch =
-    (originalType?.startsWith("touch") ?? false) || (coarsePointerQuery?.matches ?? false);
+    (originalType?.startsWith("touch") ?? false) ||
+    (coarsePointerQuery?.matches ?? false);
   return isTouch ? TOUCH_HIT_TOLERANCE_PX : MOUSE_HIT_TOLERANCE_PX;
 }
 
@@ -629,9 +710,7 @@ function getEventPixel(e: MouseEvent): [number, number] {
   return [e.clientX - rect.left, e.clientY - rect.top];
 }
 
-type ShiftClickTarget =
-  | { kind: "unit"; id: string }
-  | { kind: "feature"; id: string };
+type ShiftClickTarget = { kind: "unit"; id: string } | { kind: "feature"; id: string };
 
 // MapLibre's built-in box-zoom handler intercepts shift+mousedown, which prevents
 // the synthetic `click` event additive selection would otherwise rely on. So both
@@ -710,6 +789,9 @@ function onNativeCanvasMouseDown(e: MouseEvent) {
 }
 
 function onMapClick(e: MapMouseEvent) {
+  // Another interaction (e.g. an export-area box draw) owns the clicks; don't
+  // select underneath it.
+  if (selectionSuppressed.value) return;
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
@@ -947,7 +1029,13 @@ watch(
 
 onScenarioActionHook.on(async ({ action }) => {
   if (action !== "exportToImage") return;
-  await saveMapLibreMapAsPng(mlMap);
+  // The image export now lives in the sidebar's Tools tab; open it and ask the
+  // panel to expand the export form directly. Mobile renders the same tools in
+  // the bottom panel, which is controlled separately from the desktop sidebar.
+  uiStore.showLeftPanel = true;
+  uiStore.mobilePanelOpen = true;
+  uiStore.activeTabIndex = TAB_TOOLS;
+  uiStore.requestExportTool = true;
 });
 
 function addUnits(

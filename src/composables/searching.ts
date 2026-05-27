@@ -208,6 +208,7 @@ const actionItems: ActionItem[] = [
     label: "Export scenario data",
     icon: "download",
   },
+  { action: "exportToImage", label: "Export map as image", icon: "image" },
   { action: "addEquipment", label: "Add new equipment", icon: "add" },
   { action: "addPersonnel", label: "Add new personnel category", icon: "add" },
   { action: "exportToClipboard", label: "Copy scenario to clipboard" },
