@@ -36,6 +36,61 @@ describe("buildScenarioFeatureRenderPlan", () => {
     expect(plan.featureData.features[0].geometry.type).toBe("Polygon");
   });
 
+  it("always excludes manually hidden features even when filterVisible is false", () => {
+    // Regression: when the Layers tab is open, filterVisible is false so the
+    // map shows time-hidden features for editing — but a feature the user
+    // explicitly hid via the eye toggle (isHidden) must still stay hidden.
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-hidden",
+        kind: "overlay",
+        name: "Layer Hidden",
+        items: [
+          {
+            id: "visible-1",
+            kind: "geometry",
+            _pid: "layer-hidden",
+            geometry: { type: "Point", coordinates: [10, 20] },
+            geometryMeta: { geometryKind: "Point" },
+            style: {},
+          },
+          {
+            id: "eye-hidden-1",
+            kind: "geometry",
+            _pid: "layer-hidden",
+            isHidden: true,
+            _hidden: true,
+            geometry: { type: "Point", coordinates: [0, 0] },
+            geometryMeta: { geometryKind: "Point" },
+            style: {},
+          },
+          {
+            id: "time-hidden-1",
+            kind: "geometry",
+            _pid: "layer-hidden",
+            // Hidden only by the timeline window, not the eye toggle.
+            _hidden: true,
+            geometry: { type: "Point", coordinates: [5, 5] },
+            geometryMeta: { geometryKind: "Point" },
+            style: {},
+          },
+        ],
+      } as any,
+      {
+        filterVisible: false,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const featureIds = plan.featureData.features.map(
+      (feature) => feature.properties?.featureId,
+    );
+    expect(featureIds).toContain("visible-1");
+    expect(featureIds).not.toContain("eye-hidden-1");
+    // Time-hidden features are still revealed while the Layers tab is open.
+    expect(featureIds).toContain("time-hidden-1");
+  });
+
   it("treats null fill as no polygon fill", () => {
     const plan = buildScenarioFeatureRenderPlan(
       {

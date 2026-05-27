@@ -398,7 +398,11 @@ function buildFeatureData(
   const imageDefinitions = new Map<string, ImageDefinition>();
 
   for (const item of layer.items.filter(isNGeometryLayerItem)) {
-    if (filterVisible && item._hidden) continue;
+    // A manually hidden feature (eye toggle) must always be filtered out, the
+    // same way a hidden layer always gets visibility:"none". Only time-window
+    // hiding (`_hidden` without `isHidden`) is gated on `filterVisible`, so the
+    // Layers panel can still reveal time-hidden features for editing.
+    if (item.isHidden || (filterVisible && item._hidden)) continue;
 
     const style = item.style || {};
     const layerId = String(layer.id);
