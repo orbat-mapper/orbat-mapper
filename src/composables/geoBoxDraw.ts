@@ -21,6 +21,7 @@ export function useBoxDraw(mapSource: MaybeRefOrGetter<MapAdapter | null | undef
   let prevCursor = "";
   let prevHoverValue = true;
   let stopEscListener: Fn | undefined;
+  let releaseSelectionSuppression: (() => void) | undefined;
   let engine: BoxDrawEngine | null = null;
 
   function start() {
@@ -29,10 +30,21 @@ export function useBoxDraw(mapSource: MaybeRefOrGetter<MapAdapter | null | undef
     const native = adapter.getNativeMap();
     if (!native) return;
 
+    // Restarting while a draw is already in progress (e.g. the user clicks
+    // "Draw rectangle" again before placing the box) must tear the previous one
+    // down first; otherwise its map listeners and its selection-suppression
+    // token would leak, and a leaked token never clears — selection would stay
+    // suppressed for the rest of the session.
+    if (isActive.value) cleanUp();
+
     activeMap = adapter;
     isActive.value = true;
     prevHoverValue = mapSelectStore.hoverEnabled;
     mapSelectStore.hoverEnabled = false;
+    // Suppress unit/feature selection for the lifetime of the draw: the clicks
+    // that place the box would otherwise also fall through to the map's
+    // selection handler.
+    releaseSelectionSuppression = mapSelectStore.suppressSelection();
     prevCursor = adapter.getTargetElement()?.style.cursor ?? "";
     adapter.setCursor("crosshair");
     stopEscListener = onKeyStroke("Escape", () => cancel());
@@ -56,6 +68,8 @@ export function useBoxDraw(mapSource: MaybeRefOrGetter<MapAdapter | null | undef
     }
     activeMap = null;
     isActive.value = false;
+    releaseSelectionSuppression?.();
+    releaseSelectionSuppression = undefined;
     if (stopEscListener) {
       stopEscListener();
       stopEscListener = undefined;
