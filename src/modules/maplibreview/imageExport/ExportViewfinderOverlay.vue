@@ -236,14 +236,16 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(syncCanvasRect);
     resizeObserver.observe(canvas);
   }
-  props.map.on("move", syncCanvasRect);
+  // The frame is positioned in canvas pixel coordinates, so it stays put as the
+  // map pans/zooms; only a DOM resize moves or resizes the canvas rect. Listening
+  // to map "move" would re-emit the frame every animation frame, clearing the
+  // export preview on the slightest interaction, so only react to resizes.
   props.map.on("resize", syncCanvasRect);
   window.addEventListener("resize", syncCanvasRect);
 });
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
-  props.map.off("move", syncCanvasRect);
   props.map.off("resize", syncCanvasRect);
   window.removeEventListener("resize", syncCanvasRect);
   onPointerUp();
