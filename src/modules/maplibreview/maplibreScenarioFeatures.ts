@@ -17,6 +17,7 @@ import type {
   MapStyleImageMissingEvent,
 } from "maplibre-gl";
 import { toRgbaColor } from "@/utils/cssColor";
+import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
 import {
   drawArrowSymbol,
   getArrowGlobeIconOffset,
@@ -284,14 +285,10 @@ function convertCircleFeature(feature: NGeometryLayerItem) {
   const meta = feature.geometryMeta;
   if (!("radius" in meta) || meta.radius === undefined || geometry.type !== "Point")
     return geometry;
-  return turfCircle(
-    geometry.coordinates as Position,
-    meta.radius / 1000,
-    {
-      steps: 48,
-      units: "kilometers",
-    },
-  ).geometry;
+  return turfCircle(geometry.coordinates as Position, meta.radius / 1000, {
+    steps: 48,
+    units: "kilometers",
+  }).geometry;
 }
 
 function flattenGeometry(
@@ -1137,7 +1134,7 @@ function ensureImage(
       ? createMarkerImage(definition)
       : createArrowImage(definition);
   if (!imageData) return;
-  mlMap.addImage(imageId, imageData, { pixelRatio: 2 });
+  mlMap.addImage(imageId, imageData, { pixelRatio: getSpritePixelRatio() });
 }
 
 export class MapLibreScenarioFeatureManager {
