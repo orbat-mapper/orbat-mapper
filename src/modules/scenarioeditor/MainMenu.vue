@@ -160,7 +160,7 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
             Export scenario data...
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'exportToImage')">
-            Export as image
+            Export map as image
           </DropdownMenuItem>
           <DropdownMenuItem @select="emit('action', 'import')">
             Import data...

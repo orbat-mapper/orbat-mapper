@@ -8,6 +8,16 @@ import { activeScenarioKey, routeDetailsPanelKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useUiStore } from "@/stores/uiStore";
 
+// The panel lazy-loads ScenarioToolsTabPanel (maplibre-gl, ui/item) via
+// defineAsyncComponent; that heavy import can resolve after the test env is
+// torn down and surface as an unhandled rejection. Stub it out here.
+// `__esModule` lets Vue unwrap the default export when resolving the async
+// component.
+vi.mock("@/modules/scenarioeditor/ScenarioToolsTabPanel.vue", () => ({
+  __esModule: true,
+  default: defineComponent({ name: "ScenarioToolsTabPanel", template: "<div />" }),
+}));
+
 vi.mock("@vueuse/core", async () => {
   const actual = await vi.importActual<typeof import("@vueuse/core")>("@vueuse/core");
   return {
