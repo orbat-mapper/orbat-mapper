@@ -765,6 +765,9 @@ function onNativeCanvasClick(e: MouseEvent) {
 }
 
 function onNativeCanvasMouseDown(e: MouseEvent) {
+  // Another interaction (e.g. an export-area box draw) owns selection; the
+  // shift-click additive path must defer to it just like onMapClick does.
+  if (selectionSuppressed.value) return;
   const target = getShiftClickTarget(e);
   if (!target) return;
 

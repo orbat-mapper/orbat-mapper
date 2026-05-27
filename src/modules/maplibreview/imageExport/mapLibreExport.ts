@@ -600,12 +600,21 @@ function copyImageBetweenMaps(from: MlMap, to: MlMap, id: string) {
   });
 }
 
-function waitForIdle(map: MlMap): Promise<void> {
+// Cap how long an export waits for the hidden map to settle. A basemap whose
+// tiles keep retrying (or never load) would otherwise never fire "idle",
+// leaving the export promise unsettled and the UI stuck. On timeout we capture
+// whatever has rendered so far rather than hanging indefinitely.
+const IDLE_TIMEOUT_MS = 15_000;
+
+function waitForIdle(map: MlMap, timeoutMs = IDLE_TIMEOUT_MS): Promise<void> {
   return new Promise((resolve) => {
+    let timer: ReturnType<typeof setTimeout>;
     const done = () => {
+      clearTimeout(timer);
       map.off("idle", done);
       resolve();
     };
+    timer = setTimeout(done, timeoutMs);
     map.on("idle", done);
   });
 }
