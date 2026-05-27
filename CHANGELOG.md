@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Added raster tile layer rendering and management to MapLibre mode.
 - Added image layer rendering and transform support to MapLibre mode.
 - Added line-placement label rendering in MapLibre mode so labels with `text-placement: line` follow the line geometry.
+- Added high-quality map image export to MapLibre mode via the Tools sidebar, with an adjustable viewfinder for framing the output (aspect-ratio presets and a safe-zone guide), an output-resolution scale for crisp symbols and labels, and optional scale bar, north arrow, and attribution overlays.
 
 ### Changed
 
