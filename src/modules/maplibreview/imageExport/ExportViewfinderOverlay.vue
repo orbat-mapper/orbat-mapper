@@ -36,6 +36,8 @@ let dragState: {
   pointerX: number;
   pointerY: number;
   frame: ViewportFrame;
+  pointerId: number;
+  target: Element;
 } | null = null;
 
 const overlayStyle = computed(() => {
@@ -184,30 +186,47 @@ function frameFromDrag(mode: DragMode, start: ViewportFrame, dx: number, dy: num
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (!dragState) return;
+  if (!dragState || event.pointerId !== dragState.pointerId) return;
   event.preventDefault();
   const dx = event.clientX - dragState.pointerX;
   const dy = event.clientY - dragState.pointerY;
   setFrame(frameFromDrag(dragState.mode, dragState.frame, dx, dy));
 }
 
-function onPointerUp() {
+function onPointerUp(event?: PointerEvent) {
+  if (event && dragState && event.pointerId !== dragState.pointerId) return;
+  if (dragState) {
+    const { target, pointerId } = dragState;
+    if ((target as Element & { hasPointerCapture?: (id: number) => boolean })
+      .hasPointerCapture?.(pointerId)) {
+      (target as Element & { releasePointerCapture: (id: number) => void })
+        .releasePointerCapture(pointerId);
+    }
+  }
   dragState = null;
   window.removeEventListener("pointermove", onPointerMove);
   window.removeEventListener("pointerup", onPointerUp);
+  window.removeEventListener("pointercancel", onPointerUp);
 }
 
 function startDrag(event: PointerEvent, mode: DragMode) {
   event.preventDefault();
   event.stopPropagation();
+  const target = event.currentTarget as Element;
+  // Capture the pointer so the drag survives the finger sliding over the
+  // MapLibre canvas (which has its own touch handlers) or off-screen.
+  target.setPointerCapture?.(event.pointerId);
   dragState = {
     mode,
     pointerX: event.clientX,
     pointerY: event.clientY,
     frame: { ...frame.value },
+    pointerId: event.pointerId,
+    target,
   };
   window.addEventListener("pointermove", onPointerMove);
-  window.addEventListener("pointerup", onPointerUp, { once: true });
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
 }
 
 watch(
@@ -277,19 +296,19 @@ onBeforeUnmount(() => {
           v-for="handle in edgeHandles"
           :key="handle"
           type="button"
-          class="pointer-events-auto absolute bg-transparent"
+          class="pointer-events-auto absolute touch-none bg-transparent"
           :class="{
-            'top-0 left-0 h-3 w-full -translate-y-1/2 cursor-ns-resize': handle === 'n',
-            'bottom-0 left-0 h-3 w-full translate-y-1/2 cursor-ns-resize': handle === 's',
-            'top-0 right-0 h-full w-3 translate-x-1/2 cursor-ew-resize': handle === 'e',
-            'top-0 left-0 h-full w-3 -translate-x-1/2 cursor-ew-resize': handle === 'w',
+            'top-0 left-0 h-6 w-full -translate-y-1/2 cursor-ns-resize': handle === 'n',
+            'bottom-0 left-0 h-6 w-full translate-y-1/2 cursor-ns-resize': handle === 's',
+            'top-0 right-0 h-full w-6 translate-x-1/2 cursor-ew-resize': handle === 'e',
+            'top-0 left-0 h-full w-6 -translate-x-1/2 cursor-ew-resize': handle === 'w',
           }"
           tabindex="-1"
           @pointerdown="startDrag($event, handle)"
         />
         <button
           type="button"
-          class="pointer-events-auto absolute top-2 left-2 flex cursor-move items-center gap-1 rounded bg-black/70 py-1 pr-2 pl-1 text-xs font-medium text-white"
+          class="pointer-events-auto absolute top-2 left-2 flex touch-none cursor-move items-center gap-1 rounded bg-black/70 py-1 pr-2 pl-1 text-xs font-medium text-white"
           tabindex="-1"
           @pointerdown="startDrag($event, 'move')"
         >
@@ -300,7 +319,7 @@ onBeforeUnmount(() => {
           v-for="handle in cornerHandles"
           :key="handle"
           type="button"
-          class="bg-primary pointer-events-auto absolute size-4 rounded-full border border-white shadow"
+          class="bg-primary pointer-events-auto absolute size-5 touch-none rounded-full border border-white shadow"
           :class="{
             'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize':
               handle === 'n',
