@@ -3,6 +3,7 @@ import maplibregl, {
   type Map as MlMap,
   type StyleImage,
 } from "maplibre-gl";
+import { strToU8, zipSync } from "fflate";
 import { saveBlobToLocalFile } from "@/utils/files";
 import {
   getSymbolImageSource,
@@ -10,7 +11,34 @@ import {
 } from "@/modules/maplibreview/symbolImageRegistry";
 import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 import { drawMapDecorations } from "@/modules/maplibreview/imageExport/mapDecorations";
+import {
+  mercatorBoundsFromLngLat,
+  serializePamAuxXml,
+  serializeWorldFile,
+  WEB_MERCATOR_WKT,
+  worldFileFromMercatorBounds,
+} from "@/modules/maplibreview/imageExport/worldFile";
+import { encodeGeoTiff } from "@/modules/maplibreview/imageExport/geotiffEncoder";
 import type { MeasurementUnit } from "@/composables/geoMeasurement";
+
+/**
+ * How the rendered raster is delivered to the user.
+ *
+ * - `png`: a plain PNG, no CRS metadata.
+ * - `world-file-zip`: a `.zip` bundling the PNG with a `.pgw` (world file) and
+ *   a `.png.aux.xml` (GDAL PAM CRS sidecar) — broad GIS support, two files.
+ * - `geotiff`: a single self-describing `.tif` with embedded GeoTIFF tags
+ *   (EPSG:3857). Larger file than a PNG but no sidecars.
+ *
+ * The two georeferenced formats both force north-up axis alignment (the
+ * embedded affine assumes bearing = pitch = 0), so a rotated or tilted live
+ * view will export a different visible area than the viewfinder shows.
+ */
+export type ExportFormat = "png" | "world-file-zip" | "geotiff";
+
+export function isGeoreferencedFormat(format: ExportFormat | undefined): boolean {
+  return format === "world-file-zip" || format === "geotiff";
+}
 
 export const MAX_EXPORT_DIMENSION = 16384;
 export const MAX_EXPORT_PIXELS = 64_000_000;
@@ -73,6 +101,13 @@ function ensureFileName(name: string | undefined, fallback = "map.png"): string 
   return /\.(png|jpe?g)$/i.test(trimmed) ? trimmed : `${trimmed}.png`;
 }
 
+/** Filename with any known export extension stripped — for sidecar bundles. */
+function stripExportExtension(name: string | undefined, fallback = "map"): string {
+  const trimmed = (name ?? "").trim();
+  if (!trimmed) return fallback;
+  return trimmed.replace(/\.(png|jpe?g|zip|tiff?)$/i, "") || fallback;
+}
+
 async function canvasToBlob(
   canvas: HTMLCanvasElement,
   mimeType = "image/png",
@@ -115,6 +150,8 @@ export type ViewportExportOptions = {
    * as they will appear in the export. Defaults to this render's own size.
    */
   decorationReferenceShortSide?: number;
+  /** See {@link ExportFormat}. Defaults to `png`. */
+  outputFormat?: ExportFormat;
   fileName?: string;
 };
 
@@ -171,6 +208,8 @@ export type BoundsExportOptions = {
   decorations?: MapDecorations;
   /** See {@link ViewportExportOptions.decorationReferenceShortSide}. */
   decorationReferenceShortSide?: number;
+  /** See {@link ExportFormat}. Defaults to `png`. */
+  outputFormat?: ExportFormat;
   fileName?: string;
 };
 
@@ -199,6 +238,14 @@ export async function renderViewportFrameToBlob(
   frame: ViewportFrame,
   options: ViewportExportOptions = {},
 ): Promise<Blob | null> {
+  return (await renderViewportFrame(map, frame, options))?.blob ?? null;
+}
+
+async function renderViewportFrame(
+  map: MlMap,
+  frame: ViewportFrame,
+  options: ViewportExportOptions,
+): Promise<HiddenMapRender | null> {
   const outputScale = Math.max(1, Math.round(options.outputScale ?? 1));
   const frameWidth = Math.max(1, Math.round(frame.width));
   const frameHeight = Math.max(1, Math.round(frame.height));
@@ -211,15 +258,22 @@ export async function renderViewportFrameToBlob(
   ];
   const center = map.unproject(centerPoint);
 
+  // Both georeferenced formats embed an axis-aligned affine, which is only
+  // valid when bearing and pitch are zero. Force resetRotation in those cases.
+  const resetRotation = isGeoreferencedFormat(options.outputFormat)
+    ? true
+    : !!options.resetRotation;
+
   return renderViaHiddenMap(map, {
     width: frameWidth,
     height: frameHeight,
     outputScale,
     symbolPixelRatio: outputScale,
     symbolDisplayScale: 1,
-    resetRotation: options.resetRotation,
+    resetRotation,
     decorations: options.decorations,
     decorationReferenceShortSide: options.decorationReferenceShortSide,
+    produceRgba: options.outputFormat === "geotiff",
     camera: { center: [center.lng, center.lat], zoom: map.getZoom() },
   });
 }
@@ -229,14 +283,12 @@ export async function exportViewportFrame(
   frame: ViewportFrame,
   options: ViewportExportOptions = {},
 ): Promise<void> {
-  const fileName = ensureFileName(options.fileName, "map.png");
-  const blob = await renderViewportFrameToBlob(map, frame, {
-    outputScale: options.outputScale,
-    resetRotation: options.resetRotation,
-    decorations: options.decorations,
+  const render = await renderViewportFrame(map, frame, options);
+  if (!render) return;
+  await saveRenderedExport(render, {
+    fileName: options.fileName,
+    outputFormat: options.outputFormat ?? "png",
   });
-  if (!blob) return;
-  await saveBlobToLocalFile(blob, fileName);
 }
 
 type HiddenMapCamera = {
@@ -246,9 +298,30 @@ type HiddenMapCamera = {
 };
 
 /**
+ * Result of a hidden-map render: the PNG blob plus the geographic bounds and
+ * actual canvas pixel size the map settled on. Bounds and pixel size are read
+ * directly from the hidden map after it idles, so they reflect any MapLibre
+ * adjustments (fitBounds padding, canvas-size clamping) rather than the values
+ * the caller requested. Both are needed to derive a correct world file.
+ */
+export type HiddenMapRender = {
+  blob: Blob | null;
+  /**
+   * Tightly-packed 8-bit RGBA copied off the hidden map's canvas. Populated
+   * only when the caller asked for it (the GeoTIFF path); null otherwise to
+   * avoid a 4-bytes-per-pixel allocation on the PNG path.
+   */
+  rgba: Uint8Array | null;
+  bounds: { west: number; south: number; east: number; north: number };
+  widthPx: number;
+  heightPx: number;
+};
+
+/**
  * Shared core for the bounds and viewport exports: render the source map's style
  * through a hidden MapLibre map (so the visible map is untouched) at the given
- * base size and output scale, and return the PNG blob.
+ * base size and output scale, and return the PNG blob alongside the rendered
+ * bounds / pixel dimensions.
  *
  * The blob is `width*outputScale` by `height*outputScale`. The map renders at a
  * device pixel ratio of `outputScale`, so every layer — basemap, labels and
@@ -266,9 +339,15 @@ async function renderViaHiddenMap(
     resetRotation?: boolean;
     decorations?: MapDecorations;
     decorationReferenceShortSide?: number;
+    /**
+     * When true, also copy the rendered WebGL canvas into a 2D canvas and
+     * extract its RGBA bytes. Only the GeoTIFF path needs this; PNG and
+     * world-file paths skip it to avoid an extra full-image allocation.
+     */
+    produceRgba?: boolean;
     camera: HiddenMapCamera;
   },
-): Promise<Blob | null> {
+): Promise<HiddenMapRender | null> {
   const {
     width,
     height,
@@ -278,6 +357,7 @@ async function renderViaHiddenMap(
     resetRotation,
     decorations,
     decorationReferenceShortSide,
+    produceRgba,
     camera,
   } = options;
 
@@ -345,13 +425,18 @@ async function renderViaHiddenMap(
 
     const canvas = hiddenMap.getCanvas();
     if (!(canvas instanceof HTMLCanvasElement)) return null;
+    const renderedBounds = readMapBounds(hiddenMap);
+    const renderedSize = { widthPx: canvas.width, heightPx: canvas.height };
+
+    // Build a single "final" image: either the bare WebGL canvas, or a 2D
+    // copy with decorations composited on top. Both blob and rgba derive
+    // from this so a GeoTIFF caller never silently loses decorations.
+    let finalCanvas: HTMLCanvasElement = canvas;
     if (
       decorations &&
       (decorations.scaleBar || decorations.northArrow || decorations.credits)
     ) {
-      // Composite the furniture onto a 2D copy: the live backing canvas is
-      // WebGL, so it has no 2D context to draw scale bar / arrow / credits on.
-      return await composeDecoratedBlob(canvas, {
+      const decorated = buildDecoratedCanvas(canvas, {
         width,
         height,
         referenceShortSide: decorationReferenceShortSide,
@@ -362,14 +447,50 @@ async function renderViaHiddenMap(
         northArrow: !!decorations.northArrow,
         credits: decorations.credits ? getMapAttributionText(sourceMap) : undefined,
       });
+      if (decorated) finalCanvas = decorated;
     }
-    // The backing canvas is already width*outputScale × height*outputScale; emit
-    // it directly so symbols keep every pixel they were rendered with.
-    return await canvasToBlob(canvas, "image/png");
+
+    // PNG encoding is expensive (~1-3s at 4K); skip when the caller only
+    // wants RGBA (the GeoTIFF path).
+    const blob = produceRgba ? null : await canvasToBlob(finalCanvas, "image/png");
+    const rgba = produceRgba ? extractCanvasRgba(finalCanvas) : null;
+    return { blob, rgba, bounds: renderedBounds, ...renderedSize };
   } finally {
     hiddenMap?.remove();
     container.remove();
   }
+}
+
+/**
+ * Copy a canvas through a same-size 2D canvas and read its RGBA back as
+ * tightly-packed bytes. Production canvases always have a 2D context;
+ * `byteOffset`/`byteLength` are forwarded so polyfills that pack ImageData
+ * into a larger or offset buffer still yield the right bytes.
+ */
+function extractCanvasRgba(canvas: HTMLCanvasElement): Uint8Array | null {
+  const copy = document.createElement("canvas");
+  copy.width = canvas.width;
+  copy.height = canvas.height;
+  const ctx = copy.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(canvas, 0, 0);
+  const image = ctx.getImageData(0, 0, copy.width, copy.height);
+  return new Uint8Array(image.data.buffer, image.data.byteOffset, image.data.byteLength);
+}
+
+function readMapBounds(map: MlMap): {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+} {
+  const b = map.getBounds();
+  return {
+    west: b.getWest(),
+    south: b.getSouth(),
+    east: b.getEast(),
+    north: b.getNorth(),
+  };
 }
 
 /**
@@ -380,6 +501,13 @@ export async function renderBoundsToBlob(
   sourceMap: MlMap,
   options: Omit<BoundsExportOptions, "fileName">,
 ): Promise<Blob | null> {
+  return (await renderBounds(sourceMap, options))?.blob ?? null;
+}
+
+async function renderBounds(
+  sourceMap: MlMap,
+  options: Omit<BoundsExportOptions, "fileName">,
+): Promise<HiddenMapRender | null> {
   const outputScale = Math.max(1, Math.round(options.outputScale ?? 1));
   // Validate the final dimensions (base × scale) so an oversized export fails
   // with a clear message instead of silently producing a blank/clamped canvas.
@@ -389,15 +517,22 @@ export async function renderBoundsToBlob(
   );
   if (sizeError) throw new Error(sizeError);
 
+  // Both georeferenced formats embed an axis-aligned affine — see notes on
+  // renderViewportFrame.
+  const resetRotation = isGeoreferencedFormat(options.outputFormat)
+    ? true
+    : !!options.resetRotation;
+
   return renderViaHiddenMap(sourceMap, {
     width: options.width,
     height: options.height,
     outputScale,
     symbolPixelRatio: options.symbolPixelRatio,
     symbolDisplayScale: options.symbolDisplayScale,
-    resetRotation: options.resetRotation,
+    resetRotation,
     decorations: options.decorations,
     decorationReferenceShortSide: options.decorationReferenceShortSide,
+    produceRgba: options.outputFormat === "geotiff",
     camera: { bounds: options.bounds },
   });
 }
@@ -415,7 +550,8 @@ function metersPerCssPixel(map: MlMap, width: number, height: number): number {
 /**
  * Copy the rendered WebGL canvas into a 2D canvas of the same size and draw the
  * requested decorations on top. The 2D context is scaled so {@link
- * drawMapDecorations} can work in CSS pixels.
+ * drawMapDecorations} can work in CSS pixels. Returns null when a 2D context
+ * is unavailable (jsdom etc.) — caller falls back to the bare WebGL canvas.
  *
  * The scale is derived from the *actual* backing-canvas size rather than the
  * requested output scale: MapLibre may clamp the canvas (maxCanvasSize / GPU
@@ -423,7 +559,7 @@ function metersPerCssPixel(map: MlMap, width: number, height: number): number {
  * scale would place the edge-anchored furniture (scale bar, credits, north
  * arrow) off the real canvas and make it vanish.
  */
-async function composeDecoratedBlob(
+function buildDecoratedCanvas(
   source: HTMLCanvasElement,
   opts: {
     width: number;
@@ -436,12 +572,12 @@ async function composeDecoratedBlob(
     northArrow: boolean;
     credits?: string;
   },
-): Promise<Blob | null> {
+): HTMLCanvasElement | null {
   const out = document.createElement("canvas");
   out.width = source.width;
   out.height = source.height;
   const ctx = out.getContext("2d");
-  if (!ctx) return canvasToBlob(source, "image/png");
+  if (!ctx) return null;
   ctx.drawImage(source, 0, 0);
   const pixelRatio = opts.width > 0 ? source.width / opts.width : 1;
   ctx.save();
@@ -459,7 +595,7 @@ async function composeDecoratedBlob(
     credits: opts.credits,
   });
   ctx.restore();
-  return canvasToBlob(out, "image/png");
+  return out;
 }
 
 /** Strip HTML markup from an attribution string, collapsing whitespace. */
@@ -540,11 +676,101 @@ export async function exportMapByBounds(
   sourceMap: MlMap,
   options: BoundsExportOptions,
 ): Promise<void> {
-  const { fileName: rawFileName, ...renderOptions } = options;
-  const fileName = ensureFileName(rawFileName, "map.png");
-  const blob = await renderBoundsToBlob(sourceMap, renderOptions);
-  if (!blob) return;
-  await saveBlobToLocalFile(blob, fileName);
+  const { fileName, outputFormat, ...renderOptions } = options;
+  const render = await renderBounds(sourceMap, { ...renderOptions, outputFormat });
+  if (!render) return;
+  await saveRenderedExport(render, {
+    fileName,
+    outputFormat: outputFormat ?? "png",
+  });
+}
+
+/**
+ * Save a hidden-map render to disk. Routes by output format: plain PNG, a
+ * `.zip` bundle of PNG + `.pgw` + `.png.aux.xml` sidecars, or a
+ * self-describing GeoTIFF `.tif`.
+ */
+async function saveRenderedExport(
+  render: HiddenMapRender,
+  options: { fileName?: string; outputFormat: ExportFormat },
+): Promise<void> {
+  if (options.outputFormat === "geotiff") {
+    if (!render.rgba) {
+      throw new Error(
+        "GeoTIFF export requires pixel access to the rendered canvas, which is not available in this environment.",
+      );
+    }
+    const baseName = stripExportExtension(options.fileName, "map");
+    const tiffBytes = encodeGeoTiff({
+      width: render.widthPx,
+      height: render.heightPx,
+      rgba: render.rgba,
+      bounds: mercatorBoundsFromLngLat(render.bounds),
+      epsgCode: 3857,
+      citation: "WGS 84 / Pseudo-Mercator",
+    });
+    await saveBlobToLocalFile(
+      new Blob([new Uint8Array(tiffBytes)], { type: "image/tiff" }),
+      `${baseName}.tif`,
+    );
+    return;
+  }
+  if (!render.blob) return;
+  if (options.outputFormat === "world-file-zip") {
+    const baseName = stripExportExtension(options.fileName, "map");
+    const pngBytes = new Uint8Array(await render.blob.arrayBuffer());
+    const zipBytes = buildGeoreferencedZipBytes(
+      pngBytes,
+      render.bounds,
+      render.widthPx,
+      render.heightPx,
+      baseName,
+    );
+    await saveBlobToLocalFile(
+      // Wrap in a fresh Uint8Array so the BlobPart signature accepts it (the
+      // upstream type carries an ArrayBufferLike template that may include
+      // SharedArrayBuffer).
+      new Blob([new Uint8Array(zipBytes)], { type: "application/zip" }),
+      `${baseName}.zip`,
+    );
+    return;
+  }
+  await saveBlobToLocalFile(render.blob, ensureFileName(options.fileName, "map.png"));
+}
+
+/**
+ * Build a `.zip` (store-only — PNG is already compressed) containing the
+ * render's PNG plus a `.pgw` (world file) and a `.png.aux.xml` (GDAL PAM CRS)
+ * sidecar describing it as an EPSG:3857 raster. The world file is derived
+ * from the hidden map's actual settled bounds and canvas pixel dimensions so
+ * the affine matches the bytes.
+ *
+ * Exported so the byte content can be verified without round-tripping through
+ * a Blob (jsdom's Blob does not always preserve binary content).
+ */
+export function buildGeoreferencedZipBytes(
+  pngBytes: Uint8Array,
+  bounds: { west: number; south: number; east: number; north: number },
+  widthPx: number,
+  heightPx: number,
+  baseName: string,
+): Uint8Array {
+  const mercator = mercatorBoundsFromLngLat(bounds);
+  const worldFile = serializeWorldFile(
+    worldFileFromMercatorBounds(mercator, widthPx, heightPx),
+  );
+  const zipBytes = zipSync(
+    {
+      [`${baseName}.png`]: pngBytes,
+      [`${baseName}.pgw`]: strToU8(worldFile),
+      [`${baseName}.png.aux.xml`]: strToU8(serializePamAuxXml(WEB_MERCATOR_WKT)),
+    },
+    { level: 0 },
+  );
+  // fflate types its byte arrays with an ArrayBufferLike template that can
+  // include SharedArrayBuffer; copy into a plain Uint8Array so downstream
+  // BlobPart/ArrayBuffer signatures are happy.
+  return new Uint8Array(zipBytes);
 }
 
 /**
