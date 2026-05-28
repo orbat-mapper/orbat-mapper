@@ -17,8 +17,65 @@ const HALO = "rgba(255, 255, 255, 0.92)";
 const FONT_STACK =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
-/** Distance from the image edge to the decorations, in CSS pixels. */
+/**
+ * Distance from the image edge to the decorations at the design reference
+ * resolution. Scaled by {@link furnitureScale} for the actual render.
+ */
 const MARGIN = 16;
+
+/**
+ * Short side (device pixels) the decoration constants are sized for. Above
+ * this, furniture is upscaled proportionally so a scale bar / north arrow
+ * occupies the same fraction of the image on a high-resolution export as it
+ * does on a baseline one. Below this we keep raw constants to avoid sub-pixel
+ * shrinking on small previews.
+ */
+const FURNITURE_REFERENCE_SHORT_SIDE = 1080;
+
+/**
+ * Multiplier from "design CSS pixel" constants (sized for a 1080-short-side
+ * export) to user units in the caller's 2D context.
+ *
+ * The two export paths set up the context differently:
+ *   - Default frame mode pre-scales the context by the output pixel ratio, so
+ *     1 user unit = 1 CSS px = N device px.
+ *   - The bounds / "render more map detail" path renders into a canvas that's
+ *     already at device resolution with no context scaling, so 1 user unit = 1
+ *     device px.
+ * Without compensation, fixed CSS-px constants stay 6 device px tall in the
+ * second case and shrink relative to the image. This factor folds in the
+ * design reference, the preview's downscale ratio, and the context's pixel
+ * ratio so furniture lands at the same on-image fraction either way.
+ */
+type ReferenceMetrics = {
+  ratio: number;
+  currentShortDevice: number;
+  referenceShortDevice: number;
+};
+
+function referenceMetrics(opts: DecorationDrawOptions): ReferenceMetrics {
+  const ratio = opts.pixelRatio > 0 ? opts.pixelRatio : 1;
+  const currentShortDevice = Math.min(opts.width, opts.height) * ratio;
+  const referenceShortDevice =
+    opts.referenceShortSide && opts.referenceShortSide > 0
+      ? opts.referenceShortSide
+      : currentShortDevice;
+  return { ratio, currentShortDevice, referenceShortDevice };
+}
+
+function furnitureScaleFrom(ref: ReferenceMetrics): number {
+  if (!(ref.referenceShortDevice > 0)) return 1 / ref.ratio;
+  const designScale = Math.max(
+    1,
+    ref.referenceShortDevice / FURNITURE_REFERENCE_SHORT_SIDE,
+  );
+  const previewRatio = ref.currentShortDevice / ref.referenceShortDevice;
+  return (designScale * previewRatio) / ref.ratio;
+}
+
+function furnitureScale(opts: DecorationDrawOptions): number {
+  return furnitureScaleFrom(referenceMetrics(opts));
+}
 
 /**
  * Round a value down to the nearest "nice" cartographic value (1, 2, 3 or 5
@@ -161,15 +218,17 @@ function tracePath(ctx: CanvasRenderingContext2D, points: [number, number][]): v
 }
 
 function drawScaleBar(ctx: CanvasRenderingContext2D, opts: DecorationDrawOptions): void {
-  const maxWidth = Math.min(opts.width * 0.25, 240);
+  const s = furnitureScale(opts);
+  const margin = MARGIN * s;
+  const maxWidth = Math.min(opts.width * 0.25, 240 * s);
   const bar = computeScaleBar(opts.metersPerPixel, maxWidth, opts.scaleUnit);
   if (!bar) return;
 
   const segments = 4;
   const segmentPx = bar.widthPx / segments;
-  const barHeight = 6;
-  const x0 = MARGIN;
-  const barBottom = opts.height - MARGIN;
+  const barHeight = 6 * s;
+  const x0 = margin;
+  const barBottom = opts.height - margin;
   const barTop = barBottom - barHeight;
 
   ctx.save();
@@ -183,18 +242,18 @@ function drawScaleBar(ctx: CanvasRenderingContext2D, opts: DecorationDrawOptions
 
   // Outline: white halo first, then a crisp ink line on top.
   ctx.strokeStyle = HALO;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3 * s;
   ctx.strokeRect(x0, barTop, bar.widthPx, barHeight);
   ctx.strokeStyle = INK;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = Math.max(1, s);
   ctx.strokeRect(x0, barTop, bar.widthPx, barHeight);
 
   // End labels sit just above the bar.
-  ctx.font = `600 12px ${FONT_STACK}`;
+  ctx.font = `600 ${12 * s}px ${FONT_STACK}`;
   ctx.textBaseline = "bottom";
   ctx.textAlign = "center";
-  haloText(ctx, "0", x0, barTop - 4);
-  haloText(ctx, bar.label, x0 + bar.widthPx, barTop - 4);
+  haloText(ctx, "0", x0, barTop - 4 * s, 3 * s);
+  haloText(ctx, bar.label, x0 + bar.widthPx, barTop - 4 * s, 3 * s);
 
   ctx.restore();
 }
@@ -228,34 +287,29 @@ function drawCredits(ctx: CanvasRenderingContext2D, opts: DecorationDrawOptions)
   // Attribution is metadata, not map content: size it from the final image
   // resolution rather than the frame size × output scale, so it stays a modest,
   // consistent caption and wraps against the full output width (so a long credit
-  // rarely wraps on a large export). The context is scaled by opts.pixelRatio,
-  // so a device-pixel target is divided back into the context's user units. A
-  // downscaled preview passes the export's short side as referenceShortSide so
-  // the credit matches the export's size, then scales down with the preview.
-  const ratio = opts.pixelRatio > 0 ? opts.pixelRatio : 1;
-  const currentShortSide = Math.min(opts.width, opts.height) * ratio;
-  const referenceShortSide =
-    opts.referenceShortSide && opts.referenceShortSide > 0
-      ? opts.referenceShortSide
-      : currentShortSide;
-  const referenceFontPx = Math.min(22, Math.max(11, referenceShortSide * 0.009));
+  // rarely wraps on a large export). Furniture size uses the design-anchored
+  // scale; font px uses its own clamped formula so credits don't grow linearly
+  // with the canvas the way the scale bar / north arrow do.
+  const ref = referenceMetrics(opts);
+  const referenceFontPx = Math.min(22, Math.max(11, ref.referenceShortDevice * 0.009));
   const fontDevicePx =
-    referenceShortSide > 0
-      ? referenceFontPx * (currentShortSide / referenceShortSide)
+    ref.referenceShortDevice > 0
+      ? referenceFontPx * (ref.currentShortDevice / ref.referenceShortDevice)
       : 0;
-  const fontPx = fontDevicePx / ratio;
+  const fontPx = fontDevicePx / ref.ratio;
   const lineHeight = fontPx * 1.3;
   const haloWidth = Math.max(1, fontPx * 0.2);
+  const margin = MARGIN * furnitureScaleFrom(ref);
 
   ctx.save();
   ctx.font = `500 ${fontPx}px ${FONT_STACK}`;
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
 
-  const maxWidth = opts.width - MARGIN * 2;
+  const maxWidth = opts.width - margin * 2;
   const lines = wrapText(ctx, text, maxWidth);
-  const x = opts.width - MARGIN;
-  let y = opts.height - MARGIN;
+  const x = opts.width - margin;
+  let y = opts.height - margin;
   // Draw bottom-up so the first line ends up on top.
   for (let i = lines.length - 1; i >= 0; i--) {
     haloText(ctx, lines[i], x, y, haloWidth);
@@ -268,12 +322,14 @@ function drawNorthArrow(
   ctx: CanvasRenderingContext2D,
   opts: DecorationDrawOptions,
 ): void {
-  const len = 20; // needle tip distance from center
-  const tail = 8; // base spread below center
-  const halfW = 7; // half-width at the base
-  const labelGap = 11; // gap between tip and the "N"
-  const cx = opts.width - MARGIN - halfW - 4;
-  const cy = MARGIN + len + labelGap + 4;
+  const s = furnitureScale(opts);
+  const len = 20 * s; // needle tip distance from center
+  const tail = 8 * s; // base spread below center
+  const halfW = 7 * s; // half-width at the base
+  const labelGap = 11 * s; // gap between tip and the "N"
+  const margin = MARGIN * s;
+  const cx = opts.width - margin - halfW - 4 * s;
+  const cy = margin + len + labelGap + 4 * s;
   const ang = (-opts.bearing * Math.PI) / 180;
 
   const tip: [number, number] = [0, -len];
@@ -288,7 +344,7 @@ function drawNorthArrow(
 
   // Halo backing for the whole needle.
   ctx.strokeStyle = HALO;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3 * s;
   tracePath(ctx, [tip, east, base]);
   ctx.stroke();
   tracePath(ctx, [tip, west, base]);
@@ -304,7 +360,7 @@ function drawNorthArrow(
 
   // Crisp ink outline over both halves.
   ctx.strokeStyle = INK;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = Math.max(1, s);
   tracePath(ctx, [tip, east, base]);
   ctx.stroke();
   tracePath(ctx, [tip, west, base]);
@@ -318,9 +374,9 @@ function drawNorthArrow(
   ctx.rotate(ang);
   ctx.translate(0, -(len + labelGap));
   ctx.rotate(-ang);
-  ctx.font = `700 13px ${FONT_STACK}`;
+  ctx.font = `700 ${13 * s}px ${FONT_STACK}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  haloText(ctx, "N", 0, 0);
+  haloText(ctx, "N", 0, 0, 3 * s);
   ctx.restore();
 }
