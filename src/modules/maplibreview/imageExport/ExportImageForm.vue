@@ -17,7 +17,9 @@ import {
   checkExportSize,
   exportViewportFrame,
   exportMapByBounds,
+  type ExportFormat,
   getMapAttributionText,
+  isGeoreferencedFormat,
   isPaperPreset,
   type PaperOrientation,
   type PaperPreset,
@@ -74,7 +76,28 @@ const resetRotation = ref(false);
 const showScaleBar = ref(false);
 const showNorthArrow = ref(false);
 const showCredits = ref(false);
+const outputFormat = ref<ExportFormat>("png");
 const fileName = ref("map");
+
+const outputFormatItems = [
+  { value: "png", label: "PNG" },
+  { value: "world-file-zip", label: "PNG + world file (.zip)" },
+  { value: "geotiff", label: "GeoTIFF (.tif)" },
+];
+
+const isGeoreferenced = computed(() => isGeoreferencedFormat(outputFormat.value));
+
+const outputFileExtension = computed(() => {
+  if (outputFormat.value === "world-file-zip") return ".zip";
+  if (outputFormat.value === "geotiff") return ".tif";
+  return ".png";
+});
+
+const exportButtonLabel = computed(() => {
+  if (outputFormat.value === "world-file-zip") return "Export ZIP";
+  if (outputFormat.value === "geotiff") return "Export GeoTIFF";
+  return "Export PNG";
+});
 
 // The scale bar mirrors the map's current measurement units (the same store the
 // live scale control reads), so an imperial/nautical map exports a matching bar.
@@ -163,11 +186,25 @@ watch(safeZone, (value) => {
 });
 
 // Reset rotation isn't offered in frame mode (the frame captures the live
-// camera as-is), so clear any value carried over from another mode to keep it
-// from silently affecting the frame export.
+// camera as-is), so clear any value carried over from another mode. The
+// georeferenced override is applied at submit time via `effectiveResetRotation`
+// — keeping the model itself clean here avoids stale state when the user
+// switches a georeferenced format back to PNG.
 watch(mode, (value) => {
   if (value === "frame") resetRotation.value = false;
 });
+
+// Both georeferenced formats embed an axis-aligned affine, so we force the
+// north-up render and suppress decorations when one is active. These are
+// applied at submit time (see effectiveResetRotation / effectiveDecorations)
+// rather than as side-effects on the model, so the user's decoration toggles
+// and rotation choice survive switching format back to PNG.
+const effectiveResetRotation = computed(
+  () => isGeoreferenced.value || resetRotation.value,
+);
+const effectiveDecorations = computed(() =>
+  isGeoreferenced.value ? undefined : decorations.value,
+);
 
 const presetItems = [
   { value: "custom", label: "Custom" },
@@ -284,6 +321,9 @@ watch(
     showScaleBar,
     showNorthArrow,
     showCredits,
+    // outputFormat does not affect the preview pixels (preview is always the
+    // downscaled rendered raster, regardless of zip/tiff wrapping), so it's
+    // intentionally not in this list — switching formats keeps the preview.
     () => props.drawnBounds,
     viewfinderFrame,
   ],
@@ -431,15 +471,17 @@ async function onSubmit() {
           outputScale: 1,
           symbolPixelRatio: outputScale.value,
           symbolDisplayScale: outputScale.value,
-          resetRotation: resetRotation.value,
-          decorations: decorations.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
+          outputFormat: outputFormat.value,
           fileName: name,
         });
       } else {
         await exportViewportFrame(props.map, viewfinderFrame.value, {
           outputScale: outputScale.value,
-          resetRotation: resetRotation.value,
-          decorations: decorations.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
+          outputFormat: outputFormat.value,
           fileName: name,
         });
       }
@@ -462,8 +504,9 @@ async function onSubmit() {
         width: width.value,
         height: height.value,
         outputScale: outputScale.value,
-        resetRotation: resetRotation.value,
-        decorations: decorations.value,
+        resetRotation: effectiveResetRotation.value,
+        decorations: effectiveDecorations.value,
+        outputFormat: outputFormat.value,
         fileName: name,
       });
     }
@@ -502,15 +545,15 @@ async function onPreview() {
           outputScale: 1,
           symbolPixelRatio: outputScale.value,
           symbolDisplayScale: previewDisplayScale,
-          resetRotation: resetRotation.value,
-          decorations: decorations.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
           decorationReferenceShortSide: outputShortSide.value,
         });
       } else {
         blob = await renderViewportFrameToBlob(props.map, viewfinderFrame.value, {
           outputScale: 1,
-          resetRotation: resetRotation.value,
-          decorations: decorations.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
           decorationReferenceShortSide: outputShortSide.value,
         });
       }
@@ -534,8 +577,8 @@ async function onPreview() {
         width: pw,
         height: ph,
         outputScale: 1,
-        resetRotation: resetRotation.value,
-        decorations: decorations.value,
+        resetRotation: effectiveResetRotation.value,
+        decorations: effectiveDecorations.value,
         decorationReferenceShortSide: outputShortSide.value,
       });
     }
@@ -685,26 +728,52 @@ async function onPreview() {
       description="Export with the map flattened and pointing north, ignoring the current rotation and tilt."
     />
 
-    <fieldset class="space-y-2">
-      <legend class="text-foreground text-sm font-medium">Annotations</legend>
+    <div class="space-y-1">
+      <SimpleSelect
+        v-model="outputFormat"
+        label="Output format"
+        :items="outputFormatItems"
+      />
+      <p v-if="isGeoreferenced" class="text-muted-foreground text-xs">
+        Exports north-up and top-down — the embedded affine assumes axis
+        alignment, so the rendered area may differ from the viewfinder framing
+        when the live map is rotated. Annotations are disabled while a
+        georeferenced format is selected.
+      </p>
+    </div>
+
+    <fieldset class="space-y-2" :disabled="isGeoreferenced">
+      <legend
+        class="text-sm font-medium"
+        :class="isGeoreferenced ? 'text-muted-foreground' : 'text-foreground'"
+      >
+        Annotations
+      </legend>
       <InputCheckbox
         v-model="showScaleBar"
+        :disabled="isGeoreferenced"
         label="Scale bar"
         description="Draw a distance scale bar in the lower-left corner."
       />
       <InputCheckbox
         v-model="showNorthArrow"
+        :disabled="isGeoreferenced"
         label="North arrow"
         description="Draw a compass arrow in the upper-right, oriented to the map's rotation."
       />
       <InputCheckbox
         v-model="showCredits"
+        :disabled="isGeoreferenced"
         label="Map credits"
         description="Print the basemap attribution in the lower-right corner."
       />
     </fieldset>
 
-    <InputGroup v-model="fileName" label="File name" />
+    <InputGroup
+      v-model="fileName"
+      label="File name"
+      :description="`Saved as ${outputFileExtension}.`"
+    />
 
     <Alert v-if="sizeError" variant="destructive">
       <AlertDescription>{{ sizeError }}</AlertDescription>
@@ -732,7 +801,7 @@ async function onPreview() {
         {{ previewing ? "Rendering…" : "Preview" }}
       </SecondaryButton>
       <PrimaryButton type="submit" :disabled="!canExport">
-        {{ exporting ? "Exporting…" : "Export PNG" }}
+        {{ exporting ? "Exporting…" : exportButtonLabel }}
       </PrimaryButton>
     </div>
   </form>
