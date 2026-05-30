@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { GlobalEvents } from "vue-global-events";
-import { computed, inject, watch } from "vue";
+import { computed, inject } from "vue";
 import { useUiStore } from "@/stores/uiStore";
 import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
@@ -13,7 +13,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useScenarioFeatureActions, useUnitActions } from "@/composables/scenarioActions";
 import { UnitActions } from "@/types/constants";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
+import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
@@ -37,13 +37,14 @@ const {
   activeScenarioEventId,
 } = useSelectedItems();
 const { onUnitAction } = useUnitActions();
-const geoStore = useGeoStore();
 const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const unitSettings = useUnitSettingsStore();
 const playback = usePlaybackStore();
 const recordingStore = useRecordingStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
-let featureActions: ReturnType<typeof useScenarioFeatureActions> | null = null;
+// Resolve map-dependent utils (zoom/pan) lazily so that engine-agnostic actions
+// like delete work regardless of the active map engine (OpenLayers or MapLibre).
+const featureActions = useScenarioFeatureActions({ activeScenario });
 
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => getUnitById(id)),
@@ -53,19 +54,11 @@ const activeUnit = computed(
   () => (activeUnitId.value && getUnitById(activeUnitId.value)) || null,
 );
 
-watch(
-  () => geoStore.olMap,
-  (olMap) => {
-    featureActions = olMap ? useScenarioFeatureActions({ activeScenario, olMap }) : null;
-  },
-  { immediate: true },
-);
-
 function onFeatureAction(
   featureOrFeaturesId: FeatureId | FeatureId[],
   action: "zoom" | "pan" | "delete" | string,
 ) {
-  featureActions?.onFeatureAction(featureOrFeaturesId, action);
+  featureActions.onFeatureAction(featureOrFeaturesId, action);
 }
 
 const createNewUnit = () => {

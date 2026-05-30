@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed the Delete key not removing selected scenario features in MapLibre mode.
 - Improved MapLibre feature selection with a click hit tolerance and better shift+click handling.
 - Improved MapLibre draw and modify snapping.
 - Improved MapLibre geometry editing on touch devices.
