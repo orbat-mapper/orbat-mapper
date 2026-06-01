@@ -38,6 +38,9 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useOpenLayersRoutingPreview } from "@/geo/routing/openLayersRoutingPreview";
+import TacticalDrawPalette from "@/modules/tacticaldraw/TacticalDrawPalette.vue";
+import { OpenLayersAdapter } from "@orbat-mapper/tactical-draw-adapter-openlayers";
+import type { MapAdapter } from "@orbat-mapper/tactical-draw";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -77,6 +80,7 @@ const playback = usePlaybackStore();
 
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const nativeMapRef = shallowRef<OLMap>();
+const tacticalDrawAdapter = shallowRef<MapAdapter>();
 const featureSelectInteractionRef = shallowRef<Select>();
 const {
   activeRoutingUnitName,
@@ -128,6 +132,7 @@ function onMapReady({
     },
   };
   featureSelectInteractionRef.value = featureSelectInteraction;
+  tacticalDrawAdapter.value = new OpenLayersAdapter(olMap);
 }
 
 watch(
@@ -154,6 +159,8 @@ onUnmounted(() => {
   }
   activeUnitStore.clearActiveUnit();
   playback.playbackRunning = false;
+  // Unmounts the palette, whose useTacticalDraw scope disposes the controller.
+  tacticalDrawAdapter.value = undefined;
 });
 
 onActivated(() => {
@@ -232,6 +239,12 @@ function onCloseActiveDetailsPanel() {
         :initial-view="props.initialMapView"
         @mapReady="onMapReady"
         @map-view-change="emit('map-view-change', $event)"
+      />
+      <!-- Scaffold: tactical-graphics draw palette (tactical-draw integration). -->
+      <TacticalDrawPalette
+        v-if="tacticalDrawAdapter"
+        :adapter="tacticalDrawAdapter"
+        :key="`tg-${state.id}`"
       />
     </template>
     <template #footer-overlays>
