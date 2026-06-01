@@ -3,13 +3,14 @@ import type { NState, NUnit } from "@/types/internalModels";
 import { mergeArray, nanoid } from "@/utils";
 import { klona } from "klona";
 import type { EntityId, HistoryAction } from "@/types/base";
-import { createInitialState, updateCurrentUnitState } from "@/scenariostore/time";
+import {
+  initializeUnitProjection,
+  reprojectUnit,
+  reprojectHierarchy,
+  refreshHierarchyTimeline,
+} from "@/scenariostore/scenarioProjection";
 import type { State, StateAdd } from "@/types/scenarioModels";
 import { type Position } from "@/types/scenarioGeoModels";
-import {
-  refreshHierarchyTimelineMetadata,
-  syncTimedHierarchyProjection,
-} from "@/scenariostore/hierarchy";
 
 export function removeUnusedUnitStateEntries(unit: NUnit) {
   if (!unit || !unit.state) return;
@@ -68,12 +69,8 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
   const { state, update } = store;
 
   function updateUnitState(unitId: EntityId) {
-    const unit = state.unitMap[unitId];
-    if (!unit) return;
-    const timestamp = state.currentTime;
-    updateCurrentUnitState(unit, timestamp);
-    syncTimedHierarchyProjection(state, timestamp);
-    state.unitStateCounter++;
+    reprojectUnit(state, unitId);
+    reprojectHierarchy(state);
   }
 
   function clearUnitState(unitId: EntityId) {
@@ -82,8 +79,8 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         const _unit = s.unitMap[unitId];
         if (!_unit) return;
         _unit.state = [];
-        _unit._state = createInitialState(_unit);
-        refreshHierarchyTimelineMetadata(s);
+        initializeUnitProjection(_unit);
+        refreshHierarchyTimeline(s);
       },
       { label: "clearUnitState", value: unitId },
     );
@@ -96,7 +93,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       if (!_unit) return;
       const index = _unit.state?.findIndex((s) => s.id === stateId) ?? -1;
       if (index >= 0) _unit.state?.splice(index, 1);
-      refreshHierarchyTimelineMetadata(s);
+      refreshHierarchyTimeline(s);
     });
 
     updateUnitState(unitId);
@@ -156,12 +153,12 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
               u.state.splice(i, 0, newState as NState);
             }
 
-            refreshHierarchyTimelineMetadata(s);
+            refreshHierarchyTimeline(s);
             return;
           }
         }
         u.state.push(newState as NState);
-        refreshHierarchyTimelineMetadata(s);
+        refreshHierarchyTimeline(s);
       },
       { label: "addUnitPosition", value: unitId },
     );
@@ -173,7 +170,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const _unit = s.unitMap[unitId];
       if (!_unit) return;
       _unit.state?.splice(index, 1);
-      refreshHierarchyTimelineMetadata(s);
+      refreshHierarchyTimeline(s);
     });
 
     updateUnitState(unitId);
@@ -185,9 +182,8 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       if (!unit?.state) return;
       Object.assign(unit.state[index], data);
       unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
-      refreshHierarchyTimelineMetadata(s);
+      refreshHierarchyTimeline(s);
     });
-    state.unitStateCounter++;
 
     updateUnitState(unitId);
   }
@@ -197,7 +193,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const unit = s.unitMap[unitId];
       if (!unit) return;
       unit.state = state;
-      refreshHierarchyTimelineMetadata(s);
+      refreshHierarchyTimeline(s);
     });
     updateUnitState(unitId);
   }

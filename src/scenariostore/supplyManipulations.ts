@@ -10,18 +10,14 @@ import type {
 import { nanoid } from "@/utils";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
-import { updateCurrentUnitState } from "@/scenariostore/time";
+import { reprojectUnit } from "@/scenariostore/scenarioProjection";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 
 export function useSupplyManipulations(store: NewScenarioStore) {
   const { state, update } = store;
 
   function updateUnitState(unitId: EntityId) {
-    const unit = state.unitMap[unitId];
-    if (!unit) return;
-    const timestamp = state.currentTime;
-    updateCurrentUnitState(unit, timestamp);
-    state.unitStateCounter++;
+    reprojectUnit(state, unitId);
   }
 
   function addSupplyClass(

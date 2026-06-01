@@ -8,20 +8,14 @@ import type {
 import { nanoid } from "@/utils";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
-import { updateCurrentUnitState } from "@/scenariostore/time";
+import { reprojectUnit } from "@/scenariostore/scenarioProjection";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 
 export function useToeManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
   function updateUnitState(unitId: EntityId) {
-    const unit = state.unitMap[unitId];
-    if (!unit) return;
-    const timestamp = state.currentTime;
-    // TODO: this is a bit of a hack to force the state to update for units that have no state entries
-    unit._state = undefined;
-    updateCurrentUnitState(unit, timestamp);
-    state.unitStateCounter++;
+    reprojectUnit(state, unitId);
   }
 
   function updateEquipment(id: string, data: EquipmentDataUpdate) {

@@ -12,7 +12,6 @@ import type {
 import { nanoid } from "@/utils";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
-import { updateCurrentUnitState } from "@/scenariostore/time";
 import { removeUnusedUnitStateEntries } from "@/scenariostore/unitStateManipulations";
 import { SYMBOL_FILL_COLORS, type SymbolFillColor } from "@/config/colors.ts";
 import type { CustomSymbol } from "@/types/scenarioModels.ts";

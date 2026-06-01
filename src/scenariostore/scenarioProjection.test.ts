@@ -1,7 +1,147 @@
 import { describe, expect, it } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useScenarioTime } from "@/scenariostore/time";
-import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
+import {
+  initializeUnitProjection,
+  projectScenarioToTime,
+  reprojectHierarchy,
+} from "@/scenariostore/scenarioProjection";
+
+function createStoreWithUnit(unitData: any) {
+  return useNewScenarioStore({
+    id: "test",
+    type: "ORBAT-mapper",
+    version: "2.5.0",
+    name: "Test",
+    startTime: 0,
+    sides: [
+      {
+        id: "side-1",
+        name: "Blue",
+        standardIdentity: "3",
+        groups: [
+          {
+            id: "group-1",
+            name: "Group",
+            subUnits: [unitData],
+          },
+        ],
+      },
+    ],
+    events: [],
+    layers: [{ id: "layer-1", name: "Features", features: [] }],
+    mapLayers: [],
+    settings: {
+      rangeRingGroups: [],
+      statuses: [],
+      supplyClasses: [],
+      supplyUoMs: [],
+      symbolFillColors: [],
+    },
+  } as any);
+}
+
+describe("initializeUnitProjection", () => {
+  it("sets symbolRotation to 0 for initial state", () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      location: [10, 60],
+    });
+    const unit = store.state.unitMap["unit-1"];
+    initializeUnitProjection(unit);
+    expect(unit._state?.symbolRotation).toBe(0);
+  });
+
+  it("seeds initial state with base reinforcedStatus", () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      reinforcedStatus: "Reinforced",
+    });
+    const unit = store.state.unitMap["unit-1"];
+    initializeUnitProjection(unit);
+    expect(unit._state?.reinforcedStatus).toBe("Reinforced");
+  });
+});
+
+describe("unit state projection", () => {
+  it("defaults to 0 rotation when unit has no state entries", () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      location: [10, 60],
+      state: [],
+    });
+    projectScenarioToTime(store.state, 0);
+    expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(0);
+  });
+
+  it("applies symbolRotation from latest state at timestamp", () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      location: [10, 60],
+      state: [
+        { id: "a", t: 1000, symbolRotation: 45 },
+        { id: "b", t: 2000, symbolRotation: 270 },
+      ],
+    });
+
+    projectScenarioToTime(store.state, 1500);
+    expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(45);
+
+    projectScenarioToTime(store.state, 2500);
+    expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(270);
+  });
+
+  it("applies reinforcedStatus from latest state at timestamp", () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      reinforcedStatus: "Reinforced",
+      state: [
+        { id: "a", t: 1000, reinforcedStatus: "Reduced" },
+        { id: "b", t: 2000, reinforcedStatus: "ReinforcedReduced" },
+      ],
+    });
+
+    projectScenarioToTime(store.state, 1500);
+    expect(store.state.unitMap["unit-1"]._state?.reinforcedStatus).toBe("Reduced");
+
+    projectScenarioToTime(store.state, 2500);
+    expect(store.state.unitMap["unit-1"]._state?.reinforcedStatus).toBe(
+      "ReinforcedReduced",
+    );
+  });
+
+  it('allows a timed "None" state to clear the base reinforcedStatus', () => {
+    const store = createStoreWithUnit({
+      id: "unit-1",
+      name: "Unit",
+      sidc: "10031000000000000000",
+      subUnits: [],
+      reinforcedStatus: "Reinforced",
+      state: [{ id: "a", t: 1000, reinforcedStatus: "None" }],
+    });
+
+    projectScenarioToTime(store.state, 500);
+    expect(store.state.unitMap["unit-1"]._state?.reinforcedStatus).toBe("Reinforced");
+
+    projectScenarioToTime(store.state, 1500);
+    expect(store.state.unitMap["unit-1"]._state?.reinforcedStatus).toBe("None");
+  });
+});
 
 describe("timed hierarchy projection", () => {
   it("reparents a unit on the event timestamp and updates subtree side/group ids", () => {
@@ -272,10 +412,10 @@ describe("timed hierarchy projection", () => {
       },
     } as any);
 
-    expect(syncTimedHierarchyProjection(store.state, 50)).toBe(false);
-    expect(syncTimedHierarchyProjection(store.state, 75)).toBe(false);
-    expect(syncTimedHierarchyProjection(store.state, 100)).toBe(true);
-    expect(syncTimedHierarchyProjection(store.state, 125)).toBe(false);
+    expect(reprojectHierarchy(store.state, { timestamp: 50 })).toBe(false);
+    expect(reprojectHierarchy(store.state, { timestamp: 75 })).toBe(false);
+    expect(reprojectHierarchy(store.state, { timestamp: 100 })).toBe(true);
+    expect(reprojectHierarchy(store.state, { timestamp: 125 })).toBe(false);
   });
 
   it("uses stored parentId for above/below when target was reparented by earlier move", () => {
