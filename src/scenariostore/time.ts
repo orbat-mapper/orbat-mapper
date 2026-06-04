@@ -19,6 +19,11 @@ import { nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
+  applyResourceDiff,
+  applyResourceUpdate,
+  RESOURCE_KINDS,
+} from "@/scenariostore/unitResources";
+import {
   createInitialGeometryLayerItemState,
   type CurrentGeometryLayerItemState,
   isNGeometryLayerItem,
@@ -71,73 +76,10 @@ export function updateCurrentUnitState(
   for (const s of unit.state) {
     if (s.t <= timestamp) {
       const { diff, update, ...rest } = s;
-      if (update?.equipment && currentState?.equipment) {
-        for (const e of update.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            currentState.equipment[idx] = { ...currentState.equipment[idx], ...e };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (update?.personnel && currentState?.personnel) {
-        for (const p of update.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.personnel[idx] = { ...currentState.personnel[idx], ...p };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (update?.supplies && currentState?.supplies) {
-        for (const p of update.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            currentState.supplies[idx] = { ...currentState.supplies[idx], ...p };
-          } else {
-            console.warn("Supplies not found", p);
-          }
-        }
-      }
-
-      if (diff?.equipment && currentState?.equipment) {
-        for (const e of diff.equipment) {
-          const idx = currentState.equipment.findIndex((ee) => ee.id === e.id);
-          if (idx !== -1) {
-            const eq = currentState.equipment[idx];
-            const onHand = (eq?.onHand ?? eq.count) + (e.onHand ?? 0);
-            currentState.equipment[idx] = { ...currentState.equipment[idx], onHand };
-          } else {
-            console.warn("Equipment not found", e);
-          }
-        }
-      }
-      if (diff?.personnel && currentState?.personnel) {
-        for (const p of diff.personnel) {
-          const idx = currentState.personnel.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.personnel[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.personnel[idx] = { ...currentState.personnel[idx], onHand };
-          } else {
-            console.warn("Personnel not found", p);
-          }
-        }
-      }
-
-      if (diff?.supplies && currentState?.supplies) {
-        for (const p of diff.supplies) {
-          const idx = currentState.supplies.findIndex((pp) => pp.id === p.id);
-          if (idx !== -1) {
-            const pe = currentState.supplies[idx];
-            const onHand = (pe?.onHand ?? pe.count) + (p.onHand ?? 0);
-            currentState.supplies[idx] = { ...currentState.supplies[idx], onHand };
-          } else {
-            console.warn("Supplies not found", p);
-          }
+      if (update || diff) {
+        for (const kind of RESOURCE_KINDS) {
+          applyResourceUpdate(currentState?.[kind], update?.[kind], kind);
+          applyResourceDiff(currentState?.[kind], diff?.[kind], kind);
         }
       }
       currentState = { ...currentState, ...rest };

@@ -44,6 +44,7 @@ import type {
   NUnitSupply,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
+import { entriesToInternal } from "@/scenariostore/unitResources";
 import type {
   FeatureId,
   RangeRing,
@@ -269,42 +270,32 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       });
     unit._state = null;
 
+    const resourceBlockToInternal = (block: State["update"]) =>
+      block
+        ? {
+            equipment: entriesToInternal(
+              block.equipment,
+              (name) => tempEquipmentIdMap[name] ?? name,
+            ),
+            personnel: entriesToInternal(
+              block.personnel,
+              (name) => tempPersonnelIdMap[name] ?? name,
+            ),
+            supplies: entriesToInternal(
+              block.supplies,
+              (name) => tempSuppliesIdMap[name] ?? name,
+            ),
+          }
+        : undefined;
+
     const newState: NState[] = unit.state.map((s) => {
       const { update, diff, ...rest } = s;
       checkFillColor(s);
-      const newUpdate = update
-        ? {
-            equipment: update.equipment?.map((e) => {
-              const { name, ...rest } = e;
-              return { id: tempEquipmentIdMap[name] ?? name, ...rest };
-            }),
-            personnel: update.personnel?.map((p) => {
-              const { name, ...rest } = p;
-              return { id: tempPersonnelIdMap[name] ?? name, ...rest };
-            }),
-            supplies: update.supplies?.map((s) => {
-              const { name, ...rest } = s;
-              return { id: tempSuppliesIdMap[name] ?? name, ...rest };
-            }),
-          }
-        : undefined;
-      const newDiff = diff
-        ? {
-            equipment: diff.equipment?.map((e) => {
-              const { name, ...rest } = e;
-              return { id: tempEquipmentIdMap[name] ?? name, ...rest };
-            }),
-            personnel: diff.personnel?.map((p) => {
-              const { name, ...rest } = p;
-              return { id: tempPersonnelIdMap[name] ?? name, ...rest };
-            }),
-            supplies: diff.supplies?.map((s) => {
-              const { name, ...rest } = s;
-              return { id: tempSuppliesIdMap[name] ?? name, ...rest };
-            }),
-          }
-        : undefined;
-      return { ...rest, update: newUpdate, diff: newDiff };
+      return {
+        ...rest,
+        update: resourceBlockToInternal(update),
+        diff: resourceBlockToInternal(diff),
+      };
     });
 
     newState.forEach((stateEntry) => {

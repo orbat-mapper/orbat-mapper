@@ -37,6 +37,24 @@ only its meaningful fields). `LoadableGeometryLayerMeta` is the **loose**
 counterpart used for data still being loaded, upgraded, or partially patched,
 where the kind and its extra fields cannot yet be guaranteed to line up.
 
+### Unit resources
+
+**Unit resource**:
+A counted thing a unit holds, drawn from a catalog: **equipment**, **personnel**,
+or **supplies**. These three are the **resource kinds**. Internally every per-unit
+entry shares one shape — a catalog `id`, a `count`, and an optional `onHand` — so
+the apply and name↔id round-trip logic is written once (`unitResources.ts`) rather
+than per kind.
+_Avoid_: treating equipment/personnel/supplies as three unrelated features at the
+entry level. They diverge only at the **catalog** layer (supplies adds a supply
+class and a unit of measure; equipment and personnel are flat).
+
+**update vs diff** (on a timed unit state):
+An **update** replaces fields on matching resource entries (matched by `id`) — used
+for reorganization. A **diff** accumulates an `onHand` delta on matching entries
+(`onHand = (onHand ?? count) + delta`) — used for attrition and resupply. `diff`
+only ever touches `onHand`.
+
 ## Example dialogue
 
 > **Dev:** The circle isn't rendering after reload.
