@@ -23,6 +23,7 @@ import {
 } from "./newScenarioStore";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { isLoading } from "@/scenariostore/index";
+import { entriesToExternal } from "@/scenariostore/unitResources";
 import {
   INTERNAL_NAMES,
   type NState,
@@ -198,88 +199,41 @@ export function serializeUnit(
 }
 
 function serializeToeStuff(nUnit: NUnit, scnState: ScenarioState) {
-  let equipment = nUnit.equipment?.map(({ id, count, onHand }) => {
-    const { name } = scnState.equipmentMap[id];
-    return { name, count, onHand };
-  });
-  if (equipment?.length === 0) equipment = undefined;
-  let personnel = nUnit.personnel?.map(({ id, count, onHand }) => {
-    const { name } = scnState.personnelMap[id];
-    return { name, count, onHand };
-  });
-  if (personnel?.length === 0) personnel = undefined;
-
-  let supplies = nUnit.supplies?.map(({ id, count, onHand }) => {
-    const { name } = scnState.supplyCategoryMap[id];
-    return { name, count, onHand };
-  });
-  if (supplies?.length === 0) supplies = undefined;
-
-  return { equipment, personnel, supplies };
+  const orEmptyUndefined = <T,>(entries: T[] | undefined) =>
+    entries?.length ? entries : undefined;
+  return {
+    equipment: orEmptyUndefined(
+      entriesToExternal(nUnit.equipment, (id) => scnState.equipmentMap[id].name),
+    ),
+    personnel: orEmptyUndefined(
+      entriesToExternal(nUnit.personnel, (id) => scnState.personnelMap[id].name),
+    ),
+    supplies: orEmptyUndefined(
+      entriesToExternal(nUnit.supplies, (id) => scnState.supplyCategoryMap[id].name),
+    ),
+  };
 }
 
 function serializeState(s: NState, scnState: ScenarioState) {
-  let diffEquipment, diffPersonnel, diffSupplies;
   const c = klona(s) as State;
 
-  if (s.diff) {
-    if (s.diff.equipment) {
-      diffEquipment = s.diff.equipment.map(({ id, count, onHand }) => {
-        return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
-      });
-    }
+  const resourceBlockToExternal = (block: NState["update"]) => ({
+    equipment: entriesToExternal(
+      block?.equipment,
+      (id) => scnState.equipmentMap[id]?.name ?? id,
+    ),
+    personnel: entriesToExternal(
+      block?.personnel,
+      (id) => scnState.personnelMap[id]?.name ?? id,
+    ),
+    supplies: entriesToExternal(
+      block?.supplies,
+      (id) => scnState.supplyCategoryMap[id]?.name ?? id,
+    ),
+  });
 
-    if (s.diff?.personnel) {
-      diffPersonnel = s.diff.personnel.map(({ id, count, onHand }) => {
-        return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
-      });
-    }
-
-    if (s.diff?.supplies) {
-      diffSupplies = s.diff.supplies.map(({ id, count, onHand }) => {
-        return {
-          name: scnState.supplyCategoryMap[id]?.name ?? id,
-          count,
-          onHand,
-        };
-      });
-    }
-    c.diff = {
-      equipment: diffEquipment,
-      personnel: diffPersonnel,
-      supplies: diffSupplies,
-    };
-  }
-
-  if (s.update) {
-    let updateEquipment, updatePersonnel, updateSupplies;
-
-    if (s.update.equipment) {
-      updateEquipment = s.update.equipment.map(({ id, count, onHand }) => {
-        return { name: scnState.equipmentMap[id]?.name ?? id, count, onHand };
-      });
-    }
-    if (s.update.personnel) {
-      updatePersonnel = s.update.personnel.map(({ id, count, onHand }) => {
-        return { name: scnState.personnelMap[id]?.name ?? id, count, onHand };
-      });
-    }
-
-    if (s.update.supplies) {
-      updateSupplies = s.update.supplies.map(({ id, count, onHand }) => {
-        return {
-          name: scnState.supplyCategoryMap[id]?.name ?? id,
-          count,
-          onHand,
-        };
-      });
-    }
-    c.update = {
-      equipment: updateEquipment,
-      personnel: updatePersonnel,
-      supplies: updateSupplies,
-    };
-  }
+  if (s.diff) c.diff = resourceBlockToExternal(s.diff);
+  if (s.update) c.update = resourceBlockToExternal(s.update);
 
   if (s.status) {
     c.status = scnState.unitStatusMap[s.status]?.name;
