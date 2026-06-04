@@ -8,11 +8,9 @@ import type {
   ScenarioInfo,
   Side,
   SideGroup,
-  State,
   SupplyCategory,
   SupplyClass,
   SymbologyStandard,
-  Unit,
   UnitOfMeasure,
   UnitStatus,
 } from "@/types/scenarioModels";
@@ -21,15 +19,10 @@ import {
   type ScenarioState,
   useNewScenarioStore,
 } from "./newScenarioStore";
+import { type SerializeUnitOptions, unitToExternal } from "./scenarioCodec";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { isLoading } from "@/scenariostore/index";
-import { entriesToExternal } from "@/scenariostore/unitResources";
-import {
-  INTERNAL_NAMES,
-  type NState,
-  type NUnit,
-  TIMESTAMP_NAMES,
-} from "@/types/internalModels";
+import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import type { RangeRingGroup, ScenarioMapLayer } from "@/types/scenarioGeoModels";
@@ -140,7 +133,7 @@ function getSides(state: ScenarioState): Side[] {
     return {
       ...rest,
       subUnits: (_baseSubUnits ?? group.subUnits).map((unitId) =>
-        serializeUnit(unitId, state),
+        unitToExternal(unitId, state),
       ),
     };
   }
@@ -154,92 +147,16 @@ function getSides(state: ScenarioState): Side[] {
         groups: nSide.groups.map((groupId) => getSideGroup(groupId)),
         subUnits: (_baseSubUnits ?? nSide.subUnits).length
           ? (_baseSubUnits ?? nSide.subUnits).map((unitId) =>
-              serializeUnit(unitId, state),
+              unitToExternal(unitId, state),
             )
           : undefined,
       };
     });
 }
 
-export type SerializeUnitOptions = {
-  newId?: boolean;
-  includeSubUnits?: boolean;
-};
-
-export function serializeUnit(
-  unitId: EntityId,
-  scnState: ScenarioState,
-  options: SerializeUnitOptions = {},
-): Unit {
-  const { newId = false, includeSubUnits = true } = options;
-  const nUnit = scnState.unitMap[unitId];
-  const { equipment, personnel, supplies } = serializeToeStuff(nUnit, scnState);
-  let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
-    return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
-  });
-
-  if (rangeRings?.length === 0) rangeRings = undefined;
-  const { id, state, _basePid, _baseSubUnits, ...rest } = nUnit;
-
-  return {
-    id: newId ? nanoid() : id,
-    ...rest,
-    status: nUnit.status ? scnState.unitStatusMap[nUnit.status]?.name : undefined,
-    subUnits: includeSubUnits
-      ? (_baseSubUnits ?? nUnit.subUnits).map((subUnitId) =>
-          serializeUnit(subUnitId, scnState, options),
-        )
-      : [],
-    equipment,
-    personnel,
-    supplies,
-    rangeRings,
-    state: state ? state.map((s) => serializeState(s, scnState)) : undefined,
-  };
-}
-
-function serializeToeStuff(nUnit: NUnit, scnState: ScenarioState) {
-  const orEmptyUndefined = <T,>(entries: T[] | undefined) =>
-    entries?.length ? entries : undefined;
-  return {
-    equipment: orEmptyUndefined(
-      entriesToExternal(nUnit.equipment, (id) => scnState.equipmentMap[id].name),
-    ),
-    personnel: orEmptyUndefined(
-      entriesToExternal(nUnit.personnel, (id) => scnState.personnelMap[id].name),
-    ),
-    supplies: orEmptyUndefined(
-      entriesToExternal(nUnit.supplies, (id) => scnState.supplyCategoryMap[id].name),
-    ),
-  };
-}
-
-function serializeState(s: NState, scnState: ScenarioState) {
-  const c = klona(s) as State;
-
-  const resourceBlockToExternal = (block: NState["update"]) => ({
-    equipment: entriesToExternal(
-      block?.equipment,
-      (id) => scnState.equipmentMap[id]?.name ?? id,
-    ),
-    personnel: entriesToExternal(
-      block?.personnel,
-      (id) => scnState.personnelMap[id]?.name ?? id,
-    ),
-    supplies: entriesToExternal(
-      block?.supplies,
-      (id) => scnState.supplyCategoryMap[id]?.name ?? id,
-    ),
-  });
-
-  if (s.diff) c.diff = resourceBlockToExternal(s.diff);
-  if (s.update) c.update = resourceBlockToExternal(s.update);
-
-  if (s.status) {
-    c.status = scnState.unitStatusMap[s.status]?.name;
-  }
-  return c;
-}
+// Unit/state serialization (internal → external) lives in the ScenarioCodec so the
+// round-trip invariant has a single home. Re-exported here for existing import sites.
+export { unitToExternal as serializeUnit, type SerializeUnitOptions };
 
 function getStoredOverlayLayers(state: ScenarioState): ScenarioOverlayLayer[] {
   const layers: ScenarioOverlayLayer[] = [];

@@ -19,6 +19,7 @@ import type {
 import type { BBox } from "geojson";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
+import { unitStateToInternal } from "./scenarioCodec";
 import { walkSide } from "@/stores/scenarioStore";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
@@ -44,7 +45,6 @@ import type {
   NUnitSupply,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
-import { entriesToInternal } from "@/scenariostore/unitResources";
 import type {
   FeatureId,
   RangeRing,
@@ -270,32 +270,13 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       });
     unit._state = null;
 
-    const resourceBlockToInternal = (block: State["update"]) =>
-      block
-        ? {
-            equipment: entriesToInternal(
-              block.equipment,
-              (name) => tempEquipmentIdMap[name] ?? name,
-            ),
-            personnel: entriesToInternal(
-              block.personnel,
-              (name) => tempPersonnelIdMap[name] ?? name,
-            ),
-            supplies: entriesToInternal(
-              block.supplies,
-              (name) => tempSuppliesIdMap[name] ?? name,
-            ),
-          }
-        : undefined;
-
     const newState: NState[] = unit.state.map((s) => {
-      const { update, diff, ...rest } = s;
       checkFillColor(s);
-      return {
-        ...rest,
-        update: resourceBlockToInternal(update),
-        diff: resourceBlockToInternal(diff),
-      };
+      return unitStateToInternal(s, {
+        equipment: tempEquipmentIdMap,
+        personnel: tempPersonnelIdMap,
+        supplies: tempSuppliesIdMap,
+      });
     });
 
     newState.forEach((stateEntry) => {
