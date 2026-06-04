@@ -859,3 +859,28 @@ describe("unitManipulations timed hierarchy recording", () => {
     );
   });
 });
+
+describe("fresh load preserves base resource onHand", () => {
+  // Regression: prepareScenario used to build base equipment/personnel as { id, count },
+  // silently dropping onHand on a fresh load while the paste path kept it. Both paths now
+  // route base resources through the ScenarioCodec, so onHand survives the load.
+  it("keeps onHand on base equipment and personnel through a fresh load", () => {
+    const scenario = createScenario();
+    scenario.sides[0].groups[0].subUnits[0].equipment = [
+      { name: "Rifle", count: 5, onHand: 3 },
+    ];
+    scenario.sides[0].groups[0].subUnits[0].personnel = [
+      { name: "Officer", count: 2, onHand: 1 },
+    ];
+
+    const store = useNewScenarioStore(scenario);
+    const unit = store.state.unitMap["unit-1"];
+
+    expect(unit.equipment?.[0]).toEqual(
+      expect.objectContaining({ count: 5, onHand: 3 }),
+    );
+    expect(unit.personnel?.[0]).toEqual(
+      expect.objectContaining({ count: 2, onHand: 1 }),
+    );
+  });
+});

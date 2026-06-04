@@ -1,19 +1,16 @@
 import type { Unit, UnitStatus } from "@/types/scenarioModels";
 import type { TScenario } from "@/scenariostore";
 import type { EntityId } from "@/types/base";
-import type {
-  NState,
-  NUnitAdd,
-  NUnitEquipment,
-  NUnitPersonnel,
-  NUnitSupply,
-} from "@/types/internalModels";
+import type { NState, NUnitAdd } from "@/types/internalModels";
 import { createNameToIdMapObject, nanoid } from "@/utils";
 import {
   convertStateToInternalFormat,
   type ScenarioState,
 } from "@/scenariostore/newScenarioStore";
-import { unitStateToInternal } from "@/scenariostore/scenarioCodec";
+import {
+  unitResourcesToInternal,
+  unitStateToInternal,
+} from "@/scenariostore/scenarioCodec";
 import type { RangeRing } from "@/types/scenarioGeoModels";
 import { getCustomSymbolId, setSid } from "@/symbology/helpers.ts";
 import { klona } from "klona";
@@ -94,10 +91,7 @@ export function addUnitHierarchy(
       parentId: EntityId,
       depth: number = 0,
     ): EntityId | undefined {
-      const equipment: NUnitEquipment[] = [];
-      const personnel: NUnitPersonnel[] = [];
       const rangeRings: RangeRing[] = [];
-      const supplies: NUnitSupply[] = [];
       const customSymbolId = getCustomSymbolId(unit.sidc);
       if (customSymbolId) {
         sourceCustomSymbolIds.add(customSymbolId);
@@ -110,31 +104,21 @@ export function addUnitHierarchy(
             sourceCustomSymbolIds.add(csidc);
           }
         });
-      unit.equipment?.forEach(({ name, count, onHand }) => {
-        const { id } =
-          s.equipmentMap[name] ||
-          unitActions.addEquipment({ id: name, name }, { noUndo, s });
-        equipment.push({ id, count, onHand });
-      });
-      unit.personnel?.forEach(({ name, count, onHand }) => {
-        const { id } =
-          s.personnelMap[name] ||
-          unitActions.addPersonnel({ id: name, name }, { noUndo, s });
-        personnel.push({ id, count, onHand });
-      });
 
-      unit.supplies?.forEach((unitSupply) => {
+      // Resolve a supply name to a catalog id, minting it (and any uom / supply class it
+      // brings from the source scenario) into the target catalog when absent. Keyed purely
+      // off the name the codec resolver passes; the per-entry count/onHand are preserved by
+      // unitResourcesToInternal.
+      const resolveSupplyId = (name: string): string => {
         // use existing one if it exists. For new supplies we use the name as id
-        let supplyId =
-          supplyNameToIdMap[unitSupply.name] ??
-          s.supplyCategoryMap[unitSupply.name ?? ""]?.id;
+        let supplyId = supplyNameToIdMap[name] ?? s.supplyCategoryMap[name]?.id;
         if (!supplyId) {
           // the supply category does not exist, create it. Use the source state if available
           const newSupplyCategory = sourceState?.supplyCategoryMap[
-            sourceSupplyNameToIdMap[unitSupply.name]
+            sourceSupplyNameToIdMap[name]
           ] ?? {
-            id: unitSupply.name,
-            name: unitSupply.name,
+            id: name,
+            name: name,
           };
 
           let uomId: string | undefined = undefined;
@@ -172,7 +156,19 @@ export function addUnitHierarchy(
           }
         }
 
-        supplies.push({ ...unitSupply, id: supplyId });
+        return supplyId as string;
+      };
+
+      const { equipment, personnel, supplies } = unitResourcesToInternal(unit, {
+        equipment: (name) =>
+          (s.equipmentMap[name] || unitActions.addEquipment({ id: name, name }, { noUndo, s }))
+            .id,
+        personnel: (name) =>
+          (
+            s.personnelMap[name] ||
+            unitActions.addPersonnel({ id: name, name }, { noUndo, s })
+          ).id,
+        supplies: resolveSupplyId,
       });
 
       unit.rangeRings?.forEach((rr) => {
