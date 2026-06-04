@@ -12,7 +12,7 @@
 // `unitStateToExternal` (io.ts delegates to them).
 
 import type { State, Unit } from "@/types/scenarioModels";
-import type { NState, NUnit } from "@/types/internalModels";
+import type { NState } from "@/types/internalModels";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
 import type { EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
@@ -47,20 +47,30 @@ function toeGroupToInternal(
   };
 }
 
-function toeGroupToExternal(group: InternalToeGroup, scnState: ScenarioState) {
+// The reverse of toeGroupToInternal: fan the three kinds back through entriesToExternal
+// against their catalogs. Shared by the state-block path (update/diff) and the base-unit
+// path. `stripEmpty` drops empty arrays to undefined, which the base-unit serialization
+// wants but the state-block round-trip does not. A dangling id falls back to itself.
+function toeToExternal<
+  Eq extends { id: string },
+  Pe extends { id: string },
+  Su extends { id: string },
+>(
+  toe: { equipment?: Eq[]; personnel?: Pe[]; supplies?: Su[] },
+  scnState: ScenarioState,
+  { stripEmpty = false }: { stripEmpty?: boolean } = {},
+) {
+  const convert = <E extends { id: string }>(
+    entries: E[] | undefined,
+    catalog: Record<string, { name: string }>,
+  ) => {
+    const out = entriesToExternal(entries, (id) => catalog[id]?.name ?? id);
+    return stripEmpty && !out?.length ? undefined : out;
+  };
   return {
-    equipment: entriesToExternal(
-      group.equipment,
-      (id) => scnState.equipmentMap[id]?.name ?? id,
-    ),
-    personnel: entriesToExternal(
-      group.personnel,
-      (id) => scnState.personnelMap[id]?.name ?? id,
-    ),
-    supplies: entriesToExternal(
-      group.supplies,
-      (id) => scnState.supplyCategoryMap[id]?.name ?? id,
-    ),
+    equipment: convert(toe.equipment, scnState.equipmentMap),
+    personnel: convert(toe.personnel, scnState.personnelMap),
+    supplies: convert(toe.supplies, scnState.supplyCategoryMap),
   };
 }
 
@@ -90,28 +100,11 @@ export function unitStateToExternal(s: NState, scnState: ScenarioState): State {
   const { update, diff, status, ...rest } = s;
   const c = klona(rest) as State;
 
-  if (diff) c.diff = toeGroupToExternal(diff, scnState);
-  if (update) c.update = toeGroupToExternal(update, scnState);
+  if (diff) c.diff = toeToExternal(diff, scnState);
+  if (update) c.update = toeToExternal(update, scnState);
   if (status) c.status = scnState.unitStatusMap[status]?.name;
 
   return c;
-}
-
-/** Reverse: an internal unit's base toe arrays back to external name-keyed form. */
-function unitToeToExternal(nUnit: NUnit, scnState: ScenarioState) {
-  const orEmptyUndefined = <T,>(entries: T[] | undefined) =>
-    entries?.length ? entries : undefined;
-  return {
-    equipment: orEmptyUndefined(
-      entriesToExternal(nUnit.equipment, (id) => scnState.equipmentMap[id].name),
-    ),
-    personnel: orEmptyUndefined(
-      entriesToExternal(nUnit.personnel, (id) => scnState.personnelMap[id].name),
-    ),
-    supplies: orEmptyUndefined(
-      entriesToExternal(nUnit.supplies, (id) => scnState.supplyCategoryMap[id].name),
-    ),
-  };
 }
 
 export type SerializeUnitOptions = {
@@ -127,7 +120,9 @@ export function unitToExternal(
 ): Unit {
   const { newId = false, includeSubUnits = true } = options;
   const nUnit = scnState.unitMap[unitId];
-  const { equipment, personnel, supplies } = unitToeToExternal(nUnit, scnState);
+  const { equipment, personnel, supplies } = toeToExternal(nUnit, scnState, {
+    stripEmpty: true,
+  });
   let rangeRings = nUnit.rangeRings?.map(({ group, ...rest }) => {
     return group ? { group: scnState.rangeRingGroupMap[group].name, ...rest } : rest;
   });
