@@ -19,7 +19,7 @@ import type {
 import type { BBox } from "geojson";
 import dayjs from "dayjs";
 import { nanoid } from "@/utils";
-import { unitStateToInternal } from "./scenarioCodec";
+import { unitResourcesToInternal, unitStateToInternal } from "./scenarioCodec";
 import { walkSide } from "@/stores/scenarioStore";
 import { klona } from "klona";
 import type { EntityId } from "@/types/base";
@@ -39,10 +39,7 @@ import type {
   NSupplyUoM,
   NSymbolFillColor,
   NUnit,
-  NUnitEquipment,
-  NUnitPersonnel,
   NUnitStatus,
-  NUnitSupply,
 } from "@/types/internalModels";
 import { useScenarioTime } from "./time";
 import type {
@@ -220,25 +217,16 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     unit._isOpen = false;
     unit._gid = sideGroup?.id;
     unit._sid = side.id;
-    const equipment: NUnitEquipment[] = [];
-    const personnel: NUnitPersonnel[] = [];
-    const supplies: NUnitSupply[] = [];
     const rangeRings: RangeRing[] = [];
 
-    unit.equipment?.forEach(({ name, count }) => {
-      const id = tempEquipmentIdMap[name] || addEquipment({ name });
-      equipment.push({ id, count });
-    });
-
-    unit.personnel?.forEach(({ name, count }) => {
-      const id = tempPersonnelIdMap[name] || addPersonnel({ name });
-      personnel.push({ id, count });
-    });
-
-    unit.supplies?.forEach((s) => {
-      const { count, onHand, name } = s;
-      const id = tempSuppliesIdMap[s.name] || addSupplyCategory(s);
-      supplies.push({ id, count, onHand });
+    const { equipment, personnel, supplies } = unitResourcesToInternal(unit, {
+      equipment: (name) => tempEquipmentIdMap[name] || addEquipment({ name }),
+      personnel: (name) => tempPersonnelIdMap[name] || addPersonnel({ name }),
+      // A fresh-load supply entry doubles as its own catalog definition (carries
+      // supplyClass / uom), so the mint path looks the whole entry back up by name.
+      supplies: (name) =>
+        tempSuppliesIdMap[name] ||
+        addSupplyCategory(unit.supplies!.find((s) => s.name === name)!),
     });
 
     unit.rangeRings?.forEach((rr) => {

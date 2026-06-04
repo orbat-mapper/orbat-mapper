@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   type ResourceNameToIdMaps,
+  type ResourceResolvers,
+  unitResourcesToInternal,
   unitStateToExternal,
   unitStateToInternal,
 } from "./scenarioCodec";
 import type { ScenarioState } from "./newScenarioStore";
-import type { State } from "@/types/scenarioModels";
+import type { State, Unit } from "@/types/scenarioModels";
 
 // The codec is the single home for the unit-state external⇄internal mapping. These tests
 // pin the round-trip invariant: external --toInternal--> internal --toExternal--> external
@@ -112,5 +114,61 @@ describe("ScenarioCodec unit-state round-trip", () => {
       t: 4000,
       location: [10, 20],
     });
+  });
+});
+
+describe("ScenarioCodec base-unit resources (unitResourcesToInternal)", () => {
+  // Resolver that mirrors a simple name→id catalog, falling back to the name itself.
+  const resolvers: ResourceResolvers = {
+    equipment: (name) => nameToId.equipment[name] ?? name,
+    personnel: (name) => nameToId.personnel[name] ?? name,
+    supplies: (name) => nameToId.supplies[name] ?? name,
+  };
+
+  it("translates base equipment/personnel/supplies names to ids", () => {
+    const unit: Pick<Unit, "equipment" | "personnel" | "supplies"> = {
+      equipment: [{ name: "Rifle", count: 5 }],
+      personnel: [{ name: "Officer", count: 2 }],
+      supplies: [{ name: "Ammo", count: 100 }],
+    };
+    const internal = unitResourcesToInternal(unit, resolvers);
+    expect(internal.equipment).toEqual([{ id: "eq-1", count: 5 }]);
+    expect(internal.personnel).toEqual([{ id: "pe-1", count: 2 }]);
+    expect(internal.supplies).toEqual([{ id: "su-1", count: 100 }]);
+  });
+
+  it("preserves onHand on base equipment and personnel (regression: fresh load dropped it)", () => {
+    // prepareScenario used to build base equipment/personnel as { id, count }, silently
+    // discarding onHand while supplies and the paste path kept it. Routing all three kinds
+    // through this helper closes that gap.
+    const unit: Pick<Unit, "equipment" | "personnel" | "supplies"> = {
+      equipment: [{ name: "Rifle", count: 5, onHand: 3 }],
+      personnel: [{ name: "Officer", count: 2, onHand: 1 }],
+      supplies: [{ name: "Ammo", count: 100, onHand: 80 }],
+    };
+    const internal = unitResourcesToInternal(unit, resolvers);
+    expect(internal.equipment).toEqual([{ id: "eq-1", count: 5, onHand: 3 }]);
+    expect(internal.personnel).toEqual([{ id: "pe-1", count: 2, onHand: 1 }]);
+    expect(internal.supplies).toEqual([{ id: "su-1", count: 100, onHand: 80 }]);
+  });
+
+  it("returns empty arrays for missing resource kinds and mints via the resolver", () => {
+    const minted: string[] = [];
+    const mintingResolvers: ResourceResolvers = {
+      equipment: (name) => {
+        minted.push(name);
+        return `eq-${minted.length}`;
+      },
+      personnel: () => "unused",
+      supplies: () => "unused",
+    };
+    const internal = unitResourcesToInternal(
+      { equipment: [{ name: "New gear", count: 1 }] },
+      mintingResolvers,
+    );
+    expect(internal.equipment).toEqual([{ id: "eq-1", count: 1 }]);
+    expect(internal.personnel).toEqual([]);
+    expect(internal.supplies).toEqual([]);
+    expect(minted).toEqual(["New gear"]);
   });
 });

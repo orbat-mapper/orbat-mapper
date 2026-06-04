@@ -12,7 +12,12 @@
 // `unitStateToExternal` (io.ts delegates to them).
 
 import type { State, Unit } from "@/types/scenarioModels";
-import type { NState } from "@/types/internalModels";
+import type {
+  NState,
+  NUnitEquipment,
+  NUnitPersonnel,
+  NUnitSupply,
+} from "@/types/internalModels";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
 import type { EntityId } from "@/types/base";
 import { nanoid } from "@/utils";
@@ -92,6 +97,43 @@ export function unitStateToInternal(state: State, maps: ResourceNameToIdMaps): N
     ...rest,
     update: update ? toeGroupToInternal(update, maps) : undefined,
     diff: diff ? toeGroupToInternal(diff, maps) : undefined,
+  };
+}
+
+/**
+ * Per-kind name→id resolvers for a unit's *base* equipment/personnel/supplies entries.
+ * Unlike the state-block path (`ResourceNameToIdMaps`, a static lookup that falls back to
+ * the name), the base path may need to *mint* a catalog entry when a name is unseen — so
+ * the policy is a function the caller owns, not a map. The codec only fans the three kinds
+ * through it and preserves `count`/`onHand`; where ids come from (nanoid vs name-as-id,
+ * closed-world vs grafting into an existing catalog) stays with the caller.
+ */
+export interface ResourceResolvers {
+  equipment: (name: string) => string;
+  personnel: (name: string) => string;
+  supplies: (name: string) => string;
+}
+
+export interface InternalUnitResources {
+  equipment: NUnitEquipment[];
+  personnel: NUnitPersonnel[];
+  supplies: NUnitSupply[];
+}
+
+/**
+ * Forward: translate a unit's base equipment/personnel/supplies from names to ids,
+ * preserving `count` and `onHand`. Shared by `prepareScenario` (fresh load) and
+ * `addUnitHierarchy` (paste/import) so the two cannot drift — and so neither can drop
+ * `onHand`, which the hand-rolled fresh-load loop previously did for equipment/personnel.
+ */
+export function unitResourcesToInternal(
+  unit: Pick<Unit, "equipment" | "personnel" | "supplies">,
+  resolvers: ResourceResolvers,
+): InternalUnitResources {
+  return {
+    equipment: entriesToInternal(unit.equipment, resolvers.equipment) ?? [],
+    personnel: entriesToInternal(unit.personnel, resolvers.personnel) ?? [],
+    supplies: entriesToInternal(unit.supplies, resolvers.supplies) ?? [],
   };
 }
 
