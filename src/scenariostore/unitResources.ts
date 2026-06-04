@@ -25,7 +25,7 @@ export interface ResourceEntry {
  */
 export function applyResourceUpdate<T extends ResourceEntry>(
   target: T[] | undefined,
-  updates: Partial<T>[] | undefined,
+  updates: (Partial<T> & { id: string })[] | undefined,
   label: string,
 ): void {
   if (!updates || !target) return;
@@ -47,7 +47,7 @@ export function applyResourceUpdate<T extends ResourceEntry>(
  */
 export function applyResourceDiff<T extends ResourceEntry>(
   target: T[] | undefined,
-  diffs: Partial<T>[] | undefined,
+  diffs: (Partial<T> & { id: string })[] | undefined,
   label: string,
 ): void {
   if (!diffs || !target) return;
