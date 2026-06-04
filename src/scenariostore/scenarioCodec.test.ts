@@ -72,8 +72,10 @@ describe("ScenarioCodec unit-state round-trip", () => {
       scnState,
     );
 
-    expect(roundTripped.update).toEqual(external.update);
-    expect(roundTripped.diff).toEqual(external.diff);
+    // toStrictEqual (not toEqual) so an omitted toe kind cannot regress to an explicit
+    // `{ supplies: undefined }` key — those compare equal under toEqual but not here.
+    expect(roundTripped.update).toStrictEqual(external.update);
+    expect(roundTripped.diff).toStrictEqual(external.diff);
     expect(roundTripped.id).toEqual(external.id);
     expect(roundTripped.t).toEqual(external.t);
   });
@@ -97,7 +99,7 @@ describe("ScenarioCodec unit-state round-trip", () => {
     expect(internal.update?.equipment).toEqual([{ id: "Unmapped widget", count: 7 }]);
 
     const roundTripped = unitStateToExternal(internal, scnState);
-    expect(roundTripped.update).toEqual(external.update);
+    expect(roundTripped.update).toStrictEqual(external.update);
   });
 
   it("leaves states without toe groups untouched", () => {

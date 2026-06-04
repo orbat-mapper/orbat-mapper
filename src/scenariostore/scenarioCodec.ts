@@ -51,6 +51,8 @@ function toeGroupToInternal(
 // against their catalogs. Shared by the state-block path (update/diff) and the base-unit
 // path. `stripEmpty` drops empty arrays to undefined, which the base-unit serialization
 // wants but the state-block round-trip does not. A dangling id falls back to itself.
+// Keys whose converted value is undefined are omitted entirely (rather than emitted as
+// `{ personnel: undefined }`), so the state-block round-trip matches the original shape.
 function toeToExternal<
   Eq extends { id: string },
   Pe extends { id: string },
@@ -67,10 +69,13 @@ function toeToExternal<
     const out = entriesToExternal(entries, (id) => catalog[id]?.name ?? id);
     return stripEmpty && !out?.length ? undefined : out;
   };
+  const equipment = convert(toe.equipment, scnState.equipmentMap);
+  const personnel = convert(toe.personnel, scnState.personnelMap);
+  const supplies = convert(toe.supplies, scnState.supplyCategoryMap);
   return {
-    equipment: convert(toe.equipment, scnState.equipmentMap),
-    personnel: convert(toe.personnel, scnState.personnelMap),
-    supplies: convert(toe.supplies, scnState.supplyCategoryMap),
+    ...(equipment !== undefined && { equipment }),
+    ...(personnel !== undefined && { personnel }),
+    ...(supplies !== undefined && { supplies }),
   };
 }
 
