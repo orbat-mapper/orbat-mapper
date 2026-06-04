@@ -13,6 +13,7 @@ import {
   convertStateToInternalFormat,
   type ScenarioState,
 } from "@/scenariostore/newScenarioStore";
+import { unitStateToInternal } from "@/scenariostore/scenarioCodec";
 import type { RangeRing } from "@/types/scenarioGeoModels";
 import { getCustomSymbolId, setSid } from "@/symbology/helpers.ts";
 import { klona } from "klona";
@@ -204,46 +205,13 @@ export function addUnitHierarchy(
           s.status = tempUnitStatusIdMap[s.status!] || addUnitStatus({ name: s.status! });
         });
 
-      const internalUnitState: NState[] = unitState.map((s) => {
-        const { update, diff, ...rest } = s;
-        const newUpdate = update
-          ? {
-              equipment: update.equipment?.map((e) => {
-                const { name, ...rest } = e;
-                return { id: equipmentNameToIdMap[name] ?? name, ...rest };
-              }),
-              personnel: update.personnel?.map((p) => {
-                const { name, ...rest } = p;
-                return { id: personnelNameToIdMap[name] ?? name, ...rest };
-              }),
-              supplies: update.supplies?.map((s) => {
-                const { name, ...rest } = s;
-                return { id: supplyNameToIdMap[name] ?? name, ...rest };
-              }),
-            }
-          : undefined;
-        const newDiff = diff
-          ? {
-              equipment: diff.equipment?.map((e) => {
-                const { name, ...rest } = e;
-                return { id: equipmentNameToIdMap[name] ?? name, ...rest };
-              }),
-              personnel: diff.personnel?.map((p) => {
-                const { name, ...rest } = p;
-                return { id: personnelNameToIdMap[name] ?? name, ...rest };
-              }),
-              supplies: diff.supplies?.map((s) => {
-                const { name, ...rest } = s;
-                return { id: supplyNameToIdMap[name] ?? name, ...rest };
-              }),
-            }
-          : undefined;
-        return {
-          ...rest,
-          update: newUpdate,
-          diff: newDiff,
-        };
-      });
+      const internalUnitState: NState[] = unitState.map((s) =>
+        unitStateToInternal(s, {
+          equipment: equipmentNameToIdMap,
+          personnel: personnelNameToIdMap,
+          supplies: supplyNameToIdMap,
+        }),
+      );
 
       let status = undefined;
       if (unit.status) {
