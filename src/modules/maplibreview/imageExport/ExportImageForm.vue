@@ -4,6 +4,13 @@ import { storeToRefs } from "pinia";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
 import { useMeasurementsStore } from "@/stores/geoStore";
+import { useNotifications } from "@/composables/notifications";
+import { Button } from "@/components/ui/button";
+import {
+  IconCheck,
+  IconContentCopy,
+  IconLoading,
+} from "@iconify-prerendered/vue-mdi";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import InputGroup from "@/components/InputGroup.vue";
@@ -109,8 +116,14 @@ const decorations = computed(() => ({
   northArrow: showNorthArrow.value,
   credits: showCredits.value,
 }));
+const { send } = useNotifications();
+
 const exporting = ref(false);
 const previewing = ref(false);
+const copying = ref(false);
+// Briefly true after a successful copy to drive the button's success animation.
+const copied = ref(false);
+let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 const previewUrl = ref<string | null>(null);
 const errorMsg = ref<string | null>(null);
 
@@ -289,7 +302,13 @@ const boundsError = computed(() => {
   return null;
 });
 
-const busy = computed(() => exporting.value || previewing.value);
+const busy = computed(() => exporting.value || previewing.value || copying.value);
+
+// The system clipboard only accepts raster image data, so copying always
+// produces a PNG regardless of the selected output format.
+const canCopyToClipboard = computed(
+  () => typeof ClipboardItem !== "undefined" && !!navigator.clipboard?.write,
+);
 
 const canExport = computed(
   () =>
@@ -332,6 +351,7 @@ watch(
 );
 
 onBeforeUnmount(clearPreview);
+onBeforeUnmount(() => clearTimeout(copiedTimer));
 
 // --- Export-area overlay ---
 // Draw the rectangle/bounding box that will be exported on the map so the user
@@ -595,6 +615,79 @@ async function onPreview() {
     previewing.value = false;
   }
 }
+
+// Copy the current selection to the system clipboard as a PNG. The clipboard
+// only accepts raster data, so this renders a PNG at full output resolution
+// regardless of the selected output format (zip/GeoTIFF wrappers don't apply).
+async function onCopyToClipboard() {
+  if (!canExport.value || !canCopyToClipboard.value) return;
+  errorMsg.value = null;
+  copying.value = true;
+  setExportAreaVisible(false);
+  try {
+    let blob: Blob | null;
+    if (mode.value === "frame") {
+      if (!viewfinderFrame.value) {
+        errorMsg.value = "Place the export frame on the map first.";
+        return;
+      }
+      if (renderFrameBounds.value) {
+        blob = await renderBoundsToBlob(props.map, {
+          bounds: boundsFromViewportFrame(props.map, viewfinderFrame.value),
+          width: outputWidth.value,
+          height: outputHeight.value,
+          outputScale: 1,
+          symbolPixelRatio: outputScale.value,
+          symbolDisplayScale: outputScale.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
+        });
+      } else {
+        blob = await renderViewportFrameToBlob(props.map, viewfinderFrame.value, {
+          outputScale: outputScale.value,
+          resetRotation: effectiveResetRotation.value,
+          decorations: effectiveDecorations.value,
+        });
+      }
+    } else {
+      let bbox: Bbox;
+      if (mode.value === "rect") {
+        if (!props.drawnBounds) {
+          errorMsg.value = "Draw a rectangle on the map first.";
+          return;
+        }
+        bbox = props.drawnBounds;
+      } else {
+        bbox = customBounds.value;
+      }
+      blob = await renderBoundsToBlob(props.map, {
+        bounds: [
+          [bbox[0], bbox[1]],
+          [bbox[2], bbox[3]],
+        ],
+        width: width.value,
+        height: height.value,
+        outputScale: outputScale.value,
+        resetRotation: effectiveResetRotation.value,
+        decorations: effectiveDecorations.value,
+      });
+    }
+    if (!blob) {
+      errorMsg.value = "Could not render an image to copy.";
+      return;
+    }
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    send({ message: "Image copied to clipboard", type: "success" });
+    copied.value = true;
+    clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => (copied.value = false), 1800);
+  } catch (err) {
+    errorMsg.value = err instanceof Error ? err.message : String(err);
+  } finally {
+    setExportAreaVisible(true);
+    copying.value = false;
+  }
+}
 </script>
 
 <template>
@@ -735,10 +828,9 @@ async function onPreview() {
         :items="outputFormatItems"
       />
       <p v-if="isGeoreferenced" class="text-muted-foreground text-xs">
-        Exports north-up and top-down — the embedded affine assumes axis
-        alignment, so the rendered area may differ from the viewfinder framing
-        when the live map is rotated. Annotations are disabled while a
-        georeferenced format is selected.
+        Exports north-up and top-down — the embedded affine assumes axis alignment, so the
+        rendered area may differ from the viewfinder framing when the live map is rotated.
+        Annotations are disabled while a georeferenced format is selected.
       </p>
     </div>
 
@@ -793,13 +885,38 @@ async function onPreview() {
       </figcaption>
     </figure>
 
-    <div class="flex items-center justify-end gap-2 pt-2">
-      <SecondaryButton v-if="cancelable" type="button" @click="emit('cancel')">
+    <div class="flex items-center gap-2 pt-2">
+      <SecondaryButton
+        v-if="cancelable"
+        type="button"
+        class="mr-auto"
+        @click="emit('cancel')"
+      >
         Cancel
       </SecondaryButton>
-      <SecondaryButton type="button" :disabled="!canExport" @click="onPreview">
+      <SecondaryButton
+        type="button"
+        :class="{ 'ml-auto': !cancelable }"
+        :disabled="!canExport"
+        @click="onPreview"
+      >
         {{ previewing ? "Rendering…" : "Preview" }}
       </SecondaryButton>
+      <!-- Copy and Export are the two output destinations, grouped together. -->
+      <Button
+        v-if="canCopyToClipboard"
+        type="button"
+        variant="secondary"
+        size="icon"
+        :disabled="!canExport"
+        :aria-label="copied ? 'Image copied to clipboard' : 'Copy image to clipboard'"
+        :title="copying ? 'Copying…' : copied ? 'Copied!' : 'Copy image to clipboard'"
+        @click="onCopyToClipboard"
+      >
+        <IconLoading v-if="copying" class="h-5 w-5 animate-spin" />
+        <IconCheck v-else-if="copied" class="h-5 w-5 text-emerald-500" />
+        <IconContentCopy v-else class="h-5 w-5" />
+      </Button>
       <PrimaryButton type="submit" :disabled="!canExport">
         {{ exporting ? "Exporting…" : exportButtonLabel }}
       </PrimaryButton>

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## June 2026
+
+### Added
+
+- Added a copy-to-clipboard button to the MapLibre image export panel for copying the rendered map straight to the clipboard as a PNG.
+
 ## May 2026
 
 ### Added
