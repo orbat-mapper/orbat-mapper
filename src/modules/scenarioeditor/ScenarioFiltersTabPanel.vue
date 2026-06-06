@@ -10,10 +10,9 @@ import {
   HQTFDummyValues,
   standardIdentityValues,
   statusValues,
-  symbolSetValues,
 } from "@/symbology/values";
 import type { NUnit } from "@/types/internalModels";
-import { app6d as sym } from "@/symbology/standards/app6d";
+import { useSymbologyData } from "@/composables/symbolData";
 import FilterTree, {
   type NestedUnitStatItem,
 } from "@/modules/scenarioeditor/FilterTree.vue";
@@ -33,6 +32,12 @@ const GENERIC_FILTER_SIDC = "10031000100000000000";
 const {
   store: { state },
 } = injectStrict(activeScenarioKey);
+
+const { symbology, resolveIconLabel, resolveModifierLabel, loadData } =
+  useSymbologyData();
+
+// Trigger the lazy symbology load so labels resolve against the selected standard.
+loadData();
 
 const sideTree = ref<NestedUnitStatItem[]>([]);
 const emtTree = ref<NestedUnitStatItem[]>([]);
@@ -72,6 +77,9 @@ function expandAll() {
 }
 
 watchEffect(() => {
+  // Track the lazy symbology data so the trees recompute once it loads and the
+  // labels resolve against the selected standard.
+  void symbology.value;
   const stats: Record<string, number> = {};
   const sidStatItems: NestedUnitStatItem[] = [];
   const sideStatItems: NestedUnitStatItem[] = [];
@@ -140,14 +148,15 @@ watchEffect(() => {
       emtStatItems.push({ key: emtKey, label: getEchelonLabel(emtKey), sidc: sidcEmt });
     }
     if (stats[symbolSetKey] === 1) {
+      const symbolSetLabel = resolveIconLabel({ symbolSet: symbolSetKey });
       iconStatItems.push({
         key: symbolSetKey,
-        label: getIconLabel({ symbolSet: symbolSetKey }),
+        label: symbolSetLabel,
         sidc: sidcSymbolSet,
       });
       modifierStatItems.push({
         key: modSymbolSetKey,
-        label: getIconLabel({ symbolSet: symbolSetKey }),
+        label: symbolSetLabel,
         sidc: sidcSymbolSet,
       });
     }
@@ -157,7 +166,7 @@ watchEffect(() => {
         const children = iconItem.children || [];
         children.push({
           key: entityKey,
-          label: getIconLabel({
+          label: resolveIconLabel({
             symbolSet: symbolSetKey,
             entity: entityKey.split("-")[1],
           }),
@@ -174,7 +183,7 @@ watchEffect(() => {
         const children = entityItem.children || [];
         children.push({
           key: entityTypeKey,
-          label: getIconLabel({
+          label: resolveIconLabel({
             symbolSet: symbolSetKey,
             entity: entityKey.split("-")[1],
             entityType: entityTypeKey.split("-")[2],
@@ -193,7 +202,7 @@ watchEffect(() => {
 
         children.push({
           key: mod1Key,
-          label: getModifierLabel({
+          label: resolveModifierLabel({
             symbolSet: symbolSetKey,
             mod1: mod1Key.split("-")[2],
           }),
@@ -210,7 +219,7 @@ watchEffect(() => {
         sidc.modifierTwo = mod2Key.split("-")[2];
         children.push({
           key: mod2Key,
-          label: getModifierLabel({
+          label: resolveModifierLabel({
             symbolSet: symbolSetKey,
             mod2: mod2Key.split("-")[2],
           }),
@@ -538,25 +547,9 @@ function getHqtfdLabel(code: string) {
   return HQTFDummyValues.find((v) => v.code === code)?.text || code;
 }
 
-function getSymbolSetLabel(symbolSet: string) {
-  return symbolSetValues.find((v) => v.code === symbolSet)?.text || symbolSet;
-}
-
 function getSidLabel(code: string) {
   return standardIdentityValues.find((v) => v.code === code)?.text || code;
 }
-
-type IconData = {
-  symbolSet?: string;
-  entity?: string;
-  entityType?: string;
-};
-
-type ModifierData = {
-  symbolSet?: string;
-  mod1?: string;
-  mod2?: string;
-};
 
 function getSideLabel(sideId: string) {
   return state.sideMap[sideId]?.name || sideId;
@@ -564,47 +557,6 @@ function getSideLabel(sideId: string) {
 
 function getSideGroupLabel(sideGroupId: string) {
   return state.sideGroupMap[sideGroupId]?.name || sideGroupId;
-}
-
-function getIconLabel({ symbolSet, entity, entityType }: IconData) {
-  const label = symbolSet ?? entity ?? entityType ?? "Unknown";
-  if (symbolSet === undefined) {
-    return label;
-  }
-  if (entity == undefined && entityType == undefined) {
-    return getSymbolSetLabel(symbolSet);
-  }
-  if (entity !== undefined && entityType == undefined) {
-    const mainIcon = sym[symbolSet]?.mainIcon;
-    const i = mainIcon?.find((icon) => icon.code.startsWith(entity));
-    return i?.entity || label;
-  }
-  if (entity !== undefined && entityType !== undefined) {
-    const mainIcon = sym[symbolSet]?.mainIcon;
-    const prefix = entity + entityType;
-    const i = mainIcon?.find((icon) => icon.code.startsWith(prefix));
-    return i?.entityType || i?.entity || label;
-  }
-  return label;
-}
-
-function getModifierLabel({ symbolSet, mod1, mod2 }: ModifierData) {
-  const label = symbolSet ?? mod1 ?? mod2 ?? "Unknown";
-  if (symbolSet === undefined) {
-    return label;
-  }
-  if (mod1) {
-    const modifiers = sym[symbolSet]?.modifierOne;
-    const i = modifiers?.find((mod) => mod.code === mod1);
-    return i?.modifier || label;
-  }
-
-  if (mod2) {
-    const modifiers = sym[symbolSet]?.modifierTwo;
-    const i = modifiers?.find((mod) => mod.code === mod2);
-    return i?.modifier || label;
-  }
-  return label;
 }
 
 function onSelect(event: CustomEvent<{ value: { key: string } }>) {
