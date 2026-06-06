@@ -44,7 +44,7 @@ const form = ref<ScenarioInfo>({
   description: "",
   startTime: 0,
   timeZone: "UTC",
-  symbologyStandard: "2525",
+  symbologyStandard: "2525d",
 });
 
 watch(

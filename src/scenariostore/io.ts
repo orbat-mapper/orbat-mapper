@@ -493,7 +493,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       sessionRevision.value += 1;
       bindMutationTracking();
       settingsStore.symbologyStandard =
-        store.value.state.info.symbologyStandard || "2525";
+        store.value.state.info.symbologyStandard || "2525d";
       return true;
     } catch (e) {
       send({

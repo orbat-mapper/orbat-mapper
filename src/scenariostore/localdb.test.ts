@@ -34,7 +34,7 @@ function createScenario(id: string, name = "Scenario"): Scenario {
     description: "",
     startTime,
     timeZone: "UTC",
-    symbologyStandard: "2525",
+    symbologyStandard: "2525d",
     sides: [],
     events: [],
     layerStack: [{ id: "layer-1", kind: "overlay", name: "Features", items: [] }],

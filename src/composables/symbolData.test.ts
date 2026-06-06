@@ -10,8 +10,8 @@ const standardLoaders = vi.hoisted(() => ({
 
 vi.mock("@/symbology/standards", () => ({
   symbologyStandards: {
-    "2525": { load: standardLoaders.milstd2525 },
-    app6: { load: standardLoaders.app6 },
+    "2525d": { load: standardLoaders.milstd2525 },
+    app6d: { load: standardLoaders.app6 },
   },
 }));
 
@@ -83,7 +83,7 @@ describe("useSymbologyData", () => {
     const { loadData, symbology } = useSymbologyData();
     await loadData();
 
-    settingsStore.symbologyStandard = "app6";
+    settingsStore.symbologyStandard = "app6d";
     await nextTick();
     await vi.waitFor(() => expect(symbology.value).toBe(app6));
 
@@ -103,7 +103,7 @@ describe("useSymbologyData", () => {
     const { loadData, symbology, isLoaded } = useSymbologyData();
     const oldLoad = loadData();
 
-    settingsStore.symbologyStandard = "app6";
+    settingsStore.symbologyStandard = "app6d";
     const latestLoad = loadData();
     pendingApp6.resolve(app6);
     await latestLoad;
@@ -127,9 +127,9 @@ describe("useSymbologyData", () => {
     const { loadData, symbology, isLoaded } = useSymbologyData();
     await loadData();
 
-    settingsStore.symbologyStandard = "app6";
+    settingsStore.symbologyStandard = "app6d";
     const obsoleteLoad = loadData();
-    settingsStore.symbologyStandard = "2525";
+    settingsStore.symbologyStandard = "2525d";
     await loadData();
 
     pendingApp6.resolve(app6);

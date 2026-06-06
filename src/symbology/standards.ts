@@ -9,8 +9,8 @@ export interface SymbologyStandardDefinition {
 }
 
 export const symbologyStandards = {
-  "2525": {
-    value: "2525",
+  "2525d": {
+    value: "2525d",
     name: "MIL-STD-2525D",
     description: "US version",
     load: async () => {
@@ -18,9 +18,9 @@ export const symbologyStandards = {
       return ms2525d;
     },
   },
-  app6: {
-    value: "app6",
-    name: "APP-6",
+  app6d: {
+    value: "app6d",
+    name: "APP-6D",
     description: "NATO version",
     load: async () => {
       const { app6d } = await import("@/symbology/standards/app6d");

@@ -25,7 +25,7 @@ export const useSymbolExportSettingsStore = defineStore("symbolExportSettings", 
 export const useSymbolSettingsStore = defineStore("symbolSettings", {
   state() {
     return {
-      symbologyStandard: "2525" as SymbologyStandard,
+      symbologyStandard: "2525d" as SymbologyStandard,
       simpleStatusModifier: useLocalStorage("simpleStatusModifier", false),
     };
   },

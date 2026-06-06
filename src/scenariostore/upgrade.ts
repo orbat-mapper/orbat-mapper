@@ -466,6 +466,30 @@ function upgradeGeometryLayerItemsToSharedBase(scenario: Scenario): Scenario {
   return upgradedScenario;
 }
 
+function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
+  const symbologyStandardMap: Record<string, string> = { "2525": "2525d", app6: "app6d" };
+  const upgradedScenario = { ...scenario };
+  if (upgradedScenario.symbologyStandard != null) {
+    upgradedScenario.symbologyStandard =
+      (symbologyStandardMap[upgradedScenario.symbologyStandard] as typeof upgradedScenario.symbologyStandard) ??
+      upgradedScenario.symbologyStandard;
+  }
+  upgradedScenario.layerStack = upgradedScenario.layerStack.map((layer) => {
+    if (layer.kind !== "overlay") return layer;
+    return {
+      ...layer,
+      items: layer.items.map((item) => {
+        if (item.kind !== "tacticalGraphic") return item;
+        const tg = item as TacticalGraphicLayerItem;
+        if (tg.standard == null) return tg;
+        const upgraded = symbologyStandardMap[tg.standard];
+        return upgraded ? { ...tg, standard: upgraded as TacticalGraphicLayerItem["standard"] } : tg;
+      }),
+    };
+  });
+  return upgradedScenario;
+}
+
 export function upgradeScenarioIfNecessary(
   scenario: LoadableScenario | Scenario,
 ): Scenario {
@@ -477,6 +501,9 @@ export function upgradeScenarioIfNecessary(
   }
   if (compareVersions(canonicalScenario.version, "3.2.0", "<")) {
     canonicalScenario = upgradeGeometryLayerItemsToSharedBase(canonicalScenario);
+  }
+  if (compareVersions(canonicalScenario.version, "3.3.0", "<")) {
+    canonicalScenario = upgradeSymbologyStandardNames(canonicalScenario);
   }
   return canonicalScenario;
 }

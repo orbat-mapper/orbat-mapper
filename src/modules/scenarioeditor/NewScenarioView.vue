@@ -49,7 +49,7 @@ interface NewScenarioForm extends ScenarioInfo {
 const noInitialOrbat = ref(false);
 
 const newScenario = ref(
-  createEmptyScenario({ addGroups: true, symbologyStandard: "app6" }),
+  createEmptyScenario({ addGroups: true, symbologyStandard: "app6d" }),
 );
 const timeZone = ref(newScenario.value.timeZone || "UTC");
 const { year, month, day, hour, minute, resDateTime } = useYMDElements({
