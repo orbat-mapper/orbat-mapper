@@ -22,7 +22,7 @@ const {
 }));
 
 vi.mock("@/stores/settingsStore", () => ({
-  useSymbolSettingsStore: () => ({ symbologyStandard: "2525" }),
+  useSymbolSettingsStore: () => ({ symbologyStandard: "2525d" }),
 }));
 
 vi.mock("@/composables/notifications", () => ({

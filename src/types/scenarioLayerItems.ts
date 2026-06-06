@@ -185,7 +185,7 @@ export interface TacticalGraphicLayerItemState {
 
 export interface TacticalGraphicLayerItem extends ScenarioLayerItemBase {
   kind: "tacticalGraphic";
-  standard?: "2525" | "app6";
+  standard?: "2525d" | "app6d";
   graphicCode: string;
   controlPoints: Position[];
   modifiers?: Record<string, string | number | boolean>;

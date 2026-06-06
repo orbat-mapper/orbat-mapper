@@ -1,16 +1,16 @@
 {
   "id": "demo-narvik40",
   "type": "ORBAT-mapper",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "meta": {
     "createdDate": "2024-04-01T17:14:51.567Z",
-    "lastModifiedDate": "2026-04-25T14:33:50.325Z"
+    "lastModifiedDate": "2026-06-06T14:16:07.082Z"
   },
   "name": "Battles of Narvik",
   "startTime": "1940-04-09T01:00:00+02:00",
   "timeZone": "Europe/Oslo",
   "description": "The Battles of Narvik were a series of naval and land engagements fought between German and Allied forces from April to June 1940. The battles marked the first Allied victory against Germany in the war.",
-  "symbologyStandard": "app6",
+  "symbologyStandard": "app6d",
   "sides": [
     {
       "id": "gjNibxLX9gQrtAiX9fv_F",
