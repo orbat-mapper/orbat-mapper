@@ -17,6 +17,7 @@ import {
 } from "@/symbology/values";
 import { Sidc } from "@/symbology/sidc";
 import type { SymbolSetMap } from "@/symbology/types";
+import { symbologyStandards } from "@/symbology/standards";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import {
   mapReinforcedStatus2Field,
@@ -27,6 +28,13 @@ import {
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
 const currentSymbologyStandard = ref<SymbologyStandard | undefined>();
+let loadRequestId = 0;
+let pendingLoad:
+  | {
+      standard: SymbologyStandard;
+      promise: Promise<void>;
+    }
+  | undefined;
 
 export type IconLabelData = {
   symbolSet?: string;
@@ -154,26 +162,48 @@ const searchModifierTwoRef = computed(() => {
 });
 
 export function useSymbologyData() {
+  const settingsStore = useSymbolSettingsStore();
+
   async function loadData() {
-    const settingsStore = useSymbolSettingsStore();
-    if (
-      symbology.value &&
-      currentSymbologyStandard.value === settingsStore.symbologyStandard
-    ) {
+    const standard = settingsStore.symbologyStandard;
+    if (symbology.value && currentSymbologyStandard.value === standard) {
+      if (pendingLoad && pendingLoad.standard !== standard) {
+        loadRequestId++;
+        pendingLoad = undefined;
+      }
+      isLoaded.value = true;
       return;
     }
-    isLoaded.value = false;
-    if (settingsStore.symbologyStandard === "app6") {
-      const { app6d } = await import("../symbology/standards/app6d");
-      symbology.value = app6d;
-      currentSymbologyStandard.value = "app6";
-    } else {
-      const { ms2525d } = await import("../symbology/standards/milstd2525");
-      symbology.value = ms2525d;
-      currentSymbologyStandard.value = "2525";
+    if (pendingLoad?.standard === standard) {
+      return pendingLoad.promise;
     }
-    isLoaded.value = true;
+
+    const requestId = ++loadRequestId;
+    isLoaded.value = false;
+    const promise = symbologyStandards[standard]
+      .load()
+      .then((data) => {
+        if (requestId !== loadRequestId) return;
+        symbology.value = data;
+        currentSymbologyStandard.value = standard;
+        isLoaded.value = true;
+      })
+      .finally(() => {
+        if (pendingLoad?.promise === promise) {
+          pendingLoad = undefined;
+        }
+      });
+    pendingLoad = { standard, promise };
+    return promise;
   }
+
+  watch(
+    () => settingsStore.symbologyStandard,
+    () => {
+      void loadData().catch(() => undefined);
+    },
+    { immediate: true },
+  );
 
   return {
     isLoaded,

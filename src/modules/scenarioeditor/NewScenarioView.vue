@@ -25,22 +25,10 @@ import { useIndexedDb } from "@/scenariostore/localdb";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
+import { symbologyStandardOptions } from "@/symbology/standards";
 
 const router = useRouter();
 const { scenario } = useScenario();
-
-const standardSettings = [
-  {
-    value: "app6",
-    name: "APP-6",
-    description: "NATO version",
-  },
-  {
-    value: "2525",
-    name: "MIL-STD-2525D",
-    description: "US version",
-  },
-];
 
 interface RootUnit {
   rootUnitName?: string;
@@ -336,7 +324,7 @@ function removeUnit(side: InitialSideData, unit: RootUnit) {
           description="Select the symbology standard you prefer to use."
         >
           <RadioGroupList
-            :items="standardSettings"
+            :items="symbologyStandardOptions"
             v-model="newScenario.symbologyStandard"
           />
         </FormCard>

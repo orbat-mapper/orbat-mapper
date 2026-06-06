@@ -13,24 +13,15 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useNotifications } from "@/composables/notifications";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
+import {
+  getSymbologyStandardName,
+  symbologyStandardOptions,
+} from "@/symbology/standards";
 
 const { send } = useNotifications();
 
 const { store, io } = injectStrict(activeScenarioKey);
 const { getModalTimestamp } = injectStrict(timeModalKey);
-
-const standardSettings = [
-  {
-    value: "2525",
-    name: "MIL-STD-2525D",
-    description: "US version",
-  },
-  {
-    value: "app6",
-    name: "APP-6",
-    description: "NATO version",
-  },
-];
 
 const TimezoneSelect = defineAsyncComponent(
   () => import("@/components/TimezoneSelect.vue"),
@@ -134,7 +125,10 @@ async function openTimeModal() {
         <PlainButton @click="openTimeModal()" class="ml-2">Change</PlainButton>
       </DescriptionItem>
       <TimezoneSelect label="Time zone" v-model="form.timeZone" />
-      <RadioGroupList :items="standardSettings" v-model="form.symbologyStandard" />
+      <RadioGroupList
+        :items="symbologyStandardOptions"
+        v-model="form.symbologyStandard"
+      />
       <div class="flex justify-end space-x-2">
         <PrimaryButton type="submit">Update</PrimaryButton>
         <PlainButton type="button" @click="toggleEditMode()">Cancel</PlainButton>
@@ -150,7 +144,7 @@ async function openTimeModal() {
       </DescriptionItem>
       <DescriptionItem label="Time zone name">{{ state.info.timeZone }}</DescriptionItem>
       <DescriptionItem label="Symbology standard"
-        >{{ state.info.symbologyStandard }}
+        >{{ getSymbologyStandardName(state.info.symbologyStandard) }}
       </DescriptionItem>
 
       <DescriptionItem label="Number of units"
