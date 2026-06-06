@@ -11,6 +11,7 @@ import {
   statusValues,
   SUBSURFACE_SYMBOLSET_VALUE,
   SURFACE_SYMBOLSET_VALUE,
+  symbolSetMap,
   towedArrayValues,
   UNIT_SYMBOLSET_VALUE,
 } from "@/symbology/values";
@@ -26,6 +27,63 @@ import {
 const symbology = shallowRef<SymbolSetMap | undefined>();
 const isLoaded = ref(false);
 const currentSymbologyStandard = ref<SymbologyStandard | undefined>();
+
+export type IconLabelData = {
+  symbolSet?: string;
+  entity?: string;
+  entityType?: string;
+};
+
+export type ModifierLabelData = {
+  symbolSet?: string;
+  mod1?: string;
+  mod2?: string;
+};
+
+function getSymbolSetLabel(symbolSet: string) {
+  return symbolSetMap[symbolSet]?.text || symbolSet;
+}
+
+/**
+ * Resolve a human-readable label for a main icon against the lazily-loaded
+ * symbology data for the currently selected standard. Falls back to the raw
+ * code/label when the lookup misses or the data has not loaded yet.
+ */
+function resolveIconLabel({ symbolSet, entity, entityType }: IconLabelData): string {
+  const label = symbolSet ?? entity ?? entityType ?? "Unknown";
+  if (symbolSet === undefined) {
+    return label;
+  }
+  if (entity === undefined) {
+    return getSymbolSetLabel(symbolSet);
+  }
+  const icon = symbology.value?.[symbolSet]?.mainIcon?.find((i) =>
+    i.code.startsWith(entity + (entityType ?? "")),
+  );
+  return (entityType ? icon?.entityType : undefined) || icon?.entity || label;
+}
+
+/**
+ * Resolve a human-readable label for a symbol modifier against the lazily-loaded
+ * symbology data for the currently selected standard. Falls back to the raw
+ * code/label when the lookup misses or the data has not loaded yet.
+ */
+function resolveModifierLabel({ symbolSet, mod1, mod2 }: ModifierLabelData): string {
+  const label = symbolSet ?? mod1 ?? mod2 ?? "Unknown";
+  if (symbolSet === undefined) {
+    return label;
+  }
+  const ss = symbology.value?.[symbolSet];
+  if (mod1) {
+    const i = ss?.modifierOne.find((mod) => mod.code === mod1);
+    return i?.modifier || label;
+  }
+  if (mod2) {
+    const i = ss?.modifierTwo.find((mod) => mod.code === mod2);
+    return i?.modifier || label;
+  }
+  return label;
+}
 
 const searchSymbolRef = computed(() => {
   return (
@@ -121,6 +179,8 @@ export function useSymbologyData() {
     isLoaded,
     symbology,
     loadData,
+    resolveIconLabel,
+    resolveModifierLabel,
     searchSymbolRef,
     searchModifierOneRef,
     searchModifierTwoRef,
@@ -145,6 +205,8 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
     symbology,
     isLoaded,
     loadData,
+    resolveIconLabel,
+    resolveModifierLabel,
     searchSymbolRef,
     searchModifierOneRef,
     searchModifierTwoRef,
@@ -312,6 +374,8 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
     csidc,
     isLoaded,
     loadData,
+    resolveIconLabel,
+    resolveModifierLabel,
     searchSymbolRef,
     searchModifierOneRef,
     searchModifierTwoRef,
