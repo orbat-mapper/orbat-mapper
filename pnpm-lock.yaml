@@ -375,6 +375,9 @@ importers:
       jsdom:
         specifier: ^27.4.0
         version: 27.4.0
+      milstandard-e:
+        specifier: 0.2.14
+        version: 0.2.14
       npm-run-all2:
         specifier: ^8.0.4
         version: 8.0.4
@@ -3414,6 +3417,9 @@ packages:
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
+
+  milstandard-e@0.2.14:
+    resolution: {integrity: sha512-DUL1SzdcdW4ZkgLr7zcXdUcIjsfaHXzuRGUqIyz+UblQxnG6b7yZT63LEQMTorYSKxygiOCZ0fCrdz7rf6GxSQ==}
 
   milsymbol@3.0.4:
     resolution: {integrity: sha512-Jrs1RBCag2IzyEJwI476i2+pNHdi8WMwAp2mDD23g3TR48ERdHmdQgPXZUosRKyhPMr58/eOPyyLE53lMPPAgw==}
@@ -8154,6 +8160,8 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.2
+
+  milstandard-e@0.2.14: {}
 
   milsymbol@3.0.4: {}
 

@@ -1,16 +1,19 @@
 import { createPinia, setActivePinia } from "pinia";
-import { nextTick } from "vue";
+import { nextTick, ref } from "vue";
 import type { SymbolSetMap } from "@/symbology/types";
+import { Sidc } from "@/symbology/sidc";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const standardLoaders = vi.hoisted(() => ({
   milstd2525: vi.fn(),
+  milstd2525e: vi.fn(),
   app6: vi.fn(),
 }));
 
 vi.mock("@/symbology/standards", () => ({
   symbologyStandards: {
     "2525d": { load: standardLoaders.milstd2525 },
+    "2525e": { load: standardLoaders.milstd2525e },
     app6d: { load: standardLoaders.app6 },
   },
 }));
@@ -36,16 +39,18 @@ function deferred<T>() {
 }
 
 async function loadSubject() {
-  const [{ useSymbologyData }, { useSymbolSettingsStore }] = await Promise.all([
-    import("@/composables/symbolData"),
-    import("@/stores/settingsStore"),
-  ]);
-  return { useSymbologyData, useSymbolSettingsStore };
+  const [{ useSymbologyData, useSymbolItems }, { useSymbolSettingsStore }] =
+    await Promise.all([
+      import("@/composables/symbolData"),
+      import("@/stores/settingsStore"),
+    ]);
+  return { useSymbologyData, useSymbolItems, useSymbolSettingsStore };
 }
 
 beforeEach(() => {
   vi.resetModules();
   standardLoaders.milstd2525.mockReset();
+  standardLoaders.milstd2525e.mockReset();
   standardLoaders.app6.mockReset();
   setActivePinia(createPinia());
 });
@@ -137,5 +142,55 @@ describe("useSymbologyData", () => {
 
     expect(symbology.value).toBe(milstd2525);
     expect(isLoaded.value).toBe(true);
+  });
+
+  it("emits 30-position SIDCs for 2525E modifier items", async () => {
+    const milstd2525e = createSymbolSetMap("MIL-STD-2525E");
+    milstd2525e["10"].modifierOne = [{ code: "107", modifier: "Armored" }];
+    standardLoaders.milstd2525e.mockResolvedValue(milstd2525e);
+
+    const { useSymbologyData, useSymbolItems, useSymbolSettingsStore } =
+      await loadSubject();
+    const settingsStore = useSymbolSettingsStore();
+    settingsStore.symbologyStandard = "2525e";
+    const { loadData } = useSymbologyData();
+    const { mod1Items, csidc, mod1Value } = useSymbolItems(
+      ref("150310000000000000000000000000"),
+    );
+    await loadData();
+
+    const armored = mod1Items.value.find((item) => item.code === "107");
+    expect(armored).toBeDefined();
+    const armoredSidc = armored!.sidc;
+    expect(armoredSidc).toHaveLength(30);
+    expect(new Sidc(armoredSidc).modifierOne).toBe("107");
+
+    mod1Value.value = "107";
+    expect(csidc.value).toHaveLength(30);
+    expect(new Sidc(csidc.value).modifierOne).toBe("107");
+  });
+
+  it("keeps 20-position SIDC mode even when the selected standard is 2525E", async () => {
+    const milstd2525e = createSymbolSetMap("MIL-STD-2525E");
+    milstd2525e["10"].modifierOne = [
+      { code: "46", modifier: "Naval" },
+      { code: "107", modifier: "Armored" },
+    ];
+    standardLoaders.milstd2525e.mockResolvedValue(milstd2525e);
+
+    const { useSymbologyData, useSymbolItems, useSymbolSettingsStore } =
+      await loadSubject();
+    const settingsStore = useSymbolSettingsStore();
+    settingsStore.symbologyStandard = "2525e";
+    const { loadData } = useSymbologyData();
+    const { mod1Items, csidc, mod1Value } = useSymbolItems(ref("10031000000000000000"));
+    await loadData();
+
+    expect(mod1Items.value.map((item) => item.code)).toContain("46");
+    expect(mod1Items.value.map((item) => item.code)).not.toContain("107");
+
+    mod1Value.value = "46";
+    expect(csidc.value).toHaveLength(20);
+    expect(new Sidc(csidc.value).modifierOne).toBe("46");
   });
 });

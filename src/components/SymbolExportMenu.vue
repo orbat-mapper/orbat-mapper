@@ -25,11 +25,24 @@ import {
 import { useSymbolExport } from "@/composables/symbolExport";
 import { useSymbolExportSettingsStore } from "@/stores/settingsStore";
 import type { SymbolOptions } from "milsymbol";
+import { stableSymbologyStandardOptions } from "@/symbology/standards";
+import type { SymbologyStandard } from "@/types/scenarioModels";
 
-const props = defineProps<{
-  sidc: string;
-  symbolOptions: Partial<SymbolOptions>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    sidc: string;
+    symbolOptions: Partial<SymbolOptions>;
+    standardOptions?: typeof stableSymbologyStandardOptions;
+  }>(),
+  {
+    standardOptions: () => stableSymbologyStandardOptions,
+  },
+);
+
+// Optional: when bound, the settings menu exposes a symbology standard selector.
+const symbologyStandard = defineModel<SymbologyStandard | undefined>(
+  "symbologyStandard",
+);
 
 const { exportSettings } = storeToRefs(useSymbolExportSettingsStore());
 
@@ -70,6 +83,23 @@ const sizeOptions = [
             <SettingsIcon class="mr-2 size-4" />Settings
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent class="min-w-40">
+            <template v-if="symbologyStandard">
+              <DropdownMenuLabel>Symbology standard</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                :model-value="symbologyStandard"
+                @update:model-value="symbologyStandard = $event as SymbologyStandard"
+              >
+                <DropdownMenuRadioItem
+                  v-for="opt in standardOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  @select.prevent
+                >
+                  {{ opt.name }}
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+            </template>
             <DropdownMenuLabel>Symbol size</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               :model-value="String(exportSettings.size)"
@@ -142,6 +172,23 @@ const sizeOptions = [
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" class="min-w-44">
+        <template v-if="symbologyStandard">
+          <DropdownMenuLabel>Symbology standard</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            :model-value="symbologyStandard"
+            @update:model-value="symbologyStandard = $event as SymbologyStandard"
+          >
+            <DropdownMenuRadioItem
+              v-for="opt in standardOptions"
+              :key="opt.value"
+              :value="opt.value"
+              @select.prevent
+            >
+              {{ opt.name }}
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator />
+        </template>
         <DropdownMenuLabel>Export settings</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Symbol size</DropdownMenuLabel>

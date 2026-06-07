@@ -25,7 +25,7 @@ import { useIndexedDb } from "@/scenariostore/localdb";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
-import { symbologyStandardOptions } from "@/symbology/standards";
+import { stableSymbologyStandardOptions } from "@/symbology/standards";
 
 const router = useRouter();
 const { scenario } = useScenario();
@@ -324,7 +324,7 @@ function removeUnit(side: InitialSideData, unit: RootUnit) {
           description="Select the symbology standard you prefer to use."
         >
           <RadioGroupList
-            :items="symbologyStandardOptions"
+            :items="stableSymbologyStandardOptions"
             v-model="newScenario.symbologyStandard"
           />
         </FormCard>

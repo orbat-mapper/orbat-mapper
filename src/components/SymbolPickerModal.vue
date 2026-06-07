@@ -31,11 +31,16 @@ import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import {
   mapReinforcedStatus2Field,
   type ReinforcedStatus,
+  type SymbologyStandard,
   type UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
-import { Sidc } from "@/symbology/sidc";
+import {
+  sidcVersionForStandard,
+  standardForSidcVersion,
+  Sidc,
+} from "@/symbology/sidc";
 import {
   type MainIconSearchResult,
   type ModifierOneSearchResult,
@@ -52,6 +57,8 @@ import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue"
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 import { getFullUnitSidc } from "@/symbology/helpers.ts";
 import SymbolExportMenu from "@/components/SymbolExportMenu.vue";
+import { useSymbolSettingsStore } from "@/stores/settingsStore.ts";
+import { getSymbologyStandardName } from "@/symbology/standards.ts";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -77,6 +84,7 @@ const props = withDefaults(defineProps<Props>(), {
 const open = defineModel<boolean>("isVisible", { default: true });
 const emit = defineEmits(["update:sidc", "cancel"]);
 const scn = inject(activeScenarioKey, null);
+const symbolSettingsStore = useSymbolSettingsStore();
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -134,8 +142,24 @@ const cleanObject = (obj: any) => {
   return obj;
 };
 
+const initialFullSidc = computed(() => {
+  return getFullUnitSidc(props.initialSidc || "10031000001211000000");
+});
+const activeSymbologyStandard = ref<SymbologyStandard>(
+  standardForSidcVersion(
+    new Sidc(initialFullSidc.value).version,
+    symbolSettingsStore.symbologyStandard,
+  ),
+);
+
+const standardName = computed(() =>
+  getSymbologyStandardName(activeSymbologyStandard.value),
+);
+const standardBadge = computed(() => standardName.value.replace("MIL-STD-", ""));
+
 const {
   csidc,
+  sidcVersion,
   loadData,
   isLoaded,
   sidValue,
@@ -155,17 +179,23 @@ const {
   symbolSets,
   reinforcedReducedItems,
   reinforcedReducedValue,
-} = useSymbolItems(
-  computed(() => {
-    return getFullUnitSidc(props.initialSidc || "10031000001211000000");
-  }),
-  props.reinforcedStatus,
-);
+} = useSymbolItems(initialFullSidc, props.reinforcedStatus, activeSymbologyStandard);
 loadData();
 
 whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
-const { search } = useSymbologySearch(sidValue);
+const { search } = useSymbologySearch(sidValue, sidcVersion, activeSymbologyStandard);
+
+watch(activeSymbologyStandard, (standard) => {
+  sidcVersion.value = sidcVersionForStandard(standard);
+});
+
+watch(sidcVersion, (version) => {
+  activeSymbologyStandard.value = standardForSidcVersion(
+    version,
+    activeSymbologyStandard.value,
+  );
+});
 
 const showReinforcedStatus = computed(() => {
   return symbolSetValue.value === "10" || symbolSetValue.value === "11";
@@ -234,11 +264,11 @@ function updateFromCustomSymbol(symbolId: string) {
 }
 
 function updateFromSidcInput(sidc: string) {
-  if (!/^\d+$/.test(sidc)) {
+  if (!/^[\dA-Fa-f]+$/.test(sidc)) {
     return;
   }
   const oldSidc = new Sidc(csidc.value);
-  const ns = new Sidc(sidc);
+  const ns = new Sidc(sidc.toUpperCase());
   ns.standardIdentity = oldSidc.standardIdentity;
 
   csidc.value = ns.toString();
@@ -265,12 +295,22 @@ watch(currentTab, async (v) => {
   >
     <div class="flex h-full flex-col overflow-hidden" @keyup.ctrl.enter="onSubmit">
       <header
-        class="@container mt-4 flex h-20 w-full shrink-0 items-center justify-between"
+        class="@container mt-4 flex h-20 w-full shrink-0 items-center justify-between gap-2"
       >
         <template v-if="!customSymbol">
-          <div class="flex items-center gap-1">
+          <div class="flex shrink-0 items-center gap-1">
             <MilitarySymbol :sidc="csidc" :size="34" :options="finalSymbolOptions" />
-            <SymbolExportMenu :sidc="csidc" :symbol-options="combinedSymbolOptions" />
+            <SymbolExportMenu
+              :sidc="csidc"
+              :symbol-options="combinedSymbolOptions"
+              v-model:symbology-standard="activeSymbologyStandard"
+            />
+            <span
+              class="bg-muted-foreground/15 text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide whitespace-nowrap tabular-nums"
+              :title="`Symbology standard: ${standardName}`"
+            >
+              {{ standardBadge }}
+            </span>
           </div>
           <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
         </template>
@@ -450,6 +490,7 @@ watch(currentTab, async (v) => {
             <SymbolBrowseTab
               v-if="currentTab === '1'"
               :initial-sidc="csidc"
+              :symbology-standard="activeSymbologyStandard"
               @update-sidc="updateFromBrowseTab"
               :symbol-options="combinedSymbolOptions"
             />

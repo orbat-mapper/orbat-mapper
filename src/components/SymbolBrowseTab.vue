@@ -4,7 +4,7 @@ import SymbolCodeSelect from "./SymbolCodeSelect.vue";
 import { computed, nextTick, onActivated, ref, watch } from "vue";
 import { groupBy } from "@/utils";
 import { useSymbolItems } from "@/composables/symbolData";
-import { type UnitSymbolOptions } from "@/types/scenarioModels";
+import { type SymbologyStandard, type UnitSymbolOptions } from "@/types/scenarioModels";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { breakpointsTailwind, useBreakpoints, useDebounce } from "@vueuse/core";
 
@@ -12,6 +12,7 @@ interface Props {
   initialSidc: string;
   symbolSize?: number;
   symbolOptions?: UnitSymbolOptions;
+  symbologyStandard?: SymbologyStandard;
   fullHeight?: boolean;
 }
 
@@ -32,7 +33,11 @@ const {
   csidc,
   isLoaded,
   loadData,
-} = useSymbolItems(computed(() => props.initialSidc));
+} = useSymbolItems(
+  computed(() => props.initialSidc),
+  undefined,
+  computed(() => props.symbologyStandard),
+);
 
 if (!isLoaded.value) loadData();
 
