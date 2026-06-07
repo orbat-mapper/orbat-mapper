@@ -15,7 +15,12 @@ import {
   towedArrayValues,
   UNIT_SYMBOLSET_VALUE,
 } from "@/symbology/values";
-import { Sidc } from "@/symbology/sidc";
+import {
+  buildSidc,
+  isEditionESidcVersion,
+  Sidc,
+  type SidcBuildValues,
+} from "@/symbology/sidc";
 import type { SymbolSetMap } from "@/symbology/types";
 import { symbologyStandards } from "@/symbology/standards";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
@@ -161,11 +166,14 @@ const searchModifierTwoRef = computed(() => {
   );
 });
 
-export function useSymbologyData() {
+export function useSymbologyData(standardRef?: Ref<SymbologyStandard | undefined>) {
   const settingsStore = useSymbolSettingsStore();
+  const selectedStandard = computed(
+    () => standardRef?.value ?? settingsStore.symbologyStandard,
+  );
 
   async function loadData() {
-    const standard = settingsStore.symbologyStandard;
+    const standard = selectedStandard.value;
     if (symbology.value && currentSymbologyStandard.value === standard) {
       if (pendingLoad && pendingLoad.standard !== standard) {
         loadRequestId++;
@@ -198,7 +206,7 @@ export function useSymbologyData() {
   }
 
   watch(
-    () => settingsStore.symbologyStandard,
+    selectedStandard,
     () => {
       void loadData().catch(() => undefined);
     },
@@ -217,8 +225,13 @@ export function useSymbologyData() {
   };
 }
 
-export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus) {
+export function useSymbolItems(
+  sidc: Ref<string>,
+  reinforcedReduced?: ReinforcedStatus,
+  standardRef?: Ref<SymbologyStandard | undefined>,
+) {
   const {
+    sidcVersion,
     symbolSetValue,
     sidValue,
     statusValue,
@@ -240,16 +253,28 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
     searchSymbolRef,
     searchModifierOneRef,
     searchModifierTwoRef,
-  } = useSymbologyData();
+  } = useSymbologyData(standardRef);
+  const supportsCommonModifiers = computed(() =>
+    isEditionESidcVersion(sidcVersion.value),
+  );
+
+  function buildSymbolSidc(values: Partial<SidcBuildValues> = {}) {
+    return buildSidc(sidcVersion.value, {
+      standardIdentity: sidValue.value,
+      symbolSet: symbolSetValue.value,
+      ...values,
+    });
+  }
 
   const symbolSets = computed(() => {
     const symbSets = Object.entries(symbology.value || {}).map(([k, v]) => {
-      const iconValue =
-        k === CONTROL_MEASURE_SYMBOLSET_VALUE ? "00001602050000" : "00000000000000";
       return {
         code: k,
         text: v.name,
-        sidc: "100" + sidValue.value + k + iconValue,
+        sidc: buildSymbolSidc({
+          symbolSet: k,
+          mainIcon: k === CONTROL_MEASURE_SYMBOLSET_VALUE ? "160205" : "000000",
+        }),
       } as SymbolItem;
     });
     symbSets.sort((a, b) => +a.code - +b.code);
@@ -260,7 +285,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
     return statusValues.map(({ code, text }) => ({
       code,
       text,
-      sidc: "100" + sidValue.value + symbolSetValue.value + code + "0000000000000",
+      sidc: buildSymbolSidc({ status: code }),
     }));
   });
 
@@ -292,7 +317,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
       code,
       text,
       symbolOptions,
-      sidc: "100" + sidValue.value + symbolSetValue.value + "000000000000000",
+      sidc: buildSymbolSidc(),
     }));
   });
 
@@ -300,7 +325,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
     return HQTFDummyValues.map(({ code, text }) => ({
       code,
       text,
-      sidc: "100" + sidValue.value + symbolSetValue.value + "0" + code + "000000000000",
+      sidc: buildSymbolSidc({ hqtfd: code }),
     }));
   });
 
@@ -317,7 +342,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
       return {
         code: mi.code,
         text,
-        sidc: "100" + sidValue.value + symbolSetCode + "0000" + mi.code + "0000",
+        sidc: buildSymbolSidc({ symbolSet: symbolSetCode, mainIcon: mi.code }),
         entity: mi.entity,
         entityType: mi.entityType,
         entitySubtype: mi.entitySubtype,
@@ -348,7 +373,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
       return {
         code,
         text,
-        sidc: "100" + sidValue.value + symbolSetValue.value + "00" + code + "0000000000",
+        sidc: buildSymbolSidc({ emt: code }),
       };
     });
   });
@@ -356,38 +381,37 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
   const mod1Items = computed(() => {
     if (!symbology.value) return [];
     return (
-      symbology.value[symbolSetValue.value]?.modifierOne.map(
-        ({ code, modifier }): SymbolItem => {
+      symbology.value[symbolSetValue.value]?.modifierOne
+        .filter(({ code }) => supportsCommonModifiers.value || code.length <= 2)
+        .map(({ code, modifier }): SymbolItem => {
           return {
             code,
             text: modifier,
-            sidc:
-              "100" + sidValue.value + symbolSetValue.value + "0000000000" + code + "00",
+            sidc: buildSymbolSidc({ modifierOne: code }),
           };
-        },
-      ) || []
+        }) || []
     );
   });
 
   const mod2Items = computed(() => {
     if (!symbology.value) return [];
     return (
-      symbology.value[symbolSetValue.value]?.modifierTwo.map(
-        ({ code, modifier }): SymbolItem => {
+      symbology.value[symbolSetValue.value]?.modifierTwo
+        .filter(({ code }) => supportsCommonModifiers.value || code.length <= 2)
+        .map(({ code, modifier }): SymbolItem => {
           return {
             code,
             text: modifier,
-            sidc:
-              "100" + sidValue.value + symbolSetValue.value + "0000000000" + "00" + code,
+            sidc: buildSymbolSidc({ modifierTwo: code }),
           };
-        },
-      ) || []
+        }) || []
     );
   });
 
   return {
     symbolSets,
     icons,
+    sidcVersion,
     sidValue,
     symbolSetValue,
     iconValue,
@@ -416,6 +440,7 @@ export function useSymbolItems(sidc: Ref<string>, reinforcedReduced?: Reinforced
 
 function useSymbolValues(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus) {
   const sidcObj = new Sidc(sidc.value);
+  const sidcVersion = ref(sidcObj.version);
   const sidValue = ref(sidcObj.standardIdentity);
   const symbolSetValue = ref(sidcObj.symbolSet);
   const statusValue = ref(sidcObj.status);
@@ -428,6 +453,7 @@ function useSymbolValues(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus
 
   function setValues(value: string) {
     const sidcObj = new Sidc(value);
+    sidcVersion.value = sidcObj.version;
     sidValue.value = sidcObj.standardIdentity;
     symbolSetValue.value = sidcObj.symbolSet;
     statusValue.value = sidcObj.status;
@@ -444,17 +470,16 @@ function useSymbolValues(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus
 
   const csidc = computed({
     get() {
-      return (
-        "100" +
-        sidValue.value +
-        symbolSetValue.value +
-        statusValue.value +
-        hqtfdValue.value +
-        emtValue.value +
-        iconValue.value +
-        mod1Value.value +
-        mod2Value.value
-      );
+      return buildSidc(sidcVersion.value, {
+        standardIdentity: sidValue.value,
+        symbolSet: symbolSetValue.value,
+        status: statusValue.value,
+        hqtfd: hqtfdValue.value,
+        emt: emtValue.value,
+        mainIcon: iconValue.value,
+        modifierOne: mod1Value.value,
+        modifierTwo: mod2Value.value,
+      });
     },
     set(newValue: string) {
       setValues(newValue);
@@ -462,6 +487,7 @@ function useSymbolValues(sidc: Ref<string>, reinforcedReduced?: ReinforcedStatus
   });
 
   return {
+    sidcVersion,
     sidValue,
     symbolSetValue,
     statusValue,

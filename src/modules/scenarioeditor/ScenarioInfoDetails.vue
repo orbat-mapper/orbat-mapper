@@ -15,7 +15,7 @@ import { useNotifications } from "@/composables/notifications";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import {
   getSymbologyStandardName,
-  symbologyStandardOptions,
+  stableSymbologyStandardOptions,
 } from "@/symbology/standards";
 
 const { send } = useNotifications();
@@ -126,7 +126,7 @@ async function openTimeModal() {
       </DescriptionItem>
       <TimezoneSelect label="Time zone" v-model="form.timeZone" />
       <RadioGroupList
-        :items="symbologyStandardOptions"
+        :items="stableSymbologyStandardOptions"
         v-model="form.symbologyStandard"
       />
       <div class="flex justify-end space-x-2">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import {
   ComboboxContent,
   ComboboxGroup,
@@ -14,6 +14,7 @@ import {
   breakpointsTailwind,
   useBreakpoints,
   useDebounce,
+  useLocalStorage,
   useTitle,
   whenever,
 } from "@vueuse/core";
@@ -48,8 +49,12 @@ import {
   useSymbologySearch,
 } from "@/composables/symbolSearching";
 import { defineAsyncComponent } from "vue";
-import { Sidc } from "@/symbology/sidc";
-import type { UnitSymbolOptions } from "@/types/scenarioModels";
+import { sidcVersionForStandard, standardForSidcVersion, Sidc } from "@/symbology/sidc";
+import type { SymbologyStandard, UnitSymbolOptions } from "@/types/scenarioModels";
+import {
+  getSymbologyStandardName,
+  symbologyStandardOptions,
+} from "@/symbology/standards";
 
 const LegacyConverter = defineAsyncComponent(
   () => import("@/components/LegacyConverter.vue"),
@@ -66,12 +71,22 @@ const debouncedQuery = useDebounce(searchQuery, 100);
 const searchInputRef = ref();
 
 const internalSymbolOptions = ref<UnitSymbolOptions>({});
+const initialFullSidc = ref("10031000001211000000");
+const activeSymbologyStandard = useLocalStorage<SymbologyStandard>(
+  "symbolBrowserSymbologyStandard",
+  "2525e",
+);
 
 const combinedSymbolOptions = computed(() => ({
   outlineWidth: 8,
   outlineColor: "rgba(255,255,255,0.80)",
   ...cleanObject(internalSymbolOptions.value || {}),
 }));
+
+const standardName = computed(() =>
+  getSymbologyStandardName(activeSymbologyStandard.value),
+);
+const standardBadge = computed(() => standardName.value.replace("MIL-STD-", ""));
 
 function cleanObject(obj: any) {
   Object.keys(obj).forEach((key) => {
@@ -84,6 +99,7 @@ function cleanObject(obj: any) {
 
 const {
   csidc,
+  sidcVersion,
   loadData,
   isLoaded,
   sidValue,
@@ -101,12 +117,27 @@ const {
   mod2Items,
   icons,
   symbolSets,
-} = useSymbolItems(ref("10031000001211000000"));
+} = useSymbolItems(initialFullSidc, undefined, activeSymbologyStandard);
 loadData();
 
 whenever(isLoaded, () => NProgress.done(), { immediate: true });
 
-const { search } = useSymbologySearch(sidValue);
+const { search } = useSymbologySearch(sidValue, sidcVersion, activeSymbologyStandard);
+
+watch(
+  activeSymbologyStandard,
+  (standard) => {
+    sidcVersion.value = sidcVersionForStandard(standard);
+  },
+  { immediate: true },
+);
+
+watch(sidcVersion, (version) => {
+  activeSymbologyStandard.value = standardForSidcVersion(
+    version,
+    activeSymbologyStandard.value,
+  );
+});
 
 const showModifiers = computed(() => {
   return symbolSetValue.value === "10" || symbolSetValue.value === "11";
@@ -188,11 +219,22 @@ function updateFromSidcInput(sidc: string) {
       <ResizablePanel :default-size="40" :min-size="25">
         <div class="flex h-full flex-col overflow-y-auto p-4">
           <header
-            class="@container flex h-20 w-full shrink-0 items-center justify-between"
+            class="@container flex h-20 w-full shrink-0 items-center justify-between gap-2"
           >
-            <div class="flex items-center gap-1">
+            <div class="flex shrink-0 items-center gap-1">
               <MilitarySymbol :sidc="csidc" :size="34" :options="combinedSymbolOptions" />
-              <SymbolExportMenu :sidc="csidc" :symbol-options="combinedSymbolOptions" />
+              <SymbolExportMenu
+                :sidc="csidc"
+                :symbol-options="combinedSymbolOptions"
+                :standard-options="symbologyStandardOptions"
+                v-model:symbology-standard="activeSymbologyStandard"
+              />
+              <span
+                class="bg-muted-foreground/15 text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide whitespace-nowrap tabular-nums"
+                :title="`Symbology standard: ${standardName}`"
+              >
+                {{ standardBadge }}
+              </span>
             </div>
             <SymbolCodeViewer :sidc="csidc" @update="updateFromSidcInput" />
           </header>
@@ -344,6 +386,7 @@ function updateFromSidcInput(sidc: string) {
         <div class="h-full p-4">
           <SymbolBrowseTab
             :initial-sidc="csidc"
+            :symbology-standard="activeSymbologyStandard"
             :full-height="true"
             @update-sidc="updateFromBrowseTab"
             :symbol-options="combinedSymbolOptions"
