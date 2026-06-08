@@ -153,9 +153,7 @@ export function encodeGeoTiff(opts: EncodeGeoTiffOptions): Uint8Array {
     throw new Error("GeoTIFF requires positive image dimensions.");
   }
   if (rgba.length !== width * height * 4) {
-    throw new Error(
-      `RGBA length ${rgba.length} does not match ${width}×${height}×4.`,
-    );
+    throw new Error(`RGBA length ${rgba.length} does not match ${width}×${height}×4.`);
   }
 
   // Affine: north-up axis-aligned, origin at the upper-left pixel's *corner*
@@ -176,11 +174,26 @@ export function encodeGeoTiff(opts: EncodeGeoTiffOptions): Uint8Array {
   // For ASCII keys, "location" is the tag id that holds the strings (34737)
   // and "value" is the offset (in bytes) into that tag's data.
   const geoKeys = [
-    1, 1, 1, 4, // KeyDirectoryVersion=1, KeyRevision=1, MinorRevision=1, NumberOfKeys=4
-    KEY.GTModelType, 0, 1, 1, // 1 = ModelTypeProjected
-    KEY.GTRasterType, 0, 1, 1, // 1 = RasterPixelIsArea
-    KEY.GTCitation, TAG.GeoAsciiParams, citationByteLength, 0,
-    KEY.ProjectedCSType, 0, 1, epsgCode,
+    1,
+    1,
+    1,
+    4, // KeyDirectoryVersion=1, KeyRevision=1, MinorRevision=1, NumberOfKeys=4
+    KEY.GTModelType,
+    0,
+    1,
+    1, // 1 = ModelTypeProjected
+    KEY.GTRasterType,
+    0,
+    1,
+    1, // 1 = RasterPixelIsArea
+    KEY.GTCitation,
+    TAG.GeoAsciiParams,
+    citationByteLength,
+    0,
+    KEY.ProjectedCSType,
+    0,
+    1,
+    epsgCode,
   ];
 
   // Compress the strip up-front so we know its byte count for the IFD.

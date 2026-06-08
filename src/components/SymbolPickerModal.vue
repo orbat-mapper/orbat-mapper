@@ -36,11 +36,7 @@ import {
 } from "@/types/scenarioModels";
 import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
 import SymbolCodeViewer from "@/components/SymbolCodeViewer.vue";
-import {
-  sidcVersionForStandard,
-  standardForSidcVersion,
-  Sidc,
-} from "@/symbology/sidc";
+import { sidcVersionForStandard, standardForSidcVersion, Sidc } from "@/symbology/sidc";
 import {
   type MainIconSearchResult,
   type ModifierOneSearchResult,

@@ -37,26 +37,124 @@ const parts = computed(() => {
   const sidc = s.toString();
   const setAB = [
     // Set A — structural properties, identity & standard context (pos 1–10)
-    { key: "version", activeKey: "start", value: sidc.substring(0, 2), label: "Ver", title: "Version (edition of the standard)", set: "A" },
-    { key: "stdId", activeKey: "start", value: sidc.substring(2, 4), label: "ID", title: "Standard identity — context & affiliation", set: "A" },
-    { key: "symbolSet", activeKey: "symbolSet", value: sidc.substring(4, 6), label: "Set", title: "Symbol set (operational domain)", set: "A" },
-    { key: "status", activeKey: "status", value: sidc.substring(6, 7), label: "St", title: "Status / operational condition", set: "A" },
-    { key: "hqtfd", activeKey: "hqtfd", value: sidc.substring(7, 8), label: "HQ", title: "HQ / Task force / Dummy", set: "A" },
-    { key: "amp", activeKey: "amp", value: sidc.substring(8, 10), label: "Amp", title: "Amplifying descriptor — echelon / mobility / towed array", set: "A" },
+    {
+      key: "version",
+      activeKey: "start",
+      value: sidc.substring(0, 2),
+      label: "Ver",
+      title: "Version (edition of the standard)",
+      set: "A",
+    },
+    {
+      key: "stdId",
+      activeKey: "start",
+      value: sidc.substring(2, 4),
+      label: "ID",
+      title: "Standard identity — context & affiliation",
+      set: "A",
+    },
+    {
+      key: "symbolSet",
+      activeKey: "symbolSet",
+      value: sidc.substring(4, 6),
+      label: "Set",
+      title: "Symbol set (operational domain)",
+      set: "A",
+    },
+    {
+      key: "status",
+      activeKey: "status",
+      value: sidc.substring(6, 7),
+      label: "St",
+      title: "Status / operational condition",
+      set: "A",
+    },
+    {
+      key: "hqtfd",
+      activeKey: "hqtfd",
+      value: sidc.substring(7, 8),
+      label: "HQ",
+      title: "HQ / Task force / Dummy",
+      set: "A",
+    },
+    {
+      key: "amp",
+      activeKey: "amp",
+      value: sidc.substring(8, 10),
+      label: "Amp",
+      title: "Amplifying descriptor — echelon / mobility / towed array",
+      set: "A",
+    },
     // Set B — military function hierarchy & sector modifiers (pos 11–20)
-    { key: "mainIcon", activeKey: "mainIcon", value: sidc.substring(10, 16), label: "Icon", title: "Main icon — entity / type / subtype hierarchy", set: "B" },
-    { key: "mod1", activeKey: "mod1", value: sidc.substring(16, 18), label: "M1", title: "Sector 1 modifier", set: "B" },
-    { key: "mod2", activeKey: "mod2", value: sidc.substring(18, 20), label: "M2", title: "Sector 2 modifier", set: "B" },
+    {
+      key: "mainIcon",
+      activeKey: "mainIcon",
+      value: sidc.substring(10, 16),
+      label: "Icon",
+      title: "Main icon — entity / type / subtype hierarchy",
+      set: "B",
+    },
+    {
+      key: "mod1",
+      activeKey: "mod1",
+      value: sidc.substring(16, 18),
+      label: "M1",
+      title: "Sector 1 modifier",
+      set: "B",
+    },
+    {
+      key: "mod2",
+      activeKey: "mod2",
+      value: sidc.substring(18, 20),
+      label: "M2",
+      title: "Sector 2 modifier",
+      set: "B",
+    },
   ];
   if (!s.isExtended) return setAB;
   return [
     ...setAB,
     // Set C — operational metadata, frame geometry & nationality (pos 21–30)
-    { key: "mod1Common", activeKey: "mod1", value: sidc.substring(20, 21), label: "C1", title: "Sector 1 common modifier identifier", set: "C" },
-    { key: "mod2Common", activeKey: "mod2", value: sidc.substring(21, 22), label: "C2", title: "Sector 2 common modifier identifier", set: "C" },
-    { key: "frame", activeKey: "frame", value: sidc.substring(22, 23), label: "Frame", title: "Frame shape identifier", set: "C" },
-    { key: "reserved", activeKey: "reserved", value: sidc.substring(23, 27), label: "Rsvd", title: "Reserved for future use", set: "C" },
-    { key: "nationality", activeKey: "nationality", value: sidc.substring(27, 30), label: "Nat", title: "Nationality — GENC country code", set: "C" },
+    {
+      key: "mod1Common",
+      activeKey: "mod1",
+      value: sidc.substring(20, 21),
+      label: "C1",
+      title: "Sector 1 common modifier identifier",
+      set: "C",
+    },
+    {
+      key: "mod2Common",
+      activeKey: "mod2",
+      value: sidc.substring(21, 22),
+      label: "C2",
+      title: "Sector 2 common modifier identifier",
+      set: "C",
+    },
+    {
+      key: "frame",
+      activeKey: "frame",
+      value: sidc.substring(22, 23),
+      label: "Frame",
+      title: "Frame shape identifier",
+      set: "C",
+    },
+    {
+      key: "reserved",
+      activeKey: "reserved",
+      value: sidc.substring(23, 27),
+      label: "Rsvd",
+      title: "Reserved for future use",
+      set: "C",
+    },
+    {
+      key: "nationality",
+      activeKey: "nationality",
+      value: sidc.substring(27, 30),
+      label: "Nat",
+      title: "Nationality — GENC country code",
+      set: "C",
+    },
   ];
 });
 
@@ -79,10 +177,7 @@ async function onCopy() {
       <div
         class="no-scrollbar border-border/70 bg-muted/40 flex min-w-0 flex-1 items-stretch gap-px overflow-x-auto rounded-md border p-1"
       >
-        <template
-          v-for="(part, index) in parts"
-          :key="part.key"
-        >
+        <template v-for="(part, index) in parts" :key="part.key">
           <div
             v-if="index > 0 && part.set !== parts[index - 1].set"
             class="bg-border/80 mx-0.5 w-px self-stretch"

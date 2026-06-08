@@ -6,11 +6,7 @@ import bboxPolygon from "@turf/bbox-polygon";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { useNotifications } from "@/composables/notifications";
 import { Button } from "@/components/ui/button";
-import {
-  IconCheck,
-  IconContentCopy,
-  IconLoading,
-} from "@iconify-prerendered/vue-mdi";
+import { IconCheck, IconContentCopy, IconLoading } from "@iconify-prerendered/vue-mdi";
 import PrimaryButton from "@/components/PrimaryButton.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import InputGroup from "@/components/InputGroup.vue";
