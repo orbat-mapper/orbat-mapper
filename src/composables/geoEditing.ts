@@ -135,7 +135,10 @@ export function useEditingInteraction(
       olMap.forEachFeatureAtPixel(
         event.pixel,
         (feature) => {
-          if (isRectangleFeature(feature as Feature) && selected.includes(feature as Feature)) {
+          if (
+            isRectangleFeature(feature as Feature) &&
+            selected.includes(feature as Feature)
+          ) {
             overRectangle = true;
             return true;
           }

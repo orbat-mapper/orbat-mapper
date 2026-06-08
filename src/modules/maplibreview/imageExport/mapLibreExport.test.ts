@@ -44,8 +44,7 @@ const maplibreMock = vi.hoisted(() => {
         // zip) can run in the test environment.
         if (typeof blob.arrayBuffer !== "function") {
           (blob as unknown as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer =
-            async () =>
-              new TextEncoder().encode("png").buffer as ArrayBuffer;
+            async () => new TextEncoder().encode("png").buffer as ArrayBuffer;
         }
         callback(blob);
       };
@@ -531,22 +530,24 @@ describe("exportViewportFrame (geotiff)", () => {
   beforeAll(() => {
     const proto = HTMLCanvasElement.prototype;
     const original = proto.getContext;
-    canvasGetContextSpy = vi
-      .spyOn(proto, "getContext")
-      .mockImplementation(function (this: HTMLCanvasElement, type: string, ...rest) {
-        if (type === "2d") {
-          return {
-            drawImage: () => {},
-            getImageData: (_x: number, _y: number, w: number, h: number) => ({
-              width: w,
-              height: h,
-              data: new Uint8ClampedArray(w * h * 4),
-              colorSpace: "srgb" as const,
-            }),
-          } as unknown as CanvasRenderingContext2D;
-        }
-        return original.call(this, type, ...rest);
-      });
+    canvasGetContextSpy = vi.spyOn(proto, "getContext").mockImplementation(function (
+      this: HTMLCanvasElement,
+      type: string,
+      ...rest
+    ) {
+      if (type === "2d") {
+        return {
+          drawImage: () => {},
+          getImageData: (_x: number, _y: number, w: number, h: number) => ({
+            width: w,
+            height: h,
+            data: new Uint8ClampedArray(w * h * 4),
+            colorSpace: "srgb" as const,
+          }),
+        } as unknown as CanvasRenderingContext2D;
+      }
+      return original.call(this, type, ...rest);
+    });
   });
   afterAll(() => canvasGetContextSpy?.mockRestore());
 

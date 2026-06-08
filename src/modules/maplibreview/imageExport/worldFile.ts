@@ -140,8 +140,8 @@ export const WEB_MERCATOR_WKT =
  */
 export function serializePamAuxXml(wkt: string): string {
   return (
-    '<PAMDataset>\n' +
+    "<PAMDataset>\n" +
     `  <SRS dataAxisToSRSAxisMapping="1,2">${wkt}</SRS>\n` +
-    '</PAMDataset>\n'
+    "</PAMDataset>\n"
   );
 }

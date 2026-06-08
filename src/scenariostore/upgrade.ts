@@ -471,7 +471,9 @@ function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
   const upgradedScenario = { ...scenario };
   if (upgradedScenario.symbologyStandard != null) {
     upgradedScenario.symbologyStandard =
-      (symbologyStandardMap[upgradedScenario.symbologyStandard] as typeof upgradedScenario.symbologyStandard) ??
+      (symbologyStandardMap[
+        upgradedScenario.symbologyStandard
+      ] as typeof upgradedScenario.symbologyStandard) ??
       upgradedScenario.symbologyStandard;
   }
   upgradedScenario.layerStack = upgradedScenario.layerStack.map((layer) => {
@@ -483,7 +485,9 @@ function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
         const tg = item as TacticalGraphicLayerItem;
         if (tg.standard == null) return tg;
         const upgraded = symbologyStandardMap[tg.standard];
-        return upgraded ? { ...tg, standard: upgraded as TacticalGraphicLayerItem["standard"] } : tg;
+        return upgraded
+          ? { ...tg, standard: upgraded as TacticalGraphicLayerItem["standard"] }
+          : tg;
       }),
     };
   });

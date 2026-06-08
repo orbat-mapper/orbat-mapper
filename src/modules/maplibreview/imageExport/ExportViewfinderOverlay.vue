@@ -197,10 +197,14 @@ function onPointerUp(event?: PointerEvent) {
   if (event && dragState && event.pointerId !== dragState.pointerId) return;
   if (dragState) {
     const { target, pointerId } = dragState;
-    if ((target as Element & { hasPointerCapture?: (id: number) => boolean })
-      .hasPointerCapture?.(pointerId)) {
-      (target as Element & { releasePointerCapture: (id: number) => void })
-        .releasePointerCapture(pointerId);
+    if (
+      (
+        target as Element & { hasPointerCapture?: (id: number) => boolean }
+      ).hasPointerCapture?.(pointerId)
+    ) {
+      (
+        target as Element & { releasePointerCapture: (id: number) => void }
+      ).releasePointerCapture(pointerId);
     }
   }
   dragState = null;
@@ -308,7 +312,7 @@ onBeforeUnmount(() => {
         />
         <button
           type="button"
-          class="pointer-events-auto absolute top-2 left-2 flex touch-none cursor-move items-center gap-1 rounded bg-black/70 py-1 pr-2 pl-1 text-xs font-medium text-white"
+          class="pointer-events-auto absolute top-2 left-2 flex cursor-move touch-none items-center gap-1 rounded bg-black/70 py-1 pr-2 pl-1 text-xs font-medium text-white"
           tabindex="-1"
           @pointerdown="startDrag($event, 'move')"
         >
