@@ -103,6 +103,7 @@ const {
   loadData,
   isLoaded,
   sidValue,
+  sidItems,
   symbolSetValue,
   iconValue,
   statusValue,
@@ -297,12 +298,20 @@ function updateFromSidcInput(sidc: string) {
           </ComboboxRoot>
 
           <form class="mt-4 space-y-4 p-0.5" v-if="isLoaded" @submit.prevent>
-            <SymbolCodeSelect
-              v-model="symbolSetValue"
-              label="Symbol set"
-              :items="symbolSets"
-              :symbol-options="combinedSymbolOptions"
-            />
+            <div class="grid gap-4 sm:grid-cols-2">
+              <SymbolCodeSelect
+                v-model="sidValue"
+                label="Standard identity"
+                :items="sidItems"
+                :symbol-options="combinedSymbolOptions"
+              />
+              <SymbolCodeSelect
+                v-model="symbolSetValue"
+                label="Symbol set"
+                :items="symbolSets"
+                :symbol-options="combinedSymbolOptions"
+              />
+            </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <SymbolCodeSelect

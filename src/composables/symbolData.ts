@@ -8,6 +8,7 @@ import {
   HQTFDummyValues,
   leadershipValues,
   mobilityValues,
+  standardIdentityValues,
   statusValues,
   SUBSURFACE_SYMBOLSET_VALUE,
   SURFACE_SYMBOLSET_VALUE,
@@ -289,6 +290,17 @@ export function useSymbolItems(
     }));
   });
 
+  const sidItems = computed((): SymbolItem[] => {
+    // Exclude the non-standard "Custom" identities (codes 7+).
+    return standardIdentityValues
+      .filter(({ code }) => +code < 7)
+      .map(({ code, text }) => ({
+        code,
+        text,
+        sidc: buildSymbolSidc({ standardIdentity: code }),
+      }));
+  });
+
   const reinforcedReducedItems = computed((): SymbolItem[] => {
     return [
       {
@@ -417,6 +429,7 @@ export function useSymbolItems(
     iconValue,
     statusValue,
     statusItems,
+    sidItems,
     hqtfdItems,
     hqtfdValue,
     emtValue,
