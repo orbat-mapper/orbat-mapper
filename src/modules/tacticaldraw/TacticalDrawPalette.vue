@@ -35,7 +35,7 @@ const visibleGroups = computed(() => {
   const matches = listControlMeasureMetadata().filter(
     (meta) => !q || meta.name.toLowerCase().includes(q),
   );
-  return groupByGetter(matches, (meta) => meta.geometry);
+  return groupByGetter(matches, (meta) => meta.entity);
 });
 </script>
 
