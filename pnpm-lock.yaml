@@ -42,20 +42,20 @@ importers:
         specifier: ^1.17.0
         version: 1.18.0(vue@3.5.38(typescript@5.9.3))
       '@orbat-mapper/control-measures':
-        specifier: link:../control-measures/packages/control-measures
-        version: link:../control-measures/packages/control-measures
+        specifier: ^0.2.0-alpha.0
+        version: 0.2.0-alpha.0
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
       '@orbat-mapper/tactical-draw':
-        specifier: link:../control-measures/packages/tactical-draw
-        version: link:../control-measures/packages/tactical-draw
+        specifier: ^0.2.0-alpha.0
+        version: 0.2.0-alpha.0
       '@orbat-mapper/tactical-draw-adapter-maplibre':
-        specifier: link:../control-measures/packages/tactical-draw-adapter-maplibre
-        version: link:../control-measures/packages/tactical-draw-adapter-maplibre
+        specifier: ^0.2.0-alpha.0
+        version: 0.2.0-alpha.0(maplibre-gl@5.24.0)
       '@orbat-mapper/tactical-draw-adapter-openlayers':
-        specifier: link:../control-measures/packages/tactical-draw-adapter-openlayers
-        version: link:../control-measures/packages/tactical-draw-adapter-openlayers
+        specifier: ^0.2.0-alpha.0
+        version: 0.2.0-alpha.0(ol@10.9.0)
       '@panzoom/panzoom':
         specifier: ^4.6.2
         version: 4.6.2
@@ -1142,8 +1142,24 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
+  '@orbat-mapper/control-measures@0.2.0-alpha.0':
+    resolution: {integrity: sha512-Jm6YMR+xFWGNln0zDzVY8+5TNSC+XlGS+i6mOnvf1BHW/wYv48Lf3x7gk+Am7VFD1bVud1wECDWd1TZg6soW6A==}
+
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
+
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.0-alpha.0':
+    resolution: {integrity: sha512-3yvI2iR5CxS3jqmU0PyCFxJxoexRGFFyEjsS6AyU8Q47lI6NGqrdgzqEs3pEA9dNRe/DmcUNvQT56uydcKGnvA==}
+    peerDependencies:
+      maplibre-gl: '>=4.0.0 <6.0.0'
+
+  '@orbat-mapper/tactical-draw-adapter-openlayers@0.2.0-alpha.0':
+    resolution: {integrity: sha512-ftRditcnez5JO6nxLTa66QIkz9+CW66wm1uKMOGkTMATm9nejO2tyDbAdeYUyLvNUiYy5H4ZL3rYSum6LiHUGA==}
+    peerDependencies:
+      ol: '>=7'
+
+  '@orbat-mapper/tactical-draw@0.2.0-alpha.0':
+    resolution: {integrity: sha512-iPLAoW7TaUJEUkGIoJDKCAVNt6Eo00PjNdMTz66B81sYf/wsCA6eL3fqnpvv4UL9zzK5XN7KufeYpDNXX932Jw==}
 
   '@oxc-parser/binding-android-arm64@0.97.0':
     resolution: {integrity: sha512-oLCGuX+1zqTIUjTfCxiZO/Ad4p4wo2MksBSpjdgOC7htyfIg/Se9PK2xU2jzSXlIyzBivwK6AJFqJpcbzJlmsQ==}
@@ -5286,7 +5302,24 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
+  '@orbat-mapper/control-measures@0.2.0-alpha.0': {}
+
   '@orbat-mapper/convert-symbology@1.0.2': {}
+
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.0-alpha.0(maplibre-gl@5.24.0)':
+    dependencies:
+      '@orbat-mapper/control-measures': 0.2.0-alpha.0
+      '@orbat-mapper/tactical-draw': 0.2.0-alpha.0
+      maplibre-gl: 5.24.0
+
+  '@orbat-mapper/tactical-draw-adapter-openlayers@0.2.0-alpha.0(ol@10.9.0)':
+    dependencies:
+      '@orbat-mapper/tactical-draw': 0.2.0-alpha.0
+      ol: 10.9.0
+
+  '@orbat-mapper/tactical-draw@0.2.0-alpha.0':
+    dependencies:
+      '@orbat-mapper/control-measures': 0.2.0-alpha.0
 
   '@oxc-parser/binding-android-arm64@0.97.0':
     optional: true
