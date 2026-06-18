@@ -8,7 +8,14 @@
     "noUncheckedIndexedAccess": false,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // Type-level twin of vite.config.ts `resolve.dedupe`: the `link:`-ed
+      // @orbat-mapper/tactical-draw* packages bundle their own maplibre-gl/ol,
+      // so pin these to our single copy. Remove once those packages are
+      // published to npm (see the `link:` deps in package.json).
+      "maplibre-gl": ["./node_modules/maplibre-gl"],
+      "ol": ["./node_modules/ol"],
+      "ol/*": ["./node_modules/ol/*"]
     }
   }
 }

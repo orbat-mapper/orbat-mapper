@@ -28,6 +28,9 @@ import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
+import TacticalDrawPalette from "@/modules/tacticaldraw/TacticalDrawPalette.vue";
+import { MapLibreAdapter } from "@orbat-mapper/tactical-draw-adapter-maplibre";
+import type { MapAdapter } from "@orbat-mapper/tactical-draw";
 import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearchScenarioActions.vue";
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
@@ -77,6 +80,7 @@ const {
 });
 
 const mlMap = shallowRef<MlMap>();
+const tacticalDrawAdapter = shallowRef<MapAdapter>();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const {
   activeRoutingUnitName,
@@ -148,6 +152,7 @@ function onMapReady(mapInstance: MlMap) {
   });
   cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
+  tacticalDrawAdapter.value = markRaw(new MapLibreAdapter(rawMap));
 }
 
 watch(
@@ -175,6 +180,8 @@ function disposeMaplibreBinding() {
   cleanupScenarioBinding?.();
   cleanupScenarioBinding = null;
   scenarioMapEngineRef.value = undefined;
+  // Unmounts the palette, whose useTacticalDraw scope disposes the controller.
+  tacticalDrawAdapter.value = undefined;
   geoStore.setMapAdapter(null);
 }
 
@@ -243,6 +250,12 @@ function onCloseActiveDetailsPanel() {
         :active-scenario="activeScenario"
         :initial-map-view="props.initialMapView"
         :key="state.id"
+      />
+      <!-- Scaffold: tactical-graphics draw palette (tactical-draw integration). -->
+      <TacticalDrawPalette
+        v-if="tacticalDrawAdapter"
+        :adapter="tacticalDrawAdapter"
+        :key="`tg-${state.id}`"
       />
     </template>
     <template #after-keyboard>
