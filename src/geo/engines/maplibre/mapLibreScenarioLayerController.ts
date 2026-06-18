@@ -100,7 +100,8 @@ function normalizeMapLayerExtent(
 function toCurrentFeature(feature: NGeometryLayerItem): GeoJsonFeature | undefined {
   const geometry = feature._state?.geometry ?? feature.geometry;
   if (!geometry) return;
-  const radius = "radius" in feature.geometryMeta ? feature.geometryMeta.radius : undefined;
+  const radius =
+    "radius" in feature.geometryMeta ? feature.geometryMeta.radius : undefined;
   if (typeof radius === "number" && geometry.type === "Point") {
     return turfCircle(geometry.coordinates as Position, radius / 1000, {
       steps: 48,

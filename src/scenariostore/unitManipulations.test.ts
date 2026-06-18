@@ -876,11 +876,7 @@ describe("fresh load preserves base resource onHand", () => {
     const store = useNewScenarioStore(scenario);
     const unit = store.state.unitMap["unit-1"];
 
-    expect(unit.equipment?.[0]).toEqual(
-      expect.objectContaining({ count: 5, onHand: 3 }),
-    );
-    expect(unit.personnel?.[0]).toEqual(
-      expect.objectContaining({ count: 2, onHand: 1 }),
-    );
+    expect(unit.equipment?.[0]).toEqual(expect.objectContaining({ count: 5, onHand: 3 }));
+    expect(unit.personnel?.[0]).toEqual(expect.objectContaining({ count: 2, onHand: 1 }));
   });
 });

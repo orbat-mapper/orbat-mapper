@@ -161,8 +161,10 @@ export function addUnitHierarchy(
 
       const { equipment, personnel, supplies } = unitResourcesToInternal(unit, {
         equipment: (name) =>
-          (s.equipmentMap[name] || unitActions.addEquipment({ id: name, name }, { noUndo, s }))
-            .id,
+          (
+            s.equipmentMap[name] ||
+            unitActions.addEquipment({ id: name, name }, { noUndo, s })
+          ).id,
         personnel: (name) =>
           (
             s.personnelMap[name] ||

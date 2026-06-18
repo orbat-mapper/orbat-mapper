@@ -40,9 +40,7 @@ const props = withDefaults(
 );
 
 // Optional: when bound, the settings menu exposes a symbology standard selector.
-const symbologyStandard = defineModel<SymbologyStandard | undefined>(
-  "symbologyStandard",
-);
+const symbologyStandard = defineModel<SymbologyStandard | undefined>("symbologyStandard");
 
 const { exportSettings } = storeToRefs(useSymbolExportSettingsStore());
 
