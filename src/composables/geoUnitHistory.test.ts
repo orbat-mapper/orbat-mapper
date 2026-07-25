@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 import { useUnitHistory } from "@/composables/geoUnitHistory";
 
 const mocks = vi.hoisted(() => {
   const addUnitPositionSpy = vi.fn();
   const updateUnitStateSpy = vi.fn();
+  const updateUnitSpy = vi.fn();
+  const deleteUnitStateEntrySpy = vi.fn();
   const getUnitByIdSpy = vi.fn(() => ({ id: "unit-1", state: [{ t: 10 }] }));
   const source = {
     clear: vi.fn(),
@@ -62,6 +64,8 @@ const mocks = vi.hoisted(() => {
   return {
     addUnitPositionSpy,
     updateUnitStateSpy,
+    updateUnitSpy,
+    deleteUnitStateEntrySpy,
     getUnitByIdSpy,
     layers,
     selectedFeatures,
@@ -79,8 +83,9 @@ vi.mock("@/utils", () => ({
     unitActions: {
       getUnitById: mocks.getUnitByIdSpy,
       updateUnitStateVia: vi.fn(),
-      deleteUnitStateEntry: vi.fn(),
+      deleteUnitStateEntry: mocks.deleteUnitStateEntrySpy,
       updateUnitState: mocks.updateUnitStateSpy,
+      updateUnit: mocks.updateUnitSpy,
     },
     store: {
       onUndoRedo: vi.fn(),
@@ -126,6 +131,7 @@ vi.mock("@/stores/routingStore", () => ({
 
 vi.mock("@/geo/history", () => ({
   VIA_TIME: -1337,
+  INITIAL_TIME: Number.MIN_SAFE_INTEGER,
   labelStyle: { getText: () => ({ setText: vi.fn() }) },
   selectedWaypointStyle: {},
   createUnitHistoryLayers: () => mocks.layers,
@@ -172,6 +178,113 @@ vi.mock("ol/sphere", () => ({
 vi.mock("@/utils/convert", () => ({
   convertSpeedToMetric: vi.fn(() => 1),
 }));
+
+const INITIAL_TIME = Number.MIN_SAFE_INTEGER;
+
+// A leg feature as drawn by the history layer: an XYM line string where M is the
+// time of each waypoint (INITIAL_TIME for the unit's own location).
+function createLegFeature(initialCoordinates: number[][]) {
+  let coordinates = initialCoordinates;
+  const geometry = {
+    getType: () => "LineString",
+    getCoordinates: () => coordinates,
+    setCoordinates: (updated: number[][]) => {
+      coordinates = updated;
+    },
+    clone: () => {
+      const snapshot = coordinates.map((c) => [...c]);
+      return { getType: () => "LineString", getCoordinates: () => snapshot };
+    },
+  };
+  return {
+    feature: {
+      getGeometry: () => geometry,
+      get: (key: string) => (key === "unitId" ? "unit-1" : undefined),
+    },
+    setCoordinates: (updated: number[][]) => {
+      coordinates = updated;
+    },
+  };
+}
+
+function createModifyEvent(feature: unknown) {
+  return {
+    features: { item: () => feature },
+    mapBrowserEvent: {
+      coordinate: [0, 0],
+      originalEvent: { metaKey: false, ctrlKey: false, shiftKey: false, altKey: false },
+    },
+  };
+}
+
+describe("useUnitHistory leg editing", () => {
+  beforeEach(() => {
+    mocks.addUnitPositionSpy.mockClear();
+    mocks.updateUnitSpy.mockClear();
+    mocks.deleteUnitStateEntrySpy.mockClear();
+  });
+
+  it("moves the unit's initial location when the first waypoint is dragged", () => {
+    const { historyModify } = useUnitHistory({} as any);
+    const leg = createLegFeature([
+      [10, 60, INITIAL_TIME],
+      [11, 61, 1000],
+    ]);
+    const event = createModifyEvent(leg.feature);
+
+    (historyModify as any).emit("modifystart", event);
+    leg.setCoordinates([
+      [12, 62, INITIAL_TIME],
+      [11, 61, 1000],
+    ]);
+    (historyModify as any).emit("modifyend", event);
+
+    // Adding a state entry at INITIAL_TIME instead would make every
+    // interpolation start there, pinning the unit to the dragged waypoint.
+    expect(mocks.addUnitPositionSpy).not.toHaveBeenCalled();
+    expect(mocks.updateUnitSpy).toHaveBeenCalledWith("unit-1", { location: [12, 62] });
+  });
+
+  it("updates the state entry when a later waypoint is dragged", () => {
+    const { historyModify } = useUnitHistory({} as any);
+    const leg = createLegFeature([
+      [10, 60, INITIAL_TIME],
+      [11, 61, 1000],
+    ]);
+    const event = createModifyEvent(leg.feature);
+
+    (historyModify as any).emit("modifystart", event);
+    leg.setCoordinates([
+      [10, 60, INITIAL_TIME],
+      [13, 63, 1000],
+    ]);
+    (historyModify as any).emit("modifyend", event);
+
+    expect(mocks.updateUnitSpy).not.toHaveBeenCalled();
+    expect(mocks.addUnitPositionSpy).toHaveBeenCalledWith("unit-1", [13, 63], 1000);
+  });
+
+  it("does not delete a state entry when the initial waypoint is removed", () => {
+    const { historyModify } = useUnitHistory({} as any);
+    const leg = createLegFeature([
+      [10, 60, INITIAL_TIME],
+      [11, 61, 1000],
+      [12, 62, 2000],
+    ]);
+    const event = createModifyEvent(leg.feature);
+
+    (historyModify as any).emit("modifystart", event);
+    leg.setCoordinates([
+      [11, 61, 1000],
+      [12, 62, 2000],
+    ]);
+    (historyModify as any).emit("modifyend", event);
+
+    // There is no state entry for the initial location; a lookup would return
+    // -1 and splice(-1, 1) would drop the last waypoint instead.
+    expect(mocks.deleteUnitStateEntrySpy).not.toHaveBeenCalled();
+  });
+});
 
 describe("useUnitHistory", () => {
   it("recomputes unit state on waypoint modifyend but not on modifystart", () => {

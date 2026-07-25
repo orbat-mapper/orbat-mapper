@@ -6,6 +6,7 @@ import { toLonLat } from "ol/proj";
 import {
   createUnitHistoryLayers,
   createUnitPathFeatures,
+  INITIAL_TIME,
   labelStyle,
   selectedWaypointStyle,
   VIA_TIME,
@@ -324,13 +325,26 @@ export function useUnitHistory(
         llChangedCoords,
       );
     } else {
+      const t = changedCoords?.[2];
       if (action === "remove") {
+        // The initial waypoint is the unit's own location, not a state entry.
+        if (preCoordinates[elementIndex][2] === INITIAL_TIME) return;
         const index = unit?.state?.findIndex(
           (s) => s.t === preCoordinates[elementIndex][2],
         );
-        if (index !== undefined) unitActions.deleteUnitStateEntry(unitId, index);
+        if (index !== undefined && index >= 0) {
+          unitActions.deleteUnitStateEntry(unitId, index);
+        }
       } else if (action === "modify") {
-        geo.addUnitPosition(unitId, llChangedCoords, changedCoords[2]);
+        if (t === INITIAL_TIME) {
+          // Moving the initial waypoint moves the unit's initial location.
+          // Adding a state entry at INITIAL_TIME instead would make every
+          // interpolation start from t = Number.MIN_SAFE_INTEGER, pinning the
+          // unit to that waypoint for the whole scenario.
+          unitActions.updateUnit(unitId, { location: llChangedCoords });
+        } else {
+          geo.addUnitPosition(unitId, llChangedCoords, t);
+        }
       }
     }
   }

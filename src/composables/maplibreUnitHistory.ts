@@ -4,7 +4,7 @@ import type {
   MapMouseEvent,
   Map as MlMap,
 } from "maplibre-gl";
-import type { FeatureCollection } from "geojson";
+import type { Feature as GeoJsonFeature, FeatureCollection } from "geojson";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
 import { distanceMeters } from "@/geo/distance";
@@ -50,18 +50,34 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   const fmt = useTimeFormatStore();
 
   const appliedWaypointStates = new Set<string>();
-  let dragState: {
-    unitId: string;
-    waypointId: string;
-    t: number;
-    isInitial: boolean;
-  } | null = null;
+  let waypointFeatureCollection: FeatureCollection = EMPTY_FC;
+  let viaFeatureCollection: FeatureCollection = EMPTY_FC;
+  type DragState = {
+    source: "waypoint" | "via";
+    // Identifies the dragged feature in the rendered collection, for the preview.
+    matches: (feature: GeoJsonFeature) => boolean;
+    commit: (lngLat: [number, number]) => void;
+  };
+  let dragState: DragState | null = null;
 
   function setupUnitHistoryLayers(beforeLayerId?: string) {
-    for (const id of [ARC_SOURCE_ID, LEG_SOURCE_ID, WAYPOINT_SOURCE_ID, VIA_SOURCE_ID]) {
+    for (const id of [ARC_SOURCE_ID, LEG_SOURCE_ID]) {
       if (!mlMap.getSource(id)) {
         mlMap.addSource(id, { type: "geojson", data: EMPTY_FC });
       }
+    }
+    if (!mlMap.getSource(WAYPOINT_SOURCE_ID)) {
+      // MapLibre coerces top-level GeoJSON feature ids with parseInt, which turns
+      // our nanoid waypoint ids into NaN. Promoting the id from a property keeps
+      // it intact for queryRenderedFeatures and feature state.
+      mlMap.addSource(WAYPOINT_SOURCE_ID, {
+        type: "geojson",
+        data: waypointFeatureCollection,
+        promoteId: "waypointId",
+      });
+    }
+    if (!mlMap.getSource(VIA_SOURCE_ID)) {
+      mlMap.addSource(VIA_SOURCE_ID, { type: "geojson", data: viaFeatureCollection });
     }
     if (!mlMap.getLayer(ARC_LAYER_ID)) {
       mlMap.addLayer(
@@ -200,6 +216,26 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     });
   }
 
+  // Keeps our own copy of the rendered points so the drag preview can rewrite a
+  // single coordinate without reading MapLibre source internals.
+  function setWaypointData(source: GeoJSONSource, features: GeoJsonFeature[]) {
+    waypointFeatureCollection = { type: "FeatureCollection", features };
+    source.setData(waypointFeatureCollection);
+  }
+
+  function setViaData(source: GeoJSONSource, features: GeoJsonFeature[]) {
+    viaFeatureCollection = { type: "FeatureCollection", features };
+    source.setData(viaFeatureCollection);
+  }
+
+  function getWaypointId(feature: {
+    id?: string | number;
+    properties?: Record<string, unknown> | null;
+  }): string | undefined {
+    const id = feature.properties?.waypointId ?? feature.id;
+    return typeof id === "string" ? id : undefined;
+  }
+
   function drawHistory() {
     const arcSource = mlMap.getSource(ARC_SOURCE_ID) as GeoJSONSource | undefined;
     const legSource = mlMap.getSource(LEG_SOURCE_ID) as GeoJSONSource | undefined;
@@ -214,8 +250,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     if (!showHistory.value) {
       arcSource.setData({ type: "FeatureCollection", features: [] });
       legSource.setData({ type: "FeatureCollection", features: [] });
-      waypointSource.setData({ type: "FeatureCollection", features: [] });
-      viaSource.setData({ type: "FeatureCollection", features: [] });
+      setWaypointData(waypointSource, []);
+      setViaData(viaSource, []);
       clearWaypointFeatureStates();
       return;
     }
@@ -236,8 +272,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
     arcSource.setData({ type: "FeatureCollection", features: allArcs });
     legSource.setData({ type: "FeatureCollection", features: allLegs });
-    waypointSource.setData({ type: "FeatureCollection", features: allWaypoints });
-    viaSource.setData({ type: "FeatureCollection", features: allVia });
+    setWaypointData(waypointSource, allWaypoints);
+    setViaData(viaSource, allVia);
 
     applyWaypointFeatureStates();
   }
@@ -286,7 +322,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     if (hits.length > 0) {
       const feature = hits[0];
       const unitId = feature.properties?.unitId as string | undefined;
-      const waypointId = feature.id as string | undefined;
+      const waypointId = getWaypointId(feature);
       const stateIndex = (feature.properties?.stateIndex as number) ?? -1;
       const isInitial = feature.properties?.isInitial === true;
 
@@ -312,65 +348,104 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     return false;
   }
 
-  function onWaypointMouseDown(e: MapLayerMouseEvent) {
-    if (!editHistory.value) return;
-    const feature = e.features?.[0];
-    if (!feature) return;
-    const unitId = feature.properties?.unitId as string | undefined;
-    const waypointId = feature.id as string | undefined;
-    const t = feature.properties?.t as number | undefined;
-    const isInitial = feature.properties?.isInitial === true;
-    if (!unitId || !waypointId || t === undefined) return;
-
+  function startDrag(e: MapLayerMouseEvent, drag: DragState) {
     e.preventDefault();
-    dragState = { unitId, waypointId, t, isInitial };
+    dragState = drag;
     mlMap.getCanvas().style.cursor = "grabbing";
     mlMap.on("mousemove", onDragMove);
     mlMap.once("mouseup", onDragEnd);
   }
 
+  function onWaypointMouseDown(e: MapLayerMouseEvent) {
+    if (!editHistory.value) return;
+    const feature = e.features?.[0];
+    if (!feature) return;
+    const unitId = feature.properties?.unitId as string | undefined;
+    const waypointId = getWaypointId(feature);
+    const t = feature.properties?.t as number | undefined;
+    const isInitial = feature.properties?.isInitial === true;
+    // The initial waypoint is the unit's own location, so it has no state id.
+    if (!unitId || t === undefined || (!waypointId && !isInitial)) return;
+
+    startDrag(e, {
+      source: "waypoint",
+      matches: (f) =>
+        isInitial
+          ? f.properties?.isInitial === true && f.properties?.unitId === unitId
+          : getWaypointId(f) === waypointId,
+      commit: (lngLat) => {
+        if (isInitial) {
+          unitActions.updateUnit(unitId, { location: lngLat });
+          unitActions.updateUnitState(unitId);
+        } else {
+          geo.addUnitPosition(unitId, lngLat, t);
+        }
+      },
+    });
+  }
+
+  function onViaMouseDown(e: MapLayerMouseEvent) {
+    // A waypoint drawn on top of a via point wins; its handler runs first.
+    if (!editHistory.value || dragState) return;
+    const feature = e.features?.[0];
+    if (!feature) return;
+    const unitId = feature.properties?.unitId as string | undefined;
+    const stateIndex = feature.properties?.stateIndex as number | undefined;
+    const viaIndex = feature.properties?.viaIndex as number | undefined;
+    if (!unitId || stateIndex === undefined || stateIndex < 0 || viaIndex === undefined) {
+      return;
+    }
+
+    startDrag(e, {
+      source: "via",
+      matches: (f) =>
+        f.properties?.unitId === unitId &&
+        f.properties?.stateIndex === stateIndex &&
+        f.properties?.viaIndex === viaIndex,
+      commit: (lngLat) => {
+        unitActions.updateUnitStateVia(unitId, "modify", stateIndex, viaIndex, lngLat);
+        unitActions.updateUnitState(unitId);
+      },
+    });
+  }
+
   function onDragMove(e: MapMouseEvent) {
     if (!dragState) return;
-    const waypointSource = mlMap.getSource(WAYPOINT_SOURCE_ID) as
-      | GeoJSONSource
-      | undefined;
-    if (!waypointSource) return;
-    // Visually move just the dragged waypoint by rewriting its coordinates.
-    const data = (waypointSource as any)._data as FeatureCollection | undefined;
-    if (!data) return;
-    const next: FeatureCollection = {
-      type: "FeatureCollection",
-      features: data.features.map((f) => {
-        if (f.id !== dragState!.waypointId) return f;
-        return {
-          ...f,
-          geometry: {
-            type: "Point",
-            coordinates: [e.lngLat.lng, e.lngLat.lat],
-          },
-        };
-      }),
-    };
-    waypointSource.setData(next);
+    const isVia = dragState.source === "via";
+    const sourceId = isVia ? VIA_SOURCE_ID : WAYPOINT_SOURCE_ID;
+    const source = mlMap.getSource(sourceId) as GeoJSONSource | undefined;
+    if (!source) return;
+    // Visually move just the dragged point by rewriting its coordinates.
+    const collection = isVia ? viaFeatureCollection : waypointFeatureCollection;
+    const features = collection.features.map((f) => {
+      if (!dragState!.matches(f)) return f;
+      return {
+        ...f,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [e.lngLat.lng, e.lngLat.lat],
+        },
+      };
+    });
+    if (isVia) {
+      setViaData(source, features);
+    } else {
+      setWaypointData(source, features);
+    }
   }
 
   function onDragEnd(e: MapMouseEvent) {
     mlMap.off("mousemove", onDragMove);
     if (!dragState) return;
-    const { unitId, t, isInitial } = dragState;
+    const { commit } = dragState;
     dragState = null;
     mlMap.getCanvas().style.cursor = "";
-    const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
-    if (isInitial) {
-      // Dragging the initial location (unit origin) is not supported.
-      drawHistory();
-      return;
-    }
-    geo.addUnitPosition(unitId, lngLat, t);
+    commit([e.lngLat.lng, e.lngLat.lat]);
     drawHistory();
   }
 
   mlMap.on("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
+  mlMap.on("mousedown", VIA_LAYER_ID, onViaMouseDown);
 
   activeScenario.store.onUndoRedo?.(({ meta }) => {
     if (meta?.value && selectedUnitIds.value.has(meta.value as string)) {
@@ -394,6 +469,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   function dispose() {
     mlMap.off("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
+    mlMap.off("mousedown", VIA_LAYER_ID, onViaMouseDown);
     mlMap.off("mousemove", onDragMove);
     clearWaypointFeatureStates();
   }
