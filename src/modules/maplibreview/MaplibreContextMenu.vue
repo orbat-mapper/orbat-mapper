@@ -355,7 +355,7 @@ function onContextMenu(event: MouseEvent) {
             <div class="flex items-center">
               <span class="flex w-7 items-center">
                 <UnitSymbol
-                  :sidc="unit.sidc"
+                  :sidc="unit._state?.sidc ?? unit.sidc"
                   class="w-6"
                   :options="unitActions.getCombinedSymbolOptions(unit)"
                 />
