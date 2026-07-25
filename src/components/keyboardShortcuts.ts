@@ -42,6 +42,18 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
     ],
   },
   {
+    label: "Unit track editing",
+    shortcuts: [
+      {
+        shortcut: [["ctrl / ⌘", "click"]],
+        description: "Add waypoint for the selected units",
+      },
+      { shortcut: [["alt", "click"]], description: "Delete a waypoint or via point" },
+      { shortcut: [["drag"]], description: "Move a waypoint or via point" },
+      { shortcut: [["drag"]], description: "Add a via point (drag a midpoint handle)" },
+    ],
+  },
+  {
     label: "Time manipulation",
     shortcuts: [
       { shortcut: [["t"]], description: "Set scenario time" },
