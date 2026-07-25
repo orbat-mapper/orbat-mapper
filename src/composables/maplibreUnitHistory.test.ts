@@ -420,6 +420,31 @@ describe("useMaplibreUnitHistory", () => {
     );
   });
 
+  it("leaves a ctrl-click near a midpoint handle to the waypoint handler", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+    stubMidpointHits(harness);
+
+    harness.trigger(
+      "mousedown",
+      createEvent(11.5 + 6, 21.5 + 6, undefined, { ctrlKey: true }),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
+  it("leaves a ctrl-click on a leg to the waypoint handler", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(10.5, 20.5, LEG_FEATURE, { metaKey: true }),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
   it("redraws the line while a point is dragged", () => {
     const harness = createHarness();
     harness.unit.state[0].via = [[10.4, 20.4]];

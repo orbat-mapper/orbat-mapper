@@ -376,6 +376,15 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       .filter((f) => f.layer?.id === layerId);
   }
 
+  /**
+   * True for the modifier combination that appends a waypoint on click. The
+   * press handlers use it to keep out of the way, so a ctrl-click near a leg
+   * does not also insert a via point.
+   */
+  function isAddWaypointModifier(e: MouseEvent): boolean {
+    return (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey;
+  }
+
   function handleCtrlClick(e: MapMouseEvent): boolean {
     if (selectedUnitIds.value.size === 0) return false;
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
@@ -407,11 +416,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   function handleMapClick(e: MapMouseEvent): boolean {
     if (!showHistory.value) return false;
     const originalEvent = e.originalEvent;
-    const isCtrl =
-      (originalEvent.metaKey || originalEvent.ctrlKey) &&
-      !originalEvent.shiftKey &&
-      !originalEvent.altKey;
-
+    const isCtrl = isAddWaypointModifier(originalEvent);
     const isAlt = originalEvent.altKey && !originalEvent.shiftKey;
     const hits = queryLayer(e.point, WAYPOINT_LAYER_ID);
     if (hits.length > 0) {
@@ -513,6 +518,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     if (!editHistory.value || dragState) return;
     // Alt-click removes the via point, so it must not start a drag.
     if (e.originalEvent.altKey) return;
+    // Ctrl-click appends a waypoint instead.
+    if (isAddWaypointModifier(e.originalEvent)) return;
     const feature = e.features?.[0];
     if (!feature) return;
     const unitId = feature.properties?.unitId as string | undefined;
@@ -544,6 +551,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     if (!editHistory.value || dragState) return;
     // Alt-click is reserved for deleting points.
     if (e.originalEvent.altKey) return;
+    // Ctrl-click appends a waypoint, so it must not also insert a via point.
+    if (isAddWaypointModifier(e.originalEvent)) return;
     // Existing points win over the line they are drawn on.
     if (
       queryLayer(e.point, WAYPOINT_LAYER_ID).length > 0 ||
@@ -596,6 +605,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   function onMapMouseDown(e: MapMouseEvent) {
     if (!showHistory.value || !editHistory.value || dragState) return;
     if (e.originalEvent.altKey) return;
+    // Ctrl-click appends a waypoint, so it must not also insert a via point.
+    if (isAddWaypointModifier(e.originalEvent)) return;
     if (!mlMap.getLayer(MIDPOINT_LAYER_ID)) return;
     // Existing points win over the handle between them.
     if (
