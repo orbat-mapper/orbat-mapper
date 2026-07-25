@@ -146,6 +146,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,
+    convertViaPointToWaypoint,
+    convertWaypointToViaPoint,
   } = useUnitStateManipulations(store);
 
   function refreshProjectedHierarchy(s = state) {
@@ -1227,6 +1229,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
     expandUnit,
     updateUnitStateVia,
+    convertViaPointToWaypoint,
+    convertWaypointToViaPoint,
     updateUnitStateEntry,
     addUnitStateEntry,
     convertStateEntryToInitialLocation,

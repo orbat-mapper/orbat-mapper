@@ -22,6 +22,8 @@ import {
   IconPlay,
   IconSpeedometer,
   IconSpeedometerSlow,
+  IconVectorPoint,
+  IconVectorPointMinus,
 } from "@iconify-prerendered/vue-mdi";
 import type { Position } from "geojson";
 import type { Map as MlMap } from "maplibre-gl";
@@ -56,6 +58,11 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { VIA_LAYER_ID, WAYPOINT_LAYER_ID } from "@/composables/maplibreUnitHistory";
+import {
+  canConvertViaPointToWaypoint,
+  canConvertWaypointToViaPoint,
+} from "@/scenariostore/unitTrackConversions";
 
 const maplibreLayersStore = useMaplibreLayersStore();
 const {
@@ -104,8 +111,17 @@ const clickedUnits = ref<NUnit[]>([]);
 const clickedFeatures = ref<NGeometryLayerItem[]>([]);
 const dropPosition = ref<Position>([0, 0]);
 const mapZoomLevel = ref(0);
+const clickedWaypoint = ref<{ unitId: string; stateIndex: number } | null>(null);
+const clickedViaPoint = ref<{
+  unitId: string;
+  stateIndex: number;
+  viaIndex: number;
+} | null>(null);
 const LONG_PRESS_MS = 550;
 const MOVE_TOLERANCE_PX = 10;
+// The track handles are small circles, so buffer the click into a box the way
+// the press handlers do.
+const HANDLE_HIT_TOLERANCE_PX = 12;
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 let activePointerId: number | null = null;
@@ -278,6 +294,71 @@ function onAddPoint() {
   geo.addFeature(newFeature, activeLayer.id);
 }
 
+const canConvertWaypoint = computed(() => {
+  const hit = clickedWaypoint.value;
+  if (!hit) return false;
+  const unit = getUnitById(hit.unitId);
+  return !!unit && canConvertWaypointToViaPoint(unit, hit.stateIndex);
+});
+
+const canConvertViaPoint = computed(() => {
+  const hit = clickedViaPoint.value;
+  if (!hit) return false;
+  const unit = getUnitById(hit.unitId);
+  return !!unit && canConvertViaPointToWaypoint(unit, hit.stateIndex, hit.viaIndex);
+});
+
+function onConvertWaypointToViaPoint() {
+  const hit = clickedWaypoint.value;
+  if (!hit) return;
+  unitActions.convertWaypointToViaPoint(hit.unitId, hit.stateIndex);
+}
+
+function onConvertViaPointToWaypoint() {
+  const hit = clickedViaPoint.value;
+  if (!hit) return;
+  unitActions.convertViaPointToWaypoint(hit.unitId, hit.stateIndex, hit.viaIndex);
+}
+
+/**
+ * Resolves a right click to the closest waypoint or via point of a drawn unit
+ * path, so the menu can offer to convert between the two.
+ */
+function findClickedTrackPoint(mapRef: MlMap, point: [number, number]) {
+  const [x, y] = point;
+  const box: [[number, number], [number, number]] = [
+    [x - HANDLE_HIT_TOLERANCE_PX, y - HANDLE_HIT_TOLERANCE_PX],
+    [x + HANDLE_HIT_TOLERANCE_PX, y + HANDLE_HIT_TOLERANCE_PX],
+  ];
+  // Waypoints are drawn on top of via points, so they win a shared hit.
+  for (const layerId of [WAYPOINT_LAYER_ID, VIA_LAYER_ID]) {
+    if (!mapRef.getLayer(layerId)) continue;
+    const hits = mapRef.queryRenderedFeatures(box, { layers: [layerId] });
+    if (hits.length === 0) continue;
+    const closest = hits.reduce((best, feature) => {
+      const distance = (f: (typeof hits)[number]) => {
+        const coordinates = (f.geometry as { coordinates?: [number, number] })
+          .coordinates;
+        if (!coordinates) return Number.POSITIVE_INFINITY;
+        const projected = mapRef.project(coordinates);
+        return Math.hypot(projected.x - x, projected.y - y);
+      };
+      return distance(feature) < distance(best) ? feature : best;
+    }, hits[0]);
+    const unitId = closest.properties?.unitId as string | undefined;
+    const stateIndex = closest.properties?.stateIndex as number | undefined;
+    if (!unitId || stateIndex === undefined) continue;
+    if (layerId === WAYPOINT_LAYER_ID) {
+      clickedWaypoint.value = { unitId, stateIndex };
+      return;
+    }
+    const viaIndex = closest.properties?.viaIndex as number | undefined;
+    if (viaIndex === undefined) continue;
+    clickedViaPoint.value = { unitId, stateIndex, viaIndex };
+    return;
+  }
+}
+
 function onContextMenu(event: MouseEvent) {
   const { mapRef } = props;
   if (!mapRef) return;
@@ -290,6 +371,10 @@ function onContextMenu(event: MouseEvent) {
   mapZoomLevel.value = mapRef.getZoom() ?? 0;
   clickedUnits.value = [];
   clickedFeatures.value = [];
+  clickedWaypoint.value = null;
+  clickedViaPoint.value = null;
+
+  findClickedTrackPoint(mapRef, point);
 
   const seenUnitIds = new Set<string>();
   const seenFeatureIds = new Set<string>();
@@ -338,6 +423,25 @@ function onContextMenu(event: MouseEvent) {
         <span>{{ formattedPosition }}</span>
       </ContextMenuItem>
       <ContextMenuSeparator />
+      <template v-if="clickedWaypoint || clickedViaPoint">
+        <ContextMenuItem
+          v-if="clickedWaypoint"
+          :disabled="!canConvertWaypoint"
+          @select.prevent="onConvertWaypointToViaPoint()"
+        >
+          <IconVectorPointMinus class="mr-2 h-4 w-4" />
+          <span>Convert waypoint to via point</span>
+        </ContextMenuItem>
+        <ContextMenuItem
+          v-else
+          :disabled="!canConvertViaPoint"
+          @select.prevent="onConvertViaPointToWaypoint()"
+        >
+          <IconVectorPoint class="mr-2 h-4 w-4" />
+          <span>Convert via point to waypoint</span>
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+      </template>
       <ContextMenuSub v-if="clickedUnits.length > 0">
         <ContextMenuSubTrigger inset
           ><span>Units</span>&nbsp;

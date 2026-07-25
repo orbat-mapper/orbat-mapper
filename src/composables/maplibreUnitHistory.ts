@@ -35,9 +35,9 @@ const MIDPOINT_SOURCE_ID = "unitHistoryLegMidpointSource";
 
 const ARC_LAYER_ID = "unitHistoryArcLayer";
 const LEG_LAYER_ID = "unitHistoryLegLayer";
-const WAYPOINT_LAYER_ID = "unitHistoryWaypointLayer";
+export const WAYPOINT_LAYER_ID = "unitHistoryWaypointLayer";
 const WAYPOINT_LABEL_LAYER_ID = "unitHistoryWaypointLabelLayer";
-const VIA_LAYER_ID = "unitHistoryViaLayer";
+export const VIA_LAYER_ID = "unitHistoryViaLayer";
 const MIDPOINT_LAYER_ID = "unitHistoryLegMidpointLayer";
 
 export const UNIT_HISTORY_LAYER_IDS = [
@@ -385,6 +385,14 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     return (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey;
   }
 
+  /**
+   * MapLibre reports a press of any button as `mousedown`, so the edit handlers
+   * have to keep out of the way of the right click that opens the context menu.
+   */
+  function isPrimaryButton(e: MapMouseEvent): boolean {
+    return (e.originalEvent?.button ?? 0) === 0;
+  }
+
   function handleCtrlClick(e: MapMouseEvent): boolean {
     if (selectedUnitIds.value.size === 0) return false;
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
@@ -482,7 +490,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   }
 
   function onWaypointMouseDown(e: MapLayerMouseEvent) {
-    if (!editHistory.value) return;
+    if (!editHistory.value || !isPrimaryButton(e)) return;
     const feature = e.features?.[0];
     if (!feature) return;
     const unitId = feature.properties?.unitId as string | undefined;
@@ -515,7 +523,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   function onViaMouseDown(e: MapLayerMouseEvent) {
     // A waypoint drawn on top of a via point wins; its handler runs first.
-    if (!editHistory.value || dragState) return;
+    if (!editHistory.value || dragState || !isPrimaryButton(e)) return;
     // Alt-click removes the via point, so it must not start a drag.
     if (e.originalEvent.altKey) return;
     // Ctrl-click appends a waypoint instead.
@@ -548,7 +556,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
    * starts dragging it, like the OpenLayers Modify interaction does.
    */
   function onLegMouseDown(e: MapLayerMouseEvent) {
-    if (!editHistory.value || dragState) return;
+    if (!editHistory.value || dragState || !isPrimaryButton(e)) return;
     // Alt-click is reserved for deleting points.
     if (e.originalEvent.altKey) return;
     // Ctrl-click appends a waypoint, so it must not also insert a via point.
@@ -604,6 +612,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
    */
   function onMapMouseDown(e: MapMouseEvent) {
     if (!showHistory.value || !editHistory.value || dragState) return;
+    if (!isPrimaryButton(e)) return;
     if (e.originalEvent.altKey) return;
     // Ctrl-click appends a waypoint, so it must not also insert a via point.
     if (isAddWaypointModifier(e.originalEvent)) return;

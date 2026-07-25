@@ -224,6 +224,8 @@ describe("MaplibreContextMenu", () => {
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
         createSubordinateUnit: vi.fn(() => "unit-2"),
+        convertViaPointToWaypoint: vi.fn(),
+        convertWaypointToViaPoint: vi.fn(),
       },
       geo: {
         addUnitPosition: vi.fn(),
@@ -241,6 +243,8 @@ describe("MaplibreContextMenu", () => {
                 id: "unit-1",
                 sidc: "SFGPUCI----K",
                 name: "Unit 1",
+                location: [0, 0],
+                state: [{ id: "state-1", t: 1000, location: [2, 0], via: [[1, 0]] }],
               }
             : undefined,
         ),
@@ -442,6 +446,7 @@ describe("MaplibreContextMenu", () => {
       }),
       unproject: () => ({ lng: 10, lat: 20 }),
       getZoom: () => 7,
+      getLayer: () => undefined,
       queryRenderedFeatures: () => [
         {
           layer: { id: "unitLayer" },
@@ -466,6 +471,77 @@ describe("MaplibreContextMenu", () => {
     expect(wrapper.text()).toContain("Feature 1");
     expect(wrapper.text()).toContain("Open in");
     expect(wrapper.text()).toContain("Map as image");
+  });
+
+  function createTrackMapRef(hits: Record<string, any[]>) {
+    return {
+      getContainer: () => ({
+        getBoundingClientRect: () => ({ left: 0, top: 0 }),
+      }),
+      unproject: () => ({ lng: 10, lat: 20 }),
+      getZoom: () => 7,
+      project: () => ({ x: 10, y: 20 }),
+      getLayer: (id: string) => (hits[id] ? { id } : undefined),
+      queryRenderedFeatures: (_point: unknown, options?: { layers?: string[] }) =>
+        options?.layers?.flatMap((id) => hits[id] ?? []) ?? [],
+    };
+  }
+
+  it("converts a right clicked via point into a waypoint", async () => {
+    const mapRef = createTrackMapRef({
+      unitHistoryViaLayer: [
+        {
+          layer: { id: "unitHistoryViaLayer" },
+          geometry: { type: "Point", coordinates: [1, 0] },
+          properties: { unitId: "unit-1", stateIndex: 0, viaIndex: 0 },
+        },
+      ],
+    });
+
+    const { wrapper, scenario } = mountMenu({ mapRef });
+    await wrapper.get(".h-full.w-full").trigger("contextmenu", {
+      button: 2,
+      clientX: 10,
+      clientY: 20,
+    });
+
+    const item = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Convert via point to waypoint");
+    expect(item).toBeDefined();
+    await item?.trigger("click");
+
+    expect(scenario.unitActions.convertViaPointToWaypoint).toHaveBeenCalledWith(
+      "unit-1",
+      0,
+      0,
+    );
+  });
+
+  it("disables the waypoint conversion when there is no leg to merge into", async () => {
+    const mapRef = createTrackMapRef({
+      unitHistoryWaypointLayer: [
+        {
+          layer: { id: "unitHistoryWaypointLayer" },
+          geometry: { type: "Point", coordinates: [2, 0] },
+          properties: { unitId: "unit-1", stateIndex: 0, waypointId: "state-1" },
+        },
+      ],
+    });
+
+    const { wrapper } = mountMenu({ mapRef });
+    await wrapper.get(".h-full.w-full").trigger("contextmenu", {
+      button: 2,
+      clientX: 10,
+      clientY: 20,
+    });
+
+    // unit-1's only waypoint ends the path, so it cannot become a via point.
+    const item = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Convert waypoint to via point");
+    expect(item?.attributes("disabled")).toBeDefined();
+    expect(wrapper.text()).not.toContain("Convert via point to waypoint");
   });
 
   it("triggers the shared export action from the maplibre context menu", async () => {
