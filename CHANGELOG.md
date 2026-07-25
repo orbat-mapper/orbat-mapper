@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## July 2026
+
+### Added
+
+- Added unit track editing to MapLibre mode: drag waypoints and via points to move them, drag a midpoint handle on a leg to insert a via point, and alt-click a point to delete it. The track redraws while dragging.
+- Added the unit track editing gestures to the keyboard shortcuts dialog.
+
+### Fixed
+
+- Fixed unit track editing in MapLibre mode, where dragging a waypoint or via point never committed the new position.
+- Fixed the unit jumping to the edited waypoint in OpenLayers mode, and via points losing their leg times.
+
 ## June 2026
 
 ### Added
