@@ -37,10 +37,12 @@ export function useScenarioSearch(
         const parent = u.obj._pid && ({ ...getUnitById(u.obj._pid) } as NUnit);
         if (parent) {
           parent.symbolOptions = unitActions.getCombinedSymbolOptions(parent);
+          // Show the symbol projected for the current scenario time.
+          parent.sidc = parent._state?.sidc ?? parent.sidc;
         }
         return {
           name: u.obj.name,
-          sidc: u.obj.sidc,
+          sidc: u.obj._state?.sidc ?? u.obj.sidc,
           id: u.obj.id,
           index: i,
           parent,
