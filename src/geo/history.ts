@@ -262,6 +262,17 @@ export interface LegSegmentMeta {
   viaIndex: number;
 }
 
+/**
+ * Identifies the point a leg coordinate was drawn from, so a drag can rewrite
+ * that coordinate for a live preview of the line.
+ */
+export interface LegVertexMeta {
+  stateIndex: number;
+  /** Absent for a waypoint coordinate, set for a via coordinate. */
+  viaIndex?: number;
+  isInitial?: boolean;
+}
+
 export interface UnitPathGeoJson {
   legs: GeoJsonFeature<GeoJsonLineString>[];
   arcs: GeoJsonFeature<GeoJsonLineString>[];
@@ -269,7 +280,7 @@ export interface UnitPathGeoJson {
   viaPoints: GeoJsonFeature<GeoJsonPoint>[];
 }
 
-function createArcCoords(leg: Position[]): Position[] {
+export function createArcCoords(leg: Position[]): Position[] {
   const coords: Position[] = [];
   for (let i = 0; i < leg.length - 1; i++) {
     const from = leg[i];
@@ -361,18 +372,26 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
     // they precede, so a waypoint coordinate maps to an append at the end of
     // its own via list.
     const coordinateMeta: LegSegmentMeta[] = [];
+    // `vertexMeta[i]` identifies the point coordinate i was drawn from.
+    const vertexMeta: LegVertexMeta[] = [];
     for (let i = 0; i < part.length - 1; i++) {
       const from = part[i];
       const to = part[i + 1];
       if (i === 0) {
+        const fromStateIndex = getStateIndex(from);
         segment.push([from.location[0], from.location[1]]);
-        coordinateMeta.push({ stateIndex: getStateIndex(from), viaIndex: 0 });
+        coordinateMeta.push({ stateIndex: fromStateIndex, viaIndex: 0 });
+        vertexMeta.push({
+          stateIndex: fromStateIndex,
+          isInitial: from.t === INITIAL_TIME,
+        });
       }
       const toStateIndex = getStateIndex(to);
       if (to.via) {
         to.via.forEach((v, viaIndex) => {
           segment.push([v[0], v[1]]);
           coordinateMeta.push({ stateIndex: toStateIndex, viaIndex });
+          vertexMeta.push({ stateIndex: toStateIndex, viaIndex });
         });
       }
       segment.push([to.location[0], to.location[1]]);
@@ -380,6 +399,7 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
         stateIndex: toStateIndex,
         viaIndex: to.via?.length ?? 0,
       });
+      vertexMeta.push({ stateIndex: toStateIndex, isInitial: to.t === INITIAL_TIME });
     }
     legs.push({
       type: "Feature",
@@ -387,8 +407,13 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
         type: "LineString",
         coordinates: unwindCoordinates(segment),
       },
-      // `segments[i]` describes the segment between coordinate i and i + 1.
-      properties: { unitId: unit.id, segments: coordinateMeta.slice(1) },
+      // `segments[i]` describes the segment between coordinate i and i + 1,
+      // `vertices[i]` the point coordinate i came from.
+      properties: {
+        unitId: unit.id,
+        segments: coordinateMeta.slice(1),
+        vertices: vertexMeta,
+      },
     });
     arcs.push({
       type: "Feature",

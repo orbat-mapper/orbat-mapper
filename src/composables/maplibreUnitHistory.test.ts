@@ -56,6 +56,12 @@ function createHarness() {
     setFeatureState: vi.fn(),
     removeFeatureState: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
+    // The test map is unprojected, so screen space and lng/lat coincide.
+    project: vi.fn((coordinates: [number, number]) => ({
+      x: coordinates[0],
+      y: coordinates[1],
+    })),
+    unproject: vi.fn(([x, y]: [number, number]) => ({ lng: x, lat: y })),
     getCanvas: () => ({ style: { cursor: "" } }),
   } as any;
 
@@ -356,6 +362,137 @@ describe("useMaplibreUnitHistory", () => {
       0,
       [30, 40],
     );
+  });
+
+  // Makes the midpoint handle layer report the handles it was given.
+  function stubMidpointHits(harness: ReturnType<typeof createHarness>) {
+    harness.mlMap.queryRenderedFeatures = vi.fn(
+      (_box: unknown, options: { layers: string[] }) =>
+        options.layers[0] === "unitHistoryLegMidpointLayer"
+          ? harness.sources.get("unitHistoryLegMidpointSource").data.features
+          : [],
+    );
+  }
+
+  it("draws a midpoint handle per leg segment", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [[10.4, 20.4]];
+    setupEditing(harness);
+
+    const handles = harness.sources.get("unitHistoryLegMidpointSource").data.features;
+    // initial -> via, via -> waypoint 1, waypoint 1 -> waypoint 2
+    expect(handles).toHaveLength(3);
+    expect(handles.map((f: { properties: unknown }) => f.properties)).toEqual([
+      { unitId: UNIT_ID, stateIndex: 0, viaIndex: 0 },
+      { unitId: UNIT_ID, stateIndex: 0, viaIndex: 1 },
+      { unitId: UNIT_ID, stateIndex: 1, viaIndex: 0 },
+    ]);
+    // Placed halfway along the segment they belong to.
+    expect(handles[2].geometry.coordinates).toEqual([11.5, 21.5]);
+  });
+
+  it("draws no midpoint handles while path editing is disabled", () => {
+    const harness = createHarness();
+    harness.history.setupUnitHistoryLayers();
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    useUnitSettingsStore().editHistory = false;
+    harness.history.drawHistory();
+
+    expect(
+      harness.sources.get("unitHistoryLegMidpointSource").data.features,
+    ).toHaveLength(0);
+  });
+
+  it("adds a via point when a midpoint handle is grabbed near, not on, it", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+    stubMidpointHits(harness);
+
+    // Well off the handle at [11.5, 21.5], but inside the tolerance box.
+    harness.trigger("mousedown", createEvent(11.5 + 6, 21.5 + 6));
+
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "add",
+      1,
+      0,
+      [17.5, 27.5],
+    );
+  });
+
+  it("redraws the line while a point is dragged", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [[10.4, 20.4]];
+    setupEditing(harness);
+
+    // The antimeridian unwind leaves floating point noise behind.
+    const round = (coordinates: number[][]) =>
+      coordinates.map((c) => c.map((n) => Math.round(n * 1e6) / 1e6));
+    const legCoordinates = () =>
+      round(
+        harness.sources.get("unitHistoryLegSource").data.features[0].geometry.coordinates,
+      );
+
+    expect(legCoordinates()).toEqual([
+      [10, 20],
+      [10.4, 20.4],
+      [11, 21],
+      [12, 22],
+    ]);
+
+    harness.trigger(
+      "mousedown:unitHistoryViaLayer",
+      createEvent(10.4, 20.4, [
+        { properties: { unitId: UNIT_ID, stateIndex: 0, viaIndex: 0 } },
+      ]),
+    );
+    harness.trigger("mousemove", createEvent(30, 40));
+
+    // The line follows the cursor, not just the dragged point.
+    expect(legCoordinates()).toEqual([
+      [10, 20],
+      [30, 40],
+      [11, 21],
+      [12, 22],
+    ]);
+    // The arc is re-interpolated through the dragged position too.
+    const arcCoordinates = round(
+      harness.sources.get("unitHistoryArcSource").data.features[0].geometry.coordinates,
+    );
+    expect(arcCoordinates).toContainEqual([30, 40]);
+  });
+
+  it("redraws the line while a waypoint is dragged", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryWaypointLayer",
+      createEvent(11, 21, [
+        {
+          properties: {
+            unitId: UNIT_ID,
+            waypointId: WAYPOINT_ID,
+            t: 2000,
+            stateIndex: 0,
+            isInitial: false,
+          },
+        },
+      ]),
+    );
+    harness.trigger("mousemove", createEvent(30, 40));
+
+    expect(
+      harness.sources
+        .get("unitHistoryLegSource")
+        .data.features[0].geometry.coordinates.map((c: number[]) =>
+          c.map((n) => Math.round(n * 1e6) / 1e6),
+        ),
+    ).toEqual([
+      [10, 20],
+      [30, 40],
+      [12, 22],
+    ]);
   });
 
   it("does not add via points while path editing is disabled", () => {
