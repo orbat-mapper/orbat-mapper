@@ -13,7 +13,14 @@ import { storeToRefs } from "pinia";
 import { watch } from "vue";
 import { distanceMeters } from "@/geo/distance";
 import type { TScenario } from "@/scenariostore";
-import { createUnitPathGeoJson, findClosestLegSegment } from "@/geo/history";
+import type { LegSegmentMeta, LegVertexMeta } from "@/geo/history";
+import {
+  createArcCoords,
+  createUnitPathGeoJson,
+  findClosestLegSegment,
+} from "@/geo/history";
+import { unwindCoordinates, wrapLongitude } from "@/geo/longitude";
+import { getRenderedMidpoint } from "@/geo/maplibreMidpoint";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { useUnitSettingsStore } from "@/stores/geoStore";
@@ -24,20 +31,33 @@ const ARC_SOURCE_ID = "unitHistoryArcSource";
 const LEG_SOURCE_ID = "unitHistoryLegSource";
 const WAYPOINT_SOURCE_ID = "unitHistoryWaypointSource";
 const VIA_SOURCE_ID = "unitHistoryViaSource";
+const MIDPOINT_SOURCE_ID = "unitHistoryLegMidpointSource";
 
 const ARC_LAYER_ID = "unitHistoryArcLayer";
 const LEG_LAYER_ID = "unitHistoryLegLayer";
 const WAYPOINT_LAYER_ID = "unitHistoryWaypointLayer";
 const WAYPOINT_LABEL_LAYER_ID = "unitHistoryWaypointLabelLayer";
 const VIA_LAYER_ID = "unitHistoryViaLayer";
+const MIDPOINT_LAYER_ID = "unitHistoryLegMidpointLayer";
 
 export const UNIT_HISTORY_LAYER_IDS = [
   ARC_LAYER_ID,
   LEG_LAYER_ID,
+  MIDPOINT_LAYER_ID,
   VIA_LAYER_ID,
   WAYPOINT_LAYER_ID,
   WAYPOINT_LABEL_LAYER_ID,
 ];
+
+// The handle circles are small, so a single-pixel query is nearly impossible to
+// hit. Buffer the press into a small box, as the draw interaction does.
+const HANDLE_HIT_TOLERANCE_PX = 12;
+const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
+
+const coarsePointerQuery =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(pointer: coarse)")
+    : null;
 
 const EMPTY_FC: FeatureCollection = { type: "FeatureCollection", features: [] };
 
@@ -63,6 +83,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     source: "waypoint" | "via";
     // Identifies the dragged feature in the rendered collection, for the preview.
     matches: (feature: GeoJsonFeature) => boolean;
+    // Identifies the leg coordinate to rewrite, so the line follows the cursor.
+    matchesVertex: (vertex: LegVertexMeta) => boolean;
     commit: (lngLat: [number, number]) => void;
   };
   let dragState: DragState | null = null;
@@ -85,6 +107,9 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     }
     if (!mlMap.getSource(VIA_SOURCE_ID)) {
       mlMap.addSource(VIA_SOURCE_ID, { type: "geojson", data: viaFeatureCollection });
+    }
+    if (!mlMap.getSource(MIDPOINT_SOURCE_ID)) {
+      mlMap.addSource(MIDPOINT_SOURCE_ID, { type: "geojson", data: EMPTY_FC });
     }
     if (!mlMap.getLayer(ARC_LAYER_ID)) {
       mlMap.addLayer(
@@ -109,6 +134,24 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
           paint: {
             "line-color": "rgba(255,0,0,0.65)",
             "line-width": 2,
+          },
+        },
+        beforeLayerId,
+      );
+    }
+    if (!mlMap.getLayer(MIDPOINT_LAYER_ID)) {
+      // Same look as the midpoint handles of the feature draw editor, so the
+      // gesture that adds a vertex to a line also adds a via point to a leg.
+      mlMap.addLayer(
+        {
+          id: MIDPOINT_LAYER_ID,
+          type: "circle",
+          source: MIDPOINT_SOURCE_ID,
+          paint: {
+            "circle-radius": 4,
+            "circle-color": "#60a5fa",
+            "circle-stroke-color": "#1e3a8a",
+            "circle-stroke-width": 1.5,
           },
         },
         beforeLayerId,
@@ -192,6 +235,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const base = showHistory.value;
     set(ARC_LAYER_ID, base);
     set(LEG_LAYER_ID, base && editHistory.value);
+    set(MIDPOINT_LAYER_ID, base && editHistory.value);
     set(VIA_LAYER_ID, base);
     set(WAYPOINT_LAYER_ID, base);
     set(WAYPOINT_LABEL_LAYER_ID, base && showWaypointTimestamps.value);
@@ -260,6 +304,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       legSource.setData({ type: "FeatureCollection", features: [] });
       setWaypointData(waypointSource, []);
       setViaData(viaSource, []);
+      drawMidpointHandles();
       clearWaypointFeatureStates();
       return;
     }
@@ -283,8 +328,43 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     legSource.setData({ type: "FeatureCollection", features: allLegs });
     setWaypointData(waypointSource, allWaypoints);
     setViaData(viaSource, allVia);
+    drawMidpointHandles();
 
     applyWaypointFeatureStates();
+  }
+
+  /**
+   * One handle per leg segment, placed at the segment's on-screen midpoint.
+   * Dragging one inserts a via point there, mirroring how the draw interaction
+   * adds a vertex to a line.
+   */
+  function drawMidpointHandles() {
+    const source = mlMap.getSource(MIDPOINT_SOURCE_ID) as GeoJSONSource | undefined;
+    if (!source) return;
+    if (!showHistory.value || !editHistory.value || legFeatures.length === 0) {
+      source.setData(EMPTY_FC);
+      return;
+    }
+    const features: GeoJsonFeature[] = [];
+    for (const leg of legFeatures) {
+      const unitId = leg.properties?.unitId as string | undefined;
+      const segments = leg.properties?.segments as LegSegmentMeta[] | undefined;
+      const coordinates = leg.geometry?.coordinates ?? [];
+      if (!segments) continue;
+      for (let i = 0; i < coordinates.length - 1; i++) {
+        const meta = segments[i];
+        if (!meta) continue;
+        features.push({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: getRenderedMidpoint(mlMap, coordinates[i]!, coordinates[i + 1]!),
+          },
+          properties: { unitId, stateIndex: meta.stateIndex, viaIndex: meta.viaIndex },
+        });
+      }
+    }
+    source.setData({ type: "FeatureCollection", features });
   }
 
   function queryLayer(point: MapMouseEvent["point"], layerId: string) {
@@ -386,7 +466,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     return false;
   }
 
-  function startDrag(e: MapLayerMouseEvent, drag: DragState) {
+  function startDrag(e: MapMouseEvent, drag: DragState) {
     e.preventDefault();
     dragState = drag;
     mlMap.getCanvas().style.cursor = "grabbing";
@@ -402,6 +482,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const waypointId = getWaypointId(feature);
     const t = feature.properties?.t as number | undefined;
     const isInitial = feature.properties?.isInitial === true;
+    const stateIndex = feature.properties?.stateIndex as number | undefined;
     // The initial waypoint is the unit's own location, so it has no state id.
     if (!unitId || t === undefined || (!waypointId && !isInitial)) return;
 
@@ -411,6 +492,9 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
         isInitial
           ? f.properties?.isInitial === true && f.properties?.unitId === unitId
           : getWaypointId(f) === waypointId,
+      matchesVertex: (v) =>
+        v.viaIndex === undefined &&
+        (isInitial ? v.isInitial === true : v.stateIndex === stateIndex),
       commit: (lngLat) => {
         if (isInitial) {
           unitActions.updateUnit(unitId, { location: lngLat });
@@ -442,6 +526,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
         f.properties?.unitId === unitId &&
         f.properties?.stateIndex === stateIndex &&
         f.properties?.viaIndex === viaIndex,
+      matchesVertex: (v) => v.stateIndex === stateIndex && v.viaIndex === viaIndex,
       commit: (lngLat) => {
         unitActions.updateUnitStateVia(unitId, "modify", stateIndex, viaIndex, lngLat);
         unitActions.updateUnitState(unitId);
@@ -480,6 +565,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
         f.properties?.unitId === hitUnitId &&
         f.properties?.stateIndex === stateIndex &&
         f.properties?.viaIndex === viaIndex,
+      matchesVertex: (v) => v.stateIndex === stateIndex && v.viaIndex === viaIndex,
       commit: (position) => {
         unitActions.updateUnitStateVia(
           hitUnitId,
@@ -489,6 +575,76 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
           position,
         );
         unitActions.updateUnitState(hitUnitId);
+      },
+    });
+  }
+
+  function getHandleHitTolerance(e: MapMouseEvent): number {
+    const isTouch =
+      (e.originalEvent?.type?.startsWith("touch") ?? false) ||
+      (coarsePointerQuery?.matches ?? false);
+    return isTouch ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
+  }
+
+  /**
+   * Dragging a midpoint handle inserts a via point at that segment. Runs off a
+   * map-level mousedown so the press can be buffered into a tolerance box
+   * instead of having to land on the 4px circle exactly.
+   */
+  function onMapMouseDown(e: MapMouseEvent) {
+    if (!showHistory.value || !editHistory.value || dragState) return;
+    if (e.originalEvent.altKey) return;
+    if (!mlMap.getLayer(MIDPOINT_LAYER_ID)) return;
+    // Existing points win over the handle between them.
+    if (
+      queryLayer(e.point, WAYPOINT_LAYER_ID).length > 0 ||
+      queryLayer(e.point, VIA_LAYER_ID).length > 0
+    ) {
+      return;
+    }
+    const tolerance = getHandleHitTolerance(e);
+    const { x, y } = e.point;
+    const hits = mlMap.queryRenderedFeatures(
+      [
+        [x - tolerance, y - tolerance],
+        [x + tolerance, y + tolerance],
+      ],
+      { layers: [MIDPOINT_LAYER_ID] },
+    );
+    if (hits.length === 0) return;
+    const closest = hits.reduce((best, feature) => {
+      const distance = (f: (typeof hits)[number]) => {
+        const coordinates = (f.geometry as { coordinates?: [number, number] })
+          .coordinates;
+        if (!coordinates) return Number.POSITIVE_INFINITY;
+        const projected = mlMap.project(coordinates);
+        return Math.hypot(projected.x - x, projected.y - y);
+      };
+      return distance(feature) < distance(best) ? feature : best;
+    }, hits[0]!);
+
+    const unitId = closest.properties?.unitId as string | undefined;
+    const stateIndex = closest.properties?.stateIndex as number | undefined;
+    const viaIndex = closest.properties?.viaIndex as number | undefined;
+    if (!unitId || stateIndex === undefined || stateIndex < 0 || viaIndex === undefined) {
+      return;
+    }
+
+    const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+    unitActions.updateUnitStateVia(unitId, "add", stateIndex, viaIndex, lngLat);
+    unitActions.updateUnitState(unitId);
+    drawHistory();
+
+    startDrag(e, {
+      source: "via",
+      matches: (f) =>
+        f.properties?.unitId === unitId &&
+        f.properties?.stateIndex === stateIndex &&
+        f.properties?.viaIndex === viaIndex,
+      matchesVertex: (v) => v.stateIndex === stateIndex && v.viaIndex === viaIndex,
+      commit: (position) => {
+        unitActions.updateUnitStateVia(unitId, "modify", stateIndex, viaIndex, position);
+        unitActions.updateUnitState(unitId);
       },
     });
   }
@@ -516,6 +672,46 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     } else {
       setWaypointData(source, features);
     }
+    previewLines([e.lngLat.lng, e.lngLat.lat]);
+  }
+
+  /**
+   * Rewrites the dragged coordinate in the leg and arc lines so the whole path
+   * follows the cursor, instead of only the dragged point moving.
+   */
+  function previewLines(lngLat: [number, number]) {
+    if (!dragState) return;
+    const legSource = mlMap.getSource(LEG_SOURCE_ID) as GeoJSONSource | undefined;
+    const arcSource = mlMap.getSource(ARC_SOURCE_ID) as GeoJSONSource | undefined;
+    if (!legSource && !arcSource) return;
+
+    const previewLegs: GeoJsonFeature<GeoJsonLineString>[] = [];
+    const previewArcs: GeoJsonFeature<GeoJsonLineString>[] = [];
+    for (const leg of legFeatures) {
+      const vertices = leg.properties?.vertices as LegVertexMeta[] | undefined;
+      const coordinates = leg.geometry.coordinates.map((coordinate, index) => {
+        const vertex = vertices?.[index];
+        return vertex && dragState!.matchesVertex(vertex) ? lngLat : coordinate;
+      });
+      const unwound = unwindCoordinates(coordinates);
+      previewLegs.push({
+        ...leg,
+        geometry: { type: "LineString", coordinates: unwound },
+      });
+      previewArcs.push({
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          // The arc helper expects wrapped longitudes, as the store holds them.
+          coordinates: unwindCoordinates(
+            createArcCoords(unwound.map((c) => [wrapLongitude(c[0]!), c[1]!])),
+          ),
+        },
+        properties: { unitId: leg.properties?.unitId },
+      });
+    }
+    legSource?.setData({ type: "FeatureCollection", features: previewLegs });
+    arcSource?.setData({ type: "FeatureCollection", features: previewArcs });
   }
 
   function onDragEnd(e: MapMouseEvent) {
@@ -531,6 +727,9 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   mlMap.on("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
   mlMap.on("mousedown", VIA_LAYER_ID, onViaMouseDown);
   mlMap.on("mousedown", LEG_LAYER_ID, onLegMouseDown);
+  mlMap.on("mousedown", onMapMouseDown);
+  // The handles sit at on-screen midpoints, so they move with the camera.
+  mlMap.on("moveend", drawMidpointHandles);
 
   activeScenario.store.onUndoRedo?.(({ meta }) => {
     if (meta?.value && selectedUnitIds.value.has(meta.value as string)) {
@@ -556,6 +755,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     mlMap.off("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
     mlMap.off("mousedown", VIA_LAYER_ID, onViaMouseDown);
     mlMap.off("mousedown", LEG_LAYER_ID, onLegMouseDown);
+    mlMap.off("mousedown", onMapMouseDown);
+    mlMap.off("moveend", drawMidpointHandles);
     mlMap.off("mousemove", onDragMove);
     clearWaypointFeatureStates();
   }

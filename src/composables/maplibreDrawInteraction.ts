@@ -16,10 +16,9 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { DrawType } from "@/composables/geoEditing";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import {
-  isGlobeProjection,
-  latitudeToMercatorY,
-  mercatorYToLatitude,
-} from "@/geo/mercator";
+  getRenderedMidpoint as getMapLibreRenderedMidpoint,
+  midpoint,
+} from "@/geo/maplibreMidpoint";
 import {
   createTouchDoubleTapTracker,
   normalizePathCoordinates,
@@ -626,20 +625,7 @@ export function useMapLibreDrawInteraction(
   }
 
   function getRenderedMidpoint(a: Position, b: Position): Position {
-    if (isGlobeProjection(mlMap)) {
-      return projectedMercatorSegmentMidpoint(mlMap, a, b);
-    }
-    try {
-      const projectedA = mlMap.project(a as [number, number]);
-      const projectedB = mlMap.project(b as [number, number]);
-      const renderedMidpoint = mlMap.unproject([
-        (projectedA.x + projectedB.x) / 2,
-        (projectedA.y + projectedB.y) / 2,
-      ]);
-      return [renderedMidpoint.lng, renderedMidpoint.lat];
-    } catch {
-      return midpoint(a, b);
-    }
+    return getMapLibreRenderedMidpoint(mlMap, a, b);
   }
 
   function suspendMapDragInteractions(): MapDragInteractionState {
@@ -973,73 +959,6 @@ function visitGeometryEdges(
       });
     });
   }
-}
-
-function midpoint(a: Position, b: Position): Position {
-  return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-}
-
-function projectedMercatorSegmentMidpoint(
-  map: MlMap,
-  a: Position,
-  b: Position,
-): Position {
-  try {
-    const coordinates = sampleMercatorSegmentCoordinates(a, b);
-    const projected = coordinates.map((coordinate) => ({
-      coordinate,
-      point: map.project(coordinate as [number, number]),
-    }));
-    const lengths: number[] = [];
-    let totalLength = 0;
-
-    for (let index = 0; index < projected.length - 1; index++) {
-      const start = projected[index]!.point;
-      const end = projected[index + 1]!.point;
-      const length = Math.hypot(end.x - start.x, end.y - start.y);
-      lengths.push(length);
-      totalLength += length;
-    }
-
-    if (totalLength === 0) return midpoint(a, b);
-
-    let remaining = totalLength / 2;
-    for (let index = 0; index < lengths.length; index++) {
-      const length = lengths[index]!;
-      if (remaining > length) {
-        remaining -= length;
-        continue;
-      }
-      const start = projected[index]!.coordinate;
-      const end = projected[index + 1]!.coordinate;
-      const ratio = length === 0 ? 0 : remaining / length;
-      return unwrapPositionRelative(a, [
-        start[0] + (end[0] - start[0]) * ratio,
-        start[1] + (end[1] - start[1]) * ratio,
-      ]);
-    }
-
-    return coordinates[Math.floor(coordinates.length / 2)]!;
-  } catch {
-    return midpoint(a, b);
-  }
-}
-
-function sampleMercatorSegmentCoordinates(a: Position, b: Position): Position[] {
-  const end = unwrapPositionRelative(a, b);
-  const startY = latitudeToMercatorY(a[1]);
-  const endY = latitudeToMercatorY(end[1]);
-  const coordinates: Position[] = [];
-
-  for (let index = 0; index <= 64; index++) {
-    const ratio = index / 64;
-    coordinates.push([
-      a[0] + (end[0] - a[0]) * ratio,
-      mercatorYToLatitude(startY + (endY - startY) * ratio),
-    ]);
-  }
-
-  return coordinates;
 }
 
 function getVertexAtPath(geometry: Geometry, path: number[]): Position | undefined {
