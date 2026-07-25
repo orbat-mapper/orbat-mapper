@@ -4,12 +4,16 @@ import type {
   MapMouseEvent,
   Map as MlMap,
 } from "maplibre-gl";
-import type { Feature as GeoJsonFeature, FeatureCollection } from "geojson";
+import type {
+  Feature as GeoJsonFeature,
+  FeatureCollection,
+  LineString as GeoJsonLineString,
+} from "geojson";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
 import { distanceMeters } from "@/geo/distance";
 import type { TScenario } from "@/scenariostore";
-import { createUnitPathGeoJson } from "@/geo/history";
+import { createUnitPathGeoJson, findClosestLegSegment } from "@/geo/history";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { useUnitSettingsStore } from "@/stores/geoStore";
@@ -52,6 +56,9 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   const appliedWaypointStates = new Set<string>();
   let waypointFeatureCollection: FeatureCollection = EMPTY_FC;
   let viaFeatureCollection: FeatureCollection = EMPTY_FC;
+  // Kept so a mousedown on a leg can be resolved to the segment that was
+  // grabbed, without reading MapLibre source internals.
+  let legFeatures: GeoJsonFeature<GeoJsonLineString>[] = [];
   type DragState = {
     source: "waypoint" | "via";
     // Identifies the dragged feature in the rendered collection, for the preview.
@@ -249,6 +256,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
     if (!showHistory.value) {
       arcSource.setData({ type: "FeatureCollection", features: [] });
+      legFeatures = [];
       legSource.setData({ type: "FeatureCollection", features: [] });
       setWaypointData(waypointSource, []);
       setViaData(viaSource, []);
@@ -271,11 +279,19 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     });
 
     arcSource.setData({ type: "FeatureCollection", features: allArcs });
+    legFeatures = allLegs;
     legSource.setData({ type: "FeatureCollection", features: allLegs });
     setWaypointData(waypointSource, allWaypoints);
     setViaData(viaSource, allVia);
 
     applyWaypointFeatureStates();
+  }
+
+  function queryLayer(point: MapMouseEvent["point"], layerId: string) {
+    if (!mlMap.getLayer(layerId)) return [];
+    return mlMap
+      .queryRenderedFeatures(point, { layers: [layerId] })
+      .filter((f) => f.layer?.id === layerId);
   }
 
   function handleCtrlClick(e: MapMouseEvent): boolean {
@@ -314,11 +330,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       !originalEvent.shiftKey &&
       !originalEvent.altKey;
 
-    const hits = mlMap.getLayer(WAYPOINT_LAYER_ID)
-      ? mlMap
-          .queryRenderedFeatures(e.point, { layers: [WAYPOINT_LAYER_ID] })
-          .filter((f) => f.layer?.id === WAYPOINT_LAYER_ID)
-      : [];
+    const isAlt = originalEvent.altKey && !originalEvent.shiftKey;
+    const hits = queryLayer(e.point, WAYPOINT_LAYER_ID);
     if (hits.length > 0) {
       const feature = hits[0];
       const unitId = feature.properties?.unitId as string | undefined;
@@ -326,7 +339,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       const stateIndex = (feature.properties?.stateIndex as number) ?? -1;
       const isInitial = feature.properties?.isInitial === true;
 
-      if (originalEvent.altKey && !originalEvent.shiftKey) {
+      if (isAlt) {
         if (unitId && !isInitial && stateIndex >= 0) {
           unitActions.deleteUnitStateEntry(unitId, stateIndex);
           drawHistory();
@@ -342,6 +355,31 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
         applyWaypointFeatureStates();
       }
       return true;
+    }
+
+    if (isAlt && editHistory.value) {
+      const viaHits = queryLayer(e.point, VIA_LAYER_ID);
+      const viaFeature = viaHits[0];
+      if (viaFeature) {
+        const unitId = viaFeature.properties?.unitId as string | undefined;
+        const stateIndex = viaFeature.properties?.stateIndex as number | undefined;
+        const viaIndex = viaFeature.properties?.viaIndex as number | undefined;
+        if (
+          unitId &&
+          stateIndex !== undefined &&
+          stateIndex >= 0 &&
+          viaIndex !== undefined &&
+          viaIndex >= 0
+        ) {
+          unitActions.updateUnitStateVia(unitId, "remove", stateIndex, viaIndex, [
+            e.lngLat.lng,
+            e.lngLat.lat,
+          ]);
+          unitActions.updateUnitState(unitId);
+          drawHistory();
+        }
+        return true;
+      }
     }
 
     if (isCtrl) return handleCtrlClick(e);
@@ -387,6 +425,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   function onViaMouseDown(e: MapLayerMouseEvent) {
     // A waypoint drawn on top of a via point wins; its handler runs first.
     if (!editHistory.value || dragState) return;
+    // Alt-click removes the via point, so it must not start a drag.
+    if (e.originalEvent.altKey) return;
     const feature = e.features?.[0];
     if (!feature) return;
     const unitId = feature.properties?.unitId as string | undefined;
@@ -405,6 +445,50 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       commit: (lngLat) => {
         unitActions.updateUnitStateVia(unitId, "modify", stateIndex, viaIndex, lngLat);
         unitActions.updateUnitState(unitId);
+      },
+    });
+  }
+
+  /**
+   * Grabbing the middle of a leg segment inserts a new via point there and
+   * starts dragging it, like the OpenLayers Modify interaction does.
+   */
+  function onLegMouseDown(e: MapLayerMouseEvent) {
+    if (!editHistory.value || dragState) return;
+    // Alt-click is reserved for deleting points.
+    if (e.originalEvent.altKey) return;
+    // Existing points win over the line they are drawn on.
+    if (
+      queryLayer(e.point, WAYPOINT_LAYER_ID).length > 0 ||
+      queryLayer(e.point, VIA_LAYER_ID).length > 0
+    ) {
+      return;
+    }
+    const unitId = e.features?.[0]?.properties?.unitId as string | undefined;
+    const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+    const hit = findClosestLegSegment(legFeatures, lngLat, unitId);
+    if (!hit?.unitId || hit.stateIndex < 0) return;
+    const { unitId: hitUnitId, stateIndex, viaIndex } = hit;
+
+    unitActions.updateUnitStateVia(hitUnitId, "add", stateIndex, viaIndex, lngLat);
+    unitActions.updateUnitState(hitUnitId);
+    drawHistory();
+
+    startDrag(e, {
+      source: "via",
+      matches: (f) =>
+        f.properties?.unitId === hitUnitId &&
+        f.properties?.stateIndex === stateIndex &&
+        f.properties?.viaIndex === viaIndex,
+      commit: (position) => {
+        unitActions.updateUnitStateVia(
+          hitUnitId,
+          "modify",
+          stateIndex,
+          viaIndex,
+          position,
+        );
+        unitActions.updateUnitState(hitUnitId);
       },
     });
   }
@@ -446,6 +530,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   mlMap.on("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
   mlMap.on("mousedown", VIA_LAYER_ID, onViaMouseDown);
+  mlMap.on("mousedown", LEG_LAYER_ID, onLegMouseDown);
 
   activeScenario.store.onUndoRedo?.(({ meta }) => {
     if (meta?.value && selectedUnitIds.value.has(meta.value as string)) {
@@ -470,6 +555,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   function dispose() {
     mlMap.off("mousedown", WAYPOINT_LAYER_ID, onWaypointMouseDown);
     mlMap.off("mousedown", VIA_LAYER_ID, onViaMouseDown);
+    mlMap.off("mousedown", LEG_LAYER_ID, onLegMouseDown);
     mlMap.off("mousemove", onDragMove);
     clearWaypointFeatureStates();
   }

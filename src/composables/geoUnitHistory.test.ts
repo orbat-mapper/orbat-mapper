@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => {
   const addUnitPositionSpy = vi.fn();
   const updateUnitStateSpy = vi.fn();
   const updateUnitSpy = vi.fn();
+  const updateUnitStateViaSpy = vi.fn();
   const deleteUnitStateEntrySpy = vi.fn();
   const getUnitByIdSpy = vi.fn(() => ({ id: "unit-1", state: [{ t: 10 }] }));
   const source = {
@@ -65,6 +66,7 @@ const mocks = vi.hoisted(() => {
     addUnitPositionSpy,
     updateUnitStateSpy,
     updateUnitSpy,
+    updateUnitStateViaSpy,
     deleteUnitStateEntrySpy,
     getUnitByIdSpy,
     layers,
@@ -82,7 +84,7 @@ vi.mock("@/utils", () => ({
     },
     unitActions: {
       getUnitById: mocks.getUnitByIdSpy,
-      updateUnitStateVia: vi.fn(),
+      updateUnitStateVia: mocks.updateUnitStateViaSpy,
       deleteUnitStateEntry: mocks.deleteUnitStateEntrySpy,
       updateUnitState: mocks.updateUnitStateSpy,
       updateUnit: mocks.updateUnitSpy,
@@ -221,7 +223,12 @@ describe("useUnitHistory leg editing", () => {
   beforeEach(() => {
     mocks.addUnitPositionSpy.mockClear();
     mocks.updateUnitSpy.mockClear();
+    mocks.updateUnitStateViaSpy.mockClear();
     mocks.deleteUnitStateEntrySpy.mockClear();
+    mocks.getUnitByIdSpy.mockReturnValue({
+      id: "unit-1",
+      state: [{ t: 1000 }],
+    } as any);
   });
 
   it("moves the unit's initial location when the first waypoint is dragged", () => {
@@ -262,6 +269,33 @@ describe("useUnitHistory leg editing", () => {
 
     expect(mocks.updateUnitSpy).not.toHaveBeenCalled();
     expect(mocks.addUnitPositionSpy).toHaveBeenCalledWith("unit-1", [13, 63], 1000);
+  });
+
+  it("adds a via point when a new vertex is dragged out of a leg", () => {
+    const { historyModify } = useUnitHistory({} as any);
+    const leg = createLegFeature([
+      [10, 60, INITIAL_TIME],
+      [11, 61, 1000],
+    ]);
+    const event = createModifyEvent(leg.feature);
+
+    (historyModify as any).emit("modifystart", event);
+    // OpenLayers inserts the new vertex with its M ordinate padded to 0, which
+    // is how the leg handler recognises it as a via point.
+    leg.setCoordinates([
+      [10, 60, INITIAL_TIME],
+      [10.5, 60.5, 0],
+      [11, 61, 1000],
+    ]);
+    (historyModify as any).emit("modifyend", event);
+
+    expect(mocks.updateUnitStateViaSpy).toHaveBeenCalledWith(
+      "unit-1",
+      "add",
+      0,
+      0,
+      [10.5, 60.5],
+    );
   });
 
   it("does not delete a state entry when the initial waypoint is removed", () => {

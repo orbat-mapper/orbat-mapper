@@ -22,7 +22,7 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import LayerGroup from "ol/layer/Group";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
-import { unwindCoordinates } from "@/geo/longitude";
+import { unwindCoordinates, unwrapLongitude } from "@/geo/longitude";
 
 export const VIA_TIME = -1337;
 // Marks the synthetic waypoint for a unit's initial location (`unit.location`),
@@ -252,6 +252,16 @@ function createGreatCircleArcFeature(leg: Position[]) {
   return coords;
 }
 
+/**
+ * Describes where a new via point would go if it was inserted at a given
+ * position in a leg. `stateIndex` is an index into `unit.state`, `viaIndex` the
+ * insertion index within that state entry's `via` array.
+ */
+export interface LegSegmentMeta {
+  stateIndex: number;
+  viaIndex: number;
+}
+
 export interface UnitPathGeoJson {
   legs: GeoJsonFeature<GeoJsonLineString>[];
   arcs: GeoJsonFeature<GeoJsonLineString>[];
@@ -298,6 +308,10 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
   const legs: GeoJsonFeature<GeoJsonLineString>[] = [];
   const arcs: GeoJsonFeature<GeoJsonLineString>[] = [];
 
+  // The initial waypoint is the unit's own location and has no state entry.
+  const getStateIndex = (s: LocationState) =>
+    s.t === INITIAL_TIME ? -1 : (unit.state?.findIndex((entry) => entry.t === s.t) ?? -1);
+
   let waypointIndex = 0;
   parts.forEach((part) => {
     part.forEach((s) => {
@@ -306,9 +320,7 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
       const label = isInitial
         ? `#${waypointIndex}`
         : `#${waypointIndex} ${fmt.trackFormatter.format(s.t)}`;
-      const stateIndex = isInitial
-        ? -1
-        : (unit.state?.findIndex((entry) => entry.t === s.t) ?? -1);
+      const stateIndex = getStateIndex(s);
       const feature: GeoJsonFeature<GeoJsonPoint> = {
         type: "Feature",
         geometry: {
@@ -344,14 +356,30 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
 
     if (part.length < 2) return;
     const segment: Position[] = [];
+    // Where a via point inserted *at* the coordinate with the same index would
+    // go. Via points belong to the state entry at the end of the leg segment
+    // they precede, so a waypoint coordinate maps to an append at the end of
+    // its own via list.
+    const coordinateMeta: LegSegmentMeta[] = [];
     for (let i = 0; i < part.length - 1; i++) {
       const from = part[i];
       const to = part[i + 1];
-      if (i === 0) segment.push([from.location[0], from.location[1]]);
+      if (i === 0) {
+        segment.push([from.location[0], from.location[1]]);
+        coordinateMeta.push({ stateIndex: getStateIndex(from), viaIndex: 0 });
+      }
+      const toStateIndex = getStateIndex(to);
       if (to.via) {
-        to.via.forEach((v) => segment.push([v[0], v[1]]));
+        to.via.forEach((v, viaIndex) => {
+          segment.push([v[0], v[1]]);
+          coordinateMeta.push({ stateIndex: toStateIndex, viaIndex });
+        });
       }
       segment.push([to.location[0], to.location[1]]);
+      coordinateMeta.push({
+        stateIndex: toStateIndex,
+        viaIndex: to.via?.length ?? 0,
+      });
     }
     legs.push({
       type: "Feature",
@@ -359,7 +387,8 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
         type: "LineString",
         coordinates: unwindCoordinates(segment),
       },
-      properties: { unitId: unit.id },
+      // `segments[i]` describes the segment between coordinate i and i + 1.
+      properties: { unitId: unit.id, segments: coordinateMeta.slice(1) },
     });
     arcs.push({
       type: "Feature",
@@ -372,6 +401,60 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
   });
 
   return { legs, arcs, waypoints, viaPoints };
+}
+
+function squaredDistanceToSegment(p: Position, a: Position, b: Position): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const lengthSquared = dx * dx + dy * dy;
+  let t = 0;
+  if (lengthSquared > 0) {
+    t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t));
+  }
+  const ex = a[0] + t * dx - p[0];
+  const ey = a[1] + t * dy - p[1];
+  return ex * ex + ey * ey;
+}
+
+export interface LegSegmentHit extends LegSegmentMeta {
+  unitId?: string;
+}
+
+/**
+ * Finds the leg segment closest to `point`, so a grabbed leg can be resolved to
+ * the via point insertion position it represents.
+ */
+export function findClosestLegSegment(
+  legs: GeoJsonFeature<GeoJsonLineString>[],
+  point: Position,
+  unitId?: string,
+): LegSegmentHit | null {
+  let best: LegSegmentHit | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const leg of legs) {
+    const legUnitId = leg.properties?.unitId as string | undefined;
+    if (unitId !== undefined && legUnitId !== unitId) continue;
+    const segments = leg.properties?.segments as LegSegmentMeta[] | undefined;
+    if (!segments) continue;
+    const coordinates = leg.geometry?.coordinates ?? [];
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      const meta = segments[i];
+      if (!meta) continue;
+      const a = coordinates[i];
+      const b = coordinates[i + 1];
+      // Leg coordinates are unwound, so bring the query point into the same
+      // longitude window before measuring.
+      const reference = (a[0] + b[0]) / 2;
+      const shifted: Position = [unwrapLongitude(reference, point[0]), point[1]];
+      const distance = squaredDistanceToSegment(shifted, a, b);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = { unitId: legUnitId, ...meta };
+      }
+    }
+  }
+  return best;
 }
 
 function splitLocationStateIntoParts(state: LocationState[]): LocationState[][] {

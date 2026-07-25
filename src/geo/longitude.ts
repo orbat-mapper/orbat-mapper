@@ -20,16 +20,18 @@ export function unwrapPositionRelative(
   return [unwrapLongitude(reference[0], position[0]), position[1]];
 }
 
+// Only the longitude is rewritten; any further ordinates (the unit path carries
+// the waypoint time as M) are passed through untouched.
 export function unwindCoordinates(coordinates: Position[]): Position[] {
   if (coordinates.length <= 1) {
-    return coordinates.map(([longitude, latitude]) => [longitude, latitude]);
+    return coordinates.map((coordinate) => [...coordinate]);
   }
 
-  const result: Position[] = [[coordinates[0]![0], coordinates[0]![1]]];
+  const result: Position[] = [[...coordinates[0]!]];
 
   for (let index = 1; index < coordinates.length; index += 1) {
-    const [longitude, latitude] = coordinates[index]!;
-    result.push([unwrapLongitude(result[index - 1]![0], longitude), latitude]);
+    const [longitude, ...rest] = coordinates[index]!;
+    result.push([unwrapLongitude(result[index - 1]![0], longitude!), ...rest]);
   }
 
   return result;
