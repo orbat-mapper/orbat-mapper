@@ -51,6 +51,10 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
       { shortcut: [["alt", "click"]], description: "Delete a waypoint or via point" },
       { shortcut: [["drag"]], description: "Move a waypoint or via point" },
       { shortcut: [["drag"]], description: "Add a via point (drag a midpoint handle)" },
+      {
+        shortcut: [["right click"]],
+        description: "Convert between waypoint and via point",
+      },
     ],
   },
   {

@@ -10,6 +10,14 @@ import {
   refreshHierarchyTimelineMetadata,
   syncTimedHierarchyProjection,
 } from "@/scenariostore/hierarchy";
+import {
+  canConvertViaPointToWaypoint,
+  canConvertWaypointToViaPoint,
+  computeViaPointTime,
+  findFollowingLocationState,
+  findPrecedingTrackPoint,
+  getUnitSpeedMps,
+} from "@/scenariostore/unitTrackConversions";
 
 export function removeUnusedUnitStateEntries(unit: NUnit) {
   if (!unit || !unit.state) return;
@@ -228,6 +236,111 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     );
   }
 
+  /**
+   * Turns a via point into a waypoint of its own. The new waypoint is timed
+   * from the average speed of the leg it sits on, so the unit keeps following
+   * the same path at the same pace.
+   */
+  function convertViaPointToWaypoint(
+    unitId: EntityId,
+    stateIndex: number,
+    viaIndex: number,
+  ) {
+    const unit = state.unitMap[unitId];
+    if (!unit || !canConvertViaPointToWaypoint(unit, stateIndex, viaIndex)) return;
+    const stateEntry = unit.state![stateIndex]!;
+    const prev = findPrecedingTrackPoint(unit, stateIndex)!;
+    const t = computeViaPointTime({
+      prev,
+      via: stateEntry.via!,
+      viaIndex,
+      destination: { location: stateEntry.location!, t: stateEntry.t },
+      viaStartTime: stateEntry.viaStartTime,
+      fallbackSpeedMps: getUnitSpeedMps(unit),
+    });
+
+    const newEntry: NState = {
+      id: nanoid(),
+      t,
+      location: klona(stateEntry.via![viaIndex]!),
+    };
+    const leadingVia = klona(stateEntry.via!.slice(0, viaIndex));
+    if (leadingVia.length) newEntry.via = leadingVia;
+    // The first half of the split leg keeps the original start time.
+    if (stateEntry.viaStartTime !== undefined) {
+      newEntry.viaStartTime = stateEntry.viaStartTime;
+    }
+
+    update(
+      (s) => {
+        const u = s.unitMap[unitId];
+        const entry = u?.state?.[stateIndex];
+        if (!u?.state || !entry) return;
+        const trailingVia = entry.via?.slice(viaIndex + 1) ?? [];
+        if (trailingVia.length) {
+          entry.via = trailingVia;
+        } else {
+          delete entry.via;
+        }
+        // The second half now starts at the new waypoint.
+        delete entry.viaStartTime;
+        // Rounding can place the new time before entries without a location,
+        // so walk back to where it keeps the state list sorted.
+        let insertIndex = stateIndex;
+        while (insertIndex > 0 && u.state[insertIndex - 1]!.t > t) insertIndex--;
+        u.state.splice(insertIndex, 0, newEntry);
+        refreshHierarchyTimelineMetadata(s);
+      },
+      { label: "addUnitPosition", value: unitId },
+    );
+    updateUnitState(unitId);
+  }
+
+  /**
+   * Turns a waypoint into a via point by merging the legs on either side of it.
+   * The waypoint's own timestamp is dropped, so the unit passes the point
+   * wherever the merged leg's average speed puts it.
+   */
+  function convertWaypointToViaPoint(unitId: EntityId, stateIndex: number) {
+    const unit = state.unitMap[unitId];
+    if (!unit || !canConvertWaypointToViaPoint(unit, stateIndex)) return;
+    const stateEntry = unit.state![stateIndex]!;
+    const following = findFollowingLocationState(unit, stateIndex)!;
+    const mergedVia = klona([
+      ...(stateEntry.via ?? []),
+      stateEntry.location!,
+      ...(following.state.via ?? []),
+    ]);
+    const viaStartTime = stateEntry.viaStartTime;
+
+    update(
+      (s) => {
+        const u = s.unitMap[unitId];
+        const entry = u?.state?.[stateIndex];
+        const followingEntry = u?.state?.[following.index];
+        if (!u?.state || !entry || !followingEntry) return;
+        followingEntry.via = mergedVia;
+        // The merged leg starts where the removed waypoint's leg did.
+        if (viaStartTime !== undefined) {
+          followingEntry.viaStartTime = viaStartTime;
+        } else {
+          delete followingEntry.viaStartTime;
+        }
+        delete entry.location;
+        delete entry.via;
+        delete entry.viaStartTime;
+        // Keep the entry around if it still carries something other than the
+        // position it just gave up.
+        if (!isNotEmptyState(entry) && !entry.title && !entry.description) {
+          u.state.splice(stateIndex, 1);
+        }
+        refreshHierarchyTimelineMetadata(s);
+      },
+      { label: "addUnitPosition", value: unitId },
+    );
+    updateUnitState(unitId);
+  }
+
   return {
     clearUnitState,
     updateUnitState,
@@ -237,5 +350,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,
+    convertViaPointToWaypoint,
+    convertWaypointToViaPoint,
   };
 }

@@ -433,6 +433,69 @@ describe("useMaplibreUnitHistory", () => {
     expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
   });
 
+  it("leaves a right click near a midpoint handle to the context menu", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+    stubMidpointHits(harness);
+
+    harness.trigger(
+      "mousedown",
+      createEvent(11.5 + 6, 21.5 + 6, undefined, { button: 2 }),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
+  it("leaves a right click on a leg to the context menu", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(10.5, 20.5, LEG_FEATURE, { button: 2 }),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
+  it("does not drag a right clicked waypoint", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    const feature = {
+      id: NaN,
+      properties: { unitId: UNIT_ID, waypointId: WAYPOINT_ID, t: 2000, isInitial: false },
+    };
+    harness.trigger(
+      "mousedown:unitHistoryWaypointLayer",
+      createEvent(11, 21, [feature], { button: 2 }),
+    );
+    harness.trigger("mouseup", createEvent(30, 40));
+
+    expect(harness.addUnitPosition).not.toHaveBeenCalled();
+  });
+
+  it("does not drag a right clicked via point", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [[11.5, 21.5]];
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryViaLayer",
+      createEvent(
+        11.5,
+        21.5,
+        [{ properties: { unitId: UNIT_ID, stateIndex: 0, viaIndex: 0 } }],
+        {
+          button: 2,
+        },
+      ),
+    );
+    harness.trigger("mouseup", createEvent(30, 40));
+
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
   it("leaves a ctrl-click on a leg to the waypoint handler", () => {
     const harness = createHarness();
     setupEditing(harness);
