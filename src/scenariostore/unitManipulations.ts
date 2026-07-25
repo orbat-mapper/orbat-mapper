@@ -59,6 +59,11 @@ export type NWalkSideGroupCallback = (
   side?: NSide,
 ) => void | false | true;
 
+export interface ExpandUnitOptions {
+  /** Use the symbol projected for the current scenario time instead of the base sidc. */
+  useCurrentState?: boolean;
+}
+
 export interface WalkSubUnitsOptions {
   includeParent: boolean;
   state: ScenarioState;
@@ -1054,13 +1059,18 @@ export function useUnitManipulations(store: NewScenarioStore) {
     };
   }
 
-  function expandUnitWithSymbolOptions(unit: NUnit): Unit {
+  function expandUnitWithSymbolOptions(
+    unit: NUnit,
+    options: ExpandUnitOptions = {},
+  ): Unit {
+    const { useCurrentState = false } = options;
     return {
       ...unit,
       state: [],
+      sidc: useCurrentState ? (unit._state?.sidc ?? unit.sidc) : unit.sidc,
       symbolOptions: getCombinedSymbolOptions(unit),
       subUnits: unit.subUnits.map((subUnitId) =>
-        expandUnitWithSymbolOptions(state.unitMap[subUnitId]),
+        expandUnitWithSymbolOptions(state.unitMap[subUnitId], options),
       ),
       equipment: unit.equipment?.map(({ id, count }) => ({
         name: state.equipmentMap[id].name || "",

@@ -41,7 +41,9 @@ const rootUnitStore = useRootUnitStore();
 const showSearch = ref(false);
 
 const onUnitSelect = (unitId: string) => {
-  const unit = expandUnitWithSymbolOptions(getUnitById(unitId));
+  const unit = expandUnitWithSymbolOptions(getUnitById(unitId), {
+    useCurrentState: true,
+  });
   if (unit) rootUnitStore.unit = unit;
 };
 </script>

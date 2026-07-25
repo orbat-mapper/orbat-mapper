@@ -423,6 +423,53 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("renders the symbol projected for the current scenario time", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-state-sidc",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-sunk",
+            sidc: "10031000000000000000",
+            shortName: "A1",
+            name: "Alpha 1",
+            _state: {
+              location: [10, 20],
+              sidc: "10031000001100000000",
+            },
+          },
+        ]),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].properties.sidc).toBe("10031000001100000000");
+    mockMap.emit("styleimagemissing", { id: unitData.features[0].properties.symbolKey });
+
+    expect(symbolGenerator).toHaveBeenCalledWith(
+      "10031000001100000000",
+      expect.anything(),
+    );
+  });
+
   it("registers a symbol image source that re-rasterizes icons at an export render scale", async () => {
     const mockMap = createMockMap();
     const pinia = createPinia();

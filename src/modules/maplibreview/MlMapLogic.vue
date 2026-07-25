@@ -1071,7 +1071,10 @@ function addUnits(
           : resolvedUniqueDesignation;
       const { size: _symbolOptionSize, ...combinedSymbolOptions } =
         unitActions.getCombinedSymbolOptions(unit);
-      const customSymbolId = getCustomSymbolId(unit.sidc);
+      // Use the symbol projected for the current scenario time, so symbol changes
+      // in unit states/events are reflected on the map.
+      const sidc = unit._state?.sidc ?? unit.sidc;
+      const customSymbolId = getCustomSymbolId(sidc);
       const customSymbol = customSymbolId
         ? activeScenario.store.state.customSymbolMap[customSymbolId]
         : undefined;
@@ -1090,7 +1093,7 @@ function addUnits(
             }
           : {
               kind: "milsymbol",
-              sidc: unit.sidc,
+              sidc,
               symbolOptions: {
                 size: renderedSymbolSize,
                 ...combinedSymbolOptions,
@@ -1120,11 +1123,11 @@ function addUnits(
           id: unit.id,
           visibilityGroup: visibilityGroup.id,
           symbolKey: imageId,
-          sidc: unit.sidc,
+          sidc,
           label: mapSettings.mapUnitLabelBelow
             ? unit.shortName || unit.name || "Unnamed Unit"
             : "",
-          textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, unit.sidc)],
+          textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
           symbolRotation,
         },
       } as Feature;
