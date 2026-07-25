@@ -1,6 +1,5 @@
-import turfLength from "@turf/length";
-import { lineString } from "@turf/helpers";
 import type { Position } from "geojson";
+import { distanceMeters } from "@/geo/distance";
 import type { NState, NUnit } from "@/types/internalModels";
 import { convertSpeedToMetric } from "@/utils/convert";
 
@@ -70,57 +69,47 @@ export function getUnitSpeedMps(unit: NUnit): number {
     : convertSpeedToMetric(DEFAULT_SPEED_KMH, "km/h");
 }
 
-/** Distance in kilometers from the first coordinate to each of the others. */
+/** Distance in meters from the first coordinate to each of the others. */
 function cumulativeLengths(coordinates: Position[]): number[] {
   const lengths = [0];
   for (let i = 1; i < coordinates.length; i++) {
-    lengths.push(
-      lengths[i - 1]! + turfLength(lineString([coordinates[i - 1]!, coordinates[i]!])),
-    );
+    lengths.push(lengths[i - 1]! + distanceMeters(coordinates[i - 1]!, coordinates[i]!));
   }
   return lengths;
 }
 
-export interface ViaPointTimeOptions {
-  prev: TrackPoint;
-  via: Position[];
-  viaIndex: number;
-  destination: { location: Position; t: number };
-  viaStartTime?: number;
-  fallbackSpeedMps: number;
-}
-
 /**
- * The timestamp a unit passes a via point at. The unit covers the leg at a
- * constant average speed, so the time is the leg's time span split by the
- * distance travelled so far. When the leg has no usable start time — it begins
- * at the unit's untimed initial location — the unit's own speed is used to work
- * backwards from the arrival time instead.
+ * The timestamp a unit passes the via point at `viaIndex` of `entry` at. The
+ * unit covers the leg at a constant average speed, so the time is the leg's
+ * time span split by the distance travelled so far. When the leg has no usable
+ * start time — it begins at the unit's untimed initial location — the unit's
+ * own speed is used to work backwards from the arrival time instead.
  */
-export function computeViaPointTime({
-  prev,
-  via,
-  viaIndex,
-  destination,
-  viaStartTime,
-  fallbackSpeedMps,
-}: ViaPointTimeOptions): number {
-  const lengths = cumulativeLengths([prev.location, ...via, destination.location]);
+export function computeViaPointTime(
+  prev: TrackPoint,
+  entry: NState,
+  viaIndex: number,
+  fallbackSpeedMps: number,
+): number {
+  const lengths = cumulativeLengths([
+    prev.location,
+    ...(entry.via ?? []),
+    entry.location!,
+  ]);
   const total = lengths[lengths.length - 1]!;
   const travelled = lengths[viaIndex + 1]!;
-  const startTime = viaStartTime ?? prev.t;
+  const startTime = entry.viaStartTime ?? prev.t;
 
   let t: number;
-  if (startTime === undefined || total <= 0 || destination.t <= startTime) {
-    const remainingMeters = (total - travelled) * 1000;
-    t = destination.t - (remainingMeters / fallbackSpeedMps) * 1000;
+  if (startTime === undefined || total <= 0 || entry.t <= startTime) {
+    t = entry.t - ((total - travelled) / fallbackSpeedMps) * 1000;
   } else {
-    t = startTime + ((destination.t - startTime) * travelled) / total;
+    t = startTime + ((entry.t - startTime) * travelled) / total;
   }
 
   // Keep the new waypoint strictly inside the leg, so neither half of the split
   // ends up with a zero-length time span.
-  const upper = destination.t - 1;
+  const upper = entry.t - 1;
   let clamped = Math.min(Math.round(t), upper);
   if (startTime !== undefined)
     clamped = Math.max(clamped, Math.min(startTime + 1, upper));

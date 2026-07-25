@@ -30,7 +30,7 @@ import {
 import { reduceObstacleSafeWaypoints } from "@/geo/routing/waypointReduction";
 import { combineRouteWaypoints } from "@/geo/routing/routeWaypoints";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { convertSpeedToMetric } from "@/utils/convert";
+import { getUnitSpeedMps } from "@/scenariostore/unitTrackConversions";
 import type { NUnit } from "@/types/internalModels";
 import type { FullScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
 
@@ -439,13 +439,7 @@ export function useScenarioRouting(
   }
 
   function getTravelEndTime(unit: NUnit, totalLengthMeters: number, startTime: number) {
-    const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
-    const speed = speedValue
-      ? convertSpeedToMetric(speedValue.value, speedValue.uom)
-      : convertSpeedToMetric(30, "km/h");
-
-    if (speed <= 0) return startTime;
-    return Math.round(startTime + (totalLengthMeters / speed) * 1000);
+    return Math.round(startTime + (totalLengthMeters / getUnitSpeedMps(unit)) * 1000);
   }
 
   function getFinalLegs(includeCurrentPreview: boolean) {

@@ -11,8 +11,8 @@ import {
   syncTimedHierarchyProjection,
 } from "@/scenariostore/hierarchy";
 import {
-  canConvertViaPointToWaypoint,
-  canConvertWaypointToViaPoint,
+  canConvertViaPointToWaypoint as canConvertViaPoint,
+  canConvertWaypointToViaPoint as canConvertWaypoint,
   computeViaPointTime,
   findFollowingLocationState,
   findPrecedingTrackPoint,
@@ -236,6 +236,22 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     );
   }
 
+  /** True when the via point can be turned into a waypoint of its own. */
+  function canConvertViaPointToWaypoint(
+    unitId: EntityId,
+    stateIndex: number,
+    viaIndex: number,
+  ) {
+    const unit = state.unitMap[unitId];
+    return !!unit && canConvertViaPoint(unit, stateIndex, viaIndex);
+  }
+
+  /** True when the waypoint can be turned into a via point on the merged leg. */
+  function canConvertWaypointToViaPoint(unitId: EntityId, stateIndex: number) {
+    const unit = state.unitMap[unitId];
+    return !!unit && canConvertWaypoint(unit, stateIndex);
+  }
+
   /**
    * Turns a via point into a waypoint of its own. The new waypoint is timed
    * from the average speed of the leg it sits on, so the unit keeps following
@@ -247,17 +263,10 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     viaIndex: number,
   ) {
     const unit = state.unitMap[unitId];
-    if (!unit || !canConvertViaPointToWaypoint(unit, stateIndex, viaIndex)) return;
+    if (!unit || !canConvertViaPoint(unit, stateIndex, viaIndex)) return;
     const stateEntry = unit.state![stateIndex]!;
     const prev = findPrecedingTrackPoint(unit, stateIndex)!;
-    const t = computeViaPointTime({
-      prev,
-      via: stateEntry.via!,
-      viaIndex,
-      destination: { location: stateEntry.location!, t: stateEntry.t },
-      viaStartTime: stateEntry.viaStartTime,
-      fallbackSpeedMps: getUnitSpeedMps(unit),
-    });
+    const t = computeViaPointTime(prev, stateEntry, viaIndex, getUnitSpeedMps(unit));
 
     const newEntry: NState = {
       id: nanoid(),
@@ -303,7 +312,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
    */
   function convertWaypointToViaPoint(unitId: EntityId, stateIndex: number) {
     const unit = state.unitMap[unitId];
-    if (!unit || !canConvertWaypointToViaPoint(unit, stateIndex)) return;
+    if (!unit || !canConvertWaypoint(unit, stateIndex)) return;
     const stateEntry = unit.state![stateIndex]!;
     const following = findFollowingLocationState(unit, stateIndex)!;
     const mergedVia = klona([
@@ -350,6 +359,8 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,
+    canConvertViaPointToWaypoint,
+    canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
   };

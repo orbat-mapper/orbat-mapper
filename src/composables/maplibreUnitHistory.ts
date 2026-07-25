@@ -25,7 +25,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
-import { convertSpeedToMetric } from "@/utils/convert";
+import { getUnitSpeedMps } from "@/scenariostore/unitTrackConversions";
 
 const ARC_SOURCE_ID = "unitHistoryArcSource";
 const LEG_SOURCE_ID = "unitHistoryLegSource";
@@ -35,9 +35,9 @@ const MIDPOINT_SOURCE_ID = "unitHistoryLegMidpointSource";
 
 const ARC_LAYER_ID = "unitHistoryArcLayer";
 const LEG_LAYER_ID = "unitHistoryLegLayer";
-export const WAYPOINT_LAYER_ID = "unitHistoryWaypointLayer";
+const WAYPOINT_LAYER_ID = "unitHistoryWaypointLayer";
 const WAYPOINT_LABEL_LAYER_ID = "unitHistoryWaypointLabelLayer";
-export const VIA_LAYER_ID = "unitHistoryViaLayer";
+const VIA_LAYER_ID = "unitHistoryViaLayer";
 const MIDPOINT_LAYER_ID = "unitHistoryLegMidpointLayer";
 
 export const UNIT_HISTORY_LAYER_IDS = [
@@ -60,6 +60,85 @@ const coarsePointerQuery =
     : null;
 
 const EMPTY_FC: FeatureCollection = { type: "FeatureCollection", features: [] };
+
+/** A waypoint or via point of a drawn unit path, resolved from a map pixel. */
+export type TrackPointHit =
+  | { kind: "waypoint"; unitId: string; stateIndex: number }
+  | { kind: "via"; unitId: string; stateIndex: number; viaIndex: number };
+
+function getHandleHitTolerance(e?: MapMouseEvent): number {
+  const isTouch =
+    (e?.originalEvent?.type?.startsWith("touch") ?? false) ||
+    (coarsePointerQuery?.matches ?? false);
+  return isTouch ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
+}
+
+/** The rendered feature whose drawn position is nearest the given pixel. */
+function closestFeatureTo<T extends { geometry: unknown }>(
+  mlMap: MlMap,
+  features: T[],
+  x: number,
+  y: number,
+): T | undefined {
+  const distance = (f: T) => {
+    const coordinates = (f.geometry as { coordinates?: [number, number] }).coordinates;
+    if (!coordinates) return Number.POSITIVE_INFINITY;
+    const projected = mlMap.project(coordinates);
+    return Math.hypot(projected.x - x, projected.y - y);
+  };
+  let best: T | undefined;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const feature of features) {
+    const d = distance(feature);
+    if (d < bestDistance) {
+      best = feature;
+      bestDistance = d;
+    }
+  }
+  return best;
+}
+
+/** Queries a handle layer with the press buffered into a tolerance box. */
+function queryHandlesInBox(
+  mlMap: MlMap,
+  [x, y]: [number, number],
+  layerId: string,
+  tolerance: number,
+) {
+  if (!mlMap.getLayer(layerId)) return [];
+  return mlMap.queryRenderedFeatures(
+    [
+      [x - tolerance, y - tolerance],
+      [x + tolerance, y + tolerance],
+    ],
+    { layers: [layerId] },
+  );
+}
+
+/**
+ * Resolves a map pixel to the closest waypoint or via point of a drawn unit
+ * path. Shared by the edit handlers and the map context menu, so both agree on
+ * the hit tolerance and on waypoints winning a shared hit.
+ */
+export function queryTrackPointAt(
+  mlMap: MlMap,
+  point: [number, number],
+  tolerance = getHandleHitTolerance(),
+): TrackPointHit | null {
+  // Waypoints are drawn on top of via points, so they win a shared hit.
+  for (const layerId of [WAYPOINT_LAYER_ID, VIA_LAYER_ID]) {
+    const hits = queryHandlesInBox(mlMap, point, layerId, tolerance);
+    const closest = closestFeatureTo(mlMap, hits, point[0], point[1]);
+    const unitId = closest?.properties?.unitId as string | undefined;
+    const stateIndex = closest?.properties?.stateIndex as number | undefined;
+    if (!unitId || stateIndex === undefined) continue;
+    if (layerId === WAYPOINT_LAYER_ID) return { kind: "waypoint", unitId, stateIndex };
+    const viaIndex = closest?.properties?.viaIndex as number | undefined;
+    if (viaIndex === undefined) continue;
+    return { kind: "via", unitId, stateIndex, viaIndex };
+  }
+  return null;
+}
 
 export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) {
   const { geo, unitActions } = activeScenario;
@@ -404,11 +483,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       if (lastLocationEntry) {
         const { location, t } = lastLocationEntry;
         const travelDistance = distanceMeters(location!, lngLat);
-        const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
-        const speed = speedValue
-          ? convertSpeedToMetric(speedValue.value, speedValue.uom)
-          : convertSpeedToMetric(30, "km/h");
-        const travel = travelDistance / speed;
+        const travel = travelDistance / getUnitSpeedMps(unit);
         newTime = Math.round(t + travel * 1000);
       }
       geo.addUnitPosition(unitId, lngLat, newTime);
@@ -598,13 +673,6 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     });
   }
 
-  function getHandleHitTolerance(e: MapMouseEvent): number {
-    const isTouch =
-      (e.originalEvent?.type?.startsWith("touch") ?? false) ||
-      (coarsePointerQuery?.matches ?? false);
-    return isTouch ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
-  }
-
   /**
    * Dragging a midpoint handle inserts a via point at that segment. Runs off a
    * map-level mousedown so the press can be buffered into a tolerance box
@@ -624,26 +692,15 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     ) {
       return;
     }
-    const tolerance = getHandleHitTolerance(e);
     const { x, y } = e.point;
-    const hits = mlMap.queryRenderedFeatures(
-      [
-        [x - tolerance, y - tolerance],
-        [x + tolerance, y + tolerance],
-      ],
-      { layers: [MIDPOINT_LAYER_ID] },
+    const hits = queryHandlesInBox(
+      mlMap,
+      [x, y],
+      MIDPOINT_LAYER_ID,
+      getHandleHitTolerance(e),
     );
-    if (hits.length === 0) return;
-    const closest = hits.reduce((best, feature) => {
-      const distance = (f: (typeof hits)[number]) => {
-        const coordinates = (f.geometry as { coordinates?: [number, number] })
-          .coordinates;
-        if (!coordinates) return Number.POSITIVE_INFINITY;
-        const projected = mlMap.project(coordinates);
-        return Math.hypot(projected.x - x, projected.y - y);
-      };
-      return distance(feature) < distance(best) ? feature : best;
-    }, hits[0]!);
+    const closest = closestFeatureTo(mlMap, hits, x, y);
+    if (!closest) return;
 
     const unitId = closest.properties?.unitId as string | undefined;
     const stateIndex = closest.properties?.stateIndex as number | undefined;

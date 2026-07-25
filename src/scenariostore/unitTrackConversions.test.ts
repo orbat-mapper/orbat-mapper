@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import type { Position } from "geojson";
+import type { NState } from "@/types/internalModels";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useUnitManipulations } from "@/scenariostore/unitManipulations";
 import { useScenarioTime } from "@/scenariostore/time";
@@ -72,50 +74,44 @@ function setup(scenario: any) {
 }
 
 describe("computeViaPointTime", () => {
+  function destination(via: Position[], viaStartTime?: number): NState {
+    return { id: "state-1", t: T2, location: [2, 0], via, viaStartTime };
+  }
+
   it("splits the leg's time span by the distance travelled", () => {
-    const t = computeViaPointTime({
-      prev: { location: [0, 0], t: T0 },
-      via: [[1, 0]],
-      viaIndex: 0,
-      destination: { location: [2, 0], t: T2 },
-      fallbackSpeedMps: 10,
-    });
+    const t = computeViaPointTime(
+      { location: [0, 0], t: T0 },
+      destination([[1, 0]]),
+      0,
+      10,
+    );
     expect(t).toBe(T1);
   });
 
   it("measures from viaStartTime when the leg has one", () => {
-    const t = computeViaPointTime({
-      prev: { location: [0, 0], t: T0 },
-      via: [[1, 0]],
-      viaIndex: 0,
-      destination: { location: [2, 0], t: T2 },
-      viaStartTime: T1,
-      fallbackSpeedMps: 10,
-    });
+    const t = computeViaPointTime(
+      { location: [0, 0], t: T0 },
+      destination([[1, 0]], T1),
+      0,
+      10,
+    );
     expect(t).toBe(T1 + (T2 - T1) / 2);
   });
 
   it("works backwards from the unit's speed when the leg starts untimed", () => {
     // 1 degree of longitude at the equator is ~111.2 km, covered in ~11120 s
     // at 10 m/s.
-    const t = computeViaPointTime({
-      prev: { location: [0, 0] },
-      via: [[1, 0]],
-      viaIndex: 0,
-      destination: { location: [2, 0], t: T2 },
-      fallbackSpeedMps: 10,
-    });
+    const t = computeViaPointTime({ location: [0, 0] }, destination([[1, 0]]), 0, 10);
     expect((T2 - t) / 1000).toBeCloseTo(11119.5, 0);
   });
 
   it("keeps the new time inside the leg", () => {
-    const t = computeViaPointTime({
-      prev: { location: [0, 0], t: T0 },
-      via: [[2, 0]],
-      viaIndex: 0,
-      destination: { location: [2, 0], t: T2 },
-      fallbackSpeedMps: 10,
-    });
+    const t = computeViaPointTime(
+      { location: [0, 0], t: T0 },
+      destination([[2, 0]]),
+      0,
+      10,
+    );
     expect(t).toBe(T2 - 1);
   });
 });

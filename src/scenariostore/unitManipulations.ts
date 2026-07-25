@@ -146,6 +146,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,
+    canConvertViaPointToWaypoint,
+    canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
   } = useUnitStateManipulations(store);
@@ -1229,6 +1231,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
     expandUnit,
     updateUnitStateVia,
+    canConvertViaPointToWaypoint,
+    canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
     updateUnitStateEntry,
