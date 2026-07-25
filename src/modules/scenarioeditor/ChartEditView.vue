@@ -42,7 +42,9 @@ const {
 const activeUnit = computed(
   () =>
     (activeUnitId.value &&
-      unitActions.expandUnitWithSymbolOptions(getUnitById(activeUnitId.value))) ||
+      unitActions.expandUnitWithSymbolOptions(getUnitById(activeUnitId.value), {
+        useCurrentState: true,
+      })) ||
     null,
 );
 

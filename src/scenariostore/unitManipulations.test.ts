@@ -880,3 +880,33 @@ describe("fresh load preserves base resource onHand", () => {
     expect(unit.personnel?.[0]).toEqual(expect.objectContaining({ count: 2, onHand: 1 }));
   });
 });
+
+describe("expandUnitWithSymbolOptions", () => {
+  function createTimedScenario() {
+    const scenario = createScenario();
+    scenario.sides[0].groups[0].subUnits[0].state = [
+      { id: "state-1", t: "2025-01-01T01:00:00Z", sidc: "10031000001100000000" },
+    ];
+    return scenario;
+  }
+
+  it("keeps the base symbol by default", () => {
+    const store = useNewScenarioStore(createTimedScenario());
+    const actions = useUnitManipulations(store);
+    useScenarioTime(store).setCurrentTime(Date.parse("2025-01-01T02:00:00Z"));
+
+    const unit = actions.expandUnitWithSymbolOptions(store.state.unitMap["unit-1"]);
+    expect(unit.sidc).toBe("10031000000000000000");
+  });
+
+  it("uses the symbol projected for the current time when asked", () => {
+    const store = useNewScenarioStore(createTimedScenario());
+    const actions = useUnitManipulations(store);
+    useScenarioTime(store).setCurrentTime(Date.parse("2025-01-01T02:00:00Z"));
+
+    const unit = actions.expandUnitWithSymbolOptions(store.state.unitMap["unit-1"], {
+      useCurrentState: true,
+    });
+    expect(unit.sidc).toBe("10031000001100000000");
+  });
+});
