@@ -15,6 +15,10 @@ import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import {
+  canConvertViaPointToWaypoint,
+  canConvertWaypointToViaPoint,
+} from "@/scenariostore/unitTrackConversions";
 
 vi.mock("@/composables/mainToolbarData", () => ({
   useActiveSidc: () => ({
@@ -213,6 +217,14 @@ describe("MaplibreContextMenu", () => {
       id: "feature-1",
       name: "Feature 1",
     };
+    const unit = {
+      id: "unit-1",
+      sidc: "SFGPUCI----K",
+      name: "Unit 1",
+      location: [0, 0],
+      state: [{ id: "state-1", t: 1000, location: [2, 0], via: [[1, 0]] }],
+    } as any;
+    const getUnit = (id: string) => (id === "unit-1" ? unit : undefined);
     const scenario = {
       store: {
         state: {
@@ -224,6 +236,18 @@ describe("MaplibreContextMenu", () => {
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
         createSubordinateUnit: vi.fn(() => "unit-2"),
+        // Delegate to the real rules, so the menu's enablement stays in sync
+        // with what the store actions actually allow.
+        canConvertViaPointToWaypoint: vi.fn(
+          (id: string, stateIndex: number, viaIndex: number) => {
+            const u = getUnit(id);
+            return !!u && canConvertViaPointToWaypoint(u, stateIndex, viaIndex);
+          },
+        ),
+        canConvertWaypointToViaPoint: vi.fn((id: string, stateIndex: number) => {
+          const u = getUnit(id);
+          return !!u && canConvertWaypointToViaPoint(u, stateIndex);
+        }),
         convertViaPointToWaypoint: vi.fn(),
         convertWaypointToViaPoint: vi.fn(),
       },
@@ -237,17 +261,7 @@ describe("MaplibreContextMenu", () => {
         layerItemsLayers: ref([{ id: "layer-1", items: [] }]),
       },
       helpers: {
-        getUnitById: vi.fn((id: string) =>
-          id === "unit-1"
-            ? {
-                id: "unit-1",
-                sidc: "SFGPUCI----K",
-                name: "Unit 1",
-                location: [0, 0],
-                state: [{ id: "state-1", t: 1000, location: [2, 0], via: [[1, 0]] }],
-              }
-            : undefined,
-        ),
+        getUnitById: vi.fn(getUnit),
       },
     } as any;
     const searchHooks = {

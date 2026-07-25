@@ -31,6 +31,7 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import type { GeometryLayerItemUpdate, MediaUpdate } from "@/types/internalModels";
 import type { UpdateOptions } from "@/scenariostore/geo";
+import { getUnitSpeedMps } from "@/scenariostore/unitTrackConversions";
 import { inputEventFilter } from "@/components/helpers";
 import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatureDropdownMenu.vue";
 import type { ScenarioFeatureActions } from "@/types/constants";
@@ -53,7 +54,6 @@ import {
   isAssignableTrackFeature,
 } from "@/importexport/unitTrackAssignment";
 import type { Feature } from "geojson";
-import { convertSpeedToMetric } from "@/utils/convert";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -76,8 +76,6 @@ const uiStore = useUiStore();
 const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const toolbarStore = useMainToolbarStore();
 const { rootUnitIds } = useRootUnitIds();
-
-const DEFAULT_ASSIGN_SPEED_M_S = convertSpeedToMetric(30, "km/h");
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
@@ -320,10 +318,7 @@ function assignFeatureToUnit() {
   const unit = store.state.unitMap[assignmentUnitId.value];
   if (!unit) return;
 
-  const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;
-  const averageSpeed = speedValue
-    ? convertSpeedToMetric(speedValue.value, speedValue.uom)
-    : DEFAULT_ASSIGN_SPEED_M_S;
+  const averageSpeed = getUnitSpeedMps(unit);
 
   const result = createUnitTrackStatesFromFeature(
     geoJsonFeature,
