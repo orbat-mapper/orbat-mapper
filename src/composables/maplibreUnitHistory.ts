@@ -140,8 +140,8 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
       );
     }
     if (!mlMap.getLayer(MIDPOINT_LAYER_ID)) {
-      // Same look as the midpoint handles of the feature draw editor, so the
-      // gesture that adds a vertex to a line also adds a via point to a leg.
+      // Same gesture as the midpoint handles of the feature draw editor, but
+      // muted so they read as hints rather than competing with the real points.
       mlMap.addLayer(
         {
           id: MIDPOINT_LAYER_ID,
@@ -149,9 +149,11 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
           source: MIDPOINT_SOURCE_ID,
           paint: {
             "circle-radius": 4,
-            "circle-color": "#60a5fa",
-            "circle-stroke-color": "#1e3a8a",
-            "circle-stroke-width": 1.5,
+            "circle-color": "#ffffff",
+            "circle-opacity": 0.5,
+            "circle-stroke-color": "#475569",
+            "circle-stroke-width": 1,
+            "circle-stroke-opacity": 0.5,
           },
         },
         beforeLayerId,
