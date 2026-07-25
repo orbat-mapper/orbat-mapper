@@ -65,7 +65,24 @@ function createHarness() {
     deleteUnitStateEntry: vi.fn(),
     updateUnit: vi.fn(),
     updateUnitState: vi.fn(),
-    updateUnitStateVia: vi.fn(),
+    // Mirrors the store action so a redraw after an edit reflects the change.
+    updateUnitStateVia: vi.fn(
+      (
+        id: string,
+        action: string,
+        stateIndex: number,
+        viaIndex: number,
+        data: number[],
+      ) => {
+        if (id !== UNIT_ID) return;
+        const entry = unit.state[stateIndex];
+        if (!entry) return;
+        if (!entry.via) entry.via = [];
+        if (action === "add") entry.via.splice(viaIndex, 0, data);
+        else if (action === "modify") entry.via[viaIndex] = data;
+        else if (action === "remove") entry.via.splice(viaIndex, 1);
+      },
+    ),
   };
   const activeScenario = {
     geo: { addUnitPosition },
@@ -85,13 +102,22 @@ function createHarness() {
   return { mlMap, sources, history, addUnitPosition, unitActions, trigger, unit };
 }
 
-function createEvent(lng: number, lat: number, features?: any[]) {
+function createEvent(
+  lng: number,
+  lat: number,
+  features?: any[],
+  originalEvent: Record<string, unknown> = {},
+) {
   return {
     lngLat: { lng, lat },
     point: { x: lng, y: lat },
     features,
     preventDefault: vi.fn(),
-    originalEvent: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+    originalEvent: {
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      ...originalEvent,
+    },
   } as any;
 }
 
@@ -214,6 +240,185 @@ describe("useMaplibreUnitHistory", () => {
     );
     trigger("mouseup", createEvent(30, 40));
     expect(unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
+  function setupEditing(harness: ReturnType<typeof createHarness>) {
+    harness.history.setupUnitHistoryLayers();
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    useUnitSettingsStore().editHistory = true;
+    harness.history.drawHistory();
+  }
+
+  const LEG_FEATURE = [{ properties: { unitId: UNIT_ID } }];
+
+  // Makes the via layer report a hit at the queried point.
+  function stubViaHit(harness: ReturnType<typeof createHarness>) {
+    harness.mlMap.queryRenderedFeatures = vi.fn(
+      (_point: unknown, options: { layers: string[] }) =>
+        options.layers[0] === "unitHistoryViaLayer"
+          ? [
+              {
+                layer: { id: "unitHistoryViaLayer" },
+                properties: { unitId: UNIT_ID, stateIndex: 0, viaIndex: 0 },
+              },
+            ]
+          : [],
+    );
+  }
+
+  it("annotates leg segments with the via insertion position", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [
+      [10.4, 20.4],
+      [10.8, 20.8],
+    ];
+    setupEditing(harness);
+
+    const leg = harness.sources.get("unitHistoryLegSource").data.features[0];
+    expect(leg.geometry.coordinates).toHaveLength(5);
+    // The initial waypoint has no state entry, so the first segments belong to
+    // the state entry at the end of the leg they precede.
+    expect(leg.properties.segments).toEqual([
+      { stateIndex: 0, viaIndex: 0 },
+      { stateIndex: 0, viaIndex: 1 },
+      { stateIndex: 0, viaIndex: 2 },
+      { stateIndex: 1, viaIndex: 0 },
+    ]);
+  });
+
+  it("adds a via point when the segment from the initial location is grabbed", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(10.5, 20.5, LEG_FEATURE),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "add",
+      0,
+      0,
+      [10.5, 20.5],
+    );
+  });
+
+  it("adds a via point between two existing via points", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [
+      [10.4, 20.4],
+      [10.8, 20.8],
+    ];
+    setupEditing(harness);
+
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(10.6, 20.6, LEG_FEATURE),
+    );
+
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "add",
+      0,
+      1,
+      [10.6, 20.6],
+    );
+  });
+
+  it("drags the newly added via point", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+
+    // Midway on the leg between the two state entries.
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(11.5, 21.5, LEG_FEATURE),
+    );
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "add",
+      1,
+      0,
+      [11.5, 21.5],
+    );
+
+    harness.trigger("mousemove", createEvent(30, 40));
+    const viaFeatures = harness.sources.get("unitHistoryViaSource").data.features;
+    expect(viaFeatures).toHaveLength(1);
+    expect(viaFeatures[0].geometry.coordinates).toEqual([30, 40]);
+
+    harness.trigger("mouseup", createEvent(30, 40));
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "modify",
+      1,
+      0,
+      [30, 40],
+    );
+  });
+
+  it("does not add via points while path editing is disabled", () => {
+    const harness = createHarness();
+    harness.history.setupUnitHistoryLayers();
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    useUnitSettingsStore().editHistory = false;
+    harness.history.drawHistory();
+
+    harness.trigger(
+      "mousedown:unitHistoryLegLayer",
+      createEvent(11.5, 21.5, LEG_FEATURE),
+    );
+    harness.trigger("mouseup", createEvent(30, 40));
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+  });
+
+  it("removes a via point on alt-click without dragging it", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [[11.5, 21.5]];
+    setupEditing(harness);
+    stubViaHit(harness);
+
+    // Alt-mousedown must not start a drag that would commit a move.
+    harness.trigger(
+      "mousedown:unitHistoryViaLayer",
+      createEvent(
+        11.5,
+        21.5,
+        [{ properties: { unitId: UNIT_ID, stateIndex: 0, viaIndex: 0 } }],
+        {
+          altKey: true,
+        },
+      ),
+    );
+    harness.trigger("mouseup", createEvent(11.5, 21.5, undefined, { altKey: true }));
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
+
+    const consumed = harness.history.handleMapClick(
+      createEvent(11.5, 21.5, undefined, { altKey: true }),
+    );
+    expect(consumed).toBe(true);
+    expect(harness.unitActions.updateUnitStateVia).toHaveBeenCalledWith(
+      UNIT_ID,
+      "remove",
+      0,
+      0,
+      [11.5, 21.5],
+    );
+    expect(harness.unit.state[0].via).toEqual([]);
+  });
+
+  it("does not remove via points while path editing is disabled", () => {
+    const harness = createHarness();
+    harness.unit.state[0].via = [[11.5, 21.5]];
+    harness.history.setupUnitHistoryLayers();
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    useUnitSettingsStore().editHistory = false;
+    harness.history.drawHistory();
+    stubViaHit(harness);
+
+    harness.history.handleMapClick(createEvent(11.5, 21.5, undefined, { altKey: true }));
+    expect(harness.unitActions.updateUnitStateVia).not.toHaveBeenCalled();
   });
 
   it("ignores waypoint drags while path editing is disabled", () => {
