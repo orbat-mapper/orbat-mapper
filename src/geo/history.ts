@@ -25,6 +25,9 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { unwindCoordinates } from "@/geo/longitude";
 
 export const VIA_TIME = -1337;
+// Marks the synthetic waypoint for a unit's initial location (`unit.location`),
+// which is not backed by a state entry.
+export const INITIAL_TIME = Number.MIN_SAFE_INTEGER;
 
 const viaStyle = new Style({
   image: new CircleStyle({
@@ -155,7 +158,7 @@ export function createUnitPathFeatures(
   // extract the location states from the unit, and add the initial location
   // we then remove any states that don't have a location
   const state = [
-    { location: unit.location, t: Number.MIN_SAFE_INTEGER },
+    { location: unit.location, t: INITIAL_TIME },
     ...(unit.state || []),
   ].filter((s) => s.location !== undefined) as LocationState[];
 
@@ -218,7 +221,7 @@ export function createUnitPathFeatures(
       id: state.id,
       unitId: unit.id,
       label:
-        state.t > Number.MIN_SAFE_INTEGER
+        state.t > INITIAL_TIME
           ? `#${index} ${fmt.trackFormatter.format(state.t)}`
           : `#${index}`,
     });
@@ -284,7 +287,7 @@ function createArcCoords(leg: Position[]): Position[] {
 export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
   const fmt = useTimeFormatStore();
   const state = [
-    { location: unit.location, t: Number.MIN_SAFE_INTEGER },
+    { location: unit.location, t: INITIAL_TIME },
     ...(unit.state || []),
   ].filter((s) => s.location !== undefined) as LocationState[];
 
@@ -299,7 +302,7 @@ export function createUnitPathGeoJson(unit: Unit | NUnit): UnitPathGeoJson {
   parts.forEach((part) => {
     part.forEach((s) => {
       waypointIndex += 1;
-      const isInitial = s.t === Number.MIN_SAFE_INTEGER;
+      const isInitial = s.t === INITIAL_TIME;
       const label = isInitial
         ? `#${waypointIndex}`
         : `#${waypointIndex} ${fmt.trackFormatter.format(s.t)}`;
