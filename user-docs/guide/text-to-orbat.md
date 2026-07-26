@@ -1,12 +1,15 @@
 # Text to ORBAT
 
-The Text to ORBAT tool lets you quickly build an order of battle by typing unit names as indented text. The tool automatically detects unit types and echelons from keywords in the text and generates military symbols.
+With the Text to ORBAT tool you can build an order of battle quickly. Type the unit names as indented text. The tool
+finds the unit types and the echelons from keywords in the text automatically, and it makes military symbols.
 
-You can access the tool from the start page or directly at [orbat-mapper.app/text-to-orbat](https://orbat-mapper.app/text-to-orbat).
+You can open the tool from the start page. As an alternative, go directly to
+[orbat-mapper.app/text-to-orbat](https://orbat-mapper.app/text-to-orbat).
 
 ## Basic syntax
 
-Each line represents a unit. Use indentation (2 spaces or a tab) to define parent-child relationships. Blank lines are ignored.
+Each line is one unit. Use indentation (2 spaces or a tab) to make the parent-child relations. The tool ignores empty
+lines.
 
 ```
 1st Infantry Division
@@ -18,7 +21,7 @@ Each line represents a unit. Use indentation (2 spaces or a tab) to define paren
   Artillery Regiment
 ```
 
-Lines starting with `#` are treated as comments and ignored:
+Lines that start with `#` are comments. The tool ignores them:
 
 ```
 # This is a comment
@@ -29,57 +32,68 @@ Lines starting with `#` are treated as comments and ignored:
 
 ## Automatic detection
 
-The tool recognizes common military keywords and abbreviations:
+The tool knows the usual military keywords and abbreviations:
 
-- **Echelon keywords**: Division, Brigade, Battalion, Company, Platoon, Squad, Team, Corps, Army (and abbreviations like div, bde, bn, co, plt, sqd)
+- **Echelon keywords**: Division, Brigade, Battalion, Company, Platoon, Squad, Team, Corps, Army (and abbreviations
+  such as div, bde, bn, co, plt, sqd)
 - **Unit type keywords**: Infantry, Armor, Artillery, Engineer, Reconnaissance, Medical, Airborne, and many more
 
-Echelon abbreviations can be written without a space after a designator number, e.g. `2bn` is interpreted as `2 bn` (2nd Battalion).
+You can write an echelon abbreviation without a space after the designator number. For example, the tool reads `2bn` as
+`2 bn` (2nd Battalion).
 
-When a unit's name doesn't contain a recognized keyword, the tool infers the echelon from its parent and inherits the parent's unit type icon.
+If the name of a unit has no known keyword, the tool takes the echelon from the parent unit. The unit also gets the
+unit type icon of the parent.
 
 ## Custom pattern mappings
 
-You can view and edit pattern mappings by clicking **Patterns** in the toolbar. This opens a modal where you can add, remove, or modify the keywords that the parser uses to detect unit types and echelons.
+To see and change the pattern mappings, click **Patterns** in the toolbar. A modal opens. In this modal you can add,
+remove or change the keywords that the parser uses to find the unit types and the echelons.
 
 ::: info
-Entries are matched top-to-bottom using first-match-wins logic. More specific patterns should appear before general ones (e.g. "airborne infantry" before "infantry"). In edit mode, you can drag entries by their handle to reorder them.
+The parser examines the entries from the top to the bottom, and uses the first entry that agrees. Thus, put the more
+specific patterns before the general patterns (for example, "airborne infantry" before "infantry"). In edit mode, drag
+the entries by their handle to change their sequence.
 :::
 
-Mappings can also be exported to and imported from an Excel spreadsheet for bulk editing.
+You can also export the mappings to an Excel spreadsheet and import them again. Thus, you can change many mappings at
+the same time.
 
 ### Alias syntax
 
-Aliases are plain-text keywords. The parser compiles them into flexible patterns that handle common variations automatically:
+Aliases are keywords in plain text. The parser makes flexible patterns from them. These patterns then find the usual
+variations automatically:
 
-| Syntax | Example | Matches | Rule |
-|---|---|---|---|
-| `(text)` | `marine(s)` | marine, Marines, MARINES | Parentheses mark optional segments |
-| multiple `()` | `armo(u)r(ed)` | armor, Armour, ARMORED, armoured | Optional segments can be combined |
-| `.` | `R.A.` | RA, R.A., r.a., R.A | Each dot is individually optional |
-| space | `anti tank` | anti tank, Anti-Tank, ANTITANK, anti.tank | Spaces match any separator (whitespace, hyphen, dot) or nothing |
+| Syntax             | Example        | Agrees with                               | Rule                                                                         |
+| ------------------ | -------------- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| `(text)`           | `marine(s)`    | marine, Marines, MARINES                  | Parentheses show the optional segments                                       |
+| more than one `()` | `armo(u)r(ed)` | armor, Armour, ARMORED, armoured          | You can use more than one optional segment together                          |
+| `.`                | `R.A.`         | RA, R.A., r.a., R.A                       | Each dot is optional                                                         |
+| space              | `anti tank`    | anti tank, Anti-Tank, ANTITANK, anti.tank | A space agrees with any separator (space, hyphen, dot), or with no separator |
 
-Aliases are matched with word boundaries, so `inf` matches "2nd inf" but not "information".
+The parser uses word boundaries for the aliases. Thus, `inf` agrees with "2nd inf", but not with "information".
 
-Matching is always case-insensitive and accent-insensitive (e.g. "blindé" matches an alias written as "blinde").
+The parser always ignores the case of the letters and the accents. For example, "blindé" agrees with the alias
+"blinde".
 
 ### Raw regex patterns
 
-For cases that can't be expressed with plain-text aliases — such as case-sensitive abbreviations (`AT`, `RM`) or digit patterns (`BM-21`) — use the **Patterns** field. Patterns are raw regular expressions matched as written.
+Some cases are not possible with aliases in plain text. Examples are abbreviations with a specified case (`AT`, `RM`)
+and patterns with digits (`BM-21`). For these cases, use the **Patterns** field. A pattern is a raw regular expression,
+and the parser uses it as you write it.
 
 ## Metadata syntax
 
-You can provide additional hints for symbol detection without affecting the displayed unit name.
+You can give more data for the detection of the symbol. This data does not change the name of the unit on the screen.
 
 ### Pipe syntax
 
-Use a single `|` to separate the display name from metadata:
+Use one `|` to divide the display name from the metadata:
 
 ```
 1st | tank bn
 ```
 
-This displays the unit as "1st" but uses "tank bn" for symbol detection (resulting in a tank/armor battalion icon).
+The tool shows the unit as "1st". But it uses "tank bn" to find the symbol. The result is a tank/armor battalion icon.
 
 ### Double-slash syntax
 
@@ -89,91 +103,99 @@ Use `//` as an alternative to the single pipe:
 1st // tank bn
 ```
 
-This behaves identically to `1st | tank bn` — everything after `//` is treated as metadata.
+The result is the same as `1st | tank bn`. All text after `//` is metadata.
 
 ### Bracket syntax
 
-Use square brackets to embed metadata inline:
+Use square brackets to put metadata in the line:
 
 ```
 2nd Art [bty]
 ```
 
-This displays the unit as "2nd Art" and uses "bty" (battery) for echelon detection. You can use multiple bracket pairs.
+The tool shows the unit as "2nd Art". It uses "bty" (battery) to find the echelon. You can use more than one pair of
+brackets.
 
 ::: info
-Metadata is checked first for echelon and icon matching, then the display name is checked as a fallback.
+The tool examines the metadata first to find the echelon and the icon. If it does not find them, it then examines the
+display name.
 :::
 
 ## Settings
 
-Click **Settings** in the toolbar to open the settings menu. The following options are available:
+Click **Settings** in the toolbar to open the settings menu. These options are available:
 
-- **Autocomplete** — enable/disable autocomplete suggestions as you type
-- **Match input case** — when enabled, autocomplete suggestions match the casing of your input
+- **Autocomplete** — set the autocomplete suggestions to on or off while you type
+- **Match input case** — if this option is on, the autocomplete suggestions use the case of the letters of your input
 - **Split fields** — use commas as field separators (see below)
-- **Starting echelon** — set the default echelon for the top-level unit when no echelon keyword is detected (default: Brigade). Child units are assigned progressively smaller echelons based on this starting point.
+- **Starting echelon** — set the default echelon of the unit at the top level when the tool finds no echelon keyword
+  (default: Brigade). The child units then get progressively smaller echelons.
 
 ## Split fields
 
-Enable **Split fields** in the Settings menu to use commas as field separators. This lets you populate the unit's short name and description in addition to the name.
+To use commas as field separators, set **Split fields** to on in the Settings menu. Thus, you can give the short name
+and the description of the unit with the name.
 
-The field order can be selected in the Settings menu:
+You can select the sequence of the fields in the Settings menu:
 
-| Order | Format |
-|---|---|
+| Sequence                      | Format                                   |
+| ----------------------------- | ---------------------------------------- |
 | name, short name, description | `Alpha Company, A, Main assault element` |
 | short name, name, description | `A, Alpha Company, Main assault element` |
 
-- If only one value is provided (no commas), it is used as the name
-- If two values are provided, the first two fields from the selected order are used
-- Extra commas beyond the third field are included as part of the description
+- If you give only one value (no commas), the tool uses it as the name.
+- If you give two values, the tool uses the first two fields of the selected sequence.
+- The tool puts the text after the third comma in the description.
 
 ::: info
-When split fields is enabled, the full line (all comma parts combined) is still used for automatic symbol detection, so keywords in any field contribute to echelon and icon matching.
+When split fields is on, the tool uses the full line (all the parts between the commas) to find the symbol
+automatically. Thus, keywords in all the fields help to find the echelon and the icon.
 :::
 
-Split fields can be combined with metadata syntax:
+You can use split fields with the metadata syntax:
 
 ```
 A, Alpha Company | infantry bn
 A, Alpha Company [armor]
 ```
 
-## Editor features
+## Editor functions
 
 ### Autocomplete
 
-When **Autocomplete** is enabled in the Settings menu, the editor suggests icon and echelon keywords as you type, with symbol previews.
+When **Autocomplete** is on in the Settings menu, the editor gives suggestions for the icon and echelon keywords while
+you type. It also shows the symbols.
 
 ### Pattern and icon browsers
 
-- **Patterns** — opens a modal showing all pattern-to-icon and pattern-to-echelon mappings with priority numbers and drag-handle reordering
-- **Icons** — opens a modal browsing all available icon codes and their aliases
+- **Patterns** — opens a modal that shows all the pattern-to-icon and pattern-to-echelon mappings with their priority
+  numbers. Drag the handles to change the sequence.
+- **Icons** — opens a modal in which you can browse all the available icon codes and their aliases
 
 ### Debug info
 
-Enable **Debug info** in the output panel to display the detected echelon and icon codes next to each unit in the tree.
+Set **Debug info** to on in the output panel. The panel then shows the echelon and the icon code of each unit in the
+tree.
 
 ## Output options
 
-The right panel shows a live preview of the generated ORBAT as a hierarchical tree with military symbols.
+The right panel shows a live preview of the ORBAT. The preview is a hierarchical tree with military symbols.
 
 ### Copy to clipboard
 
-Click **Copy** to copy the ORBAT as JSON to the clipboard. You can then paste it into the scenario editor.
+Click **Copy** to copy the ORBAT to the clipboard as JSON. You can then put it in the scenario editor.
 
 ### Drag and drop
 
-Each unit icon in the tree is a drag handle. Drag individual units directly into the scenario editor's ORBAT tree.
+Each unit icon in the tree is a drag handle. Drag the units directly into the ORBAT tree of the scenario editor.
 
 ### Open in editor
 
-Click **Open** to load the entire parsed ORBAT as a new scenario in the scenario editor.
+Click **Open** to load the full ORBAT as a new scenario in the scenario editor.
 
 ### Export
 
 Click **Export** to download the ORBAT in one of two formats:
 
-- **Battle Staff Tools JSON** — Spatial Illusions format
-- **ORBAT Mapper Scenario** — full scenario file that can be loaded in ORBAT Mapper
+- **Battle Staff Tools JSON** — the Spatial Illusions format
+- **ORBAT Mapper Scenario** — a full scenario file that you can load in ORBAT Mapper

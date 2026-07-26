@@ -1,29 +1,27 @@
 # Tutorial introduction
 
-This tutorial will guide you through the process of recreating the first major land battle of the
-1982 [Falklands War](https://en.wikipedia.org/wiki/Falklands_War):
-_The [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green)_. Lasting
-from May 28-29, it saw intense combat as British troops from the 2nd Battalion, Parachute Regiment, clashed with
-well-defended Argentine positions.
+This tutorial shows you how to make the first large land battle of the
+1982 [Falklands War](https://en.wikipedia.org/wiki/Falklands_War) again:
+_The [Battle of Goose Green](https://en.wikipedia.org/wiki/Battle_of_Goose_Green)_. The battle continued from 28 to 29
+May. British troops of the 2nd Battalion, Parachute Regiment, attacked strong Argentine positions.
 
 ::: info
-The tutorial is intended for desktop/laptop users. ORBAT Mapper does support smaller screen sizes, but the scenario
-editing experience on mobile devices is not optimal.
+This tutorial is for users of desktop and laptop computers. ORBAT Mapper operates on smaller screens, but scenario
+editing on a mobile device is not easy.
 :::
 
-The tutorial is divided into the
-following sections:
+The tutorial has these sections:
 
 - [Research](research.md)
 - [Getting started](getting-started.md)
 
-In progress:
+These sections are not complete:
 
-- Building the order of battle (ORBAT)
-- Working with the map
-  - Placing units
-  - Adding scenario features
-  - Adding map layers
-- Importing and exporting scenario data
-  - Importing units from spreadsheets
-  - Export scenario to Google Earth
+- Build the order of battle (ORBAT)
+- Work with the map
+  - Put units on the map
+  - Add scenario features
+  - Add map layers
+- Import and export scenario data
+  - Import units from spreadsheets
+  - Export a scenario to Google Earth

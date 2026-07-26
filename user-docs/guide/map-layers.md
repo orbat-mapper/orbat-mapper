@@ -1,6 +1,6 @@
-# Working with map background layers
+# Work with map background layers
 
-ORBAT Mapper supports the following background layer sources:
+ORBAT Mapper supports these background layer sources:
 
 Raster layers:
 
@@ -16,28 +16,25 @@ Vector layers:
 
 ## XYZ tiles
 
-XYZ map tiles use a grid system to break up a map into small square tiles that can be loaded quickly in a web browser.
-Each tile is a small image that covers a small area of the map, and the XYZ system allows for easy indexing and
-retrieval of these tiles.
+XYZ map tiles divide a map into small square tiles in a grid. A web browser can load these tiles quickly. Each tile is
+a small image of a small area of the map. The XYZ system makes the index and the retrieval of the tiles easy.
 
 ## TileJSON
 
-[TileJSON](https://github.com/mapbox/tilejson-spec/tree/master/3.0.0) is a JSON based format designed to easily describe
-a set of XYZ map tiles. The advantage of using TileJSON over XYZ tiles is that TileJSON usually contains information
-about
-attribution, available zoom levels and extent.
+[TileJSON](https://github.com/mapbox/tilejson-spec/tree/master/3.0.0) is a format that uses JSON. It gives a simple
+description of a set of XYZ map tiles. TileJSON is better than XYZ tiles, because it usually also gives the
+attribution, the available zoom levels and the extent.
 
 ## Images
 
-An image layer is simply a single image that is displayed on top of the map at a specific location. You can rotate and
-scale it to fit the map.
+An image layer is one image on top of the map at a specified location. You can turn it and change its size to make it
+agree with the map.
 
 ## KML/KMZ
 
-You can add a KML or KMZ file as a temporary map layer by dragging and dropping it onto the map. You can also use
-the [import-data](import-data).
-dialog. If you select the "Extract KML styles" option, ORBAT mapper will try to use images and styles embedded in the
-file.
+To add a KML or KMZ file as a temporary map layer, drag the file and drop it on the map. As an alternative, use the
+[import data](import-data) dialog. If you select the "Extract KML styles" option, ORBAT Mapper tries to use the images
+and the styles in the file.
 
-Please note that KML/KMZ are stored in memory, so don't add too many of them. They are only meant to be used as
-temporary reference layers, and you currently cannot save them as part of the scenario.
+The application keeps KML/KMZ layers in memory. Thus, do not add too many of them. Use them only as temporary reference
+layers. You cannot save them as part of the scenario.

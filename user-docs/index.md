@@ -2,11 +2,11 @@
 layout: home
 
 title: ORBAT Mapper
-titleTemplate: Recreate historic battles and military scenarios
+titleTemplate: Make historic battles and military scenarios again
 
 hero:
   name: ORBAT Mapper
-  text: Recreate historic battles and military scenarios in your browser
+  text: Make historic battles and military scenarios again in your browser
   image:
     src: /images/screenshot.png
     alt: VitePress
@@ -22,22 +22,22 @@ hero:
       link: https://orbat-mapper.app/
 
 features:
-  - title: Create ORBATs
-    details: Quickly build and organize orders of battle with drag-and-drop.
+  - title: Build ORBATs
+    details: Build and organize orders of battle quickly. Drag and drop the units.
   - title: ORBAT chart view
-    details: Visualize unit hierarchies as organizational charts.
+    details: Show unit hierarchies as organization charts.
   - title: Timeline and playback
-    details: Animate unit movements and scenario events over time.
+    details: Animate unit movements and scenario events in time.
   - title: Symbol browser
-    details: Search, preview, and export military symbols as PNG or SVG.
+    details: Search for military symbols, look at them, and export them as PNG or SVG.
   - title: Text to ORBAT
-    details: Parse text into unit hierarchies automatically.
+    details: The tool reads text and makes unit hierarchies from it automatically.
   - title: Grid edit mode
-    details: Efficient spreadsheet-style editing of units and equipment.
+    details: Edit units and equipment quickly in a table, as in a spreadsheet.
   - title: Draw and measure
-    details: Draw map features and measure distances and areas.
+    details: Draw map features. Measure distances and areas.
   - title: Import and export
-    details: Support for GeoJSON, KML/KMZ, MilX, XLSX, and CSV formats.
+    details: The application supports the GeoJSON, KML/KMZ, MilX, XLSX and CSV formats.
   - title: Client side only
-    details: Everything is stored on your computer. No server required.
+    details: The application keeps all data on your computer. You do not need a server.
 ---

@@ -1,98 +1,111 @@
-# Sharing Scenarios
+# Share scenarios
 
-ORBAT Mapper provides two ways to share your scenarios with others: **Share scenario online** (cloud-based) and **Share as URL** (client-side encoding).
+ORBAT Mapper gives you two methods to share your scenarios with other persons: **Share scenario online** (it uses the
+cloud) and **Share as URL** (the client encodes the data).
 
-## Share Scenario Online
+## Share a scenario online
 
-The "Share scenario online" feature uploads your scenario to an ORBAT Mapper cloud service and generates a shareable link. This is the recommended method for sharing most scenarios, especially larger ones.
+The "Share scenario online" function sends your scenario to an ORBAT Mapper cloud service. The service then makes a
+link that you can share. Use this method for almost all scenarios, and especially for large scenarios.
 
-### How to Share
+### How to share
 
-1. Open the scenario you want to share.
-2. Open the main menu and open the **File** menu.
+1. Open the scenario that you want to share.
+2. Open the main menu, then open the **File** menu.
 3. Select **Share scenario online...**.
-4. Click **Upload and generate link** to upload your scenario.
-5. Once uploaded, click **Copy Link** to copy the generated URL to your clipboard.
+4. Click **Upload and generate link** to send your scenario.
+5. When the upload is complete, click **Copy Link**. The application copies the URL to your clipboard.
 
-You can now paste this link into emails, chat apps, or documents.
+You can now put this link in emails, chat applications or documents.
 
-### Encrypting Scenarios
+### Encrypt scenarios
 
-You can optionally encrypt your scenario before sharing it. This ensures that only people with the password can view the scenario content.
+You can encrypt your scenario before you share it. Then only the persons who have the password can see the content of
+the scenario.
 
-1. Toggle the **Encrypt scenario** switch.
-2. Enter a strong **Password**.
-3. Optionally, add a **Description**.
+1. Set the **Encrypt scenario** switch to on.
+2. Give a strong **Password**.
+3. If necessary, add a **Description**.
    ::: warning
-   The description is **not encrypted** and will be visible to anyone with the link. Do not put sensitive information in the description.
+   The application does **not** encrypt the description. All persons who have the link can read it. Do not put
+   sensitive data in the description.
    :::
 4. Click **Upload and generate link**.
 
-#### Security Details
+#### Security data
 
-ORBAT Mapper uses robust client-side encryption. The server only receives encrypted data and never sees your password or the unencrypted scenario.
+ORBAT Mapper encrypts the data in the client. This encryption is strong. The server receives only encrypted data. It
+does not receive your password or the unencrypted scenario.
 
 - **Algorithm**: AES-GCM (256-bit key)
-- **Key Derivation**: PBKDF2 (SHA-256)
-- **Data Integrity**: The encryption includes an integrity check to prevent tampering.
+- **Key derivation**: PBKDF2 (SHA-256)
+- **Data integrity**: The encryption includes a check that prevents unwanted changes to the data.
 
-### Important Notes
+### Important data
 
-- **Link expiration**: Generated links are valid for **90 days** from creation.
-- **Privacy**: Anyone with the link can view the scenario (unless encrypted). Be careful when sharing sensitive or private scenarios.
-- **Upload limits**: There is an hourly upload limit to prevent abuse. If you encounter rate limiting, wait and try again later.
-- **Size limits**: Very large scenarios may exceed the maximum upload size. In such cases, consider exporting the scenario as a JSON file.
+- **Link expiration**: A link stays valid for **90 days** after its creation.
+- **Privacy**: All persons who have the link can see the scenario, if you do not encrypt it. Be careful with sensitive
+  or private scenarios.
+- **Upload limits**: There is an hourly upload limit that prevents incorrect use. If you get to this limit, wait and
+  try again later.
+- **Size limits**: A very large scenario can be larger than the maximum upload size. If this occurs, export the
+  scenario as a JSON file.
 
 ::: warning
-The scenario is uploaded to the cloud and stored temporarily. Anyone with the link can access the full scenario data. Do not share sensitive or confidential information using this feature unless you use the encryption option.
+The application sends the scenario to the cloud, and the cloud keeps it temporarily. All persons who have the link can
+get all the scenario data. Do not share sensitive or confidential data with this function. If you must share such data,
+use the encryption option.
 :::
 
 ---
 
-## Share Scenario as URL
+## Share a scenario as a URL
 
-ORBAT Mapper also allows you to share small scenarios directly via a URL. This feature encodes the
-entire scenario data into a compressed string and appends it to the URL, allowing you to
-share your work without needing a server or account.
+ORBAT Mapper also lets you share small scenarios with a URL. This function compresses all the scenario data into a
+string and adds the string to the URL. Thus, you can share your work without a server and without an account.
 
 ::: warning
-Only use this feature for small to medium-sized scenarios. Larger scenarios may generate URLs that exceed browser or chat application limits.
-Always test the generated link to ensure it works as expected.
+Use this function only for small and medium scenarios. Large scenarios can make URLs that are longer than the limits of
+browsers and chat applications.
+Always test the link to make sure that it operates correctly.
 
-Anyone with the link has full access to the scenario data contained in it.
+All persons who have the link get all the scenario data in it.
 :::
 
-### How to Share
+### How to share
 
-1. Open the scenario you want to share.
-2. Open the main menu and open the **File** menu.
+1. Open the scenario that you want to share.
+2. Open the main menu, then open the **File** menu.
 3. Select **Share scenario as URL...**.
-4. Click **Copy Link** to copy the generated URL to your clipboard.
+4. Click **Copy Link**. The application copies the URL to your clipboard.
 
-You can now paste this link into emails, chat apps, or documents.
+You can now put this link in emails, chat applications or documents.
 
-### URL Length Limits
+### URL length limits
 
-Because the entire scenario is encoded in the URL, complex scenarios with many thousands of units may generate extremely long links.
+The URL contains all the scenario data. Thus, a complex scenario with many thousands of units makes a very long link.
 
-- Some browsers or chat applications may truncate very long URLs (typically around 2000-8000 characters).
-- If a scenario is too large, consider using "Share scenario online" instead or export as a file (JSON).
+- Some browsers and chat applications cut very long URLs. Usually the limit is between 2000 and 8000 characters.
+- If a scenario is too large, use "Share scenario online" or export the scenario as a JSON file.
 
 ---
 
-## Importing a Shared Scenario
+## Import a shared scenario
 
-When a recipient opens a shared link (from either sharing method), they will be presented with an import screen showing:
+When a recipient opens a shared link, an import screen shows. This screen shows the same data for the two share
+methods:
 
-- **Scenario Name & Description**: Preview of what's being imported.
-- **Unit & Side Count**: Quick summary of the scenario size.
+- **Scenario name and description**: a preview of the scenario for the import.
+- **Unit and side count**: a quick summary of the size of the scenario.
 
-If the scenario is **encrypted**, you will see the description (if provided) and a prompt to enter the password. You must enter the correct password to decrypt and view the scenario details.
+If the scenario is **encrypted**, you see the description (if it is available) and a field for the password. You must
+give the correct password to decrypt the scenario and to see its data.
 
-### Import Actions
+### Import actions
 
-Depending on whether a scenario with the same ID already exists in the recipient's browser, different options will be available:
+The available options change if a scenario with the same ID is already in the browser of the recipient:
 
-- **Load Scenario**: If the scenario is new to your browser, you can load it directly.
-- **Overwrite**: If a scenario with the same ID exists, you can choose to replace your existing version with the imported one.
-- **Create Copy**: Safely import the scenario as a new copy with a unique ID (appended with "(copy)"), preserving your existing version.
+- **Load Scenario**: If the scenario is new in your browser, you can load it directly.
+- **Overwrite**: If a scenario with the same ID is in your browser, you can replace it with the imported scenario.
+- **Create Copy**: This action imports the scenario as a new copy with a unique ID. The application adds "(copy)" to
+  the name and keeps your version.

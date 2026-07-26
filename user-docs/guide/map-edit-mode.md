@@ -2,7 +2,7 @@
 
 ![Map edit mode on desktop](images/map-edit-mode-parts.png)
 
-The map edit mode is the primary editing mode and consists of the following main parts:
+The map edit mode is the primary editing mode. It has these main parts:
 
 1. Navigation bar
 2. Main/ORBAT panel
@@ -15,179 +15,175 @@ The map edit mode is the primary editing mode and consists of the following main
 
 ![Navigation bar](images/navigation-bar.png)
 
-The navigation bar is located at the top of the screen and contains the following items:
+The navigation bar is at the top of the screen. It has these items:
 
 - file menu
 - scenario name
 - playback menu
 - help and search
-- editing mode switcher
+- editing mode switch
 - undo/redo buttons
 - keyboard shortcuts
-- settings menu (hambuger menu)
+- settings menu (hamburger menu)
 
 ### File menu
 
-From the file menu you can access most scenario related actions such as saving, loading, importing and exporting data.
-You also have easy access to various settings and tools.
+The file menu gives you almost all the scenario actions. These actions include save, load, import and export. The menu
+also gives you quick access to different settings and tools.
 ![File menu](images/file-menu.png)
 
 ## Main/ORBAT panel
 
-The ORBAT panel on the left side displays the hierarchical order of battle — sides, groups,
-and units — as an expandable tree.
+The ORBAT panel is on the left side. It shows the hierarchy of the order of battle — sides, groups and units — as a
+tree that you can expand.
 
-### Browsing and selecting
+### Browse and select
 
-- Click a unit to select it. **Shift+click** to range-select, **Ctrl/Cmd+click** to
-  toggle individual selections.
-- Use the **arrow keys** to navigate the tree.
-- Expand or collapse units with the chevron icon, or use the side-level expand/collapse
-  actions to open or close an entire side at once.
-- Use the **filter field** at the top to search units by name. A location filter toggle
-  narrows results to units near the current map view.
+- To select a unit, click it. To select a range, hold **Shift** and click. To select or deselect one unit, hold
+  **Ctrl/Cmd** and click.
+- To move in the tree, use the **arrow keys**.
+- To expand or collapse a unit, click the chevron icon. To open or close a full side, use the expand/collapse actions
+  at the side level.
+- To find units by name, use the **filter field** at the top. A location filter switch shows only the units near the
+  current map view.
 
 ### Drag and drop
 
-- Drag units to reorder them or move them to a different parent.
-- **Ctrl/Cmd+drag** duplicates the dragged units.
-- **Ctrl/Cmd+Alt+drag** duplicates units including their state (positions and timeline data).
-- Multiple selected units can be dragged together.
+- Drag units to put them in a different sequence or below a different parent.
+- To make copies of the dragged units, hold **Ctrl/Cmd** and drag.
+- To make copies of the units with their state (positions and timeline data), hold **Ctrl/Cmd+Alt** and drag.
+- You can drag more than one selected unit at the same time.
 
 ### Clipboard
 
-- **Ctrl/Cmd+C** copies selected units. **Ctrl/Cmd+V** pastes them into the target unit.
+- **Ctrl/Cmd+C** copies the selected units. **Ctrl/Cmd+V** puts them into the target unit.
 
 ### Context menus
 
-Right-click or use the dropdown menu on sides, groups, or units to access actions such as
-edit, duplicate, move up/down, lock/unlock, hide/show, and delete.
+Right-click a side, a group or a unit, or use its dropdown menu. You then get actions such as edit, duplicate, move
+up/down, lock/unlock, hide/show and delete.
 
-Locked units and groups cannot be dragged or modified.
+You cannot drag or change locked units and groups.
 
 ## Map
 
-The map is the central workspace where units are displayed as military symbols and map features
-are drawn.
+The map is the central work area. It shows the units as military symbols, and you draw the map features on it.
 
-### Interacting with units
+### Operate on units
 
-- **Click** a unit symbol to select it. **Shift+click** to add to the selection, or
-  **drag a box** on the map to select all units within the area.
-- **Drag** a unit to move it to a new position (requires Unit position recording to be
-  enabled).
-- Unit symbols include configurable rotation and labels showing unit names.
+- To select a unit, **click** its symbol. To add a unit to the selection, hold **Shift** and click. To select all the
+  units in an area, **drag a box** on the map.
+- To move a unit to a new position, **drag** it. Unit position recording must be on.
+- Unit symbols have a rotation that you can set, and labels that show the names of the units.
 
-### Drawing map features
+### Draw map features
 
-Use the **draw toolbar** to create map features:
+Use the **draw toolbar** to make map features:
 
-- Supported geometry types: **Point**, **Line**, **Polygon**, and **Circle**.
+- These geometry types are available: **Point**, **Line**, **Polygon** and **Circle**.
 - A **freehand** mode is available for lines and polygons.
-- Switch to **edit mode** to modify vertices of existing features, or **translate mode** to
-  move entire features.
+- To change the vertices of a feature, go to **edit mode**. To move a full feature, go to **translate mode**.
 
 ### Map layers
 
-The layers panel lets you manage feature layers, base map layers (XYZ tiles, TileJSON, KML),
-and overlays. Each layer supports visibility toggles, zoom-to, reordering, and deletion.
-Optional overlays include range rings and day/night shading.
+Use the layers panel to control the feature layers, the base map layers (XYZ tiles, TileJSON, KML) and the overlays.
+For each layer you can change the visibility, zoom to the layer, change its position in the sequence, and delete it.
+Range rings and day/night shading are available as optional overlays.
 
 ## Details panel
 
-The details panel appears on the right when a unit or map feature is selected. It shows
-contextual information and editing controls.
+When you select a unit or a map feature, the details panel shows on the right. It gives related data and editing
+controls.
 
 ### Unit details
 
-When a unit is selected, the panel shows:
+When you select a unit, the panel shows:
 
-- **Details** — name, short name, description, external URL, and initial location.
-- **Map symbol** — SIDC code and symbol appearance options.
-- **Unit state** — timeline entries showing position changes, status updates, and other
-  recorded state at each timestamp.
-- **TO&E/S** — table of organization, equipment, and supplies.
-- **Properties** — max speed and average speed with selectable units of measure.
+- **Details** — name, short name, description, external URL and initial location.
+- **Map symbol** — SIDC code and the appearance options of the symbol.
+- **Unit state** — timeline entries. They show position changes, status changes and other recorded state at each time.
+- **TO&E/S** — table of organization, equipment and supplies.
+- **Properties** — maximum speed and average speed with selectable units of measure.
 
-Actions available from the panel include zoom to unit, set location, duplicate, move in
-hierarchy, show in ORBAT tree, and delete.
+The panel also gives these actions: zoom to unit, set location, duplicate, move in the hierarchy, show in the ORBAT
+tree, and delete.
 
 ### Feature details
 
-When a map feature is selected, the panel shows:
+When you select a map feature, the panel shows:
 
-- **Style** — stroke color and width, fill, arrows (for lines), marker style (for points),
-  and text labels.
-- **Details** — name, description, and media.
-- **State** — time-based state entries for the feature.
+- **Style** — the color and the width of the stroke, the fill, the arrows (for lines), the marker style (for points),
+  and the text labels.
+- **Details** — name, description and media.
+- **State** — the state entries of the feature at different times.
 
 ## Map toolbar
 
-The map toolbar includes select, move, and rotate modes for units. Rotate mode lets you
-drag on a unit (or selected units) to adjust symbol rotation at the current scenario time.
+The map toolbar has the select, move and rotate modes for units. In rotate mode, drag on a unit (or on the selected
+units) to set the rotation of the symbol at the current scenario time.
 
 ## Recording
 
-Recording controls determine which types of changes are captured on the scenario timeline as you
-edit. The **Rec** button in the toolbar shows the current recording state.
+The recording controls specify which changes go on the scenario timeline while you edit. The **Rec** button in the
+toolbar shows the current recording state.
 
 ### Recording modes
 
-There are three independent recording modes that can be toggled on or off:
+There are three independent recording modes. You can set each mode to on or off:
 
-- **Unit position** — records changes to unit locations on the map. This is the only mode
-  enabled by default, so moving units on the map is immediately timeline-tracked. If this mode is
-  off, dragging units to new positions on the map is disabled.
-- **Unit hierarchy** — records changes to unit organizational structure. When enabled,
-  dragging a unit to a new parent or reordering units in the ORBAT panel creates a timestamped
-  entry on the timeline instead of changing the hierarchy directly.
-- **Feature geometry** — records changes to map feature shapes (points, lines, polygons).
-  When enabled, drawing or editing a feature's geometry creates a timeline entry rather than
-  modifying the feature directly.
+- **Unit position** — records the changes of the unit locations on the map. Only this mode is on by default. Thus, the
+  timeline immediately records the units that you move on the map. If this mode is off, you cannot drag units to new
+  positions on the map.
+- **Unit hierarchy** — records the changes of the organizational structure of the units. If this mode is on, the
+  application makes an entry with a time on the timeline when you drag a unit to a new parent or when you change the
+  sequence of the units in the ORBAT panel. It does not change the hierarchy directly.
+- **Feature geometry** — records the changes of the shapes of the map features (points, lines, polygons). If this mode
+  is on, the application makes a timeline entry when you draw or change the geometry of a feature. It does not change
+  the feature directly.
 
-All recorded changes are tied to the current scenario time. When you scrub the timeline, the
-scenario shows the projected state at each point in time based on the recorded entries.
+All the recorded changes have the current scenario time. When you move along the timeline, the scenario shows the
+projected state at each time. This state comes from the recorded entries.
 
-### Using the Rec button
+### Use the Rec button
 
-Click the **Rec** button to toggle recording on and off:
+Click the **Rec** button to set the recording to on or off:
 
-- When recording is active, a red indicator and icons show which modes are enabled.
-- Clicking the button stops all recording.
-- Clicking it again resumes your previous recording configuration — the app remembers your
-  last selection.
+- When the recording is on, a red indicator and icons show which modes are on.
+- When you click the button, all recording stops.
+- When you click the button again, your previous recording configuration starts again. The application keeps your last
+  selection.
 
-Use the dropdown menu (right side of the button) to open **Recording Settings**, where you can
-toggle each recording mode independently.
+Use the dropdown menu on the right side of the button to open the **Recording Settings**. There you can set each
+recording mode to on or off independently.
 
 ## Timeline
 
-The timeline is displayed at the bottom of the map editor and shows the scenario's time range.
-An amber histogram indicates where unit events are concentrated.
+The timeline is at the bottom of the map editor. It shows the time range of the scenario. An amber histogram shows the
+times that have many unit events.
 
-### Navigating time
+### Move in time
 
-- **Click** anywhere on the timeline to jump to that point in time.
-- **Drag** left or right to scrub through the scenario.
-- **Scroll wheel** to zoom in and out.
-- **Event markers** (amber circles) represent scenario events — click one to jump to it.
+- To go to a time, **click** that position on the timeline.
+- To move continuously through the scenario, **drag** to the left or to the right.
+- To zoom in and out, use the **scroll wheel**.
+- **Event markers** (amber circles) show the scenario events. To go to an event, click its marker.
 
-The current scenario time is shown in the time controller above the timeline, which also has
-buttons to step to the previous/next day or previous/next event.
+The time controller above the timeline shows the current scenario time. It also has buttons that go to the previous
+day, the next day, the previous event and the next event.
 
 ### Playback
 
-Use the playback controls to animate the scenario over time:
+Use the playback controls to animate the scenario in time:
 
-- **Play/Pause** starts or stops automatic time progression.
-- **Speed** can be increased or decreased (doubles or halves each step).
-- **Looping** replays the selected time range continuously.
-- **Range markers** let you set start and end bounds for playback.
+- **Play/Pause** starts or stops the automatic movement of the time.
+- **Speed** increases or decreases the speed. Each step makes the speed two times more or two times less.
+- **Looping** plays the selected time range again and again.
+- **Range markers** set the start and the end of the playback.
 
 ### Context menu
 
-Right-click the timeline to access additional options:
+Right-click the timeline to get more options:
 
 - Zoom in / Zoom out
-- Add a scenario event at the clicked time
+- Add a scenario event at the time that you clicked
 - Hide the timeline

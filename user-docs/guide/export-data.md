@@ -1,6 +1,6 @@
 # Export data
 
-ORBAT Mapper can export units and features to the following data formats:
+ORBAT Mapper can export units and features to these data formats:
 
 - [GeoJSON](#geojson)
 - [KML/KMZ](#kml)
@@ -8,73 +8,74 @@ ORBAT Mapper can export units and features to the following data formats:
 - [XLSX](#xlsx)
 - [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
 
-## Start the export process
+## Start the export
 
-To start the export process
-select _Export scenario_ from the _File_
-menu.
+To start the export, select _Export scenario_ from the _File_ menu.
 
 ![Export menu](images/export.png)
 
 ## GeoJSON
 
-GeoJSON is a popular open standard format for representing simple geographical features, along with their non-spatial
-attributes.
+GeoJSON is an open standard format that many applications use. It gives simple geographical features with their
+non-spatial attributes.
 
 ## KML
 
-KML (Keyhole Markup Language) is an XML-based format used to display geographic data in mapping applications such as
-Google Earth. Exporting to KML makes it easy to share and visualize your scenario data in widely used geospatial tools.
-For more information, see the [KML documentation](https://developers.google.com/kml/documentation).
+KML (Keyhole Markup Language) is a format that uses XML. Mapping applications such as Google Earth use it to show
+geographic data. When you export to KML, you can easily send your scenario data to usual geospatial tools and show it
+there. For more data, see the [KML documentation](https://developers.google.com/kml/documentation).
 
 ![Google earh](images/google-earth.png)
 
 ## XLSX
 
-Export units to Microsoft Excel format (`.xlsx`). This is useful for sharing unit data with spreadsheet applications or for further analysis.
+Export units to the Microsoft Excel format (`.xlsx`). Use this format to send unit data to spreadsheet applications, or
+to do more analysis.
 
-### Export Options
+### Export options
 
-- **One sheet per side**: When enabled, creates a separate worksheet for each side in the scenario. Otherwise, all units are exported to a single sheet.
+- **One sheet per side**: If you enable this option, the export makes one worksheet for each side in the scenario. If
+  you disable it, the export puts all the units in one sheet.
 
-### Unit Attributes
+### Unit attributes
 
-Select which unit attributes to include in the export:
+Select the unit attributes for the export:
 
-| Attribute    | Description                              |
-| ------------ | ---------------------------------------- |
-| id           | Unique unit identifier                   |
-| name         | Unit name                                |
-| sidc         | Symbol Identification Code (SIDC)        |
-| shortName    | Abbreviated unit name                    |
-| description  | Unit description                         |
-| url          | External URL                             |
-| location     | Unit's current position                  |
-| parent ID    | ID of the parent unit                    |
-| side ID      | ID of the side the unit belongs to       |
-| side name    | Name of the side                         |
+| Attribute   | Description                       |
+| ----------- | --------------------------------- |
+| id          | Unique unit identifier            |
+| name        | Unit name                         |
+| sidc        | Symbol Identification Code (SIDC) |
+| shortName   | Abbreviated unit name             |
+| description | Unit description                  |
+| url         | External URL                      |
+| location    | Current position of the unit      |
+| parent ID   | ID of the parent unit             |
+| side ID     | ID of the side of the unit        |
+| side name   | Name of the side                  |
 
-### Location Format
+### Location format
 
-Choose how coordinates are formatted in the export:
+Select the format of the coordinates in the export:
 
-| Format                   | Example                              |
-| ------------------------ | ------------------------------------ |
-| JSON array [lon, lat]    | `[10.7522, 59.9139]`                 |
-| Lat, Lon                 | `59.9139, 10.7522`                   |
-| Lon, Lat                 | `10.7522, 59.9139`                   |
-| MGRS                     | `32VNM8546314523`                    |
-| Degrees Minutes Seconds  | `59°54'50"N 10°45'8"E`               |
-| Decimal Degrees          | `N59.9139° E10.7522°`                |
+| Format                  | Example                |
+| ----------------------- | ---------------------- |
+| JSON array [lon, lat]   | `[10.7522, 59.9139]`   |
+| Lat, Lon                | `59.9139, 10.7522`     |
+| Lon, Lat                | `10.7522, 59.9139`     |
+| MGRS                    | `32VNM8546314523`      |
+| Degrees Minutes Seconds | `59°54'50"N 10°45'8"E` |
+| Decimal Degrees         | `N59.9139° E10.7522°`  |
 
 ## MilX
 
-ORBAT Mapper has experimental support for exporting a scenario as MilX layers for use with [map.army](https://map.army).
+ORBAT Mapper has experimental support for the export of a scenario as MilX layers. You can use these layers
+with [map.army](https://map.army).
 
 ::: warning
-Please note that ORBAT Mapper only supports a small subset of the MilX format. A major compatability issues is that
-Map.army uses letter based MILSTD 2525C/APP6-C symbol codes. Conversion from 2525D/APP6-D to 2525C/APP6-C is not always
-possible. ORBAT mapper will try to find the closest matching symbol, but this process may fail.
+ORBAT Mapper supports only a small part of the MilX format. There is also an important compatibility problem.
+Map.army uses MILSTD 2525C/APP6-C symbol codes with letters. It is not always possible to change 2525D/APP6-D codes
+into 2525C/APP6-C codes. ORBAT Mapper tries to find the symbol that agrees most closely, but this operation can fail.
 
 :::
 

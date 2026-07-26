@@ -4,10 +4,11 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 # Military symbology
 
-ORBAT Mapper primarily uses military map symbols defined
-in [MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
-APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN)
-for units, equipment and installations. Standard military symbols are rendered by the excellent [Milsymbol](https://spatialillusions.com/milsymbol/index.html) library.
+For units, equipment and installations, ORBAT Mapper primarily uses the military map symbols of
+[MIL-STD 2525D](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf) and [NATO
+APP-6D](https://nso.nato.int/nso/nsdd/main/standards/ap-details/1912/EN). The
+[Milsymbol](https://spatialillusions.com/milsymbol/index.html) library draws the standard military symbols. It is an
+excellent library.
 
 <div class="grid grid-cols-4 gap-8 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000131211004600" /> 
@@ -20,8 +21,8 @@ for units, equipment and installations. Standard military symbols are rendered b
     <DocMilSymbol sidc="10061000000000000000" />
 </div>
 
-Military symbols may look strange and unfamiliar at first, but they are constructed in a logical way once you understand
-the basics. Here are a few starting points if you want to learn more:
+At first, military symbols can look strange and unusual. But when you know the basic rules, you see that their
+construction is logical. If you want to know more, start here:
 
 - [Military Symbols Study Guide](https://mgrs-mapper.com/blog/military_symbols_fundamentals/)
 - [NATO Joint Military Symbology wikipedia page](https://en.wikipedia.org/wiki/NATO_Joint_Military_Symbology)
@@ -31,23 +32,21 @@ the basics. Here are a few starting points if you want to learn more:
 
 ## Symbol identification codes
 
-MILSTD 2525D/APP-6D uses a 20 digit numeric symbol identification code (SIDC) to uniquely represent a symbol. You
-usually don't need to work with these codes directly, but understanding how they are constructed can be very useful. For
-exploring symbol codes you can try the [Joint military symbology explorer](https://explorer.milsymb.net/#/explore/) or
-browse the standards.
+MILSTD 2525D/APP-6D gives each symbol a unique symbol identification code (SIDC) of 20 digits. Usually you do not use
+these codes directly. But it is very useful to know their construction. To examine symbol codes, use the
+[Joint military symbology explorer](https://explorer.milsymb.net/#/explore/) or read the standards.
 
 ### Legacy symbol codes
 
-Earlier versions of the symbology standards use a shorter, letter based, symbol identification code. There are plenty of
-systems that still use letter based codes, so ORBAT Mapper supports converting from letter based codes to numeric codes
-using the [convert-symbology](https://github.com/orbat-mapper/convert-symbology) library. Most symbols from 2525C/APP-6C
-are available in 2525D/APP-6D, but they may look different.
+Prior versions of the symbology standards use a shorter symbol identification code with letters. Many systems continue
+to use these codes with letters. Thus, ORBAT Mapper can change codes with letters into codes with numbers. It uses the
+[convert-symbology](https://github.com/orbat-mapper/convert-symbology) library. Almost all symbols of 2525C/APP-6C are
+also in 2525D/APP-6D, but they can look different.
 
 ## Differences between MILSTD 2525D and APP-6D
 
-ORBAT Mapper allows you to choose between MILSTD 2525 and APP-6. There are some differences between the versions. The
-most
-notable is that APP-6D has the dismounted individual symbol set:
+ORBAT Mapper lets you select MILSTD 2525 or APP-6. There are some differences between the versions. The most important
+difference is the dismounted individual symbol set. Only APP-6D has this symbol set:
 
 <div class="grid grid-cols-2 gap-8 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10032700001101010039" />
@@ -56,7 +55,7 @@ notable is that APP-6D has the dismounted individual symbol set:
 
 ## Custom unit symbols
 
-If standard military symbols are not sufficient for your needs, ORBAT Mapper also allows you to create custom unit
-symbols. See the [custom unit symbols guide](./custom-symbols.md) for more information.
+If the standard military symbols are not sufficient, ORBAT Mapper also lets you make custom unit symbols. For more
+data, see the [custom unit symbols guide](./custom-symbols.md).
 
 ![Custom unit symbols example](images/custom-symbols-small.jpg)

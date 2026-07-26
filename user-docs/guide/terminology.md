@@ -4,17 +4,17 @@ import DocMilSymbol from "../components/DocMilSymbol.vue";
 
 # Terminology
 
-Under the hood ORBAT Mapper uses a data model loosely inspired by
-the [Military Scenario Definition Language (MSDL)](https://en.wikipedia.org/wiki/Military_Scenario_Definition_Language).
-In this section we will go through some terminology you will encounter while building a scenario.
+Internally, ORBAT Mapper uses a data model that is related to the
+[Military Scenario Definition Language (MSDL)](https://en.wikipedia.org/wiki/Military_Scenario_Definition_Language).
+This section gives the terminology that you find when you build a scenario.
 
 ## Sides and groups
 
-A scenario consists of _units_ organized into _sides_ and _groups_. A side typically represents a nation or
-coalition. In a WWII scenario the sides would typically be _Allied forces_ and _Axis forces_.
+A scenario has _units_. The units are in _sides_ and _groups_. Usually a side is a nation or a coalition. In a WWII
+scenario the sides are usually _Allied forces_ and _Axis forces_.
 
-For each side you can specify a standard identity / affiliation. The standard identity determines the color and shape
-of the unit icons. The most commonly used ones are friend, neutral and hostile:
+For each side you can specify a standard identity (affiliation). The standard identity controls the color and the shape
+of the unit icons. Friend, neutral and hostile are the most usual identities:
 
 <div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000000000000000" />
@@ -25,8 +25,8 @@ of the unit icons. The most commonly used ones are friend, neutral and hostile:
     <p>Hostile</p>
 </div>
 
-You can also select custom colors. This is useful in cases when you do not want to label a side as hostile or want to
-distinguish different nations by symbol color.
+You can also select custom colors. Custom colors are useful when you do not want to show a side as hostile. They are
+also useful when you want to identify different nations by the color of the symbol.
 
 <div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000000000000000" :modifiers="{fillColor: '#aab074'}"/>
@@ -34,16 +34,16 @@ distinguish different nations by symbol color.
     <DocMilSymbol sidc="10031000000000000000" :modifiers="{fillColor: '#ff3333'}"/>
 </div>
 
-Each side consists of one or more groups of units. A group is just a way to organize your units. They can for instance
-represent branches (army, navy, air-force, etc.), a task force, a battlefront, etc. You can also choose not to use groups
-and place units directly under a side.
+Each side has one or more groups of units. A group is only a method to organize your units. For example, a group can be
+a branch (army, navy, air force, etc.), a task force or a battlefront. You can also use no groups and put the units
+directly below a side.
 
-A side/group consists of one or more unit hierarchies. The topmost unit in a hierarchy is called a _root unit_.
+A side or a group has one or more unit hierarchies. The unit at the top of a hierarchy is the _root unit_.
 
 ## Units
 
-A unit is the basic building block of a scenario. It represents a military unit, such as a platoon, company,
-battalion,but it can also be used to represent infrastructure, equipment, vehicles, etc.
+A unit is the basic element of a scenario. Usually a unit is a military unit, for example a platoon, a company or a
+battalion. But a unit can also be infrastructure, equipment, a vehicle, etc.
 
 <div class="grid grid-cols-3 gap-0 items-center justify-items-center content-end">
     <DocMilSymbol sidc="10031000161211000000" />
@@ -51,18 +51,17 @@ battalion,but it can also be used to represent infrastructure, equipment, vehicl
     <DocMilSymbol sidc="10061000151301020000" />
 </div>
 
-Units are organized hierarchically in a tree structure:
+The units are in a hierarchy with a tree structure:
 
 ![ORBAT](images/unit-hierarchy.png)
 
-Each unit has a set of attributes. The most commonly used
-attributes include:
+Each unit has a set of attributes. These attributes are the most usual:
 
 - _name_
 - _symbol/icon_
 - _location_
 
-Additional attributes can be assigned to units. Examples of these are:
+You can give more attributes to a unit. These are examples:
 
 - _description_
 - _image_
@@ -73,26 +72,27 @@ Additional attributes can be assigned to units. Examples of these are:
 
 ### Unit state
 
-In ORBAT Mapper, the state of a unit refers to the current values of its attributes, which can change over time. For
-instance, a unit's location updates as it moves, and its symbol may change if it sustains damage or is destroyed. While
-ORBAT Mapper is not a simulation tool, it can track changes in some unit attributes as the scenario unfolds.
+In ORBAT Mapper, the state of a unit is the set of current values of its attributes. These values can change in time.
+For example, the location of a unit changes as the unit moves. Its symbol can change if the unit becomes damaged or
+destroyed. ORBAT Mapper is not a simulation tool. But it can record the changes of some unit attributes as the scenario
+continues.
 
 ### Table of Organization and Equipment (TO&E)
 
-A military unit is composed of personnel and equipment. This composition is often referred to as [Table of Organization
-and Equipment (TO&E)](https://en.wikipedia.org/wiki/Table_of_organization_and_equipment). The TO&E outlines the
-structure, roles, and responsibilities of personnel within the unit and specifies the types and quantities of its
+A military unit has personnel and equipment. Usually this composition is the [Table of Organization
+and Equipment (TO&E)](https://en.wikipedia.org/wiki/Table_of_organization_and_equipment). The TO&E gives the structure,
+the roles and the responsibilities of the personnel of the unit. It also gives the types and the quantities of the
 equipment.
 
-ORBAT mapper has basic support for representing TO&E-data.
+ORBAT Mapper has basic support for TO&E data.
 
 ## Map layers and features
 
-The map is an important part of a scenario. A scenario map consists of multiple layers. The _base layer_ is drawn first
-an on top of that you can add raster _map layers_ and then _feature layers_.
+The map is an important part of a scenario. A scenario map has more than one layer. The application draws the _base
+layer_ first. On the base layer you can add raster _map layers_, and then _feature layers_.
 
-A raster map layer consists of one or more raster images. Typical raster map sources are aerial photos and scanned maps.
-Feature layers consists of one or more _features_. A feature is a styled point, line or polygon on the map.
+A raster map layer has one or more raster images. Usually raster map sources are aerial photos and scanned maps. A
+feature layer has one or more _features_. A feature is a point, a line or a polygon with a style on the map.
 
 [//]: # "## Events"
 [//]: #

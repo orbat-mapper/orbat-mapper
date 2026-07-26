@@ -1,28 +1,26 @@
 # Editing modes
 
-ORBAT Mapper tries to be the "Swiss Army knife" for building ORBATs and scenarios and therefore has different ways you
-can edit a scenario. You will typically switch between the different editing modes depending on your current tasks or
-preferences.
+ORBAT Mapper is the "Swiss Army knife" for ORBATs and scenarios. Thus, it gives you different modes to edit a scenario.
+Usually you change between the editing modes as your task or your preference changes.
 
 ::: info
-The user interface is currently not optimized for mobile devices. For the best editing experience
-use ORBAT Mapper on a laptop or desktop computer. Better support for mobile devices is planned for
-future releases.
+The user interface is not optimized for mobile devices. Use ORBAT Mapper on a laptop or a desktop computer to get the
+best results. Better support for mobile devices will come in subsequent releases.
 :::
 
 ### Map mode
 
-The map edit mode focuses on unit locations.
+The map edit mode gives attention to the locations of the units.
 
-### Grid mode (limited functionality)
+### Grid mode (limited functions)
 
-The grid edit mode is heavily inspired by spreadsheets and offers a quick and efficient way of editing units.
+The grid edit mode is like a spreadsheet. It is a quick and efficient method to edit units.
 
-### Chart mode (limited functionality)
+### Chart mode (limited functions)
 
-The chart edit mode if for those who prefer to visualize their ORBATs graphically.
+The chart edit mode is for users who prefer to see their ORBATs as a graphic.
 
 ::: info
-Grid and chart editing modes currently have limited functionality. They are still in development
-and will be improved in future releases.
+The grid and chart editing modes have limited functions. Their development continues, and they will become better in
+subsequent releases.
 :::

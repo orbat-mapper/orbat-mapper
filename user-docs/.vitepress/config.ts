@@ -65,7 +65,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
     {
       text: "Scenario editor",
       items: [
-        { text: "Loading and saving", link: "storage" },
+        { text: "Load and save", link: "storage" },
         { text: "Editing modes", link: "editing-modes" },
         { text: "Map edit mode", link: "map-edit-mode" },
         // { text: "Grid edit mode", link: "grid-edit-mode" },
@@ -79,7 +79,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
       items: [
         { text: "Import data", link: "import-data" },
         { text: "Export data", link: "export-data" },
-        { text: "Sharing scenarios", link: "sharing-scenarios" },
+        { text: "Share scenarios", link: "sharing-scenarios" },
         { text: "Text to ORBAT", link: "text-to-orbat" },
       ],
     },

@@ -1,37 +1,37 @@
 # Getting started
 
-Start by selecting the _Create new scenario_ option on the start page. This will open a
-form where you can enter some basic scenario information and an initial ORBAT.
+First, select the _Create new scenario_ option on the start page. A form opens. In this form you can give the basic
+scenario data and an initial ORBAT.
 
-## Create new scenario
+## Create a new scenario
 
-Start by adding a name and description:
+First, add a name and a description:
 
 ![Create new scenario](images/basic-scenario-info.png)
 
 ### Initial ORBAT
 
-Next you can add an initial ORBAT to get you started. For this scenario we will create two sides named _British forces_
-and _Argentine forces_. We will change the root units later, so just keep the default root units for now.
+Then you can add an initial ORBAT. For this scenario we make two sides: _British forces_ and _Argentine forces_. We
+will change the root units later. Thus, keep the default root units now.
 
 ![British forces side](images/british-forces.png)
 
-The standard identity determines the color and shape of the unit icons. You don't have to use the standard fill colors,
-so for this scenario
-we will use the _Olive_ fill color for the Argentine forces together with the _Friend_ standard identity shape.
+The standard identity controls the color and the shape of the unit icons. You do not have to use the standard fill
+colors. For this scenario we use the _Olive_ fill color for the Argentine forces with the _Friend_ standard identity
+shape.
 
 ![Argentine forces side](images/argentine-forces.png)
 
 ### Scenario start time
 
-For this scenario we will set the start time to 21th of May 1982, the day of the [British
-landings](https://en.wikipedia.org/wiki/Operation_Sutton) on the shores of San Carlos Water. For the time zone we will
-use the local time zone of the Falkland Islands, which is Atlantic/Stanley (GMT-4).
+For this scenario we set the start time to 21 May 1982. On this day the
+[British landings](https://en.wikipedia.org/wiki/Operation_Sutton) on the shores of San Carlos Water occurred. For the
+time zone we use the local time zone of the Falkland Islands: Atlantic/Stanley (GMT-4).
 
 ![Select scenario start time](images/start-time.png)
 
 ::: info
 
-British forces used the Greenwich Mean Time (GMT) during the Falklands War. Feel free to use GMT/ZULU time for your
-scenario if you prefer.
+The British forces used Greenwich Mean Time (GMT) in the Falklands War. If you prefer GMT/ZULU time, use it for your
+scenario.
 :::

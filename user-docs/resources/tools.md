@@ -1,30 +1,29 @@
 # Other tools and resources
 
-ORBAT mapper is created by a hobbyist. If you need something more professional, or you want to create military overlays,
-try some of these excellent tools instead:
+A hobbyist makes ORBAT Mapper. If you need a more professional tool, or if you want to make military overlays, use one
+of these excellent tools:
 
-- [map.army](https://www.map.army/about/en.html) - a really nice web application for drawing map overlays with symbols
-  and tactical graphics.
-- [ODIN open source command and control information system](https://odin.syncpoint.io/en/). Desktop application
-  available on most operating systems (Electron based).
-- [MGRS Mapper](https://mgrs-mapper.com/) - "operational graphics tool for junior leaders". Subscription based service.
-  A limited free version is
-  available.
+- [map.army](https://www.map.army/about/en.html) - a very good web application. Use it to draw map overlays with
+  symbols and tactical graphics.
+- [ODIN open source command and control information system](https://odin.syncpoint.io/en/). This is a desktop
+  application for almost all operating systems. It uses Electron.
+- [MGRS Mapper](https://mgrs-mapper.com/) - "operational graphics tool for junior leaders". You must pay a
+  subscription. A free version with limited functions is available.
 
-There are not many specialized tools available for drawing ORBAT charts. Here are a few that I'm aware of:
+There are only a few specialized tools to draw ORBAT charts. These are the tools that I know:
 
 - [Spatial Illusions unit generator](https://spatialillusions.com/unitgenerator/).
-- [Order of Battle Generator](https://www.orbatgenerator.com/). Online editor. Perfect for
-  creating [Battle Order style](https://www.battleorder.org/us-orbat) charts.
-- [Battle Order chart templates](https://www.battleorder.org/icons) (PNGs for use in a drawing program)
+- [Order of Battle Generator](https://www.orbatgenerator.com/). This is an online editor. It is very good for
+  [Battle Order style](https://www.battleorder.org/us-orbat) charts.
+- [Battle Order chart templates](https://www.battleorder.org/icons) (PNG files for a drawing program)
 
-Do you want to create your own tools and maps? Here are a few libraries and resources to get you started:
+Do you want to make your own tools and maps? These libraries and resources can help you:
 
 - [milsymbol - Military Symbols in JavaScript](https://github.com/spatialillusions/milsymbol)
 - [MILSTD Military symbol standards in TSV and JS](https://github.com/spatialillusions/mil-std-2525)
 - [STANAG APP-6 Military symbol standards in TSV and JS](https://github.com/spatialillusions/stanag-app6)
 - [Joint Military Symbology Markup Language (JMSML)](https://github.com/Esri/joint-military-symbology-xml)
-- [Spatial Illusions](https://spatialillusions.com/) - home of milsymbol. Check out
+- [Spatial Illusions](https://spatialillusions.com/) - the home of milsymbol. Look at
   the ["General Demos" section](https://spatialillusions.com/demos/index.html)
-- [@orbat-mapper/convert-symbology](https://github.com/orbat-mapper/convert-symbology) - NPM package for converting
-  between letter based and number based symbol identification codes
+- [@orbat-mapper/convert-symbology](https://github.com/orbat-mapper/convert-symbology) - an NPM package. It changes
+  symbol identification codes with letters into codes with numbers, and codes with numbers into codes with letters.

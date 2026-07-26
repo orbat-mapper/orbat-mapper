@@ -1,20 +1,20 @@
-# Loading and saving scenarios
+# Load and save scenarios
 
-ORBAT Mapper does not provide online storage, so all your scenarios are stored locally on your computer. By default,
-they are stored in your browser's storage ([IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)),
-but you can also download them as files to your computer.
+ORBAT Mapper does not give you online storage. Thus, your computer keeps all your scenarios. The browser keeps them in
+its storage ([IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)) by default. You can also
+download them to your computer as files.
 
 ::: warning
-Please note that your browser's storage is not a backup solution. If you clear your browser's storage, all your
-scenarios will be lost. The browser may also clear the storage automatically if it runs out of space.
+The storage of the browser is not a backup. If you erase the storage of the browser, you lose all your scenarios. The
+browser can also erase the storage automatically when it does not have sufficient space.
 
-**You should regularly download your scenarios to your computer for backup**.
+**Download your scenarios to your computer regularly to make a backup**.
 
 :::
 
 ## External scenarios
 
-An ORBAT Mapper scenario is a single file with the extension `.json`. You can load a scenario by dragging and dropping
-the file onto the ORBAT Mapper window, or by selecting _Open scenario_ from the _File_ menu.
+An ORBAT Mapper scenario is one file with the extension `.json`. To load a scenario, drag the file and drop it on the
+ORBAT Mapper window. As an alternative, select _Open scenario_ from the _File_ menu.
 
-Scenario files can be loaded from you local file system, or from a URL.
+You can load scenario files from your local file system or from a URL.

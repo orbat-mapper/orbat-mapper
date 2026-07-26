@@ -1,104 +1,112 @@
 # Custom symbols
 
-If standard military symbols are not sufficient for your needs, you can create custom unit symbols using images and SVGs.
+If the standard military symbols are not sufficient, you can make custom unit symbols from images and SVG files.
 
 ![Custom unit symbols example](images/custom-unit-symbols.png)
 
-## Adding custom symbols
+## Add custom symbols
 
-To create a custom unit symbol go to the _Settings -> Custom unit symbols_:
+To make a custom unit symbol, go to _Settings -> Custom unit symbols_:
 
 ![Custom symbols settings](images/custom-symbols-panel.png)
 
-Click the _Add_ button to open the _Add custom symbol_ form:
+Click the _Add_ button. The _Add custom symbol_ form opens:
 
 ![Add custom symbol form](images/add-symbol-form.png)
 
 **Name**
-Enter a descriptive name for your custom symbol
+Give a descriptive name to your custom symbol.
 
 ---
 
-**URL/URI** Provide a URL or Data URL for the symbol image.
-Supported input formats:
+**URL/URI** Give a URL or a Data URL for the image of the symbol.
+These input formats are permitted:
 
-- [Data URLs](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data) (base64-encoded images or SVGs, e.g., `data:image/png;base64,...`)
-- Regular URLs to image files (e.g., `https://example.com/symbol.png`). Subject to [CORS restrictions](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS).
+- [Data URLs](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data) (images or SVG files with base64
+  encoding, for example `data:image/png;base64,...`)
+- Usual URLs to image files (for example `https://example.com/symbol.png`).
+  [CORS restrictions](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS) apply to these URLs.
 
 :::info
-Data URLs are a way to embed small files directly within web pages or applications
-by encoding the file’s data in base64 format and placing it inline as a string.
-Data URIs typically start with a scheme like data:image/png;base64, followed by the encoded content. For more details,
-see the [MDN documentation on Data URLs](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data).
+A Data URL puts a small file directly in a web page or an application. The data of the file has base64 encoding, and
+the URL holds it as a string. Usually a Data URI starts with a scheme such as data:image/png;base64. The encoded
+content comes after the scheme. For more data, see the
+[MDN documentation on Data URLs](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data).
 
-Custom symbols added using Data URLs are stored directly in the scenario file, making them portable and self-contained.
-However, be aware that large Data URLs can increase the size of your scenario file significantly.
+The scenario file holds the custom symbols that you add with Data URLs. Thus, the file is complete and you can easily
+move it. But be careful: large Data URLs make the scenario file much larger.
 :::
 
-Supported image formats:
+These image formats are permitted:
 
 - PNG
 - SVG
 - JPEG/JPG
-- and other formats supported by web browsers
+- and other formats that web browsers support
 
-The recommended image formats are SVG and PNG with transparent backgrounds. SVG images can be scaled to any size without loss of quality and
-are usually smaller than raster images.
+Use SVG or PNG images with transparent backgrounds. These formats give the best results. You can change the size of an
+SVG image to any size without a decrease in quality. SVG images are also usually smaller than raster images.
 
 :::warning
-When using external URLs, make sure you have permission to use the image and that the server hosting the image allows cross-origin requests.
-[Hotlinking](https://en.wikipedia.org/wiki/Inline_linking) images from other websites without permission may violate their terms of service.
+If you use external URLs, make sure that you have permission to use the image. Also make sure that the server of the
+image permits cross-origin requests.
+[Hotlinking](https://en.wikipedia.org/wiki/Inline_linking) of images from other websites without permission can be a
+violation of their terms of service.
 :::
 
 ---
 
-**Corresponding SIDC**. The Symbol Identification Code (SIDC) that corresponds to your custom symbol. This value is used
-for filtering and selecting units. It may also be used when exporting data to formats that support SIDCs.
+**Corresponding SIDC**. This is the Symbol Identification Code (SIDC) that agrees with your custom symbol. The
+application uses this value to filter and to select units. It can also use the value when it exports data to formats
+that support SIDCs.
 
-After you have added your custom symbol, it will appear in the list of available custom symbols:
+When you add your custom symbol, it comes into the list of available custom symbols:
 
 ![Custom symbols list](images/custom-symbols-list.png)
 
-You can edit or delete custom symbols using the "_Edit symbols_" button. You can also double click
-on a row in the custom symbols list to open the edit form.
+To change or delete custom symbols, use the "_Edit symbols_" button. As an alternative, double-click on a row in the
+list of custom symbols to open the edit form.
 
 ![Edit custom symbol form](images/custom-symbols-edit.png)
 
-## Using custom symbols
+## Use custom symbols
 
-To use a custom symbol open the symbol picker by clicking the symbol icon in the unit
-details panel:
+To use a custom symbol, click the symbol icon in the unit details panel. The symbol picker opens:
 
 ![Open symbol picker](images/custom-symbols-open-picker.png)
 
-In the symbol picker, switch to the _Custom symbol_ tab to see your custom symbols:
+In the symbol picker, go to the _Custom symbol_ tab to see your custom symbols:
 
 ![Custom symbol picker](images/custom-symbols-picker.png)
 
-You can go back to a standard military symbol by switching to the _Browse_ tab and selecting
-a symbol from a symbol set.
+To go back to a standard military symbol, go to the _Browse_ tab and select a symbol from a symbol set.
 
 ## Where to find symbol icons
 
-Here are a few starting points:
+Start here:
 
 - [Iconify.design](https://icon-sets.iconify.design/) A large collection of open-source icon sets.
-- [Icônes](https://icones.js.org/) Icon explorer with instant searching, powered by Iconify.
-- [Icon Archive](https://iconarchive.com/) A large collection of icon sets in various styles and formats.
+- [Icônes](https://icones.js.org/) An icon explorer with immediate search. It uses Iconify.
+- [Icon Archive](https://iconarchive.com/) A large collection of icon sets in different styles and formats.
 
-A few tips :
+Some recommendations:
 
-- Look for icons in SVG format for the best scalability and quality.
-- Ensure the icons have transparent backgrounds (especially for PNGs) to blend well on different map backgrounds.
-- Check the licensing terms to ensure you have the right to use the icons in your project.
-- Avoid using large images.
-- If you use ordinary URLs, ensure the hosting server allows cross-origin requests (CORS).
-- Check the readability of the icons on different backgrounds and at various sizes. Adding a subtle outline or shadow can help improve visibility.
+- Use icons in the SVG format. You can then change their size easily, and the quality stays good.
+- Make sure that the icons have transparent backgrounds. This is important for PNG files, because the icons must agree
+  with different map backgrounds.
+- Read the license terms. Make sure that you have the right to use the icons in your project.
+- Do not use large images.
+- If you use usual URLs, make sure that the server permits cross-origin requests (CORS).
+- Look at the icons on different backgrounds and at different sizes to make sure that you can read them. A thin outline
+  or a shadow can make them easier to see.
 
 ## Troubleshooting
 
-If your custom symbol does not appear as expected, check the following:
+If your custom symbol does not show correctly, do these checks:
 
-- Ensure the URL or Data URL is correct and accessible. The easiest way to test this is to open the URL in a web browser.
-- If the symbol shows up in the list of custom symbols but not on the map, check for any [CORS-related issues](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors). Modern browsers
-  enforce CORS policies that may prevent loading images from certain external sources. If you suspect a CORS issue, try hosting the image on a different server or use a Data URL instead.
+- Make sure that the URL or the Data URL is correct and that you can get access to it. To do this test, open the URL in
+  a web browser.
+- If the symbol shows in the list of custom symbols but not on the map, look for
+  [CORS problems](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS/Errors). Modern browsers obey CORS
+  policies, and these policies can prevent the load of images from some external sources. If you think that there is a
+  CORS problem, put the image on a different server or use a Data URL.

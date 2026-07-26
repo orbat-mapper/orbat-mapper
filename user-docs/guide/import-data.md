@@ -1,6 +1,6 @@
 # Import data
 
-ORBAT Mapper can import units and features from the following sources and formats:
+ORBAT Mapper can import units and features from these sources and formats:
 
 - [GeoJSON](#geojson)
 - [MilX](#milx)
@@ -8,18 +8,18 @@ ORBAT Mapper can import units and features from the following sources and format
 - [Order of Battle Generator](#order-of-battle-generator)
 - [Decisive Action Training Environment (DATE) force structures](#decisive-action-training-environment-date-force-structures)
 
-Additionally, you can import KML/KMZ files as temporary map layers.
-See [Working with map background layers](map-layers.md)
+You can also import KML/KMZ files as temporary map layers.
+See [Work with map background layers](map-layers.md).
 
-## Start the import process
+## Start the import
 
-To start the import process select _Import data_ from the _File_ menu.
+To start the import, select _Import data_ from the _File_ menu.
 
 ![Import menu](images/import-menu.png)
 
-This will open the _Import data_ dialog shown below. You can also simply drag and drop a supported file onto the map to
-start the import process. Select the file you want to import and click _Load_. In many cases ORBAT mapper will guess the
-correct import format automatically. If not, you can select the correct format from the _Select import format_ dropdown.
+The _Import data_ dialog opens. You see it below. As an alternative, drag a supported file and drop it on the map to
+start the import. Select the file for the import and click _Load_. Usually ORBAT Mapper finds the correct import format
+automatically. If it does not, select the correct format from the _Select import format_ dropdown list.
 
 ![An image](images/import.png)
 
@@ -27,81 +27,82 @@ correct import format automatically. If not, you can select the correct format f
 
 ## MilX
 
-[MilX (common military exchange format)](https://www.gs-soft.com/CMS/en/products/mssstick-mss-and-milx/milx) is an
-XML-based format for exchanging military map overlays. It is for instance used by the
-excellent [map.army](https://www.map.army/) tool for storing map overlays. ORBAT Mapper supports loading of
-overlays from map.army. Both compressed (`.milxlyz`) and uncompressed (`.milxly`) files are supported.
-.
+[MilX (common military exchange format)](https://www.gs-soft.com/CMS/en/products/mssstick-mss-and-milx/milx) is a
+format that uses XML. It exchanges military map overlays. For example, the
+excellent [map.army](https://www.map.army/) tool uses it to keep map overlays. ORBAT Mapper can load overlays from
+map.army. It supports compressed (`.milxlyz`) and uncompressed (`.milxly`) files.
 
 ::: info
-Please note that ORBAT Mapper only supports a small subset of the MilX format. A potential compatability issues is that
-Map.army uses letter based MILSTD 2525C/APP6-C symbol codes. ORBAT Mapper will try its best to convert them to
-2525D/APP6-D, but this process may fail for some symbols.
+ORBAT Mapper supports only a small part of the MilX format. There can also be a compatibility problem, because
+map.army uses MILSTD 2525C/APP6-C symbol codes with letters. ORBAT Mapper tries to change them into 2525D/APP6-D
+codes, but this operation can fail for some symbols.
 :::
 
 ## Spatial Illusions ORBAT Builder
 
-[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator/) is a tool for creating military
-symbols and ORBATs. The tool supports exporting of ORBATs in a simple JSON format that is supported by ORBAT Mapper.
+[Spatial Illusions ORBAT Builder](https://www.spatialillusions.com/unitgenerator/) is a tool that makes military
+symbols and ORBATs. The tool can export ORBATs in a simple JSON format. ORBAT Mapper supports this format.
 
 ## Order of Battle Generator
 
-Import from [Order of Battle Generator](https://www.orbatgenerator.com/).
+Import data from [Order of Battle Generator](https://www.orbatgenerator.com/).
 
 ## Decisive Action Training Environment (DATE) force structures
 
-The [Decisive Action Training Environment World](https://odin.tradoc.army.mil/DATEWORLD) is a training environment
-provided by the U.S. Army. To import a DATE World force structure, first download the force structure from the DATE
-World website as shown in the screenshot below. Each unit in the force structure viewer has a small export button in
-the upper right corner. Click on the export button and select the _DRAGON (Agnostic)_ format. This will download a
-`.xlsx` file to your computer containing every unit, equipment and personnel in the force structure.
+The [Decisive Action Training Environment World](https://odin.tradoc.army.mil/DATEWORLD) is a training environment of
+the U.S. Army. To import a DATE World force structure, first download the force structure from the DATE World website.
+The screenshot below shows this operation. In the force structure viewer, each unit has a small export button in the
+top right corner. Click the export button and select the _DRAGON (Agnostic)_ format. A `.xlsx` file downloads to your
+computer. It contains all the units, the equipment and the personnel of the force structure.
 
 ![DATE World](images/date-world-export.png)
 
 ::: warning
-The DATE World force structures are massive and may contain thousands of units. Importing huge force structures will affect
-the performance of ORBAT Mapper. It is recommended to import smaller subsets of the force structures.
+The DATE World force structures are very large and can contain thousands of units. If you import a very large force
+structure, the performance of ORBAT Mapper decreases. Import smaller parts of the force structures.
 :::
 
-After you have downloaded the `.xlsx` file, you can import it into ORBAT Mapper by opening the _Import data_ dialog or
-by dragging and dropping the `.xlsx` file onto the map. ORBAT Mapper will automatically detect it as a DATE World force
-structure.
+When the `.xlsx` file is on your computer, open the _Import data_ dialog to import it. As an alternative, drag the
+`.xlsx` file and drop it on the map. ORBAT Mapper identifies a DATE World force structure automatically.
 
 **Import options**
 
-- **Parent unit**. Shows a list of existing root units in the scenario. Remember that you can always move units around
-  after the import is complete.
-- **Expand templates**. DATE World force structures use templates to define the structure of units. If this option is
-  enabled, ORBAT Mapper will expand the templates and import all units in the force structure. If it is disabled, only
-  the top level units will be imported.
-- **Include equipment**. If this option is enabled, ORBAT Mapper will import equipment from the unit templates and
-  include it in the unit's TO&E.
-- **Include personnel**. If this option is enabled, ORBAT Mapper will import personnel from the unit templates and
-  include it in the unit's TO&E.
+- **Parent unit**. This option shows a list of the root units in the scenario. Remember that you can always move units
+  after the import.
+- **Expand templates**. DATE World force structures use templates to define the structure of the units. If you enable
+  this option, ORBAT Mapper expands the templates and imports all the units of the force structure. If you disable it,
+  ORBAT Mapper imports only the units at the top level.
+- **Include equipment**. If you enable this option, ORBAT Mapper imports the equipment from the unit templates and puts
+  it in the TO&E of the unit.
+- **Include personnel**. If you enable this option, ORBAT Mapper imports the personnel from the unit templates and puts
+  it in the TO&E of the unit.
 
-## Tabular Data (Excel/CSV)
+## Tabular data (Excel/CSV)
 
-You can import units from Excel (`.xlsx`) or CSV files. This allows you to bring in data from spreadsheets or other tools.
+You can import units from Excel (`.xlsx`) or CSV files. Thus, you can use data from spreadsheets and other tools.
 
-### Column Mapping
+### Column mapping
 
-When you import a tabular file, you will be presented with a column mapping screen where you associate the columns in your file with unit properties.
+When you import a tabular file, a column mapping screen shows. On this screen, connect the columns of your file to the
+properties of the units.
 
-**Essential fields:**
+**Necessary fields:**
 
-- **Name**: The name of the unit (required).
-- **Icon**: The unit function or symbol code. If you have a full SIDC (15, 20 or 30 characters), map it here. If you have a human readable name (e.g. "Infantry"), map it here.
-- **Echelon**: The command level of the unit (e.g. "Platoon", "Company").
+- **Name**: The name of the unit. This field is mandatory.
+- **Icon**: The function of the unit or its symbol code. If you have a full SIDC (15, 20 or 30 characters), map it
+  here. If you have a name that persons can read (for example "Infantry"), map it here.
+- **Echelon**: The command level of the unit (for example "Platoon" or "Company").
 
 **Validation:**
 
-The importer will try to generate a valid SIDC based on the mapped **Icon** and **Echelon** columns. If a valid SIDC cannot be generated, or if the Name is missing, the unit will be excluded from the import.
+The importer tries to make a valid SIDC from the mapped **Icon** and **Echelon** columns. If it cannot make a valid
+SIDC, or if the name is not available, the importer removes the unit from the import.
 
-### Creating a Hierarchy
+### Make a hierarchy
 
-You can recreate a unit hierarchy by mapping the **Parent ID** field.
+To make a unit hierarchy again, map the **Parent ID** field.
 
-1. **ID field**: Select the column that contains the unique identifier for each unit.
+1. **ID field**: Select the column that contains the unique identifier of each unit.
 2. **Parent ID**: Select the column that contains the ID of the parent unit.
 
-ORBAT Mapper will use these two fields to rebuild the tree structure.
+ORBAT Mapper uses these two fields to build the tree structure again.
