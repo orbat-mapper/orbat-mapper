@@ -1,57 +1,52 @@
 # ORBAT Mapper
 
-ORBAT Mapper is a client side web application that lets you build order of battles (ORBATs) and plot unit locations on a
-map. With
-ORBAT Mapper you can recreate historic battles and military scenarios in your browser.
+ORBAT Mapper is a client side web application. With ORBAT Mapper you can build order of battles (ORBATs) and plot the
+locations of units on a map. You can make historic battles and military scenarios again in your browser.
 
-**Please note that this project is a work in progress.** You can try the work in progress version
-at https://orbat-mapper.app/ and browse the documentation
-at https://docs.orbat-mapper.app/.
+**This project is work in progress.** You can try the current version at https://orbat-mapper.app/. You can read the
+documentation at https://docs.orbat-mapper.app/.
 
 _Screenshot:_
 
 ![Work in progress sample screenshot](images/screenshot-2023-09-01.png "Work in progress sample screenshot")
 
-ORBAT Mapper is an open-source project licensed under MIT, which means the source
-code is freely available for use, modification, and redistribution under the terms of the license.
+ORBAT Mapper is an open-source project with an MIT license. Thus, you can freely use, change and give the source code
+to other persons. You must obey the conditions of the license.
 
-You're welcome to create a fork and adapt ORBAT Mapper to suit your needs, but please note that the project is currently
-in a rapidly evolving phase with frequent changes to the codebase.
+You can make a fork and adapt ORBAT Mapper for your applications. But be careful, because the project changes quickly.
 
-## Getting started
+## Get started
 
-If you want to run ORBAT Mapper locally or developing your own version of ORBAT Mapper, you can do so by following these
-steps:
+Obey these steps to run ORBAT Mapper on your computer, or to make your own version of ORBAT Mapper.
 
-Clone repo:
+Clone the repository:
 
     $ git clone https://github.com/orbat-mapper/orbat-mapper.git
 
-Navigate to project root:
+Go to the project root:
 
     $ cd orbat-mapper
 
-Install dependencies:
+Install the dependencies:
 
     $ pnpm install
 
-To start a development server run:
+Start a development server:
 
     $ pnpm run dev
 
-ORBAT mapper is now running on http://localhost:5173/. Any changes made to the source code will be instantly
-available in the browser thanks to Vite's lightning fast hot module replacement.
+ORBAT Mapper now runs on http://localhost:5173/. When you change the source code, Vite sends the changes immediately to
+the browser.
 
-For an optimized and minified build run:
+Make an optimized and minified build:
 
     $ pnpm run build
 
-The above command will output the optimized build to the `dist` directory. You can then serve the optimized build
-locally by running:
+This command writes the optimized build to the `dist` directory. Then you can supply this build on your computer:
 
     $ pnpm run preview
 
-See https://vitejs.dev/guide/static-deploy.html for various deploy options.
+For the different deployment options, see https://vitejs.dev/guide/static-deploy.html.
 
 ## Use ORBAT Mapper without an internet connection
 
