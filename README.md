@@ -53,63 +53,78 @@ locally by running:
 
 See https://vitejs.dev/guide/static-deploy.html for various deploy options.
 
-## Using ORBAT Mapper without an internet connection
+## Use ORBAT Mapper without an internet connection
 
-ORBAT Mapper is a static client side web application and can with some configuration changes be used without an
-internet connection. However, by default ORBAT Mapper uses maps hosted on the internet, and an online service for
-place name searching. So if you want to use ORBAT Mapper without an internet connection you need to provide your own
-maps and host them locally.
+ORBAT Mapper is a static client side web application. You can use it without an internet connection, but you must
+first change the configuration. ORBAT Mapper uses maps from the internet by default. It also uses an online service
+for place name search.
 
-It is possible to configure the default maps by following the instructions in the next section. For place name searching
-there is currently no straightforward offline solution.
+Thus, you must do these steps:
 
-### Configuring default map layers
+1. Host your own map data on the local network.
+2. Point the basemap configuration to your local map data.
 
-You can configure the default map layers by modifying the [`public/config/mapConfig.json`](public/config/mapConfig.json)
-file. When
-building the application, the `mapConfig.json` file is copied to `dist/config/mapConfig.json`. You can also configure
-the basemap layers by modifying the
-`dist/config/mapConfig.json` file directly, but keep in mind that the `dist` directory is overwritten when building the
-application.
+There is no simple offline replacement for the place name search. The search sends requests
+to [Photon](https://photon.komoot.io/). This function does not operate without an internet connection.
 
-The `mapConfig.json` file contains an JSON array of basemap layers. Example:
+### Configure the basemap layers
+
+MapLibre GL is the primary map engine. It reads the basemap layers from
+[`public/config/maplibreConfig.json`](public/config/maplibreConfig.json). The build copies this file to
+`dist/config/maplibreConfig.json`. You can also change `dist/config/maplibreConfig.json` directly. But remember that
+the build writes over the `dist` directory again.
+
+If the application cannot read the file, it uses a small set of built-in online basemaps.
+
+The `maplibreConfig.json` file contains a JSON array of basemap layers. Each layer has a `sourceType` of `style` or
+`raster`. Example:
 
 ```json
 [
   {
-    "title": "OSM (DE)",
-    "name": "osm-de",
-    "layerSourceType": "osm",
-    "sourceOptions": {
-      "url": "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
-      "crossOrigin": "anonymous"
-    }
+    "name": "localBasemap",
+    "title": "Local basemap",
+    "sourceType": "style",
+    "styleUrl": "http://localhost:8080/styles/basic/style.json"
   },
   {
-    "title": "Topographic Map Norway",
-    "name": "kartverketTopo4",
-    "layerSourceType": "xyz",
-    "sourceOptions": {
-      "crossOrigin": "anonymous",
-      "url": "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png",
-      "attributions": "<a href=\"http://www.kartverket.no/\">Kartverket</a>"
-    },
-    "tileLayerConfig": {
-      "extent": [2, 57, 33, 72]
-    }
+    "name": "localTopo",
+    "title": "Local topographic map",
+    "sourceType": "raster",
+    "tiles": ["http://localhost:8080/tiles/topo/{z}/{x}/{y}.png"],
+    "tileSize": 256,
+    "bounds": [2, 57, 33, 72],
+    "maxZoom": 16,
+    "attribution": "<a href=\"http://www.kartverket.no/\">Kartverket</a>"
   }
 ]
 ```
 
-For an overview of the available configuration options see the `LayerConfigFile` type in [
-`layerConfigTypes.ts`](src/geo/layerConfigTypes.ts).
+A `style` layer uses `styleUrl` for a remote MapLibre style, or `style` for an inline style specification. Use only one
+of the two. A style for offline use must also point to local glyphs (fonts) and to a local sprite. If it does not, the
+map labels and the icons do not show.
 
-### Hosting your own maps
+A `raster` layer uses `tiles` with one or more tile URL templates. The optional `scheme` property selects `xyz` or
+`tms`.
 
-Local map hosting can be done in various ways, ranging in complexity from a simple local web server that serves a
-directory tree of cached map tiles to a full-blown map server. Some options to explore:
+All layers accept these optional properties: `title`, `minZoom`, `maxZoom`, `opacity`, `attribution` and `bounds`.
 
-- [TileServer GL](https://tileserver.readthedocs.io/en/latest/). [Tutorial](https://openmaptiles.org/docs/host/tileserver-gl/).
-- [MapProxy](https://mapproxy.org/)
-- [GeoServer](https://geoserver.org/)
-- [MapTiler](https://www.maptiler.com/data/)
+For all configuration options, see the `MlLayerConfigFile` type in
+[`maplibreLayerConfigTypes.ts`](src/geo/maplibreLayerConfigTypes.ts).
+
+### The legacy OpenLayers map (deprecated)
+
+The OpenLayers map is deprecated. Do not use it for new work. It stays available at `/scenario/<scenarioId>/legacy`,
+and it reads a different file: [`public/config/mapConfig.json`](public/config/mapConfig.json). The layer types for that
+file are in [`layerConfigTypes.ts`](src/geo/layerConfigTypes.ts).
+
+### Host your own maps
+
+You can host maps in different ways. A simple web server that supplies a directory of map tiles is sufficient. A full
+map server gives more functions. These are some options:
+
+- [TileServer GL](https://tileserver.readthedocs.io/en/latest/) supplies vector tiles, styles, glyphs and sprites for
+  MapLibre. See this [tutorial](https://openmaptiles.org/docs/host/tileserver-gl/).
+- [MapProxy](https://mapproxy.org/) caches tiles from other servers and supplies them again.
+- [GeoServer](https://geoserver.org/) supplies maps from your own geographic data.
+- [MapTiler](https://www.maptiler.com/data/) supplies map data that you can host.
