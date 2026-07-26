@@ -50,6 +50,9 @@ importers:
       '@popperjs/core':
         specifier: ^2.11.8
         version: 2.11.8
+      '@protomaps/basemaps':
+        specifier: ^5.7.2
+        version: 5.7.2
       '@tanstack/vue-table':
         specifier: ^8.21.3
         version: 8.21.3(vue@3.5.40(typescript@5.9.3))
@@ -254,6 +257,9 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.40(typescript@5.9.3))
+      pmtiles:
+        specifier: ^4.4.1
+        version: 4.4.1
       pretty-bytes:
         specifier: ^7.1.1
         version: 7.1.1
@@ -399,6 +405,9 @@ importers:
       vite:
         specifier: ^8.1.5
         version: 8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+      vite-plugin-singlefile:
+        specifier: ^2.3.3
+        version: 2.3.3(rollup@4.62.2)(vite@8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
       vite-plugin-vue-devtools:
         specifier: ^8.2.1
         version: 8.2.1(vite@8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.40(typescript@5.9.3))
@@ -1239,6 +1248,10 @@ packages:
   '@prettier/plugin-oxc@0.0.5':
     resolution: {integrity: sha512-A0uIVkwFrEFQJCU/Wpga6pS5t8UQDdVGB+5e7pVMtlPRw69KDmlozcAoLggwdp3FoVpzNGhngMmgfiE8KLs+BA==}
     engines: {node: '>=14'}
+
+  '@protomaps/basemaps@5.7.2':
+    resolution: {integrity: sha512-K1Yk6bWdULulYg+R2QRVXx4NzJZan5YQhpejEG0c1/sXruJrfPIPZuakpf3jwAgVmjIRVQwAv+yRafDeN0aaUQ==}
+    hasBin: true
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -3662,6 +3675,9 @@ packages:
   pkg-types@2.3.1:
     resolution: {integrity: sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==}
 
+  pmtiles@4.4.1:
+    resolution: {integrity: sha512-5oTeQc/yX/ft1evbpIlnoCZugQuug/iYIAj/ZTqIqzdGek4uZEho99En890EE6NOSI3JTI3IG8R7r8+SltphxA==}
+
   point-in-polygon-hao@1.2.4:
     resolution: {integrity: sha512-x2pcvXeqhRHlNRdhLs/tgFapAbSSe86wa/eqmj1G6pWftbEs5aVRJhRGM6FYSUERKu0PjekJzMq0gsI2XyiclQ==}
 
@@ -4214,6 +4230,16 @@ packages:
       vite: ^6.0.0 || ^7.0.0-0 || ^8.0.0-0
     peerDependenciesMeta:
       '@nuxt/kit':
+        optional: true
+
+  vite-plugin-singlefile@2.3.3:
+    resolution: {integrity: sha512-XVnGH0QzbOa8fxRSsHdCarVN1BSBXNi7uLMQYlrGRN5apdHkk62XQWRJhVever0lnfuyBkwn+kvVChdm/OoOUg==}
+    engines: {node: '>18.0.0'}
+    peerDependencies:
+      rollup: ^4.59.0
+      vite: ^5.4.21 || ^6.0.0 || ^7.0.0 || ^8.0.0
+    peerDependenciesMeta:
+      rollup:
         optional: true
 
   vite-plugin-vue-devtools@8.2.1:
@@ -5367,6 +5393,8 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
     optional: true
+
+  '@protomaps/basemaps@5.7.2': {}
 
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true
@@ -8484,6 +8512,10 @@ snapshots:
       exsolve: 1.1.0
       pathe: 2.0.3
 
+  pmtiles@4.4.1:
+    dependencies:
+      fflate: 0.8.3
+
   point-in-polygon-hao@1.2.4:
     dependencies:
       robust-predicates: 3.0.3
@@ -8965,6 +8997,13 @@ snapshots:
       unplugin-utils: 0.3.2
       vite: 8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
       vite-dev-rpc: 2.0.0(vite@8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+
+  vite-plugin-singlefile@2.3.3(rollup@4.62.2)(vite@8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)):
+    dependencies:
+      micromatch: 4.0.8
+      vite: 8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+    optionalDependencies:
+      rollup: 4.62.2
 
   vite-plugin-vue-devtools@8.2.1(vite@8.1.5(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.40(typescript@5.9.3)):
     dependencies:

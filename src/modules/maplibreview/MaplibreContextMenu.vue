@@ -42,6 +42,7 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/notifications";
+import { useBasemapArchives } from "@/composables/basemapArchives";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict, nanoid } from "@/utils";
 import {
@@ -99,6 +100,12 @@ const baseMapId = defineModel<string>("baseMapId", {
 const basemapOptions = computed(() =>
   getSupportedMaplibreBasemaps(maplibreLayersStore.layers),
 );
+const { openBasemapArchivePicker } = useBasemapArchives();
+
+/** Lets the user pick a basemap archive from disk. The picker activates whatever it loads. */
+function onOpenMapFile() {
+  openBasemapArchivePicker();
+}
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -485,6 +492,10 @@ function onContextMenu(event: MouseEvent) {
               {{ option.title }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
+          <ContextMenuSeparator />
+          <ContextMenuItem @select.prevent="onOpenMapFile()">
+            Open map file…
+          </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>

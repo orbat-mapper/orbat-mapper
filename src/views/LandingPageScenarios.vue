@@ -19,6 +19,7 @@ import { saveImportedScenario } from "@/composables/importScenarioTransfer";
 import { useIndexedDb } from "@/scenariostore/localdb";
 import { useScenarioFileLoader } from "@/composables/useScenarioFileLoader";
 import type { LoadableScenario } from "@/scenariostore/upgrade";
+import { areDemoScenariosAvailable } from "@/utils/runtimeEnvironment";
 
 const DecryptScenarioModal = defineAsyncComponent(
   () => import("@/components/DecryptScenarioModal.vue"),
@@ -33,6 +34,10 @@ const {
   onBulkAction,
   loadScenario,
 } = useBrowserScenarios();
+
+// The demo scenarios are fetched from the server, so a standalone file cannot open them.
+const demoScenarios = areDemoScenariosAvailable() ? DEMO_SCENARIOS : [];
+const showDemoScenarios = demoScenarios.length > 0;
 
 const router = useRouter();
 const getScenarioTo = (scenarioId: string) => {
@@ -163,7 +168,7 @@ useEventListener("paste", (event: ClipboardEvent) => {
         </template>
       </StoredScenarioBrowser>
     </section>
-    <section class="mb-2">
+    <section v-if="showDemoScenarios" class="mb-2">
       <p
         class="bg-muted/50 text-muted-foreground relative top-0 right-0 left-0 p-4 text-center text-sm"
       >
@@ -173,13 +178,17 @@ useEventListener("paste", (event: ClipboardEvent) => {
     </section>
     <div class="mx-auto max-w-3xl px-4 text-center">
       <p class="text-muted-foreground text-lg">
-        Try one of the bundled demo scenarios or create your own
+        {{
+          showDemoScenarios
+            ? "Try one of the bundled demo scenarios or create your own"
+            : "Create your own scenario"
+        }}
       </p>
     </div>
     <section class="mx-auto max-w-7xl p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <li
-          v-for="scenario in DEMO_SCENARIOS"
+          v-for="scenario in demoScenarios"
           :key="scenario.name"
           class="divide-border bg-card text-card-foreground focus-within:border-primary col-span-1 flex flex-col divide-y overflow-hidden rounded-lg border text-center shadow-sm"
         >

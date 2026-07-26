@@ -56,6 +56,7 @@ import {
   NEW_SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
+import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/commandPalette/CommandPalette.vue";
 import type { PhotonSearchResult } from "@/composables/geosearching";
@@ -398,8 +399,18 @@ watchOnce(
   },
 );
 
+const { handleDroppedFiles } = useBasemapArchives();
+
+/**
+ * Routes dropped files. Basemap archives (.pmtiles/.mapbundle) are loaded as basemaps; everything
+ * else goes to the import wizard. A mixed drop is split, not rejected.
+ */
 function onDrop(files: File[] | null) {
   if (!files || !files.length) return;
+  handleDroppedFiles(files, openImportWizard);
+}
+
+function openImportWizard(files: File[]) {
   const dragState = useDragStore();
   dragState.draggedFiles = files;
   showImportModal.value = true;

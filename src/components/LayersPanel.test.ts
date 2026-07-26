@@ -35,7 +35,7 @@ const OpacityInputStub = defineComponent({
 
 describe("LayersPanel", () => {
   beforeEach(() => {
-    localStorage.clear();
+    window.localStorage?.clear();
     setActivePinia(createPinia());
     routeState.currentRouteName = "MapBetaModeRoute";
   });
@@ -134,5 +134,86 @@ describe("LayersPanel", () => {
 
     await overlayButtons[1]!.trigger("click");
     expect(updateLayer).toHaveBeenCalledWith("overlay-1", { isHidden: true });
+  });
+
+  describe("basemap flavour select", () => {
+    function mountWithArchives(activeName: string) {
+      const pinia = createPinia();
+      setActivePinia(pinia);
+      const mapSettings = useMapSettingsStore();
+      const maplibreLayersStore = useMaplibreLayersStore();
+      maplibreLayersStore.layers = [
+        {
+          name: "vectorArchive",
+          title: "World (local)",
+          sourceType: "pmtiles",
+          archive: {
+            kind: "vector",
+            minZoom: 0,
+            maxZoom: 14,
+            bounds: [-180, -85, 180, 85],
+          },
+        },
+        {
+          name: "rasterArchive",
+          title: "Scan (local)",
+          sourceType: "pmtiles",
+          archive: {
+            kind: "raster",
+            minZoom: 0,
+            maxZoom: 12,
+            bounds: [-180, -85, 180, 85],
+          },
+        },
+      ];
+      mapSettings.maplibreBaseLayerName = activeName;
+
+      const wrapper = mount(LayersPanel, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            BaseLayerSwitcher: BaseLayerSwitcherStub,
+            OpacityInput: OpacityInputStub,
+          },
+        },
+      });
+      const switcher = wrapper.getComponent(BaseLayerSwitcherStub);
+      const settings = switcher.props("settings") as Array<{
+        id: string;
+        flavor?: string;
+      }>;
+      return { wrapper, switcher, settings, maplibreLayersStore };
+    }
+
+    it("offers a flavour only for the active vector archive", () => {
+      const { settings } = mountWithArchives("vectorArchive");
+      expect(settings.find((s) => s.id === "vectorArchive")?.flavor).toBe("light");
+      expect(settings.find((s) => s.id === "rasterArchive")?.flavor).toBeUndefined();
+    });
+
+    it("offers no flavour for a raster archive, even when it is active", () => {
+      const { settings } = mountWithArchives("rasterArchive");
+      expect(settings.find((s) => s.id === "rasterArchive")?.flavor).toBeUndefined();
+      // A vector archive that is not the active basemap is not styled, so it gets no select.
+      expect(settings.find((s) => s.id === "vectorArchive")?.flavor).toBeUndefined();
+    });
+
+    it("writes a picked flavour back to the layer", async () => {
+      const { switcher, settings, maplibreLayersStore, wrapper } =
+        mountWithArchives("vectorArchive");
+      const vectorLayer = settings.find((s) => s.id === "vectorArchive");
+
+      switcher.vm.$emit(
+        "update:layerFlavor",
+        { ...vectorLayer, name: "vectorArchive" },
+        "dark",
+      );
+      await wrapper.vm.$nextTick();
+
+      const config = maplibreLayersStore.layers.find(
+        (layer) => layer.name === "vectorArchive",
+      );
+      expect(config).toMatchObject({ flavor: "dark" });
+    });
   });
 });

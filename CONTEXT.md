@@ -55,6 +55,40 @@ for reorganization. A **diff** accumulates an `onHand` delta on matching entries
 (`onHand = (onHand ?? count) + delta`) — used for attrition and resupply. `diff`
 only ever touches `onHand`.
 
+### Offline use
+
+**Offline level**:
+How much infrastructure a deployment still depends on, on two independent axes —
+where the **application** is delivered from, and where the **map data** comes
+from. Three named rungs: **Level 1 — Self-hosted** (own web server, own tile
+server), **Level 2 — Local map file** (served application, basemap read from the
+user's disk), **Level 3 — Standalone file** (application *and* basemap read from
+the user's disk). The numbering is a ladder of removed infrastructure, not a
+ranking of "how offline" — a Level 2 deployment on a public host still needs the
+network to load the application.
+
+**Basemap archive**:
+A single file on the user's disk that a basemap is read from — a **PMTiles**
+archive or a **mapbundle**. Read with `Blob.slice`, never fetched, so it works on
+any origin including `file://` and only the needed bytes are touched.
+_Avoid_: "offline basemap" (a self-hosted tile server is also offline), "embedded
+basemap" (nothing is embedded — the archive stays a file the user picks).
+
+**PMTiles archive**:
+A basemap archive holding *tiles only*. Raster archives are self-describing;
+vector archives carry no style, glyphs or sprites, so the application supplies
+those (see [[adr-0003]]).
+
+**Mapbundle**:
+A basemap archive (a ZIP) holding tiles *and* the styles, glyphs and sprites that
+go with them, so it needs nothing from the application to render.
+
+**Flavour**:
+One of the Protomaps basemap presets (`light`, `dark`, `white`, `black`,
+`grayscale`) used to generate style layers for a vector PMTiles archive. Chosen
+per archive (default `light`), and deliberately not coupled to the application's
+dark mode. A mapbundle has **styles** instead, not flavours.
+
 ## Example dialogue
 
 > **Dev:** The circle isn't rendering after reload.

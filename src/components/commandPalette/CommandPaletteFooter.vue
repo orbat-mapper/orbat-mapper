@@ -2,12 +2,16 @@
 import ToggleField from "@/components/ToggleField.vue";
 import { useUiStore } from "@/stores/uiStore.ts";
 import { Kbd } from "@/components/ui/kbd";
+import { isGeoSearchAvailable } from "@/utils/runtimeEnvironment";
 
 const emit = defineEmits(["click-actions"]);
 const uiStore = useUiStore();
 const props = defineProps<{
   rawQuery: string;
 }>();
+
+// Place search needs the remote Photon service, so a standalone file does not offer it.
+const showGeoSearch = isGeoSearchAvailable();
 </script>
 
 <template>
@@ -17,9 +21,11 @@ const props = defineProps<{
     <div class="flex items-center gap-0.5">
       Type
 
-      <Kbd>@</Kbd>
-      <span class="sm:hidden">for places,</span>
-      <span class="hidden sm:inline">to search for places,</span>
+      <template v-if="showGeoSearch">
+        <Kbd>@</Kbd>
+        <span class="sm:hidden">for places,</span>
+        <span class="hidden sm:inline">to search for places,</span>
+      </template>
       <button class="flex" @click="emit('click-actions')">
         <Kbd>#</Kbd> /
         <Kbd>&gt;</Kbd>
@@ -28,6 +34,8 @@ const props = defineProps<{
       <Kbd class="hidden sm:flex">?</Kbd>
       <span class="hidden sm:flex">for help.</span>
     </div>
-    <div><ToggleField v-model="uiStore.searchGeoMode">Place mode</ToggleField></div>
+    <div v-if="showGeoSearch">
+      <ToggleField v-model="uiStore.searchGeoMode">Place mode</ToggleField>
+    </div>
   </div>
 </template>

@@ -35,6 +35,7 @@ import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTra
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
+import BasemapArchivePrompt from "@/components/BasemapArchivePrompt.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import {
@@ -223,7 +224,8 @@ function onCloseActiveDetailsPanel() {
     @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
-      <div class="@container flex flex-auto">
+      <div class="@container relative flex flex-auto">
+        <BasemapArchivePrompt class="absolute top-14 left-2 z-10" />
         <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
           <MaplibreMap
             @ready="onMapReady"

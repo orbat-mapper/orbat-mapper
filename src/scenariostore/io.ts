@@ -41,6 +41,7 @@ import {
 import { type ScenarioDraft, useIndexedDb } from "@/scenariostore/localdb";
 import { klona } from "klona";
 import { saveBlobToLocalFile } from "@/utils/files";
+import { areDemoScenariosAvailable } from "@/utils/runtimeEnvironment";
 import { compare as compareVersions } from "compare-versions";
 import { useNotifications } from "@/composables/notifications";
 import type {
@@ -671,6 +672,11 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   async function loadDemoScenario(id: string | "falkland82" | "narvik40") {
+    if (!areDemoScenariosAvailable()) {
+      // The UI hides the demo scenarios here, so this is only reached through a stale link.
+      console.warn("Demo scenarios are not available when the app runs from a file");
+      return null;
+    }
     isLoading.value = true;
     const idUrlMap: Record<string, string> = {
       falkland82: "/scenarios/falkland82.json",

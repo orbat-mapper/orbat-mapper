@@ -17,9 +17,15 @@ import { activeScenarioKey } from "@/components/injects";
 import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
+  basemapFlavor,
+  basemapSupportsFlavor,
+  basemapSupportsOpacity,
   getSupportedMaplibreBasemaps,
   resolveMaplibreBasemap,
 } from "@/modules/maplibreview/maplibreBasemaps";
+import type { BasemapFlavor } from "@/geo/maplibreLayerConfigTypes";
+import { useBasemapArchives } from "@/composables/basemapArchives";
+import { Button } from "@/components/ui/button";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { TScenario } from "@/scenariostore";
 
@@ -34,6 +40,8 @@ export interface LayerInfo {
   description?: string;
   layerType?: LayerType | "baselayer" | "map-layer";
   supportsOpacity?: boolean;
+  /** Set only for the active base layer when it is a vector PMTiles archive. */
+  flavor?: BasemapFlavor;
   kind?: "openlayers" | "scenario-layer";
   nativeLayer?: unknown;
   layerId?: FeatureId;
@@ -45,6 +53,7 @@ const mapSettings = useMapSettingsStore();
 const baseLayersStore = useBaseLayersStore();
 const maplibreLayersStore = useMaplibreLayersStore();
 const activeScenario = inject<TScenario | null>(activeScenarioKey, null);
+const { openBasemapArchivePicker } = useBasemapArchives();
 
 const otherLayers = ref<LayerInfo[]>([]);
 const isMaplibreMode = computed(() => route.name === MAP_EDIT_MODE_ROUTE);
@@ -66,16 +75,21 @@ const baseLayers = computed<LayerInfo[]>(() => {
     const activeId = selectedBaseLayerId.value;
     return getSupportedMaplibreBasemaps(maplibreLayersStore.layers).map((layer) => {
       const config = maplibreLayersStore.layers.find((entry) => entry.name === layer.id);
+      const isActive = activeId === layer.id;
       return {
         id: layer.id,
         name: layer.id,
         title: layer.title,
-        visible: activeId === layer.id,
+        visible: isActive,
         zIndex: 0,
         opacity: config?.opacity ?? 1,
         description: "",
         layerType: "baselayer" as const,
-        supportsOpacity: config?.sourceType === "raster",
+        supportsOpacity: basemapSupportsOpacity(config),
+        // Only a vector PMTiles archive has flavours, and only the active base layer is styled,
+        // so that is the only row that gets the select.
+        flavor:
+          isActive && basemapSupportsFlavor(config) ? basemapFlavor(config) : undefined,
       };
     });
   }
@@ -221,6 +235,10 @@ function toggleLayer(layerInfo: LayerInfo) {
   }
 }
 
+function updateFlavor(layerInfo: LayerInfo, flavor: BasemapFlavor) {
+  maplibreLayersStore.setLayerFlavor(layerInfo.name, flavor);
+}
+
 function updateOpacity(layerInfo: LayerInfo, opacity: number) {
   if (layerInfo.layerType === "baselayer") {
     if (isMaplibreMode.value) {
@@ -253,7 +271,20 @@ function updateOpacity(layerInfo: LayerInfo, opacity: number) {
       :settings="baseLayers"
       v-model="activeBaseLayer"
       @update:layer-opacity="updateOpacity"
+      @update:layer-flavor="updateFlavor"
     />
+
+    <Button
+      v-if="isMaplibreMode"
+      type="button"
+      variant="outline"
+      size="sm"
+      class="mt-2 w-full"
+      data-test="open-map-file"
+      @click="openBasemapArchivePicker()"
+    >
+      Open map file…
+    </Button>
 
     <p class="mt-4 text-xs font-medium tracking-wider uppercase">Other layers</p>
 
