@@ -13,9 +13,7 @@ defineProps<{
 const emit = defineEmits(["delete"]);
 const editMode = defineModel<boolean>("editMode");
 const addMode = defineModel<boolean>("addMode");
-const includeSubordinates = defineModel<boolean>("includeSubordinates", {
-  default: undefined,
-});
+const includeSubordinates = defineModel<boolean | undefined>("includeSubordinates");
 let prevIncludeSubordinates: boolean | undefined;
 </script>
 <template>

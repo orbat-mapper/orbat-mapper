@@ -111,15 +111,17 @@ watch([() => isActionSearch.value, () => query.value.trim()], async ([isa, q]) =
   hitCount.value = filteredActions.length;
 });
 
-function onSelect(
-  item:
-    | UnitSearchResult
-    | LayerFeatureSearchResult
-    | EventSearchResult
-    | ExtendedPhotonSearchResult
-    | ActionSearchResult
-    | MapLayerSearchResult,
-) {
+type SearchHit =
+  | UnitSearchResult
+  | LayerFeatureSearchResult
+  | EventSearchResult
+  | ExtendedPhotonSearchResult
+  | ActionSearchResult
+  | MapLayerSearchResult;
+
+function onSelect(value: unknown) {
+  const item = value as SearchHit | null;
+  if (!item) return;
   if (item.category === "Units") emit("select-unit", item.id);
   else if (item.category === "Features") {
     if (item.type === "layer") {
@@ -145,7 +147,7 @@ function onSelect(
     <ListboxRoot
       data-slot="command"
       class="bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md"
-      @update:modelValue="onSelect!"
+      @update:modelValue="onSelect"
     >
       <CommandPaletteInput v-model="rawQuery" />
       <ListboxContent
