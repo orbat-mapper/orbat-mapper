@@ -56,6 +56,7 @@ import {
   useBasemapArchives,
   type PendingBasemapArchive,
 } from "@/composables/basemapArchives";
+import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict, nanoid } from "@/utils";
 import {
@@ -120,6 +121,7 @@ const {
   activatePendingBasemapArchive,
   removeBasemapArchive,
 } = useBasemapArchives();
+const { isCustomBasemap, removeCustomBasemap } = useCustomBasemaps();
 
 function pendingArchiveLabel(pending: PendingBasemapArchive) {
   return pending.action === "restore"
@@ -176,7 +178,15 @@ function onActivatePendingArchive(key: string) {
 
 function onRemoveActiveArchive() {
   const layer = removableActiveBasemap.value;
-  if (layer) void removeBasemapArchive(layer.name);
+  if (!layer) return;
+  // Same split as the Layers panel: a basemap added by address has no file, no handle and nothing
+  // to forget but the address. Sending it down the archive path would drop the layer for this
+  // session and leave the address remembered, so it would come back on the next load.
+  if (isCustomBasemap(layer.name)) {
+    removeCustomBasemap(layer.name);
+    return;
+  }
+  void removeBasemapArchive(layer.name);
 }
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
