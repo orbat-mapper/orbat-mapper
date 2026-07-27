@@ -170,8 +170,13 @@ A vector archive holds tiles only. It does not hold a style. Therefore, ORBAT Ma
 **flavour** selects the colours of that style. There are five flavours: `light`, `dark`, `white`, `black` and
 `grayscale`. The default is `light`.
 
-The flavour select is in the _Base layers_ section of the _Layers_ panel, near the opacity control. It shows only when
-the active base layer is a vector archive. A raster archive does not need a flavour, because it holds finished images.
+There are two ways to change the flavour:
+
+- Do a right click on the map. Select _Map flavour_.
+- Open the _Layers_ panel. The flavour select is in the _Base layers_ section, near the opacity control.
+
+The two controls show only when the active base layer is a vector archive. A raster archive does not need a flavour,
+because it holds finished images.
 
 The flavour is not the same as the dark mode of the application. Change one, and the other does not change.
 
