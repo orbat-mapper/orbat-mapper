@@ -13,8 +13,32 @@ export type MapProjection = "globe" | "mercator";
 export interface RememberedBasemapArchive {
   fileName: string;
   kind: BasemapArchiveKind;
+  /** Archive key. Optional because entries written before this change do not have it. */
+  key?: string;
 }
 export type MapLibreUnitRotationMode = "screen" | "mixed" | "map";
+
+const LEGACY_REMEMBERED_ARCHIVE_KEY = "lastBasemapArchive";
+
+/**
+ * Reads the superseded single-archive key once and folds it into the list, so a user who opened an
+ * archive before archives were remembered plural does not lose it.
+ *
+ * Deliberately not a VueUse ref: it runs once, when the store is first created, and then the key is
+ * gone. Guarded for a missing `localStorage`, because the test environment has none.
+ */
+function migrateLegacyRememberedArchive(): RememberedBasemapArchive[] {
+  try {
+    if (typeof localStorage === "undefined") return [];
+    const raw = localStorage.getItem(LEGACY_REMEMBERED_ARCHIVE_KEY);
+    if (!raw) return [];
+    localStorage.removeItem(LEGACY_REMEMBERED_ARCHIVE_KEY);
+    const parsed = JSON.parse(raw) as RememberedBasemapArchive | null;
+    return parsed?.fileName ? [parsed] : [];
+  } catch {
+    return [];
+  }
+}
 
 export const useMapSettingsStore = defineStore("mapSettings", {
   state: () => ({
@@ -27,11 +51,16 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     showFeatureTooltip: useLocalStorage("showFeatureTooltip", true),
     baseLayerName: DEFAULT_BASEMAP_ID,
     maplibreBaseLayerName: useLocalStorage("maplibreBaseLayerName", ""),
-    // Only the archive's name and kind — the file itself cannot be persisted, so all we can do
-    // after a reload is ask the user to select it again.
-    lastBasemapArchive: useLocalStorage<RememberedBasemapArchive | null>(
-      "lastBasemapArchive",
-      null,
+    // Only each archive's name, kind and key — never the bytes. On Chromium a file handle for the
+    // same key may also be stored in IndexedDB, which lets the archive be opened again; elsewhere
+    // all we can do after a reload is ask the user to select the file again.
+    //
+    // A list, because several archives can be open at once: the pmtiles protocol keys them
+    // individually and each is its own base layer. Remembering only the last one lost the others
+    // on reload and orphaned their stored handles.
+    basemapArchives: useLocalStorage<RememberedBasemapArchive[]>(
+      "basemapArchives",
+      migrateLegacyRememberedArchive(),
       { serializer: StorageSerializers.object },
     ),
     showDayNightTerminator: false,

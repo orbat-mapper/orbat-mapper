@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPinia, setActivePinia } from "pinia";
+import { createPinia, getActivePinia, setActivePinia } from "pinia";
 import { defineComponent, reactive, ref } from "vue";
 import LayersPanel from "@/components/LayersPanel.vue";
 import { activeScenarioKey } from "@/components/injects";
@@ -18,10 +18,23 @@ vi.mock("vue-router", () => ({
   }),
 }));
 
+// The panel reaches the handle store through the archives composable. Stubbed so no IndexedDB
+// call is attempted in jsdom.
+vi.mock("@/geo/basemapArchiveHandles", () => ({
+  isFileHandleSupported: () => false,
+  pickBasemapArchiveHandles: async () => ({ status: "unavailable" }),
+  fileFromHandle: async () => null,
+  queryBasemapArchivePermission: async () => "unsupported",
+  requestBasemapArchivePermission: async () => "unsupported",
+  saveBasemapArchiveHandle: async () => {},
+  loadBasemapArchiveHandle: async () => null,
+  deleteBasemapArchiveHandle: async () => {},
+}));
+
 const BaseLayerSwitcherStub = defineComponent({
   name: "BaseLayerSwitcher",
   props: ["settings", "modelValue"],
-  emits: ["update:modelValue", "update:layerOpacity"],
+  emits: ["update:modelValue", "update:layerOpacity", "activateLayer", "removeLayer"],
   template: "<div />",
 });
 
@@ -214,6 +227,156 @@ describe("LayersPanel", () => {
         (layer) => layer.name === "vectorArchive",
       );
       expect(config).toMatchObject({ flavor: "dark" });
+    });
+  });
+
+  describe("basemap archive rows", () => {
+    interface BaseRow {
+      id: string;
+      name: string;
+      title: string;
+      rowKind?: string;
+      removable?: boolean;
+      actionLabel?: string;
+      supportsOpacity?: boolean;
+    }
+
+    function mountPanel() {
+      const wrapper = mount(LayersPanel, {
+        global: {
+          plugins: [getActivePinia()!],
+          stubs: {
+            BaseLayerSwitcher: BaseLayerSwitcherStub,
+            OpacityInput: OpacityInputStub,
+          },
+        },
+      });
+      const switcher = wrapper.getComponent(BaseLayerSwitcherStub);
+      return {
+        wrapper,
+        switcher,
+        rows: () => switcher.props("settings") as BaseRow[],
+      };
+    }
+
+    function sessionArchive(url?: string) {
+      return {
+        name: "world",
+        title: "World (local)",
+        sourceType: "pmtiles" as const,
+        url,
+        archive: {
+          kind: "vector" as const,
+          minZoom: 0,
+          maxZoom: 14,
+          bounds: [-180, -85, 180, 85] as [number, number, number, number],
+        },
+      };
+    }
+
+    it("marks only an archive the user opened from disk as removable", () => {
+      const store = useMaplibreLayersStore();
+      store.layers = [
+        sessionArchive(),
+        {
+          name: "bright",
+          title: "Bright",
+          sourceType: "style",
+          styleUrl: "https://example.com/style.json",
+        },
+        {
+          name: "osmRaster",
+          title: "OSM Raster",
+          sourceType: "raster",
+          tiles: ["https://example.com/{z}/{x}/{y}.png"],
+        },
+      ];
+      const { rows } = mountPanel();
+
+      expect(rows().find((row) => row.id === "world")?.removable).toBe(true);
+      expect(rows().find((row) => row.id === "bright")?.removable).toBe(false);
+      expect(rows().find((row) => row.id === "osmRaster")?.removable).toBe(false);
+      expect(rows().find((row) => row.title === "No base map")?.removable).toBe(false);
+    });
+
+    it("marks a config-declared archive as not removable", () => {
+      const store = useMaplibreLayersStore();
+      store.layers = [sessionArchive("/maps/world.pmtiles")];
+      const { rows } = mountPanel();
+
+      expect(rows().find((row) => row.id === "world")?.removable).toBe(false);
+    });
+
+    it("appends a pending row for a remembered archive that is not loaded", () => {
+      useMapSettingsStore().basemapArchives = [
+        {
+          fileName: "world.pmtiles",
+          kind: "pmtiles",
+          key: "world",
+        },
+      ];
+      useMaplibreLayersStore().layers = [];
+      const { rows } = mountPanel();
+
+      const pending = rows()[rows().length - 1]!;
+      expect(pending).toMatchObject({
+        id: "pending:world",
+        name: "world",
+        title: "world.pmtiles",
+        rowKind: "pending-archive",
+        removable: true,
+        supportsOpacity: false,
+        actionLabel: "Select map file…",
+      });
+    });
+
+    it("drops the pending row once the archive is loaded", () => {
+      useMapSettingsStore().basemapArchives = [
+        {
+          fileName: "world.pmtiles",
+          kind: "pmtiles",
+          key: "world",
+        },
+      ];
+      useMaplibreLayersStore().layers = [sessionArchive()];
+      const { rows } = mountPanel();
+
+      expect(rows().some((row) => row.rowKind === "pending-archive")).toBe(false);
+    });
+
+    it("does not activate a pending row as a base layer", async () => {
+      const mapSettings = useMapSettingsStore();
+      mapSettings.basemapArchives = [
+        {
+          fileName: "world.pmtiles",
+          kind: "pmtiles",
+          key: "world",
+        },
+      ];
+      mapSettings.maplibreBaseLayerName = "";
+      useMaplibreLayersStore().layers = [];
+      const { switcher, rows, wrapper } = mountPanel();
+      const pending = rows()[rows().length - 1]!;
+
+      switcher.vm.$emit("update:modelValue", pending);
+      await wrapper.vm.$nextTick();
+
+      expect(mapSettings.maplibreBaseLayerName).toBe("");
+    });
+
+    it("removes a removable base layer when the switcher asks for it", async () => {
+      const store = useMaplibreLayersStore();
+      store.layers = [sessionArchive()];
+      const { switcher, rows, wrapper } = mountPanel();
+
+      switcher.vm.$emit(
+        "removeLayer",
+        rows().find((row) => row.id === "world"),
+      );
+      await wrapper.vm.$nextTick();
+      await Promise.resolve();
+
+      expect(store.layers.some((layer) => layer.name === "world")).toBe(false);
     });
   });
 });

@@ -15,6 +15,7 @@ import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
@@ -35,7 +36,6 @@ import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTra
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
-import BasemapArchivePrompt from "@/components/BasemapArchivePrompt.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import {
@@ -110,6 +110,7 @@ useMapLibreRoutingPreview(() => mlMap.value);
 
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
+const { restoreRememberedBasemapArchive } = useBasemapArchives();
 const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = computed({
   get: () =>
@@ -168,8 +169,11 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => {
-  void maplibreLayersStore.initialize();
+onMounted(async () => {
+  await maplibreLayersStore.initialize();
+  // The layer list must be resolved first, so a remembered key that a config-declared archive
+  // already provides is not treated as pending.
+  await restoreRememberedBasemapArchive();
 });
 
 function disposeMaplibreBinding() {
@@ -225,7 +229,6 @@ function onCloseActiveDetailsPanel() {
   >
     <template #map>
       <div class="@container relative flex flex-auto">
-        <BasemapArchivePrompt class="absolute top-14 left-2 z-10" />
         <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
           <MaplibreMap
             @ready="onMapReady"

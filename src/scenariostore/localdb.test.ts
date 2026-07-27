@@ -121,6 +121,10 @@ function createMockDb(
       const store = ensureStore(name);
       return Promise.resolve(Array.from(store.values.values()));
     },
+    getAllKeys(name: string) {
+      const store = ensureStore(name);
+      return Promise.resolve(Array.from(store.values.keys()));
+    },
     transaction(storeNames: string[]) {
       return {
         objectStore(name: string) {
@@ -248,5 +252,121 @@ describe("localdb draft persistence", () => {
       updatedAt: 999,
     });
     expect(db.__stores.has("scenario-drafts")).toBe(true);
+  });
+});
+
+describe("localdb basemap archive handles", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  it("opens the database at version 5 with the handle store", async () => {
+    const db = createMockDb();
+    openDBMock.mockImplementation(async (_name, nextVersion, { upgrade }) => {
+      upgrade?.(db, 0, nextVersion, {
+        objectStore: (name: string) => db.transaction([name]).objectStore(name),
+      });
+      db.__setVersion(nextVersion);
+      return db;
+    });
+
+    const { useIndexedDb } = await import("./localdb");
+    await useIndexedDb();
+
+    expect(openDBMock).toHaveBeenCalledWith("scenario-db", 5, expect.anything());
+    expect(db.__stores.has("basemap-archive-handles")).toBe(true);
+  });
+
+  it("upgrades a version 4 database and keeps the scenarios intact", async () => {
+    const scenario = createScenario("scenario-v4", "Version 4 Scenario");
+    const existingBlobStore = createStoreState();
+    existingBlobStore.values.set("scenario-v4", scenario);
+    const existingMetadataStore = createStoreState("id");
+    existingMetadataStore.indexes.add("by-created");
+    existingMetadataStore.indexes.add("by-modified");
+    const existingDraftStore = createStoreState("scenarioId");
+    existingDraftStore.indexes.add("by-updated-at");
+
+    const db = createMockDb(4, {
+      "scenario-blobs": existingBlobStore,
+      "scenario-metadata": existingMetadataStore,
+      "scenario-drafts": existingDraftStore,
+    });
+
+    openDBMock.mockImplementation(async (_name, nextVersion, { upgrade }) => {
+      if (db.__getVersion() < nextVersion) {
+        upgrade?.(db, db.__getVersion(), nextVersion, {
+          objectStore: (name: string) => db.transaction([name]).objectStore(name),
+        });
+        db.__setVersion(nextVersion);
+      }
+      return db;
+    });
+
+    const { useIndexedDb } = await import("./localdb");
+    const api = await useIndexedDb();
+
+    expect(await api.loadScenario("scenario-v4")).toMatchObject({
+      id: "scenario-v4",
+      name: "Version 4 Scenario",
+    });
+    expect(db.__stores.has("basemap-archive-handles")).toBe(true);
+  });
+
+  it("stores, reads and deletes an archive handle record", async () => {
+    const db = createMockDb();
+    openDBMock.mockImplementation(async (_name, nextVersion, { upgrade }) => {
+      upgrade?.(db, 0, nextVersion, {
+        objectStore: (name: string) => db.transaction([name]).objectStore(name),
+      });
+      db.__setVersion(nextVersion);
+      return db;
+    });
+
+    const { useIndexedDb } = await import("./localdb");
+    const api = await useIndexedDb();
+    // A plain object stands in for the FileSystemFileHandle: this store never calls into it.
+    const handle = {
+      name: "world.pmtiles",
+      getFile: () => Promise.resolve(new File(["x"], "world.pmtiles")),
+    };
+
+    await api.putArchiveHandle({
+      key: "world",
+      handle,
+      fileName: "world.pmtiles",
+      savedAt: 42,
+    });
+
+    expect(await api.getArchiveHandle("world")).toMatchObject({
+      key: "world",
+      fileName: "world.pmtiles",
+      savedAt: 42,
+    });
+
+    await api.deleteArchiveHandle("world");
+
+    expect(await api.getArchiveHandle("world")).toBeUndefined();
+  });
+
+  it("lists the keys of every stored handle, so orphans can be found", async () => {
+    const db = createMockDb();
+    openDBMock.mockImplementation(async (_name, nextVersion, { upgrade }) => {
+      upgrade?.(db, 0, nextVersion, {
+        objectStore: (name: string) => db.transaction([name]).objectStore(name),
+      });
+      db.__setVersion(nextVersion);
+      return db;
+    });
+
+    const { useIndexedDb } = await import("./localdb");
+    const api = await useIndexedDb();
+    const handle = { name: "x" } as never;
+
+    await api.putArchiveHandle({ key: "alpha", handle, fileName: "a", savedAt: 1 });
+    await api.putArchiveHandle({ key: "bravo", handle, fileName: "b", savedAt: 2 });
+
+    expect(await api.listArchiveHandleKeys()).toEqual(["alpha", "bravo"]);
   });
 });

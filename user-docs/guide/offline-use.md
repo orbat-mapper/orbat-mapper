@@ -191,9 +191,26 @@ For raster archives there is no schema. All raster archives operate.
 
 ### Limits of a local map file
 
-- **You must select the archive again after each reload.** A web page cannot keep a reference to a file on your disk.
-  After you reload the page, ORBAT Mapper shows a message with the name of the archive and asks you to select the file
-  again. It does not copy the basemap into the browser storage.
+- **The browser can sometimes open the archive again.** ORBAT Mapper does not copy the basemap into the browser storage.
+  It keeps only a reference to the file on your disk. A Chromium browser (Google Chrome, Microsoft Edge, Brave) keeps
+  this reference between sessions. ORBAT Mapper gets a reference only if you selected the archive with
+  _Open map file…_. If you drag the file and drop it on the map, ORBAT Mapper gets no reference. ORBAT Mapper opens the
+  archive again at start in one condition only. The browser must still hold your permission to read the file, and the
+  archive must be the active base layer. Then ORBAT Mapper opens the archive and shows a message. This condition is
+  usual after a reload of the page. It is not usual after you close the browser, because the browser then cancels the
+  permission. In all other conditions, ORBAT Mapper shows the archive in the list of base layers with the name of the
+  file. Select _Restore map file_ in that row. The browser asks you for permission. Then the archive opens.
+- **ORBAT Mapper keeps all your archives.** You can open more than one basemap archive. Each archive is a different row
+  in the list of base layers, and one of them is the active base layer. ORBAT Mapper keeps a row for each archive after
+  a reload. But it opens only the archive that was the active base layer without a question. For the other archives,
+  select the row.
+- **Sometimes you must select the file again.** The row in the list of base layers shows _Select map file…_ if ORBAT
+  Mapper has no reference to the file. Firefox, Safari and the standalone file keep no reference. There you must select
+  the file again after each reload. A Chromium browser also shows _Select map file…_ if you dragged the file to the map,
+  if you refused the permission, or if the file is no longer at the same location. Select the row. Then select the file
+  in the dialog.
+- **The reference is not correct if you move the file.** If you move the file, or if you give it a different name, or if
+  you erase it, ORBAT Mapper cannot open it again. ORBAT Mapper then erases the reference and asks you for the file.
 - **The labels are different.** ORBAT Mapper does not use fonts from a server for a vector archive. The browser makes
   the labels from the fonts of your operating system. Therefore, the labels are not the same as the labels on an online
   map.
@@ -233,6 +250,24 @@ The fields are:
 An entry without `url` is not correct. ORBAT Mapper cannot ask you for a file on your disk from the configuration,
 because it must read the archive at start. To use an archive from your disk, select the file as above.
 :::
+
+### Remove a basemap archive
+
+Each basemap archive in the _Base layers_ section of the _Layers_ panel has a remove control. The remove control does
+these operations:
+
+- It erases the reference to the file.
+- It erases the archive from the list of base layers.
+- The map does not read the archive again.
+- If the archive was the active base layer, it makes a different base layer active.
+
+The file on your disk does not change. You can select the file again at any time.
+
+Only a basemap archive that you selected from your disk has a remove control. An archive from `maplibreConfig.json` and
+a built-in online basemap do not have one.
+
+You can also do a right click on the map, then select _Map base layer_. If the active base layer is a basemap archive,
+the menu shows a remove item for it.
 
 ## Level 3 — Standalone file
 

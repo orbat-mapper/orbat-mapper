@@ -18,6 +18,7 @@ import { MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   basemapFlavor,
+  basemapIsRemovable,
   basemapSupportsFlavor,
   basemapSupportsOpacity,
   getSupportedMaplibreBasemaps,
@@ -42,6 +43,15 @@ export interface LayerInfo {
   supportsOpacity?: boolean;
   /** Set only for the active base layer when it is a vector PMTiles archive. */
   flavor?: BasemapFlavor;
+  /**
+   * "pending-archive" is the remembered basemap archive that is not loaded. Such a row has no
+   * radio: it cannot be activated, its action button loads the archive first.
+   */
+  rowKind?: "basemap" | "pending-archive";
+  /** Button label on a pending-archive row. */
+  actionLabel?: string;
+  /** True for a basemap archive the user opened from disk. Only these can be removed. */
+  removable?: boolean;
   kind?: "openlayers" | "scenario-layer";
   nativeLayer?: unknown;
   layerId?: FeatureId;
@@ -53,7 +63,12 @@ const mapSettings = useMapSettingsStore();
 const baseLayersStore = useBaseLayersStore();
 const maplibreLayersStore = useMaplibreLayersStore();
 const activeScenario = inject<TScenario | null>(activeScenarioKey, null);
-const { openBasemapArchivePicker } = useBasemapArchives();
+const {
+  openBasemapArchivePicker,
+  pendingBasemapArchives,
+  activatePendingBasemapArchive,
+  removeBasemapArchive,
+} = useBasemapArchives();
 
 const otherLayers = ref<LayerInfo[]>([]);
 const isMaplibreMode = computed(() => route.name === MAP_EDIT_MODE_ROUTE);
@@ -73,7 +88,9 @@ const selectedBaseLayerId = computed(() => {
 const baseLayers = computed<LayerInfo[]>(() => {
   if (isMaplibreMode.value) {
     const activeId = selectedBaseLayerId.value;
-    return getSupportedMaplibreBasemaps(maplibreLayersStore.layers).map((layer) => {
+    const rows: LayerInfo[] = getSupportedMaplibreBasemaps(
+      maplibreLayersStore.layers,
+    ).map((layer) => {
       const config = maplibreLayersStore.layers.find((entry) => entry.name === layer.id);
       const isActive = activeId === layer.id;
       return {
@@ -90,8 +107,36 @@ const baseLayers = computed<LayerInfo[]>(() => {
         // so that is the only row that gets the select.
         flavor:
           isActive && basemapSupportsFlavor(config) ? basemapFlavor(config) : undefined,
+        rowKind: "basemap" as const,
+        removable: basemapIsRemovable(config),
       };
     });
+
+    // Built here and not inside getSupportedMaplibreBasemaps(): that function is shared with the
+    // context menu, and resolveMaplibreBasemap() falls back to options[0], so a non-basemap entry
+    // in it could become the resolved active basemap.
+    for (const pending of pendingBasemapArchives.value) {
+      rows.push({
+        // Prefixed so this id can never equal a layer name, a radio value or a stored basemap id.
+        id: `pending:${pending.key}`,
+        name: pending.key,
+        title: pending.fileName,
+        visible: false,
+        zIndex: 0,
+        opacity: 1,
+        description:
+          pending.action === "restore"
+            ? "Opened earlier. Your browser must ask you before it reads the file again."
+            : "Opened earlier. Select the file again to use this basemap.",
+        layerType: "baselayer" as const,
+        supportsOpacity: false,
+        rowKind: "pending-archive" as const,
+        actionLabel:
+          pending.action === "restore" ? "Restore map file" : "Select map file…",
+        removable: true,
+      });
+    }
+    return rows;
   }
 
   const activeId = selectedBaseLayerId.value;
@@ -111,7 +156,8 @@ const baseLayers = computed<LayerInfo[]>(() => {
 const activeBaseLayer = computed({
   get: () => baseLayers.value.find((layer) => layer.id === selectedBaseLayerId.value),
   set: (layerInfo?: LayerInfo) => {
-    if (!layerInfo) return;
+    // Belt and braces: a pending row has no radio, so it cannot become the active base layer.
+    if (!layerInfo || layerInfo.rowKind === "pending-archive") return;
     setScenarioBaseMapId(
       layerInfo.name,
       isMaplibreMode.value ? "maplibre" : "openlayers",
@@ -235,6 +281,16 @@ function toggleLayer(layerInfo: LayerInfo) {
   }
 }
 
+function activateLayer(layerInfo: LayerInfo) {
+  if (layerInfo.rowKind !== "pending-archive") return;
+  void activatePendingBasemapArchive(layerInfo.name);
+}
+
+function removeBaseLayer(layerInfo: LayerInfo) {
+  // `name` is the archive key on both a loaded row and a pending row.
+  void removeBasemapArchive(layerInfo.name);
+}
+
 function updateFlavor(layerInfo: LayerInfo, flavor: BasemapFlavor) {
   maplibreLayersStore.setLayerFlavor(layerInfo.name, flavor);
 }
@@ -272,6 +328,8 @@ function updateOpacity(layerInfo: LayerInfo, opacity: number) {
       v-model="activeBaseLayer"
       @update:layer-opacity="updateOpacity"
       @update:layer-flavor="updateFlavor"
+      @activate-layer="activateLayer"
+      @remove-layer="removeBaseLayer"
     />
 
     <Button

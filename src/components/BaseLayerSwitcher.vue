@@ -6,6 +6,8 @@ import OpacityInput from "./OpacityInput.vue";
 import { computed } from "vue";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { BASEMAP_FLAVORS } from "@/geo/maplibreLayerConfigTypes";
+import { Button } from "@/components/ui/button";
+import { TrashIcon } from "@heroicons/vue/24/outline";
 
 interface Props {
   settings: LayerInfo[];
@@ -13,7 +15,12 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-defineEmits(["update:layerOpacity", "update:layerFlavor"]);
+defineEmits([
+  "update:layerOpacity",
+  "update:layerFlavor",
+  "activateLayer",
+  "removeLayer",
+]);
 
 const selected = defineModel<LayerInfo>();
 const nsettings = computed(() => [...props.settings]);
@@ -38,18 +45,25 @@ const selectedId = computed({
     >
       <div
         v-for="setting in nsettings"
-        :key="setting.title"
+        :key="setting.id"
         class="hover:bg-muted/50 flex items-start gap-3 p-4 transition-colors"
       >
         <RadioGroupItem
+          v-if="setting.rowKind !== 'pending-archive'"
           :value="setting.id ?? '__NULL__'"
           :id="`layer-${setting.id ?? 'null'}`"
           class="mt-1"
         />
+        <!-- Same-size spacer, so a row without a radio keeps the two-column layout. -->
+        <span v-else class="mt-1 size-4 shrink-0" aria-hidden="true" />
         <div class="flex min-w-0 flex-auto flex-col text-sm">
           <div class="flex items-center justify-between font-medium">
             <Label
-              :for="`layer-${setting.id ?? 'null'}`"
+              :for="
+                setting.rowKind === 'pending-archive'
+                  ? undefined
+                  : `layer-${setting.id ?? 'null'}`
+              "
               class="flex-auto truncate font-medium"
             >
               {{ setting.title }}
@@ -59,20 +73,48 @@ const selectedId = computed({
                 >Default</span
               >
             </Label>
-            <span v-if="setting.title === 'None' || setting.supportsOpacity === false" />
-            <OpacityInput
-              v-else
-              :model-value="setting.opacity"
-              @update:model-value="$emit('update:layerOpacity', setting, $event)"
-              class="text-foreground shrink-0"
-            />
+            <div class="ml-2 flex shrink-0 items-center gap-1">
+              <OpacityInput
+                v-if="setting.title !== 'None' && setting.supportsOpacity !== false"
+                :model-value="setting.opacity"
+                @update:model-value="$emit('update:layerOpacity', setting, $event)"
+                class="text-foreground shrink-0"
+              />
+              <!-- Outside the Label on purpose: inside it, a click would also toggle the radio. -->
+              <button
+                v-if="setting.removable"
+                type="button"
+                class="text-muted-foreground hover:text-foreground shrink-0"
+                :title="`Remove ${setting.title}`"
+                :aria-label="`Remove ${setting.title}`"
+                data-test="basemap-archive-remove"
+                @click.prevent="$emit('removeLayer', setting)"
+              >
+                <TrashIcon class="size-4" />
+              </button>
+            </div>
           </div>
           <Label
-            :for="`layer-${setting.id ?? 'null'}`"
+            :for="
+              setting.rowKind === 'pending-archive'
+                ? undefined
+                : `layer-${setting.id ?? 'null'}`
+            "
             class="text-muted-foreground block text-sm font-normal"
           >
             {{ setting.description || "" }}
           </Label>
+          <Button
+            v-if="setting.rowKind === 'pending-archive'"
+            type="button"
+            size="sm"
+            variant="secondary"
+            class="mt-2 self-start"
+            data-test="basemap-archive-activate"
+            @click="$emit('activateLayer', setting)"
+          >
+            {{ setting.actionLabel }}
+          </Button>
           <!-- Only a vector map file has flavours, so LayersPanel leaves this unset elsewhere. -->
           <div v-if="setting.flavor" class="mt-2 flex items-center gap-2">
             <Label :for="`flavor-${setting.id}`" class="text-muted-foreground text-xs">

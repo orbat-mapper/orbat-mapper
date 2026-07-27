@@ -32,6 +32,7 @@ import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
 import {
   basemapFlavor,
+  basemapIsRemovable,
   getSupportedMaplibreBasemaps,
   resolveMaplibreBasemap,
 } from "@/modules/maplibreview/maplibreBasemaps";
@@ -51,7 +52,10 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/notifications";
-import { useBasemapArchives } from "@/composables/basemapArchives";
+import {
+  useBasemapArchives,
+  type PendingBasemapArchive,
+} from "@/composables/basemapArchives";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict, nanoid } from "@/utils";
 import {
@@ -109,7 +113,18 @@ const baseMapId = defineModel<string>("baseMapId", {
 const basemapOptions = computed(() =>
   getSupportedMaplibreBasemaps(maplibreLayersStore.layers),
 );
-const { openBasemapArchivePicker } = useBasemapArchives();
+const {
+  openBasemapArchivePicker,
+  pendingBasemapArchives,
+  activatePendingBasemapArchive,
+  removeBasemapArchive,
+} = useBasemapArchives();
+
+function pendingArchiveLabel(pending: PendingBasemapArchive) {
+  return pending.action === "restore"
+    ? `Restore ${pending.fileName}`
+    : `Select ${pending.fileName}…`;
+}
 
 // A vector PMTiles archive carries no style of its own, so the flavour picks the colours of the
 // style ORBAT Mapper generates for it. Raster archives and remote styles have no flavour, and
@@ -117,6 +132,14 @@ const { openBasemapArchivePicker } = useBasemapArchives();
 const activeBasemapId = computed(
   () => resolveMaplibreBasemap(baseMapId.value, maplibreLayersStore.layers)?.id,
 );
+
+/** The active basemap when, and only when, it is an archive the user opened from disk. */
+const removableActiveBasemap = computed(() => {
+  const layer = maplibreLayersStore.layers.find(
+    (entry) => entry.name === activeBasemapId.value,
+  );
+  return basemapIsRemovable(layer) ? layer : undefined;
+});
 
 const activeFlavor = computed(() =>
   basemapFlavor(
@@ -137,6 +160,15 @@ function onSelectFlavor(value: unknown) {
 /** Lets the user pick a basemap archive from disk. The picker activates whatever it loads. */
 function onOpenMapFile() {
   openBasemapArchivePicker();
+}
+
+function onActivatePendingArchive(key: string) {
+  void activatePendingBasemapArchive(key);
+}
+
+function onRemoveActiveArchive() {
+  const layer = removableActiveBasemap.value;
+  if (layer) void removeBasemapArchive(layer.name);
 }
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
@@ -527,6 +559,19 @@ function onContextMenu(event: MouseEvent) {
           <ContextMenuSeparator />
           <ContextMenuItem @select.prevent="onOpenMapFile()">
             Open map file…
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-for="pending in pendingBasemapArchives"
+            :key="pending.key"
+            @select.prevent="onActivatePendingArchive(pending.key)"
+          >
+            {{ pendingArchiveLabel(pending) }}
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-if="removableActiveBasemap"
+            @select.prevent="onRemoveActiveArchive()"
+          >
+            Remove {{ removableActiveBasemap.title || removableActiveBasemap.name }}
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
