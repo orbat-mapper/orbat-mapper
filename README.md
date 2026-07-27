@@ -65,6 +65,10 @@ tell it where to find the map data. There are three ways to do this:
 The place name search sends requests to [Photon](https://photon.komoot.io/). This function needs an internet connection
 in all three cases. There is no offline replacement.
 
+You do not have to make a build. Each release supplies `orbat-mapper-<version>.zip` for a web server, and
+`orbat-mapper-standalone-<version>.html` for the standalone file. See the
+[releases page](https://github.com/orbat-mapper/orbat-mapper/releases).
+
 For the full instructions, the configuration of the basemap layers and the limits of each option, see
 [Offline use](https://docs.orbat-mapper.app/guide/offline-use) in the documentation.
 

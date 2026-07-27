@@ -32,7 +32,9 @@ best option for an isolated network with more than one user.
 The two servers do not need to be on the same machine. The web server can be on one machine, and the tile server on a
 different machine on the same network. One tile server can supply the basemap to all the users on the network.
 
-Make the build and put the `dist` directory on your web server:
+Download `orbat-mapper-<version>.zip` from the
+[releases page](https://github.com/orbat-mapper/orbat-mapper/releases), and put its contents on your web server. You can
+also make the build yourself. The command writes the same files to the `dist` directory:
 
 ```sh
 pnpm run build
@@ -303,14 +305,18 @@ the menu shows a remove item for it.
 At Level 3 there is no web server. The application is one HTML file on your disk. You open it with your browser, and you
 select a basemap archive as at Level 2.
 
-Make the standalone build:
+There are two ways to get the standalone file:
 
-```sh
-pnpm run build:singlefile
-```
+- Download `orbat-mapper-standalone-<version>.html` from the
+  [releases page](https://github.com/orbat-mapper/orbat-mapper/releases).
+- Make the build yourself. The command writes one file, `dist-singlefile/index.html`:
 
-The build writes one file, `dist-singlefile/index.html`. It contains the full application. Copy that file to the other
-computer, and do a double click on it. The browser opens it with a `file://` address.
+  ```sh
+  pnpm run build:singlefile
+  ```
+
+The file contains the full application. Copy it to the other computer, and do a double click on it. The browser opens it
+with a `file://` address. You can give the file a different name. The name has no effect.
 
 ::: warning The standalone file is large
 The file is approximately 8 MB. There are three causes:
