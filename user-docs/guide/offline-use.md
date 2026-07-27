@@ -34,7 +34,9 @@ different machine on the same network. One tile server can supply the basemap to
 
 Make the build and put the `dist` directory on your web server:
 
-    $ pnpm run build
+```sh
+pnpm run build
+```
 
 ### Host your own basemap
 
@@ -154,18 +156,27 @@ A [PMTiles](https://docs.protomaps.com/pmtiles/) archive has the extension `.pmt
   [`pmtiles` command line tool](https://docs.protomaps.com/guide/getting-started). Protomaps supplies a daily archive of
   the full planet:
 
-      $ pmtiles extract https://build.protomaps.com/20260726.pmtiles denmark.pmtiles --bbox=8,54.5,15.2,57.8
+  ```sh
+  pmtiles extract https://build.protomaps.com/20260726.pmtiles \
+    denmark.pmtiles --bbox=8,54.5,15.2,57.8
+  ```
 
   This archive is approximately 960 MB, because it contains all the zoom levels.
 
   You can also limit the zoom levels instead of the area. This example keeps all the world, but only to zoom level 6.
   The archive is approximately 60 MB, and it shows the countries and the large cities:
 
-      $ pmtiles extract https://build.protomaps.com/20260726.pmtiles planet_z6.pmtiles --maxzoom=6
+  ```sh
+  pmtiles extract https://build.protomaps.com/20260726.pmtiles \
+    planet_z6.pmtiles --maxzoom=6
+  ```
 
   Use the two options together to get one area with less detail:
 
-      $ pmtiles extract https://build.protomaps.com/20260726.pmtiles denmark_z12.pmtiles --bbox=8,54.5,15.2,57.8 --maxzoom=12
+  ```sh
+  pmtiles extract https://build.protomaps.com/20260726.pmtiles \
+    denmark_z12.pmtiles --bbox=8,54.5,15.2,57.8 --maxzoom=12
+  ```
 
   The address contains the date of the build. Use the date of a recent build.
 
@@ -300,7 +311,9 @@ select a basemap archive as at Level 2.
 
 Make the standalone build:
 
-    $ pnpm run build:singlefile
+```sh
+pnpm run build:singlefile
+```
 
 The build writes one file, `dist-singlefile/index.html`. It contains the full application. Copy that file to the other
 computer, and do a double click on it. The browser opens it with a `file://` address.
