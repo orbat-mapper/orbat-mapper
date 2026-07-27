@@ -326,7 +326,7 @@ describe("LayersPanel", () => {
         rowKind: "pending-archive",
         removable: true,
         supportsOpacity: false,
-        actionLabel: "Select map file…",
+        actionLabel: "Select PMTiles archive…",
       });
     });
 

@@ -62,7 +62,7 @@ export type CustomBasemapResult =
  *
  * Only http and https are accepted. A `file://` address is refused with its own message: it looks
  * reasonable in a standalone file, but a page cannot read an arbitrary file from disk, and _Open
- * map file…_ is the control for a file.
+ * PMTiles archive…_ is the control for a file.
  */
 export function customBasemapFromUrl(url: string, title?: string): CustomBasemapResult {
   const trimmed = url.trim();
@@ -78,7 +78,7 @@ export function customBasemapFromUrl(url: string, title?: string): CustomBasemap
   if (parsed.protocol === "file:") {
     return {
       ok: false,
-      message: "Use Open map file… for a file on your disk.",
+      message: "Use Open PMTiles archive… for a file on your disk.",
     };
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {

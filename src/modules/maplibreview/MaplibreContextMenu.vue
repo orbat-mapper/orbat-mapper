@@ -576,7 +576,7 @@ function onContextMenu(event: MouseEvent) {
           </ContextMenuRadioGroup>
           <ContextMenuSeparator />
           <ContextMenuItem @select.prevent="onOpenMapFile()">
-            Open map file…
+            Open PMTiles archive…
           </ContextMenuItem>
           <ContextMenuItem @select="showAddMapServer = true">
             Add map server…
@@ -596,7 +596,7 @@ function onContextMenu(event: MouseEvent) {
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
-      <!-- Only a vector map file has flavours, so this is hidden for every other basemap. -->
+      <!-- Only a vector archive has flavours, so this is hidden for every other basemap. -->
       <ContextMenuSub v-if="activeFlavor">
         <ContextMenuSubTrigger inset><span>Map flavour</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>

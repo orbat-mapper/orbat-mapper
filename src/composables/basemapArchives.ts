@@ -385,7 +385,7 @@ export function useBasemapArchives() {
       // transient activation, so showOpenFilePicker would reject with a SecurityError. The row now
       // offers the picker instead, and a second click opens it.
       send({
-        message: `${pending.fileName} could not be opened. Select the map file again.`,
+        message: `${pending.fileName} could not be opened. Select the archive again.`,
         type: "error",
       });
       return;

@@ -67,7 +67,7 @@ describe("customBasemapFromUrl", () => {
     const result = customBasemapFromUrl("file:///home/user/denmark.pmtiles");
     expect(result).toEqual({
       ok: false,
-      message: "Use Open map file… for a file on your disk.",
+      message: "Use Open PMTiles archive… for a file on your disk.",
     });
   });
 

@@ -73,7 +73,7 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
     } catch (e) {
       // A standalone file has no server to read the config from, thus it always lands here and
       // offers the fallbacks. They load if the computer can reach them, and the user selects
-      // "No base map" or "Open map file…" if it cannot.
+      // "No base map" or "Open PMTiles archive…" if it cannot.
       console.warn("Could not read config/maplibreConfig.json", e);
       layers.value = FALLBACK_LAYERS;
     }

@@ -135,7 +135,9 @@ const baseLayers = computed<LayerInfo[]>(() => {
         supportsOpacity: false,
         rowKind: "pending-archive" as const,
         actionLabel:
-          pending.action === "restore" ? "Restore map file" : "Select map file…",
+          pending.action === "restore"
+            ? "Restore PMTiles archive"
+            : "Select PMTiles archive…",
         removable: true,
       });
     }
@@ -351,7 +353,7 @@ function updateOpacity(layerInfo: LayerInfo, opacity: number) {
       data-test="open-map-file"
       @click="openBasemapArchivePicker()"
     >
-      Open map file…
+      Open PMTiles archive…
     </Button>
 
     <Button

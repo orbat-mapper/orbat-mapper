@@ -26,7 +26,7 @@ function pendingRow(overrides: Partial<LayerInfo> = {}): LayerInfo {
     visible: false,
     supportsOpacity: false,
     rowKind: "pending-archive",
-    actionLabel: "Restore map file",
+    actionLabel: "Restore PMTiles archive",
     removable: true,
     ...overrides,
   });
@@ -51,7 +51,7 @@ describe("BaseLayerSwitcher", () => {
     const wrapper = mountSwitcher([baseRow(), pending]);
 
     const action = wrapper.get("[data-test='basemap-archive-activate']");
-    expect(action.text()).toBe("Restore map file");
+    expect(action.text()).toBe("Restore PMTiles archive");
 
     await action.trigger("click");
 

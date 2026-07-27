@@ -450,7 +450,7 @@ describe("activatePendingBasemapArchive", () => {
     expect(handles.deleteBasemapArchiveHandle).toHaveBeenCalledWith("world");
     expect(handles.pickBasemapArchiveHandles).not.toHaveBeenCalled();
     expect(lastNotification()).toMatchObject({
-      message: "world.pmtiles could not be opened. Select the map file again.",
+      message: "world.pmtiles could not be opened. Select the archive again.",
       type: "error",
     });
     expect(api.pendingBasemapArchives.value[0]?.action).toBe("pick");

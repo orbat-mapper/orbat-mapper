@@ -115,7 +115,7 @@ const selectedId = computed({
           >
             {{ setting.actionLabel }}
           </Button>
-          <!-- Only a vector map file has flavours, so LayersPanel leaves this unset elsewhere. -->
+          <!-- Only a vector archive has flavours, so LayersPanel leaves this unset elsewhere. -->
           <div v-if="setting.flavor" class="mt-2 flex items-center gap-2">
             <Label :for="`flavor-${setting.id}`" class="text-muted-foreground text-xs">
               Flavour

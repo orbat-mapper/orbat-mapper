@@ -135,7 +135,7 @@ ORBAT Mapper accepts three types of address, and it identifies the type from the
 | A tile address with `{z}`, `{x}` and `{y}` | Raster tiles    | `http://mapserver.example.local:8080/{z}/{x}/{y}.png`         |
 | A file with the extension `.pmtiles`       | Basemap archive | `http://mapserver.example.local:8080/denmark.pmtiles`         |
 
-The address must start with `http://` or `https://`. For a file on your disk, use _Open map file…_ instead.
+The address must start with `http://` or `https://`. For a file on your disk, use _Open PMTiles archive…_ instead.
 
 ORBAT Mapper keeps the address in the browser, therefore the basemap is available again after a reload. The two
 conditions above also apply to this map server. To remove the basemap, select the remove control in its row in the
@@ -191,7 +191,7 @@ the file has no effect.
 
 There are three ways to open an archive:
 
-- Do a right click on the map. Select _Map base layer_, then _Open map file…_ at the bottom of the list.
+- Do a right click on the map. Select _Map base layer_, then _Open PMTiles archive…_ at the bottom of the list.
 - Open the _Layers_ panel. Use the button in the _Base layers_ section.
 - Drag the file and drop it on the map.
 
@@ -232,15 +232,15 @@ disk. Some browsers keep this reference after a reload, and some do not:
 
 | Browser                              | How you opened the archive | Reference |
 | ------------------------------------ | -------------------------- | --------- |
-| Google Chrome, Microsoft Edge, Brave | _Open map file…_           | Yes       |
+| Google Chrome, Microsoft Edge, Brave | _Open PMTiles archive…_    | Yes       |
 | Google Chrome, Microsoft Edge, Brave | Drag and drop              | No        |
 | Firefox, Safari, standalone file     | All ways                   | No        |
 
 - **With a reference, ORBAT Mapper can open the archive again.** It does this at start in one condition only: the
   archive is the active base layer, and the browser still holds your permission. This condition is usual after a reload
   of the page. It is not usual after you close the browser, because the browser then cancels the permission. In all
-  other conditions, select _Restore map file_ in the row of the archive. The browser asks you for permission.
-- **Without a reference, you must select the file again after each reload.** The row shows _Select map file…_. Select
+  other conditions, select _Restore PMTiles archive_ in the row of the archive. The browser asks you for permission.
+- **Without a reference, you must select the file again after each reload.** The row shows _Select PMTiles archive…_. Select
   the row, then select the file in the dialog.
 - **ORBAT Mapper keeps a row for each archive.** You can open more than one archive, but only one of them is the active
   base layer. Only that archive opens again without a question. For the other archives, select the row.
