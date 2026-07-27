@@ -127,7 +127,10 @@ provide(activeScenarioKey, props.activeScenario);
 provide(activeFeatureStylesKey, scnFeatureStyles);
 provide(currentScenarioTabKey, activeScenarioTab);
 
-const onUnitSelectHook = createEventHook<{ unitId: EntityId }>();
+const onUnitSelectHook = createEventHook<{
+  unitId: EntityId;
+  options?: { noZoom?: boolean; revealInOrbat?: boolean };
+}>();
 const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
 const onImageLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
 const onFeatureSelectHook = createEventHook<{

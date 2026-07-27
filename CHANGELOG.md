@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed the ORBAT panel opening again when you select a unit on the map in desktop mode. A closed panel now stays closed. Search, the locate shortcut, and "Locate in ORBAT" still open the panel and show the unit in the tree.
 - Fixed right-clicking a unit track in MapLibre edit mode, which inserted a via point and started dragging it instead of opening the context menu.
 - Fixed symbol changes from unit events not showing in MapLibre mode, the ORBAT chart, unit search results, or the map context menus, which all drew the base unit symbol instead of the symbol at the current time.
 - Fixed the long-press hit tolerance for track points in the map context menu, which used a 12px box on touch devices where every other touch gesture uses 26px.

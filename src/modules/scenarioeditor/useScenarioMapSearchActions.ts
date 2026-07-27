@@ -68,21 +68,27 @@ export function useScenarioMapSearchActions({
   } = useSearchActions();
 
   onUnitSelect(({ unitId, options }) => {
-    if (!isMobile.value) {
-      ui.showLeftPanel = true;
-    }
-    ui.activeTabIndex = TAB_ORBAT;
+    // Selecting a unit on the map should only change the selection. Revealing the unit in
+    // the ORBAT tree is an explicit action (search, locate shortcut, "Locate in ORBAT"),
+    // so it must not reopen a panel the user closed.
+    const revealInOrbat = options?.revealInOrbat !== false;
     activeUnitId.value = unitId;
     activeParentId.value = unitId;
     selectedUnitIds.value.clear();
     selectedUnitIds.value.add(unitId);
     const unit = activeScenario.unitActions.getUnitById(unitId);
-    const { side, sideGroup, parents } =
-      activeScenario.unitActions.getUnitHierarchy(unitId);
-    if (side) side._isOpen = true;
-    if (sideGroup) sideGroup._isOpen = true;
-    parents.forEach((parent) => (parent._isOpen = true));
-    orbatRevealUnitId.value = unitId;
+    if (revealInOrbat) {
+      if (!isMobile.value) {
+        ui.showLeftPanel = true;
+      }
+      ui.activeTabIndex = TAB_ORBAT;
+      const { side, sideGroup, parents } =
+        activeScenario.unitActions.getUnitHierarchy(unitId);
+      if (side) side._isOpen = true;
+      if (sideGroup) sideGroup._isOpen = true;
+      parents.forEach((parent) => (parent._isOpen = true));
+      orbatRevealUnitId.value = unitId;
+    }
 
     if (!(options?.noZoom === true) && zoomToUnit) {
       nextTick(() => {

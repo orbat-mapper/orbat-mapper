@@ -38,7 +38,12 @@ export const sidcModalKey = Symbol("SIDC modal") as InjectionKey<{
 }>;
 
 export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
-  onUnitSelectHook: EventHook<{ unitId: EntityId; options?: { noZoom?: boolean } }>;
+  onUnitSelectHook: EventHook<{
+    unitId: EntityId;
+    // revealInOrbat defaults to true. Plain map selections pass false so that they only
+    // change the selection, without opening the ORBAT panel or expanding the tree.
+    options?: { noZoom?: boolean; revealInOrbat?: boolean };
+  }>;
   onLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onImageLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{

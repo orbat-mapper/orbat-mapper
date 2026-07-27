@@ -2006,7 +2006,7 @@ describe("MlMapLogic", () => {
     expect(mockMap.canvas.style.cursor).toBe("pointer");
     expect(unitSelectSpy).toHaveBeenCalledWith({
       unitId: "unit-1",
-      options: { noZoom: true },
+      options: { noZoom: true, revealInOrbat: false },
     });
     expect(featureSelectSpy).not.toHaveBeenCalled();
   });
@@ -2066,7 +2066,7 @@ describe("MlMapLogic", () => {
 
     expect(unitSelectSpy).toHaveBeenCalledWith({
       unitId: "unit-1",
-      options: { noZoom: true },
+      options: { noZoom: true, revealInOrbat: false },
     });
   });
 
@@ -2471,7 +2471,7 @@ describe("MlMapLogic", () => {
 
     expect(unitSelectSpy).toHaveBeenCalledWith({
       unitId: "unit-1",
-      options: { noZoom: true },
+      options: { noZoom: true, revealInOrbat: false },
     });
   });
 

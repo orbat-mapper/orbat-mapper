@@ -810,7 +810,10 @@ function onMapClick(e: MapMouseEvent) {
     const unitId = topHit.properties?.id;
     if (!unitId) return;
     if (additive) return;
-    onUnitSelectHook.trigger({ unitId, options: { noZoom: true } });
+    onUnitSelectHook.trigger({
+      unitId,
+      options: { noZoom: true, revealInOrbat: false },
+    });
     return;
   }
   if (isMapLibreKmlRenderedLayerId(topHit.layer.id)) {
@@ -936,7 +939,7 @@ function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
     } else {
       onUnitSelectHook.trigger({
         unitId: dragState.clickedUnitId,
-        options: { noZoom: true },
+        options: { noZoom: true, revealInOrbat: false },
       });
     }
     return;
