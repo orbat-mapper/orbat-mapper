@@ -18,6 +18,11 @@ interface BaseMlLayerConfig {
   attribution?: string;
   /** Tile coverage bounds [minLon, minLat, maxLon, maxLat] in WGS84. */
   bounds?: [number, number, number, number];
+  /**
+   * True for a basemap the user added by address at runtime (see `@/geo/customBasemap`). It is
+   * what makes the row removable: a basemap from `maplibreConfig.json` carries no such mark.
+   */
+  custom?: boolean;
 }
 
 export interface MlStyleLayerConfig extends BaseMlLayerConfig {

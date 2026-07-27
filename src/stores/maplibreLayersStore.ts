@@ -12,6 +12,7 @@ import {
 } from "@/geo/basemapArchive";
 import { unregisterArchive } from "@/geo/pmtilesProtocol";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { customBasemapToLayerConfig } from "@/geo/customBasemap";
 
 /**
  * The basemaps to use when `config/maplibreConfig.json` cannot be read.
@@ -76,7 +77,23 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
       console.warn("Could not read config/maplibreConfig.json", e);
       layers.value = FALLBACK_LAYERS;
     }
+    addCustomBasemaps();
     await resolveArchiveLayers();
+  }
+
+  /**
+   * Appends the basemaps the user added by address.
+   *
+   * After the config, so a custom basemap with the same name as a config entry replaces it — the
+   * user's own address wins over a default. Before resolveArchiveLayers(), so a custom `.pmtiles`
+   * address gets its header read like any other archive declared by URL.
+   */
+  function addCustomBasemaps() {
+    const { customBasemaps } = useMapSettingsStore();
+    if (customBasemaps.length === 0) return;
+    const custom = customBasemaps.map(customBasemapToLayerConfig);
+    const names = new Set(custom.map((layer) => layer.name));
+    layers.value = [...layers.value.filter((layer) => !names.has(layer.name)), ...custom];
   }
 
   /**

@@ -114,6 +114,30 @@ Two conditions apply to a tile server on a different machine:
 - **The two servers must use the same protocol.** If you supply the application with `https`, the tile server must also
   use `https`. A browser does not read `http` addresses from an `https` page.
 
+### Add a map server without the configuration file
+
+`maplibreConfig.json` is a file on the web server. If you cannot change that file — or if you use the standalone file,
+which cannot read it — you can give ORBAT Mapper the address of a map server in the application:
+
+1. Open the **Layers** panel and select **Add map server…**. You can also do a right click on the map, then select _Map
+   base layer_ > _Add map server…_.
+2. Type the address. Then select **Add**.
+
+ORBAT Mapper accepts three types of address, and it identifies the type from the address:
+
+| Address                                    | Type            | Example                                                       |
+| ------------------------------------------ | --------------- | ------------------------------------------------------------- |
+| A MapLibre style                           | Style           | `http://mapserver.example.local:8080/styles/basic/style.json` |
+| A tile address with `{z}`, `{x}` and `{y}` | Raster tiles    | `http://mapserver.example.local:8080/{z}/{x}/{y}.png`         |
+| A file with the extension `.pmtiles`       | Basemap archive | `http://mapserver.example.local:8080/denmark.pmtiles`         |
+
+The address must start with `http://` or `https://`. For a file on your disk, use _Open map file…_ instead.
+
+ORBAT Mapper keeps the address in the browser, therefore the basemap is available again after a reload. The two
+conditions above also apply here: the tile server must send the `Access-Control-Allow-Origin` header, and it must use
+the same protocol as the application. To remove the basemap, select the remove control in its row in the **Layers**
+panel.
+
 ## Level 2 — Local map file
 
 At Level 2 you get the application from a web server, but you read the basemap from a **basemap archive**. A basemap
@@ -312,9 +336,10 @@ therefore you do not see a control that cannot operate. These are the limitation
   the start page.
 - **There is no place name search.** The search needs an online service. The build removes the search from the map and
   from the command palette.
-- **You cannot configure the basemaps.** `maplibreConfig.json` is a file on the server, therefore the standalone file
-  cannot read it. The map shows the built-in online basemaps, which operate if the computer can reach them, and you add
-  a basemap archive from your disk with _Open map file…_.
+- **You cannot use `maplibreConfig.json`.** That file is on the web server, therefore the standalone file cannot read
+  it. The map shows the built-in online basemaps, which operate if the computer can reach them. To use your own map
+  server, select _Add map server…_ in the Layers panel and type the address. Refer to
+  [Add a map server without the configuration file](#add-a-map-server-without-the-configuration-file).
 - **ORBAT Mapper does not remember your basemap archive.** A `file://` page cannot keep a reference to a file on your
   disk. Therefore you must select the archive again after each reload. At Level 1 and Level 2 in a Chromium browser,
   ORBAT Mapper keeps the reference. Refer to [Limits of a local map file](#limits-of-a-local-map-file).

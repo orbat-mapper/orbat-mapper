@@ -3,6 +3,7 @@ import { type CoordinateFormatType } from "@/composables/geoShowLocation";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 import type { BasemapArchiveKind } from "@/geo/basemapArchive";
+import type { CustomBasemap } from "@/geo/customBasemap";
 
 export type MapProjection = "globe" | "mercator";
 
@@ -63,6 +64,13 @@ export const useMapSettingsStore = defineStore("mapSettings", {
       migrateLegacyRememberedArchive(),
       { serializer: StorageSerializers.object },
     ),
+    // Basemaps the user added by address. The full address is kept, because it is the whole of
+    // what a custom basemap is — there is no file and no handle. This is the only way to reach a
+    // tile server that maplibreConfig.json does not declare, and the only way at all in the
+    // standalone build, which cannot read that file.
+    customBasemaps: useLocalStorage<CustomBasemap[]>("customBasemaps", [], {
+      serializer: StorageSerializers.object,
+    }),
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 25),
     mapCustomIconScale: useLocalStorage("mapCustomIconScale", 1.7),

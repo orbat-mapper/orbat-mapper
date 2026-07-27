@@ -182,12 +182,16 @@ export function basemapSupportsFlavor(
 }
 
 /**
- * Whether the UI should offer to remove this basemap. Only a basemap archive the user opened from
- * disk qualifies: a config-declared archive carries a `url`, and every other source type comes from
- * maplibreConfig.json or the built-in fallbacks, which the user did not add and cannot remove.
+ * Whether the UI should offer to remove this basemap. Only what the user added qualifies: an
+ * archive opened from disk, or a basemap added by address. A config-declared archive carries a
+ * `url`, and everything else comes from maplibreConfig.json or the built-in fallbacks, which the
+ * user did not add and cannot remove.
  */
 export function basemapIsRemovable(layer: MlLayerConfig | undefined): boolean {
-  return layer?.sourceType === "pmtiles" && !layer.url;
+  if (!layer) return false;
+  // Either the user opened it from disk, or the user typed its address. Both are the user's own.
+  if (layer.custom) return true;
+  return layer.sourceType === "pmtiles" && !layer.url;
 }
 
 /** The flavour currently in effect for a basemap, or undefined when it has none. */

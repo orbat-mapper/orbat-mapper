@@ -72,6 +72,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
+import AddMapServerDialog from "@/components/AddMapServerDialog.vue";
 import { queryTrackPointAt, type TrackPointHit } from "@/composables/maplibreUnitHistory";
 
 const maplibreLayersStore = useMaplibreLayersStore();
@@ -156,6 +157,13 @@ function onSelectFlavor(value: unknown) {
   if (!id || !isBasemapFlavor(value)) return;
   maplibreLayersStore.setLayerFlavor(id, value);
 }
+
+/**
+ * The map server dialog cannot live inside the menu: the menu unmounts its content when it
+ * closes, and the dialog must stay while the user types. It is a sibling of the whole menu, and
+ * this flag is what the menu item sets.
+ */
+const showAddMapServer = ref(false);
 
 /** Lets the user pick a basemap archive from disk. The picker activates whatever it loads. */
 function onOpenMapFile() {
@@ -560,6 +568,9 @@ function onContextMenu(event: MouseEvent) {
           <ContextMenuItem @select.prevent="onOpenMapFile()">
             Open map file…
           </ContextMenuItem>
+          <ContextMenuItem @select="showAddMapServer = true">
+            Add map server…
+          </ContextMenuItem>
           <ContextMenuItem
             v-for="pending in pendingBasemapArchives"
             :key="pending.key"
@@ -763,4 +774,5 @@ function onContextMenu(event: MouseEvent) {
       </ContextMenuCheckboxItem>
     </ContextMenuContent>
   </ContextMenu>
+  <AddMapServerDialog v-model="showAddMapServer" />
 </template>

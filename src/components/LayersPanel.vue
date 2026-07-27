@@ -26,7 +26,9 @@ import {
 } from "@/modules/maplibreview/maplibreBasemaps";
 import type { BasemapFlavor } from "@/geo/maplibreLayerConfigTypes";
 import { useBasemapArchives } from "@/composables/basemapArchives";
+import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { Button } from "@/components/ui/button";
+import AddMapServerDialog from "@/components/AddMapServerDialog.vue";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { TScenario } from "@/scenariostore";
 
@@ -69,6 +71,7 @@ const {
   activatePendingBasemapArchive,
   removeBasemapArchive,
 } = useBasemapArchives();
+const { isCustomBasemap, removeCustomBasemap } = useCustomBasemaps();
 
 const otherLayers = ref<LayerInfo[]>([]);
 const isMaplibreMode = computed(() => route.name === MAP_EDIT_MODE_ROUTE);
@@ -287,9 +290,16 @@ function activateLayer(layerInfo: LayerInfo) {
 }
 
 function removeBaseLayer(layerInfo: LayerInfo) {
+  // A basemap added by address has no file, no handle and nothing to forget but the address.
+  if (isCustomBasemap(layerInfo.name)) {
+    removeCustomBasemap(layerInfo.name);
+    return;
+  }
   // `name` is the archive key on both a loaded row and a pending row.
   void removeBasemapArchive(layerInfo.name);
 }
+
+const showAddMapServer = ref(false);
 
 function updateFlavor(layerInfo: LayerInfo, flavor: BasemapFlavor) {
   maplibreLayersStore.setLayerFlavor(layerInfo.name, flavor);
@@ -343,6 +353,20 @@ function updateOpacity(layerInfo: LayerInfo, opacity: number) {
     >
       Open map file…
     </Button>
+
+    <Button
+      v-if="isMaplibreMode"
+      type="button"
+      variant="outline"
+      size="sm"
+      class="mt-2 w-full"
+      data-test="add-map-server"
+      @click="showAddMapServer = true"
+    >
+      Add map server…
+    </Button>
+
+    <AddMapServerDialog v-if="isMaplibreMode" v-model="showAddMapServer" />
 
     <p class="mt-4 text-xs font-medium tracking-wider uppercase">Other layers</p>
 
