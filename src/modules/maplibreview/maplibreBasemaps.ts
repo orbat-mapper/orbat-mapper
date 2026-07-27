@@ -9,8 +9,15 @@ import {
   type MlRasterLayerConfig,
   type MlStyleLayerConfig,
 } from "@/geo/maplibreLayerConfigTypes";
+import { registerBasemapProtocols } from "@/geo/basemapArchive";
 import { archiveTileUrl } from "@/geo/pmtilesProtocol";
 import { protomapsSpriteUrl } from "@/geo/protomapsSprite";
+
+// Global MapLibre protocols — registered once, here rather than in main.ts. This module is the
+// only source of `pmtiles://` and `pmsprite://` URLs and it loads lazily with the map, so a URL
+// cannot exist before its protocol does. Registering in the app entry instead pulled maplibre-gl
+// (~1 MB) into the initial chunk for every visitor. Both registrations are idempotent.
+registerBasemapProtocols();
 
 export const MAPLIBRE_VECTOR_BASEMAP_ID = DEFAULT_MAPLIBRE_BASEMAP_ID;
 export const MAPLIBRE_LIBERTY_BASEMAP_ID = "openFreeMapLiberty";
