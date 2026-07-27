@@ -11,6 +11,7 @@ import {
   customBasemapToLayerConfig,
   type CustomBasemap,
 } from "@/geo/customBasemap";
+import { resolveBasemapArchiveLayer } from "@/geo/basemapArchive";
 import {
   getSupportedMaplibreBasemaps,
   NO_BASEMAP_ID,
@@ -33,9 +34,14 @@ export function useCustomBasemaps() {
   /**
    * Adds a basemap from an address and makes it active.
    *
-   * The address is not tested here. Whether a server answers is not knowable until MapLibre asks
-   * it, and a server that is down now can be up later, therefore an address that cannot load stays
-   * in the list and the map shows the failure.
+   * A style or raster address is not tested. Whether a server answers is not knowable until
+   * MapLibre asks it, and a server that is down now can be up later, therefore an address that
+   * cannot load stays in the list and the map shows the failure.
+   *
+   * A `.pmtiles` address is different: nothing can be drawn from it until its header has been read,
+   * so resolveBasemapArchiveLayer() runs here. An archive that cannot be read therefore fails while
+   * the dialog is still open, instead of being reported as added and then silently skipped by the
+   * basemap picker until the next reload resolves it.
    */
   async function addCustomBasemap(url: string, title?: string): Promise<boolean> {
     const result = customBasemapFromUrl(url, title);
@@ -46,7 +52,7 @@ export function useCustomBasemaps() {
     const { basemap } = result;
 
     try {
-      const layer = customBasemapToLayerConfig(basemap);
+      const layer = await resolveBasemapArchiveLayer(customBasemapToLayerConfig(basemap));
       layersStore.addLayer(layer);
       // Assigned as a new array, so localStorage is written. An address that is already in the
       // list updates its entry instead of making a second row for the same server.

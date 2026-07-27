@@ -1,13 +1,29 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { useNotifications } from "@/composables/notifications";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import type { MlLayerConfig } from "@/geo/maplibreLayerConfigTypes";
+
+/**
+ * Reading a PMTiles header is a range request. The seam stands in for it, so a test can choose
+ * between an archive that answers and one that does not.
+ */
+const archive = vi.hoisted(() => ({
+  resolve: vi.fn(async (layer: unknown) => layer),
+}));
+
+vi.mock("@/geo/basemapArchive", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/geo/basemapArchive")>()),
+  resolveBasemapArchiveLayer: (layer: MlLayerConfig) => archive.resolve(layer),
+}));
 
 const STYLE_URL = "http://tiles.example.lan/style.json";
 const STYLE_NAME = `custom:${STYLE_URL}`;
+const PMTILES_URL = "http://tiles.example.lan/denmark.pmtiles";
+const PMTILES_NAME = `custom:${PMTILES_URL}`;
 
 function lastNotification() {
   const list = useNotifications().notifications.value;
@@ -17,6 +33,7 @@ function lastNotification() {
 beforeEach(() => {
   setActivePinia(createPinia());
   useNotifications().notifications.value = [];
+  archive.resolve.mockReset().mockImplementation(async (layer: unknown) => layer);
 });
 
 describe("addCustomBasemap", () => {
@@ -53,6 +70,40 @@ describe("addCustomBasemap", () => {
     expect(useMaplibreLayersStore().layers).toHaveLength(before);
     expect(useMapSettingsStore().customBasemaps).toEqual([]);
     expect(lastNotification()).toMatchObject({ type: "error" });
+  });
+
+  it("reads the header of a .pmtiles address before it adds the layer", async () => {
+    archive.resolve.mockImplementation(async (layer: unknown) => ({
+      ...(layer as MlLayerConfig),
+      archive: { kind: "vector", minZoom: 0, maxZoom: 14, bounds: [-180, -85, 180, 85] },
+    }));
+    const { addCustomBasemap } = useCustomBasemaps();
+
+    expect(await addCustomBasemap(PMTILES_URL)).toBe(true);
+
+    // Without the archive info the basemap picker drops the layer, so the map would fall back to
+    // another basemap while the dialog reported success.
+    expect(useMaplibreLayersStore().getLayer(PMTILES_NAME)).toMatchObject({
+      sourceType: "pmtiles",
+      archive: { kind: "vector" },
+    });
+  });
+
+  it("fails an archive it cannot read, and remembers nothing", async () => {
+    archive.resolve.mockRejectedValue(new Error("Could not read the archive header"));
+    const { addCustomBasemap } = useCustomBasemaps();
+    const before = useMaplibreLayersStore().layers.length;
+    const active = useMapSettingsStore().maplibreBaseLayerName;
+
+    expect(await addCustomBasemap(PMTILES_URL)).toBe(false);
+
+    expect(useMaplibreLayersStore().layers).toHaveLength(before);
+    expect(useMapSettingsStore().customBasemaps).toEqual([]);
+    expect(useMapSettingsStore().maplibreBaseLayerName).toBe(active);
+    expect(lastNotification()).toMatchObject({
+      message: "Could not read the archive header",
+      type: "error",
+    });
   });
 
   it("updates the entry when the same address is added again", async () => {
