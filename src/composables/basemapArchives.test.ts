@@ -628,6 +628,69 @@ describe("removeBasemapArchive", () => {
   });
 });
 
+describe("archive keys", () => {
+  beforeEach(() => {
+    window.localStorage?.clear();
+    setActivePinia(createPinia());
+    resetBasemapArchiveSessionState();
+    resetHandleMocks();
+    useNotifications().clear();
+    const layersStore = useMaplibreLayersStore();
+    layersStore.layers = [];
+    // Honours options.name, as the real openBasemapArchiveFile() does. The key is what these
+    // tests are about, so a mock that derived its own would test nothing.
+    layersStore.addBasemapArchive = vi.fn(
+      async (f: File, options?: { name?: string }) => {
+        const layer = pmtilesLayer(options?.name ?? f.name);
+        layersStore.layers = [...layersStore.layers, layer];
+        return layer;
+      },
+    ) as never;
+  });
+
+  it("keeps two files apart when their names normalize to one key", async () => {
+    const { loadBasemapArchive } = useBasemapArchives();
+
+    await loadBasemapArchive(file("area map.pmtiles"));
+    await loadBasemapArchive(file("area_map.pmtiles"));
+
+    expect(useMapSettingsStore().basemapArchives).toMatchObject([
+      { fileName: "area map.pmtiles", key: "area_map" },
+      { fileName: "area_map.pmtiles", key: "area_map_2" },
+    ]);
+    // Both are still there: the second must not have replaced the first.
+    expect(useMaplibreLayersStore().layers.map((layer) => layer.name)).toEqual([
+      "area_map",
+      "area_map_2",
+    ]);
+  });
+
+  it("keeps its own key when the same file is opened again", async () => {
+    const { loadBasemapArchive } = useBasemapArchives();
+
+    await loadBasemapArchive(file("area map.pmtiles"));
+    await loadBasemapArchive(file("area_map.pmtiles"));
+    await loadBasemapArchive(file("area map.pmtiles"));
+
+    // A third row here would strand the handle and the remembered row of the first.
+    expect(useMapSettingsStore().basemapArchives).toMatchObject([
+      { fileName: "area_map.pmtiles", key: "area_map_2" },
+      { fileName: "area map.pmtiles", key: "area_map" },
+    ]);
+  });
+
+  it("steps aside for a layer that already has the key", async () => {
+    const layersStore = useMaplibreLayersStore();
+    layersStore.layers = [pmtilesLayer("world")];
+    const { loadBasemapArchive } = useBasemapArchives();
+
+    await loadBasemapArchive(file("world.pmtiles"));
+
+    expect(useMapSettingsStore().basemapArchives).toMatchObject([{ key: "world_2" }]);
+    expect(layersStore.layers).toHaveLength(2);
+  });
+});
+
 describe("several remembered archives", () => {
   beforeEach(() => {
     window.localStorage?.clear();

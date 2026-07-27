@@ -149,6 +149,34 @@ export function useBasemapArchives() {
   }
 
   /**
+   * A free archive key for this file.
+   *
+   * The derivation is lossy: "area map.pmtiles" and "area_map.pmtiles" both give `area_map`, and a
+   * layer in `maplibreConfig.json` can be called that too. Everything about an archive hangs off
+   * its key — the layer, the `pmtiles://` registration, the stored handle and the remembered row —
+   * so letting a second file take a key in use would replace the first one silently.
+   *
+   * Reopening the SAME file must keep its key, or a handle and a remembered row would be stranded
+   * on every reload. A taken key is therefore only stepped over when the archive behind it is a
+   * different file.
+   */
+  function archiveKeyForFile(fileName: string): string {
+    const base = archiveKeyFromFileName(fileName);
+    const remembered = (key: string) =>
+      mapSettings.basemapArchives.find((entry) => rememberedArchiveKey(entry) === key);
+    const usable = (key: string) => {
+      const entry = remembered(key);
+      if (entry) return entry.fileName === fileName;
+      return !layersStore.getLayer(key);
+    };
+    if (usable(base)) return base;
+    for (let n = 2; n < 1000; n++) {
+      if (usable(`${base}_${n}`)) return `${base}_${n}`;
+    }
+    return base;
+  }
+
+  /**
    * Opens one archive, makes it the active basemap and reports the outcome.
    *
    * Returns true when the archive was loaded. A `.mapbundle` fails here with the seam's own
@@ -159,7 +187,9 @@ export function useBasemapArchives() {
     options: LoadBasemapArchiveOptions = {},
   ): Promise<boolean> {
     try {
-      const layer = await layersStore.addBasemapArchive(file);
+      const layer = await layersStore.addBasemapArchive(file, {
+        name: archiveKeyForFile(file.name),
+      });
       layersStore.setActiveBasemap(layer.name);
       rememberBasemapArchive({
         fileName: file.name,
