@@ -30,7 +30,16 @@ import type { Map as MlMap } from "maplibre-gl";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
-import { getSupportedMaplibreBasemaps } from "@/modules/maplibreview/maplibreBasemaps";
+import {
+  basemapFlavor,
+  getSupportedMaplibreBasemaps,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
+import {
+  BASEMAP_FLAVORS,
+  isBasemapFlavor,
+  type BasemapFlavor,
+} from "@/geo/maplibreLayerConfigTypes";
 import {
   getFeatureIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
@@ -101,6 +110,29 @@ const basemapOptions = computed(() =>
   getSupportedMaplibreBasemaps(maplibreLayersStore.layers),
 );
 const { openBasemapArchivePicker } = useBasemapArchives();
+
+// A vector PMTiles archive carries no style of its own, so the flavour picks the colours of the
+// style ORBAT Mapper generates for it. Raster archives and remote styles have no flavour, and
+// `basemapFlavor()` returns undefined for them, which hides the submenu.
+const activeBasemapId = computed(
+  () => resolveMaplibreBasemap(baseMapId.value, maplibreLayersStore.layers)?.id,
+);
+
+const activeFlavor = computed(() =>
+  basemapFlavor(
+    maplibreLayersStore.layers.find((layer) => layer.name === activeBasemapId.value),
+  ),
+);
+
+function flavorLabel(flavor: BasemapFlavor) {
+  return flavor.charAt(0).toUpperCase() + flavor.slice(1);
+}
+
+function onSelectFlavor(value: unknown) {
+  const id = activeBasemapId.value;
+  if (!id || !isBasemapFlavor(value)) return;
+  maplibreLayersStore.setLayerFlavor(id, value);
+}
 
 /** Lets the user pick a basemap archive from disk. The picker activates whatever it loads. */
 function onOpenMapFile() {
@@ -496,6 +528,25 @@ function onContextMenu(event: MouseEvent) {
           <ContextMenuItem @select.prevent="onOpenMapFile()">
             Open map file…
           </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <!-- Only a vector map file has flavours, so this is hidden for every other basemap. -->
+      <ContextMenuSub v-if="activeFlavor">
+        <ContextMenuSubTrigger inset><span>Map flavour</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuRadioGroup
+            :model-value="activeFlavor"
+            @update:model-value="onSelectFlavor"
+          >
+            <ContextMenuRadioItem
+              v-for="flavor in BASEMAP_FLAVORS"
+              :key="flavor"
+              :value="flavor"
+              @select.prevent
+            >
+              {{ flavorLabel(flavor) }}
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>
