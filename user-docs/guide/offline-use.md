@@ -52,8 +52,8 @@ map server gives more functions. These are some options:
 ### Configure the basemap layers
 
 MapLibre GL is the main map engine. It reads the basemap layers from `public/config/maplibreConfig.json`. The build
-copies this file to `dist/config/maplibreConfig.json`. You can also change `dist/config/maplibreConfig.json` directly.
-But the next build erases the `dist` directory and writes it again.
+copies this file to `dist/config/maplibreConfig.json`. You can change the copy in `dist` directly, but the next build
+erases it.
 
 If the application cannot read the file, it uses a small set of built-in online basemaps.
 
@@ -136,9 +136,8 @@ ORBAT Mapper accepts three types of address, and it identifies the type from the
 The address must start with `http://` or `https://`. For a file on your disk, use _Open map file…_ instead.
 
 ORBAT Mapper keeps the address in the browser, therefore the basemap is available again after a reload. The two
-conditions above also apply here: the tile server must send the `Access-Control-Allow-Origin` header, and it must use
-the same protocol as the application. To remove the basemap, select the remove control in its row in the **Layers**
-panel.
+conditions above also apply to this map server. To remove the basemap, select the remove control in its row in the
+**Layers** panel.
 
 ## Level 2 — Local map file
 
@@ -226,26 +225,25 @@ For raster archives there is no schema. All raster archives operate.
 
 ### Limits of a local map file
 
-- **The browser can sometimes open the archive again.** ORBAT Mapper does not copy the basemap into the browser storage.
-  It keeps only a reference to the file on your disk. A Chromium browser (Google Chrome, Microsoft Edge, Brave) keeps
-  this reference between sessions. ORBAT Mapper gets a reference only if you selected the archive with
-  _Open map file…_. If you drag the file and drop it on the map, ORBAT Mapper gets no reference. ORBAT Mapper opens the
-  archive again at start in one condition only. The browser must still hold your permission to read the file, and the
-  archive must be the active base layer. Then ORBAT Mapper opens the archive and shows a message. This condition is
-  usual after a reload of the page. It is not usual after you close the browser, because the browser then cancels the
-  permission. In all other conditions, ORBAT Mapper shows the archive in the list of base layers with the name of the
-  file. Select _Restore map file_ in that row. The browser asks you for permission. Then the archive opens.
-- **ORBAT Mapper keeps all your archives.** You can open more than one basemap archive. Each archive is a different row
-  in the list of base layers, and one of them is the active base layer. ORBAT Mapper keeps a row for each archive after
-  a reload. But it opens only the archive that was the active base layer without a question. For the other archives,
-  select the row.
-- **Sometimes you must select the file again.** The row in the list of base layers shows _Select map file…_ if ORBAT
-  Mapper has no reference to the file. Firefox, Safari and the standalone file keep no reference. There you must select
-  the file again after each reload. A Chromium browser also shows _Select map file…_ if you dragged the file to the map,
-  if you refused the permission, or if the file is no longer at the same location. Select the row. Then select the file
-  in the dialog.
-- **The reference is not correct if you move the file.** If you move the file, or if you give it a different name, or if
-  you erase it, ORBAT Mapper cannot open it again. ORBAT Mapper then erases the reference and asks you for the file.
+ORBAT Mapper does not copy the basemap into the browser storage. It keeps only a **reference** to the file on your
+disk. Some browsers keep this reference after a reload, and some do not:
+
+| Browser                              | How you opened the archive | Reference |
+| ------------------------------------ | -------------------------- | --------- |
+| Google Chrome, Microsoft Edge, Brave | _Open map file…_           | Yes       |
+| Google Chrome, Microsoft Edge, Brave | Drag and drop              | No        |
+| Firefox, Safari, standalone file     | All ways                   | No        |
+
+- **With a reference, ORBAT Mapper can open the archive again.** It does this at start in one condition only: the
+  archive is the active base layer, and the browser still holds your permission. This condition is usual after a reload
+  of the page. It is not usual after you close the browser, because the browser then cancels the permission. In all
+  other conditions, select _Restore map file_ in the row of the archive. The browser asks you for permission.
+- **Without a reference, you must select the file again after each reload.** The row shows _Select map file…_. Select
+  the row, then select the file in the dialog.
+- **ORBAT Mapper keeps a row for each archive.** You can open more than one archive, but only one of them is the active
+  base layer. Only that archive opens again without a question. For the other archives, select the row.
+- **The reference is not correct if you move the file.** If you move the file, give it a different name, or erase it,
+  ORBAT Mapper cannot open it again. It erases the reference and asks you for the file.
 - **The labels are different.** ORBAT Mapper does not use fonts from a server for a vector archive. The browser makes
   the labels from the fonts of your operating system. Therefore, the labels are not the same as the labels on an online
   map.
@@ -288,15 +286,11 @@ because it must read the archive at start. To use an archive from your disk, sel
 
 ### Remove a basemap archive
 
-Each basemap archive in the _Base layers_ section of the _Layers_ panel has a remove control. The remove control does
-these operations:
+Each basemap archive in the _Base layers_ section of the _Layers_ panel has a remove control. It erases the reference to
+the file and erases the archive from the list of base layers. If the archive was the active base layer, a different base
+layer becomes active.
 
-- It erases the reference to the file.
-- It erases the archive from the list of base layers.
-- The map does not read the archive again.
-- If the archive was the active base layer, it makes a different base layer active.
-
-The file on your disk does not change. You can select the file again at any time.
+The file on your disk does not change. You can select it again at any time.
 
 Only a basemap archive that you selected from your disk has a remove control. An archive from `maplibreConfig.json` and
 a built-in online basemap do not have one.
@@ -342,17 +336,17 @@ by email without compression.
 
 ### Limitations
 
-The standalone file is a different build of the same application. The build removes the functions that need a server,
-therefore you do not see a control that cannot operate. These are the limitations:
+The standalone file is a different build of the same application. The build removes the functions that need a server.
+Therefore you do not see a control that cannot operate, and these parts cannot come back if the computer gets an
+internet connection.
 
 - **There are no demo scenarios.** The demo scenarios are files on the server. The build removes the demo section from
   the start page.
 - **There is no place name search.** The search needs an online service. The build removes the search from the map and
   from the command palette.
 - **You cannot use `maplibreConfig.json`.** That file is on the web server, therefore the standalone file cannot read
-  it. The map shows the built-in online basemaps, which operate if the computer can reach them. To use your own map
-  server, select _Add map server…_ in the Layers panel and type the address. Refer to
-  [Add a map server without the configuration file](#add-a-map-server-without-the-configuration-file).
+  it. The map shows the built-in online basemaps, which operate if the computer can reach them. For your own map server,
+  refer to [Add a map server without the configuration file](#add-a-map-server-without-the-configuration-file).
 - **ORBAT Mapper does not remember your basemap archive.** A `file://` page cannot keep a reference to a file on your
   disk. Therefore you must select the archive again after each reload. At Level 1 and Level 2 in a Chromium browser,
   ORBAT Mapper keeps the reference. Refer to [Limits of a local map file](#limits-of-a-local-map-file).
@@ -361,9 +355,6 @@ therefore you do not see a control that cannot operate. These are the limitation
   you copy from the standalone file is not the same as an address from the hosted application.
 - **You cannot update the application from the network.** To get a newer version, make a new build and copy the new
   file.
-
-The build removes these parts. It does not hide them at start. Therefore the parts are not in the file, and they cannot
-come back if the computer gets an internet connection.
 
 ## Mapbundle (planned)
 
