@@ -2,7 +2,8 @@ import turfBuffer from "@turf/buffer";
 import { simplify as turfSimplify } from "@turf/simplify";
 import { union as turfUnion } from "@turf/union";
 import type { Feature, FeatureCollection, Polygon, MultiPolygon } from "geojson";
-import WorkerConstructor from "@/geo/routing/shortestPath.worker?worker";
+// Inlined so the worker also starts from a file:// origin (the standalone build).
+import WorkerConstructor from "@/geo/routing/shortestPath.worker?worker&inline";
 import type {
   RoutingOptions,
   RoutingRequest,

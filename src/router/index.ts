@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
+import { createRouter, type RouteRecordRaw } from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import LandingPage from "../views/LandingPage.vue";
@@ -14,6 +14,7 @@ import {
   SYMBOL_BROWSER_ROUTE,
   TEXT_TO_ORBAT_ROUTE,
 } from "@/router/names";
+import { createAppHistory } from "@/router/history";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -104,7 +105,7 @@ export const routes = [
 ] as RouteRecordRaw[];
 
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createAppHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

@@ -6,6 +6,7 @@ import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore, useWidthStore } from "@/stores/uiStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import { isGeoSearchAvailable } from "@/utils/runtimeEnvironment";
 
 export function useScenarioMapModeController(resizeMap: () => void) {
   const activeScenario = injectStrict(activeScenarioKey);
@@ -93,7 +94,9 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   }
 
   function onShowPlaceSearch() {
-    ui.searchGeoMode = true;
+    // Without the Photon service there are no places to search for, so the same entry point opens
+    // the palette on plain scenario search instead.
+    ui.searchGeoMode = isGeoSearchAvailable;
     ui.showSearch = true;
   }
 

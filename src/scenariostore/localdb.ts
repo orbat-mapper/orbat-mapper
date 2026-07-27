@@ -1,6 +1,7 @@
 import type { DBSchema, IDBPDatabase } from "idb";
 import { openDB } from "idb";
 import type { Scenario } from "@/types/scenarioModels";
+import type { BasemapArchiveHandleRecord } from "@/geo/basemapArchiveHandles";
 import { nanoid } from "@/utils";
 import { saveBlobToLocalFile } from "@/utils/files";
 
@@ -36,6 +37,10 @@ interface ScenarioDb extends DBSchema {
     value: ScenarioDraft;
     indexes: { "by-updated-at": number };
   };
+  "basemap-archive-handles": {
+    key: string;
+    value: BasemapArchiveHandleRecord;
+  };
 }
 
 let db: IDBPDatabase<ScenarioDb>;
@@ -46,7 +51,7 @@ export async function useIndexedDb() {
   }
 
   function createOrUpdateDb() {
-    return openDB<ScenarioDb>("scenario-db", 4, {
+    return openDB<ScenarioDb>("scenario-db", 5, {
       upgrade(db, oldVersion, newVersion, transaction) {
         if (oldVersion < 1) {
           db.createObjectStore("scenario-blobs");
@@ -72,6 +77,12 @@ export async function useIndexedDb() {
             keyPath: "scenarioId",
           });
           draftStore.createIndex("by-updated-at", "updatedAt", { unique: false });
+        }
+
+        if (oldVersion < 5) {
+          // A new store, so it is created off `db` rather than off `transaction`. It holds one
+          // FileSystemFileHandle per basemap archive key — never the archive bytes.
+          db.createObjectStore("basemap-archive-handles", { keyPath: "key" });
         }
       },
     });
@@ -224,6 +235,25 @@ export async function useIndexedDb() {
     await db.delete("scenario-drafts", scenarioId);
   }
 
+  // Basemap archive handles. Named with an `ArchiveHandle` suffix so they do not collide with this
+  // module's own exports when a caller destructures the returned object.
+  async function putArchiveHandle(record: BasemapArchiveHandleRecord) {
+    await db.put("basemap-archive-handles", record);
+  }
+
+  async function getArchiveHandle(key: string) {
+    return db.get("basemap-archive-handles", key);
+  }
+
+  async function deleteArchiveHandle(key: string) {
+    await db.delete("basemap-archive-handles", key);
+  }
+
+  /** Every stored key, so handles for archives that are no longer remembered can be found. */
+  async function listArchiveHandleKeys() {
+    return db.getAllKeys("basemap-archive-handles");
+  }
+
   return {
     db,
     addScenario,
@@ -238,5 +268,9 @@ export async function useIndexedDb() {
     putScenarioDraft,
     getScenarioDraft,
     deleteScenarioDraft,
+    putArchiveHandle,
+    getArchiveHandle,
+    deleteArchiveHandle,
+    listArchiveHandleKeys,
   };
 }

@@ -30,6 +30,7 @@ import CommandPaletteImageLayerItem from "@/components/commandPalette/CommandPal
 import CommandPaletteDialog from "@/components/commandPalette/CommandPaletteDialog.vue";
 import CommandPaletteInput from "@/components/commandPalette/CommandPaletteInput.vue";
 import CommandPaletteFooter from "@/components/commandPalette/CommandPaletteFooter.vue";
+import { isGeoSearchAvailable } from "@/utils/runtimeEnvironment";
 
 const emit = defineEmits([
   "select-unit",
@@ -50,8 +51,11 @@ const open = defineModel<boolean>({ default: false });
 const rawQuery = ref("");
 const query = computed(() => rawQuery.value.replace(/^[#@>]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
+// Place search needs the remote Photon service. A standalone file cannot reach it, so neither the
+// "@" prefix nor the place mode toggle switches the palette into geo search there.
+const geoSearchAvailable = isGeoSearchAvailable;
 const isGeoSearch = computed(
-  () => uiStore.searchGeoMode || rawQuery.value.startsWith("@"),
+  () => geoSearchAvailable && (uiStore.searchGeoMode || rawQuery.value.startsWith("@")),
 );
 
 const isActionSearch = computed(

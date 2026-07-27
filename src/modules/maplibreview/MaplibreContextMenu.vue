@@ -30,7 +30,17 @@ import type { Map as MlMap } from "maplibre-gl";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
-import { getSupportedMaplibreBasemaps } from "@/modules/maplibreview/maplibreBasemaps";
+import {
+  basemapFlavor,
+  basemapIsRemovable,
+  getSupportedMaplibreBasemaps,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
+import {
+  BASEMAP_FLAVORS,
+  isBasemapFlavor,
+  type BasemapFlavor,
+} from "@/geo/maplibreLayerConfigTypes";
 import {
   getFeatureIdFromRenderedFeature,
   isManagedScenarioFeatureLayerId,
@@ -42,6 +52,11 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { getCoordinateFormatFunction } from "@/utils/geoConvert";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/notifications";
+import {
+  useBasemapArchives,
+  type PendingBasemapArchive,
+} from "@/composables/basemapArchives";
+import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { injectStrict, nanoid } from "@/utils";
 import {
@@ -58,6 +73,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
+import AddMapServerDialog from "@/components/AddMapServerDialog.vue";
 import { queryTrackPointAt, type TrackPointHit } from "@/composables/maplibreUnitHistory";
 
 const maplibreLayersStore = useMaplibreLayersStore();
@@ -99,6 +115,79 @@ const baseMapId = defineModel<string>("baseMapId", {
 const basemapOptions = computed(() =>
   getSupportedMaplibreBasemaps(maplibreLayersStore.layers),
 );
+const {
+  openBasemapArchivePicker,
+  pendingBasemapArchives,
+  activatePendingBasemapArchive,
+  removeBasemapArchive,
+} = useBasemapArchives();
+const { isCustomBasemap, removeCustomBasemap } = useCustomBasemaps();
+
+function pendingArchiveLabel(pending: PendingBasemapArchive) {
+  return pending.action === "restore"
+    ? `Restore ${pending.fileName}`
+    : `Select ${pending.fileName}…`;
+}
+
+// A vector PMTiles archive carries no style of its own, so the flavour picks the colours of the
+// style ORBAT Mapper generates for it. Raster archives and remote styles have no flavour, and
+// `basemapFlavor()` returns undefined for them, which hides the submenu.
+const activeBasemapId = computed(
+  () => resolveMaplibreBasemap(baseMapId.value, maplibreLayersStore.layers)?.id,
+);
+
+/** The active basemap when, and only when, it is an archive the user opened from disk. */
+const removableActiveBasemap = computed(() => {
+  const layer = maplibreLayersStore.layers.find(
+    (entry) => entry.name === activeBasemapId.value,
+  );
+  return basemapIsRemovable(layer) ? layer : undefined;
+});
+
+const activeFlavor = computed(() =>
+  basemapFlavor(
+    maplibreLayersStore.layers.find((layer) => layer.name === activeBasemapId.value),
+  ),
+);
+
+function flavorLabel(flavor: BasemapFlavor) {
+  return flavor.charAt(0).toUpperCase() + flavor.slice(1);
+}
+
+function onSelectFlavor(value: unknown) {
+  const id = activeBasemapId.value;
+  if (!id || !isBasemapFlavor(value)) return;
+  maplibreLayersStore.setLayerFlavor(id, value);
+}
+
+/**
+ * The map server dialog cannot live inside the menu: the menu unmounts its content when it
+ * closes, and the dialog must stay while the user types. It is a sibling of the whole menu, and
+ * this flag is what the menu item sets.
+ */
+const showAddMapServer = ref(false);
+
+/** Lets the user pick a basemap archive from disk. The picker activates whatever it loads. */
+function onOpenMapFile() {
+  openBasemapArchivePicker();
+}
+
+function onActivatePendingArchive(key: string) {
+  void activatePendingBasemapArchive(key);
+}
+
+function onRemoveActiveArchive() {
+  const layer = removableActiveBasemap.value;
+  if (!layer) return;
+  // Same split as the Layers panel: a basemap added by address has no file, no handle and nothing
+  // to forget but the address. Sending it down the archive path would drop the layer for this
+  // session and leave the address remembered, so it would come back on the next load.
+  if (isCustomBasemap(layer.name)) {
+    removeCustomBasemap(layer.name);
+    return;
+  }
+  void removeBasemapArchive(layer.name);
+}
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -485,6 +574,45 @@ function onContextMenu(event: MouseEvent) {
               {{ option.title }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
+          <ContextMenuSeparator />
+          <ContextMenuItem @select.prevent="onOpenMapFile()">
+            Open PMTiles archive…
+          </ContextMenuItem>
+          <ContextMenuItem @select="showAddMapServer = true">
+            Add map server…
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-for="pending in pendingBasemapArchives"
+            :key="pending.key"
+            @select.prevent="onActivatePendingArchive(pending.key)"
+          >
+            {{ pendingArchiveLabel(pending) }}
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-if="removableActiveBasemap"
+            @select.prevent="onRemoveActiveArchive()"
+          >
+            Remove {{ removableActiveBasemap.title || removableActiveBasemap.name }}
+          </ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <!-- Only a vector archive has flavours, so this is hidden for every other basemap. -->
+      <ContextMenuSub v-if="activeFlavor">
+        <ContextMenuSubTrigger inset><span>Map flavour</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuRadioGroup
+            :model-value="activeFlavor"
+            @update:model-value="onSelectFlavor"
+          >
+            <ContextMenuRadioItem
+              v-for="flavor in BASEMAP_FLAVORS"
+              :key="flavor"
+              :value="flavor"
+              @select.prevent
+            >
+              {{ flavorLabel(flavor) }}
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSub>
@@ -656,4 +784,5 @@ function onContextMenu(event: MouseEvent) {
       </ContextMenuCheckboxItem>
     </ContextMenuContent>
   </ContextMenu>
+  <AddMapServerDialog v-model="showAddMapServer" />
 </template>
