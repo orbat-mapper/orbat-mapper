@@ -12,6 +12,8 @@ node_modules
 .DS_Store
 dist
 dist-ssr
+dist-singlefile
+dist-offline
 coverage
 *.local
 
@@ -43,3 +45,6 @@ stats.html
 cache
 /.wrangler/
 /.claude/worktrees/
+
+# Local offline experiment assets (staged basemaps, generated configs)
+/offline/

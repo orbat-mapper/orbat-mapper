@@ -15,6 +15,7 @@ import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
@@ -109,6 +110,7 @@ useMapLibreRoutingPreview(() => mlMap.value);
 
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
+const { restoreRememberedBasemapArchive } = useBasemapArchives();
 const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = computed({
   get: () =>
@@ -167,8 +169,11 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => {
-  void maplibreLayersStore.initialize();
+onMounted(async () => {
+  await maplibreLayersStore.initialize();
+  // The layer list must be resolved first, so a remembered key that a config-declared archive
+  // already provides is not treated as pending.
+  await restoreRememberedBasemapArchive();
 });
 
 function disposeMaplibreBinding() {
@@ -223,7 +228,7 @@ function onCloseActiveDetailsPanel() {
     @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
-      <div class="@container flex flex-auto">
+      <div class="@container relative flex flex-auto">
         <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
           <MaplibreMap
             @ready="onMapReady"

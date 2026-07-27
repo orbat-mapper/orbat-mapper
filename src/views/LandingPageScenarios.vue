@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-import {
-  IMPORT_SCENARIO_ROUTE,
-  MAP_EDIT_MODE_ROUTE,
-  NEW_SCENARIO_ROUTE,
-} from "@/router/names";
+import { IMPORT_SCENARIO_ROUTE, NEW_SCENARIO_ROUTE } from "@/router/names";
 import LoadScenarioPanel from "@/modules/scenarioeditor/LoadScenarioPanel.vue";
 import LoadScenarioFromUrlPanel from "@/modules/scenarioeditor/LoadScenarioFromUrlPanel.vue";
 import StoredScenarioBrowser from "@/components/StoredScenarioBrowser.vue";
-import { DEMO_SCENARIOS, useBrowserScenarios } from "@/composables/browserScenarios";
+import { useBrowserScenarios } from "@/composables/browserScenarios";
+import DemoScenarioCards from "./DemoScenarioCards.vue";
+import DemoScenarioNotice from "./DemoScenarioNotice.vue";
 import { Button } from "@/components/ui/button";
 import { defineAsyncComponent, ref } from "vue";
 import { useEventListener } from "@vueuse/core";
@@ -35,12 +33,6 @@ const {
 } = useBrowserScenarios();
 
 const router = useRouter();
-const getScenarioTo = (scenarioId: string) => {
-  return {
-    name: MAP_EDIT_MODE_ROUTE,
-    params: { scenarioId: `demo-${scenarioId}` },
-  };
-};
 
 const newScenario = () => {
   router.push({ name: NEW_SCENARIO_ROUTE });
@@ -163,48 +155,10 @@ useEventListener("paste", (event: ClipboardEvent) => {
         </template>
       </StoredScenarioBrowser>
     </section>
-    <section class="mb-2">
-      <p
-        class="bg-muted/50 text-muted-foreground relative top-0 right-0 left-0 p-4 text-center text-sm"
-      >
-        Please note that the demo scenarios are incomplete and they are still under
-        development.
-      </p>
-    </section>
-    <div class="mx-auto max-w-3xl px-4 text-center">
-      <p class="text-muted-foreground text-lg">
-        Try one of the bundled demo scenarios or create your own
-      </p>
-    </div>
+    <DemoScenarioNotice />
     <section class="mx-auto max-w-7xl p-6">
       <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <li
-          v-for="scenario in DEMO_SCENARIOS"
-          :key="scenario.name"
-          class="divide-border bg-card text-card-foreground focus-within:border-primary col-span-1 flex flex-col divide-y overflow-hidden rounded-lg border text-center shadow-sm"
-        >
-          <router-link
-            :to="getScenarioTo(scenario.id)"
-            class="flex flex-1 flex-col"
-            draggable="false"
-          >
-            <img
-              class="bg-muted mx-auto h-52 w-full shrink-0 object-cover object-top"
-              :src="scenario.imageUrl"
-              alt=""
-              draggable="false"
-            />
-            <h3 class="text-heading mt-6 text-sm font-medium">
-              {{ scenario.name }}
-            </h3>
-            <dl class="mt-1 flex grow flex-col justify-between p-4">
-              <dt class="sr-only">Summary</dt>
-              <dd class="text-muted-foreground text-sm">
-                {{ scenario.summary }}
-              </dd>
-            </dl>
-          </router-link>
-        </li>
+        <DemoScenarioCards />
         <li class="col-span-1 flex">
           <button
             type="button"

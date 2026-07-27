@@ -33,13 +33,21 @@ jobs:
       - name: Build project
         run: pnpm build
 
+      - name: Build standalone app
+        run: pnpm build:singlefile
+
       - name: Zip build output
         run: zip -r orbat-mapper-${{ github.ref_name }}.zip dist/
+
+      - name: Name standalone app
+        run: mv dist-singlefile/index.html orbat-mapper-standalone-${{ github.ref_name }}.html
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: orbat-mapper-${{ github.ref_name }}.zip
+          files: |
+            orbat-mapper-${{ github.ref_name }}.zip
+            orbat-mapper-standalone-${{ github.ref_name }}.html
           generate_release_notes: true
           draft: false
           prerelease: false

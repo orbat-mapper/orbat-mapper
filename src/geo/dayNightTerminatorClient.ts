@@ -1,5 +1,6 @@
 import type { FeatureCollection, MultiPolygon } from "geojson";
-import WorkerConstructor from "@/geo/dayNightTerminator.worker?worker";
+// Inlined so the worker also starts from a file:// origin (the standalone build).
+import WorkerConstructor from "@/geo/dayNightTerminator.worker?worker&inline";
 import { getDayNightTerminatorGeoJson } from "@/geo/dayNightTerminator";
 import type {
   DayNightTerminatorWorkerRequest,

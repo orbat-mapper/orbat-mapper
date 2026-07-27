@@ -38,7 +38,6 @@ vi.mock("vue-router", () => ({
 }));
 
 vi.mock("@/composables/browserScenarios", () => ({
-  DEMO_SCENARIOS: [],
   useBrowserScenarios: () => ({
     storedScenarios: storedScenariosMock,
     sortOptions: [],
