@@ -9,10 +9,18 @@ All notable changes to this project will be documented in this file.
 - Added unit track editing to MapLibre mode: drag waypoints and via points to move them, drag a midpoint handle on a leg to insert a via point, and alt-click a point to delete it. The track redraws while dragging.
 - Added the unit track editing gestures to the keyboard shortcuts dialog.
 - Added map context menu options for converting a waypoint into a via point and a via point into a waypoint. The new waypoint is timed from the average speed of the leg it sits on.
+- Added offline basemap support: open a PMTiles basemap archive from your disk through the Layers panel, the map context menu, or drag and drop. MapLibre reads the file directly, so no tile server is needed. A style is generated for vector archives that carry no style, with five colour flavours.
+- Added a standalone single-file build (`orbat-mapper-standalone-<version>.html`) that runs from `file://` with no web server. Both the standalone HTML and the `dist` zip are now attached to each GitHub release.
+- Added basemaps by address, including `.pmtiles` URLs. The archive header is read before the layer is activated, so an unreachable address fails while the dialog is still open.
+- Chromium browsers can reopen the basemap archive that was active in your last session. Other archives offer a row to restore or reselect.
+- Added an offline use guide to the user documentation that describes the three deployment levels.
 
 ### Fixed
 
 - Fixed right-clicking a unit track in MapLibre edit mode, which inserted a via point and started dragging it instead of opening the context menu.
+- Fixed symbol changes from unit events not showing in MapLibre mode, the ORBAT chart, unit search results, or the map context menus, which all drew the base unit symbol instead of the symbol at the current time.
+- Fixed the long-press hit tolerance for track points in the map context menu, which used a 12px box on touch devices where every other touch gesture uses 26px.
+- Fixed unit travel times for a zero average speed, which left the arrival time unchanged instead of applying the default speed.
 - Fixed unit track editing in MapLibre mode, where dragging a waypoint or via point never committed the new position.
 - Fixed the unit jumping to the edited waypoint in OpenLayers mode, and via points losing their leg times.
 
