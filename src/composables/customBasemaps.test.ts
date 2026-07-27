@@ -31,6 +31,7 @@ function lastNotification() {
 }
 
 beforeEach(() => {
+  localStorage.clear();
   setActivePinia(createPinia());
   useNotifications().notifications.value = [];
   archive.resolve.mockReset().mockImplementation(async (layer: unknown) => layer);
