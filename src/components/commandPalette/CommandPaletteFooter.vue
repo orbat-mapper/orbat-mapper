@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 
 // Place search needs the remote Photon service, so a standalone file does not offer it.
-const showGeoSearch = isGeoSearchAvailable();
+const showGeoSearch = isGeoSearchAvailable;
 </script>
 
 <template>

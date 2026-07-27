@@ -1,38 +1,30 @@
 /**
- * What the runtime the app is loaded in can and cannot do.
+ * What the build the user runs can and cannot do.
  *
- * Level 3 offline use ("standalone file", see user-docs/guide/offline-use.md) means the user opens
- * a single HTML file straight from disk, so the origin is `file://` and there is no server behind
- * the app: `fetch` of app-relative URLs fails, the History API cannot push path-based URLs, and
- * anything hosted — the demo scenarios, the Photon geosearch service — is out of reach.
+ * Level 3 offline use ("standalone file", see user-docs/guide/offline-use.md) is a different build
+ * of the same source, not a different code path in it. Where the standalone build must behave
+ * differently, `vite.singlefile.config.ts` replaces the module that holds the behaviour. This
+ * module is one of them: it is the answer to "may the app offer a service on the internet?".
  *
- * Every one of those adjustments asks the same question, so it is answered here once, in named
- * terms of the capability the caller needs, instead of scattering `location.protocol` checks
- * through the app.
+ * The app does not test `location.protocol` for this. A standalone file is a `file://` page in
+ * normal use, but it stays a standalone file when somebody puts it on a web server, and a served
+ * build can be on a network with no route to the internet. The build knows; the address does not.
  */
-
-/** True when the app was loaded from disk (`file://`) rather than served over http(s). */
-export function isFileProtocol(): boolean {
-  return globalThis.location?.protocol === "file:";
-}
 
 /**
- * True when files shipped next to the app (`/config/maplibreConfig.json`, `/scenarios/*.json`)
- * can be fetched. There is no origin to fetch them from under `file://`.
+ * True when the Photon place search can be offered.
+ *
+ * The standalone build is made for an offline computer, thus it hides the geosearch UI instead of
+ * showing a control that always fails.
  */
-export function canFetchAppAssets(): boolean {
-  return !isFileProtocol();
-}
-
-/** True when the bundled demo scenarios can be loaded, and so may be offered in the UI. */
-export function areDemoScenariosAvailable(): boolean {
-  return canFetchAppAssets();
-}
+export const isGeoSearchAvailable = true;
 
 /**
- * True when the Photon place search can be used. It is a remote service, and a standalone file is
- * the one setup where we know up front that it is unreachable, so its UI is hidden there.
+ * True when the build may keep a `FileSystemFileHandle` between visits.
+ *
+ * A standalone file has an opaque origin: IndexedDB is blocked and `showOpenFilePicker` throws a
+ * SecurityError, thus there is nowhere to keep a handle and nothing to keep. The browser probe in
+ * `isFileHandleSupported()` runs after this, because a served build must still ask whether the
+ * browser has the API at all.
  */
-export function isGeoSearchAvailable(): boolean {
-  return !isFileProtocol();
-}
+export const canPersistFileHandles = true;

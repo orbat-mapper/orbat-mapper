@@ -53,7 +53,7 @@ const query = computed(() => rawQuery.value.replace(/^[#@>]/, ""));
 const showHelp = computed(() => rawQuery.value === "?");
 // Place search needs the remote Photon service. A standalone file cannot reach it, so neither the
 // "@" prefix nor the place mode toggle switches the palette into geo search there.
-const geoSearchAvailable = isGeoSearchAvailable();
+const geoSearchAvailable = isGeoSearchAvailable;
 const isGeoSearch = computed(
   () => geoSearchAvailable && (uiStore.searchGeoMode || rawQuery.value.startsWith("@")),
 );

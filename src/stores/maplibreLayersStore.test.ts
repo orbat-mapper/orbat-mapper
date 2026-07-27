@@ -2,10 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 
-function stubProtocol(protocol: string) {
-  vi.stubGlobal("location", { ...globalThis.location, protocol });
-}
-
 beforeEach(() => {
   setActivePinia(createPinia());
 });
@@ -15,24 +11,28 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("maplibre layers store under file://", () => {
-  it("does not fetch the config and offers no online basemaps", async () => {
-    stubProtocol("file:");
-    const fetchSpy = vi.fn();
+describe("a config that cannot be read", () => {
+  it("offers the fallback basemaps", async () => {
+    // The standalone build always lands here: a file:// page has no server to read the config
+    // from. It keeps the fallbacks, because whether they load is a property of the network.
+    const fetchSpy = vi.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    });
     vi.stubGlobal("fetch", fetchSpy);
     const store = useMaplibreLayersStore();
 
-    expect(store.layers).toEqual([]);
-
     await store.initialize();
 
-    expect(fetchSpy).not.toHaveBeenCalled();
-    expect(store.layers).toEqual([]);
+    expect(store.layers.map((layer) => layer.sourceType)).toEqual([
+      "style",
+      "style",
+      "style",
+      "style",
+    ]);
     expect(store.isInitialized).toBe(true);
   });
 
   it("fetches the config when the app is served", async () => {
-    stubProtocol("https:");
     const fetchSpy = vi.fn(async () => ({
       json: async () => [
         {
@@ -55,7 +55,6 @@ describe("maplibre layers store under file://", () => {
 
 describe("concurrent initialize", () => {
   it("makes a second caller wait for the first to finish", async () => {
-    stubProtocol("https:");
     const fetchSpy = vi.fn(async () => ({
       json: async () => [
         {

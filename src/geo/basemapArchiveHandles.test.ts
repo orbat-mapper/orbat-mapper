@@ -24,6 +24,15 @@ const { putArchiveHandle, getArchiveHandle, deleteArchiveHandle, listArchiveHand
     listArchiveHandleKeys: vi.fn(),
   }));
 
+const buildSeam = vi.hoisted(() => ({ canPersistFileHandles: true }));
+
+vi.mock("@/utils/runtimeEnvironment", () => ({
+  get canPersistFileHandles() {
+    return buildSeam.canPersistFileHandles;
+  },
+  isGeoSearchAvailable: true,
+}));
+
 vi.mock("@/scenariostore/localdb", () => ({
   useIndexedDb: async () => ({
     putArchiveHandle,
@@ -65,10 +74,6 @@ function notFoundError() {
   );
 }
 
-function setProtocol(protocol: string) {
-  vi.stubGlobal("location", { ...globalThis.location, protocol });
-}
-
 /** The shape the module reads off globalThis. Only what the assertions below need. */
 type PickerOptions = {
   multiple?: boolean;
@@ -76,11 +81,10 @@ type PickerOptions = {
 };
 type PickerMock = (options?: PickerOptions) => Promise<BasemapArchiveFileHandle[]>;
 
-/** Puts the runtime in the state Chromium on http(s) is in: picker present, handle type present. */
+/** Puts the runtime in the state Chromium is in: picker present, handle type present. */
 function enableFileHandleSupport(
   picker = vi.fn<PickerMock>(async () => [] as BasemapArchiveFileHandle[]),
 ) {
-  setProtocol("https:");
   vi.stubGlobal("showOpenFilePicker", picker);
   vi.stubGlobal("FileSystemFileHandle", class {});
   return picker;
@@ -96,7 +100,7 @@ beforeEach(() => {
   getArchiveHandle.mockReset().mockResolvedValue(undefined);
   deleteArchiveHandle.mockReset().mockResolvedValue(undefined);
   listArchiveHandleKeys.mockReset().mockResolvedValue([]);
-  setProtocol("https:");
+  buildSeam.canPersistFileHandles = true;
   removeFileSystemFileHandle();
 });
 
@@ -118,9 +122,10 @@ describe("isFileHandleSupported", () => {
     expect(isFileHandleSupported()).toBe(false);
   });
 
-  it("is false on a file: origin even when showOpenFilePicker exists", () => {
+  it("is false in a build that cannot persist a handle, whatever the browser has", () => {
     enableFileHandleSupport();
-    setProtocol("file:");
+    buildSeam.canPersistFileHandles = false;
+
     expect(isFileHandleSupported()).toBe(false);
   });
 

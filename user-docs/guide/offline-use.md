@@ -294,9 +294,7 @@ The size does not make the application slow, because the browser reads the file 
 by email without compression.
 :::
 
-### What operates and what does not
-
-These functions operate:
+### What operates
 
 - All operations that change a scenario.
 - The browser storage. Your scenarios stay in the browser, but only for that HTML file at that location. If you move the
@@ -305,11 +303,29 @@ These functions operate:
 - Import and export.
 - Basemap archives, as at Level 2.
 
-These functions do not operate:
+### Limitations
 
-- **The demo scenarios.** ORBAT Mapper hides them, because it cannot read them from a `file://` address.
-- **The place name search.** ORBAT Mapper hides it, because it needs an online service.
-- **Online basemaps**, if you have no internet connection.
+The standalone file is a different build of the same application. The build removes the functions that need a server,
+therefore you do not see a control that cannot operate. These are the limitations:
+
+- **There are no demo scenarios.** The demo scenarios are files on the server. The build removes the demo section from
+  the start page.
+- **There is no place name search.** The search needs an online service. The build removes the search from the map and
+  from the command palette.
+- **You cannot configure the basemaps.** `maplibreConfig.json` is a file on the server, therefore the standalone file
+  cannot read it. The map shows the built-in online basemaps, which operate if the computer can reach them, and you add
+  a basemap archive from your disk with _Open map file…_.
+- **ORBAT Mapper does not remember your basemap archive.** A `file://` page cannot keep a reference to a file on your
+  disk. Therefore you must select the archive again after each reload. At Level 1 and Level 2 in a Chromium browser,
+  ORBAT Mapper keeps the reference. Refer to [Limits of a local map file](#limits-of-a-local-map-file).
+- **The address contains a `#`.** There is no server to answer an address such as `/scenario/12345`, therefore the
+  standalone file puts the position in the part after the `#`. The application operates as usual, but an address that
+  you copy from the standalone file is not the same as an address from the hosted application.
+- **You cannot update the application from the network.** To get a newer version, make a new build and copy the new
+  file.
+
+The build removes these parts. It does not hide them at start. Therefore the parts are not in the file, and they cannot
+come back if the computer gets an internet connection.
 
 ## Mapbundle (planned)
 

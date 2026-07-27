@@ -12,8 +12,14 @@ import {
 } from "@/geo/basemapArchive";
 import { unregisterArchive } from "@/geo/pmtilesProtocol";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { canFetchAppAssets } from "@/utils/runtimeEnvironment";
 
+/**
+ * The basemaps to use when `config/maplibreConfig.json` cannot be read.
+ *
+ * Every one of them is a hosted style. The standalone build keeps them: a `file://` page can reach
+ * a server, and a computer with a tile server on the network — or with an internet connection — is
+ * a normal setup for it. Whether they load is a property of the network, which no build knows.
+ */
 const FALLBACK_LAYERS: MlLayerConfig[] = [
   {
     name: "openFreeMapPositron",
@@ -42,7 +48,7 @@ const FALLBACK_LAYERS: MlLayerConfig[] = [
 ];
 
 export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
-  const layers = shallowRef<MlLayerConfig[]>(canFetchAppAssets() ? FALLBACK_LAYERS : []);
+  const layers = shallowRef<MlLayerConfig[]>(FALLBACK_LAYERS);
   const isInitialized = ref(false);
 
   // Held while initialize() runs, so a second caller in the same tick waits for the archives to
@@ -59,19 +65,15 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
   }
 
   async function runInitialize() {
-    if (!canFetchAppAssets()) {
-      // Standalone file: there is no server to read the config from, and every fallback is an
-      // online basemap that cannot load either. Start with no basemaps at all — the map opens on
-      // "No base map" and the Layers panel offers "Open map file…" as the way forward.
-      layers.value = [];
-      return;
-    }
     try {
       const res = await fetch("/config/maplibreConfig.json");
       const config = (await res.json()) as MlLayerConfigFile;
       layers.value = config && config.length > 0 ? config : FALLBACK_LAYERS;
     } catch (e) {
-      console.error("Failed to fetch maplibreConfig.json", e);
+      // A standalone file has no server to read the config from, thus it always lands here and
+      // offers the fallbacks. They load if the computer can reach them, and the user selects
+      // "No base map" or "Open map file…" if it cannot.
+      console.warn("Could not read config/maplibreConfig.json", e);
       layers.value = FALLBACK_LAYERS;
     }
     await resolveArchiveLayers();

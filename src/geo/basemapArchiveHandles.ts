@@ -19,7 +19,7 @@
  */
 
 import { useIndexedDb } from "@/scenariostore/localdb";
-import { isFileProtocol } from "@/utils/runtimeEnvironment";
+import { canPersistFileHandles } from "@/utils/runtimeEnvironment";
 
 /** The three states the File System Access permission API returns. */
 export type FilePermissionState = "granted" | "denied" | "prompt";
@@ -68,12 +68,12 @@ type ShowOpenFilePicker = (options?: {
  * The mandatory feature gate. True only in a browser that has the File System Access picker and can
  * store a handle.
  *
- * A `file://` origin is opaque: `showOpenFilePicker` throws a SecurityError there and IndexedDB is
- * blocked, and that is exactly the Level 3 standalone build. Firefox and Safari have no
- * `showOpenFilePicker` at all.
+ * Firefox and Safari have no `showOpenFilePicker` at all, and the standalone build has an opaque
+ * origin where neither the picker nor IndexedDB works — `canPersistFileHandles` reports that,
+ * because it is a property of the build.
  */
 export function isFileHandleSupported(): boolean {
-  if (isFileProtocol()) return false;
+  if (!canPersistFileHandles) return false;
   if (
     typeof (globalThis as { showOpenFilePicker?: unknown }).showOpenFilePicker !==
     "function"

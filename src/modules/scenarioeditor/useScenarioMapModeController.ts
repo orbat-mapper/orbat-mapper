@@ -96,7 +96,7 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   function onShowPlaceSearch() {
     // Without the Photon service there are no places to search for, so the same entry point opens
     // the palette on plain scenario search instead.
-    ui.searchGeoMode = isGeoSearchAvailable();
+    ui.searchGeoMode = isGeoSearchAvailable;
     ui.showSearch = true;
   }
 
