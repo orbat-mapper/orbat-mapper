@@ -10,7 +10,7 @@ import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import OLMap from "ol/Map";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
+import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";

@@ -1,5 +1,4 @@
-import type { FeatureLike } from "ol/Feature";
-import type BaseLayer from "ol/layer/Base";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
 import { sanitizeHTML } from "@/utils/dom";
 
@@ -102,9 +101,18 @@ export interface ReferenceFeatureDisplayValue {
   value: string;
 }
 
+export interface ReferenceFeatureLike {
+  getProperties?: () => Record<string, unknown>;
+  getId?: () => string | number | undefined;
+}
+
+export interface ReferenceLayerLike {
+  get: (key: string) => unknown;
+}
+
 export function extractReferenceFeatureSelection(
-  feature: FeatureLike,
-  layer?: BaseLayer | null,
+  feature: ReferenceFeatureLike,
+  layer?: ReferenceLayerLike | null,
 ): ReferenceFeatureSelection {
   const properties = { ...(feature.getProperties?.() ?? {}) };
   delete properties.geometry;
@@ -117,7 +125,7 @@ export function extractReferenceFeatureSelection(
         : undefined;
 
   return {
-    layerId: layer?.get("id"),
+    layerId: layer?.get("id") as FeatureId | undefined,
     layerName: String(layer?.get("title") ?? layer?.get("name") ?? "Reference layer"),
     featureId: feature.getId?.(),
     name: featureName,

@@ -5,8 +5,6 @@ import type { UseFeatureStyles } from "@/geo/featureStyles";
 import type { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
 import type { EventHook } from "@vueuse/core";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type OLMap from "ol/Map";
-import type Select from "ol/interaction/Select";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { EventSearchResult } from "@/components/types";
 import type { PhotonSearchResult } from "@/composables/geosearching";
@@ -59,18 +57,6 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
 export const activeScenarioMapEngineKey = Symbol(
   "Active scenario map engine",
 ) as InjectionKey<ShallowRef<ScenarioMapEngine | undefined>>;
-
-/**
- * Temporary escape hatch during scenario editor migration.
- * Prefer activeScenarioMapEngineKey with `engine.map.getNativeMap()` instead.
- * This injection key will be removed once the migration is complete.
- */
-export const activeNativeMapKey = Symbol("Active native map") as InjectionKey<
-  ShallowRef<OLMap>
->;
-export const activeFeatureSelectInteractionKey = Symbol(
-  "Active feature select",
-) as InjectionKey<ShallowRef<Select>>;
 
 export interface RouteDetailsPanelContext {
   activeRoutingUnitName: ComputedRef<string | null>;

@@ -167,8 +167,11 @@ vi.mock("@/geo/engines/openlayers/olScenarioLayerController", () => ({
 }));
 
 vi.mock("@/modules/scenarioeditor/featureLayerUtils", () => ({
-  getTopHitLayerType: vi.fn(),
   isReferenceFeatureLayerType: vi.fn(() => false),
+}));
+
+vi.mock("@/modules/scenarioeditor/featureLayerUtilsOl", () => ({
+  getTopHitLayerType: vi.fn(),
   useScenarioFeatureSelect: () => ({ selectInteraction: {} }),
 }));
 

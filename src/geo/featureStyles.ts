@@ -17,7 +17,7 @@ import { isObstacleHighlighted } from "@/geo/routing/obstacleHighlight";
 import {
   createFeatureSelectionMarkerStyle,
   createFeatureSelectionStyle,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+} from "@/modules/scenarioeditor/featureLayerUtilsOl";
 
 let zoomResolutions: number[] = [];
 

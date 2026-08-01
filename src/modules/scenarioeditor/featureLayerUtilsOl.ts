@@ -1,0 +1,412 @@
+import OLMap from "ol/Map";
+import VectorLayer from "ol/layer/Vector";
+import LayerGroup from "ol/layer/Group";
+import { click as clickCondition } from "ol/events/condition";
+import { getCenter, isEmpty } from "ol/extent";
+import { featureCollection } from "@turf/helpers";
+import turfEnvelope from "@turf/envelope";
+import { injectStrict, nanoid } from "@/utils";
+import Collection from "ol/Collection";
+import { getFeatureAndLayerById, useOlEvent } from "@/composables/openlayersHelpers";
+import GeoJSON from "ol/format/GeoJSON";
+import Feature, { type FeatureLike } from "ol/Feature";
+import type { FeatureId, ScenarioFeature } from "@/types/scenarioGeoModels";
+import Circle from "ol/geom/Circle";
+import { fromLonLat, type ProjectionLike } from "ol/proj";
+import LineString from "ol/geom/LineString";
+import type { Feature as GeoJsonFeature, Point } from "geojson";
+import destination from "@turf/destination";
+import { type MaybeRef, onUnmounted, ref, watch } from "vue";
+import { unByKey } from "ol/Observable";
+import { type EventsKey } from "ol/events";
+import Select, { SelectEvent } from "ol/interaction/Select";
+import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
+import type { TScenario } from "@/scenariostore";
+import type { UseFeatureStyles } from "@/geo/featureStyles";
+import Fill from "ol/style/Fill";
+import Style from "ol/style/Style";
+import Stroke from "ol/style/Stroke";
+import CircleStyle from "ol/style/Circle";
+import { useSelectedItems } from "@/stores/selectedStore";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
+import type { ScenarioLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isNGeometryLayerItem,
+  toGeometryLayerItemGeoJsonProperties,
+} from "@/types/scenarioLayerItems";
+import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenarioFeatureSelection";
+import { useSelectionActions } from "@/composables/selectionActions";
+import {
+  type GeometryFeatureLike,
+  getGeometryRadius,
+  getGeometryUserData,
+  isGeometryFeatureLike,
+  isScenarioFeatureLayerType,
+} from "@/modules/scenarioeditor/featureLayerUtils";
+
+export function createFeatureSelectionStyle(width = 9) {
+  return new Style({
+    stroke: new Stroke({ color: "#ffff00", width }),
+    image: new CircleStyle({
+      radius: 15,
+      fill: new Fill({
+        color: "#ffff00",
+      }),
+    }),
+  });
+}
+
+export function createFeatureSelectionMarkerStyle(radius = 15) {
+  return new Style({
+    image: new CircleStyle({
+      radius,
+      fill: new Fill({
+        color: "#ffff00",
+      }),
+    }),
+  });
+}
+
+const selectStyle = createFeatureSelectionStyle();
+const selectMarkerStyle = createFeatureSelectionMarkerStyle();
+
+const layersMap = new WeakMap<OLMap, LayerGroup>();
+
+function convertRadius(center: GeoJsonFeature<Point>, radiusInMeters: number): number {
+  const p = destination(center, radiusInMeters / 1000, 90);
+  const line = new LineString([center.geometry.coordinates, p.geometry.coordinates]);
+  line.transform("EPSG:4326", "EPSG:3857");
+  return line.getLength();
+}
+
+export function getTopHitLayerType(
+  olMap: OLMap,
+  pixel: number[],
+  hitTolerance = 0,
+): string | undefined {
+  let topLayerType: string | undefined;
+  olMap.forEachFeatureAtPixel(
+    pixel,
+    (_feature, layer) => {
+      topLayerType = layer?.get("layerType");
+      return true;
+    },
+    { hitTolerance },
+  );
+  return topLayerType;
+}
+
+export function projectGeometryLayerItemToOlFeature(
+  fullFeature: GeometryFeatureLike,
+  index: number,
+  featureProjection: ProjectionLike,
+) {
+  const gjson = new GeoJSON({
+    dataProjection: "EPSG:4326",
+    featureProjection,
+  });
+  let feature = fullFeature;
+  if (fullFeature._state && "geometry" in fullFeature._state) {
+    feature = {
+      ...fullFeature,
+      geometry: fullFeature._state.geometry || fullFeature.geometry,
+    };
+  }
+
+  if ("geometryMeta" in feature) {
+    feature._zIndex = index;
+  } else {
+    feature.meta._zIndex = index;
+  }
+  const radius = getGeometryRadius(feature);
+  if (radius !== undefined && feature.geometry.type === "Point") {
+    const newRadius = convertRadius(
+      {
+        type: "Feature",
+        geometry: feature.geometry,
+        properties: {},
+      } as GeoJsonFeature<Point>,
+      radius,
+    );
+    const circle = new Circle(
+      fromLonLat(feature.geometry.coordinates as number[]),
+      newRadius,
+    );
+    const f = new Feature({
+      geometry: circle,
+      ...(getGeometryUserData(feature) ?? {}),
+    });
+    f.setId(feature.id);
+    return f;
+  }
+
+  return gjson.readFeature(
+    {
+      type: "Feature",
+      id: feature.id,
+      geometry: feature.geometry,
+      properties:
+        "geometryMeta" in feature
+          ? toGeometryLayerItemGeoJsonProperties(feature)
+          : (feature.properties ?? {}),
+    },
+    {
+      featureProjection,
+      dataProjection: "EPSG:4326",
+    },
+  ) as Feature;
+}
+
+export function createScenarioLayerItemFeatures(
+  items: Array<ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature>,
+  featureProjection: ProjectionLike,
+) {
+  return items
+    .filter(isGeometryFeatureLike)
+    .map((feature, index) =>
+      projectGeometryLayerItemToOlFeature(feature, index, featureProjection),
+    );
+}
+
+export function useScenarioFeatureSelect(
+  olMap: OLMap,
+  options: Partial<{
+    enable: MaybeRef<boolean>;
+  }> = {},
+) {
+  const { scenarioFeatureStyle } = injectStrict(activeFeatureStylesKey);
+  const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
+  const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
+    VectorLayer<any>
+  >;
+  const { applyScenarioFeatureSelection } = useScenarioFeatureSelection();
+  const { canAdditivelySelectFeature } = useSelectionActions();
+
+  const { selectedFeatureIds: selectedIds } = useSelectedItems();
+
+  const enableRef = ref(options.enable ?? true);
+  const hitTolerance = 20;
+
+  const selectInteraction = new Select({
+    condition: (event) => {
+      if (!clickCondition(event)) return false;
+      const topHitLayerType = getTopHitLayerType(olMap, event.pixel, hitTolerance);
+      if (topHitLayerType !== undefined && !isScenarioFeatureLayerType(topHitLayerType)) {
+        return false;
+      }
+      return !event.originalEvent.shiftKey || canAdditivelySelectFeature();
+    },
+    hitTolerance,
+    layers: (layer) => isScenarioFeatureLayerType(layer.get("layerType")),
+    style: (feature: FeatureLike, res: number): Style | Style[] => {
+      const styleOrStyles = scenarioFeatureStyle(feature, res, true);
+      if (!styleOrStyles) {
+        return feature.getGeometry()?.getType() === "Point"
+          ? selectMarkerStyle
+          : selectStyle;
+      }
+      // scenarioFeatureStyle may return an array when arrows are present
+      const baseStyle = Array.isArray(styleOrStyles) ? styleOrStyles[0] : styleOrStyles;
+      let activeSelectStyle: Style;
+      if (feature.getGeometry()?.getType() === "Point") {
+        activeSelectStyle = selectMarkerStyle;
+      } else {
+        selectStyle.getStroke()?.setWidth((baseStyle.getStroke()?.getWidth() || 0) + 8);
+        activeSelectStyle = selectStyle;
+      }
+      if (Array.isArray(styleOrStyles)) {
+        return [activeSelectStyle, ...styleOrStyles];
+      }
+      return [activeSelectStyle, baseStyle];
+    },
+  });
+  const selectedFeatures = selectInteraction.getFeatures();
+  let isInternal = false;
+
+  function redrawSelectionOverlay() {
+    selectInteraction.changed();
+    if ("renderSync" in olMap && typeof olMap.renderSync === "function") {
+      olMap.renderSync();
+      return;
+    }
+    if ("render" in olMap && typeof olMap.render === "function") {
+      olMap.render();
+    }
+  }
+
+  useOlEvent(
+    selectInteraction.on("select", (event: SelectEvent) => {
+      isInternal = true;
+      const featureIds = selectedFeatures
+        .getArray()
+        .map((feature) => feature.getId())
+        .filter((featureId): featureId is FeatureId => featureId !== undefined);
+      const primaryFeatureId = event.selected[0]?.getId() ?? featureIds[0];
+      applyScenarioFeatureSelection({
+        featureIds,
+        primaryFeatureId,
+        noZoom: true,
+      });
+    }),
+  );
+
+  watch(
+    () => [...selectedIds.value],
+    (v) => {
+      if (!isInternal) {
+        selectedFeatures.clear();
+        v.forEach((fid) => {
+          const { feature } = getFeatureAndLayerById(fid, scenarioLayersOl) || {};
+          if (feature) selectedFeatures.push(feature);
+        });
+        redrawSelectionOverlay();
+      }
+      isInternal = false;
+    },
+    { immediate: true },
+  );
+
+  olMap.addInteraction(selectInteraction);
+
+  watch(
+    enableRef,
+    (enabled) => {
+      selectInteraction.getFeatures().clear();
+      selectInteraction.setActive(enabled);
+      redrawSelectionOverlay();
+    },
+    { immediate: true },
+  );
+
+  onUnmounted(() => {
+    olMap.removeInteraction(selectInteraction);
+  });
+
+  return { selectedIds, selectedFeatures, selectInteraction };
+}
+
+export function useFeatureLayerUtils(
+  olMap: OLMap,
+  {
+    activeScenario,
+  }: { activeScenario?: TScenario; activeScenarioFeatures?: UseFeatureStyles } = {},
+) {
+  const {
+    geo,
+    store: { state },
+  } = activeScenario || injectStrict(activeScenarioKey);
+
+  const scenarioLayersGroup = getOrCreateLayerGroup(olMap);
+  const scenarioLayersOl = scenarioLayersGroup.getLayers() as Collection<
+    VectorLayer<any>
+  >;
+
+  function getOlLayerById(layerId: FeatureId) {
+    return scenarioLayersOl
+      .getArray()
+      .find((e) => e.get("id") === layerId) as VectorLayer<any>;
+  }
+
+  function zoomToFeature(featureId: FeatureId) {
+    const { feature: olFeature } =
+      getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
+    if (!olFeature?.getGeometry()) return;
+    olMap.getView().fit(olFeature.getGeometry() as SimpleGeometry, { maxZoom: 15 });
+  }
+
+  function zoomToFeatures(featureIds: FeatureId[]) {
+    const c = featureCollection(
+      featureIds
+        .map((fid) => state.layerItemMap[fid])
+        .filter(isNGeometryLayerItem)
+        .map((item) => ({
+          type: "Feature" as const,
+          id: item.id,
+          geometry: item._state?.geometry ?? item.geometry,
+          properties: {},
+        })),
+    );
+    const bb = new GeoJSON().readFeature(turfEnvelope(c), {
+      featureProjection: "EPSG:3857",
+      dataProjection: "EPSG:4326",
+    }) as Feature<any>;
+    if (!bb) return;
+    olMap.getView().fit(bb.getGeometry(), { maxZoom: 17 });
+  }
+
+  function panToFeature(featureId: FeatureId) {
+    const { feature: olFeature } =
+      getFeatureAndLayerById(featureId, scenarioLayersOl) || {};
+    if (!olFeature) return;
+    const view = olMap.getView();
+    const extent = olFeature?.getGeometry()?.getExtent();
+    extent &&
+      view.animate({
+        center: getCenter(extent),
+      });
+  }
+
+  function zoomToLayer(layerId: FeatureId) {
+    const olLayer = getOlLayerById(layerId);
+    if (!olLayer) return;
+    const layerExtent = olLayer.getSource()?.getExtent();
+
+    layerExtent && !isEmpty(layerExtent) && olMap.getView().fit(layerExtent);
+  }
+
+  function getLayerById(layerId: FeatureId): NScenarioLayer | undefined | null {
+    return geo.getLayerById(layerId);
+  }
+
+  return {
+    scenarioLayersGroup,
+    scenarioLayers: geo.layerItemsLayers,
+    getOlLayerById,
+    zoomToFeature,
+    zoomToFeatures,
+    zoomToLayer,
+    panToFeature,
+    getLayerById,
+  };
+}
+
+export function getOrCreateLayerGroup(olMap: OLMap) {
+  if (layersMap.has(olMap)) return layersMap.get(olMap)!;
+
+  const layerGroup = new LayerGroup({
+    properties: { id: nanoid(), title: "Scenario layers" },
+  });
+  layersMap.set(olMap, layerGroup);
+  olMap.addLayer(layerGroup);
+  return layerGroup;
+}
+
+export function useScenarioLayerSync(olLayers: Collection<VectorLayer<any>>) {
+  const { geo } = injectStrict(activeScenarioKey);
+
+  const eventKeys = [] as EventsKey[];
+
+  function addListener(l: VectorLayer<any>) {
+    eventKeys.push(
+      l.on("change:visible", (event) => {
+        const isVisible = l.getVisible();
+        geo.updateLayer(l.get("id"), { isHidden: !isVisible }, { undoable: false });
+      }),
+    );
+  }
+
+  olLayers.forEach((l) => {
+    addListener(l);
+  });
+  useOlEvent(
+    olLayers.on("add", (event) => {
+      const addedLayer = event.element as VectorLayer<any>;
+      addListener(addedLayer);
+    }),
+  );
+
+  onUnmounted(() => {
+    eventKeys.forEach((key) => unByKey(key));
+  });
+}

@@ -8,11 +8,11 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NGeometryLayerItem, ScenarioLayerUpdate } from "@/types/internalModels";
 import { type ProjectionLike } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   createScenarioLayerItemFeatures,
   getOrCreateLayerGroup,
-  LayerTypes,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+} from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { type ActionLabel } from "@/scenariostore/newScenarioStore";
 import VectorSource from "ol/source/Vector";
 import { getFeatureAndLayerById } from "@/composables/openlayersHelpers";
