@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import type LineString from "ol/geom/LineString";
-import { createUnitPathFeatures, INITIAL_TIME, VIA_TIME } from "@/geo/history";
+import { createUnitPathGeoJson, INITIAL_TIME } from "@/geo/history";
 
 function createUnit() {
   return {
@@ -16,19 +15,41 @@ function createUnit() {
   } as any;
 }
 
-describe("createUnitPathFeatures leg geometry", () => {
+describe("createUnitPathGeoJson leg geometry", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
   });
 
-  it("carries the waypoint time as the M ordinate", () => {
-    // Path editing reads the time back off the dragged vertex to find the state
-    // entry to update, so the M ordinate has to survive both the antimeridian
-    // unwind and the projection transform.
-    const { legFeatures } = createUnitPathFeatures(createUnit(), { isEditMode: true });
+  it("includes via points in the leg coordinates", () => {
+    const { legs } = createUnitPathGeoJson(createUnit());
 
-    expect(legFeatures).toHaveLength(1);
-    const coordinates = (legFeatures[0].getGeometry() as LineString).getCoordinates();
-    expect(coordinates.map((c) => c[2])).toEqual([INITIAL_TIME, VIA_TIME, 1000, 2000]);
+    expect(legs).toHaveLength(1);
+    expect(legs[0].geometry.coordinates).toEqual([
+      [10, 60],
+      [10.5, 60.5],
+      [11, 61],
+      [12, 62],
+    ]);
+  });
+
+  it("maps every leg coordinate back to the point it was drawn from", () => {
+    // Path editing rewrites the dragged coordinate for a live preview, so each
+    // vertex has to identify its state entry and, for via points, its index.
+    const { legs } = createUnitPathGeoJson(createUnit());
+
+    expect(legs[0].properties?.vertices).toEqual([
+      { stateIndex: -1, isInitial: true },
+      { stateIndex: 0, viaIndex: 0 },
+      { stateIndex: 0, isInitial: false },
+      { stateIndex: 1, isInitial: false },
+    ]);
+  });
+
+  it("marks the initial waypoint", () => {
+    const { waypoints } = createUnitPathGeoJson(createUnit());
+
+    expect(waypoints[0].properties?.isInitial).toBe(true);
+    expect(waypoints[0].properties?.t).toBe(INITIAL_TIME);
+    expect(waypoints.slice(1).map((w) => w.properties?.stateIndex)).toEqual([0, 1]);
   });
 });

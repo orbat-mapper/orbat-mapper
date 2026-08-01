@@ -3,14 +3,13 @@ import { activeScenarioKey } from "@/components/injects";
 import type { EntityId, HistoryAction } from "@/types/base";
 import type { Coordinate } from "ol/coordinate";
 import { toLonLat } from "ol/proj";
+import { INITIAL_TIME, VIA_TIME } from "@/geo/history";
 import {
   createUnitHistoryLayers,
   createUnitPathFeatures,
-  INITIAL_TIME,
   labelStyle,
   selectedWaypointStyle,
-  VIA_TIME,
-} from "@/geo/history";
+} from "@/geo/engines/openlayers/unitHistoryOl";
 import Modify, { ModifyEvent } from "ol/interaction/Modify";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
