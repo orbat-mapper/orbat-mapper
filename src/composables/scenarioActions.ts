@@ -9,8 +9,9 @@ import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import OLMap from "ol/Map";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtilsOl";
+import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import { featureCollection } from "@turf/helpers";
+import turfCenter from "@turf/center";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -275,42 +276,61 @@ export function useUnitMenu(
 export function useScenarioFeatureActions(
   options: Partial<{
     activeScenario: TScenario;
-    olMap: OLMap | null;
   }> = {},
 ) {
   const geoStore = useGeoStore();
   const activeScenario = options.activeScenario || injectStrict(activeScenarioKey);
   const {
-    store: { groupUpdate },
+    store: { groupUpdate, state },
     geo,
   } = activeScenario;
 
-  const initialMapRef = options.olMap ?? geoStore.olMap;
-  const initialFeatureLayerUtils = initialMapRef
-    ? useFeatureLayerUtils(initialMapRef, { activeScenario })
-    : null;
+  function getFeatureGeometry(featureId: FeatureId) {
+    const item = state.layerItemMap[featureId];
+    if (!item || !isNGeometryLayerItem(item)) return null;
+    return item._state?.geometry ?? item.geometry ?? null;
+  }
 
-  function getFeatureLayerUtils() {
-    if (initialFeatureLayerUtils) return initialFeatureLayerUtils;
-    const mapRef = options.olMap ?? geoStore.olMap;
-    return mapRef ? useFeatureLayerUtils(mapRef, { activeScenario }) : null;
+  function toGeoJsonFeature(featureId: FeatureId) {
+    const geometry = getFeatureGeometry(featureId);
+    if (!geometry) return null;
+    return {
+      type: "Feature" as const,
+      id: featureId,
+      geometry,
+      properties: {},
+    };
+  }
+
+  function zoomToFeatures(featureIds: FeatureId[], maxZoom: number) {
+    const features = featureIds
+      .map(toGeoJsonFeature)
+      .filter((f): f is NonNullable<typeof f> => !!f);
+    if (!features.length) return;
+    geoStore.zoomToGeometry(featureCollection(features), { maxZoom });
+  }
+
+  function panToFeature(featureId: FeatureId) {
+    const feature = toGeoJsonFeature(featureId);
+    if (!feature) return;
+    const center = turfCenter(feature);
+    geoStore.panToLocation(center.geometry.coordinates);
   }
 
   function onFeatureAction(
     featureOrFeaturesId: FeatureId | FeatureId[],
     action: "zoom" | "pan" | "delete" | string,
   ) {
-    const featureLayerUtils = getFeatureLayerUtils();
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
-      featureLayerUtils?.zoomToFeatures(featureOrFeaturesId);
+      zoomToFeatures(featureOrFeaturesId, 17);
       return;
     }
     groupUpdate(
       () => {
         (isArray ? featureOrFeaturesId : [featureOrFeaturesId]).forEach((featureId) => {
-          if (action === "zoom") featureLayerUtils?.zoomToFeature(featureId);
-          if (action === "pan") featureLayerUtils?.panToFeature(featureId);
+          if (action === "zoom") zoomToFeatures([featureId], 15);
+          if (action === "pan") panToFeature(featureId);
           if (action === "delete") geo.deleteFeature(featureId);
           if (action === "duplicate") {
             geo.duplicateFeature(featureId);

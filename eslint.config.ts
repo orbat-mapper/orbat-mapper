@@ -17,13 +17,6 @@ const LEGACY_OPENLAYERS_FILES = [
   "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtils.select.test,featureLayerUtilsOl,olInjects}.ts",
 ];
 
-// Shared files still being decoupled from OpenLayers. Shrink this list to
-// empty; do NOT add to it.
-const PENDING_OPENLAYERS_DECOUPLE = [
-  "src/composables/scenarioActions.ts",
-  "src/stores/geoStore.ts",
-];
-
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
 // configureVueProject({ scriptLangs: ['ts', 'tsx'] })
@@ -48,7 +41,7 @@ export default defineConfigWithVueTs(
   {
     name: "app/no-openlayers-outside-legacy",
     files: ["**/*.{ts,mts,tsx,vue}"],
-    ignores: [...LEGACY_OPENLAYERS_FILES, ...PENDING_OPENLAYERS_DECOUPLE],
+    ignores: [...LEGACY_OPENLAYERS_FILES],
     rules: {
       "no-restricted-imports": [
         "error",
