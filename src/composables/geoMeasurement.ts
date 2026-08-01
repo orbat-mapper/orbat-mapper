@@ -28,8 +28,13 @@ import type { EventsKey } from "ol/events";
 import { unByKey } from "ol/Observable";
 import { circular } from "ol/geom/Polygon";
 
-export type MeasurementTypes = "LineString" | "Polygon";
-export type MeasurementUnit = "metric" | "imperial" | "nautical";
+import type {
+  MeasurementInteractionOptions,
+  MeasurementTypes,
+  MeasurementUnit,
+} from "@/geo/measurementTypes";
+
+export type { MeasurementInteractionOptions, MeasurementTypes, MeasurementUnit };
 
 const style = new Style({
   fill: new Fill({
@@ -396,16 +401,6 @@ function measurementInteractionWrapper(
     cleanup,
     clear,
   };
-}
-
-export interface MeasurementInteractionOptions {
-  showSegments?: MaybeRef<boolean>;
-  clearPrevious?: MaybeRef<boolean>;
-  enable?: MaybeRef<boolean>;
-  measurementUnit?: MaybeRef<MeasurementUnit>;
-  snap?: MaybeRef<boolean>;
-  showCircle?: MaybeRef<boolean>;
-  showGeodesicPaths?: MaybeRef<boolean>;
 }
 
 export function useMeasurementInteraction(

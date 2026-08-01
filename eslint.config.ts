@@ -21,14 +21,10 @@ const LEGACY_OPENLAYERS_FILES = [
 // empty; do NOT add to it.
 const PENDING_OPENLAYERS_DECOUPLE = [
   "src/components/injects.ts",
-  "src/components/commandPalette/CommandPalettePlaceItem.vue",
   "src/composables/scenarioActions.ts",
-  "src/geo/utils.ts",
-  "src/importexport/export/locationFormat.ts",
   "src/modules/scenarioeditor/{featureLayerUtils,referenceFeatureUtils}.ts",
   "src/modules/scenarioeditor/MapEditorMeasurementToolbar.vue",
   "src/stores/geoStore.ts",
-  "src/utils/geoConvert.ts",
 ];
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:

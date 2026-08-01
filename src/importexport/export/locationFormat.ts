@@ -1,7 +1,7 @@
 import type { Position } from "geojson";
 import type { LocationExportFormat } from "@/types/importExport";
 import { formatMGRS, formatDecimalDegrees } from "@/utils/geoConvert";
-import { toStringHDMS } from "ol/coordinate";
+import { toStringHDMS } from "@/geo/coordinateFormat";
 
 /**
  * Format a location based on the specified export format.

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import OLMap from "ol/Map";
 import type { Unit } from "@/types/scenarioModels";
-import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
+import type { MeasurementTypes, MeasurementUnit } from "@/geo/measurementTypes";
 import type { NUnit } from "@/types/internalModels";
 import type { Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";

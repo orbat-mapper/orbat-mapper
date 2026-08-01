@@ -6,7 +6,7 @@ import type { CoordinateFormatType } from "@/composables/geoShowLocation";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
-import { type MeasurementUnit } from "@/composables/geoMeasurement";
+import { type MeasurementUnit } from "@/geo/measurementTypes";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";

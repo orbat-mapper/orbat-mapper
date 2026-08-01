@@ -4,8 +4,8 @@ import { formatLength } from "@/geo/utils.ts";
 import { type PhotonSearchResult } from "@/composables/geosearching.ts";
 import type { Feature, Point } from "geojson";
 import { type GeoSearchProperties } from "@/types/search.ts";
-import { getDistance } from "ol/sphere";
 import { useMeasurementsStore } from "@/stores/geoStore.ts";
+import { distanceMeters } from "@/geo/distance.ts";
 
 const measurementsStore = useMeasurementsStore();
 const props = defineProps<{
@@ -13,7 +13,7 @@ const props = defineProps<{
   center?: number[] | null;
 }>();
 function getFromCenter(f: Feature<Point, GeoSearchProperties>) {
-  const distance = props.center && getDistance(props.center, f.geometry.coordinates);
+  const distance = props.center && distanceMeters(props.center, f.geometry.coordinates);
   return distance ? formatLength(distance, measurementsStore.measurementUnit) : "";
 }
 </script>

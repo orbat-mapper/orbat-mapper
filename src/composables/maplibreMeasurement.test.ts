@@ -6,7 +6,7 @@ import {
   geodesicCircleGeometry,
   useMapLibreMeasurementInteraction,
 } from "@/composables/maplibreMeasurement";
-import type { MeasurementTypes, MeasurementUnit } from "@/composables/geoMeasurement";
+import type { MeasurementTypes, MeasurementUnit } from "@/geo/measurementTypes";
 
 function expectLineEndpoints(coords: any[], start: number[], end: number[]) {
   expect(coords[0]).toEqual(start);

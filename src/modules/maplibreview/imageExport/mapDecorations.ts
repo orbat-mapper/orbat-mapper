@@ -9,7 +9,7 @@
  * stays upright as it rotates with the map bearing.
  */
 
-import type { MeasurementUnit } from "@/composables/geoMeasurement";
+import type { MeasurementUnit } from "@/geo/measurementTypes";
 
 const INK = "#1a1a1a";
 const PAPER = "#ffffff";
