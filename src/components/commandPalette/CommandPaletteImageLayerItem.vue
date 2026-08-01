@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type MapLayerSearchResult } from "@/components/types.ts";
-import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers.ts";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import { computed } from "vue";
 import { type ScenarioMapLayer } from "@/types/scenarioGeoModels.ts";
 

@@ -7,11 +7,8 @@ import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { defineComponent, nextTick, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  activeFeatureStylesKey,
-  activeScenarioKey,
-  activeScenarioMapEngineKey,
-} from "@/components/injects";
+import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
+import { activeFeatureStylesKey } from "@/modules/scenarioeditor/olInjects";
 import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useSelectedItems } from "@/stores/selectedStore";
 

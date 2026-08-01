@@ -4,7 +4,7 @@ import { createPinia, setActivePinia, type Pinia } from "pinia";
 import { defineComponent, nextTick, ref } from "vue";
 import VectorLayer from "ol/layer/Vector";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { activeFeatureStylesKey } from "@/components/injects";
+import { activeFeatureStylesKey } from "@/modules/scenarioeditor/olInjects";
 import { useRoutingStore } from "@/stores/routingStore";
 import { useOlScenarioLayerController } from "@/geo/engines/openlayers/olScenarioLayerController";
 

@@ -10,11 +10,15 @@ import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
 const LEGACY_OPENLAYERS_FILES = [
   "src/geo/engines/openlayers/**",
   "src/geo/routing/openLayersRoutingPreview.ts",
-  "src/geo/{featureStyles,arrowStyles,arrowStyles.test,simplestyle,layers,baseLayers,olInteractions,layerConfigTypes,types,kmlz}.ts",
-  "src/components/{MapContainer,ScenarioMap,ScenarioMapLogic,MapContextMenu,MeasurementToolbar,LayersPanel,DrawMarker,DrawRangeRingMarker}.vue",
+  "src/geo/{featureStyles,arrowStyles,arrowStyles.test,simplestyleOl,layers,baseLayers,olInteractions,layerConfigTypes,types,kmlz}.ts",
+  "src/geo/{unitStyles.test,unitStyles.reparent.test}.ts",
+  "src/components/{MapContainer,ScenarioMap,ScenarioMapLogic,MapContextMenu,MeasurementToolbar,LayersPanel,BaseLayerSwitcher}.vue",
+  "src/components/{MapContainer.test,ScenarioMapLogic.test,LayersPanel.test,BaseLayerSwitcher.test}.ts",
   "src/composables/{geoEditing,geoMeasurement,geoUnitLayers,geoUnitHistory,geoHover,geoDayNight,geoRangeRings,geoBoxDraw,boxDrawEngineOL,geoImageLayerInteraction,geoScaleLine,geoShowLocation,openlayersHelpers}.ts",
-  "src/modules/scenarioeditor/{ScenarioEditorMap,SearchScenarioActions,ScenarioMapSettings,ScenarioBoundingBox,TileMapLayerSettingsForm}.vue",
-  "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtils.select.test,featureLayerUtilsOl,olInjects}.ts",
+  "src/composables/geoUnitHistory.test.ts",
+  "src/modules/scenarioeditor/{ScenarioEditorMap,SearchScenarioActions,ScenarioMapSettings,ScenarioBoundingBox}.vue",
+  "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtilsOl,olInjects}.ts",
+  "src/modules/scenarioeditor/{ScenarioEditorMap.test,featureLayerUtils.select.test,featureLayerUtils.items.test,featureLayerUtils.topHit.test,scenarioDrawHelpers.test,useScenarioDraw.test,recordHierarchyChangesUi.test}.ts",
 ];
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:

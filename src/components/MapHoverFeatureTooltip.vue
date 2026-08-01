@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useTimeoutFn } from "@vueuse/core";
-import { useMapHover } from "@/composables/geoHover";
+import { useMapHover } from "@/geo/mapHover";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";

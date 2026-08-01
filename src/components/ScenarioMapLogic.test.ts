@@ -177,6 +177,9 @@ vi.mock("@/modules/scenarioeditor/featureLayerUtilsOl", () => ({
 
 vi.mock("@/composables/geoHover", () => ({
   provideMapHover: vi.fn(),
+}));
+
+vi.mock("@/geo/mapHover", () => ({
   useMapHover: () => ({
     features: mocks.hoveredFeatures,
     pixel: mocks.hoveredPixel,

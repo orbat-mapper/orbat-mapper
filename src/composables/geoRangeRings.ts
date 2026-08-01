@@ -13,7 +13,7 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Feature, { type FeatureLike } from "ol/Feature";
 import { type FeatureId } from "@/types/scenarioGeoModels";
-import { createSimpleStyle } from "@/geo/simplestyle";
+import { createSimpleStyle } from "@/geo/simplestyleOl";
 import { type TScenario } from "@/scenariostore";
 
 export function useRangeRingsLayer() {

@@ -13,11 +13,14 @@ import {
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  measurementInteractionFactoryKey,
 } from "@/components/injects";
 import {
   activeFeatureSelectInteractionKey,
+  activeFeatureStylesKey,
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
+import { useFeatureStyles } from "@/geo/featureStyles";
 import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { injectStrict } from "@/utils";
@@ -40,6 +43,7 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useOpenLayersRoutingPreview } from "@/geo/routing/openLayersRoutingPreview";
+import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -90,6 +94,7 @@ const {
   handleEscape,
 } = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 useOpenLayersRoutingPreview(() => nativeMapRef.value);
+provide(activeFeatureStylesKey, useFeatureStyles(activeScenario.geo));
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
@@ -99,6 +104,11 @@ provide(
   activeFeatureSelectInteractionKey,
   featureSelectInteractionRef as ShallowRef<Select>,
 );
+provide(measurementInteractionFactoryKey, (measurementType, options) => {
+  const olMap = nativeMapRef.value;
+  if (!olMap) return { clear: () => {} };
+  return useMeasurementInteraction(olMap, measurementType, options);
+});
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

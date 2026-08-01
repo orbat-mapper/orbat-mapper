@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { type CoordinateFormatType } from "@/composables/geoShowLocation";
+import { type CoordinateFormatType } from "@/geo/coordinateFormat";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 import type { BasemapArchiveKind } from "@/geo/basemapArchive";

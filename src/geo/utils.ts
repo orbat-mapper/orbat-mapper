@@ -4,7 +4,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { toStringHDMS } from "@/geo/coordinateFormat";
 import { formatDecimalDegrees, formatMGRS, type MGRSPrecision } from "@/utils/geoConvert";
 import type { MeasurementUnit } from "@/geo/measurementTypes";
-import { type CoordinateFormatType } from "@/composables/geoShowLocation";
+import { type CoordinateFormatType } from "@/geo/coordinateFormat";
 import { truncate } from "@turf/truncate";
 import { point } from "@turf/helpers";
 import type { Position } from "geojson";

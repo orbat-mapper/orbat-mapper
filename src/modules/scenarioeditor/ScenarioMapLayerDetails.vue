@@ -15,7 +15,7 @@ import { useDebounceFn } from "@vueuse/core";
 import DotsMenu from "@/components/DotsMenu.vue";
 import { type MenuItemData } from "@/components/types";
 import { type ScenarioMapLayerAction } from "@/types/constants";
-import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { TabsContent } from "@/components/ui/tabs";
 import ImageMapLayerSettings from "@/modules/scenarioeditor/ImageMapLayerSettings.vue";

@@ -23,10 +23,6 @@ import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
-import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
-} from "@/modules/scenarioeditor/olInjects";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
@@ -91,14 +87,10 @@ const {
   handleEscape,
 } = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 let cleanupScenarioBinding: (() => void) | null = null;
-const nativeMapStub = shallowRef<never>(null as never);
-const featureSelectStub = shallowRef<never>(null as never);
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
 );
-provide(activeNativeMapKey, nativeMapStub);
-provide(activeFeatureSelectInteractionKey, featureSelectStub);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

@@ -17,7 +17,7 @@ import { useScenarioFeatureSelection } from "@/modules/scenarioeditor/useScenari
 import { useUiStore } from "@/stores/uiStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { fixExtent } from "@/utils/geoConvert";
-import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import { usePlaybackStore } from "@/stores/playbackStore";
 
 interface UseScenarioMapSearchActionsOptions {

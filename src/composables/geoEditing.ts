@@ -19,7 +19,9 @@ import Collection from "ol/Collection";
 import Geometry from "ol/geom/Geometry";
 import Polygon from "ol/geom/Polygon";
 
-export type DrawType = "Point" | "LineString" | "Polygon" | "Circle" | "Rectangle";
+import type { DrawType } from "@/geo/drawTypes";
+
+export type { DrawType };
 
 export interface GeoEditingOptions {
   addMultiple?: MaybeRef<boolean>;
