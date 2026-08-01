@@ -14,16 +14,13 @@ const LEGACY_OPENLAYERS_FILES = [
   "src/components/{MapContainer,ScenarioMap,ScenarioMapLogic,MapContextMenu,MeasurementToolbar,LayersPanel,DrawMarker,DrawRangeRingMarker}.vue",
   "src/composables/{geoEditing,geoMeasurement,geoUnitLayers,geoUnitHistory,geoHover,geoDayNight,geoRangeRings,geoBoxDraw,boxDrawEngineOL,geoImageLayerInteraction,geoScaleLine,geoShowLocation,openlayersHelpers}.ts",
   "src/modules/scenarioeditor/{ScenarioEditorMap,SearchScenarioActions,ScenarioMapSettings,ScenarioBoundingBox,TileMapLayerSettingsForm}.vue",
-  "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtils.select.test}.ts",
+  "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtils.select.test,featureLayerUtilsOl,olInjects}.ts",
 ];
 
 // Shared files still being decoupled from OpenLayers. Shrink this list to
 // empty; do NOT add to it.
 const PENDING_OPENLAYERS_DECOUPLE = [
-  "src/components/injects.ts",
   "src/composables/scenarioActions.ts",
-  "src/modules/scenarioeditor/{featureLayerUtils,referenceFeatureUtils}.ts",
-  "src/modules/scenarioeditor/MapEditorMeasurementToolbar.vue",
   "src/stores/geoStore.ts",
 ];
 

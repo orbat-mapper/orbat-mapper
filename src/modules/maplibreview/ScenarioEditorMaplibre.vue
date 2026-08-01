@@ -19,12 +19,14 @@ import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeNativeMapKey,
+} from "@/modules/scenarioeditor/olInjects";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";

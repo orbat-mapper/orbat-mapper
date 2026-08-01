@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  createScenarioLayerItemFeatures,
-  layerItemsToGeoJsonString,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
+import { createScenarioLayerItemFeatures } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import type { AnnotationLayerItem, GeometryLayerItem } from "@/types/scenarioLayerItems";
 
 const geometryItem: GeometryLayerItem = {

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  getTopHitLayerType,
   isReferenceFeatureLayerType,
   isScenarioFeatureLayerType,
   LayerTypes,
 } from "@/modules/scenarioeditor/featureLayerUtils";
+import { getTopHitLayerType } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 
 describe("getTopHitLayerType", () => {
   it("returns the layer type for the first hit only", () => {

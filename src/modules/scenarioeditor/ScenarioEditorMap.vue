@@ -10,12 +10,14 @@ import {
 } from "vue";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeNativeMapKey,
+} from "@/modules/scenarioeditor/olInjects";
 import { OlMapAdapter } from "@/geo/engines/openlayers/olMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { injectStrict } from "@/utils";

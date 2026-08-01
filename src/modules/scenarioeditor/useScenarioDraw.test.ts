@@ -6,12 +6,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
-  activeFeatureSelectInteractionKey,
   activeLayerKey,
-  activeNativeMapKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeNativeMapKey,
+} from "@/modules/scenarioeditor/olInjects";
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),

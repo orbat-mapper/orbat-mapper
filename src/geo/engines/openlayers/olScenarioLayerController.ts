@@ -8,11 +8,11 @@ import GeoImageLayer from "ol-ext/layer/GeoImage";
 import GeoImage from "ol-ext/source/GeoImage";
 import { KMLZ } from "@/geo/kmlz";
 import { imageCache } from "@/importexport/fileHandling";
+import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   createScenarioLayerItemFeatures,
   getOrCreateLayerGroup,
-  LayerTypes,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+} from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useImageLayerTransformInteraction } from "@/composables/geoImageLayerInteraction";
 import { activeFeatureStylesKey } from "@/components/injects";
 import { injectStrict } from "@/utils";

@@ -4,12 +4,14 @@ import type VectorLayer from "ol/layer/Vector";
 import { computed, nextTick, ref, shallowRef, watch, type ShallowRef } from "vue";
 import { storeToRefs } from "pinia";
 import {
-  activeFeatureSelectInteractionKey,
   activeLayerKey,
-  activeNativeMapKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
+import {
+  activeFeatureSelectInteractionKey,
+  activeNativeMapKey,
+} from "@/modules/scenarioeditor/olInjects";
 import { injectStrict } from "@/utils";
 import { useEditingInteraction, type DrawType } from "@/composables/geoEditing";
 import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
@@ -17,7 +19,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtils";
+import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import {
   addOlDrawFeature,
   addScenarioDrawFeature,

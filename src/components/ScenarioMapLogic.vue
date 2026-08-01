@@ -24,11 +24,11 @@ import {
   useUnitSelectInteraction,
 } from "@/composables/geoUnitLayers";
 import LayerGroup from "ol/layer/Group";
+import { isReferenceFeatureLayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   getTopHitLayerType,
-  isReferenceFeatureLayerType,
   useScenarioFeatureSelect,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+} from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { provideMapHover } from "@/composables/geoHover";
 import { saveMapAsPng, useOlEvent } from "@/composables/openlayersHelpers";

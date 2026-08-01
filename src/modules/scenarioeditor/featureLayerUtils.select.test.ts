@@ -12,7 +12,7 @@ import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
-import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtils";
+import { useScenarioFeatureSelect } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useSelectedItems } from "@/stores/selectedStore";
 
 describe("useScenarioFeatureSelect", () => {

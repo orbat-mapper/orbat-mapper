@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UnitActions } from "@/types/constants";
 import { injectStrict } from "@/utils";
-import { activeNativeMapKey } from "@/components/injects";
+import { activeNativeMapKey } from "@/modules/scenarioeditor/olInjects";
 import { useUnitActions } from "@/composables/scenarioActions";
 import { applyTransform } from "ol/extent";
 import OlPoint from "ol/geom/Point";

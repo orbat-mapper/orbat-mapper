@@ -13,7 +13,7 @@ import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { onKeyDown } from "@vueuse/core";
-import { activeNativeMapKey, activeScenarioMapEngineKey } from "@/components/injects";
+import { activeScenarioMapEngineKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
@@ -23,9 +23,7 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { computed } from "vue";
 import { onUnmounted } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import OLMap from "ol/Map";
 
-const mapRef = injectStrict(activeNativeMapKey);
 const mapEngineRef = injectStrict(activeScenarioMapEngineKey);
 
 const store = useMainToolbarStore();
@@ -41,7 +39,10 @@ const {
 } = storeToRefs(useMeasurementsStore());
 const activeMapAdapter = mapEngineRef.value?.map;
 const nativeMap = activeMapAdapter?.getNativeMap();
-const isMapLibre = !!nativeMap && !(nativeMap instanceof OLMap);
+const isOpenLayers =
+  typeof (nativeMap as { addInteraction?: unknown } | undefined)?.addInteraction ===
+  "function";
+const isMapLibre = !!nativeMap && !isOpenLayers;
 const { mapProjection } = storeToRefs(useMapSettingsStore());
 const showGeodesicToggle = computed(() => isMapLibre && mapProjection.value !== "globe");
 const interactionOptions = {
@@ -53,8 +54,12 @@ const interactionOptions = {
   showGeodesicPaths,
 };
 const { clear } = nativeMap
-  ? nativeMap instanceof OLMap
-    ? useMeasurementInteraction(mapRef.value, measurementType, interactionOptions)
+  ? isOpenLayers
+    ? useMeasurementInteraction(
+        nativeMap as Parameters<typeof useMeasurementInteraction>[0],
+        measurementType,
+        interactionOptions,
+      )
     : useMapLibreMeasurementInteraction(
         activeMapAdapter!,
         measurementType,
