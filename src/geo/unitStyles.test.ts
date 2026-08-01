@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createUnitStyle } from "./unitStyles";
+import { createUnitStyle } from "@/geo/engines/openlayers/unitStyles";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 
 const mapSettingsMock = {
