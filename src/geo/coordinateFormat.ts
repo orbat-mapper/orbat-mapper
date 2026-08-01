@@ -1,5 +1,8 @@
 export type CoordinateFormat = (coordinate: number[] | undefined) => string;
 
+export type CoordinateFormatType =
+  "MGRS" | "DecimalDegrees" | "DegreeMinuteSeconds" | "dms" | "dd";
+
 function modulo(a: number, b: number) {
   const r = a % b;
   return r * b < 0 ? r + b : r;

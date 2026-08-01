@@ -1,16 +1,5 @@
-import {
-  ref,
-  shallowRef,
-  computed,
-  provide,
-  inject,
-  unref,
-  watch,
-  type Ref,
-  type MaybeRef,
-  type InjectionKey,
-} from "vue";
-import { watchThrottled, watchDebounced } from "@vueuse/core";
+import { ref, unref, watch, type Ref, type MaybeRef } from "vue";
+import { watchThrottled } from "@vueuse/core";
 import type OLMap from "ol/Map";
 import type { FeatureLike } from "ol/Feature";
 import type MapBrowserEvent from "ol/MapBrowserEvent";
@@ -18,50 +7,13 @@ import type { Types as MapBrowserEventType } from "ol/MapBrowserEventType";
 import type { Pixel } from "ol/pixel";
 import { useOlEvent } from "@/composables/openlayersHelpers";
 import { unByKey } from "ol/Observable";
-
-export interface MapHoverContext {
-  globalHoveredFeatures: Ref<FeatureLike[]>;
-  globalHoveredPixel: Ref<Pixel | null>;
-}
-
-export type HoverFeatureLike = Pick<FeatureLike, "getId">;
-
-export const MapHoverKey: InjectionKey<MapHoverContext> = Symbol("MapHover");
-
-export interface UseMapHoverOptions {
-  filter?: (feature: FeatureLike) => boolean;
-  debounceMs?: number;
-}
+import { provideMapHoverContext } from "@/geo/mapHover";
 
 export interface ProvideMapHoverOptions {
   hitTolerance?: number;
   throttleMs?: number;
   updateCursor?: boolean;
   enable?: MaybeRef<boolean>;
-}
-
-export function provideMapHoverContext() {
-  const globalHoveredFeatures = shallowRef<FeatureLike[]>([]);
-  const globalHoveredPixel = ref<Pixel | null>(null);
-
-  const setHoveredFeatures = (features: HoverFeatureLike[], pixel: Pixel | null) => {
-    globalHoveredFeatures.value = features as FeatureLike[];
-    globalHoveredPixel.value = features.length && pixel ? pixel : null;
-  };
-
-  const clearHoveredFeatures = () => {
-    globalHoveredFeatures.value = [];
-    globalHoveredPixel.value = null;
-  };
-
-  const context: MapHoverContext = { globalHoveredFeatures, globalHoveredPixel };
-  provide(MapHoverKey, context);
-
-  return {
-    ...context,
-    setHoveredFeatures,
-    clearHoveredFeatures,
-  };
 }
 
 export function provideMapHover(
@@ -135,34 +87,4 @@ export function provideMapHover(
   );
 
   return { globalHoveredFeatures, globalHoveredPixel };
-}
-
-export function useMapHover(options: UseMapHoverOptions = {}) {
-  const context = inject(MapHoverKey);
-  if (!context) throw new Error("useMapHover must be used within provideMapHover");
-
-  const filteredFeatures = shallowRef<FeatureLike[]>([]);
-  const isMatch = computed(() => filteredFeatures.value.length > 0);
-
-  const update = (newFeatures: FeatureLike[]) => {
-    filteredFeatures.value = options.filter
-      ? newFeatures.filter(options.filter)
-      : newFeatures;
-  };
-
-  if (options.debounceMs) {
-    watchDebounced(context.globalHoveredFeatures, (val) => update(val), {
-      debounce: options.debounceMs,
-      immediate: true,
-    });
-  } else {
-    watch(context.globalHoveredFeatures, (val) => update(val), { immediate: true });
-  }
-
-  return {
-    features: filteredFeatures,
-    isMatch,
-    allFeatures: context.globalHoveredFeatures,
-    pixel: context.globalHoveredPixel,
-  };
 }

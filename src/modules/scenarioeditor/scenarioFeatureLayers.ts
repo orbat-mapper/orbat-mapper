@@ -1,7 +1,8 @@
 import OLMap from "ol/Map";
 import { watch } from "vue";
 import { injectStrict, nanoid } from "@/utils";
-import { activeFeatureStylesKey, activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey } from "@/components/injects";
+import { activeFeatureStylesKey } from "@/modules/scenarioeditor/olInjects";
 import { useRoutingStore } from "@/stores/routingStore";
 import type { ScenarioFeatureLayerEvent } from "@/scenariostore/geo";
 import type { FeatureId } from "@/types/scenarioGeoModels";

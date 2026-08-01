@@ -27,7 +27,10 @@ import type {
 } from "@/types/constants";
 import { ScenarioLayerActions } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { addMapLayer, getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import {
+  addMapLayer,
+  getMapLayerIcon,
+} from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";

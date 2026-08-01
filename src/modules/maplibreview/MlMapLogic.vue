@@ -66,7 +66,7 @@ import {
 } from "@/stores/mapSettingsStore";
 import { useRoutingStore } from "@/stores/routingStore";
 import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTerminator";
-import { provideMapHoverContext, type HoverFeatureLike } from "@/composables/geoHover";
+import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 import { SID_INDEX } from "@/symbology/sidc";

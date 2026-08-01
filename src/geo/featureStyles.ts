@@ -4,7 +4,7 @@ import {
   createSimpleStyle,
   defaultSimplestyleFill,
   defaultSimplestyleStroke,
-} from "./simplestyle";
+} from "./simplestyleOl";
 import { createArrowStyles } from "./arrowStyles";
 import type { FeatureLike } from "ol/Feature";
 import type { FeatureId } from "@/types/scenarioGeoModels";

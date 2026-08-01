@@ -14,7 +14,7 @@ import {
   getOrCreateLayerGroup,
 } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useImageLayerTransformInteraction } from "@/composables/geoImageLayerInteraction";
-import { activeFeatureStylesKey } from "@/components/injects";
+import { activeFeatureStylesKey } from "@/modules/scenarioeditor/olInjects";
 import { injectStrict } from "@/utils";
 import { fixExtent } from "@/utils/geoConvert";
 import type { TScenario } from "@/scenariostore";

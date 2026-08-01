@@ -2,7 +2,7 @@
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type { RadioGroupItemData } from "@/components/types";
-import type { CoordinateFormatType } from "@/composables/geoShowLocation";
+import type { CoordinateFormatType } from "@/geo/coordinateFormat";
 import RadioGroupList from "@/components/RadioGroupList.vue";
 import { useUiStore } from "@/stores/uiStore";
 import { useMeasurementsStore } from "@/stores/geoStore";

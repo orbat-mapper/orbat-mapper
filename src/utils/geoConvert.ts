@@ -1,7 +1,10 @@
 import type { Position } from "geojson";
 import { forward } from "mgrs";
-import { type CoordinateFormat, toStringHDMS } from "@/geo/coordinateFormat";
-import { type CoordinateFormatType } from "@/composables/geoShowLocation";
+import {
+  type CoordinateFormat,
+  type CoordinateFormatType,
+  toStringHDMS,
+} from "@/geo/coordinateFormat";
 export type MGRSPrecision = 1 | 2 | 3 | 4 | 5;
 export function formatDecimalDegrees(p: Position, precision: number) {
   const [lon, lat] = p;
@@ -38,5 +41,16 @@ export function fixExtent(extent: number[] | null | undefined = []) {
     Math.min(miny, maxy),
     Math.max(minx, maxx),
     Math.max(miny, maxy),
+  ];
+}
+
+const EARTH_RADIUS = 6378137;
+
+/** Convert an EPSG:3857 coordinate to EPSG:4326 (longitude, latitude). */
+export function webMercatorToLonLat(coordinate: number[]): Position {
+  const [x = 0, y = 0] = coordinate ?? [];
+  return [
+    (x * 180) / (EARTH_RADIUS * Math.PI),
+    ((2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * 180) / Math.PI,
   ];
 }

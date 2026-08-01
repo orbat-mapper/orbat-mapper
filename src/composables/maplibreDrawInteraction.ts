@@ -13,7 +13,7 @@ import { ref, toValue, unref, watch, type MaybeRef, type MaybeRefOrGetter } from
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type { DrawType } from "@/composables/geoEditing";
+import type { DrawType } from "@/geo/drawTypes";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import {
   getRenderedMidpoint as getMapLibreRenderedMidpoint,

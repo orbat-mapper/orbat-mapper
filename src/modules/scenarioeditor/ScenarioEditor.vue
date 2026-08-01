@@ -35,7 +35,6 @@ import NProgress from "nprogress";
 import type { TScenario } from "@/scenariostore";
 import type { EntityId } from "@/types/base";
 import {
-  activeFeatureStylesKey,
   activeLayerKey,
   activeParentKey,
   activeScenarioKey,
@@ -44,7 +43,6 @@ import {
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
-import { useFeatureStyles } from "@/geo/featureStyles";
 import type { EventSearchResult } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
@@ -116,7 +114,6 @@ const DecryptScenarioModal = defineAsyncComponent(
 const dropZoneRef = ref<HTMLDivElement>();
 const activeParentId = ref<EntityId | undefined | null>(null);
 const activeLayerId = ref<FeatureId | undefined | null>(null);
-const scnFeatureStyles = useFeatureStyles(props.activeScenario.geo);
 
 const uiTabs = useTabStore();
 const { activeScenarioTab } = storeToRefs(uiTabs);
@@ -124,7 +121,6 @@ const selectedItems = useSelectedItems();
 provide(activeParentKey, activeParentId);
 provide(activeLayerKey, activeLayerId);
 provide(activeScenarioKey, props.activeScenario);
-provide(activeFeatureStylesKey, scnFeatureStyles);
 provide(currentScenarioTabKey, activeScenarioTab);
 
 const onUnitSelectHook = createEventHook<{

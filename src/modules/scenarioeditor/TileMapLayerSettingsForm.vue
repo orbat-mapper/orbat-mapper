@@ -8,7 +8,7 @@ import { useFocusOnMount } from "@/components/helpers";
 import { type ScenarioImageLayerUpdate } from "@/types/internalModels";
 import { useToggle } from "@vueuse/core";
 import TextAreaGroup from "@/components/TextAreaGroup.vue";
-import { toLonLat } from "ol/proj";
+import { webMercatorToLonLat } from "@/utils/geoConvert";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -83,7 +83,7 @@ function loadAdvanced() {
     if (rawData) {
       const { imageCenter, imageScale, imageRotate, url = "" } = rawData;
       const data = {
-        imageCenter: toLonLat(imageCenter),
+        imageCenter: webMercatorToLonLat(imageCenter),
         imageRotate,
         imageScale,
       } as ScenarioImageLayerUpdate;

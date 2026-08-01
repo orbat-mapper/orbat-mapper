@@ -1,7 +1,7 @@
 import type Select from "ol/interaction/Select";
 import type OLMap from "ol/Map";
 import type VectorLayer from "ol/layer/Vector";
-import { computed, nextTick, ref, shallowRef, watch, type ShallowRef } from "vue";
+import { computed, inject, nextTick, ref, shallowRef, watch, type ShallowRef } from "vue";
 import { storeToRefs } from "pinia";
 import {
   activeLayerKey,
@@ -37,11 +37,12 @@ export function useScenarioDraw() {
   const activeScenario = injectStrict(activeScenarioKey);
   const engineRef = injectStrict(activeScenarioMapEngineKey);
   const activeLayerIdRef = injectStrict(activeLayerKey);
-  const nativeOpenLayersMapRef = injectStrict(activeNativeMapKey) as ShallowRef<
+  const nativeOpenLayersMapRef = inject(activeNativeMapKey, shallowRef()) as ShallowRef<
     OLMap | null | undefined
   >;
-  const featureSelectInteractionRef = injectStrict(
+  const featureSelectInteractionRef = inject(
     activeFeatureSelectInteractionKey,
+    shallowRef(),
   ) as ShallowRef<Select | null | undefined>;
 
   const toolbarStore = useMainToolbarStore();

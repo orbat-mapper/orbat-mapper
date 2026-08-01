@@ -13,14 +13,16 @@ import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { onKeyDown } from "@vueuse/core";
-import { activeScenarioMapEngineKey } from "@/components/injects";
+import {
+  activeScenarioMapEngineKey,
+  measurementInteractionFactoryKey,
+} from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { useMeasurementInteraction } from "@/composables/geoMeasurement";
 import { useMapLibreMeasurementInteraction } from "@/composables/maplibreMeasurement";
 import { storeToRefs } from "pinia";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { onUnmounted } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 
@@ -37,12 +39,10 @@ const {
   showCircle,
   showGeodesicPaths,
 } = storeToRefs(useMeasurementsStore());
+const measurementInteractionFactory = inject(measurementInteractionFactoryKey, undefined);
 const activeMapAdapter = mapEngineRef.value?.map;
 const nativeMap = activeMapAdapter?.getNativeMap();
-const isOpenLayers =
-  typeof (nativeMap as { addInteraction?: unknown } | undefined)?.addInteraction ===
-  "function";
-const isMapLibre = !!nativeMap && !isOpenLayers;
+const isMapLibre = !!nativeMap && !measurementInteractionFactory;
 const { mapProjection } = storeToRefs(useMapSettingsStore());
 const showGeodesicToggle = computed(() => isMapLibre && mapProjection.value !== "globe");
 const interactionOptions = {
@@ -53,19 +53,15 @@ const interactionOptions = {
   showCircle,
   showGeodesicPaths,
 };
-const { clear } = nativeMap
-  ? isOpenLayers
-    ? useMeasurementInteraction(
-        nativeMap as Parameters<typeof useMeasurementInteraction>[0],
-        measurementType,
-        interactionOptions,
-      )
-    : useMapLibreMeasurementInteraction(
+const { clear } = measurementInteractionFactory
+  ? measurementInteractionFactory(measurementType, interactionOptions)
+  : nativeMap
+    ? useMapLibreMeasurementInteraction(
         activeMapAdapter!,
         measurementType,
         interactionOptions,
       )
-  : { clear: () => {} };
+    : { clear: () => {} };
 
 selectStore.unitSelectEnabled = false;
 selectStore.featureSelectEnabled = false;

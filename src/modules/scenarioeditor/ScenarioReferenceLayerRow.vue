@@ -7,7 +7,7 @@ import DropIndicator from "@/components/DropIndicator.vue";
 import type { MenuItemData } from "@/components/types";
 import type { ScenarioMapLayer, FeatureId } from "@/types/scenarioGeoModels";
 import type { ScenarioMapLayerAction } from "@/types/constants";
-import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayers";
+import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import {
   draggable,
   dropTargetForElements,
