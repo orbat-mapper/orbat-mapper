@@ -134,6 +134,9 @@ vi.mock("@/stores/routingStore", () => ({
 vi.mock("@/geo/history", () => ({
   VIA_TIME: -1337,
   INITIAL_TIME: Number.MIN_SAFE_INTEGER,
+}));
+
+vi.mock("@/geo/engines/openlayers/unitHistoryOl", () => ({
   labelStyle: { getText: () => ({ setText: vi.fn() }) },
   selectedWaypointStyle: {},
   createUnitHistoryLayers: () => mocks.layers,
