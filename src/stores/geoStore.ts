@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import OLMap from "ol/Map";
 import type { Unit } from "@/types/scenarioModels";
 import type { MeasurementTypes, MeasurementUnit } from "@/geo/measurementTypes";
 import type { NUnit } from "@/types/internalModels";
@@ -8,7 +7,7 @@ import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/he
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import { useMapViewStore } from "@/stores/mapViewStore";
 
-import { shallowRef, ref, computed } from "vue";
+import { shallowRef, ref } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 
 export interface ZoomOptions {
@@ -21,12 +20,6 @@ export const useGeoStore = defineStore("geo", () => {
   const mapAdapter = shallowRef<MapAdapter | null>(null);
   const mapViewStore = useMapViewStore();
   let stopZoomTracking: (() => void) | null = null;
-
-  /** @deprecated Use mapAdapter instead. Returns the native OL Map for backward compatibility. */
-  const olMap = computed<OLMap | null>(() => {
-    const native = mapAdapter.value?.getNativeMap();
-    return native instanceof OLMap ? native : null;
-  });
 
   function setMapAdapter(adapter: MapAdapter | null) {
     stopZoomTracking?.();
@@ -97,7 +90,6 @@ export const useGeoStore = defineStore("geo", () => {
 
   return {
     mapAdapter,
-    olMap,
     setMapAdapter,
     zoomToUnit,
     zoomToUnits,

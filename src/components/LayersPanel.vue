@@ -2,6 +2,7 @@
 import { computed, inject, markRaw, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/solid";
+import OLMap from "ol/Map";
 import BaseLayer from "ol/layer/Base";
 import LayerGroup from "ol/layer/Group";
 import VectorLayer from "ol/layer/Vector";
@@ -61,6 +62,11 @@ export interface LayerInfo {
 
 const route = useRoute();
 const geoStore = useGeoStore();
+/** The native OpenLayers map, when the OpenLayers engine is active. */
+const olMap = computed(() => {
+  const native = geoStore.mapAdapter?.getNativeMap();
+  return native instanceof OLMap ? native : null;
+});
 const mapSettings = useMapSettingsStore();
 const baseLayersStore = useBaseLayersStore();
 const maplibreLayersStore = useMaplibreLayersStore();
@@ -243,7 +249,7 @@ function syncLayers() {
     return;
   }
 
-  const nativeMap = geoStore.olMap;
+  const nativeMap = olMap.value;
   if (!nativeMap) {
     otherLayers.value = [];
     return;
@@ -267,7 +273,7 @@ watchEffect(() => {
   if (isMaplibreMode.value) {
     activeScenario?.geo.layerItemsLayers.value;
   } else {
-    geoStore.olMap;
+    olMap.value;
   }
   syncLayers();
 });
