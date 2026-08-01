@@ -14,6 +14,11 @@ import { injectStrict } from "@/utils";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
+import { createTacticalDrawSurface } from "@/geo/engines/maplibre/tacticalDrawSurface";
+import {
+  isTacticalDrawProbeEnabled,
+  startTacticalDrawProbe,
+} from "@/geo/engines/maplibre/tacticalDrawProbe";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
@@ -87,6 +92,8 @@ const {
   handleEscape,
 } = useScenarioRouting(() => scenarioMapEngineRef.value?.map);
 let cleanupScenarioBinding: (() => void) | null = null;
+let tacticalDrawSurface: ReturnType<typeof createTacticalDrawSurface> | null = null;
+let cleanupTacticalDrawProbe: (() => void) | null = null;
 provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
@@ -132,18 +139,30 @@ const activeMaplibreBasemap = computed(() =>
 
 function onMapReady(mapInstance: MlMap) {
   cleanupScenarioBinding?.();
+  cleanupTacticalDrawProbe?.();
+  cleanupTacticalDrawProbe = null;
+  tacticalDrawSurface?.destroy();
+  tacticalDrawSurface = null;
   const rawMap = markRaw(mapInstance);
   mlMap.value = rawMap;
   const adapter = markRaw(new MapLibreMapAdapter(rawMap));
   const layers = markRaw(createMapLibreScenarioLayerController(adapter));
+  // Never reactive: the tactical-draw engine caches rendered output on `Graphic`
+  // object identity, which a Vue proxy would silently defeat.
+  const draw = markRaw(createTacticalDrawSurface(rawMap));
+  tacticalDrawSurface = draw;
   scenarioMapEngineRef.value = markRaw({
     map: adapter,
     layers,
+    draw,
     suspendFeatureSelection() {},
     resumeFeatureSelection() {},
   });
   cleanupScenarioBinding = layers.bindScenario(activeScenario);
   geoStore.setMapAdapter(adapter);
+  if (isTacticalDrawProbeEnabled()) {
+    cleanupTacticalDrawProbe = startTacticalDrawProbe(rawMap, draw);
+  }
 }
 
 watch(
@@ -171,8 +190,12 @@ onMounted(async () => {
 });
 
 function disposeMaplibreBinding() {
+  cleanupTacticalDrawProbe?.();
+  cleanupTacticalDrawProbe = null;
   cleanupScenarioBinding?.();
   cleanupScenarioBinding = null;
+  tacticalDrawSurface?.destroy();
+  tacticalDrawSurface = null;
   scenarioMapEngineRef.value = undefined;
   geoStore.setMapAdapter(null);
 }

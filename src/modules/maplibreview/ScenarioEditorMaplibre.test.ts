@@ -23,6 +23,7 @@ const { mapModeState, routingHandlers, closeDetailsPanelMock } = vi.hoisted(() =
 }));
 
 const bindScenario = vi.fn();
+const destroyTacticalDrawSurface = vi.fn();
 const cleanupScenarioBinding = vi.fn();
 const setMapAdapter = vi.fn();
 const initializeMaplibreLayers = vi.fn();
@@ -41,6 +42,16 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
       return 0.75;
     }
   },
+}));
+
+vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", () => ({
+  createTacticalDrawSurface: vi.fn(() => ({
+    adapter: {},
+    tacticalDraw: null,
+    render: vi.fn(),
+    onGraphicPick: vi.fn(() => vi.fn()),
+    destroy: destroyTacticalDrawSurface,
+  })),
 }));
 
 vi.mock("@/geo/engines/maplibre/mapLibreScenarioLayerController", () => ({
@@ -203,6 +214,7 @@ describe("ScenarioEditorMaplibre", () => {
     bindScenario.mockReset();
     bindScenario.mockReturnValue(cleanupScenarioBinding);
     cleanupScenarioBinding.mockReset();
+    destroyTacticalDrawSurface.mockReset();
     setMapAdapter.mockReset();
     initializeMaplibreLayers.mockReset();
     routingHandlers.addRouteLeg.mockReset();
@@ -293,6 +305,7 @@ describe("ScenarioEditorMaplibre", () => {
     wrapper.unmount();
 
     expect(cleanupScenarioBinding).toHaveBeenCalledTimes(1);
+    expect(destroyTacticalDrawSurface).toHaveBeenCalledTimes(1);
     expect(setMapAdapter).toHaveBeenLastCalledWith(null);
   });
 
