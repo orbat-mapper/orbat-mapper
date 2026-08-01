@@ -28,7 +28,7 @@ import {
   type MeasurementInteractionOptions,
   type MeasurementTypes,
   type MeasurementUnit,
-} from "@/composables/geoMeasurement";
+} from "@/geo/measurementTypes";
 import { formatArea, formatLength } from "@/geo/utils";
 import { unwindCoordinates, unwrapPositionRelative } from "@/geo/longitude";
 import { isGlobeProjection, mercatorMidpoint } from "@/geo/mercator";

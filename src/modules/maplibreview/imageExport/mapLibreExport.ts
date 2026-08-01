@@ -19,7 +19,7 @@ import {
   worldFileFromMercatorBounds,
 } from "@/modules/maplibreview/imageExport/worldFile";
 import { encodeGeoTiff } from "@/modules/maplibreview/imageExport/geotiffEncoder";
-import type { MeasurementUnit } from "@/composables/geoMeasurement";
+import type { MeasurementUnit } from "@/geo/measurementTypes";
 
 /**
  * How the rendered raster is delivered to the user.
