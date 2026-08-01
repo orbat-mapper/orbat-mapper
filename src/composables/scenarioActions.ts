@@ -12,6 +12,8 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
 import { featureCollection } from "@turf/helpers";
 import turfCenter from "@turf/center";
+import turfCircle from "@turf/circle";
+import type { Position } from "geojson";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -285,15 +287,19 @@ export function useScenarioFeatureActions(
     geo,
   } = activeScenario;
 
-  function getFeatureGeometry(featureId: FeatureId) {
+  function toGeoJsonFeature(featureId: FeatureId) {
     const item = state.layerItemMap[featureId];
     if (!item || !isNGeometryLayerItem(item)) return null;
-    return item._state?.geometry ?? item.geometry ?? null;
-  }
-
-  function toGeoJsonFeature(featureId: FeatureId) {
-    const geometry = getFeatureGeometry(featureId);
+    const geometry = item._state?.geometry ?? item.geometry;
     if (!geometry) return null;
+    const radius = "radius" in item.geometryMeta ? item.geometryMeta.radius : undefined;
+    if (typeof radius === "number" && geometry.type === "Point") {
+      const circle = turfCircle(geometry.coordinates as Position, radius / 1000, {
+        steps: 48,
+        units: "kilometers",
+      });
+      return { ...circle, id: featureId };
+    }
     return {
       type: "Feature" as const,
       id: featureId,
