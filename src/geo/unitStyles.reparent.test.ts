@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { createUnitStyle, clearUnitStyleCache, unitStyleCache } from "@/geo/unitStyles";
+import { createUnitStyle } from "@/geo/engines/openlayers/unitStyles";
+import { clearUnitStyleCache, unitStyleCache } from "@/geo/unitStyles";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useUnitManipulations } from "@/scenariostore/unitManipulations";
 import { useScenarioTime } from "@/scenariostore/time";

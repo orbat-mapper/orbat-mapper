@@ -20,7 +20,7 @@ import {
   labelStyleCache,
   selectedUnitStyleCache,
   unitStyleCache,
-} from "@/geo/unitStyles";
+} from "@/geo/engines/openlayers/unitStyles";
 import {
   altKeyOnly,
   click as clickCondition,
@@ -47,7 +47,7 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import { LayerTypes } from "@/modules/scenarioeditor/featureLayerUtils.ts";
-import { getTopHitLayerType } from "@/modules/scenarioeditor/featureLayerUtils.ts";
+import { getTopHitLayerType } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import { useRecordingStore } from "@/stores/recordingStore";
 import {
   normalizeRotation,
