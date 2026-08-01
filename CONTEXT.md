@@ -55,6 +55,24 @@ for reorganization. A **diff** accumulates an `onHand` delta on matching entries
 (`onHand = (onHand ?? count) + delta`) — used for attrition and resupply. `diff`
 only ever touches `onHand`.
 
+### Map engines
+
+**Map engine**:
+A concrete map rendering stack (MapLibre; formerly also OpenLayers) plugged in
+behind the vendor-agnostic **MapAdapter** contract. Scenario logic talks to the
+adapter, never to a vendor map object.
+
+**MapAdapter**:
+The permanent seam between scenario logic and the map engine (see
+[[adr-0005]]). It is not migration scaffolding: it stays even with only one
+engine implemented.
+
+**Legacy map view**:
+Specifically the removed OpenLayers-based scenario editor view — a historical
+term kept so old commits and docs stay intelligible.
+_Avoid_: using "legacy" for other retired routes (`/maplibre`, `/globe` are old
+*URLs* that redirect, not the legacy view).
+
 ### Offline use
 
 **Offline level**:
