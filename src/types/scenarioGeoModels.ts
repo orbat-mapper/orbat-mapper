@@ -1,6 +1,9 @@
 import type { Feature as GeoJsonFeature, Geometry } from "geojson";
 import type { FillStyleSpec, SimpleStyleSpec, StrokeStyleSpec } from "@/geo/simplestyle";
 import type { ScenarioTime } from "@/types/base";
+// `scenarioLayerItems` imports back from this module; the reference is type-only in
+// both directions here, so it is erased at build time and creates no runtime cycle.
+import type { ScenarioLayerItemKind } from "@/types/scenarioLayerItems";
 import type {
   CurrentStateType,
   Media,
@@ -141,7 +144,11 @@ export interface ScenarioLayerInstance extends ScenarioLayer {
 
 export interface LayerFeatureItem {
   id: FeatureId;
-  type: "layer" | ScenarioFeatureType;
+  /**
+   * `"layer"` for a layer row, the geometry kind for a geometry item, and the layer
+   * item kind for every other kind — a `tacticalGraphic` is not a `"Point"`.
+   */
+  type: "layer" | ScenarioFeatureType | Exclude<ScenarioLayerItemKind, "geometry">;
   name: string;
   description?: string;
   _pid?: FeatureId;

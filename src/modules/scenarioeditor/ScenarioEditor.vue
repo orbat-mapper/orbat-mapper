@@ -131,7 +131,7 @@ const onLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
 const onImageLayerSelectHook = createEventHook<{ layerId: FeatureId }>();
 const onFeatureSelectHook = createEventHook<{
   featureId: FeatureId;
-  layerId: FeatureId;
+  layerId?: FeatureId;
   options?: { noZoom?: boolean };
 }>();
 const onEventSelectHook = createEventHook<EventSearchResult>();

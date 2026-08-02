@@ -3084,4 +3084,172 @@ describe("MlMapLogic", () => {
       });
     }).not.toThrow();
   });
+
+  describe("control measure selection", () => {
+    function createControlMeasureHarness(
+      ownsPixel: boolean,
+      // A plain shape sitting directly under the control measure, unless the caller
+      // wants something else under there (e.g. a unit).
+      renderedFeatures: unknown[] = [
+        {
+          layer: { id: "scenario-feature-layer-1-line" },
+          properties: { featureId: "feature-1", layerId: "layer-1" },
+        },
+      ],
+    ) {
+      const mockMap = createMockMap();
+      const searchActions = createSearchActions();
+      const featureSelectSpy = vi.spyOn(searchActions.onFeatureSelectHook, "trigger");
+      const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+      const refreshScenarioFeatureLayers = vi.fn();
+      const ownsInteractionAt = vi.fn(() =>
+        ownsPixel ? { layer: "graphics", feature: {}, measureId: "cm-1" } : null,
+      );
+      const activeScenario = {
+        store: {
+          state: {
+            id: "scenario-control-measure-pick",
+            currentTime: 0,
+            featureStateCounter: 0,
+          },
+        },
+        unitActions: { getCombinedSymbolOptions: vi.fn(() => ({})) },
+        geo: {
+          everyVisibleUnit: computed(() => []),
+          getLayerItemById: vi.fn((id: string) => ({
+            layerItem: { id, kind: "tacticalGraphic" },
+            layer: { id: "layer-1" },
+          })),
+        },
+        time: { setCurrentTime: vi.fn() },
+      } as any;
+
+      mount(MlMapLogic, {
+        props: { mlMap: mockMap.map, activeScenario },
+        global: {
+          plugins: [createPinia()],
+          provide: {
+            [activeScenarioMapEngineKey as symbol]: shallowRef({
+              map: {},
+              layers: { refreshScenarioFeatureLayers },
+              draw: { ownsInteractionAt },
+            } as any),
+            [searchActionsKey as symbol]: searchActions,
+          },
+        },
+      });
+
+      mockMap.map.queryRenderedFeatures.mockReturnValue(renderedFeatures);
+
+      return { mockMap, featureSelectSpy, unitSelectSpy, ownsInteractionAt };
+    }
+
+    it("selects the control measure instead of the plain shape under it", () => {
+      const h = createControlMeasureHarness(true);
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
+        originalEvent: { shiftKey: false },
+      });
+      expect(h.featureSelectSpy).toHaveBeenCalledWith({
+        featureId: "cm-1",
+        layerId: "layer-1",
+        options: { noZoom: true },
+      });
+      // Topmost wins: the plain shape underneath is unreachable until stage two
+      // unifies the renderers (ADR-0006). This is the accepted, documented cost.
+      expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
+        expect.objectContaining({ featureId: "feature-1" }),
+      );
+    });
+
+    it("keeps a unit under a control measure selectable", () => {
+      // ADR-0006 scopes the short-circuit to the plain-feature query. Units outrank
+      // everything drawn over them (see `collectInteractiveFeatures`), so an area
+      // graphic covering a formation must not swallow clicks on its units.
+      const h = createControlMeasureHarness(true, [
+        { layer: { id: "unitLayer" }, properties: { id: "unit-1" } },
+        {
+          layer: { id: "scenario-feature-layer-1-line" },
+          properties: { featureId: "feature-1", layerId: "layer-1" },
+        },
+      ]);
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.unitSelectSpy).toHaveBeenCalledWith({
+        unitId: "unit-1",
+        options: { noZoom: true, revealInOrbat: false },
+      });
+      expect(h.featureSelectSpy).not.toHaveBeenCalled();
+    });
+
+    it("keeps a unit under a control measure shift-selectable", () => {
+      const h = createControlMeasureHarness(true, [
+        { layer: { id: "unitLayer" }, properties: { id: "unit-1" } },
+      ]);
+      const { selectedUnitIds, selectedFeatureIds } = useSelectedItems();
+      selectedUnitIds.value.clear();
+      selectedFeatureIds.value.clear();
+
+      h.mockMap.canvasContainer.dispatchEvent(
+        new MouseEvent("mousedown", {
+          bubbles: true,
+          shiftKey: true,
+          button: 0,
+          clientX: 1,
+          clientY: 2,
+        }),
+      );
+
+      expect(selectedUnitIds.value.has("unit-1")).toBe(true);
+      expect(selectedFeatureIds.value.has("cm-1")).toBe(false);
+    });
+
+    it("falls through to the plain query when tactical-draw owns nothing", () => {
+      const h = createControlMeasureHarness(false);
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.featureSelectSpy).toHaveBeenCalledWith({
+        featureId: "feature-1",
+        layerId: "layer-1",
+        options: { noZoom: true },
+      });
+    });
+
+    it("short-circuits the native shift+click path too", () => {
+      const h = createControlMeasureHarness(true);
+      const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+      selectedFeatureIds.value.clear();
+      // Additive feature selection is refused while units are selected, and the
+      // selection stores are module-global across tests.
+      selectedUnitIds.value.clear();
+
+      // Shift+mousedown, not the synthetic click: MapLibre's box-zoom handler eats
+      // the click, so additive selection runs off the native event.
+      h.mockMap.canvasContainer.dispatchEvent(
+        new MouseEvent("mousedown", {
+          bubbles: true,
+          shiftKey: true,
+          button: 0,
+          clientX: 1,
+          clientY: 2,
+        }),
+      );
+
+      expect(selectedFeatureIds.value.has("cm-1")).toBe(true);
+      expect(selectedFeatureIds.value.has("feature-1")).toBe(false);
+    });
+  });
 });

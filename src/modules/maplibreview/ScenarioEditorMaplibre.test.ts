@@ -50,6 +50,8 @@ vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", () => ({
     tacticalDraw: null,
     render: vi.fn(),
     onGraphicPick: vi.fn(() => vi.fn()),
+    ownsInteractionAt: vi.fn(() => null),
+    setHighlightedGraphics: vi.fn(),
     destroy: destroyTacticalDrawSurface,
   })),
 }));
@@ -194,15 +196,21 @@ describe("ScenarioEditorMaplibre", () => {
         state: {
           id: "scenario-1",
           mapSettings: {},
+          featureStateCounter: 0,
           layerStack: ["layer-1"],
           layerStackMap: {
             "layer-1": { id: "layer-1", kind: "overlay", name: "Features", items: [] },
           },
         },
         groupUpdate: (fn: () => void) => fn(),
+        // The control-measure render feed subscribes to undo/redo and to layer
+        // events; both hand back a vueuse-style `{ off }`.
+        onUndoRedo: vi.fn(() => ({ off: vi.fn() })),
       },
       geo: {
         addFeature: vi.fn((feature) => feature.id),
+        layerItemsLayers: computed(() => []),
+        onFeatureLayerEvent: vi.fn(() => ({ off: vi.fn() })),
       },
     };
   }

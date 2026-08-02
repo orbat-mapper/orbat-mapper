@@ -289,9 +289,16 @@ function createScenario() {
         onFeatureLayerEvent: featureLayerHook.on,
         getGeometryLayerItemById: vi.fn((featureId: string) => ({
           layerItem: layerItemsLayers.value[0].items.find(
-            (item: any) => item.id === featureId,
+            (item: any) => item.id === featureId && item.kind === "geometry",
           ),
         })),
+        getLayerItemById: vi.fn((featureId: string) => {
+          for (const layer of layerItemsLayers.value) {
+            const layerItem = layer.items.find((item: any) => item.id === featureId);
+            if (layerItem) return { layerItem, layer };
+          }
+          return { layerItem: undefined, layer: undefined };
+        }),
         getFullLayerItemsLayer: vi.fn((layerId: string) =>
           layerItemsLayers.value.find((layer: any) => layer.id === layerId),
         ),
@@ -339,6 +346,46 @@ describe("createMapLibreScenarioLayerController", () => {
 
     expect(mockMap.map.addSource).toHaveBeenCalled();
     expect(mockMap.map.addLayer).toHaveBeenCalled();
+  });
+
+  it("frames a control measure from its control points", () => {
+    const mockMap = createMockMap();
+    const { scenario, layerItemsLayers } = createScenario();
+    layerItemsLayers.value[0].items.push({
+      id: "cm-1",
+      kind: "tacticalGraphic",
+      _pid: "layer-1",
+      graphicKind: "phase-line",
+      controlPoints: [
+        [30, 40],
+        [35, 45],
+      ],
+    } as any);
+    const fitGeometry = vi.fn();
+    const animateView = vi.fn();
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry,
+      fitExtent: vi.fn(),
+      animateView,
+    } as any);
+    controller.bindScenario(scenario);
+
+    // A control measure renders through tactical-draw, so there is no plain feature
+    // to frame; before this it silently no-opped.
+    controller.zoomToFeature("cm-1");
+
+    expect(fitGeometry).toHaveBeenCalledTimes(1);
+    expect(fitGeometry.mock.calls[0][0].features[0].geometry).toEqual({
+      type: "MultiPoint",
+      coordinates: [
+        [30, 40],
+        [35, 45],
+      ],
+    });
+
+    controller.panToFeature("cm-1");
+    expect(animateView).toHaveBeenCalledTimes(1);
   });
 
   it("refreshes existing GeoJSON sources instead of staying a no-op", () => {

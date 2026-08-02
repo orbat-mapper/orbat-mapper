@@ -33,6 +33,9 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
+import ControlMeasureLayer from "@/modules/scenarioeditor/ControlMeasureLayer.vue";
+import { getControlMeasureLayerGroups } from "@/modules/scenarioeditor/controlMeasureLayers";
+import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   isScenarioFeatureDragItem,
@@ -153,6 +156,53 @@ const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ]);
 
+/**
+ * The control-measures section(s), outside the layer tree and created lazily: nothing
+ * appears until a scenario actually holds a `tacticalGraphic` item.
+ *
+ * `layersItems` is optional-chained because older injected `geo` mocks in tests only
+ * expose `layerItemsLayers`.
+ */
+const controlMeasureGroups = computed(() =>
+  getControlMeasureLayerGroups(geo.layersItems?.value ?? []),
+);
+
+/**
+ * Layers the tree must not also render, or a dedicated control-measures layer would
+ * get two headers and two visibility toggles.
+ *
+ * Only layers whose items are *all* control measures drop out. A layer that mixes
+ * kinds keeps its tree row for the geometry it holds and additionally appears as a
+ * section for its control measures — a duplicate header in that pathological case,
+ * which is still better than leaving items unlisted in either place.
+ */
+const controlMeasureOnlyLayerIds = computed(
+  () =>
+    new Set(
+      controlMeasureGroups.value
+        .filter(({ layer, items }) => layer.items.length === items.length)
+        .map(({ layer }) => layer.id),
+    ),
+);
+
+/**
+ * Deliberately shorter than the tree's layer menu. The control-measures layer is not
+ * part of the stack ordering the map honours, so Move up/down and Zoom to would
+ * promise behaviour that does not exist; Copy as GeoJSON is geometry-only.
+ */
+const controlMeasureLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
+  { label: "Edit", action: ScenarioLayerActions.Edit },
+  { label: "Delete", action: ScenarioLayerActions.Delete },
+];
+
+const controlMeasureItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(
+  () => [
+    { label: "Zoom to", action: "zoom", disabled: !canZoomFeatures.value },
+    { label: "Pan to", action: "pan", disabled: !canPanFeatures.value },
+    { label: "Delete", action: "delete" },
+  ],
+);
+
 const availableFeatureMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
   featureMenuItems.map((item) => ({
     ...item,
@@ -187,9 +237,12 @@ function calculateSelectedFeatureIds(newFeatureId: FeatureId): FeatureId[] {
   );
 }
 
+// Widened past NGeometryLayerItem: the control-measures section reuses this, and the
+// only thing selection has ever needed is the id. Range-select works across kinds
+// already — calculateSelectedFeatureIds walks layer.items without narrowing.
 function onFeatureClick(
-  feature: NGeometryLayerItem,
-  layer: NScenarioLayer,
+  feature: { id: FeatureId },
+  layer: { id: FeatureId },
   event?: MouseEvent,
 ) {
   const ids = selectedFeatureIds.value;
@@ -216,6 +269,36 @@ function onFeatureDoubleClick(
   event?: MouseEvent,
 ) {
   engineRef.value?.layers.zoomToFeature(feature.id);
+}
+
+/**
+ * Control measures are not geometry, so they cannot go through `onFeatureAction`:
+ * every branch there resolves the item with `getGeometryLayerItemById`, which returns
+ * nothing for a `tacticalGraphic`. Reorder and duplicate are absent for the same
+ * reason — `moveFeature`/`duplicateFeature` are still geometry-only.
+ */
+function onControlMeasureAction(itemId: FeatureId, action: ScenarioFeatureActions) {
+  if (action === "zoom") engineRef.value?.layers.zoomToFeature(itemId);
+  if (action === "pan") engineRef.value?.layers.panToFeature(itemId);
+  if (action === "delete") {
+    geo.deleteFeature(itemId);
+    selectedFeatureIds.value.delete(itemId);
+  }
+}
+
+function onControlMeasureLayerAction(
+  layer: { id: FeatureId; _isOpen?: boolean },
+  action: ScenarioLayerAction,
+) {
+  if (action === ScenarioLayerActions.Edit) {
+    editedLayerId.value = layer.id;
+    layer._isOpen = true;
+  }
+  if (action === ScenarioLayerActions.Delete) geo.deleteLayer(layer.id);
+}
+
+function onControlMeasureDoubleClick(item: NTacticalGraphicLayerItem) {
+  engineRef.value?.layers.zoomToFeature(item.id);
 }
 
 function onImageLayerClick(layer: ScenarioMapLayer, event?: MouseEvent) {
@@ -498,7 +581,7 @@ onUnmounted(() => {
     <div>
       <template v-for="layer in stackLayers" :key="layer.id">
         <ScenarioFeatureLayer
-          v-if="isOverlayStackEntry(layer)"
+          v-if="isOverlayStackEntry(layer) && !controlMeasureOnlyLayerIds.has(layer.id)"
           :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
           :layer="layer as unknown as NScenarioLayer"
           :layer-menu-items="layerMenuItems"
@@ -523,6 +606,28 @@ onUnmounted(() => {
           @action="onMapLayerAction(getReferenceLayerSource(layer), $event)"
         />
       </template>
+    </div>
+
+    <!--
+      One top-level control-measures section, outside the layer tree. It renders only
+      once a control measure exists, and it is a real layer, so its header owns
+      visibility and lock. It sits below the tree because the tactical-draw stack draws
+      above every plain shape regardless of layer order (ADR-0006).
+    -->
+    <div v-if="controlMeasureGroups.length">
+      <ControlMeasureLayer
+        v-for="group in controlMeasureGroups"
+        :key="group.layer.id"
+        :layer="group.layer"
+        :items="group.items"
+        :layer-menu-items="controlMeasureLayerMenuItems"
+        :item-menu-items="controlMeasureItemMenuItems"
+        v-model:editedLayerId="editedLayerId"
+        @item-click="onFeatureClick"
+        @item-double-click="onControlMeasureDoubleClick"
+        @item-action="onControlMeasureAction"
+        @layer-action="onControlMeasureLayerAction"
+      />
     </div>
 
     <footer class="my-8 text-right">

@@ -202,9 +202,7 @@ export interface Side extends SideData {
 }
 
 export type UIActionType =
-  | "CHANGE_MAP_LAYER"
-  | "FLY_TO_LOCATION"
-  | "FLY_TO_UNIT_LOCATION";
+  "CHANGE_MAP_LAYER" | "FLY_TO_LOCATION" | "FLY_TO_UNIT_LOCATION";
 
 /**
  * A UI/map-action
@@ -268,6 +266,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525d" | "2525e" | "app6d";
 export type ScenarioVersion =
+  | "3.4.0"
   | "3.3.0"
   | "3.2.0"
   | "3.1.0"

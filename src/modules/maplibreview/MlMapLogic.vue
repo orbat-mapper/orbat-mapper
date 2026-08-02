@@ -10,6 +10,7 @@ import {
   type PointLike,
 } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
 import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
@@ -710,7 +711,53 @@ function getEventPixel(e: MouseEvent): [number, number] {
   return [e.clientX - rect.left, e.clientY - rect.top];
 }
 
-type ShiftClickTarget = { kind: "unit"; id: string } | { kind: "feature"; id: string };
+/**
+ * A pixel tactical-draw owns, and the control measure it resolves to (if any).
+ *
+ * `undefined` means tactical-draw does not own the pixel and the plain-feature
+ * selection branches should proceed. A returned object means it does own it and no
+ * plain *feature* may be selected from that click, even when no control measure
+ * resolves: control measures render in their own stack above every plain shape, so
+ * topmost wins on selection. The accepted consequence (ADR-0006) is that **a plain
+ * shape** lying under a control-measure fill is unclickable until stage two unifies
+ * the renderers. This is deliberate; it is not fixed by merging the two hit tests.
+ *
+ * **Units are not part of that trade.** ADR-0006 scopes the short-circuit to "the
+ * plain-feature query", and this map has a standing rule (see
+ * `collectInteractiveFeatures`) that units outrank everything drawn over them. An
+ * area graphic covering a formation must not swallow every click on the units inside
+ * it, so callers resolve a unit hit *first* and only consult this when there is none.
+ */
+interface ControlMeasurePick {
+  featureId?: FeatureId;
+  layerId?: FeatureId;
+}
+
+/**
+ * Ask the tactical-draw surface whether it owns a pixel.
+ *
+ * Uses the library's synchronous `ownsInteractionAt` rather than its `onGraphicPick`
+ * notification, because a short-circuit has to be answerable *inside* our own click
+ * handler and must not depend on listener ordering between the two pipelines.
+ * Returns `undefined` on OpenLayers, where `engine.draw` is undefined.
+ */
+function pickControlMeasureAt(
+  pixel: [number, number],
+  originalEvent?: unknown,
+): ControlMeasurePick | undefined {
+  const hit = engineRef.value?.draw?.ownsInteractionAt(pixel, { originalEvent });
+  if (!hit) return undefined;
+  if (hit.measureId === undefined) return {};
+  const { layerItem, layer } = activeScenario.geo.getLayerItemById(hit.measureId);
+  if (!layerItem) return {};
+  return { featureId: layerItem.id, layerId: layer?.id };
+}
+
+type ShiftClickTarget =
+  | { kind: "unit"; id: string }
+  // `FeatureId`, not `string`: a control measure carries the layer item's own id
+  // straight from the store, and the flat `selectedFeatureIds` set matches on identity.
+  | { kind: "feature"; id: FeatureId };
 
 // MapLibre's built-in box-zoom handler intercepts shift+mousedown, which prevents
 // the synthetic `click` event additive selection would otherwise rely on. So both
@@ -722,14 +769,28 @@ function getShiftClickTarget(e: MouseEvent): ShiftClickTarget | undefined {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
 
-  const topHit = queryInteractiveFeatures(getEventPixel(e), getHitTolerance(e))[0];
-  if (!topHit) return;
+  const pixel = getEventPixel(e);
+  const topHit = queryInteractiveFeatures(pixel, getHitTolerance(e))[0];
 
-  if (isUnitLayerId(topHit.layer.id)) {
+  // Units first, exactly as onMapClick does: `collectInteractiveFeatures` promotes
+  // any unit hit to the front, so a unit top hit means a unit is under the pointer.
+  if (topHit && isUnitLayerId(topHit.layer.id)) {
     if (!unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     return unitId ? { kind: "unit", id: unitId } : undefined;
   }
+
+  // Then control measures, ahead of the plain-feature branch — otherwise
+  // shift-clicking a control measure would toggle whatever plain shape lies under it.
+  const controlMeasure = pickControlMeasureAt(pixel, e);
+  if (controlMeasure) {
+    if (!featureSelectEnabled.value) return;
+    return controlMeasure.featureId !== undefined
+      ? { kind: "feature", id: controlMeasure.featureId }
+      : undefined;
+  }
+
+  if (!topHit) return;
 
   if (isManagedScenarioFeatureLayerId(topHit.layer.id)) {
     if (!featureSelectEnabled.value) return;
@@ -798,14 +859,17 @@ function onMapClick(e: MapMouseEvent) {
   if (routingStore.active) return;
   if (moveUnitEnabled.value) return;
   if (handleHistoryMapClick(e)) return;
-  const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
   const additive = e.originalEvent.shiftKey;
+
+  const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
   const selectionEnabled = unitSelectEnabled.value || featureSelectEnabled.value;
-  if (!topHit) {
-    if (!additive && selectionEnabled) clearSelectedItems();
-    return;
-  }
-  if (isUnitLayerId(topHit.layer.id)) {
+
+  // Units outrank everything drawn over them, including the tactical-draw stack:
+  // `collectInteractiveFeatures` promotes any unit hit to the front, so a unit top
+  // hit means a unit is under the pointer. ADR-0006 scopes the control-measure
+  // short-circuit to the *plain-feature* query; an area graphic covering a formation
+  // must not make its units unselectable.
+  if (topHit && isUnitLayerId(topHit.layer.id)) {
     if (!unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     if (!unitId) return;
@@ -814,6 +878,29 @@ function onMapClick(e: MapMouseEvent) {
       unitId,
       options: { noZoom: true, revealInOrbat: false },
     });
+    return;
+  }
+
+  // Then control measures, ahead of every plain-feature branch: they render in a
+  // separate tactical-draw stack above the plain scenario feature source, so a hit
+  // test that consulted both would have no honest way to order them.
+  const controlMeasure = pickControlMeasureAt([e.point.x, e.point.y], e.originalEvent);
+  if (controlMeasure) {
+    if (!featureSelectEnabled.value) return;
+    // Additive selection is owned by the native mousedown path (box-zoom eats the
+    // synthetic click), exactly as for plain features.
+    if (additive) return;
+    if (controlMeasure.featureId === undefined) return;
+    onFeatureSelectHook.trigger({
+      featureId: controlMeasure.featureId,
+      layerId: controlMeasure.layerId,
+      options: { noZoom: true },
+    });
+    return;
+  }
+
+  if (!topHit) {
+    if (!additive && selectionEnabled) clearSelectedItems();
     return;
   }
   if (isMapLibreKmlRenderedLayerId(topHit.layer.id)) {

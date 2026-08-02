@@ -12,6 +12,7 @@ import type {
   MeasurementInteractionOptions,
   MeasurementTypes,
 } from "@/geo/measurementTypes";
+import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 
 export const activeParentKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
@@ -45,7 +46,9 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onImageLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{
     featureId: FeatureId;
-    layerId: FeatureId;
+    // Optional: the handler resolves the owning layer from the item itself when it is
+    // not supplied, which is what a tactical-draw pick can offer.
+    layerId?: FeatureId;
     options?: { noZoom?: boolean };
   }>;
   onEventSelectHook: EventHook<EventSearchResult>;
@@ -87,3 +90,12 @@ export const measurementInteractionFactoryKey = Symbol(
 export const routeDetailsPanelKey = Symbol(
   "Route details panel",
 ) as InjectionKey<RouteDetailsPanelContext>;
+
+/**
+ * The control-measure render feed. Provided by the MapLibre scenario view, which owns
+ * the tactical-draw surface. M2's session owner registers its settle handler here and
+ * re-renders through it after folding a commit; on OpenLayers it is simply absent.
+ */
+export const tacticalGraphicRenderFeedKey = Symbol(
+  "Tactical graphic render feed",
+) as InjectionKey<TacticalGraphicRenderFeed>;
