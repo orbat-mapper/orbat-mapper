@@ -19,14 +19,16 @@ import type {
 } from "@/types/internalModels";
 import type {
   CurrentGeometryLayerItemState,
+  CurrentScenarioLayerItemState,
   FullScenarioLayerItemsLayer,
   GeometryLayerItem,
   ScenarioLayerItem,
+  ScenarioLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import {
-  createInitialGeometryLayerItemState,
+  computeScenarioLayerItemHidden,
   isNGeometryLayerItem,
-  projectGeometryLayerItemState,
+  projectScenarioLayerItemStateAt,
 } from "@/types/scenarioLayerItems";
 import type {
   NScenarioOverlayLayer,
@@ -61,7 +63,11 @@ export type ScenarioFeatureLayerEvent =
   | { type: "removeLayer" | "moveLayer"; id: FeatureId }
   | { type: "updateLayer"; id: FeatureId; data: ScenarioLayerUpdate }
   | { type: "deleteFeature"; id: FeatureId }
-  | { type: "updateFeature"; id: FeatureId; data: GeometryLayerItemUpdate }
+  | {
+      type: "updateFeature";
+      id: FeatureId;
+      data: GeometryLayerItemUpdate | ScenarioLayerItemUpdate;
+    }
   | { type: "addFeature"; id: FeatureId; data: NGeometryLayerItem }
   | { type: "moveFeature"; id: FeatureId; fromLayer?: FeatureId; toLayer?: FeatureId };
 
@@ -131,11 +137,25 @@ function getReferenceLayerFromMap(
   return isScenarioReferenceLayer(layer) ? (layer as NScenarioReferenceLayer) : undefined;
 }
 
-function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: number) {
-  const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-  const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
-  feature._hidden = timeHidden || !!feature.isHidden;
+/**
+ * Kind-agnostic base pass. `_hidden` lives on `ScenarioLayerItemBase`, so this
+ * applies to every layer-item kind, not just geometry.
+ */
+function updateLayerItemHidden(item: NScenarioLayerItem, currentTime: number) {
+  item._hidden = computeScenarioLayerItemHidden(item, currentTime);
+}
+
+/**
+ * Each kind narrows `_state` to its own current-state interface, so writing the
+ * shared base-pass result needs one deliberate widening here rather than a cast at
+ * every call site. The fold itself is kind-correct: it only ever merges patches
+ * that came off this item's own `state[]`.
+ */
+function setProjectedLayerItemState(
+  item: NScenarioLayerItem,
+  projected: CurrentScenarioLayerItemState,
+) {
+  (item as { _state?: CurrentScenarioLayerItemState | null })._state = projected;
 }
 
 function mergeGeometryUserData(
@@ -686,7 +706,7 @@ export function useGeo(store: NewScenarioStore) {
           if (_hidden !== undefined) feature._hidden = _hidden;
           if (_state !== undefined) feature._state = _state;
 
-          updateGeometryItemHidden(feature, s.currentTime);
+          updateLayerItemHidden(feature, s.currentTime);
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
@@ -707,7 +727,7 @@ export function useGeo(store: NewScenarioStore) {
       }
       const { geometry, geometryMeta, style, userData, ...topLevelData } = data;
       Object.assign(layerItem, topLevelData);
-      updateGeometryItemHidden(layerItem, state.currentTime);
+      updateLayerItemHidden(layerItem, state.currentTime);
     }
     if (data.state) {
       updateFeatureState(featureId);
@@ -717,6 +737,49 @@ export function useGeo(store: NewScenarioStore) {
     if (isGeometry) {
       featureLayerEvent.trigger({ type: "moveFeature", id: featureId }).then();
     }
+  }
+
+  /**
+   * Kind-agnostic counterpart to `updateFeature` for the shared base fields.
+   *
+   * `updateFeature` narrows to geometry before it reaches `style`/`geometry`/
+   * `geometryMeta`, so it silently no-ops on a `tacticalGraphic`. The layers panel's
+   * visibility and lock toggles are shared chrome over every kind, so they go through
+   * here instead. Geometry callers keep using `updateFeature` — this is deliberately
+   * the smaller door, not a replacement.
+   */
+  function updateLayerItem(
+    itemId: FeatureId,
+    data: ScenarioLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+
+    // No return value: the immer producer treats a returned value as a replacement
+    // for the whole draft.
+    const apply = (item: NScenarioLayerItem | undefined, currentTime: number) => {
+      if (!item) return;
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined) return;
+        (item as unknown as Record<string, unknown>)[key] = value;
+      });
+      updateLayerItemHidden(item, currentTime);
+    };
+
+    if (undoable) {
+      update(
+        (s) => {
+          apply(s.layerItemMap[itemId], s.currentTime);
+        },
+        { label: "updateFeature", value: itemId },
+      );
+    } else {
+      if (!state.layerItemMap[itemId]) return;
+      apply(state.layerItemMap[itemId], state.currentTime);
+    }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
   }
 
   function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
@@ -729,27 +792,25 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(featureId);
   }
 
-  function updateFeatureState(featureId: FeatureId, undoable = false) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+  /**
+   * Kind-agnostic base pass: fold `state[]` onto `_state` at the current time.
+   *
+   * Geometry layers its own seed on top (`createInitialScenarioLayerItemState`), so
+   * the geometry projection is byte-identical to what this used to compute; every
+   * other kind now projects at all, which it never did before.
+   */
+  function updateFeatureState(featureId: FeatureId) {
+    const feature = state.layerItemMap[featureId];
     if (!feature) return;
-    const timestamp = state.currentTime;
     if (!feature.state || !feature.state.length) {
       store.state.featureStateCounter++;
       feature._state = undefined;
       return;
     }
-    let currentState = createInitialGeometryLayerItemState(feature);
-    for (const s of feature.state) {
-      if (s.t <= timestamp) {
-        currentState = {
-          ...currentState,
-          ...projectGeometryLayerItemState(s),
-        };
-      } else {
-        break;
-      }
-    }
-    feature._state = currentState;
+    setProjectedLayerItemState(
+      feature,
+      projectScenarioLayerItemStateAt(feature, state.currentTime),
+    );
     store.state.featureStateCounter++;
   }
 
@@ -776,9 +837,12 @@ export function useGeo(store: NewScenarioStore) {
       items.push({ id: layer.id, type: "layer", name: layer.name });
       const mappedFeatures: LayerFeatureItem[] = layer.items.map((layerItem) => {
         if (!isNGeometryLayerItem(layerItem)) {
+          // Non-geometry kinds have no `geometryKind`, so the item kind itself is the
+          // discriminator search results and icons key off. It used to be a flat
+          // `"Point"` placeholder, which made every control measure look like a marker.
           return {
             id: layerItem.id,
-            type: "Point",
+            type: layerItem.kind,
             name: layerItem.name || "",
             description: layerItem.description,
             _pid: layer.id,
@@ -821,6 +885,7 @@ export function useGeo(store: NewScenarioStore) {
     duplicateFeature,
     deleteFeature,
     updateFeature,
+    updateLayerItem,
     deleteFeatureStateEntry,
     itemsInfo,
     layerItemsLayers,

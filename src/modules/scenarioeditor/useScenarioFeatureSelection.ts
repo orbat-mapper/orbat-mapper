@@ -27,8 +27,10 @@ export function useScenarioFeatureSelection() {
 
     const resolvedLayerId =
       layerId ??
+      // Kind-agnostic: a control measure is a layer item like any other and must
+      // reveal its owning layer in the panel the same way a geometry item does.
       (resolvedPrimaryFeatureId
-        ? activeScenario.geo.getGeometryLayerItemById(resolvedPrimaryFeatureId).layer?.id
+        ? activeScenario.geo.getLayerItemById(resolvedPrimaryFeatureId).layer?.id
         : undefined);
     const layer =
       resolvedLayerId !== undefined

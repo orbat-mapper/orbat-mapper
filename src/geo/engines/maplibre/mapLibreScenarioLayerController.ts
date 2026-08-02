@@ -36,8 +36,11 @@ import type {
 } from "@/types/scenarioGeoModels";
 import {
   isNGeometryLayerItem,
+  isNTacticalGraphicLayerItem,
   type NGeometryLayerItem,
+  type NScenarioLayerItem,
 } from "@/types/scenarioLayerItems";
+import { controlMeasureExtentFeature } from "@/geo/controlMeasures";
 import { fixExtent } from "@/utils/geoConvert";
 import { createMapLibreKmlLayerRenderer } from "@/geo/kml/maplibre";
 import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
@@ -126,10 +129,21 @@ function getMapLayerCenter(mapLayer: ScenarioMapLayer): Position | undefined {
   return [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
 }
 
-function isGeometryLayerItem(
-  item: NGeometryLayerItem | undefined,
-): item is NGeometryLayerItem {
-  return Boolean(item);
+/**
+ * A GeoJSON stand-in for whatever a layer item occupies on the map, for framing and
+ * centring. Geometry items hand over their current geometry; control measures render
+ * through tactical-draw and have no plain feature at all, so their extent comes from
+ * their control points instead (see `controlMeasureExtentFeature`).
+ */
+function toZoomTargetFeature(
+  layerItem: NScenarioLayerItem | undefined,
+): GeoJsonFeature | undefined {
+  if (!layerItem) return undefined;
+  if (isNGeometryLayerItem(layerItem)) return toCurrentFeature(layerItem);
+  if (isNTacticalGraphicLayerItem(layerItem)) {
+    return controlMeasureExtentFeature(layerItem);
+  }
+  return undefined;
 }
 
 function isImageLayer(layer: ScenarioMapLayer | undefined): layer is ScenarioImageLayer {
@@ -277,14 +291,13 @@ export function createMapLibreScenarioLayerController(
   }
 
   function getFeature(featureId: FeatureId) {
-    return activeScenario?.geo.getGeometryLayerItemById(featureId).layerItem;
+    return activeScenario?.geo.getLayerItemById(featureId).layerItem;
   }
 
   function getFeatureCollection(featureIds: FeatureId[]) {
     const features = featureIds
       .map((featureId) => getFeature(featureId))
-      .filter(isGeometryLayerItem)
-      .map(toCurrentFeature)
+      .map(toZoomTargetFeature)
       .filter((feature): feature is GeoJsonFeature => Boolean(feature));
     if (!features.length) return;
     return featureCollection(features);

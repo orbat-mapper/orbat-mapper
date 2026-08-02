@@ -1,6 +1,13 @@
 import type { GeoJsonProperties, Geometry } from "geojson";
+import type {
+  AmplifierPlacements,
+  ControlMeasureKind,
+  ControlMeasureStyle,
+  TextAmplifiers as ControlMeasureTextAmplifiers,
+} from "@orbat-mapper/control-measures";
 import type { SimpleStyleSpec } from "@/geo/simplestyle";
 import type { ScenarioTime } from "@/types/base";
+import type { SidValue } from "@/symbology/values";
 import type {
   CurrentStateType,
   Media,
@@ -27,10 +34,7 @@ import type {
 
 export type LayerItemId = string;
 export type ScenarioLayerItemKind =
-  | "geometry"
-  | "annotation"
-  | "tacticalGraphic"
-  | "measurement";
+  "geometry" | "annotation" | "tacticalGraphic" | "measurement";
 
 export type ShapeGeometry =
   | { type: "Point"; coordinates: Position }
@@ -59,6 +63,18 @@ export interface ScenarioLayerItemStyle extends Partial<SimpleStyleSpec> {
   };
 }
 
+/**
+ * The kind-agnostic shape of a projected `_state`.
+ *
+ * Every layer-item kind folds its `state[]` patches onto this. Kinds that carry a
+ * meaningful patch narrow `_state` to their own current-state interface (see
+ * `CurrentGeometryLayerItemState`, `CurrentTacticalGraphicLayerItemState`).
+ */
+export interface CurrentScenarioLayerItemState extends Partial<ScenarioEventDescription> {
+  t: ScenarioTime;
+  type?: CurrentStateType;
+}
+
 export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   id: LayerItemId;
   kind: ScenarioLayerItemKind;
@@ -69,6 +85,16 @@ export interface ScenarioLayerItemBase extends Partial<VisibilityInfo> {
   isHidden?: boolean;
   media?: Media[];
   userData?: Record<string, unknown>;
+  /**
+   * Derived, never serialized. Computed by the kind-agnostic base pass from
+   * `visibleFromT`/`visibleUntilT`/`isHidden` against the current scenario time.
+   */
+  _hidden?: boolean;
+  /**
+   * Derived, never serialized. The `state[]` projection at the current scenario time,
+   * or `undefined` when the item has no timed state.
+   */
+  _state?: CurrentScenarioLayerItemState | null;
 }
 
 // Canonical, strict geometry metadata. Each geometryKind carries only the
@@ -110,9 +136,7 @@ export type LoadableGeometryLayerItemState =
     });
 
 export interface CurrentGeometryLayerItemState
-  extends Omit<GeometryLayerItemState, "id" | "patch">, GeometryLayerItemStatePatch {
-  type?: CurrentStateType;
-}
+  extends CurrentScenarioLayerItemState, GeometryLayerItemStatePatch {}
 
 export interface GeometryLayerItem extends ScenarioLayerItemBase {
   kind: "geometry";
@@ -121,7 +145,6 @@ export interface GeometryLayerItem extends ScenarioLayerItemBase {
   style: Partial<SimpleStyleSpec>;
   state?: GeometryLayerItemState[];
   _zIndex?: number;
-  _hidden?: boolean;
   _state?: CurrentGeometryLayerItemState | null;
 }
 
@@ -165,32 +188,81 @@ export interface AnnotationLayerItem extends ScenarioLayerItemBase {
   state?: AnnotationLayerItemState[];
 }
 
+/**
+ * Per-kind option typing deliberately does NOT live here.
+ *
+ * `@orbat-mapper/control-measures` types options as a discriminated map over 78
+ * kinds (`OptionsByKind`). Reproducing that in the *stored* model would force every
+ * scenario-store write to narrow on `graphicKind`, and would reject any kind a newer
+ * library adds. Options are therefore stored opaquely and typed at the
+ * `toControlMeasure` seam, which is the only place that knows the kind statically.
+ */
+export type TacticalGraphicOptions = Record<string, unknown>;
+
+/** Host-owned. The library models identity colouring nowhere. */
+export type TacticalGraphicColorMode = "identity" | "monochrome";
+
+/** Host-owned. The library models status nowhere. */
+export type TacticalGraphicStatus = "present" | "planned";
+
+export interface TacticalGraphicLayerItemStatePatch {
+  graphicKind?: ControlMeasureKind;
+  controlPoints?: Position[];
+  options?: TacticalGraphicOptions;
+  textAmplifiers?: ControlMeasureTextAmplifiers;
+  amplifierPlacements?: AmplifierPlacements;
+  style?: ControlMeasureStyle;
+  standardIdentity?: SidValue;
+  colorMode?: TacticalGraphicColorMode;
+  status?: TacticalGraphicStatus;
+  name?: string;
+  description?: string;
+  isHidden?: boolean;
+}
+
 export interface TacticalGraphicLayerItemState {
   id: string;
   t: ScenarioTime;
   note?: string;
-  patch: Partial<
-    Pick<
-      TacticalGraphicLayerItem,
-      | "graphicCode"
-      | "controlPoints"
-      | "modifiers"
-      | "style"
-      | "name"
-      | "description"
-      | "isHidden"
-    >
-  >;
+  // Deliberately wide: recording only ever writes `controlPoints`, but an imported
+  // scenario may carry a richer patch and must still project.
+  patch: TacticalGraphicLayerItemStatePatch;
 }
 
+export interface CurrentTacticalGraphicLayerItemState
+  extends CurrentScenarioLayerItemState, TacticalGraphicLayerItemStatePatch {}
+
+/**
+ * A doctrinal control measure.
+ *
+ * This *flattens* the library's `ControlMeasure` rather than embedding one: the same
+ * field names, so `toControlMeasure` is a projection and not a translation. Three
+ * fields — `standardIdentity`, `colorMode`, `status` — are host-owned and have no
+ * library counterpart; they resolve into `style.color` / `style.strokeDash` at the
+ * `toControlMeasure` seam and are never written back into storage.
+ *
+ * There is intentionally no `standard` field (the library is 2525E-only) and no
+ * `schemaVersion` (the library reads it nowhere; the exact package pin makes the
+ * scenario file version a faithful proxy).
+ */
 export interface TacticalGraphicLayerItem extends ScenarioLayerItemBase {
   kind: "tacticalGraphic";
-  standard?: "2525d" | "app6d";
-  graphicCode: string;
+  /**
+   * The library's `ControlMeasureKind`. An unrecognised value is stored verbatim
+   * and filtered out of the render batch — see `isSupportedTacticalGraphic`.
+   */
+  graphicKind: ControlMeasureKind;
   controlPoints: Position[];
-  modifiers?: Record<string, string | number | boolean>;
-  style?: ScenarioLayerItemStyle;
+  options?: TacticalGraphicOptions;
+  textAmplifiers?: ControlMeasureTextAmplifiers;
+  amplifierPlacements?: AmplifierPlacements;
+  /** The library's `ControlMeasureStyle` verbatim, not `ScenarioLayerItemStyle`. */
+  style?: ControlMeasureStyle;
+  standardIdentity?: SidValue;
+  colorMode?: TacticalGraphicColorMode;
+  status?: TacticalGraphicStatus;
   state?: TacticalGraphicLayerItemState[];
+  _state?: CurrentTacticalGraphicLayerItemState | null;
 }
 
 export interface MeasurementLayerItemState {
@@ -235,12 +307,17 @@ export type ScenarioLayerItem =
   | TacticalGraphicLayerItem
   | MeasurementLayerItem;
 
+// `_hidden` and `_state` live on ScenarioLayerItemBase, so every kind carries them
+// and there is a single declaration site.
 export type NScenarioLayerItem = ScenarioLayerItem & {
   _pid: LayerId;
-  _hidden?: boolean;
 };
 
 export type NGeometryLayerItem = GeometryLayerItem & {
+  _pid: LayerId;
+};
+
+export type NTacticalGraphicLayerItem = TacticalGraphicLayerItem & {
   _pid: LayerId;
 };
 
@@ -255,6 +332,83 @@ export function createInitialGeometryLayerItemState(
     t: Number.MIN_SAFE_INTEGER,
     geometry: feature.geometry,
   };
+}
+
+/**
+ * Kind-agnostic base pass: the seed a `state[]` fold starts from.
+ *
+ * Geometry seeds with its own current geometry so an item with timed state still
+ * projects a geometry before the first entry's `t`. No other kind has a seedable
+ * field today.
+ */
+export function createInitialScenarioLayerItemState(
+  item: ScenarioLayerItem,
+): CurrentScenarioLayerItemState {
+  if (item.kind === "geometry") return createInitialGeometryLayerItemState(item);
+  return { t: Number.MIN_SAFE_INTEGER };
+}
+
+/** Kind-agnostic base pass: flatten one state entry's patch over its own fields. */
+export function projectScenarioLayerItemState(
+  state: ScenarioLayerItemState,
+): CurrentScenarioLayerItemState {
+  const {
+    id: _id,
+    patch,
+    ...rest
+  } = state as unknown as {
+    id: string;
+    t: ScenarioTime;
+    patch?: Record<string, unknown>;
+  } & Record<string, unknown>;
+  return { ...rest, ...(patch ?? {}) } as CurrentScenarioLayerItemState;
+}
+
+/**
+ * Kind-agnostic base pass: fold every state entry at or before `timestamp`.
+ *
+ * `state[]` is assumed sorted by `t`, matching every existing writer.
+ */
+export function projectScenarioLayerItemStateAt(
+  item: ScenarioLayerItem,
+  timestamp: number,
+): CurrentScenarioLayerItemState {
+  let currentState = createInitialScenarioLayerItemState(item);
+  const entries = (item.state ?? []) as ScenarioLayerItemState[];
+  for (const entry of entries) {
+    if (entry.t > timestamp) break;
+    currentState = { ...currentState, ...projectScenarioLayerItemState(entry) };
+  }
+  return currentState;
+}
+
+/**
+ * Kind-agnostic base pass: is this item hidden at `currentTime`?
+ *
+ * `visibleFromT`/`visibleUntilT` are exclusive bounds, matching the pre-existing
+ * geometry-only behaviour exactly.
+ */
+export function computeScenarioLayerItemHidden(
+  item: Pick<ScenarioLayerItemBase, "visibleFromT" | "visibleUntilT" | "isHidden">,
+  currentTime: number,
+): boolean {
+  const visibleFromT = item.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+  const visibleUntilT = item.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
+  return timeHidden || !!item.isHidden;
+}
+
+export function isTacticalGraphicLayerItem(
+  item: unknown,
+): item is TacticalGraphicLayerItem {
+  if (!item || typeof item !== "object") return false;
+  return (item as { kind?: string }).kind === "tacticalGraphic";
+}
+
+export function isNTacticalGraphicLayerItem(
+  item: NScenarioLayerItem,
+): item is NTacticalGraphicLayerItem {
+  return isTacticalGraphicLayerItem(item);
 }
 
 export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
@@ -338,6 +492,30 @@ export interface GeometryLayerItemUpdate extends Partial<
 > {
   geometryMeta?: LoadableGeometryLayerMeta;
 }
+
+/**
+ * The kind-agnostic slice of a layer-item update: only fields declared on
+ * `ScenarioLayerItemBase`, so it is valid for every kind.
+ *
+ * `GeometryLayerItemUpdate` stays the richer, geometry-only form. This exists because
+ * `updateFeature` narrows to geometry before it touches `style`/`geometry`/
+ * `geometryMeta`, which leaves shared chrome — the layers panel's visibility and lock
+ * toggles — with no way to write a `tacticalGraphic`.
+ */
+export type ScenarioLayerItemUpdate = Partial<
+  Pick<
+    ScenarioLayerItemBase,
+    | "name"
+    | "description"
+    | "externalUrl"
+    | "locked"
+    | "isHidden"
+    | "visibleFromT"
+    | "visibleUntilT"
+    | "media"
+    | "userData"
+  >
+>;
 
 export interface FullScenarioLayerItemsLayer extends Omit<
   ScenarioLayerItemsLayer,

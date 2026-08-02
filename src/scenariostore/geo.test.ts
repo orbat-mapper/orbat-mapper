@@ -358,4 +358,69 @@ describe("scenario geo item accessors", () => {
       geometry: { type: "Point", coordinates: [11, 61] },
     });
   });
+
+  it("reports each layer item's own kind in itemsInfo, not a Point placeholder", () => {
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.4.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layerStack: [
+        {
+          id: "layer-1",
+          kind: "overlay",
+          name: "Features",
+          items: [
+            {
+              id: "feature-1",
+              kind: "geometry",
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates: [
+                  [10, 60],
+                  [11, 61],
+                ],
+              },
+              properties: {},
+              geometryMeta: { geometryKind: "LineString" },
+              style: {},
+            },
+            {
+              id: "cm-1",
+              kind: "tacticalGraphic",
+              name: "Phase Line Blue",
+              graphicKind: "phase-line",
+              controlPoints: [
+                [10, 60],
+                [11, 61],
+              ],
+            },
+          ],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+
+    const geo = useGeo(store);
+    const byId = Object.fromEntries(geo.itemsInfo.value.map((i) => [i.id, i]));
+
+    expect(byId["layer-1"].type).toBe("layer");
+    expect(byId["feature-1"].type).toBe("LineString");
+    // Was a flat "Point", which made every control measure search hit render as a
+    // map marker.
+    expect(byId["cm-1"].type).toBe("tacticalGraphic");
+    expect(byId["cm-1"].name).toBe("Phase Line Blue");
+    expect(byId["cm-1"]._pid).toBe("layer-1");
+  });
 });

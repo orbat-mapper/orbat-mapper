@@ -129,7 +129,7 @@ describe("upgradeScenarioIfNecessary", () => {
     expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
-  it("skips unsupported item kinds and warns with layer details and counts", () => {
+  it("keeps annotation, tacticalGraphic and measurement items without warning", () => {
     const feature = createFeature();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const scenario = createScenario({
@@ -145,6 +145,15 @@ describe("upgradeScenarioIfNecessary", () => {
               annotationType: "label",
               anchor: { type: "point", position: [10, 60] },
               content: { text: "Note" },
+            },
+            {
+              id: "tacticalGraphic-1",
+              kind: "tacticalGraphic",
+              graphicKind: "boundary",
+              controlPoints: [
+                [10, 60],
+                [11, 61],
+              ],
             },
             {
               id: "measurement-1",
@@ -168,11 +177,83 @@ describe("upgradeScenarioIfNecessary", () => {
 
     const upgraded = upgradeScenarioIfNecessary(scenario as any);
 
-    expect(getOverlayLayers(upgraded)[0].items).toEqual([createExpectedGeometryItem()]);
+    const items = getOverlayLayers(upgraded)[0].items;
+    expect(items).toHaveLength(4);
+    expect(items[0]).toEqual(createExpectedGeometryItem());
+    expect(items.map((item) => item.id)).toEqual([
+      "feature-1",
+      "annotation-1",
+      "tacticalGraphic-1",
+      "measurement-1",
+    ]);
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it("warns once for the whole scenario about unsupported graphicKinds", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const scenario = createScenario({
+      layers: [
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [
+            {
+              id: "tacticalGraphic-1",
+              kind: "tacticalGraphic",
+              graphicKind: "from-the-future",
+              controlPoints: [[10, 60]],
+            },
+            {
+              id: "tacticalGraphic-2",
+              kind: "tacticalGraphic",
+              graphicKind: "from-the-future",
+              controlPoints: [[11, 61]],
+            },
+          ],
+        },
+        {
+          id: "layer-2",
+          name: "More features",
+          items: [
+            {
+              id: "tacticalGraphic-3",
+              kind: "tacticalGraphic",
+              graphicKind: "also-unknown",
+              controlPoints: [[12, 62]],
+            },
+          ],
+        },
+      ],
+    });
+
+    const upgraded = upgradeScenarioIfNecessary(scenario as any);
+
+    // Stored verbatim, never dropped and never replaced by a placeholder.
+    expect(getOverlayLayers(upgraded)[0].items).toHaveLength(2);
+    expect(getOverlayLayers(upgraded)[1].items).toHaveLength(1);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain("from-the-future=2");
+    expect(warnSpy.mock.calls[0][0]).toContain("also-unknown=1");
+  });
+
+  it("still drops items whose kind is entirely unknown", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const scenario = createScenario({
+      layers: [
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [{ id: "mystery-1", kind: "somethingElse" }],
+        },
+      ],
+    });
+
+    const upgraded = upgradeScenarioIfNecessary(scenario as any);
+
+    expect(getOverlayLayers(upgraded)[0].items).toEqual([]);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy.mock.calls[0][0]).toContain('layer "Features" (layer-1)');
-    expect(warnSpy.mock.calls[0][0]).toContain("annotation=1");
-    expect(warnSpy.mock.calls[0][0]).toContain("measurement=1");
+    expect(warnSpy.mock.calls[0][0]).toContain("somethingElse=1");
   });
 
   it("prefers items[] over features[] when both are present", () => {

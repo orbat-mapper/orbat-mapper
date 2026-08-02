@@ -2,14 +2,68 @@ import type { Map as MlMap } from "maplibre-gl";
 import { TacticalDraw } from "@orbat-mapper/tactical-draw";
 import type {
   Graphic,
+  InteractionHit,
   // orbat-mapper has its own `MapAdapter` (`@/geo/contracts/mapAdapter`) answering a
   // different question. Alias tactical-draw's ABI so the two never collide.
   MapAdapter as TacticalDrawMapAdapter,
   PickEvent,
+  PixelCoordinate,
 } from "@orbat-mapper/tactical-draw";
 import { MapLibreAdapter } from "@orbat-mapper/tactical-draw-adapter-maplibre";
+import { isProxy, isRef } from "vue";
+import { nanoid } from "@/utils";
 
-export type { TacticalDrawMapAdapter };
+export type { TacticalDrawMapAdapter, InteractionHit, PixelCoordinate };
+
+/**
+ * Dev-only reactivity guard, warning at most once per session.
+ *
+ * tactical-draw caches rendered output on `Graphic` object identity. A Vue proxy
+ * defeats that cache silently — nothing throws, the map just re-renders everything
+ * on every pass — so the hazard is guarded at `render()`, which is the only door,
+ * rather than left to a `markRaw` convention spread across call sites.
+ *
+ * The check is deliberately **shallow**: the batch array and each `Graphic` in it.
+ * A `Graphic` built by `toControlMeasure` is a fresh plain object whose *fields* may
+ * still point into reactive scenario state, and that is fine — the identity cache
+ * keys on the `Graphic`, not on its members. Walking deeper would cost per render
+ * and would warn on the normal case.
+ */
+let warnedAboutReactiveGraphics = false;
+
+function isReactiveLike(value: unknown): boolean {
+  return isProxy(value) || isRef(value);
+}
+
+function assertRawGraphics(graphics: readonly Graphic[]) {
+  if (!import.meta.env.DEV) return;
+  if (warnedAboutReactiveGraphics) return;
+  if (!isReactiveLike(graphics) && !graphics.some(isReactiveLike)) return;
+  warnedAboutReactiveGraphics = true;
+  console.warn(
+    "[tacticalDrawSurface] render() received reactive graphics. Vue reactivity must " +
+      "not reach anything the tactical-draw engine holds: it caches rendered output " +
+      "on Graphic object identity, which a proxy defeats. markRaw/shallowRef the " +
+      "batch and its graphics. See docs/adr/0006-control-measures-on-tactical-draw.md.",
+  );
+}
+
+/** Test-only: reset the once-per-session latch. */
+export function __resetTacticalDrawReactivityWarning() {
+  warnedAboutReactiveGraphics = false;
+}
+
+/**
+ * Id generation is handed to the host so a graphic's id is the scenario layer-item id
+ * from birth — `ControlMeasure.id === TacticalGraphicLayerItem.id`, with no
+ * reconciliation table anywhere. The library's default is a monotonic `td-${n}` slug,
+ * which would collide across façade re-attaches.
+ *
+ * Rebuilt per attach because the façade is reconstructed on every `style.load`.
+ */
+function tacticalDrawOptions() {
+  return { generateId: () => nanoid() };
+}
 
 /**
  * The tactical-draw seam on the MapLibre scenario map.
@@ -31,6 +85,32 @@ export interface TacticalDrawSurface {
   render(graphics: readonly Graphic[]): void;
   /** Subscribe to picks on committed graphics. Returns an idempotent unsubscribe. */
   onGraphicPick(handler: (event: PickEvent) => void): () => void;
+  /**
+   * "Does tactical-draw own the pixel at `pixel`?" — `null` when it does not, and
+   * always `null` while detached.
+   *
+   * This, not `onGraphicPick`, is how the host short-circuits its own plain-feature
+   * hit test. It is a pure synchronous query over adapter-cached state, so it does
+   * **not** depend on tactical-draw's pick/click dispatch having run first; a host
+   * click handler can call it regardless of listener ordering. `onGraphicPick` is a
+   * notification and gives no way to say "this click was mine, stop".
+   *
+   * Pass the host's raw click event as `originalEvent` to inherit the library's
+   * pointer-type-aware tolerance (4 px mouse/pen, 12 px touch).
+   */
+  ownsInteractionAt(
+    pixel: PixelCoordinate,
+    options?: { tolerance?: number; originalEvent?: unknown },
+  ): InteractionHit | null;
+  /**
+   * Replace the passive selection-highlight set. Declarative and idempotent, like
+   * `render()`; `[]` clears it. Unknown ids are skipped by the library.
+   *
+   * Deliberately **not** part of the render batch: highlighting starts no session and
+   * aborts none, so selection changes must not have to go through the settle-first
+   * render feed. The set is replayed after a `style.load` re-attach.
+   */
+  setHighlightedGraphics(ids: readonly string[]): void;
   /** Tear down the façade and the adapter, in that order, and stop re-attaching. */
   destroy(): void;
 }
@@ -61,6 +141,7 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   let tacticalDraw: TacticalDraw | null = null;
   let unsubscribePick: (() => void) | null = null;
   let lastRendered: readonly Graphic[] = [];
+  let lastHighlighted: readonly string[] = [];
   let destroyed = false;
 
   function detachFacade() {
@@ -79,12 +160,15 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     if (destroyed) return;
     // Idempotent by construction, so a repeated `style.load` cannot stack façades.
     detachFacade();
-    tacticalDraw = new TacticalDraw(adapter);
+    tacticalDraw = new TacticalDraw(adapter, tacticalDrawOptions());
     unsubscribePick = tacticalDraw.onGraphicPick((event) => {
       for (const handler of pickHandlers) handler(event);
     });
     // A style swap wiped the previous layers; restore what the host last asked for.
     if (lastRendered.length > 0) tacticalDraw.render(lastRendered);
+    // Highlights live on their own layer and are wiped by the same swap. Replay after
+    // `render`, since the library skips ids that are not currently rendered.
+    if (lastHighlighted.length > 0) tacticalDraw.setHighlightedGraphics(lastHighlighted);
   }
 
   const handleStyleLoad = () => attachFacade();
@@ -101,6 +185,7 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       return tacticalDraw;
     },
     render(graphics) {
+      assertRawGraphics(graphics);
       lastRendered = graphics;
       tacticalDraw?.render(graphics);
     },
@@ -108,12 +193,20 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       pickHandlers.add(handler);
       return () => pickHandlers.delete(handler);
     },
+    ownsInteractionAt(pixel, options) {
+      return tacticalDraw?.ownsInteractionAt(pixel, options) ?? null;
+    },
+    setHighlightedGraphics(ids) {
+      lastHighlighted = ids;
+      tacticalDraw?.setHighlightedGraphics(ids);
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
       mlMap.off("style.load", handleStyleLoad);
       pickHandlers.clear();
       lastRendered = [];
+      lastHighlighted = [];
       // Order matters: the façade releases only the layer slots it allocated,
       // then the adapter tears down the rest.
       detachFacade();

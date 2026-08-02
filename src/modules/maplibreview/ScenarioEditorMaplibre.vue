@@ -19,6 +19,7 @@ import {
   isTacticalDrawProbeEnabled,
   startTacticalDrawProbe,
 } from "@/geo/engines/maplibre/tacticalDrawProbe";
+import { useTacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
@@ -27,6 +28,7 @@ import {
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
@@ -98,6 +100,13 @@ provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
 );
+// Owned here rather than in `MlMapLogic` because this is where the tactical-draw
+// surface is constructed and destroyed, and because M2 hoists `useScenarioDraw` to
+// this same view — `arm()` settles through the provided feed.
+const tacticalGraphicRenderFeed = useTacticalGraphicRenderFeed(activeScenario, {
+  surface: () => scenarioMapEngineRef.value?.draw,
+});
+provide(tacticalGraphicRenderFeedKey, tacticalGraphicRenderFeed);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

@@ -8,6 +8,7 @@ import {
   IconVectorLine,
   IconVectorTriangle,
   IconMapMarkerMultipleOutline,
+  IconVectorPolyline,
 } from "@iconify-prerendered/vue-mdi";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import type { NGeometryLayerItem } from "@/types/internalModels";
@@ -43,7 +44,9 @@ const geometryIconMap: any = {
   GeometryCollection: IconMapMarkerMultipleOutline,
   layer: IconLayersOutline,
   annotation: IconMapMarker,
-  tacticalGraphic: IconVectorLine,
+  // Distinct from LineString's IconVectorLine so a control-measure row is not mistaken
+  // for a plain line in the layers panel.
+  tacticalGraphic: IconVectorPolyline,
   measurement: IconVectorCircleVariant,
 };
 
