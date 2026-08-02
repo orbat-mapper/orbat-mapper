@@ -19,6 +19,7 @@ vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
 function mountSettings(props: {
   graphicKind?: ControlMeasureKind;
   measureStyle?: ControlMeasureStyle;
+  options?: Record<string, unknown>;
 }) {
   return mount(ControlMeasureStyleSettings, { props });
 }
@@ -98,5 +99,49 @@ describe("what it emits", () => {
     });
     await wrapper.findAll("select")[3]!.setValue("");
     expect(wrapper.emitted("update")).toEqual([[{ style: {} }]]);
+  });
+});
+
+/**
+ * Smoothing is a generator option rather than a style, so it is gated by the registry's
+ * own `params` and not by the Generic Graphics rule that gates colour and fill.
+ */
+describe("the smoothing toggle", () => {
+  function smoothSwitch(wrapper: ReturnType<typeof mountSettings>) {
+    return wrapper.find("#cm-smooth");
+  }
+
+  it("is offered on a doctrinal kind that declares a smooth param", () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    expect(smoothSwitch(wrapper).exists()).toBe(true);
+    // ...even though that same kind is offered neither colour nor fill.
+    expect(labels(wrapper)).not.toContain("Color");
+  });
+
+  it("is not offered on a kind that declares no smooth param", () => {
+    const wrapper = mountSettings({ graphicKind: "text" });
+    expect(smoothSwitch(wrapper).exists()).toBe(false);
+  });
+
+  it("is not offered for the defaults, which belong to no kind", () => {
+    expect(smoothSwitch(mountSettings({})).exists()).toBe(false);
+  });
+
+  it("reflects an authored option over the library default", () => {
+    const off = mountSettings({ graphicKind: "phase-line" });
+    expect(off.findComponent({ name: "Switch" }).props("modelValue")).toBe(false);
+    const on = mountSettings({ graphicKind: "phase-line", options: { smooth: true } });
+    expect(on.findComponent({ name: "Switch" }).props("modelValue")).toBe(true);
+  });
+
+  it("emits the whole options object, merged, so nothing authored is lost", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "phase-line",
+      options: { smoothResolution: 24, smooth: false },
+    });
+    await wrapper.findComponent({ name: "Switch" }).vm.$emit("update:modelValue", true);
+    expect(wrapper.emitted("update")).toEqual([
+      [{ options: { smoothResolution: 24, smooth: true } }],
+    ]);
   });
 });

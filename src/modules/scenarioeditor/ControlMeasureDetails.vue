@@ -37,6 +37,7 @@ import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   resolveControlMeasureControlPoints,
+  resolveControlMeasureOptions,
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
@@ -97,6 +98,11 @@ const kindName = computed(() => {
 // would disagree with what is drawn.
 const controlPointCount = computed(() =>
   item.value ? resolveControlMeasureControlPoints(item.value).length : 0,
+);
+// Projected too, for the same reason as `strokeColor` and `controlPointCount`: a
+// recorded options patch is what the map is drawing with at the current time.
+const resolvedOptions = computed(() =>
+  item.value ? resolveControlMeasureOptions(item.value) : undefined,
 );
 const hDescription = computed(() => renderMarkdown(item.value?.description || ""));
 
@@ -257,6 +263,7 @@ function doDelete() {
           :standard-identity="item.standardIdentity"
           :color-mode="item.colorMode"
           :status="item.status"
+          :options="resolvedOptions"
           @update="doStyleUpdate"
         />
       </PanelDataGrid>

@@ -169,6 +169,17 @@ export function resolveControlMeasureControlPoints(
 }
 
 /**
+ * The projected generator options, for the same reason as `resolveControlMeasureControlPoints`:
+ * the options editor has to show the values the map is drawing with, and a recorded
+ * options patch replaces them at the current time.
+ */
+export function resolveControlMeasureOptions(
+  item: TacticalGraphicLayerItem,
+): TacticalGraphicOptions | undefined {
+  return resolveProjectionInputs(item).options;
+}
+
+/**
  * A GeoJSON stand-in for a control measure's extent, for `fitGeometry` / `centerOfMass`.
  *
  * Deliberately the **control points**, not `renderControlMeasure`'s output. The points
