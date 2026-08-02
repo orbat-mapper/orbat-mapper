@@ -13,14 +13,20 @@
  * there is no parallel list of kinds or of fill patterns to drift out of step with
  * the registry.
  */
-import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
+import {
+  CONTROL_MEASURE_METADATA,
+  getDefaultOptions,
+} from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
   ControlMeasureKind,
   ControlMeasureStyle,
 } from "@orbat-mapper/control-measures";
 import { PREVIEW_FILL_PATTERNS } from "@orbat-mapper/control-measures/preview";
-import type { TacticalGraphicLayerItemUpdate } from "@/types/scenarioLayerItems";
+import type {
+  TacticalGraphicLayerItemUpdate,
+  TacticalGraphicOptions,
+} from "@/types/scenarioLayerItems";
 import type { NewControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
 
 export type ControlMeasureFillPattern = NonNullable<ControlMeasureStyle["fillPattern"]>;
@@ -32,7 +38,7 @@ export type ControlMeasureFillPattern = NonNullable<ControlMeasureStyle["fillPat
  */
 export type ControlMeasureStyleUpdate = Pick<
   TacticalGraphicLayerItemUpdate,
-  "style" | "standardIdentity" | "colorMode" | "status"
+  "style" | "standardIdentity" | "colorMode" | "status" | "options"
 >;
 
 /** The registry entity holding the kinds that carry no doctrinal colour of their own. */
@@ -59,6 +65,42 @@ export function isStyleableControlMeasureKind(
  */
 export function canAuthorFillPattern(kind: ControlMeasureKind | undefined): boolean {
   return isStyleableControlMeasureKind(kind) && metadataFor(kind)?.paints.fill === "user";
+}
+
+/**
+ * Whether a smoothing toggle is meaningful for this kind.
+ *
+ * Derived from the registry's own `params`, like everything else here: the 50 kinds
+ * that accept a `smooth` boolean declare it, and a kind that gains or loses one needs
+ * no edit on this side. `graphicKind === undefined` (the authoring defaults) is false —
+ * smoothing is a per-kind generator option, not a style, so there is nothing sensible
+ * to make sticky across kinds that do not all accept it.
+ */
+export function canSmoothControlMeasureKind(
+  kind: ControlMeasureKind | undefined,
+): boolean {
+  return (
+    metadataFor(kind)?.params?.some(
+      (param) => param.key === "smooth" && param.type === "boolean",
+    ) ?? false
+  );
+}
+
+/**
+ * The effective smoothing state: the item's own option when it has authored one, and
+ * otherwise the library's default for the kind — which is what the map is drawing, so
+ * it is what the checkbox must show.
+ */
+export function isControlMeasureSmoothed(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): boolean {
+  const authored = (options as Record<string, unknown> | undefined)?.smooth;
+  if (typeof authored === "boolean") return authored;
+  if (kind === undefined) return false;
+  const defaults = getDefaultOptions(kind as ControlMeasureId) as
+    Record<string, unknown> | undefined;
+  return defaults?.smooth === true;
 }
 
 /** `"solid"` has no preview tile — it is the absence of a pattern, not one of them. */
