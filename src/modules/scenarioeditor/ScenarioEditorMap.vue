@@ -14,7 +14,9 @@ import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
   measurementInteractionFactoryKey,
+  scenarioDrawKey,
 } from "@/components/injects";
+import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
 import {
   activeFeatureSelectInteractionKey,
   activeFeatureStylesKey,
@@ -110,6 +112,17 @@ provide(measurementInteractionFactoryKey, (measurementType, options) => {
   if (!olMap) return { clear: () => {} };
   return useMeasurementInteraction(olMap, measurementType, options);
 });
+// Hoisted out of `MapEditorDrawToolbar` for the same reason as the MapLibre view: the
+// toolbar is `v-if`'d. There is no tactical-draw surface here, so no render feed.
+provide(
+  scenarioDrawKey,
+  useScenarioDraw({
+    engine: scenarioMapEngineRef,
+    nativeOpenLayersMap: nativeMapRef,
+    featureSelectInteraction: featureSelectInteractionRef,
+    renderFeed: null,
+  }),
+);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,

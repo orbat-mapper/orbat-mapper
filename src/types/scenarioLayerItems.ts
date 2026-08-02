@@ -517,6 +517,44 @@ export type ScenarioLayerItemUpdate = Partial<
   >
 >;
 
+/**
+ * The `tacticalGraphic`-only slice of a layer-item update — the authoring fields a
+ * settled edit session folds back in.
+ *
+ * A closed allowlist rather than a `Partial<TacticalGraphicLayerItem>`: the writer
+ * copies field by field, so anything nameable here is writable, and `state` / `_state`
+ * / `_pid` / `kind` / `graphicKind` must never be reachable through this door.
+ * `graphicKind` is excluded because changing it would invalidate `options`, which is
+ * typed per kind at the `toControlMeasure` seam; a different kind is a different
+ * graphic. The shared base fields (name, visibility, lock, …) keep going through
+ * `ScenarioLayerItemUpdate`.
+ */
+export type TacticalGraphicLayerItemUpdate = Partial<
+  Pick<
+    TacticalGraphicLayerItem,
+    | "controlPoints"
+    | "options"
+    | "textAmplifiers"
+    | "amplifierPlacements"
+    | "style"
+    | "standardIdentity"
+    | "colorMode"
+    | "status"
+  >
+>;
+
+/** The fields `updateTacticalGraphic` copies, in the order it copies them. */
+export const TACTICAL_GRAPHIC_UPDATE_FIELDS = [
+  "controlPoints",
+  "options",
+  "textAmplifiers",
+  "amplifierPlacements",
+  "style",
+  "standardIdentity",
+  "colorMode",
+  "status",
+] as const satisfies readonly (keyof TacticalGraphicLayerItemUpdate)[];
+
 export interface FullScenarioLayerItemsLayer extends Omit<
   ScenarioLayerItemsLayer,
   "items"

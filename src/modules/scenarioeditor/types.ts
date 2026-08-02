@@ -24,12 +24,7 @@ export interface SideGroupItem {
 export type TableItem = SideItem | SideGroupItem | UnitItem;
 
 export type ColumnField =
-  | "id"
-  | "name"
-  | "shortName"
-  | "sidc"
-  | "externalUrl"
-  | "description";
+  "id" | "name" | "shortName" | "sidc" | "externalUrl" | "description";
 export type GridResizableColumnKey = "__indicator" | "__unit" | ColumnField;
 export type CellType = "text" | "sidc" | "markdown";
 
@@ -45,6 +40,7 @@ export type DetailsPanel =
   | "event"
   | "mapLayer"
   | "feature"
+  | "tacticalGraphic"
   | "referenceFeature"
   | "scenario";
 

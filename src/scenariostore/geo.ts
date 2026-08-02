@@ -24,11 +24,14 @@ import type {
   GeometryLayerItem,
   ScenarioLayerItem,
   ScenarioLayerItemUpdate,
+  TacticalGraphicLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import {
   computeScenarioLayerItemHidden,
   isNGeometryLayerItem,
+  isNTacticalGraphicLayerItem,
   projectScenarioLayerItemStateAt,
+  TACTICAL_GRAPHIC_UPDATE_FIELDS,
 } from "@/types/scenarioLayerItems";
 import type {
   NScenarioOverlayLayer,
@@ -66,9 +69,12 @@ export type ScenarioFeatureLayerEvent =
   | {
       type: "updateFeature";
       id: FeatureId;
-      data: GeometryLayerItemUpdate | ScenarioLayerItemUpdate;
+      data:
+        | GeometryLayerItemUpdate
+        | ScenarioLayerItemUpdate
+        | TacticalGraphicLayerItemUpdate;
     }
-  | { type: "addFeature"; id: FeatureId; data: NGeometryLayerItem }
+  | { type: "addFeature"; id: FeatureId; data: NScenarioLayerItem }
   | { type: "moveFeature"; id: FeatureId; fromLayer?: FeatureId; toLayer?: FeatureId };
 
 export type UpdateOptions = {
@@ -592,15 +598,19 @@ export function useGeo(store: NewScenarioStore) {
     mapLayerEvent.trigger({ type: "remove", id: layerId, data: {} });
   }
 
+  // Kind-agnostic: `tacticalGraphic` items are added through this same path, so a
+  // control measure is one `layerItemMap` entry and one undo step like any other layer
+  // item. `kind` still defaults to `"geometry"`, which is what every pre-existing
+  // caller relies on.
   function addFeature(
-    data: Omit<NGeometryLayerItem, "_pid">,
+    data: ScenarioLayerItem,
     layerId: FeatureId,
     options: UpdateOptions = {},
   ) {
     const noEmit = options.noEmit ?? false;
-    const newFeature = klona(data) as NGeometryLayerItem;
+    const newFeature = klona(data) as NScenarioLayerItem;
     if (!newFeature.id) newFeature.id = nanoid();
-    if (!newFeature.kind) newFeature.kind = "geometry";
+    if (!newFeature.kind) (newFeature as NGeometryLayerItem).kind = "geometry";
     newFeature._pid = layerId;
     update(
       (s) => {
@@ -782,6 +792,97 @@ export function useGeo(store: NewScenarioStore) {
     featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
   }
 
+  /**
+   * The `tacticalGraphic` counterpart to `updateFeature`.
+   *
+   * `updateFeature` narrows to geometry and silently no-ops on a control measure, and
+   * `updateLayerItem` only carries the shared base fields — neither can persist what a
+   * settled edit session produced. This is the third, deliberately narrow door: it
+   * copies only `TACTICAL_GRAPHIC_UPDATE_FIELDS`, so `state`/`_state`/`_pid`/`kind`
+   * stay unreachable and the timed projection cannot be corrupted through it.
+   *
+   * One `update()` is one undo step, which is what ADR-0006's "exactly one store write
+   * per settled session" asks for. Recording — writing shape into `state[]` instead of
+   * top-level — is step 17's; this always writes top-level.
+   */
+  function updateTacticalGraphic(
+    itemId: FeatureId,
+    data: TacticalGraphicLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+
+    // No return value: the immer producer treats a returned value as a replacement
+    // for the whole draft.
+    const apply = (item: NScenarioLayerItem | undefined) => {
+      if (!item || !isNTacticalGraphicLayerItem(item)) return;
+      TACTICAL_GRAPHIC_UPDATE_FIELDS.forEach((field) => {
+        const value = data[field];
+        if (value === undefined) return;
+        (item as unknown as Record<string, unknown>)[field] = value;
+      });
+    };
+
+    if (undoable) {
+      update(
+        (s) => {
+          apply(s.layerItemMap[itemId]);
+        },
+        { label: "updateFeature", value: itemId },
+      );
+    } else {
+      apply(state.layerItemMap[itemId]);
+    }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
+  }
+
+  /**
+   * The `tacticalGraphic` counterpart to `addFeatureStateGeometry`: record **shape**
+   * into `state[]` at `atTime` rather than writing it top-level.
+   *
+   * Shape is the only recordable thing on a control measure — option, style and
+   * amplifier edits are timeless and go through `updateTacticalGraphic`. The patch type
+   * is deliberately wider than this writer, so an imported scenario carrying a richer
+   * patch still projects (`TacticalGraphicLayerItemState`).
+   */
+  function addTacticalGraphicStateControlPoints(
+    itemId: FeatureId,
+    controlPoints: Position[],
+    atTime?: number,
+  ) {
+    update(
+      (s) => {
+        const item = s.layerItemMap[itemId];
+        if (!item || !isNTacticalGraphicLayerItem(item)) return;
+        const t = atTime ?? s.currentTime;
+        const nextState = [...(item.state ?? [])];
+        for (let i = 0, len = nextState.length; i < len; i++) {
+          if (t < nextState[i].t) {
+            nextState.splice(i, 0, { id: nanoid(), t, patch: { controlPoints } });
+            item.state = nextState;
+            return;
+          } else if (t === nextState[i].t) {
+            nextState[i] = {
+              ...nextState[i],
+              patch: { ...nextState[i].patch, controlPoints },
+            };
+            item.state = nextState;
+            return;
+          }
+        }
+        nextState.push({ id: nanoid(), t, patch: { controlPoints } });
+        item.state = nextState;
+      },
+      { label: "updateFeatureState", value: itemId },
+    );
+
+    // `_state` is recomputed from the whole projection rather than assigned inline:
+    // an earlier patch may carry fields this writer never touches.
+    updateFeatureState(itemId);
+  }
+
   function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
     update((s) => {
       const _feature = s.layerItemMap[featureId];
@@ -886,6 +987,8 @@ export function useGeo(store: NewScenarioStore) {
     deleteFeature,
     updateFeature,
     updateLayerItem,
+    updateTacticalGraphic,
+    addTacticalGraphicStateControlPoints,
     deleteFeatureStateEntry,
     itemsInfo,
     layerItemsLayers,

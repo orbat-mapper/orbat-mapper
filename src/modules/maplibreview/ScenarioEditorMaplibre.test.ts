@@ -32,6 +32,9 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
     constructor(public map: unknown) {}
     setViewConstraints() {}
+    getNativeMap() {
+      return this.map;
+    }
     getCenter() {
       return [33, 44];
     }
@@ -44,15 +47,32 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   },
 }));
 
-vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", () => ({
-  createTacticalDrawSurface: vi.fn(() => ({
-    adapter: {},
-    tacticalDraw: null,
-    render: vi.fn(),
-    onGraphicPick: vi.fn(() => vi.fn()),
-    ownsInteractionAt: vi.fn(() => null),
-    setHighlightedGraphics: vi.fn(),
-    destroy: destroyTacticalDrawSurface,
+// The one shared medium-fidelity fake of the surface seam, rather than a view-local
+// copy that has to be widened every time the seam grows.
+vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", async () => {
+  const { createTacticalDrawSurfaceFake } =
+    await import("@/geo/engines/maplibre/tacticalDrawSurfaceFake");
+  return {
+    createTacticalDrawSurface: vi.fn(
+      () =>
+        createTacticalDrawSurfaceFake({ onDestroy: () => destroyTacticalDrawSurface() })
+          .surface,
+    ),
+  };
+});
+
+// The hoisted `useScenarioDraw` builds the plain draw interaction against the native
+// map; this view test has no real maplibre-gl instance.
+vi.mock("@/composables/maplibreDrawInteraction", () => ({
+  useMapLibreDrawInteraction: vi.fn(() => ({
+    startDrawing: vi.fn(),
+    currentDrawType: ref(null),
+    startModify: vi.fn(),
+    isModifying: ref(false),
+    cancel: vi.fn(),
+    isDrawing: ref(false),
+    finishPathDrawing: vi.fn(),
+    destroy: vi.fn(),
   })),
 }));
 

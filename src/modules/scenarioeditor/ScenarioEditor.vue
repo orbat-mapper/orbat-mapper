@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onUnmounted, provide, ref } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+} from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { useDragStore } from "@/stores/dragStore";
 import ShortcutsModal from "@/components/ShortcutsModal.vue";
@@ -39,10 +46,12 @@ import {
   activeParentKey,
   activeScenarioKey,
   currentScenarioTabKey,
+  scenarioKeyboardOwnerKey,
   searchActionsKey,
   sidcModalKey,
   timeModalKey,
 } from "@/components/injects";
+import type { ScenarioKeyboardOwner } from "@/modules/scenarioeditor/useScenarioDraw";
 import type { EventSearchResult } from "@/components/types";
 import { useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
@@ -58,7 +67,8 @@ import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/commandPalette/CommandPalette.vue";
 import type { PhotonSearchResult } from "@/composables/geosearching";
-import { useSelectedItems } from "@/stores/selectedStore";
+import { setTacticalGraphicPredicate, useSelectedItems } from "@/stores/selectedStore";
+import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
@@ -123,6 +133,16 @@ provide(activeLayerKey, activeLayerId);
 provide(activeScenarioKey, props.activeScenario);
 provide(currentScenarioTabKey, activeScenarioTab);
 
+// `selectedStore` is a bare module singleton with no scenario access, so it cannot
+// tell a selected control measure from a selected plain shape on its own — the two
+// share one flat id set. The lookup is registered here, the one place that owns the
+// scenario for its whole life and sits above both map views and the layers panel.
+onUnmounted(
+  setTacticalGraphicPredicate((id) =>
+    isNTacticalGraphicLayerItem(props.activeScenario.geo.getLayerItemById(id).layerItem),
+  ),
+);
+
 const onUnitSelectHook = createEventHook<{
   unitId: EntityId;
   options?: { noZoom?: boolean; revealInOrbat?: boolean };
@@ -148,6 +168,24 @@ provide(searchActionsKey, {
 });
 
 const { state, undo, redo, canRedo, canUndo } = props.activeScenario.store;
+
+// Undo/redo is bound here, above the map views, so the armed-tool owner cannot be
+// injected — it registers itself into this holder instead. Both key phases go through
+// the guard because the ctrl variants are bound on `keyup` and the meta variants on
+// `keydown`; a keydown-only guard would let Ctrl+Z through and settle a half-drawn
+// control measure. See ADR-0006.
+const scenarioKeyboardOwner = shallowRef<ScenarioKeyboardOwner | null>(null);
+provide(scenarioKeyboardOwnerKey, scenarioKeyboardOwner);
+
+function onUndoKey(event: KeyboardEvent) {
+  if (scenarioKeyboardOwner.value?.handleUndoKey(event)) return;
+  undo();
+}
+
+function onRedoKey(event: KeyboardEvent) {
+  if (scenarioKeyboardOwner.value?.handleRedoKey(event)) return;
+  redo();
+}
 
 const {
   unitActions,
@@ -646,11 +684,11 @@ if (firstOverlayLayerId) {
     />
     <GlobalEvents
       :filter="inputEventFilter"
-      @keydown.meta.z.exact="undo()"
-      @keyup.ctrl.z.exact="undo()"
-      @keydown.meta.shift.z="redo()"
-      @keyup.ctrl.shift.z="redo()"
-      @keyup.ctrl.y="redo()"
+      @keydown.meta.z.exact="onUndoKey"
+      @keyup.ctrl.z.exact="onUndoKey"
+      @keydown.meta.shift.z="onRedoKey"
+      @keyup.ctrl.shift.z="onRedoKey"
+      @keyup.ctrl.y="onRedoKey"
     />
     <ShortcutsModal v-model="shortcutsModalVisible" />
     <MainViewSlideOver v-model="isOpen" />

@@ -3,17 +3,24 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
+import {
+  useScenarioDraw,
+  type ScenarioKeyboardOwner,
+} from "@/modules/scenarioeditor/useScenarioDraw";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 import {
   activeLayerKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  scenarioKeyboardOwnerKey,
 } from "@/components/injects";
 import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
+import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),
@@ -21,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   mapLibreStartDrawing: vi.fn(),
   mapLibreStartModify: vi.fn(),
   mapLibreCancel: vi.fn(),
+  mapLibreFinishPathDrawing: vi.fn(),
 }));
 
 vi.mock("@/composables/maplibreDrawInteraction", () => ({
@@ -39,6 +47,8 @@ function createInteraction() {
     isModifying: ref(false),
     cancel: mocks.mapLibreCancel,
     isDrawing: ref(false),
+    finishPathDrawing: mocks.mapLibreFinishPathDrawing,
+    destroy: vi.fn(),
   };
 }
 
@@ -50,8 +60,29 @@ function createScenario() {
     geo: {
       layerItemsLayers: { value: [] },
       getGeometryLayerItemById: vi.fn(() => ({})),
+      getLayerItemById: vi.fn((id: string) => ({
+        layerItem: {
+          id,
+          kind: "tacticalGraphic",
+          graphicKind: "phase-line",
+          controlPoints: [
+            [0, 0],
+            [1, 1],
+          ],
+        },
+      })),
+      updateTacticalGraphic: vi.fn(),
       deleteFeature: vi.fn(),
     },
+  };
+}
+
+function createRenderFeed() {
+  return {
+    render: vi.fn(),
+    settle: vi.fn(),
+    onSettle: vi.fn(() => vi.fn()),
+    lastPlan: null,
   };
 }
 
@@ -59,10 +90,14 @@ function mountHarness({
   engineRef = shallowRef(),
   scenario = createScenario(),
   pinia = createPinia(),
+  renderFeed,
+  keyboardOwnerRef = shallowRef<ScenarioKeyboardOwner | null>(null),
 }: {
   engineRef?: ReturnType<typeof shallowRef>;
   scenario?: ReturnType<typeof createScenario>;
   pinia?: ReturnType<typeof createPinia>;
+  renderFeed?: ReturnType<typeof createRenderFeed>;
+  keyboardOwnerRef?: ReturnType<typeof shallowRef<ScenarioKeyboardOwner | null>>;
 } = {}) {
   setActivePinia(pinia);
   const activeLayer = ref("layer-1");
@@ -72,7 +107,7 @@ function mountHarness({
   const wrapper = mount(
     defineComponent({
       setup() {
-        Object.assign(exposedDraw, useScenarioDraw());
+        Object.assign(exposedDraw, useScenarioDraw({ renderFeed: renderFeed as any }));
         return {};
       },
       template: "<div />",
@@ -86,17 +121,35 @@ function mountHarness({
           [activeLayerKey as symbol]: activeLayer,
           [activeNativeMapKey as symbol]: nativeMap,
           [activeFeatureSelectInteractionKey as symbol]: featureSelect,
+          [scenarioKeyboardOwnerKey as symbol]: keyboardOwnerRef,
         },
       },
     },
   );
-  return { wrapper, draw: exposedDraw, engineRef, scenario };
+  return { wrapper, draw: exposedDraw, engineRef, scenario, keyboardOwnerRef };
+}
+
+function createEngine() {
+  // The shared surface fake. Sessions are opened but never settled here: these tests
+  // are about the armed-tool owner, not about what a settled session folds in — that
+  // is `controlMeasureAuthoring.test.ts`.
+  const fake = createTacticalDrawSurfaceFake();
+  return {
+    map: {
+      getNativeMap: () => ({ queryRenderedFeatures: vi.fn() }),
+    },
+    layers: {},
+    draw: fake.surface,
+    surfaceFake: fake,
+    suspendFeatureSelection: vi.fn(),
+    resumeFeatureSelection: vi.fn(),
+  };
 }
 
 describe("useScenarioDraw", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.useMapLibreDrawInteraction.mockReturnValue(createInteraction());
+    mocks.useMapLibreDrawInteraction.mockImplementation(() => createInteraction());
   });
 
   it("initializes MapLibre drawing when the map engine becomes ready after setup", async () => {
@@ -106,14 +159,7 @@ describe("useScenarioDraw", () => {
     await nextTick();
     expect(mocks.mapLibreStartDrawing).not.toHaveBeenCalled();
 
-    engineRef.value = {
-      map: {
-        getNativeMap: () => ({ queryRenderedFeatures: vi.fn() }),
-      },
-      layers: {},
-      suspendFeatureSelection: vi.fn(),
-      resumeFeatureSelection: vi.fn(),
-    };
+    engineRef.value = createEngine();
     await nextTick();
 
     expect(mocks.useMapLibreDrawInteraction).toHaveBeenCalledTimes(1);
@@ -121,15 +167,175 @@ describe("useScenarioDraw", () => {
     expect(mocks.mapLibreStartDrawing).toHaveBeenCalledWith("LineString");
   });
 
+  it("rebuilds the MapLibre interaction when the map engine is replaced", async () => {
+    const { engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    const first = mocks.useMapLibreDrawInteraction.mock.results[0].value;
+
+    engineRef.value = createEngine();
+    await nextTick();
+
+    expect(first.destroy).toHaveBeenCalled();
+    expect(mocks.useMapLibreDrawInteraction).toHaveBeenCalledTimes(2);
+  });
+
+  it("derives currentDrawType and isModifying from the armed tool", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    draw.startDrawing("Polygon");
+    expect(draw.armed.value).toEqual({ kind: "plainDraw", drawType: "Polygon" });
+    expect(draw.currentDrawType.value).toBe("Polygon");
+    expect(draw.isModifying.value).toBe(false);
+
+    draw.startModify();
+    expect(draw.armed.value).toEqual({ kind: "plainModify" });
+    expect(draw.currentDrawType.value).toBeNull();
+    expect(draw.isModifying.value).toBe(true);
+
+    draw.cancel();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
+  it("suppresses selection while anything is armed and restores it on disarm", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    const mapSelectStore = useMapSelectStore();
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    await nextTick();
+    expect(mapSelectStore.unitSelectEnabled).toBe(false);
+    expect(mapSelectStore.featureSelectEnabled).toBe(false);
+    expect(mapSelectStore.selectionSuppressed).toBe(true);
+
+    draw.arm({ kind: "none" });
+    await nextTick();
+    expect(mapSelectStore.unitSelectEnabled).toBe(true);
+    expect(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect(mapSelectStore.selectionSuppressed).toBe(false);
+  });
+
+  it("settles the render feed when a tool is armed", async () => {
+    const renderFeed = createRenderFeed();
+    const { draw, engineRef } = mountHarness({ renderFeed });
+    engineRef.value = createEngine();
+    await nextTick();
+
+    draw.startDrawing("Point");
+
+    expect(renderFeed.settle).toHaveBeenCalledWith("arm");
+  });
+
+  it("fans the one snap toggle out to tactical-draw's engine-level snapping", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    const { snapping } = engine.surfaceFake.calls;
+
+    expect(snapping[snapping.length - 1]).toEqual({
+      enabled: true,
+      sources: { graphics: true, graphicGeometry: true },
+    });
+
+    draw.snap.value = false;
+    await nextTick();
+    expect(snapping[snapping.length - 1]).toEqual({
+      enabled: false,
+      sources: { graphics: true, graphicGeometry: true },
+    });
+  });
+
+  it("gates control measures on the engine having a tactical-draw surface", async () => {
+    const { draw, engineRef } = mountHarness();
+    expect(draw.canControlMeasures.value).toBe(false);
+
+    engineRef.value = createEngine();
+    await nextTick();
+    expect(draw.canControlMeasures.value).toBe(true);
+  });
+
+  it("disarms when the draw toolbar closes, but leaves a control-measure edit alone", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    const toolbarStore = useMainToolbarStore();
+    toolbarStore.currentToolbar = "draw";
+    await nextTick();
+
+    draw.startDrawing("Point");
+    toolbarStore.currentToolbar = null;
+    await nextTick();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+
+    toolbarStore.currentToolbar = "draw";
+    await nextTick();
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    toolbarStore.currentToolbar = null;
+    await nextTick();
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-1" });
+  });
+
+  it("registers itself as the keyboard owner and handles Escape only while armed", async () => {
+    const { draw, engineRef, keyboardOwnerRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    expect(keyboardOwnerRef.value).not.toBeNull();
+    expect(keyboardOwnerRef.value!.handleEscape()).toBe(false);
+
+    draw.startDrawing("LineString");
+    const event = new KeyboardEvent("keydown", { key: "Escape" });
+    const stopPropagation = vi.spyOn(event, "stopPropagation");
+    expect(keyboardOwnerRef.value!.handleEscape(event)).toBe(true);
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
+  it("finishes a plain path draw on Enter and falls through when unarmed", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    expect(draw.handleEnter()).toBe(false);
+    expect(mocks.mapLibreFinishPathDrawing).not.toHaveBeenCalled();
+
+    draw.startDrawing("LineString");
+    expect(draw.handleEnter()).toBe(true);
+    expect(mocks.mapLibreFinishPathDrawing).toHaveBeenCalled();
+  });
+
+  it("swallows Ctrl+Z during a control-measure session only", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    expect(draw.handleUndoKey()).toBe(false);
+
+    draw.startDrawing("Polygon");
+    expect(draw.handleUndoKey()).toBe(false);
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    expect(draw.handleUndoKey()).toBe(true);
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    expect(draw.handleUndoKey()).toBe(true);
+  });
+
   it("deletes selected features through the scenario store", () => {
     const scenario = createScenario();
-    const { draw } = mountHarness({ scenario });
+    const renderFeed = createRenderFeed();
+    const { draw } = mountHarness({ scenario, renderFeed });
     const { selectedFeatureIds } = useSelectedItems();
     selectedFeatureIds.value.add("feature-1");
     selectedFeatureIds.value.add("feature-2");
 
     draw.deleteSelected();
 
+    expect(renderFeed.settle).toHaveBeenCalledWith("commit");
     expect(scenario.store.groupUpdate).toHaveBeenCalled();
     expect(scenario.geo.deleteFeature).toHaveBeenCalledWith("feature-1");
     expect(scenario.geo.deleteFeature).toHaveBeenCalledWith("feature-2");

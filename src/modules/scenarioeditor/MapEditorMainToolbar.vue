@@ -316,7 +316,7 @@ watchEffect(() => {
       <MainToolbarButton
         :active="store.currentToolbar === 'draw'"
         @click="toggleToolbarIfSupported('draw')"
-        :title="props.canDraw ? 'Draw' : 'Draw not supported in MapLibre mode yet'"
+        :title="props.canDraw ? 'Draw' : 'Draw not supported by this map engine'"
         :disabled="!props.canDraw"
       >
         <DrawIcon class="size-6" />
