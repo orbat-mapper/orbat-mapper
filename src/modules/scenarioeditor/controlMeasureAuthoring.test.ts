@@ -391,3 +391,35 @@ describe("recording a control measure's shape", () => {
     expect(item.state ?? []).toHaveLength(0);
   });
 });
+
+describe("the façade going away underneath a session", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  // Destroying the façade rejects the session promise without firing `onCommit`, and
+  // nothing in the store changed, so no other settle trigger can fire. Without the
+  // `onBeforeDetach` hook the reshaping is silently discarded — the one settle path
+  // ADR-0006's "an edit closes and keeps its work" cannot reach through the feed.
+  it("keeps an open edit's work when a basemap swap detaches the surface", async () => {
+    const { draw, scenario, fake } = setup();
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    fake.editSession!.setControlPoints(EDITED_POINTS);
+    fake.setDetached(true);
+    await nextTick();
+
+    expect(storedItem(scenario).controlPoints).toEqual(EDITED_POINTS);
+  });
+
+  it("writes nothing when a draw is detached mid-gesture", async () => {
+    const { draw, scenario, fake, mutations } = setup();
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    fake.setDetached(true);
+    await nextTick();
+    await nextTick();
+
+    // A draw aborts rather than folding: half a graphic is not a graphic.
+    expect(controlMeasureIds(scenario)).toEqual(["cm-1"]);
+    expect(mutations()).toBe(0);
+  });
+});

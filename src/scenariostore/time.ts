@@ -159,14 +159,17 @@ export function useScenarioTime(store: NewScenarioStore) {
       layer.items.forEach((featureId) => {
         const feature = state.layerItemMap[featureId];
         if (!feature) return;
-        const oldHidden = feature._hidden;
-        feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);
-        if (oldHidden !== feature._hidden) {
-          state.featureStateCounter++;
-        }
+        // Projection first: `_hidden` resolves `isHidden`/`visibleFromT`/
+        // `visibleUntilT` through `_state`, so computing it against the pre-scrub
+        // projection would ignore any timed patch of them.
         if (feature.state?.length) {
           (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
             projectScenarioLayerItemStateAt(feature, timestamp);
+          state.featureStateCounter++;
+        }
+        const oldHidden = feature._hidden;
+        feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);
+        if (oldHidden !== feature._hidden) {
           state.featureStateCounter++;
         }
       });

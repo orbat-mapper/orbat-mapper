@@ -387,15 +387,30 @@ export function projectScenarioLayerItemStateAt(
  *
  * `visibleFromT`/`visibleUntilT` are exclusive bounds, matching the pre-existing
  * geometry-only behaviour exactly.
+ *
+ * The three visibility fields are read through `_state` when the projection carries
+ * them, so a timed patch of `isHidden` (or of either bound) actually takes effect.
+ * The patch type is deliberately wide — an imported scenario may carry richer patches
+ * than anything this app writes — so reading only the top-level fields would silently
+ * drop them. **`_state` must therefore be projected before this is called**; both
+ * callers do so in that order.
  */
 export function computeScenarioLayerItemHidden(
-  item: Pick<ScenarioLayerItemBase, "visibleFromT" | "visibleUntilT" | "isHidden">,
+  item: Pick<ScenarioLayerItemBase, "visibleFromT" | "visibleUntilT" | "isHidden"> & {
+    _state?: CurrentScenarioLayerItemState | null;
+  },
   currentTime: number,
 ): boolean {
-  const visibleFromT = item.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-  const visibleUntilT = item.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  const projected = (item._state ?? undefined) as
+    | Partial<Pick<ScenarioLayerItemBase, "visibleFromT" | "visibleUntilT" | "isHidden">>
+    | undefined;
+  const visibleFromT =
+    projected?.visibleFromT ?? item.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+  const visibleUntilT =
+    projected?.visibleUntilT ?? item.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  const isHidden = projected?.isHidden ?? item.isHidden;
   const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
-  return timeHidden || !!item.isHidden;
+  return timeHidden || !!isHidden;
 }
 
 export function isTacticalGraphicLayerItem(

@@ -906,12 +906,18 @@ export function useGeo(store: NewScenarioStore) {
     if (!feature.state || !feature.state.length) {
       store.state.featureStateCounter++;
       feature._state = undefined;
+      // The projection just went away, so a patched visibility went with it.
+      updateLayerItemHidden(feature, state.currentTime);
       return;
     }
     setProjectedLayerItemState(
       feature,
       projectScenarioLayerItemStateAt(feature, state.currentTime),
     );
+    // After the projection, never before: `_hidden` resolves the visibility fields
+    // through `_state`, so a timed patch of `isHidden` only lands if it is computed
+    // from the fresh projection.
+    updateLayerItemHidden(feature, state.currentTime);
     store.state.featureStateCounter++;
   }
 

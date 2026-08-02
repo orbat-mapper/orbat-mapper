@@ -175,6 +175,26 @@ describe("kind-agnostic time projection", () => {
     expect(item(store, "annotation-1")._hidden).toBe(false);
   });
 
+  // The patch type is deliberately wide, so an imported scenario may patch visibility
+  // itself. `_hidden` therefore has to be computed *after* `_state` is projected and
+  // read through it — otherwise the patch never reaches the map and the item stays
+  // drawn at a time it declares itself hidden.
+  it("honours a timed patch of isHidden", () => {
+    const scenario = createScenario();
+    const graphic = (scenario.layerStack![0] as any).items.find(
+      (i: any) => i.id === "tacticalGraphic-1",
+    ) as any;
+    graphic.state = [{ t: T2, patch: { isHidden: true } }];
+    const store = useNewScenarioStore(scenario);
+    const time = useScenarioTime(store);
+
+    time.setCurrentTime(Date.parse(T1));
+    expect(item(store, "tacticalGraphic-1")._hidden).toBe(false);
+
+    time.setCurrentTime(Date.parse(T2));
+    expect(item(store, "tacticalGraphic-1")._hidden).toBe(true);
+  });
+
   it("includes non-geometry state entries in the time histogram", () => {
     const store = useNewScenarioStore(createScenario());
     const time = useScenarioTime(store);
