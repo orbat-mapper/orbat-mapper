@@ -37,6 +37,56 @@ only its meaningful fields). `LoadableGeometryLayerMeta` is the **loose**
 counterpart used for data still being loaded, upgraded, or partially patched,
 where the kind and its extra fields cannot yet be guaranteed to line up.
 
+### Control measures
+
+**Control measure**:
+A doctrinal tactical graphic — boundary, axis of advance, phase line, fire
+support area, … — drawn and rendered by the `@orbat-mapper/control-measures`
+registry rather than by our own shape pipeline (see [[adr-0006]]). Not a geometry
+layer item, and deliberately not a `geometryKind`.
+
+**graphicKind**:
+Which control measure it is — the library's `ControlMeasureKind`. Named
+deliberately in parallel with **geometryKind**: same role, different family.
+_Avoid_: "graphicCode" (an earlier name for this field, dropped before it shipped).
+
+**The three names for one control measure**:
+It is a **tacticalGraphic layer item** where it is stored (`graphicKind`,
+`controlPoints`, opaque `options`, amplifiers, host-owned identity/status), a
+**ControlMeasure** once projected for the library at the `toControlMeasure` seam,
+and a **Graphic** by the time it reaches `render()`. Use the name that belongs to
+the seam you are at; the stored item is the only one that is persisted.
+
+**Colour mode** and **Status**:
+`"identity" | "monochrome"`, and Present vs Planned (Planned renders dashed).
+Neither exists in the control-measures library — both are **host projections**,
+resolved at the `toControlMeasure` seam and never written into storage. Identity
+colours come from milsymbol's saturated colour mode, the same source the unit
+symbols use, so a control measure matches a unit of the same identity.
+_Avoid_: storing a resolved colour. The stored `style.color` is an *authored*
+override; absent it, colour is derived per render.
+
+**Session** (draw session / edit session):
+An open control-measure interaction owned by tactical-draw. Transient — nothing
+reaches the scenario store while it is open.
+
+**Commit on settle**:
+Exactly one scenario-store update per settled session, so a whole drawn control
+measure is one undo step and an aborted session leaves none.
+
+**Settle-first**:
+The rule that anything feeding `render()` settles an open session before
+re-rendering — an edit closes and keeps its work, a draw aborts. The guard is on
+the render feed, not the clock, because a mid-session `render()` that omits the
+edited graphic aborts its session.
+
+**Armed tool**:
+The one thing the map is currently armed to do — `none`, `plainDraw`,
+`plainModify`, `cmDraw`, `cmEdit` — as a single union across both draw families,
+so "at most one thing armed" holds by construction.
+_Avoid_: reading `currentDrawType` / `isModifying` as state; they are derived from
+the armed tool.
+
 ### Unit resources
 
 **Unit resource**:
@@ -66,6 +116,19 @@ adapter, never to a vendor map object.
 The permanent seam between scenario logic and the map engine (see
 [[adr-0005]]). It is not migration scaffolding: it stays even with only one
 engine implemented.
+_Avoid_: an unqualified "the adapter". `@orbat-mapper/tactical-draw` ships its
+own, unrelated `MapAdapter` ABI, imported here as **TacticalDrawMapAdapter**;
+both are constructed over the same `maplibre-gl` map and they stay distinct (see
+[[adr-0006]]).
+
+**Tactical-draw surface**:
+The object owning the `TacticalDrawMapAdapter` and the tactical-draw façade,
+hanging off `ScenarioMapEngine.draw`. Optional — an engine without one leaves it
+undefined, and control-measure UI is capability-gated on its presence. It also
+owns the re-attach: tactical-draw's ready signal never re-fires after a basemap
+swap, so the surface re-attaches on `style.load` and replays the last render.
+_Avoid_: capturing the façade (`Pick<TacticalDraw, …>`) anywhere long-lived — its
+identity changes underneath you on every re-attach.
 
 **Legacy map view**:
 Specifically the removed OpenLayers-based scenario editor view — a historical
