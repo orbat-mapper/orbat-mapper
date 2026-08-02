@@ -6,12 +6,19 @@ const PROBE_PARAM = "tacticalDrawProbe";
 const PROBE_ID = "tactical-draw-probe";
 
 /**
- * Throwaway liveness probe for the tactical-draw seam (issue #634).
+ * Dev-only liveness probe for the tactical-draw seam.
  *
  * Renders one hard-coded control measure across the current viewport and logs every
- * pick on it, so the seam can be exercised in a real browser before any real UI
- * exists. Opt-in via `?tacticalDrawProbe=1`; a no-op otherwise, and stripped from
- * production builds. Delete once the draw/edit UI lands.
+ * pick on it. Opt-in via `?tacticalDrawProbe=1`; a no-op otherwise, and stripped from
+ * production builds.
+ *
+ * **Keep this.** It started as throwaway scaffolding for #634, but our tests stop at
+ * the `Graphic[]` we hand the library — nothing in CI can tell whether the map
+ * actually drew. This probe is the compensating manual check, and the named artifact
+ * a `@orbat-mapper/tactical-draw` version bump is verified against. Widen it to more
+ * representative kinds as they land; do not delete it when the draw/edit UI arrives.
+ *
+ * See docs/adr/0006-control-measures-on-tactical-draw.md.
  */
 export function isTacticalDrawProbeEnabled(): boolean {
   if (!import.meta.env.DEV) return false;
