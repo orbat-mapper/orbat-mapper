@@ -126,6 +126,11 @@ export function createTacticalDrawSurfaceFake(
   let nextId = 0;
   const generateId = options.generateId ?? (() => `cm-${++nextId}`);
   let detached = options.detached ?? false;
+  const beforeDetachHandlers = new Set<() => void>();
+
+  function fireBeforeDetach() {
+    for (const handler of [...beforeDetachHandlers]) handler();
+  }
 
   const calls: TacticalDrawSurfaceFake["calls"] = {
     draw: [],
@@ -370,10 +375,18 @@ export function createTacticalDrawSurfaceFake(
     get activeSession() {
       return drawHandle?.session ?? editHandle?.session ?? null;
     },
+    onBeforeDetach(handler: () => void) {
+      beforeDetachHandlers.add(handler);
+      return () => beforeDetachHandlers.delete(handler);
+    },
     destroy() {
       calls.destroy += 1;
+      // Before the sessions go, exactly as the real surface fires it — a test that
+      // asserts an edit keeps its work across teardown depends on this ordering.
+      fireBeforeDetach();
       detached = true;
       pickHandlers.clear();
+      beforeDetachHandlers.clear();
       options.onDestroy?.();
     },
   } as unknown as TacticalDrawSurface;
@@ -391,6 +404,9 @@ export function createTacticalDrawSurfaceFake(
       for (const handler of [...pickHandlers]) handler(event);
     },
     setDetached(value) {
+      // A basemap swap destroys the façade, so detaching fires the same hook the real
+      // surface fires — which is what gives an open edit its chance to fold.
+      if (value && !detached) fireBeforeDetach();
       detached = value;
     },
   };

@@ -38,6 +38,12 @@ export type SettleReason =
   | "arm"
   /** A settled session's work has just been folded into the store (M2). */
   | "commit"
+  /**
+   * The tactical-draw façade is about to be destroyed and rebuilt — a basemap swap.
+   * Destroying it rejects an open session without firing `onCommit`, so an edit that
+   * did not settle here would lose its work.
+   */
+  | "detach"
   /** The map is going away. */
   | "teardown";
 

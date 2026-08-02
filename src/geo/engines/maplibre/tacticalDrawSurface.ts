@@ -171,6 +171,17 @@ export interface TacticalDrawSurface {
   cancel(reason?: TacticalDrawAbortReason): boolean;
   /** The open session, or `null`. Re-read it; never hold it across a basemap swap. */
   readonly activeSession: TacticalDrawSession;
+  /**
+   * Fires immediately before a live façade is destroyed — a basemap swap's
+   * `style.load` re-attach, or `destroy()`.
+   *
+   * Destroying the façade rejects an open session's promise without firing
+   * `onCommit`, which for an **edit** would silently discard the user's work and
+   * break ADR-0006's "an edit closes and keeps its work". The host settles from here
+   * so the fold happens while the façade is still alive. Returns an idempotent
+   * unsubscribe.
+   */
+  onBeforeDetach(handler: () => void): () => void;
   /** Tear down the façade and the adapter, in that order, and stop re-attaching. */
   destroy(): void;
 }
@@ -197,6 +208,7 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   // scaling mid-animation. See docs/adr/0006-control-measures-on-tactical-draw.md.
   const adapter = new MapLibreAdapter(mlMap, { viewChangeMode: "settle" });
   const pickHandlers = new Set<(event: PickEvent) => void>();
+  const beforeDetachHandlers = new Set<() => void>();
 
   let tacticalDraw: TacticalDraw | null = null;
   let unsubscribePick: (() => void) | null = null;
@@ -214,6 +226,11 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   }
 
   function detachFacade() {
+    // Before anything is torn down, so a settling edit can still close through the
+    // live façade and fold its work. Copied because a handler may unregister itself.
+    if (tacticalDraw) {
+      for (const handler of [...beforeDetachHandlers]) handler();
+    }
     unsubscribePick?.();
     unsubscribePick = null;
     if (!tacticalDraw) return;
@@ -292,6 +309,10 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     get activeSession() {
       return tacticalDraw?.activeSession ?? null;
     },
+    onBeforeDetach(handler) {
+      beforeDetachHandlers.add(handler);
+      return () => beforeDetachHandlers.delete(handler);
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
@@ -303,6 +324,8 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       // Order matters: the façade releases only the layer slots it allocated,
       // then the adapter tears down the rest.
       detachFacade();
+      // After `detachFacade`, which is what gives the settle its last chance to run.
+      beforeDetachHandlers.clear();
       adapter.destroy();
     },
   };

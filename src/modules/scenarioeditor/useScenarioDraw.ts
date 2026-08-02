@@ -89,6 +89,17 @@ export interface ScenarioKeyboardOwner {
    * swallow, never steer.
    */
   handleRedoKey(event?: KeyboardEvent): boolean;
+  /**
+   * What undo/redo *availability* means right now, or `null` when the owner does not
+   * own them and scenario `canUndo`/`canRedo` apply.
+   *
+   * The buttons need this and the key handlers do not: a key that is swallowed simply
+   * does nothing, but an Undo button left enabled by scenario history while a draw
+   * swallows the action would be a control that visibly does nothing — and one
+   * disabled by scenario history during an edit would hide a session undo that is
+   * genuinely available.
+   */
+  ownedUndoState(): { canUndo: boolean; canRedo: boolean } | null;
 }
 
 export interface UseScenarioDrawOptions {
@@ -345,6 +356,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       sources: { graphics: true, graphicGeometry: true },
     });
   });
+
+  // A basemap swap destroys the tactical-draw façade and builds a new one. Destroying
+  // it rejects an open session's promise *without* firing `onCommit`, so an edit would
+  // lose everything the user had reshaped — the one settle path that cannot go through
+  // the render feed's own inputs, because nothing in the store changed. Registered here
+  // rather than in the map view because this is where the sessions are owned.
+  watch(
+    () => engineRef.value?.draw,
+    (surface, _previous, onCleanup) => {
+      if (!surface || !renderFeed) return;
+      onCleanup(surface.onBeforeDetach(() => renderFeed.settle("detach")));
+    },
+    { immediate: true },
+  );
 
   const currentDrawType = computed(() =>
     armed.value.kind === "plainDraw" ? armed.value.drawType : null,
@@ -633,6 +658,19 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     return true;
   }
 
+  function ownedUndoState() {
+    // During a draw there is only abort, so both directions are unavailable rather
+    // than merely swallowed.
+    if (armed.value.kind === "cmDraw") return { canUndo: false, canRedo: false };
+    if (armed.value.kind === "cmEdit") {
+      return {
+        canUndo: controlMeasureEdit.canUndo.value,
+        canRedo: controlMeasureEdit.canRedo.value,
+      };
+    }
+    return null;
+  }
+
   // `ScenarioEditor` owns undo/redo and sits above the map view, so it cannot inject
   // what the map view provides. It provides this holder instead and the owner registers
   // itself into it.
@@ -642,6 +680,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     handleEnter,
     handleUndoKey,
     handleRedoKey,
+    ownedUndoState,
   };
   if (keyboardOwnerRef) keyboardOwnerRef.value = keyboardOwner;
 
