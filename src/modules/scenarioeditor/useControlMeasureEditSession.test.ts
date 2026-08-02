@@ -52,6 +52,18 @@ function createScenario(): TScenario {
             ],
           },
           {
+            // An import can carry a pixel-denominated size; nothing drawn in the app
+            // can, since every draw bakes to ground on commit.
+            id: "cm-screen",
+            kind: "tacticalGraphic",
+            graphicKind: "boundary",
+            controlPoints: [
+              [10, 60],
+              [11, 61],
+            ],
+            options: { echelon: "battalion", echelonSizePixels: 16 },
+          },
+          {
             id: "cm-unsupported",
             kind: "tacticalGraphic",
             graphicKind: "not-a-real-kind",
@@ -89,6 +101,19 @@ function setup({ recordShape = false } = {}) {
 }
 
 describe("useControlMeasureEditSession", () => {
+  // An edit must never silently re-anchor a graphic: reshaping a ground-sized boundary
+  // must not freeze its glyph to the zoom that happened to be showing, and reshaping a
+  // screen-anchored import must not bake it just because it was touched.
+  it("edits at whatever size anchor the graphic already encodes", () => {
+    const { edit, fake } = setup();
+
+    edit.start("cm-1");
+    edit.stop();
+    edit.start("cm-screen");
+
+    expect(fake.calls.editSizeAnchor).toEqual(["ground", "screen"]);
+  });
+
   it("opens a session on a control measure and refuses everything else", () => {
     const { edit, fake } = setup();
 
