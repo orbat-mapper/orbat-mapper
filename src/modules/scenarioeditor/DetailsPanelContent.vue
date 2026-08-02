@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
+import ControlMeasureDetails from "@/modules/scenarioeditor/ControlMeasureDetails.vue";
 import UnitDetails from "@/modules/scenarioeditor/UnitDetails.vue";
 import ScenarioEventDetails from "@/modules/scenarioeditor/ScenarioEventDetails.vue";
 import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDetails.vue";
@@ -39,6 +40,11 @@ const showRouteContent = computed(() => toolbarStore.currentToolbar === "route")
     @clear-current-leg="routeDetailsPanel.clearCurrentLeg()"
     @finish="routeDetailsPanel.finishRoute()"
     @end-drawing="routeDetailsPanel.endRouting()"
+  />
+  <ControlMeasureDetails
+    v-else-if="activeDetailsPanel === 'tacticalGraphic'"
+    :selected-ids="selectedFeatureIds"
+    :class="props.contentClass"
   />
   <ScenarioFeatureDetails
     v-else-if="activeDetailsPanel === 'feature'"

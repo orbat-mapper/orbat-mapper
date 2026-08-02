@@ -13,6 +13,10 @@ import type {
   MeasurementTypes,
 } from "@/geo/measurementTypes";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
+import type {
+  ScenarioDraw,
+  ScenarioKeyboardOwner,
+} from "@/modules/scenarioeditor/useScenarioDraw";
 
 export const activeParentKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
@@ -99,3 +103,22 @@ export const routeDetailsPanelKey = Symbol(
 export const tacticalGraphicRenderFeedKey = Symbol(
   "Tactical graphic render feed",
 ) as InjectionKey<TacticalGraphicRenderFeed>;
+
+/**
+ * The armed-tool owner. Provided by whichever scenario map view is mounted, so the
+ * draw toolbar and the details panel share one instance instead of each creating its
+ * own — the toolbar is `v-if`'d and unmounts, and control-measure editing is driven
+ * from the details panel with the toolbar closed.
+ */
+export const scenarioDrawKey = Symbol("Scenario draw") as InjectionKey<ScenarioDraw>;
+
+/**
+ * Registration holder for the keyboard owner (Escape / Enter / Ctrl+Z).
+ *
+ * Provided by `ScenarioEditor`, *above* the map views, because that is where undo/redo
+ * is bound and a component cannot inject what its descendant provides. The map view's
+ * `useScenarioDraw` writes itself in and clears it on scope dispose.
+ */
+export const scenarioKeyboardOwnerKey = Symbol("Scenario keyboard owner") as InjectionKey<
+  ShallowRef<ScenarioKeyboardOwner | null>
+>;

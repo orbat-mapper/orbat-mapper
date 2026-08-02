@@ -16,13 +16,23 @@ import {
   IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
 
+import { IconShapePolygonPlus as MoreGraphicsIcon } from "@iconify-prerendered/vue-mdi";
+import { computed, ref } from "vue";
+
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
-import { onKeyStroke, useToggle } from "@vueuse/core";
+import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
+import ControlMeasurePickerDialog from "@/modules/scenarioeditor/ControlMeasurePickerDialog.vue";
+import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
+import { getControlMeasureKindOption } from "@/modules/scenarioeditor/controlMeasurePicker";
+import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
+import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import { useToggle } from "@vueuse/core";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { storeToRefs } from "pinia";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
+import { scenarioDrawKey } from "@/components/injects";
+import { injectStrict } from "@/utils";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const { selectedFeatureIds } = useSelectedItems();
@@ -34,6 +44,9 @@ const recordStore = useRecordingStore();
 const { isRecordingGeometry } = storeToRefs(recordStore);
 const { toggleRecordingGeometry } = recordStore;
 
+// Provided by the map view rather than created here: this toolbar is `v-if`'d, and an
+// instance that dies with it would take the armed tool and the snap/translate/freehand
+// toggles down with it.
 const {
   startDrawing,
   currentDrawType,
@@ -44,15 +57,43 @@ const {
   snap,
   translate,
   freehand,
-} = useScenarioDraw();
+  armed,
+  arm,
+  canControlMeasures,
+} = injectStrict(scenarioDrawKey);
+
+const controlMeasureStore = useControlMeasureToolStore();
+const { pinnedKinds } = storeToRefs(controlMeasureStore);
+const pickerOpen = ref(false);
+
+const armedGraphicKind = computed(() =>
+  armed.value.kind === "cmDraw" ? armed.value.graphicKind : null,
+);
+
+/**
+ * A control-measure session is running. The three plain-draw toggles do not all mean
+ * something for one: `freehand` has no counterpart in the library at all, and
+ * `translate` is stage-two work (`syncTransformGraphics`). `snap` does — it fans out to
+ * the engine's own snapping options in `useScenarioDraw`.
+ */
+const controlMeasureArmed = computed(
+  () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
+);
+
+const NO_ENGINE_SUPPORT = "Control measures are not supported by this map engine";
+
+function controlMeasureTitle(kind: ControlMeasureId) {
+  if (!canControlMeasures.value) return NO_ENGINE_SUPPORT;
+  return getControlMeasureKindOption(kind)?.name ?? kind;
+}
+
+function drawControlMeasure(kind: ControlMeasureId) {
+  arm({ kind: "cmDraw", graphicKind: kind });
+}
 
 const toggleSnap = useToggle(snap);
 const toggleTranslate = useToggle(translate);
 const toggleFreehand = useToggle(freehand);
-
-onKeyStroke("Escape", (event) => {
-  cancel();
-});
 </script>
 
 <template>
@@ -98,6 +139,25 @@ onKeyStroke("Escape", (event) => {
     </MainToolbarButton>
     <div class="border-border mx-1 h-5 border-l" />
     <MainToolbarButton
+      v-for="kind in pinnedKinds"
+      :key="kind"
+      :title="controlMeasureTitle(kind)"
+      :active="armedGraphicKind === kind"
+      :disabled="!canControlMeasures"
+      @click="drawControlMeasure(kind)"
+    >
+      <ControlMeasurePreview :kind="kind" class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      :title="canControlMeasures ? 'More control measures' : NO_ENGINE_SUPPORT"
+      :disabled="!canControlMeasures"
+      @click="pickerOpen = true"
+    >
+      <MoreGraphicsIcon class="size-5" />
+    </MainToolbarButton>
+    <ControlMeasureDefaultsPopover :disabled="!canControlMeasures" />
+    <div class="border-border mx-1 h-5 border-l" />
+    <MainToolbarButton
       title="Keep tool active to add multiple"
       @click="toggleAddMultiple()"
       :active="addMultiple"
@@ -108,7 +168,12 @@ onKeyStroke("Escape", (event) => {
     <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
       <SnapIcon class="size-5" />
     </MainToolbarButton>
-    <MainToolbarButton title="Freehand" @click="toggleFreehand()" :active="freehand">
+    <MainToolbarButton
+      v-if="!controlMeasureArmed"
+      title="Freehand"
+      @click="toggleFreehand()"
+      :active="freehand"
+    >
       <FreehandIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
@@ -121,7 +186,16 @@ onKeyStroke("Escape", (event) => {
     >
       <IconClockEdit class="size-5" />
     </MainToolbarButton>
-    <MainToolbarButton title="translate" @click="toggleTranslate()" :active="translate">
+    <MainToolbarButton
+      :title="
+        controlMeasureArmed
+          ? 'Translate is not available for control measures yet'
+          : 'Translate'
+      "
+      :disabled="controlMeasureArmed"
+      @click="toggleTranslate()"
+      :active="translate"
+    >
       <MoveIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
@@ -131,5 +205,6 @@ onKeyStroke("Escape", (event) => {
     >
       <DeleteIcon class="size-5" />
     </MainToolbarButton>
+    <ControlMeasurePickerDialog v-model="pickerOpen" @select="drawControlMeasure" />
   </MapEditorSubToolbar>
 </template>

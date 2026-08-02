@@ -116,6 +116,19 @@ export function resolveControlMeasureColor(item: TacticalGraphicLayerItem): stri
   return colorFromInputs(resolveProjectionInputs(item));
 }
 
+/**
+ * The same projection, over loose fields rather than a stored item.
+ *
+ * The styling UI edits `style` / `colorMode` / `standardIdentity` and has to show the
+ * colour they resolve to — including for the authoring *defaults*, which have no item
+ * to hang on at all. Exported so that projection is never re-implemented there.
+ */
+export function resolveControlMeasureColorFrom(
+  inputs: Pick<ProjectionInputs, "style" | "colorMode" | "standardIdentity">,
+): string {
+  return colorFromInputs(inputs as ProjectionInputs);
+}
+
 function colorFromInputs({
   style,
   colorMode,

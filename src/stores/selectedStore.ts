@@ -1,6 +1,6 @@
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { EntityId } from "@/types/base";
-import { computed, ref, watch } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { type DetailsPanel } from "@/modules/scenarioeditor/types";
 import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
 
@@ -117,8 +117,39 @@ function clear() {
   showScenarioInfo.value = false;
 }
 
+/**
+ * "Is this selected id a control measure?"
+ *
+ * Control measures share the one flat `selectedFeatureIds` set with plain geometry
+ * items — deliberately, since selection has only ever needed the id — but the details
+ * panel has to tell the two apart. This module is a bare singleton with no scenario
+ * access (it imports nothing but types), so it cannot look the kind up itself; the
+ * scenario owner registers the lookup instead, exactly once, for the scenario's life.
+ *
+ * Unregistered — which is every non-scenario context and every test that does not opt
+ * in — the panel behaves as it did before control measures existed.
+ */
+export type TacticalGraphicPredicate = (id: FeatureId) => boolean;
+
+const isTacticalGraphicId = shallowRef<TacticalGraphicPredicate | null>(null);
+
+/** Register the lookup. Returns an idempotent unregister. */
+export function setTacticalGraphicPredicate(predicate: TacticalGraphicPredicate) {
+  isTacticalGraphicId.value = predicate;
+  return () => {
+    if (isTacticalGraphicId.value === predicate) isTacticalGraphicId.value = null;
+  };
+}
+
 const activeDetailsPanel = computed((): DetailsPanel | null | undefined => {
   if (selectedFeatureIds.value.size) {
+    // Only when *every* selected id is a control measure. A mixed selection falls
+    // through to the feature panel, which hides the sections that cannot describe a
+    // control measure rather than splitting the selection across two panels.
+    const isTacticalGraphic = isTacticalGraphicId.value;
+    if (isTacticalGraphic && [...selectedFeatureIds.value].every(isTacticalGraphic)) {
+      return "tacticalGraphic";
+    }
     return "feature";
   }
   if (activeUnitId.value || selectedUnitIds.value.size) {

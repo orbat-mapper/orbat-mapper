@@ -1,19 +1,29 @@
 import type { Map as MlMap } from "maplibre-gl";
-import { TacticalDraw } from "@orbat-mapper/tactical-draw";
+import { TacticalDraw, TacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
+  DrawMeasureDraft,
+  DrawOptions,
+  EditOptions,
   Graphic,
+  GraphicSnapshot,
   InteractionHit,
   // orbat-mapper has its own `MapAdapter` (`@/geo/contracts/mapAdapter`) answering a
   // different question. Alias tactical-draw's ABI so the two never collide.
   MapAdapter as TacticalDrawMapAdapter,
   PickEvent,
   PixelCoordinate,
+  SnappingOptions,
+  TacticalDrawAbortReason,
 } from "@orbat-mapper/tactical-draw";
+import type { ControlMeasure, ControlMeasureKind } from "@orbat-mapper/control-measures";
 import { MapLibreAdapter } from "@orbat-mapper/tactical-draw-adapter-maplibre";
 import { isProxy, isRef } from "vue";
 import { nanoid } from "@/utils";
 
 export type { TacticalDrawMapAdapter, InteractionHit, PixelCoordinate };
+
+/** The session kinds a host can hold. Mirrors `TacticalDraw.activeSession`. */
+export type TacticalDrawSession = TacticalDraw["activeSession"];
 
 /**
  * Dev-only reactivity guard, warning at most once per session.
@@ -45,6 +55,25 @@ function assertRawGraphics(graphics: readonly Graphic[]) {
       "not reach anything the tactical-draw engine holds: it caches rendered output " +
       "on Graphic object identity, which a proxy defeats. markRaw/shallowRef the " +
       "batch and its graphics. See docs/adr/0006-control-measures-on-tactical-draw.md.",
+  );
+}
+
+/**
+ * The same guard for the authoring doors. `draw()` and `edit()` also take host-owned
+ * objects the engine holds for the life of a session, so a reactive draft or measure
+ * defeats the same identity cache — `toRaw` it at the call site (`toControlMeasure`
+ * already does).
+ */
+function assertRawGraphicInput(value: unknown, door: string) {
+  if (!import.meta.env.DEV) return;
+  if (warnedAboutReactiveGraphics) return;
+  if (!isReactiveLike(value)) return;
+  warnedAboutReactiveGraphics = true;
+  console.warn(
+    `[tacticalDrawSurface] ${door}() received a reactive object. Vue reactivity must ` +
+      "not reach anything the tactical-draw engine holds: it caches rendered output " +
+      "on Graphic object identity, which a proxy defeats. markRaw/toRaw it. " +
+      "See docs/adr/0006-control-measures-on-tactical-draw.md.",
   );
 }
 
@@ -111,6 +140,37 @@ export interface TacticalDrawSurface {
    * render feed. The set is replayed after a `style.load` re-attach.
    */
   setHighlightedGraphics(ids: readonly string[]): void;
+  /**
+   * Engine-level snapping for draw and edit sessions. Cheap and idempotent, so the
+   * host re-asserts it rather than tracking what the façade currently holds — which
+   * is also what makes it survive a `style.load` re-attach.
+   */
+  setSnappingOptions(options?: SnappingOptions): void;
+  /**
+   * Start an interactive draw. Resolves with the committed snapshot, rejects with
+   * `TacticalDrawAbortError` on Escape / abort / destroy — and, notably, while the
+   * façade is detached, so a caller's abort path covers the basemap-swap window by
+   * construction rather than by a separate null check.
+   *
+   * Nothing here writes to the scenario store: the host folds the resolved snapshot
+   * in exactly once, on settle (ADR-0006).
+   */
+  draw<K extends ControlMeasureKind>(
+    draft: DrawMeasureDraft<K>,
+    options?: DrawOptions,
+  ): Promise<GraphicSnapshot<ControlMeasure<K>>>;
+  /** Start an interactive edit on one committed control measure. Same rejection rules. */
+  edit(
+    measure: ControlMeasure,
+    options?: EditOptions,
+  ): Promise<GraphicSnapshot<ControlMeasure>>;
+  /**
+   * Abort whatever session is open. `true` when there was one. This is the settle
+   * trigger's hard end — a draw aborts, an edit is closed by the caller instead.
+   */
+  cancel(reason?: TacticalDrawAbortReason): boolean;
+  /** The open session, or `null`. Re-read it; never hold it across a basemap swap. */
+  readonly activeSession: TacticalDrawSession;
   /** Tear down the façade and the adapter, in that order, and stop re-attaching. */
   destroy(): void;
 }
@@ -142,7 +202,16 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   let unsubscribePick: (() => void) | null = null;
   let lastRendered: readonly Graphic[] = [];
   let lastHighlighted: readonly string[] = [];
+  let lastSnapping: SnappingOptions | undefined;
   let destroyed = false;
+
+  /** Every authoring door rejects the same way while detached. */
+  function detachedAbort(): TacticalDrawAbortError {
+    return new TacticalDrawAbortError("destroyed", {
+      message:
+        "tactical-draw is detached (basemap swap in progress or surface destroyed)",
+    });
+  }
 
   function detachFacade() {
     unsubscribePick?.();
@@ -160,7 +229,10 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     if (destroyed) return;
     // Idempotent by construction, so a repeated `style.load` cannot stack façades.
     detachFacade();
-    tacticalDraw = new TacticalDraw(adapter, tacticalDrawOptions());
+    tacticalDraw = new TacticalDraw(adapter, {
+      ...tacticalDrawOptions(),
+      snapping: lastSnapping,
+    });
     unsubscribePick = tacticalDraw.onGraphicPick((event) => {
       for (const handler of pickHandlers) handler(event);
     });
@@ -200,6 +272,26 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       lastHighlighted = ids;
       tacticalDraw?.setHighlightedGraphics(ids);
     },
+    setSnappingOptions(options) {
+      lastSnapping = options;
+      tacticalDraw?.setSnappingOptions(options);
+    },
+    draw(draft, options) {
+      assertRawGraphicInput(draft, "draw");
+      if (!tacticalDraw) return Promise.reject(detachedAbort());
+      return tacticalDraw.draw(draft, options);
+    },
+    edit(measure, options) {
+      assertRawGraphicInput(measure, "edit");
+      if (!tacticalDraw) return Promise.reject(detachedAbort());
+      return tacticalDraw.edit(measure, options);
+    },
+    cancel(reason) {
+      return tacticalDraw?.cancel(reason) ?? false;
+    },
+    get activeSession() {
+      return tacticalDraw?.activeSession ?? null;
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
@@ -207,6 +299,7 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       pickHandlers.clear();
       lastRendered = [];
       lastHighlighted = [];
+      lastSnapping = undefined;
       // Order matters: the façade releases only the layer slots it allocated,
       // then the adapter tears down the rest.
       detachFacade();
