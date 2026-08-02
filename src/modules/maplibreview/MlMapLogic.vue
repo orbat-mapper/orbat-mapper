@@ -597,20 +597,42 @@ function getHitTolerance(e?: MapMouseEvent | MapTouchEvent | MouseEvent): number
   return isTouch ? TOUCH_HIT_TOLERANCE_PX : MOUSE_HIT_TOLERANCE_PX;
 }
 
+/** The four layer families this query is about. Also the shape of the `layers` filter. */
+function isInteractiveLayerId(layerId: string): boolean {
+  return (
+    isUnitLayerId(layerId) ||
+    UNIT_HISTORY_LAYER_IDS.includes(layerId) ||
+    isMapLibreKmlRenderedLayerId(layerId) ||
+    isManagedScenarioFeatureLayerId(layerId)
+  );
+}
+
+/**
+ * Read off the live style on every query rather than cached: scenario feature layers,
+ * KML layers and unit layers all come and go, and a basemap swap rebuilds the whole
+ * style. Filtering a few hundred strings is nothing beside the query it scopes.
+ */
+function interactiveLayerIds(): string[] {
+  return mlMap.getLayersOrder().filter(isInteractiveLayerId);
+}
+
 function collectInteractiveFeatures(
   geometry: PointLike | [PointLike, PointLike],
 ): MapGeoJSONFeature[] {
   const unitHits: MapGeoJSONFeature[] = [];
   const otherHits: MapGeoJSONFeature[] = [];
-  for (const feature of mlMap.queryRenderedFeatures(geometry)) {
+  // Scoped to the layers whose hits are kept. Unscoped, MapLibre evaluates every layer
+  // in the style — the whole tactical-draw stack and the basemap included — on every
+  // mouse move, only for the loop below to throw the results away. It also made the
+  // adapter's per-feature style expressions warn (`Expected value to be of type
+  // object, but found string instead`) from a hover, which is how this was noticed.
+  for (const feature of mlMap.queryRenderedFeatures(geometry, {
+    layers: interactiveLayerIds(),
+  })) {
     const layerId = feature.layer.id;
     if (isUnitLayerId(layerId)) {
       unitHits.push(feature);
-    } else if (
-      UNIT_HISTORY_LAYER_IDS.includes(layerId) ||
-      isMapLibreKmlRenderedLayerId(layerId) ||
-      isManagedScenarioFeatureLayerId(layerId)
-    ) {
+    } else {
       otherHits.push(feature);
     }
   }
