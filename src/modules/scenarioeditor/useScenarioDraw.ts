@@ -713,6 +713,10 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureEditFeatureId: controlMeasureEdit.featureId,
     controlMeasureEditCanUndo: controlMeasureEdit.canUndo,
     controlMeasureEditCanRedo: controlMeasureEdit.canRedo,
+    /** Label-drag mode — additive to reshape, and sticky across edit sessions. */
+    controlMeasureLabelDrag: controlMeasureEdit.labelDrag,
+    setControlMeasureLabelDrag: (enabled: boolean) =>
+      controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
     startControlMeasureEdit: (featureId: FeatureId) => arm({ kind: "cmEdit", featureId }),
     /** `engine.draw` is defined — control measures can be authored on this engine. */
