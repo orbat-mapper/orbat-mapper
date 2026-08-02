@@ -47,6 +47,8 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
+// PROTOTYPE — throwaway (#640), gated on `?cmvariant=`. Delete with `cmPrototype/`.
+import CmPrototypeHost from "@/modules/maplibreview/cmPrototype/CmPrototypeHost.vue";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -208,6 +210,12 @@ onBeforeUnmount(() => {
   disposeMaplibreBinding();
 });
 
+// PROTOTYPE — throwaway (#640). Dev-only, opt-in via `?cmvariant=A|B|C`.
+const cmPrototypeVariantEnabled =
+  import.meta.env.DEV &&
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).has("cmvariant");
+
 const mapReady = computed(() => Boolean(mlMap.value));
 const headerControlsStyle = computed(() =>
   !isMobile.value && showDetailsPanel.value && ui.detailsPanelMode === "overlay"
@@ -258,6 +266,7 @@ function onCloseActiveDetailsPanel() {
             class="flex-auto bg-radial from-gray-800 to-gray-950"
           />
         </MaplibreContextMenu>
+        <CmPrototypeHost v-if="mlMap && cmPrototypeVariantEnabled" />
       </div>
       <MlMapLogic
         v-if="mlMap"
