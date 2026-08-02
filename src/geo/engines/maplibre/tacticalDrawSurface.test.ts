@@ -10,7 +10,10 @@ const { facades, adapters } = vi.hoisted(() => ({
     emitPick: (event: PickEvent) => void;
     unsubscribePick: ReturnType<typeof vi.fn>;
   }>,
-  adapters: [] as Array<{ destroy: ReturnType<typeof vi.fn> }>,
+  adapters: [] as Array<{
+    destroy: ReturnType<typeof vi.fn>;
+    options: { viewChangeMode?: "continuous" | "settle" } | undefined;
+  }>,
 }));
 
 // The real engine calls `map.addSource`/`map.addLayer` from its constructor, so the
@@ -43,8 +46,11 @@ vi.mock("@orbat-mapper/tactical-draw", () => ({
 
 vi.mock("@orbat-mapper/tactical-draw-adapter-maplibre", () => ({
   MapLibreAdapter: class FakeMapLibreAdapter {
-    constructor() {
-      const entry = { destroy: vi.fn() };
+    constructor(
+      _map: unknown,
+      options?: { viewChangeMode?: "continuous" | "settle" },
+    ) {
+      const entry = { destroy: vi.fn(), options };
       adapters.push(entry);
       Object.assign(this, { destroy: entry.destroy });
     }
@@ -78,6 +84,16 @@ describe("createTacticalDrawSurface", () => {
   beforeEach(() => {
     facades.length = 0;
     adapters.length = 0;
+  });
+
+  // The adapter's default is "continuous", which re-renders the whole stack on every
+  // frame of a pure pan. Nothing fails if this regresses — the map just gets slow —
+  // so it is asserted rather than left to a comment. See ADR-0006.
+  it("constructs the adapter in settle view-change mode", () => {
+    const { map } = createFakeMap(true);
+    createTacticalDrawSurface(map);
+
+    expect(adapters[0].options?.viewChangeMode).toBe("settle");
   });
 
   it("attaches immediately when the style is already loaded", () => {

@@ -48,7 +48,14 @@ export interface TacticalDrawSurface {
  * must `markRaw` this surface.
  */
 export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
-  const adapter = new MapLibreAdapter(mlMap);
+  // `viewChangeMode: "settle"` is load-bearing, not a tuning knob. MapLibre emits
+  // `zoom` on every frame of a *pure pan*, so the adapter's default "continuous"
+  // re-renders the whole stack per frame — measured at 1400 `updateData` calls in
+  // one 2 s pan over 50 graphics, collapsing pan to 15 fps. In "settle" mode the
+  // same scene holds 59 fps and the interactive ceiling moves from ~25 graphics to
+  // ~150-200. The cost is that pixel-fit chrome refits at `moveend` instead of
+  // scaling mid-animation. See docs/adr/0006-control-measures-on-tactical-draw.md.
+  const adapter = new MapLibreAdapter(mlMap, { viewChangeMode: "settle" });
   const pickHandlers = new Set<(event: PickEvent) => void>();
 
   let tacticalDraw: TacticalDraw | null = null;
