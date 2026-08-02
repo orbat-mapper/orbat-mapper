@@ -10,6 +10,7 @@
  * is therefore the only writer, and it groups the lazy layer creation together with the
  * item add so a drawn control measure is one undo step even the first time.
  */
+import { getDefaultOptions } from "@orbat-mapper/control-measures";
 import type { ControlMeasure, ControlMeasureStyle } from "@orbat-mapper/control-measures";
 import type { Position } from "geojson";
 import type { TScenario } from "@/scenariostore";
@@ -83,6 +84,34 @@ export function draftStyleForNewControlMeasure(
   defaults: NewControlMeasureDefaults = {},
 ): ControlMeasureStyle {
   return resolveControlMeasureStyle(newItemShell(measureKind, defaults));
+}
+
+/**
+ * The generator options a new control measure is drawn with: the kind's own registry
+ * defaults, verbatim.
+ *
+ * This is what makes an echelon glyph or a label come out sized for the zoom it was
+ * drawn at rather than at a fixed ground size. Several kinds declare both a meter and a
+ * pixel form of the same dimension — Boundary has `echelonSize: 750` *and*
+ * `echelonSizePixels: 16` — and the pixel form wins whenever it is present. Seeding it
+ * makes the in-flight preview screen-anchored, so the glyph stays 16 px while the user
+ * pans and zooms mid-gesture; then `draw()`'s default `"ground"` size anchor bakes it
+ * to meters against the resolution at commit and strips the pixel key, leaving an
+ * ordinary ground-anchored graphic that no longer rescales. Drawing the same boundary
+ * at city zoom and at theatre zoom therefore gives two glyphs that each look right
+ * where they were drawn, instead of one invisible and one covering a country.
+ *
+ * Seeding the whole default object rather than only the pixel keys is deliberate, and
+ * is what tactrace does: the pixel-size table is the library's own and is not exported,
+ * so picking the keys out here would mean re-deriving per-kind knowledge that is
+ * already declared. The cost is that a drawn graphic stores its kind's defaults
+ * explicitly — which also pins its appearance against a future change to those
+ * defaults, and gives the details panel real values to edit.
+ */
+export function draftOptionsForNewControlMeasure(
+  measureKind: ControlMeasure["kind"],
+): TacticalGraphicOptions {
+  return { ...(getDefaultOptions(measureKind) as TacticalGraphicOptions) };
 }
 
 /**

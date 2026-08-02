@@ -20,7 +20,7 @@
  */
 import { onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
-import { isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
+import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
   EditSession,
   GraphicEditSession,
@@ -139,8 +139,14 @@ export function useControlMeasureEditSession(
     if (!isSupportedGraphicKind(layerItem.graphicKind)) return false;
 
     featureId.value = itemId;
+    const startMeasure = toEditStartMeasure(layerItem);
     surface
-      .edit(toEditStartMeasure(layerItem), {
+      .edit(startMeasure, {
+        // Whatever the graphic already encodes, so an edit never silently re-anchors
+        // it: a stored ground size stays ground, and a screen-anchored one — which
+        // only an import can be, since every drawn graphic bakes to ground — is not
+        // frozen to the zoom that happened to be showing when it was reshaped.
+        sizeAnchor: getSizeAnchor(startMeasure),
         onSession(live) {
           if (token !== generation) return;
           const editSession = asControlMeasureEditSession(live);

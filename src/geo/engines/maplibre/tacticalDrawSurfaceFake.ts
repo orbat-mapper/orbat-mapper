@@ -32,6 +32,7 @@ import type {
   Graphic,
   GraphicSnapshot,
   PickEvent,
+  SizeAnchor,
   SnappingOptions,
   TacticalDrawAbortReason,
 } from "@orbat-mapper/tactical-draw";
@@ -101,7 +102,10 @@ export interface TacticalDrawSurfaceFake {
   readonly editSession: FakeEditSessionHandle | null;
   readonly calls: {
     draw: DrawMeasureDraft[];
+    /** The size anchor each `draw()` / `edit()` was opened with, parallel to the above. */
+    drawSizeAnchor: (SizeAnchor | undefined)[];
     edit: ControlMeasure[];
+    editSizeAnchor: (SizeAnchor | undefined)[];
     cancel: (TacticalDrawAbortReason | undefined)[];
     render: (readonly Graphic[])[];
     highlight: (readonly string[])[];
@@ -134,7 +138,9 @@ export function createTacticalDrawSurfaceFake(
 
   const calls: TacticalDrawSurfaceFake["calls"] = {
     draw: [],
+    drawSizeAnchor: [],
     edit: [],
+    editSizeAnchor: [],
     cancel: [],
     render: [],
     highlight: [],
@@ -331,9 +337,13 @@ export function createTacticalDrawSurfaceFake(
     },
     draw(
       draft: DrawMeasureDraft,
-      drawOptions?: { onSession?: (session: DrawSession) => void },
+      drawOptions?: {
+        sizeAnchor?: SizeAnchor;
+        onSession?: (session: DrawSession) => void;
+      },
     ) {
       calls.draw.push(draft);
+      calls.drawSizeAnchor.push(drawOptions?.sizeAnchor);
       if (detached) return Promise.reject(detachedAbort());
       return new Promise<GraphicSnapshot<ControlMeasure>>((resolve, reject) => {
         drawHandle = createDrawSession(draft, (result) => {
@@ -346,9 +356,13 @@ export function createTacticalDrawSurfaceFake(
     },
     edit(
       measure: ControlMeasure,
-      editOptions?: { onSession?: (session: EditSession) => void },
+      editOptions?: {
+        sizeAnchor?: SizeAnchor;
+        onSession?: (session: EditSession) => void;
+      },
     ) {
       calls.edit.push(measure);
+      calls.editSizeAnchor.push(editOptions?.sizeAnchor);
       if (detached) return Promise.reject(detachedAbort());
       return new Promise<GraphicSnapshot<ControlMeasure>>((resolve, reject) => {
         editHandle = createEditSession(measure, (result) => {
