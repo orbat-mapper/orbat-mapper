@@ -52,6 +52,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -164,6 +165,17 @@ function toggleEditShape() {
   scenarioDraw.startControlMeasureEdit(item.value.id);
 }
 
+/**
+ * Additive to reshape rather than a separate mode the panel swaps into: the handles and
+ * the transform box stay live, so nothing is taken away by turning it on. The flag
+ * lives on the session composable, not here, because it is sticky across edits — see
+ * `useControlMeasureEditSession`.
+ */
+const labelDragModel = computed({
+  get: () => scenarioDraw.controlMeasureLabelDrag.value,
+  set: (value: boolean) => scenarioDraw.setControlMeasureLabelDrag(value),
+});
+
 function doZoom() {
   const [first] = [...props.selectedIds];
   if (first !== undefined) engineRef.value?.layers.zoomToFeature(first);
@@ -241,14 +253,25 @@ function doDelete() {
 
     <div
       v-if="isEditingShape"
-      class="border-border bg-muted/50 mb-4 flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
+      class="border-border bg-muted/50 mb-4 space-y-2 rounded-md border p-2 text-sm"
     >
-      <p class="text-muted-foreground">
-        Drag the handles to reshape. Ctrl+Z undoes within the edit.
-      </p>
-      <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
-        Done
-      </Button>
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-muted-foreground">
+          {{
+            labelDragModel
+              ? "Click a label to select it, then drag or rotate it."
+              : "Drag the handles to reshape."
+          }}
+          Ctrl+Z undoes within the edit.
+        </p>
+        <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
+          Done
+        </Button>
+      </div>
+      <label class="flex items-center gap-2">
+        <Switch v-model="labelDragModel" />
+        <span>Move labels</span>
+      </label>
     </div>
 
     <template v-if="item">

@@ -101,6 +101,60 @@ function setup({ recordShape = false } = {}) {
 }
 
 describe("useControlMeasureEditSession", () => {
+  /**
+   * Label drag is additive, not a mode swap: reshape and transform stay in the set, so
+   * turning it on never takes the handles away. It is also sticky across sessions —
+   * placing several labels means editing several graphics in a row.
+   */
+  describe("label drag mode", () => {
+    it("is off by default and leaves the library's own mode set", () => {
+      const { edit, fake } = setup();
+      edit.start("cm-1");
+      expect(edit.labelDrag.value).toBe(false);
+      expect(fake.editSession!.modes).toEqual(["reshape", "transform"]);
+    });
+
+    it("adds the mode to the open session without closing it", () => {
+      const { edit, fake, settled } = setup();
+      edit.start("cm-1");
+      edit.setLabelDrag(true);
+
+      expect(fake.editSession!.modes).toEqual(["reshape", "transform", "labeldrag"]);
+      // Nothing settled: mode is session state, not model state.
+      expect(settled).toEqual([]);
+      expect(edit.featureId.value).toBe("cm-1");
+    });
+
+    it("stays on for the next session and comes back off", () => {
+      const { edit, fake } = setup();
+      edit.setLabelDrag(true);
+      edit.start("cm-1");
+      expect(fake.editSession!.modes).toEqual(["reshape", "transform", "labeldrag"]);
+
+      edit.stop();
+      edit.setLabelDrag(false);
+      edit.start("cm-1");
+      expect(fake.editSession!.modes).toEqual(["reshape", "transform"]);
+    });
+  });
+
+  // The point of the mode: a dragged label has to survive the session.
+  it("folds a moved label's placement into the store", async () => {
+    const { edit, scenario, fake } = setup();
+    edit.start("cm-1");
+    edit.setLabelDrag(true);
+    fake.editSession!.setWorkingGraphic({
+      ...fake.editSession!.startMeasure,
+      amplifierPlacements: { T: { offset: [12, -8] } },
+    } as any);
+    edit.stop();
+    await nextTick();
+
+    expect(
+      (scenario.store.state.layerItemMap["cm-1"] as any).amplifierPlacements,
+    ).toEqual({ T: { offset: [12, -8] } });
+  });
+
   // An edit must never silently re-anchor a graphic: reshaping a ground-sized boundary
   // must not freeze its glyph to the zoom that happened to be showing, and reshaping a
   // screen-anchored import must not bake it just because it was touched.

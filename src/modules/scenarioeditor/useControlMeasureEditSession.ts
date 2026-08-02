@@ -22,6 +22,7 @@ import { onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
 import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
+  EditMode,
   EditSession,
   GraphicEditSession,
   PointSymbol,
@@ -58,6 +59,8 @@ export interface UseControlMeasureEditSessionOptions {
 export interface ControlMeasureEditSession {
   /** The control measure under edit, or `null`. Non-null exactly while open. */
   readonly featureId: Ref<FeatureId | null>;
+  /** Is label-drag mode on? Sticky across sessions, like a tool preference. */
+  readonly labelDrag: Ref<boolean>;
   /** In-session history availability, for the details panel's affordances. */
   readonly canUndo: Ref<boolean>;
   readonly canRedo: Ref<boolean>;
@@ -65,6 +68,8 @@ export interface ControlMeasureEditSession {
   start(featureId: FeatureId): boolean;
   /** Close any open session, keeping its work. */
   stop(): void;
+  /** Turn label-drag mode on or off, live if a session is open. */
+  setLabelDrag(enabled: boolean): void;
   /** In-session undo/redo. `false` when there is nothing to undo/redo. */
   undo(): boolean;
   redo(): boolean;
@@ -86,6 +91,29 @@ export function useControlMeasureEditSession(
   const featureId = ref<FeatureId | null>(null);
   const canUndo = ref(false);
   const canRedo = ref(false);
+  // Sticky across sessions on purpose: it is a mode the user is in, not a property of
+  // one graphic. Placing several labels means editing several graphics in a row, and
+  // having the mode reset under you each time is the annoying half of that.
+  const labelDrag = ref(false);
+
+  /**
+   * `["reshape", "transform"]` is the library's own default and is spelled out because
+   * label drag is *additive* — the vertex handles and the transform box stay live, so
+   * a label can be moved without leaving the reshape the panel armed the user for.
+   */
+  function editModes(): EditMode[] {
+    return labelDrag.value
+      ? ["reshape", "transform", "labeldrag"]
+      : ["reshape", "transform"];
+  }
+
+  function setLabelDrag(enabled: boolean) {
+    if (labelDrag.value === enabled) return;
+    labelDrag.value = enabled;
+    // Live, so the toggle acts on the session the user is looking at rather than only
+    // on the next one. Nothing is written: mode is session state, not model state.
+    session?.setModes(editModes());
+  }
 
   // Same role as the draw session's: a settled `edit()` promise lands a microtask
   // after the close that produced it, so without a token a preempted session's
@@ -147,6 +175,7 @@ export function useControlMeasureEditSession(
         // only an import can be, since every drawn graphic bakes to ground — is not
         // frozen to the zoom that happened to be showing when it was reshaped.
         sizeAnchor: getSizeAnchor(startMeasure),
+        modes: editModes(),
         onSession(live) {
           if (token !== generation) return;
           const editSession = asControlMeasureEditSession(live);
@@ -207,10 +236,12 @@ export function useControlMeasureEditSession(
 
   return {
     featureId,
+    labelDrag,
     canUndo,
     canRedo,
     start,
     stop,
+    setLabelDrag,
     undo: () => session?.history.undo() ?? false,
     redo: () => session?.history.redo() ?? false,
   };
