@@ -15,7 +15,7 @@ import {
 } from "vue";
 import { storeToRefs } from "pinia";
 import type { ControlMeasureKind } from "@orbat-mapper/control-measures";
-import type { SnapCandidateRequest } from "@orbat-mapper/tactical-draw";
+import type { SnapCandidateProvider } from "@orbat-mapper/tactical-draw";
 import {
   activeLayerKey,
   activeScenarioKey,
@@ -47,7 +47,7 @@ import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useContro
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
 import {
   getUnitSnapCandidates,
-  type UnitSnapMap,
+  isUnitSnapMap,
 } from "@/modules/scenarioeditor/unitSnapCandidates";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
@@ -351,15 +351,13 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    */
   const canControlMeasures = computed(() => Boolean(engineRef.value?.draw));
 
-  // Units are not graphics, so tactical-draw cannot see them through its built-in
-  // sources. They reach it as external candidates, read from the map on each snap
-  // resolution rather than captured — the native map is replaced on every basemap swap,
-  // and the rendered features are the current time's positions.
-  function unitSnapCandidates(request: SnapCandidateRequest) {
+  // The map is resolved on each snap resolution rather than captured — it is replaced
+  // on every basemap swap, and the rendered features are the current time's positions.
+  const unitSnapCandidates: SnapCandidateProvider = (request) => {
     const native = nativeMap.value;
-    if (!native || isOpenLayersMap(native)) return [];
-    return getUnitSnapCandidates(native as UnitSnapMap, request);
-  }
+    if (!isUnitSnapMap(native)) return [];
+    return getUnitSnapCandidates(native, request);
+  };
 
   // One `snap` button, two mechanisms: the plain interactions read the ref directly,
   // tactical-draw takes engine-level snapping options. Re-asserted rather than diffed —

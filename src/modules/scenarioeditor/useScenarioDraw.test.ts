@@ -21,9 +21,7 @@ import {
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
-import type { UnitSnapMap } from "@/modules/scenarioeditor/unitSnapCandidates";
-
-type RenderedFeature = ReturnType<UnitSnapMap["queryRenderedFeatures"]>[number];
+import type { RenderedUnitFeature } from "@/modules/scenarioeditor/unitSnapCandidates";
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),
@@ -134,17 +132,21 @@ function mountHarness({
 
 function createEngine({
   renderedFeatures = [],
-}: { renderedFeatures?: RenderedFeature[] } = {}) {
+}: { renderedFeatures?: RenderedUnitFeature[] } = {}) {
   // The shared surface fake. Sessions are opened but never settled here: these tests
   // are about the armed-tool owner, not about what a settled session folds in — that
   // is `controlMeasureAuthoring.test.ts`.
   const fake = createTacticalDrawSurfaceFake();
-  const nativeMap = { queryRenderedFeatures: vi.fn(() => renderedFeatures) };
+  // Stable across calls: `unitSnapCandidates` re-reads the native map on every snap
+  // resolution, so a fresh object per call would hide a captured-map regression.
+  const nativeMap = {
+    getLayersOrder: vi.fn(() => ["unitLayer"]),
+    queryRenderedFeatures: vi.fn(() => renderedFeatures),
+  };
   return {
     map: {
       getNativeMap: () => nativeMap,
     },
-    nativeMap,
     layers: {},
     draw: fake.surface,
     surfaceFake: fake,
@@ -243,7 +245,7 @@ describe("useScenarioDraw", () => {
     await nextTick();
     const { snapping } = engine.surfaceFake.calls;
 
-    expect(snapping[snapping.length - 1]).toMatchObject({
+    expect(snapping[snapping.length - 1]).toEqual({
       enabled: true,
       sources: {
         graphics: true,
@@ -254,9 +256,13 @@ describe("useScenarioDraw", () => {
 
     draw.snap.value = false;
     await nextTick();
-    expect(snapping[snapping.length - 1]).toMatchObject({
+    expect(snapping[snapping.length - 1]).toEqual({
       enabled: false,
-      sources: { graphics: true, graphicGeometry: true },
+      sources: {
+        graphics: true,
+        graphicGeometry: true,
+        external: expect.any(Function),
+      },
     });
   });
 

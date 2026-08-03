@@ -13,21 +13,32 @@ import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
  */
 const UNIT_QUERY_PADDING_PX = 24;
 
-type RenderedUnitFeature = {
-  layer?: { id?: string | undefined };
-  geometry?: Geometry | undefined;
+export type RenderedUnitFeature = {
+  layer: { id: string };
+  geometry: Geometry;
   properties?: Record<string, unknown> | null;
 };
 
 /**
  * The minimum of MapLibre's `Map` this needs. Narrowed so tests can hand in a plain
- * object, and so the OpenLayers native map is a type error rather than a runtime one.
+ * object rather than stand up a real map.
  */
 export type UnitSnapMap = {
+  getLayersOrder(): string[];
   queryRenderedFeatures(
     geometry: PointLike | [PointLike, PointLike],
+    options?: { layers?: string[] },
   ): RenderedUnitFeature[];
 };
+
+/** Is `nativeMap` a MapLibre map? The OpenLayers map has none of this surface. */
+export function isUnitSnapMap(nativeMap: unknown): nativeMap is UnitSnapMap {
+  const candidate = nativeMap as UnitSnapMap | null | undefined;
+  return (
+    typeof candidate?.queryRenderedFeatures === "function" &&
+    typeof candidate.getLayersOrder === "function"
+  );
+}
 
 /**
  * Snap candidates for units rendered on the MapLibre map.
@@ -52,22 +63,31 @@ export function getUnitSnapCandidates(
   ];
   let renderedFeatures: RenderedUnitFeature[];
   try {
-    renderedFeatures = mlMap.queryRenderedFeatures(queryBox);
+    // Scoped to the unit layers, like `MlMapLogic`'s interactive query. Unscoped,
+    // MapLibre evaluates every layer in the style — basemap and the whole tactical-draw
+    // stack included — on every snap resolution, which here means every pointermove of
+    // a draw. Layer ids are read off the live style per call because unit layers come
+    // and go and a basemap swap rebuilds the style.
+    renderedFeatures = mlMap.queryRenderedFeatures(queryBox, {
+      layers: mlMap.getLayersOrder().filter(isUnitLayerId),
+    });
   } catch {
     // MapLibre throws while the style is still loading. Snapping is an assist, so a
     // pass with no unit candidates is the right answer, not a failed interaction.
     return [];
   }
   const candidates: SnapCandidate[] = [];
-  const seen = new Set<string>();
   for (const feature of renderedFeatures) {
-    if (!isUnitLayerId(feature.layer?.id)) continue;
-    if (feature.geometry?.type !== "Point") continue;
+    if (!isUnitLayerId(feature.layer.id)) continue;
+    if (feature.geometry.type !== "Point") continue;
     const unitId = feature.properties?.id;
-    if (typeof unitId !== "string" || seen.has(unitId)) continue;
-    seen.add(unitId);
+    if (typeof unitId !== "string") continue;
+    const id = `unit:${unitId}`;
+    // A unit rendered into more than one layer comes back once per layer. Linear over
+    // a handful of hits beats a Set allocated on every pass, most of which find none.
+    if (candidates.some((candidate) => candidate.id === id)) continue;
     candidates.push({
-      id: `unit:${unitId}`,
+      id,
       coordinate: feature.geometry.coordinates,
       kind: "unit",
       // Above the 0 that graphic control points and generated geometry carry: a unit

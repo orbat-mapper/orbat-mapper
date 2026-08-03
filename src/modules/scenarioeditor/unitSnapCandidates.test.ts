@@ -1,16 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   getUnitSnapCandidates,
+  type RenderedUnitFeature,
   type UnitSnapMap,
 } from "@/modules/scenarioeditor/unitSnapCandidates";
 
-type RenderedFeature = ReturnType<UnitSnapMap["queryRenderedFeatures"]>[number];
-
-function createMap(features: RenderedFeature[] | (() => never)): UnitSnapMap {
+function createMap(features: RenderedUnitFeature[]): UnitSnapMap {
   return {
-    queryRenderedFeatures: vi.fn(() =>
-      typeof features === "function" ? features() : features,
-    ),
+    getLayersOrder: vi.fn(() => ["basemap", "unitLayer", "unitLayer-group-2"]),
+    queryRenderedFeatures: vi.fn(() => features),
   };
 }
 
@@ -37,15 +35,18 @@ describe("getUnitSnapCandidates", () => {
     ]);
   });
 
-  it("queries a box around the pointer", () => {
+  it("queries a box around the pointer, scoped to the unit layers", () => {
     const mlMap = createMap([]);
 
     getUnitSnapCandidates(mlMap, request);
 
-    expect(mlMap.queryRenderedFeatures).toHaveBeenCalledWith([
-      [76, 76],
-      [124, 124],
-    ]);
+    expect(mlMap.queryRenderedFeatures).toHaveBeenCalledWith(
+      [
+        [76, 76],
+        [124, 124],
+      ],
+      { layers: ["unitLayer", "unitLayer-group-2"] },
+    );
   });
 
   it("ignores features from non-unit layers", () => {
@@ -77,9 +78,12 @@ describe("getUnitSnapCandidates", () => {
   });
 
   it("returns no candidates when the style is not queryable yet", () => {
-    const mlMap = createMap(() => {
-      throw new Error("style is not done loading");
-    });
+    const mlMap: UnitSnapMap = {
+      getLayersOrder: vi.fn(() => ["unitLayer"]),
+      queryRenderedFeatures: vi.fn(() => {
+        throw new Error("style is not done loading");
+      }),
+    };
 
     expect(getUnitSnapCandidates(mlMap, request)).toEqual([]);
   });
