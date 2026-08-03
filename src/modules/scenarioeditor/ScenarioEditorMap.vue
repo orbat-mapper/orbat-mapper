@@ -44,6 +44,7 @@ import {
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useOpenLayersRoutingPreview } from "@/geo/routing/openLayersRoutingPreview";
 import { useMeasurementInteraction } from "@/composables/geoMeasurement";
+import LegacyMapDeprecationNotice from "@/modules/scenarioeditor/LegacyMapDeprecationNotice.vue";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -302,6 +303,7 @@ function onCloseActiveDetailsPanel() {
     </template>
     <template #after-keyboard>
       <SearchScenarioActions v-if="nativeMapRef" />
+      <LegacyMapDeprecationNotice />
     </template>
   </ScenarioMapModeShell>
 </template>
