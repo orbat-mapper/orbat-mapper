@@ -4,12 +4,14 @@ import {
   activeLayerKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  scenarioDrawKey,
+  tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
 import {
   featureMenuItems,
   layerItemsToGeoJsonString,
 } from "@/modules/scenarioeditor/featureLayerUtils";
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, inject, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import type {
   FeatureId,
@@ -59,6 +61,8 @@ const emit = defineEmits(["feature-click"]);
 
 const activeLayerId = injectStrict(activeLayerKey);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
+const scenarioDraw = inject(scenarioDrawKey, null);
+const tacticalGraphicRenderFeed = inject(tacticalGraphicRenderFeedKey, null);
 const uiStore = useUiStore();
 const { send: notify } = useNotifications();
 const {
@@ -271,6 +275,12 @@ function onFeatureDoubleClick(
   engineRef.value?.layers.zoomToFeature(feature.id);
 }
 
+function settleEditedControlMeasureBeforeDelete(itemIds: readonly FeatureId[]) {
+  const tool = scenarioDraw?.armed.value;
+  if (tool?.kind !== "cmEdit" || !itemIds.includes(tool.featureId)) return;
+  tacticalGraphicRenderFeed?.settle("delete");
+}
+
 /**
  * Control measures are not geometry, so they cannot go through `onFeatureAction`:
  * every branch there resolves the item with `getGeometryLayerItemById`, which returns
@@ -281,20 +291,24 @@ function onControlMeasureAction(itemId: FeatureId, action: ScenarioFeatureAction
   if (action === "zoom") engineRef.value?.layers.zoomToFeature(itemId);
   if (action === "pan") engineRef.value?.layers.panToFeature(itemId);
   if (action === "delete") {
+    settleEditedControlMeasureBeforeDelete([itemId]);
     geo.deleteFeature(itemId);
     selectedFeatureIds.value.delete(itemId);
   }
 }
 
 function onControlMeasureLayerAction(
-  layer: { id: FeatureId; _isOpen?: boolean },
+  layer: { id: FeatureId; items?: FeatureId[]; _isOpen?: boolean },
   action: ScenarioLayerAction,
 ) {
   if (action === ScenarioLayerActions.Edit) {
     editedLayerId.value = layer.id;
     layer._isOpen = true;
   }
-  if (action === ScenarioLayerActions.Delete) geo.deleteLayer(layer.id);
+  if (action === ScenarioLayerActions.Delete) {
+    settleEditedControlMeasureBeforeDelete(layer.items ?? []);
+    geo.deleteLayer(layer.id);
+  }
 }
 
 function onControlMeasureDoubleClick(item: NTacticalGraphicLayerItem) {
@@ -352,6 +366,7 @@ function onLayerAction(layer: NScenarioLayer, action: ScenarioLayerAction) {
       activeLayer.value = null;
       olCurrentLayer.value = null;
     }*/
+    settleEditedControlMeasureBeforeDelete(layer.items);
     geo.deleteLayer(layer.id);
   }
   if (

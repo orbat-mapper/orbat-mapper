@@ -445,10 +445,10 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     },
   });
 
-  // The control-measure edit session. Entered only by an explicit gesture from the
-  // details panel or the draw toolbar — a map click selects and nothing more, because
-  // under settle-first click-to-edit would leave an open session behind nearly every
-  // map interaction.
+  // The control-measure edit session. A details-panel gesture opens a one-off session;
+  // persistent toolbar Edit opens or transfers a session when map selection changes.
+  // The `resume` marker distinguishes those lifecycles without introducing a second
+  // armed-tool state.
   const controlMeasureEdit = useControlMeasureEditSession({
     scenario: activeScenario,
     surface: () => engineRef.value?.draw,
@@ -456,15 +456,29 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     // Shape is the only recordable thing on a control measure, and it reuses the same
     // flag plain geometry does — see `applyScenarioControlMeasureEdit`.
     recordShape: () => isRecordingGeometry.value,
-    onSettled({ featureId }) {
+    onSettled({ featureId, settleReason }) {
       if (armed.value.kind === "cmEdit" && armed.value.featureId === featureId) {
+        const settledTool = armed.value;
         // A toolbar edit is one target inside a persistent mode, just like ordinary
         // feature editing. The details panel's one-off Edit shape gesture carries no
         // continuation and therefore still ends here. Do not resurrect a toolbar mode
         // after the toolbar itself was closed while the session remained open.
-        const resumeModify =
-          armed.value.resume === "plainModify" && toolbarStore.currentToolbar === "draw";
-        arm(resumeModify ? { kind: "plainModify" } : { kind: "none" });
+        const persistentEditActive =
+          settledTool.resume === "plainModify" && toolbarStore.currentToolbar === "draw";
+        // A render-feed settle is protective, not an intent to leave this target.
+        // Reopen any still-visible edit after the new batch is authoritative. A
+        // toolbar-originated edit additionally requires that Draw is still open;
+        // details-panel edits have no toolbar lifetime.
+        const remainsRendered = renderFeed?.lastPlan?.graphics.some(
+          (graphic) => graphic.id === featureId,
+        );
+        const editOwnerStillActive =
+          settledTool.resume === "plainModify" ? persistentEditActive : true;
+        if (settleReason === "render" && remainsRendered && editOwnerStillActive) {
+          arm(settledTool);
+          return;
+        }
+        arm(persistentEditActive ? { kind: "plainModify" } : { kind: "none" });
       }
     },
   });
@@ -587,17 +601,19 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     () => [...selectedFeatureIds.value],
     (selectedIds) => {
       const featureId = selectedControlMeasureId(selectedIds);
-      if (!featureId) return;
       if (armed.value.kind === "plainModify") {
-        arm({ kind: "cmEdit", featureId, resume: "plainModify" });
+        if (featureId) arm({ kind: "cmEdit", featureId, resume: "plainModify" });
         return;
       }
-      if (
-        armed.value.kind === "cmEdit" &&
-        armed.value.resume === "plainModify" &&
-        armed.value.featureId !== featureId
-      ) {
-        arm({ kind: "cmEdit", featureId, resume: "plainModify" });
+      if (armed.value.kind === "cmEdit" && armed.value.resume === "plainModify") {
+        if (featureId && armed.value.featureId !== featureId) {
+          arm({ kind: "cmEdit", featureId, resume: "plainModify" });
+        } else if (!featureId) {
+          // An ordinary/mixed selection goes directly into plain editing. An empty
+          // selection settles the current target but keeps persistent Edit armed,
+          // matching ordinary-feature deselection.
+          arm({ kind: "plainModify" });
+        }
       }
     },
   );
@@ -608,12 +624,17 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
 
   // Closing the draw toolbar used to tear this composable down, which cancelled
   // whatever was armed. Hoisted it no longer does, so disarm explicitly — otherwise the
-  // map stays armed and unclickable behind a closed toolbar. `cmEdit` is exempt: it is
-  // driven from the details panel, which is reachable with the toolbar closed.
+  // map stays armed and unclickable behind a closed toolbar. A one-off `cmEdit` is
+  // exempt because it is driven from the details panel; a persistent toolbar edit is
+  // identified by its `resume` marker and must end with the toolbar.
   watch(
     () => toolbarStore.currentToolbar,
     (toolbar) => {
-      if (toolbar === "draw" || armed.value.kind === "cmEdit") return;
+      if (
+        toolbar === "draw" ||
+        (armed.value.kind === "cmEdit" && armed.value.resume !== "plainModify")
+      )
+        return;
       // `translate` is a live map mode rather than a preference, so it does not get to
       // stay on behind a closed toolbar the way `snap` and `freehand` do.
       translate.value = false;
@@ -632,9 +653,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   }
 
   function deleteSelected() {
-    // Every store write owes a settle first: a `render()` whose batch omits the graphic
-    // being edited aborts that session.
-    renderFeed?.settle("commit");
+    // Deletion owes a settle before the write: once the item is gone, a later render
+    // cannot fold the open edit back into the authoritative batch.
+    renderFeed?.settle("delete");
     activeScenario.store.groupUpdate(
       () => {
         [...selectedFeatureIds.value.values()].forEach((featureId) =>

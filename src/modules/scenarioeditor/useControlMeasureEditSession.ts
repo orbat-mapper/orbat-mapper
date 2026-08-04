@@ -8,9 +8,9 @@
  *    a time scrub, a layer-visibility toggle, arming another tool, Escape — folds the
  *    working geometry into the store. There is deliberately no discard gesture: the
  *    fold is one undo step, so scenario undo *is* the discard.
- * 2. **It is entered by an explicit gesture**, never by a click. Click selects. Under
- *    settle-first, click-to-edit (tactrace's model) would leave an open session behind
- *    nearly every interaction on the map, and every one of those would have to settle.
+ * 2. **Its lifecycle has an explicit owner.** A details-panel gesture owns a one-off
+ *    session; persistent toolbar Edit owns sessions opened or transferred by selection
+ *    changes. An unarmed map click still only selects — it never creates an edit.
  *
  * The fold rides `EditSession.onCommit` rather than the outer `edit()` promise.
  * `onCommit` fires **synchronously** inside `close()`, which is what lets a settle
@@ -30,7 +30,10 @@ import type {
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { TacticalDrawSurface } from "@/geo/engines/maplibre/tacticalDrawSurface";
-import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
+import type {
+  SettleReason,
+  TacticalGraphicRenderFeed,
+} from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import {
@@ -50,10 +53,16 @@ export interface UseControlMeasureEditSessionOptions {
    */
   recordShape?: () => boolean;
   /**
-   * A session ended on its own — a click away, an abort, a destroyed façade. The
-   * armed-tool owner decides what happens next; unlike draw there is no re-arm case.
+   * A session ended — by gesture, abort, façade destruction, or a protective settle.
+   * The armed-tool owner decides whether to disarm, resume target-picking, or reopen
+   * the same target after the authoritative render.
    */
-  onSettled: (result: { committed: boolean; featureId: FeatureId }) => void;
+  onSettled: (result: {
+    committed: boolean;
+    featureId: FeatureId;
+    /** Present when the render feed, rather than a map gesture, closed the session. */
+    settleReason?: SettleReason;
+  }) => void;
 }
 
 export interface ControlMeasureEditSession {
@@ -120,6 +129,7 @@ export function useControlMeasureEditSession(
   // resolution would disarm the tool that replaced it. The *fold* is deliberately not
   // token-guarded — a closed edit keeps its work no matter what happened since.
   let generation = 0;
+  let settleReason: SettleReason | undefined;
   // Never made reactive: the engine holds this object for the life of the session.
   let session: EditSession | null = null;
   // Set while the feed itself is closing us, so the fold can skip its own render:
@@ -131,6 +141,7 @@ export function useControlMeasureEditSession(
     generation += 1;
     session = null;
     featureId.value = null;
+    settleReason = undefined;
     canUndo.value = false;
     canRedo.value = false;
   }
@@ -153,6 +164,19 @@ export function useControlMeasureEditSession(
     // Required by the library's contract, not an optimisation: it hands the override
     // back and expects the host's next render to be authoritative.
     options.renderFeed?.render("commit");
+  }
+
+  function notifySettled(
+    committed: boolean,
+    itemId: FeatureId,
+    reason: SettleReason | undefined,
+  ) {
+    clearSession();
+    options.onSettled({
+      committed,
+      featureId: itemId,
+      ...(reason ? { settleReason: reason } : {}),
+    });
   }
 
   function start(itemId: FeatureId): boolean {
@@ -194,8 +218,7 @@ export function useControlMeasureEditSession(
       })
       .then(() => {
         if (token !== generation) return;
-        clearSession();
-        options.onSettled({ committed: true, featureId: itemId });
+        notifySettled(true, itemId, settleReason);
       })
       .catch((error) => {
         // Abort is a normal outcome here too — a destroyed façade, a basemap swap
@@ -204,8 +227,7 @@ export function useControlMeasureEditSession(
           console.error("[controlMeasureEdit] edit session failed", error);
         }
         if (token !== generation) return;
-        clearSession();
-        options.onSettled({ committed: false, featureId: itemId });
+        notifySettled(false, itemId, settleReason);
       });
     return true;
   }
@@ -219,8 +241,12 @@ export function useControlMeasureEditSession(
   // and not one behaviour: where a draw aborts, an edit closes and keeps its work.
   // Registered on the feed rather than called from `arm()` so a time scrub or a
   // layer-visibility toggle settles through the same path.
-  const unregisterSettle = options.renderFeed?.onSettle(() => {
-    if (!session) return;
+  const unregisterSettle = options.renderFeed?.onSettle((reason) => {
+    // `fold()` performs the library-required commit render synchronously from inside
+    // the live session's own `onCommit`. That session is already settling itself; it
+    // is not an external reason to close or later restore it.
+    if (!session || reason === "commit") return;
+    settleReason = reason;
     closingFromSettle = true;
     try {
       close();

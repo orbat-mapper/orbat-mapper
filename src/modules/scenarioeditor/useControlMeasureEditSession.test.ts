@@ -15,6 +15,7 @@ import type { TScenario } from "@/scenariostore";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
+import type { SettleReason } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import "@/dayjs";
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -86,7 +87,11 @@ function setup({ recordShape = false } = {}) {
   // what a settled edit must fold in.
   const fake = createTacticalDrawSurfaceFake({ editControlPoints: EDITED_POINTS });
   const { feed, renders } = createTacticalGraphicRenderFeedFake();
-  const settled: { committed: boolean; featureId: string }[] = [];
+  const settled: {
+    committed: boolean;
+    featureId: string;
+    settleReason?: SettleReason;
+  }[] = [];
   const scope = effectScope();
   const edit = scope.run(() =>
     useControlMeasureEditSession({
@@ -189,8 +194,8 @@ describe("useControlMeasureEditSession", () => {
     ]);
   });
 
-  it("closes and keeps its work when the feed settles, before the feed re-renders", () => {
-    const { edit, scenario, feed, renders } = setup();
+  it("closes and keeps its work when the feed settles, before the feed re-renders", async () => {
+    const { edit, scenario, feed, renders, settled } = setup();
     edit.start("cm-1");
 
     // Exactly how a time scrub or a layer-visibility toggle reaches it.
@@ -200,6 +205,10 @@ describe("useControlMeasureEditSession", () => {
     // already carries the new geometry — and the fold did not re-enter `render()`.
     expect(storedControlPoints(scenario)).toEqual(EDITED_POINTS);
     expect(renders).toEqual(["render"]);
+    await nextTick();
+    expect(settled).toEqual([
+      { committed: true, featureId: "cm-1", settleReason: "render" },
+    ]);
   });
 
   it("folds exactly once and re-renders when the session closes on its own", async () => {
