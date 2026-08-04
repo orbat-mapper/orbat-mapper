@@ -304,6 +304,25 @@ describe("the keyboard contract", () => {
   });
 });
 
+describe("changing control-measure options while editing its shape", () => {
+  it("keeps a Smooth toggle made while the edit session is open", async () => {
+    const { draw, scenario } = setup({ realFeed: true });
+    scenario.geo.updateTacticalGraphic("cm-1", { options: { smooth: false } });
+    await nextTick();
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+
+    // This is the store write emitted by ControlMeasureStyleSettings when Smooth is
+    // toggled in the details panel. The real feed then settles and reopens the edit.
+    draw.updateControlMeasure("cm-1", { options: { smooth: true } });
+    expect(storedItem(scenario).options).toEqual({ smooth: true });
+    await nextTick();
+    await nextTick();
+
+    expect(storedItem(scenario).options).toEqual({ smooth: true });
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-1" });
+  });
+});
+
 describe("recording a control measure's shape", () => {
   it("puts controlPoints in timed state while everything else stays top-level", async () => {
     const { draw, scenario, fake } = setup();

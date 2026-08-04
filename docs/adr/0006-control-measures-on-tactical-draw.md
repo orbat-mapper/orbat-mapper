@@ -142,10 +142,12 @@ time-scrubbing, layer-visibility toggles, tool switching. It is resolved by
 **settle-first**: anything that feeds `render()` settles any open session before
 re-rendering (an edit closes and keeps its work; a draw aborts). The guard is placed
 on **the render feed, not the clock**, so a visibility toggle settles too. Arming a
-different tool and host deletions are additional settle triggers with the same
-disposition. A protective render settle reopens a still-rendered edit after the new
-batch is authoritative: toolbar edits only while Draw remains open, and details-panel
-edits independently of the toolbar.
+different tool, host deletions, and details-panel writes to host-owned control-measure
+fields are additional settle triggers with the same disposition. The details write
+settles _before_ its store update so the session's older snapshot cannot overwrite the
+new value. A protective render settle reopens a still-rendered edit after the new batch
+is authoritative: toolbar edits only while Draw remains open, and details-panel edits
+independently of the toolbar.
 
 ## A separate render layer, with interleaving deferred
 
