@@ -71,8 +71,8 @@ describe("MapEditorDrawToolbar capability gating", () => {
     expect(gated.length).toBeGreaterThanOrEqual(6);
     for (const button of gated) expect(button.attributes("disabled")).toBeDefined();
 
-    // The plain-shape tools are untouched by the gate.
-    expect(buttonByTitle(wrapper, "Polygon")[0]!.attributes("disabled")).toBeUndefined();
+    // The plain-shape split button is untouched by the gate ("Line" is its default).
+    expect(buttonByTitle(wrapper, "Line")[0]!.attributes("disabled")).toBeUndefined();
   });
 
   it("enables them and names the kind once the engine has a surface", () => {

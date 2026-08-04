@@ -5,13 +5,8 @@ import {
   IconLockOpenVariantOutline,
   IconLockOutline,
   IconMagnet as SnapIcon,
-  IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
   IconTrashCanOutline as DeleteIcon,
-  IconVectorCircleVariant as CircleIcon,
-  IconVectorLine as LineStringIcon,
-  IconVectorPolygon as PolygonIcon,
-  IconVectorRectangle as RectangleIcon,
   IconClockEditOutline as IconClockEdit,
   IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
@@ -20,6 +15,7 @@ import { IconShapePolygonPlus as MoreGraphicsIcon } from "@iconify-prerendered/v
 import { computed, ref } from "vue";
 
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
+import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
 import ControlMeasurePickerDialog from "@/modules/scenarioeditor/ControlMeasurePickerDialog.vue";
@@ -101,42 +97,7 @@ const toggleFreehand = useToggle(freehand);
     <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="size-5" />
     </MainToolbarButton>
-    <MainToolbarButton
-      title="Point"
-      @click="startDrawing('Point')"
-      :active="currentDrawType === 'Point'"
-    >
-      <PointIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Line"
-      @click="startDrawing('LineString')"
-      :active="currentDrawType === 'LineString'"
-    >
-      <LineStringIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Polygon"
-      @click="startDrawing('Polygon')"
-      :active="currentDrawType === 'Polygon'"
-    >
-      <PolygonIcon class="size-5" />
-    </MainToolbarButton>
-
-    <MainToolbarButton
-      title="Rectangle"
-      @click="startDrawing('Rectangle')"
-      :active="currentDrawType === 'Rectangle'"
-    >
-      <RectangleIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Circle"
-      @click="startDrawing('Circle')"
-      :active="currentDrawType === 'Circle'"
-    >
-      <CircleIcon class="size-5" />
-    </MainToolbarButton>
+    <DrawToolSplitButton :current-draw-type="currentDrawType" @select="startDrawing" />
     <div class="border-border mx-1 h-5 border-l" />
     <MainToolbarButton
       v-for="kind in pinnedKinds"
