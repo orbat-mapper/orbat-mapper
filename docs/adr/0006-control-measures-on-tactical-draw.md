@@ -141,8 +141,11 @@ The second collides with everything that re-renders on its own schedule —
 time-scrubbing, layer-visibility toggles, tool switching. It is resolved by
 **settle-first**: anything that feeds `render()` settles any open session before
 re-rendering (an edit closes and keeps its work; a draw aborts). The guard is placed
-on **the render feed, not the clock**, so a visibility toggle settles too, and arming
-a different tool is a second settle trigger with the same disposition.
+on **the render feed, not the clock**, so a visibility toggle settles too. Arming a
+different tool and host deletions are additional settle triggers with the same
+disposition. A protective render settle reopens a still-rendered edit after the new
+batch is authoritative: toolbar edits only while Draw remains open, and details-panel
+edits independently of the toolbar.
 
 ## A separate render layer, with interleaving deferred
 
@@ -159,8 +162,11 @@ limitation, not a subtlety, and it is **temporary**: stage two unifies the rende
 The same split produces a second visible consequence: **topmost wins on selection**,
 with tactical-draw's `onPick` short-circuiting the plain-feature query when nothing is
 armed, so a plain shape lying under a control-measure fill is unclickable until stage
-two. (When a tool *is* armed, clicks are swallowed entirely by the existing
-selection-disable watcher, generalised from `isDrawing` to "anything armed".)
+two. Draw sessions and one-off control-measure edits suppress selection while they own
+map clicks. Persistent toolbar Edit is the exception: host selection remains live so
+one click can settle the current control measure and transfer editing to another
+control measure or to an ordinary feature. Clearing selection settles the current
+control-measure target but leaves persistent Edit armed, matching ordinary features.
 
 Outbound rendering is reached through a pure `buildTacticalGraphicRenderPlan`,
 mirroring the existing `buildScenarioFeatureRenderPlan`, so the store-to-`Graphic[]`
@@ -171,7 +177,7 @@ enters the scenario store.
 ### Rendering facts that are load-bearing
 
 The adapter is constructed in **`viewChangeMode: "settle"`**. Treat this as
-load-bearing, not a tuning knob. MapLibre emits `zoom` on every frame of a *pure pan*,
+load-bearing, not a tuning knob. MapLibre emits `zoom` on every frame of a _pure pan_,
 so the default `"continuous"` mode re-renders the entire stack per frame — measured at
 **1400 `updateData` calls in one 2 s pan over 50 graphics**, collapsing pan to 15 fps.
 In `"settle"` mode the same scene holds 59 fps, and the interactive ceiling moves from
@@ -203,7 +209,7 @@ lockfile. The exact pin is also what lets the scenario file version stand in for
 library version, since a range would break that correspondence.
 
 The library is treated as **trusted code**, not as a subject under test. Its
-`/testing` conformance suites are adapter-*author* suites and we consume a published
+`/testing` conformance suites are adapter-_author_ suites and we consume a published
 adapter, so they are of no use here. Where a fake is needed, it impersonates a
 **host-owned** seam (`TacticalDrawSurface`, which absorbs the session methods) rather
 than a `Pick<TacticalDraw, …>` that goes stale on every façade re-attach and every
@@ -271,5 +277,5 @@ Named here so nothing above reads as permanent by omission: migrating plain
 point/line/circle/polygon onto tactical-draw, retiring `maplibreScenarioFeatures.ts`,
 unifying z-order so control measures and plain shapes interleave, `translate` /
 `syncTransformGraphics`, the `external` snapping provider, and mobile interaction. The
-~150–200 interactive ceiling is a budget over *all* rendered graphics, so migrated
+~150–200 interactive ceiling is a budget over _all_ rendered graphics, so migrated
 plain shapes draw against the same allowance rather than a fresh one.

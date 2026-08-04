@@ -5,10 +5,13 @@ import { ref, shallowRef } from "vue";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
 import type { NScenarioLayerItem } from "@/types/scenarioLayerItems";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import { ScenarioLayerActions } from "@/types/constants";
 import {
   activeLayerKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  scenarioDrawKey,
+  tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
 
 vi.mock("@/stores/uiStore", () => ({
@@ -181,6 +184,13 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
 
   function mountWithLayers(
     layersItems: { layer: NScenarioOverlayLayer; items: NScenarioLayerItem[] }[],
+    {
+      renderFeed,
+      editedControlMeasureId,
+    }: {
+      renderFeed?: { settle: ReturnType<typeof vi.fn> };
+      editedControlMeasureId?: string;
+    } = {},
   ) {
     const stackLayers = layersItems.map(({ layer }) => layer);
     return mount(ScenarioLayersTabPanel, {
@@ -209,6 +219,17 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
             },
             store: { groupUpdate: vi.fn((fn: () => void) => fn()) },
           },
+          ...(renderFeed ? { [tacticalGraphicRenderFeedKey as symbol]: renderFeed } : {}),
+          ...(editedControlMeasureId
+            ? {
+                [scenarioDrawKey as symbol]: {
+                  armed: shallowRef({
+                    kind: "cmEdit",
+                    featureId: editedControlMeasureId,
+                  }),
+                },
+              }
+            : {}),
         },
         stubs: {
           ChevronPanel: { template: "<div><slot name='label' /><slot /></div>" },
@@ -254,5 +275,46 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
 
     expect(wrapper.find('[data-tree-layer-id="mixed-layer"]').exists()).toBe(true);
     expect(wrapper.findAllComponents({ name: "ControlMeasureLayer" })).toHaveLength(1);
+  });
+
+  it("settles only when the layer panel deletes the control measure being edited", () => {
+    const renderFeed = { settle: vi.fn() };
+    const wrapper = mountWithLayers(
+      [
+        {
+          layer: overlayLayer("cm-layer", ["cm1", "cm2"]),
+          items: [cm("cm1"), cm("cm2")],
+        },
+      ],
+      { renderFeed, editedControlMeasureId: "cm1" },
+    );
+    const controlMeasureLayer = wrapper.findComponent({ name: "ControlMeasureLayer" });
+
+    controlMeasureLayer.vm.$emit("item-action", "cm2", "delete");
+    expect(renderFeed.settle).not.toHaveBeenCalled();
+
+    controlMeasureLayer.vm.$emit("item-action", "cm1", "delete");
+
+    expect(renderFeed.settle).toHaveBeenCalledWith("delete");
+  });
+
+  it("settles only when deleting the overlay layer containing the active edit", () => {
+    const renderFeed = { settle: vi.fn() };
+    const cm1Layer = overlayLayer("cm1-layer", ["cm1"]);
+    const cm2Layer = overlayLayer("cm2-layer", ["cm2"]);
+    const wrapper = mountWithLayers(
+      [
+        { layer: cm1Layer, items: [cm("cm1")] },
+        { layer: cm2Layer, items: [cm("cm2")] },
+      ],
+      { renderFeed, editedControlMeasureId: "cm1" },
+    );
+    const layers = wrapper.findAllComponents({ name: "ControlMeasureLayer" });
+
+    layers[1]!.vm.$emit("layer-action", cm2Layer, ScenarioLayerActions.Delete);
+    expect(renderFeed.settle).not.toHaveBeenCalled();
+
+    layers[0]!.vm.$emit("layer-action", cm1Layer, ScenarioLayerActions.Delete);
+    expect(renderFeed.settle).toHaveBeenCalledWith("delete");
   });
 });

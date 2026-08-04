@@ -13,8 +13,8 @@
  *
  * No sessions exist in M1, so `settle()` currently fans out to zero handlers. It is
  * built now, with the feed, so M2 cannot forget it: the session owner registers via
- * `onSettle`, and `arm()` becomes a second settle trigger by calling `settle("arm")`
- * on this same object rather than inventing a parallel path.
+ * `onSettle`, while tool changes and host deletions call `settle()` on this same
+ * object rather than inventing parallel paths.
  */
 import { onScopeDispose, watch } from "vue";
 import type { TScenario } from "@/scenariostore";
@@ -38,6 +38,8 @@ export type SettleReason =
   | "arm"
   /** A settled session's work has just been folded into the store (M2). */
   | "commit"
+  /** A host deletion must settle any session before it removes the edited item. */
+  | "delete"
   /**
    * The tactical-draw façade is about to be destroyed and rebuilt — a basemap swap.
    * Destroying it rejects an open session without firing `onCommit`, so an edit that
@@ -58,7 +60,7 @@ export interface TacticalGraphicRenderFeed {
    * authoritative. M2 calls `render("commit")` at the end of its fold.
    */
   render(reason?: SettleReason): void;
-  /** Settle without re-rendering. M2's `arm()` hooks here. */
+  /** Settle without re-rendering before a tool change or host deletion. */
   settle(reason: SettleReason): void;
   /** Register a session owner. Returns an idempotent unregister. */
   onSettle(handler: SettleHandler): () => void;
