@@ -11,16 +11,14 @@ import {
   IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
 
-import { IconShapePolygonPlus as MoreGraphicsIcon } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
+import ControlMeasureSplitButton from "@/modules/scenarioeditor/ControlMeasureSplitButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
-import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
 import ControlMeasurePickerDialog from "@/modules/scenarioeditor/ControlMeasurePickerDialog.vue";
 import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
-import { getControlMeasureKindOption } from "@/modules/scenarioeditor/controlMeasurePicker";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 import { useToggle } from "@vueuse/core";
@@ -59,7 +57,7 @@ const {
 } = injectStrict(scenarioDrawKey);
 
 const controlMeasureStore = useControlMeasureToolStore();
-const { pinnedKinds } = storeToRefs(controlMeasureStore);
+const { lastKind } = storeToRefs(controlMeasureStore);
 const pickerOpen = ref(false);
 
 const armedGraphicKind = computed(() =>
@@ -76,14 +74,8 @@ const controlMeasureArmed = computed(
   () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
 );
 
-const NO_ENGINE_SUPPORT = "Control measures are not supported by this map engine";
-
-function controlMeasureTitle(kind: ControlMeasureId) {
-  if (!canControlMeasures.value) return NO_ENGINE_SUPPORT;
-  return getControlMeasureKindOption(kind)?.name ?? kind;
-}
-
 function drawControlMeasure(kind: ControlMeasureId) {
+  lastKind.value = kind;
   arm({ kind: "cmDraw", graphicKind: kind });
 }
 
@@ -99,23 +91,12 @@ const toggleFreehand = useToggle(freehand);
     </MainToolbarButton>
     <DrawToolSplitButton :current-draw-type="currentDrawType" @select="startDrawing" />
     <div class="border-border mx-1 h-5 border-l" />
-    <MainToolbarButton
-      v-for="kind in pinnedKinds"
-      :key="kind"
-      :title="controlMeasureTitle(kind)"
-      :active="armedGraphicKind === kind"
+    <ControlMeasureSplitButton
+      :armed-kind="armedGraphicKind"
       :disabled="!canControlMeasures"
-      @click="drawControlMeasure(kind)"
-    >
-      <ControlMeasurePreview :kind="kind" class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      :title="canControlMeasures ? 'More control measures' : NO_ENGINE_SUPPORT"
-      :disabled="!canControlMeasures"
-      @click="pickerOpen = true"
-    >
-      <MoreGraphicsIcon class="size-5" />
-    </MainToolbarButton>
+      @select="drawControlMeasure"
+      @more="pickerOpen = true"
+    />
     <ControlMeasureDefaultsPopover :disabled="!canControlMeasures" />
     <div class="border-border mx-1 h-5 border-l" />
     <MainToolbarButton
