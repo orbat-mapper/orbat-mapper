@@ -3200,6 +3200,38 @@ describe("MlMapLogic", () => {
       );
     });
 
+    it("shows the pointer cursor when hovering a control measure", () => {
+      const h = createControlMeasureHarness(true, []);
+      const originalEvent = { type: "mousemove" };
+
+      h.mockMap.emit("mousemove", {
+        point: { x: 1, y: 2 },
+        originalEvent,
+      });
+
+      expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
+        tolerance: 6,
+        originalEvent,
+      });
+      expect(h.mockMap.canvas.style.cursor).toBe("pointer");
+    });
+
+    it("shows the grab cursor over control-measure edit handles", () => {
+      const h = createControlMeasureHarness(true, []);
+      h.ownsInteractionAt.mockReturnValue({
+        layer: "handles",
+        feature: {},
+        measureId: "cm-1",
+      });
+
+      h.mockMap.emit("mousemove", {
+        point: { x: 1, y: 2 },
+        originalEvent: { type: "mousemove" },
+      });
+
+      expect(h.mockMap.canvas.style.cursor).toBe("grab");
+    });
+
     it("keeps a unit under a control measure selectable", () => {
       // ADR-0006 scopes the short-circuit to the plain-feature query. Units outrank
       // everything drawn over them (see `collectInteractiveFeatures`), so an area
@@ -3222,6 +3254,20 @@ describe("MlMapLogic", () => {
         options: { noZoom: true, revealInOrbat: false },
       });
       expect(h.featureSelectSpy).not.toHaveBeenCalled();
+    });
+
+    it("keeps unit hover above a control measure", () => {
+      const h = createControlMeasureHarness(true, [
+        { layer: { id: "unitLayer" }, properties: { id: "unit-1" } },
+      ]);
+
+      h.mockMap.emit("mousemove", {
+        point: { x: 1, y: 2 },
+        originalEvent: { type: "mousemove" },
+      });
+
+      expect(h.mockMap.canvas.style.cursor).toBe("pointer");
+      expect(h.ownsInteractionAt).not.toHaveBeenCalled();
     });
 
     it("keeps a unit under a control measure shift-selectable", () => {
