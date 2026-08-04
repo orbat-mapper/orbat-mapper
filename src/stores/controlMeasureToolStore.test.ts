@@ -8,6 +8,8 @@ import {
 } from "@/stores/controlMeasureToolStore";
 
 beforeEach(() => {
+  // Pins and lastKind live in localStorage now; without this, state leaks between tests.
+  localStorage.clear();
   setActivePinia(createPinia());
 });
 
@@ -34,12 +36,35 @@ describe("pinned control-measure kinds", () => {
     expect(store.pinnedKinds).toHaveLength(before);
   });
 
-  it("evicts the least recently used once the strip is full", () => {
+  it("evicts the least recently used once the menu is full", () => {
     const store = useControlMeasureToolStore();
-    const extras = ["breach", "bypass", "canalize", "clear", "cover", "delay"] as const;
+    const extras = [
+      "light-line",
+      "engineer-work-line",
+      "battle-position",
+      "strong-point",
+      "ambush",
+      "encirclement",
+      "assembly-area",
+      "drop-zone",
+      "extraction-zone",
+      "landing-zone",
+      "pickup-zone",
+      "objective-area",
+    ] as const;
+    expect(extras).toHaveLength(MAX_PINNED_CONTROL_MEASURE_KINDS);
     extras.forEach((kind) => store.pinKind(kind));
     expect(store.pinnedKinds).toHaveLength(MAX_PINNED_CONTROL_MEASURE_KINDS);
     expect(store.pinnedKinds).toEqual([...extras].reverse());
+  });
+
+  it("resets the pins to the defaults but leaves the last-used kind alone", () => {
+    const store = useControlMeasureToolStore();
+    store.pinKind("breach");
+    store.lastKind = "breach";
+    store.resetPinnedKinds();
+    expect(store.pinnedKinds).toEqual(DEFAULT_PINNED_CONTROL_MEASURE_KINDS);
+    expect(store.lastKind).toBe("breach");
   });
 
   it("toggles a kind off and back on", () => {

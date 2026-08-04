@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useLocalStorage } from "@vueuse/core";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 import { SID } from "@/symbology/values";
 import type { NewControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
@@ -14,8 +15,12 @@ export const DEFAULT_PINNED_CONTROL_MEASURE_KINDS: ControlMeasureId[] = [
   "area",
 ];
 
-/** The sub-toolbar is one horizontal strip shared with the plain draw tools. */
-export const MAX_PINNED_CONTROL_MEASURE_KINDS = 6;
+/**
+ * The pins render in the split button's dropdown menu, so the bound is about keeping
+ * the menu scannable, not toolbar width. Still MRU-evicted: picking from the full
+ * catalog pins every kind, and without a cap the menu would grow without end.
+ */
+export const MAX_PINNED_CONTROL_MEASURE_KINDS = 12;
 
 /**
  * What a newly drawn control measure is born with before the user has changed
@@ -30,9 +35,11 @@ export const DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS: NewControlMeasureDefaults = {
 };
 
 /**
- * Session-sticky UI state for the control-measure tools — pinned kinds and authoring
- * defaults are toolbar preferences, not scenario data, so they are never persisted into
- * a scenario and never reset when the `v-if`'d draw toolbar remounts.
+ * UI state for the control-measure tools — pinned kinds and authoring defaults are
+ * toolbar preferences, not scenario data, so they are never persisted into a scenario
+ * and never reset when the `v-if`'d draw toolbar remounts. Pins and the last-used kind
+ * additionally persist across reloads via localStorage; the authoring defaults stay
+ * session-only.
  *
  * `defaults.style` is the *authored* style a new graphic may be born with. It is kept
  * ungated here and narrowed per kind on the way out (`newControlMeasureDefaults`), so a
@@ -41,7 +48,11 @@ export const DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS: NewControlMeasureDefaults = {
  */
 export const useControlMeasureToolStore = defineStore("controlMeasureTool", {
   state: () => ({
-    pinnedKinds: [...DEFAULT_PINNED_CONTROL_MEASURE_KINDS] as ControlMeasureId[],
+    pinnedKinds: useLocalStorage<ControlMeasureId[]>("pinnedControlMeasureKinds", [
+      ...DEFAULT_PINNED_CONTROL_MEASURE_KINDS,
+    ]),
+    // Remembered by the control-measure split button; re-armed by its main half.
+    lastKind: useLocalStorage<ControlMeasureId>("lastControlMeasureKind", "main-attack"),
     defaults: { ...DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS } as NewControlMeasureDefaults,
   }),
   actions: {
@@ -69,6 +80,10 @@ export const useControlMeasureToolStore = defineStore("controlMeasureTool", {
     togglePinnedKind(kind: ControlMeasureId) {
       if (this.pinnedKinds.includes(kind)) this.unpinKind(kind);
       else this.pinKind(kind);
+    },
+    /** Back to the starting pins; the remembered last-used kind is left alone. */
+    resetPinnedKinds() {
+      this.pinnedKinds = [...DEFAULT_PINNED_CONTROL_MEASURE_KINDS];
     },
   },
 });
