@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 /**
  * The split button collapses the five plain draw shapes into one pill: the main half
- * re-arms the last-used shape, the chevron menu picks a new one. The remembered shape
- * lives in the main toolbar store so it survives the v-if'd toolbar unmounting.
+ * re-arms the last-used shape, the chevron menu picks a new one. Arming stays with the
+ * toolbar (which also records the last-used shape); this component only emits. The
+ * remembered shape lives in the main toolbar store so it survives the v-if'd toolbar
+ * unmounting.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
@@ -60,8 +62,8 @@ describe("DrawToolSplitButton", () => {
     expect(wrapper.emitted("select")).toEqual([["LineString"]]);
   });
 
-  it("remembers a shape picked from the menu", async () => {
-    const { wrapper, store } = mountButton();
+  it("picks a shape from the menu", async () => {
+    const { wrapper } = mountButton();
 
     const circleItem = wrapper
       .findAllComponents({ name: "DropdownMenuItem" })
@@ -69,11 +71,16 @@ describe("DrawToolSplitButton", () => {
     await circleItem.trigger("click");
 
     expect(wrapper.emitted("select")).toEqual([["Circle"]]);
-    expect(store.lastDrawType).toBe("Circle");
+  });
 
-    // The main half now previews and re-arms the picked shape.
+  it("previews and re-arms the shape the toolbar remembered", async () => {
+    const { wrapper, store } = mountButton();
+    store.lastDrawType = "Circle";
+    await wrapper.vm.$nextTick();
+
     await buttonByTitle(wrapper, "Circle").trigger("click");
-    expect(wrapper.emitted("select")).toEqual([["Circle"], ["Circle"]]);
+
+    expect(wrapper.emitted("select")).toEqual([["Circle"]]);
   });
 
   it("mirrors the armed shape even when armed elsewhere", async () => {

@@ -41,6 +41,8 @@ function toOption(id: ControlMeasureId): ControlMeasureKindOption {
 }
 
 const OPTIONS: readonly ControlMeasureKindOption[] = CONTROL_MEASURE_IDS.map(toOption);
+// Built once: the split-button menu looks a kind up per row on every render.
+const OPTIONS_BY_ID = new Map(OPTIONS.map((option) => [option.id, option]));
 
 /** Every kind the library knows, in registry order. */
 export function listControlMeasureKindOptions(): readonly ControlMeasureKindOption[] {
@@ -50,7 +52,7 @@ export function listControlMeasureKindOptions(): readonly ControlMeasureKindOpti
 export function getControlMeasureKindOption(
   id: ControlMeasureId,
 ): ControlMeasureKindOption | undefined {
-  return OPTIONS.find((option) => option.id === id);
+  return OPTIONS_BY_ID.get(id);
 }
 
 /**
