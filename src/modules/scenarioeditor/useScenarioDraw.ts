@@ -52,7 +52,10 @@ import {
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
-import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isNTacticalGraphicLayerItem,
+  type GeometryLayerItem,
+} from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 
 /**
@@ -69,7 +72,12 @@ export type ArmedTool =
   | { kind: "plainDraw"; drawType: DrawType }
   | { kind: "plainModify" }
   | { kind: "cmDraw"; graphicKind: ControlMeasureKind }
-  | { kind: "cmEdit"; featureId: FeatureId };
+  | {
+      kind: "cmEdit";
+      featureId: FeatureId;
+      /** Return to the toolbar's target-picking mode when this session settles. */
+      resume?: "plainModify";
+    };
 
 /**
  * The keyboard contract the armed-tool owner exposes upwards.
@@ -242,6 +250,21 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       )
       .filter(Boolean) as GeometryLayerItem[];
 
+  /**
+   * Return the primary selected control measure only when the whole feature selection
+   * belongs to that family. Mixed selections stay with the plain modify interaction,
+   * matching the details-panel split.
+   */
+  function selectedControlMeasureId(ids = [...selectedFeatureIds.value]) {
+    if (!ids.length) return null;
+    const allControlMeasures = ids.every((featureId) =>
+      isNTacticalGraphicLayerItem(
+        activeScenario.geo.getLayerItemById(featureId).layerItem,
+      ),
+    );
+    return allControlMeasures ? ids[0]! : null;
+  }
+
   const addFeature = (feature: GeometryLayerItem) => {
     const addedFeature = addScenarioDrawFeature(
       activeScenario,
@@ -394,7 +417,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   const isDrawing = computed(
     () => armed.value.kind === "plainDraw" || armed.value.kind === "cmDraw",
   );
-  const isModifying = computed(() => armed.value.kind === "plainModify");
+  const isModifying = computed(
+    () => armed.value.kind === "plainModify" || armed.value.kind === "cmEdit",
+  );
 
   // The control-measure draw session. Everything transient lives in there; the only
   // thing that reaches back is a settled session asking what to arm next.
@@ -421,8 +446,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   });
 
   // The control-measure edit session. Entered only by an explicit gesture from the
-  // details panel — a click selects and nothing more, because under settle-first
-  // click-to-edit would leave an open session behind nearly every map interaction.
+  // details panel or the draw toolbar — a map click selects and nothing more, because
+  // under settle-first click-to-edit would leave an open session behind nearly every
+  // map interaction.
   const controlMeasureEdit = useControlMeasureEditSession({
     scenario: activeScenario,
     surface: () => engineRef.value?.draw,
@@ -431,10 +457,14 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     // flag plain geometry does — see `applyScenarioControlMeasureEdit`.
     recordShape: () => isRecordingGeometry.value,
     onSettled({ featureId }) {
-      // No re-arm case: an edit ends when its graphic is done, whether it closed on
-      // a click away or was settled by something else.
       if (armed.value.kind === "cmEdit" && armed.value.featureId === featureId) {
-        arm({ kind: "none" });
+        // A toolbar edit is one target inside a persistent mode, just like ordinary
+        // feature editing. The details panel's one-off Edit shape gesture carries no
+        // continuation and therefore still ends here. Do not resurrect a toolbar mode
+        // after the toolbar itself was closed while the session remained open.
+        const resumeModify =
+          armed.value.resume === "plainModify" && toolbarStore.currentToolbar === "draw";
+        arm(resumeModify ? { kind: "plainModify" } : { kind: "none" });
       }
     },
   });
@@ -528,16 +558,30 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     { deep: true },
   );
 
-  // Generalised from `isDrawing`: clicks are swallowed whenever *anything* is armed, so
-  // a control-measure draw or edit does not double as a selection gesture.
+  // Draw sessions and live control-measure edits own map clicks. Plain modify is the
+  // exception: it must leave selection live so Edit can be enabled first and its target
+  // picked afterwards (for either a plain feature or a control measure).
   watch(
-    () => armed.value.kind !== "none",
-    (isArmed) => {
-      if (isArmed) {
+    () => armed.value.kind !== "none" && armed.value.kind !== "plainModify",
+    (ownsMapClicks) => {
+      if (ownsMapClicks) {
         translate.value = false;
         suppressSelection();
       } else {
         restoreSelection();
+      }
+    },
+  );
+
+  // Plain modify is also the toolbar's target-picking state. Once map selection lands
+  // on a control measure, hand ownership to tactical-draw and open its edit session.
+  watch(
+    () => [...selectedFeatureIds.value],
+    (selectedIds) => {
+      if (armed.value.kind !== "plainModify") return;
+      const featureId = selectedControlMeasureId(selectedIds);
+      if (featureId) {
+        arm({ kind: "cmEdit", featureId, resume: "plainModify" });
       }
     },
   );
@@ -583,6 +627,30 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       },
       { label: "batchLayer", value: "dummy" },
     );
+  }
+
+  /**
+   * The Edit toolbar button is shared by the two editing mechanisms. When the current
+   * selection consists only of control measures, edit the first one — the same primary
+   * item the control-measure details panel displays. A mixed or ordinary selection
+   * keeps the existing plain-geometry modify interaction.
+   */
+  function startModify() {
+    if (isModifying.value) {
+      arm({ kind: "none" });
+      return;
+    }
+
+    const selectedControlMeasure = selectedControlMeasureId();
+    if (selectedControlMeasure) {
+      arm({
+        kind: "cmEdit",
+        featureId: selectedControlMeasure,
+        resume: "plainModify",
+      });
+      return;
+    }
+    arm({ kind: "plainModify" });
   }
 
   function handleEscape(event?: KeyboardEvent): boolean {
@@ -716,10 +784,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     arm,
     startDrawing: (drawType: DrawType) => arm({ kind: "plainDraw", drawType }),
     currentDrawType,
-    startModify: () =>
-      arm(
-        armed.value.kind === "plainModify" ? { kind: "none" } : { kind: "plainModify" },
-      ),
+    startModify,
     isModifying,
     cancel: () => arm({ kind: "none" }),
     isDrawing,
