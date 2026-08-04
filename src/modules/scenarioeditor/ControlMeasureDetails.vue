@@ -136,7 +136,7 @@ function updateName(name: string) {
  * `toControlMeasure` stay uniform over kinds.
  */
 function doStyleUpdate(data: ControlMeasureStyleUpdate) {
-  if (item.value) geo.updateTacticalGraphic(item.value.id, data);
+  if (item.value) scenarioDraw.updateControlMeasure(item.value.id, data);
 }
 
 function doMetaUpdate(data: {

@@ -55,6 +55,7 @@ import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTactic
 import {
   isNTacticalGraphicLayerItem,
   type GeometryLayerItem,
+  type TacticalGraphicLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 
@@ -667,6 +668,21 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   }
 
   /**
+   * Update host-owned control-measure fields without letting an open shape session
+   * fold its older snapshot over the new values. Settling first is synchronous; the
+   * resulting store render then reopens the still-visible edit through `onSettled`.
+   */
+  function updateControlMeasure(
+    featureId: FeatureId,
+    update: TacticalGraphicLayerItemUpdate,
+  ) {
+    if (controlMeasureEdit.featureId.value === featureId) {
+      renderFeed?.settle("render");
+    }
+    activeScenario.geo.updateTacticalGraphic(featureId, update);
+  }
+
+  /**
    * The Edit toolbar button is shared by the two editing mechanisms. When the current
    * selection consists only of control measures, edit the first one — the same primary
    * item the control-measure details panel displays. A mixed or ordinary selection
@@ -840,6 +856,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     startControlMeasureEdit: (featureId: FeatureId) => arm({ kind: "cmEdit", featureId }),
     /** `engine.draw` is defined — control measures can be authored on this engine. */
     canControlMeasures,
+    updateControlMeasure,
     deleteSelected,
     handleEscape,
     handleEnter,
