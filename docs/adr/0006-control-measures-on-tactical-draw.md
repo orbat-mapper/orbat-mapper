@@ -155,6 +155,33 @@ Control measures render through tactical-draw, stacked **above** the flat scenar
 feature source that `maplibreScenarioFeatures.ts` maintains. They are not merged into
 it.
 
+The editor may hold multiple explicitly specialized control-measure layers. They form
+their own ordered stack: their relative order is honoured by tactical-draw and they
+may be reordered against one another, but the UI does not allow them to be interleaved
+with feature or reference layers. An empty control-measure layer remains one; its
+optional `specialization: "controlMeasure"` is persisted rather than inferred from
+its contents. Existing overlay layers remain unspecialized, leaving a future mixed-item
+model open without migrating every layer.
+
+Control-measure layers have the same applicable interactions as feature layers:
+active-layer selection, rename/timing, visibility, content locking, zoom, deletion,
+item and layer reordering, moving items between compatible layers, duplication, and
+GeoJSON copy of the rendered projection. Content locking prevents authoring and item
+changes but not management of the layer itself. There is no layer-count cap.
+
+There is still one active overlay layer. Switching authoring families restores the
+most recently used compatible unlocked layer (the topmost compatible layer when the
+session has no history). If no control-measure layer exists, choosing a control-measure
+tool creates and activates `Control measures`; if layers exist but all are locked, the
+tool asks the user to unlock or add one rather than creating another silently. Explicit
+layer creation instead creates `New control-measure layer`, activates it, and opens its
+inline editor.
+
+The editor enforces homogeneous authoring in this stage, but loading stays tolerant:
+items that do not match a layer's specialization are preserved and warned about rather
+than rejected or rewritten. Specialization cannot be converted through the UI in this
+iteration.
+
 The accepted cost is stated plainly: **a control measure always draws above every
 plain shape, regardless of layer order in the layers panel.** A user can reorder
 layers and the control measure will not move below a polygon. This is a real

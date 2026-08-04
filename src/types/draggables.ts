@@ -1,10 +1,5 @@
-import type {
-  NGeometryLayerItem,
-  NScenarioLayer,
-  NSide,
-  NSideGroup,
-  NUnit,
-} from "@/types/internalModels";
+import type { NScenarioLayer, NSide, NSideGroup, NUnit } from "@/types/internalModels";
+import type { NScenarioLayerItem } from "@/types/scenarioLayerItems";
 import type { ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 
@@ -26,7 +21,7 @@ export type UnitDragItemSource = "orbatTree" | "breadcrumbs" | "detailsPanel";
 
 export type ScenarioFeatureDragItem = {
   [privateKey]: boolean;
-  feature: NGeometryLayerItem;
+  feature: NScenarioLayerItem;
 };
 
 export type ScenarioFeatureLayerDragItem = {

@@ -51,7 +51,7 @@ export function isControlMeasureLabelFeature(
  */
 export function controlMeasureToGeoJsonFeatures(
   item: TacticalGraphicLayerItem,
-  options: Partial<GeoJsonSettings> = {},
+  options: Partial<GeoJsonSettings> & { includeGeneratedLabels?: boolean } = {},
 ): Feature<Geometry, GeoJsonProperties>[] {
   if (!isSupportedTacticalGraphic(item)) return [];
   const render = renderControlMeasure(toControlMeasure(item), {
@@ -61,7 +61,10 @@ export function controlMeasureToGeoJsonFeatures(
   const includeIdInProperties = options.includeIdInProperties ?? false;
 
   return render.features
-    .filter((feature) => !isControlMeasureLabelFeature(feature))
+    .filter(
+      (feature) =>
+        options.includeGeneratedLabels || !isControlMeasureLabelFeature(feature),
+    )
     .map((feature) => ({
       type: "Feature" as const,
       // The renderer's stable id is `${cmId}:${part}:${index}`.

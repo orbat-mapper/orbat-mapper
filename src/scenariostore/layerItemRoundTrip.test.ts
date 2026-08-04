@@ -61,6 +61,48 @@ function storeItem(store: ReturnType<typeof loadStore>, id: string) {
 }
 
 describe("layer item round trip", () => {
+  it("preserves an empty control-measure layer specialization", () => {
+    const scenario = loadControlMeasureScenarioFixture();
+    scenario.layerStack.push({
+      id: "empty-cm-layer",
+      kind: "overlay",
+      name: "Prepared control measures",
+      specialization: "controlMeasure",
+      items: [],
+    });
+
+    const serialized = serialize(loadStore(scenario));
+    const layer = serialized.layerStack.find(
+      (candidate) => candidate.id === "empty-cm-layer",
+    );
+
+    expect(layer).toMatchObject({
+      kind: "overlay",
+      specialization: "controlMeasure",
+      items: [],
+    });
+  });
+
+  it("preserves mismatched content and warns without rewriting it", () => {
+    const scenario = loadControlMeasureScenarioFixture();
+    const overlay = scenario.layerStack.find(
+      (layer) =>
+        layer.kind === "overlay" && layer.items.some((item) => item.kind === "geometry"),
+    )!;
+    if (overlay.kind !== "overlay") throw new Error("Expected overlay fixture");
+    overlay.specialization = "controlMeasure";
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const serialized = serialize(loadStore(scenario));
+    const loadedOverlay = serialized.layerStack.find((layer) => layer.id === overlay.id)!;
+    if (loadedOverlay.kind !== "overlay") throw new Error("Expected overlay round trip");
+
+    expect(loadedOverlay.items.some((item) => item.kind === "geometry")).toBe(true);
+    expect(loadedOverlay.specialization).toBe("controlMeasure");
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("mismatched items"));
+    warn.mockRestore();
+  });
+
   it("keeps every item of every kind, in order, across a save and load", () => {
     const first = loadStore(loadControlMeasureScenarioFixture());
     const serialized = serialize(first);

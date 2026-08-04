@@ -27,7 +27,7 @@ import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
-import { injectStrict } from "@/utils";
+import { injectStrict, nanoid } from "@/utils";
 import { useEditingInteraction, type DrawType } from "@/composables/geoEditing";
 import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -58,6 +58,11 @@ import {
   type TacticalGraphicLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
+import { useNotifications } from "@/composables/notifications";
+import {
+  CONTROL_MEASURE_LAYER_NAME,
+  isControlMeasureLayer,
+} from "@/modules/scenarioeditor/controlMeasureLayers";
 
 /**
  * What the map is currently armed with — one union, one writer.
@@ -182,6 +187,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   const controlMeasureToolStore = useControlMeasureToolStore();
   const { isRecordingGeometry } = storeToRefs(recordingStore);
   const mapSelectStore = useMapSelectStore();
+  const { send: notify } = useNotifications();
 
   const snap = ref(true);
   const translate = ref(false);
@@ -200,6 +206,87 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   );
 
   const armed = shallowRef<ArmedTool>({ kind: "none" });
+  const lastUsedFeatureLayerId = ref<FeatureId | null>(null);
+  const lastUsedControlMeasureLayerId = ref<FeatureId | null>(null);
+
+  function overlayLayers() {
+    return (
+      activeScenario.geo.overlayLayers?.value ??
+      activeScenario.geo.layerItemsLayers?.value ??
+      []
+    );
+  }
+
+  function getOverlayLayer(layerId: FeatureId | null | undefined) {
+    if (layerId == null) return undefined;
+    return overlayLayers().find((layer) => layer.id === layerId);
+  }
+
+  function isCompatibleUnlockedLayer(
+    layerId: FeatureId | null | undefined,
+    family: "feature" | "controlMeasure",
+  ) {
+    const candidate = getOverlayLayer(layerId);
+    if (!candidate || candidate.locked) return false;
+    return family === "controlMeasure"
+      ? isControlMeasureLayer(candidate)
+      : !isControlMeasureLayer(candidate);
+  }
+
+  watch(
+    activeLayerIdRef,
+    (layerId) => {
+      const activeLayer = getOverlayLayer(layerId);
+      if (!activeLayer) return;
+      if (isControlMeasureLayer(activeLayer)) {
+        lastUsedControlMeasureLayerId.value = activeLayer.id;
+      } else {
+        lastUsedFeatureLayerId.value = activeLayer.id;
+      }
+    },
+    { immediate: true },
+  );
+
+  function selectAuthoringLayer(family: "feature" | "controlMeasure"): boolean {
+    // Compatibility for lightweight injected test/host doubles that predate the
+    // canonical overlay collection. The production store always exposes both.
+    if (!activeScenario.geo.overlayLayers && !activeScenario.geo.addLayer) return true;
+    if (isCompatibleUnlockedLayer(activeLayerIdRef.value, family)) return true;
+    const remembered =
+      family === "controlMeasure"
+        ? lastUsedControlMeasureLayerId.value
+        : lastUsedFeatureLayerId.value;
+    if (isCompatibleUnlockedLayer(remembered, family)) {
+      activeLayerIdRef.value = remembered;
+      return true;
+    }
+    const compatibleLayers = overlayLayers().filter((layer) =>
+      family === "controlMeasure"
+        ? isControlMeasureLayer(layer)
+        : !isControlMeasureLayer(layer),
+    );
+    const topmostUnlocked = compatibleLayers.find((layer) => !layer.locked);
+    if (topmostUnlocked) {
+      activeLayerIdRef.value = topmostUnlocked.id;
+      return true;
+    }
+    if (family === "feature") return false;
+    if (compatibleLayers.length > 0) {
+      notify({ message: "Unlock or add a control-measure layer to draw." });
+      return false;
+    }
+    const created = activeScenario.geo.addLayer({
+      id: nanoid(),
+      name: CONTROL_MEASURE_LAYER_NAME,
+      specialization: "controlMeasure",
+      items: [],
+      _isNew: false,
+    });
+    if (!created) return false;
+    activeLayerIdRef.value = created.id;
+    lastUsedControlMeasureLayerId.value = created.id;
+    return true;
+  }
 
   // Selection suppression snapshots rather than force-enables. This composable used to
   // die with the draw toolbar, so writing `true` on disarm was harmless; hoisted, it
@@ -430,6 +517,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     // creation and its façade on every basemap swap.
     surface: () => engineRef.value?.draw,
     renderFeed,
+    destinationLayerId: () => activeLayerIdRef.value,
     // Session-sticky UI state, read per session rather than captured: a default changed
     // between two draws applies to the second one. Narrowed per kind, because authored
     // colour is offered for the Generic Graphics kinds only.
@@ -530,6 +618,19 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    * there is exactly one settle mechanism.
    */
   function arm(tool: ArmedTool) {
+    if (tool.kind === "cmEdit") {
+      const item = activeScenario.geo.getLayerItemById(tool.featureId).layerItem;
+      const owner = item ? getOverlayLayer(item._pid) : undefined;
+      if (!item || item.locked || owner?.locked) tool = { kind: "none" };
+    }
+    if (tool.kind === "cmDraw" && !selectAuthoringLayer("controlMeasure")) {
+      tool = { kind: "none" };
+    } else if (
+      (tool.kind === "plainDraw" || tool.kind === "plainModify") &&
+      !selectAuthoringLayer("feature")
+    ) {
+      tool = { kind: "none" };
+    }
     // An open **edit** settles by folding its work into the store, and that write does
     // not always reach the feed synchronously: with geometry recording on the fold goes
     // through `addTacticalGraphicStateControlPoints`, which signals only via
@@ -843,6 +944,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     isDrawing,
     /** Non-null exactly while a control-measure draw session is open. */
     controlMeasureDrawProgress: controlMeasureDraw.progress,
+    controlMeasureDrawDestinationLayerId: controlMeasureDraw.destinationLayerId,
     commitControlMeasureDraw: () => controlMeasureDraw.commit(),
     /** Non-null exactly while a control-measure edit session is open. */
     controlMeasureEditFeatureId: controlMeasureEdit.featureId,

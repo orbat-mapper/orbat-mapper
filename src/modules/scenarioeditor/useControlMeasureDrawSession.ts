@@ -55,6 +55,8 @@ export interface UseControlMeasureDrawSessionOptions {
    * `newControlMeasureDefaults`.
    */
   defaults?: (graphicKind: ControlMeasureKind) => NewControlMeasureDefaults;
+  /** The compatible layer selected when the session opens. */
+  destinationLayerId?: () => string | number | null | undefined;
   /**
    * A session ended on its own. The armed-tool owner decides what happens next —
    * re-arm on commit when `addMultiple`, disarm otherwise.
@@ -65,6 +67,8 @@ export interface UseControlMeasureDrawSessionOptions {
 export interface ControlMeasureDrawSession {
   /** Non-null exactly while a draw session is open. */
   readonly progress: Ref<ControlMeasureDrawProgress | null>;
+  /** Session-sticky destination, non-null exactly while a draw is open. */
+  readonly destinationLayerId: Ref<string | null>;
   /** Open a draw session for `graphicKind`. Supersedes whatever this owner had open. */
   start(graphicKind: ControlMeasureKind): void;
   /** Give up ownership of any open session without committing. */
@@ -77,6 +81,7 @@ export function useControlMeasureDrawSession(
   options: UseControlMeasureDrawSessionOptions,
 ): ControlMeasureDrawSession {
   const progress = shallowRef<ControlMeasureDrawProgress | null>(null);
+  const openDestinationLayerId = shallowRef<string | null>(null);
 
   // Bumped by every `start`/`stop`, and captured by each session's callbacks. A
   // `draw()` promise settles a microtask after the abort that caused it, so without
@@ -103,27 +108,35 @@ export function useControlMeasureDrawSession(
     generation += 1;
     session = null;
     progress.value = null;
+    openDestinationLayerId.value = null;
   }
 
   async function finish(
     token: number,
     graphicKind: ControlMeasureKind,
     measure: Parameters<typeof addScenarioControlMeasure>[1] | null,
+    destinationLayerId?: string | number | null,
   ) {
     if (token !== generation) return;
     // Cleared before the write, so the settle this write's re-render triggers does not
     // try to cancel a session that has already settled.
     session = null;
     progress.value = null;
+    openDestinationLayerId.value = null;
     if (!measure) {
       options.onSettled({ committed: false, graphicKind });
       return;
     }
-    addScenarioControlMeasure(
+    const added = addScenarioControlMeasure(
       options.scenario,
       measure,
       options.defaults?.(graphicKind) ?? {},
+      destinationLayerId == null ? undefined : String(destinationLayerId),
     );
+    if (!added) {
+      options.onSettled({ committed: false, graphicKind });
+      return;
+    }
     // Required by the library's contract, not an optimisation: it hands the override
     // back and expects the host's next render to be authoritative.
     options.renderFeed?.render("commit");
@@ -138,8 +151,11 @@ export function useControlMeasureDrawSession(
   function start(graphicKind: ControlMeasureKind) {
     stop();
     const token = generation;
+    const destinationLayerId = options.destinationLayerId?.();
     const surface = options.surface();
     if (!surface) return;
+    openDestinationLayerId.value =
+      destinationLayerId == null ? null : String(destinationLayerId);
     const draft = {
       kind: graphicKind,
       options: draftOptionsForNewControlMeasure(graphicKind),
@@ -165,14 +181,16 @@ export function useControlMeasureDrawSession(
           });
         },
       })
-      .then((snapshot) => finish(token, graphicKind, snapshot.graphic))
+      .then((snapshot) =>
+        finish(token, graphicKind, snapshot.graphic, destinationLayerId),
+      )
       .catch((error) => {
         // Abort is the normal way a draw ends — Escape, another tool armed, a basemap
         // swap mid-gesture. Nothing is written and nothing is reported.
         if (!isTacticalDrawAbortError(error)) {
           console.error("[controlMeasureDraw] draw session failed", error);
         }
-        return finish(token, graphicKind, null);
+        return finish(token, graphicKind, null, destinationLayerId);
       });
   }
 
@@ -191,6 +209,7 @@ export function useControlMeasureDrawSession(
 
   return {
     progress,
+    destinationLayerId: openDestinationLayerId,
     start,
     stop,
     commit: () => session?.commit() ?? false,

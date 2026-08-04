@@ -41,6 +41,7 @@ import {
   type NScenarioLayerItem,
 } from "@/types/scenarioLayerItems";
 import { controlMeasureExtentFeature } from "@/geo/controlMeasures";
+import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
 import { fixExtent } from "@/utils/geoConvert";
 import { createMapLibreKmlLayerRenderer } from "@/geo/kml/maplibre";
 import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
@@ -328,8 +329,17 @@ export function createMapLibreScenarioLayerController(
   function zoomToScenarioLayer(layerId: FeatureId) {
     const fullLayer = activeScenario?.geo.getFullLayerItemsLayer(layerId);
     if (!fullLayer) return;
-    const items = fullLayer.items.filter(isNGeometryLayerItem);
+    const items = fullLayer.items.filter(
+      (item) =>
+        isNGeometryLayerItem(item) ||
+        (isNTacticalGraphicLayerItem(item) && isSupportedTacticalGraphic(item)),
+    );
     const visible = items.filter((item) => !item._hidden);
+    if (fullLayer.specialization === "controlMeasure") {
+      if (fullLayer.isHidden || fullLayer._hidden || !visible.length) return;
+      zoomToFeatures(visible.map((item) => item.id));
+      return;
+    }
     const picked = (visible.length ? visible : items).map((item) => item.id);
     zoomToFeatures(picked);
   }
@@ -851,8 +861,7 @@ export function createMapLibreScenarioLayerController(
       undoable: !active,
     });
     const source = safeGetSource(getImageSourceId(transform.layerId)) as
-      | { updateImage?: (options: { coordinates?: number[][] }) => void }
-      | undefined;
+      { updateImage?: (options: { coordinates?: number[][] }) => void } | undefined;
     source?.updateImage?.({ coordinates: getTransformCoordinates(transform.state) });
     emitLayerEvent({
       type: "map-layer-transform",

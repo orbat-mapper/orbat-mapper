@@ -130,6 +130,7 @@ describe("addScenarioControlMeasure", () => {
     const layers = scenario.geo.layersItems.value;
     expect(layers).toHaveLength(1);
     expect(layers[0].layer.name).toBe(CONTROL_MEASURE_LAYER_NAME);
+    expect(layers[0].layer.specialization).toBe("controlMeasure");
     expect(controlMeasureItems(scenario)).toHaveLength(1);
   });
 
@@ -151,6 +152,16 @@ describe("addScenarioControlMeasure", () => {
 
     scenario.store.undo();
 
+    expect(controlMeasureItems(scenario)).toHaveLength(0);
+    expect(scenario.geo.layersItems.value).toHaveLength(0);
+  });
+
+  it("does not silently redirect when an explicit destination no longer exists", () => {
+    const scenario = createScenario();
+
+    const added = addScenarioControlMeasure(scenario, measure(), {}, "deleted-layer");
+
+    expect(added).toBeUndefined();
     expect(controlMeasureItems(scenario)).toHaveLength(0);
     expect(scenario.geo.layersItems.value).toHaveLength(0);
   });
