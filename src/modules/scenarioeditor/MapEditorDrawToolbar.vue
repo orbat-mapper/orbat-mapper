@@ -21,6 +21,7 @@ import ControlMeasurePickerDialog from "@/modules/scenarioeditor/ControlMeasureP
 import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { DrawType } from "@/geo/drawTypes";
 import { useToggle } from "@vueuse/core";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { storeToRefs } from "pinia";
@@ -31,7 +32,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const { selectedFeatureIds } = useSelectedItems();
 
-const { addMultiple } = storeToRefs(useMainToolbarStore());
+const { addMultiple, lastDrawType } = storeToRefs(useMainToolbarStore());
 const toggleAddMultiple = useToggle(addMultiple);
 
 const recordStore = useRecordingStore();
@@ -74,6 +75,14 @@ const controlMeasureArmed = computed(
   () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
 );
 
+// Both split buttons only emit; arming — and remembering what was armed, so the pill
+// re-arms it next time — belongs to the toolbar, which is also where the picker dialog
+// lands.
+function drawShape(drawType: DrawType) {
+  lastDrawType.value = drawType;
+  startDrawing(drawType);
+}
+
 function drawControlMeasure(kind: ControlMeasureId) {
   lastKind.value = kind;
   arm({ kind: "cmDraw", graphicKind: kind });
@@ -89,7 +98,7 @@ const toggleFreehand = useToggle(freehand);
     <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="size-5" />
     </MainToolbarButton>
-    <DrawToolSplitButton :current-draw-type="currentDrawType" @select="startDrawing" />
+    <DrawToolSplitButton :current-draw-type="currentDrawType" @select="drawShape" />
     <div class="border-border mx-1 h-5 border-l" />
     <ControlMeasureSplitButton
       :armed-kind="armedGraphicKind"

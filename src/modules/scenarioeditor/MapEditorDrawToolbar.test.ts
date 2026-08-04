@@ -10,6 +10,8 @@ import { createPinia, setActivePinia } from "pinia";
 import { computed, defineComponent, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { scenarioDrawKey } from "@/components/injects";
 import type { ArmedTool } from "@/modules/scenarioeditor/useScenarioDraw";
 
@@ -46,7 +48,7 @@ function mountToolbar({
       provide: { [scenarioDrawKey as symbol]: scenarioDraw },
     },
   });
-  return { wrapper, scenarioDraw };
+  return { wrapper, scenarioDraw, mainToolbarStore: useMainToolbarStore() };
 }
 
 function buttonByTitle(
@@ -89,6 +91,17 @@ describe("MapEditorDrawToolbar capability gating", () => {
       kind: "cmDraw",
       graphicKind: "main-attack",
     });
+  });
+
+  // Both split buttons only emit; the toolbar arms and remembers what it armed, so the
+  // pill re-arms the same tool next time — one convention for both tool families.
+  it("arms and remembers the shape the draw split button picks", async () => {
+    const { wrapper, scenarioDraw, mainToolbarStore } = mountToolbar();
+
+    await wrapper.findComponent(DrawToolSplitButton).vm.$emit("select", "Circle");
+
+    expect(scenarioDraw.startDrawing).toHaveBeenCalledWith("Circle");
+    expect(mainToolbarStore.lastDrawType).toBe("Circle");
   });
 
   it("hides freehand and disables translate while a control measure is armed", () => {
