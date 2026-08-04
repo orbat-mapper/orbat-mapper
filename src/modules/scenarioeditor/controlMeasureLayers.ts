@@ -11,10 +11,17 @@ import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 /**
  * The name a lazily created control-measures layer is given.
  *
- * Only M2's authoring path creates one; M1 renders whatever a loaded scenario
- * already carries.
+ * Used by implicit authoring creation; explicit panel creation uses the distinct
+ * "New control-measure layer" label.
  */
 export const CONTROL_MEASURE_LAYER_NAME = "Control measures";
+export const NEW_CONTROL_MEASURE_LAYER_NAME = "New control-measure layer";
+
+export function isControlMeasureLayer(
+  layer: Pick<NScenarioOverlayLayer, "specialization">,
+): boolean {
+  return layer.specialization === "controlMeasure";
+}
 
 /**
  * One control-measures section, backed by a real overlay layer.
@@ -29,17 +36,10 @@ export interface ControlMeasureLayerGroup {
 }
 
 /**
- * Resolve the control-measures section(s) from the store's layer/items pairs.
- *
- * Lazy by construction: a layer only appears here once it actually holds a
- * `tacticalGraphic` item, so a scenario without control measures renders no section
- * at all and the stored model from steps 1–2 stays untouched.
- *
- * Normally this returns exactly one group — control measures live in one host-created
- * layer. It returns several rather than one when a hand-authored or imported scenario
- * scattered them across layers: listing only the first would silently hide the rest,
- * and each group's header then owns the visibility and lock of the layer that actually
- * contains its items.
+ * Resolve every explicitly specialized control-measure layer from the store's
+ * layer/items pairs. Contents never determine identity, so empty layers remain visible
+ * and unspecialized layers stay feature layers even when malformed data contains a
+ * tactical graphic.
  *
  * The `layer` handed back is the store's own reactive object, not a copy, so the
  * section's open/closed state (`_isOpen`) survives the same way the layer tree's does.
@@ -49,11 +49,11 @@ export function getControlMeasureLayerGroups(
 ): ControlMeasureLayerGroup[] {
   const groups: ControlMeasureLayerGroup[] = [];
   for (const { layer, items } of layersItems) {
+    if (!isControlMeasureLayer(layer)) continue;
     const controlMeasures = items.filter(
       (item): item is NTacticalGraphicLayerItem =>
         !!item && isNTacticalGraphicLayerItem(item),
     );
-    if (!controlMeasures.length) continue;
     groups.push({ layer, items: controlMeasures });
   }
   return groups;

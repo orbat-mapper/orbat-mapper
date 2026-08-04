@@ -144,12 +144,9 @@ export function toTacticalGraphicLayerItem(
 }
 
 /**
- * The layer a new control measure goes into: the first one that already holds control
- * measures, otherwise a freshly created "Control measures" layer.
- *
- * Created lazily rather than up front so a scenario that never gets one keeps the
- * stored model M1 landed untouched, and so the section only appears in the layers panel
- * once there is something in it. Returns `undefined` only when the write itself failed.
+ * Fallback for callers that do not pass the destination selected by the armed-tool
+ * owner: use the topmost specialized layer, otherwise create one explicitly specialized
+ * as a control-measure layer.
  */
 function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | undefined {
   const existing = getControlMeasureLayerGroups(scenario.geo.layersItems.value)[0];
@@ -157,6 +154,7 @@ function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | unde
   return scenario.geo.addLayer({
     id: nanoid(),
     name: CONTROL_MEASURE_LAYER_NAME,
+    specialization: "controlMeasure",
     items: [],
     _isNew: false,
   })?.id;
@@ -174,15 +172,15 @@ export function addScenarioControlMeasure(
   scenario: TScenario,
   measure: ControlMeasure,
   defaults: NewControlMeasureDefaults = {},
+  destinationLayerId?: FeatureId,
 ): TacticalGraphicLayerItem | undefined {
   const item = toTacticalGraphicLayerItem(measure, defaults);
   let added = false;
   scenario.store.groupUpdate(
     () => {
-      const layerId = getOrCreateControlMeasureLayerId(scenario);
+      const layerId = destinationLayerId ?? getOrCreateControlMeasureLayerId(scenario);
       if (!layerId) return;
-      scenario.geo.addFeature(item, layerId);
-      added = true;
+      added = Boolean(scenario.geo.addFeature(item, layerId));
     },
     { label: "addFeature", value: item.id },
   );

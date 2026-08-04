@@ -390,8 +390,10 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function moveFeature(featureId: FeatureId, toIndex: number) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+    const feature = state.layerItemMap[featureId];
     if (!feature) return;
+    const owner = getOverlayLayerFromMap(state.layerStackMap, feature._pid);
+    if (!owner || owner.locked || feature.locked) return;
 
     update(
       (s) => {
@@ -400,9 +402,8 @@ export function useGeo(store: NewScenarioStore) {
         const fromIndex = layer.items.indexOf(String(featureId));
         moveItemMutable(layer.items, fromIndex, toIndex);
         layer.items.forEach((fid, i) => {
-          const feature = getGeometryLayerItemFromMap(s.layerItemMap, fid);
-          if (!feature) return;
-          if (feature._zIndex !== i) feature._zIndex = i;
+          const item = s.layerItemMap[fid];
+          if (item?.kind === "geometry" && item._zIndex !== i) item._zIndex = i;
         });
       },
       { label: "moveFeature", value: featureId },
@@ -415,11 +416,8 @@ export function useGeo(store: NewScenarioStore) {
     destinationFeatureOrLayerId: FeatureId,
     target: DropTarget,
   ) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
-    const destinationFeature = getGeometryLayerItemFromMap(
-      state.layerItemMap,
-      destinationFeatureOrLayerId,
-    );
+    const feature = state.layerItemMap[featureId];
+    const destinationFeature = state.layerItemMap[destinationFeatureOrLayerId];
     const destinationLayerId = destinationFeature?._pid ?? destinationFeatureOrLayerId;
     if (!feature) return;
     const layer = getOverlayLayerFromMap(state.layerStackMap, feature._pid);
@@ -428,6 +426,11 @@ export function useGeo(store: NewScenarioStore) {
       destinationLayerId,
     );
     if (!layer || !destinationLayer) return;
+    if (layer.locked || destinationLayer.locked || feature.locked) return;
+    const itemNeedsControlMeasureLayer = feature.kind === "tacticalGraphic";
+    const destinationIsControlMeasureLayer =
+      destinationLayer.specialization === "controlMeasure";
+    if (itemNeedsControlMeasureLayer !== destinationIsControlMeasureLayer) return;
 
     const toIndex = destinationLayer.items.indexOf(String(destinationFeatureOrLayerId));
     if (layer.id === destinationLayer.id) {
@@ -454,9 +457,7 @@ export function useGeo(store: NewScenarioStore) {
           } else {
             toLayer.items.push(String(featureId));
           }
-          if (f.kind === "geometry") {
-            (f as NGeometryLayerItem)._pid = toLayer.id;
-          }
+          f._pid = toLayer.id;
         },
         { label: "moveFeature", value: featureId },
       );
@@ -612,6 +613,15 @@ export function useGeo(store: NewScenarioStore) {
     if (!newFeature.id) newFeature.id = nanoid();
     if (!newFeature.kind) (newFeature as NGeometryLayerItem).kind = "geometry";
     newFeature._pid = layerId;
+    const destination = getOverlayLayerFromMap(state.layerStackMap, layerId);
+    if (!destination || destination.locked) return;
+    const requiresControlMeasureLayer = newFeature.kind === "tacticalGraphic";
+    if (
+      requiresControlMeasureLayer !==
+      (destination.specialization === "controlMeasure")
+    ) {
+      return;
+    }
     update(
       (s) => {
         const layer = getOverlayLayerFromMap(s.layerStackMap, layerId);
@@ -638,6 +648,8 @@ export function useGeo(store: NewScenarioStore) {
     const noEmit = options.noEmit ?? false;
     const feature = state.layerItemMap[featureId];
     if (!feature) return;
+    const owner = getOverlayLayerFromMap(state.layerStackMap, feature._pid);
+    if (owner?.locked || feature.locked) return;
     update(
       (s) => {
         const layer = getOverlayLayerFromMap(s.layerStackMap, feature._pid);
@@ -652,11 +664,13 @@ export function useGeo(store: NewScenarioStore) {
   }
 
   function duplicateFeature(featureId: FeatureId) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+    const feature = state.layerItemMap[featureId];
     if (!feature) return;
-    const shallowCopy = { ...feature };
-    shallowCopy.id = nanoid();
-    return addFeature(shallowCopy, feature._pid);
+    const owner = getOverlayLayerFromMap(state.layerStackMap, feature._pid);
+    if (!owner || owner.locked || feature.locked) return;
+    const copy = klona(feature);
+    copy.id = nanoid();
+    return addFeature(copy, feature._pid);
   }
 
   function updateFeature(
@@ -667,6 +681,11 @@ export function useGeo(store: NewScenarioStore) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
     const isGeometry = data.geometry !== undefined;
+    const currentFeature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+    const currentOwner = currentFeature
+      ? getOverlayLayerFromMap(state.layerStackMap, currentFeature._pid)
+      : undefined;
+    if (!currentFeature || currentFeature.locked || currentOwner?.locked) return;
     if (undoable) {
       update(
         (s) => {
@@ -770,6 +789,8 @@ export function useGeo(store: NewScenarioStore) {
     // for the whole draft.
     const apply = (item: NScenarioLayerItem | undefined, currentTime: number) => {
       if (!item) return;
+      const owner = getOverlayLayerFromMap(state.layerStackMap, item._pid);
+      if (owner?.locked || item.locked) return;
       Object.entries(data).forEach(([key, value]) => {
         if (value === undefined) return;
         (item as unknown as Record<string, unknown>)[key] = value;
@@ -817,6 +838,8 @@ export function useGeo(store: NewScenarioStore) {
     // for the whole draft.
     const apply = (item: NScenarioLayerItem | undefined) => {
       if (!item || !isNTacticalGraphicLayerItem(item)) return;
+      const owner = getOverlayLayerFromMap(state.layerStackMap, item._pid);
+      if (owner?.locked || item.locked) return;
       TACTICAL_GRAPHIC_UPDATE_FIELDS.forEach((field) => {
         const value = data[field];
         if (value === undefined) return;
@@ -856,6 +879,8 @@ export function useGeo(store: NewScenarioStore) {
       (s) => {
         const item = s.layerItemMap[itemId];
         if (!item || !isNTacticalGraphicLayerItem(item)) return;
+        const owner = getOverlayLayerFromMap(s.layerStackMap, item._pid);
+        if (owner?.locked || item.locked) return;
         const t = atTime ?? s.currentTime;
         const nextState = [...(item.state ?? [])];
         for (let i = 0, len = nextState.length; i < len; i++) {

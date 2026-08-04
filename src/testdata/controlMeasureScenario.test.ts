@@ -64,9 +64,13 @@ describe("control measure fixture — load", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     loadFixture();
 
-    // Aggregated: one message per load, not one per item and not one per layer.
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0]![0]).toContain("phase-line-from-the-future=1");
+    // Unsupported kinds remain aggregated into one message even when specialization
+    // mismatch warnings are also emitted for affected legacy layers.
+    const unsupportedWarnings = warn.mock.calls.filter(([message]) =>
+      String(message).includes("Unsupported control measure kinds"),
+    );
+    expect(unsupportedWarnings).toHaveLength(1);
+    expect(unsupportedWarnings[0]![0]).toContain("phase-line-from-the-future=1");
     warn.mockRestore();
   });
 

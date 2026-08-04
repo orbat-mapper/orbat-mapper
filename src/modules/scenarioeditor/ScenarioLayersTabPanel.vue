@@ -29,15 +29,19 @@ import type {
 } from "@/types/constants";
 import { ScenarioLayerActions } from "@/types/constants";
 import { useSelectedItems } from "@/stores/selectedStore";
-import {
-  addMapLayer,
-  getMapLayerIcon,
-} from "@/modules/scenarioeditor/scenarioMapLayerUtils";
+import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 import ControlMeasureLayer from "@/modules/scenarioeditor/ControlMeasureLayer.vue";
 import { getControlMeasureLayerGroups } from "@/modules/scenarioeditor/controlMeasureLayers";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isControlMeasureLayer,
+  NEW_CONTROL_MEASURE_LAYER_NAME,
+} from "@/modules/scenarioeditor/controlMeasureLayers";
+import type {
+  NScenarioLayerItem,
+  NTacticalGraphicLayerItem,
+} from "@/types/scenarioLayerItems";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   isScenarioFeatureDragItem,
@@ -49,12 +53,14 @@ import {
   type Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
 import {
   isScenarioOverlayLayer,
   isScenarioReferenceLayer,
   type NScenarioOverlayLayer,
   type NScenarioReferenceLayer,
+  type NScenarioStackLayer,
 } from "@/types/scenarioStackLayers";
 
 const emit = defineEmits(["feature-click"]);
@@ -97,9 +103,11 @@ const mapLayerMenuItems = computed<MenuItemData<ScenarioMapLayerAction>[]>(() =>
 const mapLayerButtonItems: ButtonGroupItem[] = [
   {
     label: "Add feature layer",
-    onClick: () => {
-      const newLayer = addNewLayer();
-    },
+    onClick: () => addNewLayer(),
+  },
+  {
+    label: "Add control-measure layer",
+    onClick: () => addNewControlMeasureLayer(),
   },
   {
     label: "Add image layer",
@@ -135,11 +143,11 @@ const stackLayers = computed(() => {
 });
 
 function isOverlayStackEntry(layer: unknown): layer is NScenarioOverlayLayer {
-  return isScenarioOverlayLayer(layer as any);
+  return isScenarioOverlayLayer(layer as NScenarioStackLayer);
 }
 
 function isReferenceStackEntry(layer: unknown): layer is NScenarioReferenceLayer {
-  return isScenarioReferenceLayer(layer as any);
+  return isScenarioReferenceLayer(layer as NScenarioStackLayer);
 }
 
 function getReferenceLayerSource(layer: NScenarioReferenceLayer) {
@@ -161,8 +169,8 @@ const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
 ]);
 
 /**
- * The control-measures section(s), outside the layer tree and created lazily: nothing
- * appears until a scenario actually holds a `tacticalGraphic` item.
+ * The specialized control-measure stack, outside the mixed overlay/reference tree.
+ * Empty specialized layers deliberately remain present.
  *
  * `layersItems` is optional-chained because older injected `geo` mocks in tests only
  * expose `layerItemsLayers`.
@@ -172,42 +180,19 @@ const controlMeasureGroups = computed(() =>
 );
 
 /**
- * Layers the tree must not also render, or a dedicated control-measures layer would
- * get two headers and two visibility toggles.
- *
- * Only layers whose items are *all* control measures drop out. A layer that mixes
- * kinds keeps its tree row for the geometry it holds and additionally appears as a
- * section for its control measures — a duplicate header in that pathological case,
- * which is still better than leaving items unlisted in either place.
+ * Specialized layers the feature/reference tree must not also render.
  */
 const controlMeasureOnlyLayerIds = computed(
-  () =>
-    new Set(
-      controlMeasureGroups.value
-        .filter(({ layer, items }) => layer.items.length === items.length)
-        .map(({ layer }) => layer.id),
-    ),
+  () => new Set(controlMeasureGroups.value.map(({ layer }) => layer.id)),
 );
 
 /**
- * Deliberately shorter than the tree's layer menu. The control-measures layer is not
- * part of the stack ordering the map honours, so Move up/down and Zoom to would
- * promise behaviour that does not exist; Copy as GeoJSON is geometry-only.
+ * Control-measure layers expose the same applicable management actions as feature
+ * layers. Their move actions are constrained to their own family below.
  */
-const controlMeasureLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
-  { label: "Edit", action: ScenarioLayerActions.Edit },
-  { label: "Delete", action: ScenarioLayerActions.Delete },
-];
+const controlMeasureLayerMenuItems = layerMenuItems;
 
-const controlMeasureItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(
-  () => [
-    { label: "Zoom to", action: "zoom", disabled: !canZoomFeatures.value },
-    { label: "Pan to", action: "pan", disabled: !canPanFeatures.value },
-    { label: "Delete", action: "delete" },
-  ],
-);
-
-const availableFeatureMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
+const availableItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
   featureMenuItems.map((item) => ({
     ...item,
     disabled:
@@ -215,6 +200,9 @@ const availableFeatureMenuItems = computed<MenuItemData<ScenarioFeatureActions>[
       (item.action === "pan" && !canPanFeatures.value),
   })),
 );
+
+const controlMeasureItemMenuItems = availableItemMenuItems;
+const availableFeatureMenuItems = availableItemMenuItems;
 
 const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeatureId } =
   useSelectedItems();
@@ -267,11 +255,7 @@ function onFeatureClick(
   emit("feature-click", feature, layer, event);
 }
 
-function onFeatureDoubleClick(
-  feature: NGeometryLayerItem,
-  layer: NScenarioLayer,
-  event?: MouseEvent,
-) {
+function onFeatureDoubleClick(feature: NGeometryLayerItem) {
   engineRef.value?.layers.zoomToFeature(feature.id);
 }
 
@@ -282,10 +266,8 @@ function settleEditedControlMeasureBeforeDelete(itemIds: readonly FeatureId[]) {
 }
 
 /**
- * Control measures are not geometry, so they cannot go through `onFeatureAction`:
- * every branch there resolves the item with `getGeometryLayerItemById`, which returns
- * nothing for a `tacticalGraphic`. Reorder and duplicate are absent for the same
- * reason — `moveFeature`/`duplicateFeature` are still geometry-only.
+ * Control-measure actions share the kind-aware store operations while retaining their
+ * rendered GeoJSON copy path and settle-first deletion.
  */
 function onControlMeasureAction(itemId: FeatureId, action: ScenarioFeatureActions) {
   if (action === "zoom") engineRef.value?.layers.zoomToFeature(itemId);
@@ -295,20 +277,36 @@ function onControlMeasureAction(itemId: FeatureId, action: ScenarioFeatureAction
     geo.deleteFeature(itemId);
     selectedFeatureIds.value.delete(itemId);
   }
+  if (action === "moveUp" || action === "moveDown") {
+    const item = geo.getLayerItemById(itemId).layerItem;
+    if (!item) return;
+    const owner = geo.getLayerById(item._pid);
+    if (!owner || owner.locked || item.locked) return;
+    const index = owner.items.indexOf(itemId);
+    geo.moveFeature(itemId, action === "moveUp" ? index - 1 : index + 1);
+  }
+  if (action === "duplicate") {
+    const newId = geo.duplicateFeature(itemId);
+    if (newId) activeFeatureId.value = newId;
+  }
+  if (action === "copyAsGeoJson") {
+    const item = geo.getLayerItemById(itemId).layerItem;
+    if (!item) return;
+    navigator.clipboard.writeText(layerItemsToGeoJsonString([item]));
+    notify({
+      message: isSupportedTacticalGraphic(item)
+        ? "Copied GeoJSON to clipboard"
+        : "The unsupported control measure was omitted from GeoJSON copy.",
+      type: isSupportedTacticalGraphic(item) ? undefined : "warning",
+    });
+  }
 }
 
 function onControlMeasureLayerAction(
   layer: { id: FeatureId; items?: FeatureId[]; _isOpen?: boolean },
   action: ScenarioLayerAction,
 ) {
-  if (action === ScenarioLayerActions.Edit) {
-    editedLayerId.value = layer.id;
-    layer._isOpen = true;
-  }
-  if (action === ScenarioLayerActions.Delete) {
-    settleEditedControlMeasureBeforeDelete(layer.items ?? []);
-    geo.deleteLayer(layer.id);
-  }
+  onLayerAction(layer as NScenarioLayer, action);
 }
 
 function onControlMeasureDoubleClick(item: NTacticalGraphicLayerItem) {
@@ -367,23 +365,72 @@ function onLayerAction(layer: NScenarioLayer, action: ScenarioLayerAction) {
       olCurrentLayer.value = null;
     }*/
     settleEditedControlMeasureBeforeDelete(layer.items);
+    if (
+      scenarioDraw?.armed.value.kind === "cmDraw" &&
+      scenarioDraw.controlMeasureDrawDestinationLayerId?.value === layer.id
+    ) {
+      tacticalGraphicRenderFeed?.settle("delete");
+    }
+    const overlays = geo.overlayLayers?.value ?? [];
+    const sameFamily = overlays.filter(
+      (candidate) =>
+        candidate.id !== layer.id &&
+        isControlMeasureLayer(candidate) ===
+          isControlMeasureLayer(layer as unknown as NScenarioOverlayLayer),
+    );
+    const layerIndex = overlays.findIndex((candidate) => candidate.id === layer.id);
+    const nearest = (candidates: NScenarioOverlayLayer[]) =>
+      candidates.find(
+        (candidate) =>
+          overlays.findIndex((overlay) => overlay.id === candidate.id) > layerIndex,
+      ) ??
+      [...candidates]
+        .reverse()
+        .find(
+          (candidate) =>
+            overlays.findIndex((overlay) => overlay.id === candidate.id) < layerIndex,
+        );
+    const otherFamily = overlays.filter(
+      (candidate) =>
+        candidate.id !== layer.id &&
+        isControlMeasureLayer(candidate) !==
+          isControlMeasureLayer(layer as unknown as NScenarioOverlayLayer),
+    );
+    const fallback = nearest(sameFamily) ?? nearest(otherFamily);
     geo.deleteLayer(layer.id);
+    if (activeLayerId.value === layer.id) activeLayerId.value = fallback?.id ?? null;
   }
   if (
     action === ScenarioLayerActions.MoveUp ||
     action === ScenarioLayerActions.MoveDown
   ) {
     const direction = action === ScenarioLayerActions.MoveUp ? "up" : "down";
-    let toIndex = geo.getLayerIndex(layer.id);
-    if (direction === "up") toIndex--;
-    if (direction === "down") toIndex++;
-    geo.moveLayer(layer.id, toIndex);
+    const current = geo.getLayerById(layer.id) as NScenarioOverlayLayer | undefined;
+    if (current && isControlMeasureLayer(current)) {
+      const family = (geo.overlayLayers?.value ?? []).filter(isControlMeasureLayer);
+      const familyIndex = family.findIndex((candidate) => candidate.id === layer.id);
+      const neighbor = family[direction === "up" ? familyIndex - 1 : familyIndex + 1];
+      if (neighbor) geo.moveLayer(layer.id, geo.getLayerIndex(neighbor.id));
+    } else {
+      let toIndex = geo.getLayerIndex(layer.id);
+      if (direction === "up") toIndex--;
+      if (direction === "down") toIndex++;
+      geo.moveLayer(layer.id, toIndex);
+    }
   }
   if (action === ScenarioLayerActions.CopyAsGeoJson) {
     const fullLayer = geo.getFullLayerItemsLayer(layer.id);
     if (fullLayer) {
       navigator.clipboard.writeText(layerItemsToGeoJsonString(fullLayer.items));
-      notify({ message: "Copied GeoJSON to clipboard" });
+      const unsupportedCount = fullLayer.items.filter(
+        (item) => isNTacticalGraphicLayerItem(item) && !isSupportedTacticalGraphic(item),
+      ).length;
+      notify({
+        message: unsupportedCount
+          ? `Copied GeoJSON; omitted ${unsupportedCount} unsupported control measure${unsupportedCount === 1 ? "" : "s"}.`
+          : "Copied GeoJSON to clipboard",
+        type: unsupportedCount ? "warning" : undefined,
+      });
     }
   }
 }
@@ -454,8 +501,8 @@ function onFeatureAction(
 }
 
 function onFeatureDrop(data: {
-  feature: NGeometryLayerItem;
-  destinationFeature: NGeometryLayerItem | NScenarioLayer;
+  feature: NScenarioLayerItem;
+  destinationFeature: NScenarioLayerItem | NScenarioLayer;
   target: DropTarget;
 }) {
   const { feature, destinationFeature, target } = data;
@@ -466,6 +513,20 @@ function addNewLayer() {
   const addedLayer = geo.addLayer({
     id: nanoid(),
     name: `New layer`,
+    items: [],
+    _isNew: false,
+  });
+  if (!addedLayer) return;
+  activeLayerId.value = addedLayer.id;
+  editedLayerId.value = addedLayer.id;
+  return addedLayer;
+}
+
+function addNewControlMeasureLayer() {
+  const addedLayer = geo.addLayer({
+    id: nanoid(),
+    name: NEW_CONTROL_MEASURE_LAYER_NAME,
+    specialization: "controlMeasure",
     items: [],
     _isNew: false,
   });
@@ -494,7 +555,7 @@ function getOverlayFeatures(layer: NScenarioOverlayLayer): NGeometryLayerItem[] 
     .filter((item): item is NGeometryLayerItem => !!item);
 }
 
-function onLayerDrop(layer: NScenarioLayer, feature: NGeometryLayerItem) {
+function onLayerDrop(layer: NScenarioLayer, feature: NScenarioLayerItem) {
   onFeatureDrop({
     feature,
     destinationFeature: layer,
@@ -559,6 +620,20 @@ onMounted(() => {
         const destinationId = isScenarioFeatureLayerDragItem(destination.data)
           ? destination.data.layer.id
           : destination.data.mapLayer.id;
+        if (isScenarioFeatureLayerDragItem(source.data)) {
+          const sourceIsControlMeasure = isControlMeasureLayer(
+            source.data.layer as unknown as NScenarioOverlayLayer,
+          );
+          if (
+            !isScenarioFeatureLayerDragItem(destination.data) ||
+            sourceIsControlMeasure !==
+              isControlMeasureLayer(
+                destination.data.layer as unknown as NScenarioOverlayLayer,
+              )
+          ) {
+            return;
+          }
+        }
         if (sourceId !== destinationId) {
           const fromIndex = geo.getLayerIndex(sourceId);
           let toIndex = geo.getLayerIndex(destinationId);
@@ -624,10 +699,8 @@ onUnmounted(() => {
     </div>
 
     <!--
-      One top-level control-measures section, outside the layer tree. It renders only
-      once a control measure exists, and it is a real layer, so its header owns
-      visibility and lock. It sits below the tree because the tactical-draw stack draws
-      above every plain shape regardless of layer order (ADR-0006).
+      The control-measure stack sits below the feature/reference tree in the panel,
+      reflecting that tactical-draw renders the whole stack above plain geometry.
     -->
     <div v-if="controlMeasureGroups.length">
       <ControlMeasureLayer
@@ -637,6 +710,7 @@ onUnmounted(() => {
         :items="group.items"
         :layer-menu-items="controlMeasureLayerMenuItems"
         :item-menu-items="controlMeasureItemMenuItems"
+        v-model:activeLayerId="activeLayerId"
         v-model:editedLayerId="editedLayerId"
         @item-click="onFeatureClick"
         @item-double-click="onControlMeasureDoubleClick"
