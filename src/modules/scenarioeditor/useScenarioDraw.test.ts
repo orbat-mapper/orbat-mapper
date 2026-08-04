@@ -158,6 +158,7 @@ function createEngine({
 describe("useScenarioDraw", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useSelectedItems().clear();
     mocks.useMapLibreDrawInteraction.mockImplementation(() => createInteraction());
   });
 
@@ -208,7 +209,79 @@ describe("useScenarioDraw", () => {
     expect(draw.armed.value).toEqual({ kind: "none" });
   });
 
-  it("suppresses selection while anything is armed and restores it on disarm", async () => {
+  it("uses the Edit toggle to edit the selected control measure", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    useSelectedItems().activeFeatureId.value = "cm-1";
+
+    draw.startModify();
+
+    expect(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+    expect(draw.isModifying.value).toBe(true);
+
+    draw.startModify();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(draw.isModifying.value).toBe(false);
+  });
+
+  it("lets Edit mode select a control measure and starts editing it", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    const mapSelectStore = useMapSelectStore();
+
+    draw.startModify();
+    await nextTick();
+
+    // The map click path must remain live while Edit is waiting for a target.
+    expect.soft(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+
+    // This is what the map selection path writes after a control-measure pick.
+    useSelectedItems().activeFeatureId.value = "cm-1";
+    await nextTick();
+
+    expect.soft(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+
+    useSelectedItems().clear();
+    engine.surfaceFake.editSession!.close();
+    await nextTick();
+    await nextTick();
+
+    expect.soft(draw.armed.value).toEqual({ kind: "plainModify" });
+    expect.soft(draw.isModifying.value).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+  });
+
+  it("keeps a details-panel control-measure edit as a one-off gesture", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+
+    draw.startControlMeasureEdit("cm-1");
+    engine.surfaceFake.editSession!.close();
+    await nextTick();
+    await nextTick();
+
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(draw.isModifying.value).toBe(false);
+  });
+
+  it("suppresses selection while a control-measure session owns map clicks", async () => {
     const { draw, engineRef } = mountHarness();
     engineRef.value = createEngine();
     await nextTick();
