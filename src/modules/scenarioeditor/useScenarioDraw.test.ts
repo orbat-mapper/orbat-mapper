@@ -265,6 +265,42 @@ describe("useScenarioDraw", () => {
     expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
   });
 
+  it("switches directly between control measures in persistent Edit mode", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    const selectedItems = useSelectedItems();
+    const mapSelectStore = useMapSelectStore();
+
+    selectedItems.activeFeatureId.value = "cm-1";
+    draw.startModify();
+    await nextTick();
+
+    expect.soft(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+    // Persistent Edit mode must leave the map selection path live so the click that
+    // settles cm-1 can also select cm-2, as it does for ordinary features.
+    expect.soft(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+
+    // The map click path replaces the active selection in this same gesture.
+    selectedItems.activeFeatureId.value = "cm-2";
+    await nextTick();
+    await nextTick();
+
+    expect(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-2",
+      resume: "plainModify",
+    });
+    expect(engine.surfaceFake.editSession?.startMeasure.id).toBe("cm-2");
+  });
+
   it("keeps a details-panel control-measure edit as a one-off gesture", async () => {
     const { draw, engineRef } = mountHarness();
     const engine = createEngine();

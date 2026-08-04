@@ -558,11 +558,16 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     { deep: true },
   );
 
-  // Draw sessions and live control-measure edits own map clicks. Plain modify is the
-  // exception: it must leave selection live so Edit can be enabled first and its target
-  // picked afterwards (for either a plain feature or a control measure).
+  // Draw sessions and one-off control-measure edits own map clicks. Persistent Edit
+  // mode leaves selection live both while waiting for a target and while editing one,
+  // so the click that settles one control measure can select the next — matching
+  // ordinary-feature editing. The tactical-draw session still receives that click;
+  // this only keeps the host selection path alongside it.
   watch(
-    () => armed.value.kind !== "none" && armed.value.kind !== "plainModify",
+    () =>
+      armed.value.kind !== "none" &&
+      armed.value.kind !== "plainModify" &&
+      !(armed.value.kind === "cmEdit" && armed.value.resume === "plainModify"),
     (ownsMapClicks) => {
       if (ownsMapClicks) {
         translate.value = false;
@@ -573,14 +578,25 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     },
   );
 
-  // Plain modify is also the toolbar's target-picking state. Once map selection lands
-  // on a control measure, hand ownership to tactical-draw and open its edit session.
+  // Persistent modify is also the toolbar's target-picking state. Once map selection
+  // lands on a control measure, hand ownership to tactical-draw and open its edit
+  // session. While one toolbar-originated session is already open, a different target
+  // replaces it directly; `arm()` settles the old edit and defers the replacement past
+  // the folded store update.
   watch(
     () => [...selectedFeatureIds.value],
     (selectedIds) => {
-      if (armed.value.kind !== "plainModify") return;
       const featureId = selectedControlMeasureId(selectedIds);
-      if (featureId) {
+      if (!featureId) return;
+      if (armed.value.kind === "plainModify") {
+        arm({ kind: "cmEdit", featureId, resume: "plainModify" });
+        return;
+      }
+      if (
+        armed.value.kind === "cmEdit" &&
+        armed.value.resume === "plainModify" &&
+        armed.value.featureId !== featureId
+      ) {
         arm({ kind: "cmEdit", featureId, resume: "plainModify" });
       }
     },
