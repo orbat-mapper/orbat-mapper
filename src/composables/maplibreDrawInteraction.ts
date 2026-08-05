@@ -343,6 +343,15 @@ export function useMapLibreDrawInteraction(
   }
 
   function onTouchMove(e: MapTouchEvent) {
+    if (
+      isDrawing.value &&
+      unref(options.freehand) &&
+      (currentDrawType.value === "LineString" || currentDrawType.value === "Polygon")
+    ) {
+      suppressMapEvent(e);
+      appendFreehandVertex(getEventPosition(e));
+      return;
+    }
     // MapLibre does not synthesize "mousemove" from touch, so without this the
     // vertex/midpoint/translate drag has no live preview until the finger lifts.
     if (!dragState) return;
