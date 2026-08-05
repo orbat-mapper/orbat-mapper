@@ -144,9 +144,29 @@ interface ScenarioDrawInteraction {
   isModifying: Ref<boolean>;
   cancel(): void;
   isDrawing: Ref<boolean>;
+  drawPointCount?: Ref<number>;
+  finishDrawing?: () => boolean;
   finishPathDrawing?: () => void;
   destroy?: () => void;
 }
+
+export type DrawSessionProgress =
+  | {
+      family: "plain";
+      drawType: DrawType;
+      pointCount: number;
+      minPoints: number;
+      maxPoints?: number;
+      canCommit: boolean;
+    }
+  | {
+      family: "controlMeasure";
+      graphicKind: ControlMeasureKind;
+      pointCount: number;
+      minPoints: number;
+      maxPoints?: number;
+      canCommit: boolean;
+    };
 
 function isOpenLayersMap(nativeMap: unknown): nativeMap is OLMap {
   return Boolean(nativeMap && typeof (nativeMap as OLMap).addInteraction === "function");
@@ -511,6 +531,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
 
   // The control-measure draw session. Everything transient lives in there; the only
   // thing that reaches back is a settled session asking what to arm next.
+  let explicitFinishTool: ArmedTool | null = null;
   const controlMeasureDraw = useControlMeasureDrawSession({
     scenario: activeScenario,
     // Read through a getter, never captured: the surface is replaced on every map
@@ -524,6 +545,11 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     defaults: (graphicKind) =>
       newControlMeasureDefaults(controlMeasureToolStore.defaults, graphicKind),
     onSettled({ committed, graphicKind }) {
+      if (explicitFinishTool === armed.value) {
+        explicitFinishTool = null;
+        arm({ kind: "none" });
+        return;
+      }
       // `addMultiple` re-arms on **commit only**, so Escape still escapes a locked
       // tool rather than being answered with a fresh session.
       if (committed && addMultiple.value) {
@@ -532,6 +558,40 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       }
       if (armed.value.kind === "cmDraw") arm({ kind: "none" });
     },
+  });
+
+  const drawSessionProgress = computed<DrawSessionProgress | null>(() => {
+    if (armed.value.kind === "plainDraw") {
+      const { drawType } = armed.value;
+      const pointCount = interaction.value?.drawPointCount?.value ?? 0;
+      const minPoints = drawType === "Point" ? 1 : drawType === "Polygon" ? 3 : 2;
+      const maxPoints =
+        drawType === "Point"
+          ? 1
+          : drawType === "Circle" || drawType === "Rectangle"
+            ? 2
+            : undefined;
+      return {
+        family: "plain",
+        drawType,
+        pointCount,
+        minPoints,
+        maxPoints,
+        canCommit: pointCount >= minPoints,
+      };
+    }
+    if (armed.value.kind === "cmDraw") {
+      const progress = controlMeasureDraw.progress.value;
+      return {
+        family: "controlMeasure",
+        graphicKind: armed.value.graphicKind,
+        pointCount: progress?.pointCount ?? 0,
+        minPoints: progress?.minControlPoints ?? 1,
+        maxPoints: progress?.maxControlPoints,
+        canCommit: progress?.canCommit ?? false,
+      };
+    }
+    return null;
   });
 
   // The control-measure edit session. A details-panel gesture opens a one-off session;
@@ -819,6 +879,33 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   }
 
   /**
+   * Explicit Done action shared by the mobile action bar and Enter. A valid draft is
+   * committed, an empty session simply exits, and an incomplete draft stays armed.
+   * Unlike automatic completion, this path never honours add-multiple.
+   */
+  function finishDrawSession(): boolean {
+    const progress = drawSessionProgress.value;
+    if (!progress) return false;
+    if (progress.pointCount === 0) {
+      arm({ kind: "none" });
+      return true;
+    }
+    if (!progress.canCommit) return false;
+
+    if (armed.value.kind === "cmDraw") {
+      explicitFinishTool = armed.value;
+      if (controlMeasureDraw.commit()) return true;
+      explicitFinishTool = null;
+      return false;
+    }
+
+    if (armed.value.kind !== "plainDraw") return false;
+    const finished = interaction.value?.finishDrawing?.() ?? false;
+    if (finished && armed.value.kind === "plainDraw") arm({ kind: "none" });
+    return finished;
+  }
+
+  /**
    * First refusal on Escape, taken in the **capture** phase on `window`.
    *
    * tactical-draw registers its own bubble-phase `keydown` listener on `window` for the
@@ -851,13 +938,6 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   }
 
   function handleEnter(event?: KeyboardEvent): boolean {
-    if (armed.value.kind === "cmDraw") {
-      // The library already finishes on a double-click; Enter is the keyboard
-      // equivalent, and the session refuses it below `minControlPoints` itself.
-      event?.stopPropagation();
-      controlMeasureDraw.commit();
-      return true;
-    }
     if (armed.value.kind === "cmEdit") {
       // Enter finishes an edit the same way it finishes a draw. Disarming is the
       // settle, and an edit settles by closing and keeping its work.
@@ -865,9 +945,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       arm({ kind: "none" });
       return true;
     }
-    if (armed.value.kind !== "plainDraw") return false;
+    if (armed.value.kind !== "plainDraw" && armed.value.kind !== "cmDraw") return false;
     event?.stopPropagation();
-    interaction.value?.finishPathDrawing?.();
+    finishDrawSession();
     return true;
   }
 
@@ -948,6 +1028,8 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureDrawProgress: controlMeasureDraw.progress,
     controlMeasureDrawDestinationLayerId: controlMeasureDraw.destinationLayerId,
     commitControlMeasureDraw: () => controlMeasureDraw.commit(),
+    drawSessionProgress,
+    finishDrawSession,
     /** Non-null exactly while a control-measure edit session is open. */
     controlMeasureEditFeatureId: controlMeasureEdit.featureId,
     controlMeasureEditCanUndo: controlMeasureEdit.canUndo,

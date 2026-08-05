@@ -14,7 +14,7 @@ import { scenarioDrawKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 
-const { controlMeasureDrawProgress, commitControlMeasureDraw, cancel } =
+const { controlMeasureDrawProgress, finishDrawSession, cancel } =
   injectStrict(scenarioDrawKey);
 
 const kindName = computed(() => {
@@ -52,8 +52,10 @@ const pointCount = computed(() => {
       type="button"
       variant="outline"
       size="sm"
-      :disabled="!controlMeasureDrawProgress.canCommit"
-      @click="commitControlMeasureDraw()"
+      :disabled="
+        controlMeasureDrawProgress.pointCount > 0 && !controlMeasureDrawProgress.canCommit
+      "
+      @click="finishDrawSession()"
     >
       Done
     </Button>

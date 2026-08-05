@@ -273,6 +273,11 @@ alpha bump.
 - **Escape now takes two presses** to also clear selection, because the armed tool
   consumes the first. In exchange, three separate non-propagation-stopping Escape
   listeners collapse to one owner.
+- **Explicit completion exits; automatic completion may repeat.** Done and Enter commit
+  a valid draw and disarm even when add-multiple is enabled. Fixed-length completion,
+  double-click and touch double-tap remain add-multiple-aware and may re-arm the same
+  tool. An empty explicit completion simply disarms; an incomplete draft cannot be
+  completed and must either receive more points or be cancelled.
 - **`useScenarioDraw` is hoisted** out of `MapEditorDrawToolbar` (which is `v-if`'d and
   therefore unmounts) to the map view, and provided. Side effect, and an improvement:
   `snap`/`translate`/`freehand` stop silently resetting every time the toolbar is
@@ -296,15 +301,19 @@ alpha bump.
   `DEFINITIONS[kind]` on an unknown kind throws a raw `TypeError` that would blank the
   entire layer. No placeholder graphic is substituted — a generic stand-in would carry
   the real id, so editing it would commit the wrong kind over the unknown one. (#637)
-- **Mobile is not designed.** The whole keyboard layer decided here (Escape/Enter/
-  Ctrl+Z) does not exist on a phone; this ADR assumes a keyboard. Touch behaviour is
-  handled when stage two unifies the draw stack. (#647)
+- **An active mobile draw owns essential session chrome.** At the existing mobile
+  breakpoint, the ordinary Draw sub-toolbar is replaced by one status/Cancel/Done bar
+  for both plain shapes and control measures; the separate control-measure hint remains
+  desktop-only. The bar reports live point progress, stays visible even when the
+  persistent toolbar preference is off, and survives responsive layout changes without
+  settling the session. Plain MapLibre and legacy OpenLayers drawing expose the same
+  point-progress and explicit-finish contract. (#647)
 
 ## What stage two owns
 
 Named here so nothing above reads as permanent by omission: migrating plain
 point/line/circle/polygon onto tactical-draw, retiring `maplibreScenarioFeatures.ts`,
 unifying z-order so control measures and plain shapes interleave, `translate` /
-`syncTransformGraphics`, the `external` snapping provider, and mobile interaction. The
+`syncTransformGraphics`, and the `external` snapping provider. The
 ~150–200 interactive ceiling is a budget over _all_ rendered graphics, so migrated
 plain shapes draw against the same allowance rather than a fresh one.
