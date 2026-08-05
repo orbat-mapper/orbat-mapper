@@ -552,6 +552,29 @@ describe("useMapLibreDrawInteraction", () => {
     );
   });
 
+  it("creates a freehand line from touch drag samples", () => {
+    const harness = createHarness({ freehand: true });
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("touchstart", createEvent(1, 2));
+    harness.trigger("touchmove", createEvent(2, 3));
+    harness.trigger("touchmove", createEvent(3, 4));
+    harness.trigger("touchend", createEvent(3, 4));
+
+    expect(harness.addFeature).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [1, 2],
+            [2, 3],
+            [3, 4],
+          ],
+        },
+      }),
+    );
+  });
+
   it("finishes a line drawing with a mobile double tap", () => {
     const harness = createHarness();
 
