@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
-import { computed, defineComponent, h, nextTick, onMounted, ref } from "vue";
+import { computed, defineComponent, h, inject, nextTick, onMounted, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
-import { activeLayerKey, activeScenarioKey } from "@/components/injects";
+import { activeLayerKey, activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
@@ -229,7 +229,9 @@ describe("ScenarioEditorMaplibre", () => {
       },
       geo: {
         addFeature: vi.fn((feature) => feature.id),
-        layerItemsLayers: computed(() => []),
+        layerItemsLayers: computed(() => [
+          { id: "layer-1", kind: "overlay", name: "Features", items: [] },
+        ]),
         onFeatureLayerEvent: vi.fn(() => ({ off: vi.fn() })),
       },
     };
@@ -486,7 +488,25 @@ describe("ScenarioEditorMaplibre", () => {
           MapEditorUnitTrackToolbar: true,
           MapEditorDrawToolbar: defineComponent({
             name: "MapEditorDrawToolbar",
-            template: "<div data-test='draw-toolbar' />",
+            setup() {
+              return { draw: inject(scenarioDrawKey)! };
+            },
+            template: `
+              <div data-test="draw-toolbar">
+                <button data-test="start-plain-draw" @click="draw.startDrawing('LineString')" />
+                <button
+                  data-test="start-control-measure-draw"
+                  @click="draw.arm({ kind: 'cmDraw', graphicKind: 'phase-line' })"
+                />
+              </div>
+            `,
+          }),
+          DrawSessionActionBar: defineComponent({
+            name: "DrawSessionActionBar",
+            setup() {
+              return { draw: inject(scenarioDrawKey)! };
+            },
+            template: "<button data-test='draw-session-bar' @click=\"draw.cancel()\" />",
           }),
           MapEditorMeasurementToolbar: true,
           ToggleField: true,
@@ -509,5 +529,36 @@ describe("ScenarioEditorMaplibre", () => {
         .exists(),
     ).toBe(true);
     expect(toolbarStore.currentToolbar).toBe("draw");
+
+    await wrapper.get("[data-test='start-plain-draw']").trigger("click");
+    await nextTick();
+
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='draw-toolbar']")
+        .exists(),
+    ).toBe(false);
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='draw-session-bar']")
+        .exists(),
+    ).toBe(true);
+
+    await wrapper.get("[data-test='draw-session-bar']").trigger("click");
+    await nextTick();
+    await wrapper.get("[data-test='start-control-measure-draw']").trigger("click");
+    await nextTick();
+
+    expect(wrapper.find("[data-testid='control-measure-draw-hint']").exists()).toBe(
+      false,
+    );
+    expect(
+      wrapper
+        .get("[data-test='footer-overlays-slot']")
+        .find("[data-test='draw-session-bar']")
+        .exists(),
+    ).toBe(true);
   });
 });

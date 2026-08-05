@@ -953,6 +953,14 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
+  // Drawing, box selection, and other map interactions acquire the shared selection
+  // suppression token while they own pointer input. Their mousemove handlers also own
+  // the cursor, so the general hover path must not overwrite (for example) a drawing
+  // crosshair with a feature pointer immediately after the tool is armed.
+  if (selectionSuppressed.value) {
+    clearHoveredFeatures();
+    return;
+  }
   if (rotateInteraction.isRotating.value) {
     clearHoveredFeatures();
     return;

@@ -2044,6 +2044,60 @@ describe("MlMapLogic", () => {
     expect(featureSelectSpy).not.toHaveBeenCalled();
   });
 
+  it("leaves the cursor owned by an interaction while selection is suppressed", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-suppressed-hover-cursor",
+          currentTime: 0,
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => []),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mount(MlMapLogic, {
+      props: {
+        mlMap: mockMap.map,
+        activeScenario,
+      },
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {},
+            layers: { refreshScenarioFeatureLayers: vi.fn() },
+          } as any),
+          [searchActionsKey as symbol]: createSearchActions(),
+        },
+      },
+    });
+
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        properties: { id: "unit-1" },
+      },
+    ]);
+    mockMap.canvas.style.cursor = "crosshair";
+    const releaseSuppression = useMapSelectStore(pinia).suppressSelection();
+
+    mockMap.emit("mousemove", { point: { x: 1, y: 2 } });
+
+    expect(mockMap.canvas.style.cursor).toBe("crosshair");
+    releaseSuppression();
+  });
+
   it("treats zoom-bounded unit layers as interactive unit hits", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
