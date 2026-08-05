@@ -424,6 +424,23 @@ describe("useScenarioDraw", () => {
     expect(mapSelectStore.selectionSuppressed).toBe(false);
   });
 
+  it("disarms when the tactical-draw surface disappears before a deferred draw starts", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    const mapSelectStore = useMapSelectStore();
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    engineRef.value = undefined;
+    await nextTick();
+    await nextTick();
+
+    expect(draw.controlMeasureDrawProgress.value).toBeNull();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(mapSelectStore.selectionSuppressed).toBe(false);
+  });
+
   it("settles the render feed when a tool is armed", async () => {
     const renderFeed = createRenderFeed();
     const { draw, engineRef } = mountHarness({ renderFeed });

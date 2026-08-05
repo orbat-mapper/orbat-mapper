@@ -69,8 +69,8 @@ export interface ControlMeasureDrawSession {
   readonly progress: Ref<ControlMeasureDrawProgress | null>;
   /** Session-sticky destination, non-null exactly while a draw is open. */
   readonly destinationLayerId: Ref<string | null>;
-  /** Open a draw session for `graphicKind`. Supersedes whatever this owner had open. */
-  start(graphicKind: ControlMeasureKind): void;
+  /** Open a draw session for `graphicKind`. `false` when no surface is available. */
+  start(graphicKind: ControlMeasureKind): boolean;
   /** Give up ownership of any open session without committing. */
   stop(): void;
   /** Finish the open session if it has enough points. `false` when it does not. */
@@ -153,7 +153,7 @@ export function useControlMeasureDrawSession(
     const token = generation;
     const destinationLayerId = options.destinationLayerId?.();
     const surface = options.surface();
-    if (!surface) return;
+    if (!surface) return false;
     openDestinationLayerId.value =
       destinationLayerId == null ? null : String(destinationLayerId);
     const draft = {
@@ -192,6 +192,7 @@ export function useControlMeasureDrawSession(
         }
         return finish(token, graphicKind, null, destinationLayerId);
       });
+    return true;
   }
 
   // The settle-first guard's draw disposition: a `DrawSession` has no way to keep
