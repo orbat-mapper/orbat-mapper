@@ -10,8 +10,15 @@
  * is therefore the only writer, and it groups the lazy layer creation together with the
  * item add so a drawn control measure is one undo step even the first time.
  */
-import { getDefaultOptions } from "@orbat-mapper/control-measures";
-import type { ControlMeasure, ControlMeasureStyle } from "@orbat-mapper/control-measures";
+import {
+  CONTROL_MEASURE_METADATA,
+  getDefaultOptions,
+} from "@orbat-mapper/control-measures";
+import type {
+  ControlMeasure,
+  ControlMeasureId,
+  ControlMeasureStyle,
+} from "@orbat-mapper/control-measures";
 import type { Position } from "geojson";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -160,6 +167,26 @@ function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | unde
   })?.id;
 }
 
+function nextControlMeasureName(
+  scenario: TScenario,
+  layerId: FeatureId,
+  measureKind: ControlMeasure["kind"],
+): string {
+  const baseName =
+    CONTROL_MEASURE_METADATA[measureKind as ControlMeasureId]?.name ??
+    String(measureKind);
+  const layer = scenario.geo.getLayerById(layerId);
+  const existingNames = new Set(
+    layer?.items
+      .map((itemId) => scenario.geo.getLayerItemById(itemId).layerItem?.name)
+      .filter((name): name is string => name !== undefined),
+  );
+
+  let sequence = 1;
+  while (existingNames.has(`${baseName} ${sequence}`)) sequence++;
+  return `${baseName} ${sequence}`;
+}
+
 /**
  * The one store write a settled draw session performs.
  *
@@ -180,6 +207,7 @@ export function addScenarioControlMeasure(
     () => {
       const layerId = destinationLayerId ?? getOrCreateControlMeasureLayerId(scenario);
       if (!layerId) return;
+      item.name = nextControlMeasureName(scenario, layerId, measure.kind);
       added = Boolean(scenario.geo.addFeature(item, layerId));
     },
     { label: "addFeature", value: item.id },

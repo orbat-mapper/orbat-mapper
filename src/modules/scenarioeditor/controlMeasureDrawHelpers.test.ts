@@ -146,6 +146,31 @@ describe("addScenarioControlMeasure", () => {
     ]);
   });
 
+  it("names new control measures from their kind with an unused sequence number", () => {
+    const scenario = createScenario();
+    addScenarioControlMeasure(scenario, measure());
+    addScenarioControlMeasure(scenario, measure({ id: "cm-2" }));
+
+    expect(controlMeasureItems(scenario).map((item) => item.name)).toEqual([
+      "Phase line 1",
+      "Phase line 2",
+    ]);
+  });
+
+  it("does not duplicate a generated name after a control measure is deleted", () => {
+    const scenario = createScenario();
+    addScenarioControlMeasure(scenario, measure());
+    addScenarioControlMeasure(scenario, measure({ id: "cm-2" }));
+    scenario.geo.deleteFeature("cm-1");
+
+    addScenarioControlMeasure(scenario, measure({ id: "cm-3" }));
+
+    expect(controlMeasureItems(scenario).map((item) => item.name)).toEqual([
+      "Phase line 2",
+      "Phase line 1",
+    ]);
+  });
+
   it("is one undo step even when it also created the layer", () => {
     const scenario = createScenario();
     addScenarioControlMeasure(scenario, measure());

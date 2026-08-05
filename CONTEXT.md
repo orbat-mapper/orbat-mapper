@@ -79,6 +79,10 @@ support area, … — drawn and rendered by the `@orbat-mapper/control-measures`
 registry rather than by our own shape pipeline (see [[adr-0006]]). Not a geometry
 layer item, and deliberately not a `geometryKind`.
 
+**Control-measure state**:
+A control measure's time-indexed form. Its identity persists while its control points,
+and therefore its geometry, can vary across scenario time.
+
 **graphicKind**:
 Which control measure it is — the library's `ControlMeasureKind`. Named
 deliberately in parallel with **geometryKind**: same role, different family.
