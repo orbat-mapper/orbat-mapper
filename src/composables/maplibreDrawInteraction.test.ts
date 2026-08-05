@@ -40,6 +40,7 @@ function createHarness(
     snap?: boolean;
     projection?: "mercator" | "globe";
     doubleClickZoomEnabled?: boolean;
+    addMultiple?: boolean;
   } = {},
 ) {
   const handlers = new Map<string, Function[]>();
@@ -49,6 +50,7 @@ function createHarness(
   const translate = ref(options.translate ?? false);
   const freehand = ref(options.freehand ?? false);
   const snap = ref(options.snap ?? true);
+  const addMultiple = ref(options.addMultiple ?? false);
   let doubleClickZoomEnabled = options.doubleClickZoomEnabled ?? true;
   const mlMap = {
     on: vi.fn((name: string, handler: Function) => {
@@ -95,6 +97,7 @@ function createHarness(
     defineComponent({
       setup() {
         const draw = useMapLibreDrawInteraction(mapAdapter, {
+          addMultiple,
           translate,
           freehand,
           snap,
@@ -236,6 +239,27 @@ describe("useMapLibreDrawInteraction", () => {
         geometryMeta: expect.objectContaining({ geometryKind: "Circle" }),
       }),
     );
+  });
+
+  it("reports progress and makes explicit Done exit add-multiple drawing", () => {
+    const harness = createHarness({ addMultiple: true });
+
+    harness.draw.startDrawing("LineString");
+    expect(harness.draw.drawPointCount.value).toBe(0);
+    expect(harness.draw.finishDrawing()).toBe(true);
+    expect(harness.draw.isDrawing.value).toBe(false);
+
+    harness.draw.startDrawing("LineString");
+    harness.trigger("click", createEvent(1, 2));
+    expect(harness.draw.drawPointCount.value).toBe(1);
+    expect(harness.draw.finishDrawing()).toBe(false);
+    expect(harness.draw.isDrawing.value).toBe(true);
+
+    harness.trigger("click", createEvent(3, 4));
+    expect(harness.draw.drawPointCount.value).toBe(2);
+    expect(harness.draw.finishDrawing()).toBe(true);
+    expect(harness.addFeature).toHaveBeenCalledTimes(1);
+    expect(harness.draw.isDrawing.value).toBe(false);
   });
 
   it("creates a rectangle as a box-shaped polygon from two corner clicks", () => {

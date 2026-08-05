@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => ({
   mapLibreStartModify: vi.fn(),
   mapLibreCancel: vi.fn(),
   mapLibreFinishPathDrawing: vi.fn(),
+  mapLibreFinishDrawing: vi.fn(() => true),
 }));
 
 vi.mock("@/composables/maplibreDrawInteraction", () => ({
@@ -52,6 +53,8 @@ function createInteraction() {
     isModifying: ref(false),
     cancel: mocks.mapLibreCancel,
     isDrawing: ref(false),
+    drawPointCount: ref(0),
+    finishDrawing: mocks.mapLibreFinishDrawing,
     finishPathDrawing: mocks.mapLibreFinishPathDrawing,
     destroy: vi.fn(),
   };
@@ -566,7 +569,7 @@ describe("useScenarioDraw", () => {
     expect(draw.armed.value).toEqual({ kind: "none" });
   });
 
-  it("finishes a plain path draw on Enter and falls through when unarmed", async () => {
+  it("uses Enter as explicit Done for empty and valid plain draws", async () => {
     const { draw, engineRef } = mountHarness();
     engineRef.value = createEngine();
     await nextTick();
@@ -576,7 +579,40 @@ describe("useScenarioDraw", () => {
 
     draw.startDrawing("LineString");
     expect(draw.handleEnter()).toBe(true);
-    expect(mocks.mapLibreFinishPathDrawing).toHaveBeenCalled();
+    expect(mocks.mapLibreFinishDrawing).not.toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+
+    draw.startDrawing("LineString");
+    const interaction =
+      mocks.useMapLibreDrawInteraction.mock.results[
+        mocks.useMapLibreDrawInteraction.mock.results.length - 1
+      ].value;
+    interaction.drawPointCount.value = 2;
+    expect(draw.handleEnter()).toBe(true);
+    expect(mocks.mapLibreFinishDrawing).toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
+  it("keeps an incomplete plain draw armed when Done is unavailable", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    draw.startDrawing("Polygon");
+    const interaction =
+      mocks.useMapLibreDrawInteraction.mock.results[
+        mocks.useMapLibreDrawInteraction.mock.results.length - 1
+      ].value;
+    interaction.drawPointCount.value = 2;
+
+    expect(draw.drawSessionProgress.value).toMatchObject({
+      pointCount: 2,
+      minPoints: 3,
+      canCommit: false,
+    });
+    expect(draw.finishDrawSession()).toBe(false);
+    expect(mocks.mapLibreFinishDrawing).not.toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "plainDraw", drawType: "Polygon" });
   });
 
   it("swallows Ctrl+Z during a control-measure session only", async () => {

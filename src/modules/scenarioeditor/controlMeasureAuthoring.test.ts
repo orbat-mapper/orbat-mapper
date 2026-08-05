@@ -352,6 +352,22 @@ describe("drawing a control measure", () => {
     expect(fake.drawSession).not.toBeNull();
   });
 
+  it("makes explicit Done commit and exit even when addMultiple is on", async () => {
+    const { draw, fake, scenario } = setup();
+    useMainToolbarStore().addMultiple = true;
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    expect(draw.drawSessionProgress.value?.canCommit).toBe(true);
+    expect(draw.finishDrawSession()).toBe(true);
+    await nextTick();
+    await nextTick();
+
+    expect(controlMeasureIds(scenario)).toEqual(["cm-1", "cm-new"]);
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(fake.calls.draw).toHaveLength(1);
+    expect(fake.drawSession).toBeNull();
+  });
+
   it("does not re-arm on any abort of a locked tool", async () => {
     const { draw, fake, feed } = setup();
     useMainToolbarStore().addMultiple = true;

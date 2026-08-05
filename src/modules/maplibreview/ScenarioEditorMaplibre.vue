@@ -41,6 +41,7 @@ import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearch
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import MobileDrawSessionActionBar from "@/modules/scenarioeditor/MobileDrawSessionActionBar.vue";
 import ControlMeasureDrawHint from "@/modules/scenarioeditor/ControlMeasureDrawHint.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
@@ -117,6 +118,7 @@ const scenarioDraw = useScenarioDraw({
   engine: scenarioMapEngineRef,
   renderFeed: tacticalGraphicRenderFeed,
 });
+const { isDrawing } = scenarioDraw;
 provide(scenarioDrawKey, scenarioDraw);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
@@ -286,7 +288,7 @@ function onCloseActiveDetailsPanel() {
           class="pointer-events-none absolute top-14 left-1/2 z-10 -translate-x-1/2"
           data-testid="control-measure-draw-hint"
         >
-          <ControlMeasureDrawHint />
+          <ControlMeasureDrawHint v-if="!isMobile" />
         </div>
       </div>
       <MlMapLogic
@@ -340,22 +342,26 @@ function onCloseActiveDetailsPanel() {
     </template>
     <template #mobile-toolbar>
       <div
-        v-if="mlMap && ui.showToolbar && isMobile"
+        v-if="mlMap && isMobile && (ui.showToolbar || isDrawing)"
         class="border-border bg-background pointer-events-auto border-t px-1 py-2"
       >
+        <MobileDrawSessionActionBar v-if="isDrawing" class="mb-2" />
         <MapEditorUnitTrackToolbar
-          v-if="toolbarStore.currentToolbar === 'track'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
           class="mb-2"
         />
         <MapEditorMeasurementToolbar
-          v-if="toolbarStore.currentToolbar === 'measurements'"
+          v-if="
+            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+          "
           class="mb-2"
         />
         <MapEditorDrawToolbar
-          v-if="toolbarStore.currentToolbar === 'draw'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
           class="mb-2"
         />
         <MapEditorMainToolbar
+          v-if="ui.showToolbar"
           :can-move-units="true"
           :can-rotate-units="true"
           :can-measure="true"
