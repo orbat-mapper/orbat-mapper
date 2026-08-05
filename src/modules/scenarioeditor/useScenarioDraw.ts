@@ -582,7 +582,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       // whatever it armed has already opened its own session.
       if (armed.value !== tool) return;
       if (tool.kind === "cmDraw") {
-        controlMeasureDraw.start(tool.graphicKind);
+        // The surface can disappear while an edit's replacement is deferred. Do not
+        // leave a draw tool armed at no session with map selection suppressed.
+        if (!controlMeasureDraw.start(tool.graphicKind)) armed.value = { kind: "none" };
       } else if (tool.kind === "cmEdit") {
         // Nothing editable behind that id — deleted, or an unsupported kind the library
         // cannot put handles on. Fall straight back to disarmed rather than leaving the
