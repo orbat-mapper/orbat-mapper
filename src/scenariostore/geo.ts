@@ -908,14 +908,27 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(itemId);
   }
 
-  function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
+  function deleteLayerItemStateEntry(itemId: FeatureId, index: number) {
     update((s) => {
-      const _feature = s.layerItemMap[featureId];
-      if (!_feature) return;
-      _feature.state?.splice(index, 1);
+      const item = s.layerItemMap[itemId];
+      if (!item) return;
+      item.state?.splice(index, 1);
     });
 
-    updateFeatureState(featureId);
+    updateFeatureState(itemId);
+  }
+
+  function clearLayerItemState(itemId: FeatureId) {
+    update(
+      (s) => {
+        const item = s.layerItemMap[itemId];
+        if (!item) return;
+        item.state = [];
+      },
+      { label: "updateFeatureState", value: itemId },
+    );
+
+    updateFeatureState(itemId);
   }
 
   /**
@@ -1020,7 +1033,8 @@ export function useGeo(store: NewScenarioStore) {
     updateLayerItem,
     updateTacticalGraphic,
     addTacticalGraphicStateControlPoints,
-    deleteFeatureStateEntry,
+    deleteLayerItemStateEntry,
+    clearLayerItemState,
     itemsInfo,
     layerItemsLayers,
     overlayLayers,

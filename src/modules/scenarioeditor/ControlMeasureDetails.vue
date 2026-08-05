@@ -20,9 +20,11 @@ import { computed, ref, watch } from "vue";
 import {
   IconAlertOutline,
   IconMagnifyExpand as ZoomIcon,
+  IconPalette as StyleIcon,
   IconPencil as EditIcon,
   IconVectorPolyline as ShapeIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { storeToRefs } from "pinia";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 import { injectStrict } from "@/utils";
@@ -33,6 +35,7 @@ import {
 } from "@/components/injects";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import { useUiStore } from "@/stores/uiStore";
+import { useTabStore } from "@/stores/tabStore";
 import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
@@ -53,6 +56,9 @@ import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { TabsContent } from "@/components/ui/tabs";
+import ScrollTabs from "@/components/ScrollTabs.vue";
+import ScenarioLayerItemState from "@/modules/scenarioeditor/ScenarioLayerItemState.vue";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -65,6 +71,32 @@ const engineRef = injectStrict(activeScenarioMapEngineKey);
 const scenarioDraw = injectStrict(scenarioDrawKey);
 const { clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
+const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
+
+const tabList = computed(() => {
+  const tabs = [
+    { label: "Style", value: "0" },
+    { label: "Details", value: "1" },
+    { label: "State", value: "2" },
+  ];
+  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "3" });
+  return tabs;
+});
+
+const selectedTabString = computed({
+  get: () => selectedTab.value.toString(),
+  set: (value: string) => {
+    selectedTab.value = Number(value);
+  },
+});
+
+watch(
+  () => uiStore.debugMode,
+  (debugMode) => {
+    if (!debugMode && selectedTab.value === 3) selectedTab.value = 0;
+  },
+  { immediate: true },
+);
 
 const item = computed<NTacticalGraphicLayerItem | null>(() => {
   if (props.selectedIds.size !== 1) return null;
@@ -119,6 +151,11 @@ watch(
 const isEditMode = ref(false);
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
+  selectedTab.value = 1;
+}
+
+function showStylePanel() {
+  selectedTab.value = 0;
 }
 
 function updateName(name: string) {
@@ -235,6 +272,13 @@ function doDelete() {
         </IconButton>
         <IconButton
           v-if="item"
+          title="Change control measure style"
+          @click="showStylePanel()"
+        >
+          <StyleIcon class="size-5" />
+        </IconButton>
+        <IconButton
+          v-if="item"
           :disabled="!canEditShape"
           :title="
             canEditShape
@@ -274,37 +318,53 @@ function doDelete() {
       </label>
     </div>
 
-    <template v-if="item">
-      <PanelDataGrid>
-        <div class="text-muted-foreground">Kind</div>
-        <div class="truncate">{{ kindName }}</div>
-        <div class="text-muted-foreground">Points</div>
-        <div>{{ controlPointCount }}</div>
-        <ControlMeasureStyleSettings
-          :graphic-kind="item.graphicKind"
-          :measure-style="item.style"
-          :standard-identity="item.standardIdentity"
-          :color-mode="item.colorMode"
-          :status="item.status"
-          :options="resolvedOptions"
-          @update="doStyleUpdate"
-        />
-      </PanelDataGrid>
+    <div v-if="item" class="-mx-4">
+      <ScrollTabs :items="tabList" v-model="selectedTabString">
+        <TabsContent value="0" class="mx-4">
+          <PanelDataGrid class="mt-4">
+            <ControlMeasureStyleSettings
+              :graphic-kind="item.graphicKind"
+              :measure-style="item.style"
+              :standard-identity="item.standardIdentity"
+              :color-mode="item.colorMode"
+              :status="item.status"
+              :options="resolvedOptions"
+              :show-heading="false"
+              @update="doStyleUpdate"
+            />
+          </PanelDataGrid>
+        </TabsContent>
+        <TabsContent value="1" class="mx-4">
+          <PanelDataGrid class="mt-4">
+            <div class="text-muted-foreground">Kind</div>
+            <div class="truncate">{{ kindName }}</div>
+            <div class="text-muted-foreground">Points</div>
+            <div>{{ controlPointCount }}</div>
+          </PanelDataGrid>
 
-      <div v-if="isEditMode" class="mt-4">
-        <EditMetaForm :item="item" @update="doMetaUpdate" @cancel="toggleEditMode()" />
-      </div>
-      <div v-else-if="item.description" class="prose prose-sm dark:prose-invert mt-4">
-        <div v-html="hDescription"></div>
-      </div>
-
-      <div
-        v-if="uiStore.debugMode"
-        class="prose prose-sm dark:prose-invert mt-4 max-w-none"
-      >
-        <pre>{{ item }}</pre>
-      </div>
-    </template>
+          <div v-if="isEditMode" class="mt-4">
+            <EditMetaForm
+              :item="item"
+              @update="doMetaUpdate"
+              @cancel="toggleEditMode()"
+            />
+          </div>
+          <div v-else-if="item.description" class="prose prose-sm dark:prose-invert mt-4">
+            <div v-html="hDescription"></div>
+          </div>
+        </TabsContent>
+        <TabsContent value="2" class="mx-4">
+          <ScenarioLayerItemState :item="item" heading="Control measure state" />
+        </TabsContent>
+        <TabsContent
+          v-if="uiStore.debugMode"
+          value="3"
+          class="prose prose-sm dark:prose-invert mx-4 max-w-none"
+        >
+          <pre>{{ item }}</pre>
+        </TabsContent>
+      </ScrollTabs>
+    </div>
 
     <div v-else-if="isMultiMode" class="mt-4">
       <Button type="button" variant="outline" size="sm" @click="doDelete()">
