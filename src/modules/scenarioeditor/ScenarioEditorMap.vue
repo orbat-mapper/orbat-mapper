@@ -32,7 +32,7 @@ import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasu
 import OLMap from "ol/Map";
 import NewScenarioMap from "@/components/ScenarioMap.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
-import MobileDrawSessionActionBar from "@/modules/scenarioeditor/MobileDrawSessionActionBar.vue";
+import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import Select from "ol/interaction/Select";
 import { useRafFn } from "@vueuse/core";
 import SearchScenarioActions from "@/modules/scenarioeditor/SearchScenarioActions.vue";
@@ -262,10 +262,11 @@ function onCloseActiveDetailsPanel() {
     </template>
     <template #footer-overlays>
       <footer
-        v-if="nativeMapRef && ui.showToolbar && !isMobile"
+        v-if="nativeMapRef && !isMobile && (ui.showToolbar || isDrawing)"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
         <MapEditorMainToolbar
+          v-if="ui.showToolbar"
           @open-time-modal="openTimeDialog()"
           @inc-day="onIncDay()"
           @dec-day="onDecDay()"
@@ -275,15 +276,21 @@ function onCloseActiveDetailsPanel() {
         />
         <MapEditorMeasurementToolbar
           class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'measurements'"
+          v-if="
+            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+          "
+        />
+        <DrawSessionActionBar
+          v-if="isDrawing"
+          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
         />
         <MapEditorDrawToolbar
           class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'draw'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
         />
         <MapEditorUnitTrackToolbar
           class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="toolbarStore.currentToolbar === 'track'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
         />
       </footer>
     </template>
@@ -292,7 +299,7 @@ function onCloseActiveDetailsPanel() {
         v-if="nativeMapRef && isMobile && (ui.showToolbar || isDrawing)"
         class="border-border bg-background pointer-events-auto border-t px-2 py-2"
       >
-        <MobileDrawSessionActionBar v-if="isDrawing" class="mb-2" />
+        <DrawSessionActionBar v-if="isDrawing" class="mb-2" />
         <MapEditorMeasurementToolbar
           class="mb-2"
           v-if="

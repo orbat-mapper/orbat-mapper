@@ -3,7 +3,9 @@ import { computed } from "vue";
 import {
   IconCheck as DoneIcon,
   IconClose as CancelIcon,
+  IconMagnet as SnapIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { useToggle } from "@vueuse/core";
 
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
@@ -12,7 +14,9 @@ import { injectStrict } from "@/utils";
 import { getControlMeasureKindOption } from "@/modules/scenarioeditor/controlMeasurePicker";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 
-const { drawSessionProgress, finishDrawSession, cancel } = injectStrict(scenarioDrawKey);
+const { drawSessionProgress, finishDrawSession, cancel, snap } =
+  injectStrict(scenarioDrawKey);
+const toggleSnap = useToggle(snap);
 
 const plainNames = {
   Point: "Point",
@@ -65,6 +69,15 @@ const doneDisabled = computed(() => {
       <span class="font-medium">{{ drawingName }}</span>
       <span class="text-muted-foreground"> · {{ progressText }}</span>
     </p>
+    <MainToolbarButton
+      title="Snap to grid"
+      aria-label="Snap to grid"
+      class="size-11"
+      :active="snap"
+      @click="toggleSnap()"
+    >
+      <SnapIcon class="size-5" />
+    </MainToolbarButton>
     <MainToolbarButton
       title="Cancel drawing"
       aria-label="Cancel drawing"

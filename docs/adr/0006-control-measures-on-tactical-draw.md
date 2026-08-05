@@ -301,13 +301,13 @@ alpha bump.
   `DEFINITIONS[kind]` on an unknown kind throws a raw `TypeError` that would blank the
   entire layer. No placeholder graphic is substituted — a generic stand-in would carry
   the real id, so editing it would commit the wrong kind over the unknown one. (#637)
-- **An active mobile draw owns essential session chrome.** At the existing mobile
-  breakpoint, the ordinary Draw sub-toolbar is replaced by one status/Cancel/Done bar
-  for both plain shapes and control measures; the separate control-measure hint remains
-  desktop-only. The bar reports live point progress, stays visible even when the
-  persistent toolbar preference is off, and survives responsive layout changes without
-  settling the session. Plain MapLibre and legacy OpenLayers drawing expose the same
-  point-progress and explicit-finish contract. (#647)
+- **An active draw owns essential session chrome.** The ordinary Draw sub-toolbar is
+  replaced by one status/Snap/Cancel/Done bar for both plain shapes and control measures
+  on desktop and mobile; there is no separate control-measure hint. The bar reports live
+  point progress, stays visible even when the persistent toolbar preference is off, and
+  survives responsive layout changes without settling the session. Plain MapLibre and
+  legacy OpenLayers drawing expose the same point-progress and explicit-finish
+  contract. (#647)
 
 ## What stage two owns
 

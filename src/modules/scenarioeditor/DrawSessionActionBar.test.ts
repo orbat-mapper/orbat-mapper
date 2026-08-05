@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import { ref } from "vue";
 import { describe, expect, it, vi } from "vitest";
 
-import MobileDrawSessionActionBar from "@/modules/scenarioeditor/MobileDrawSessionActionBar.vue";
+import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import { scenarioDrawKey } from "@/components/injects";
 import type { DrawSessionProgress } from "@/modules/scenarioeditor/useScenarioDraw";
 
@@ -11,21 +11,23 @@ function mountBar(progress: DrawSessionProgress) {
   const drawSessionProgress = ref<DrawSessionProgress | null>(progress);
   const finishDrawSession = vi.fn();
   const cancel = vi.fn();
-  const wrapper = mount(MobileDrawSessionActionBar, {
+  const snap = ref(true);
+  const wrapper = mount(DrawSessionActionBar, {
     global: {
       provide: {
         [scenarioDrawKey as symbol]: {
           drawSessionProgress,
           finishDrawSession,
           cancel,
+          snap,
         },
       },
     },
   });
-  return { wrapper, drawSessionProgress, finishDrawSession, cancel };
+  return { wrapper, drawSessionProgress, finishDrawSession, cancel, snap };
 }
 
-describe("MobileDrawSessionActionBar", () => {
+describe("DrawSessionActionBar", () => {
   it("shows accessible progress and disables Done for an incomplete draft", async () => {
     const { wrapper, finishDrawSession, cancel } = mountBar({
       family: "plain",
@@ -77,5 +79,21 @@ describe("MobileDrawSessionActionBar", () => {
     expect(wrapper.get("[aria-label='Drawing actions']").classes()).toContain("p-0");
     expect(wrapper.get("[aria-label='Cancel drawing']").classes()).toContain("size-11");
     expect(wrapper.get("[aria-label='Done drawing']").classes()).toContain("size-11");
+  });
+
+  it("keeps the sticky Snap setting available while drawing", async () => {
+    const { wrapper, snap } = mountBar({
+      family: "plain",
+      drawType: "LineString",
+      pointCount: 0,
+      minPoints: 2,
+      canCommit: false,
+    });
+
+    const snapButton = wrapper.get("[aria-label='Snap to grid']");
+    expect(snapButton.classes()).toContain("bg-army2");
+    await snapButton.trigger("click");
+    expect(snap.value).toBe(false);
+    expect(snapButton.classes()).not.toContain("bg-army2");
   });
 });

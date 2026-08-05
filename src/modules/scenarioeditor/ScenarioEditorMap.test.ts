@@ -263,8 +263,8 @@ describe("ScenarioEditorMap", () => {
             template:
               "<button data-test='draw-toolbar' @click=\"draw.startDrawing('LineString')\">draw-toolbar</button>",
           }),
-          MobileDrawSessionActionBar: defineComponent({
-            name: "MobileDrawSessionActionBar",
+          DrawSessionActionBar: defineComponent({
+            name: "DrawSessionActionBar",
             template: "<div data-test='draw-session-bar'>draw-session-bar</div>",
           }),
           MapEditorUnitTrackToolbar: defineComponent({
