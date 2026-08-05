@@ -176,6 +176,12 @@ function doStyleUpdate(data: ControlMeasureStyleUpdate) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, data);
 }
 
+function resetLabelPositions() {
+  if (item.value) {
+    scenarioDraw.updateControlMeasure(item.value.id, { amplifierPlacements: {} });
+  }
+}
+
 function doMetaUpdate(data: {
   name?: string;
   description?: string;
@@ -312,10 +318,21 @@ function doDelete() {
           Done
         </Button>
       </div>
-      <label class="flex items-center gap-2">
-        <Switch v-model="labelDragModel" />
-        <span>Move labels</span>
-      </label>
+      <div class="flex items-center justify-between gap-2">
+        <label class="flex items-center gap-2">
+          <Switch v-model="labelDragModel" />
+          <span>Move labels</span>
+        </label>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          title="Reset label positions to their default placement"
+          @click="resetLabelPositions()"
+        >
+          Reset positions
+        </Button>
+      </div>
     </div>
 
     <div v-if="item" class="-mx-4">

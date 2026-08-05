@@ -62,7 +62,9 @@ const baseStubs = {
   Switch: true,
 };
 
-function controlMeasure(): NTacticalGraphicLayerItem {
+function controlMeasure(
+  overrides: Partial<NTacticalGraphicLayerItem> = {},
+): NTacticalGraphicLayerItem {
   return {
     id: "cm-1",
     _pid: "layer-1",
@@ -75,15 +77,21 @@ function controlMeasure(): NTacticalGraphicLayerItem {
     name: "Phase Line Alpha",
     style: {},
     state: [{ id: "state-1", t: 100, patch: { controlPoints: [[12, 62]] } }],
+    ...overrides,
   };
 }
 
-function mountDetails() {
-  const item = controlMeasure();
+function mountDetails(
+  itemOverrides: Partial<NTacticalGraphicLayerItem> = {},
+  editingShape = false,
+) {
+  const item = controlMeasure(itemOverrides);
   const updateControlMeasure = vi.fn();
   const scenarioDraw = {
     updateControlMeasure,
-    controlMeasureEditFeatureId: ref<string | number | null>(null),
+    controlMeasureEditFeatureId: ref<string | number | null>(
+      editingShape ? item.id : null,
+    ),
     controlMeasureLabelDrag: ref(false),
     setControlMeasureLabelDrag: vi.fn(),
     cancel: vi.fn(),
@@ -178,5 +186,34 @@ describe("ControlMeasureDetails tabs", () => {
     expect(settings.props("showHeading")).toBe(false);
     await settings.vm.$emit("update", { status: "planned" });
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", { status: "planned" });
+  });
+
+  it("resets custom label positions through the settle-first update path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails(
+      {
+        amplifierPlacements: { T: { position: [10.5, 60.5] } },
+      },
+      true,
+    );
+    const button = wrapper.find(
+      "button[title='Reset label positions to their default placement']",
+    );
+
+    expect(wrapper.text()).toContain("Move labels");
+    await button.trigger("click");
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      amplifierPlacements: {},
+    });
+  });
+
+  it("only shows label reset with the active label-movement controls", () => {
+    const { wrapper } = mountDetails();
+
+    expect(
+      wrapper
+        .find("button[title='Reset label positions to their default placement']")
+        .exists(),
+    ).toBe(false);
   });
 });
