@@ -99,6 +99,14 @@ const toggleFreehand = useToggle(freehand);
       <SelectIcon class="size-5" />
     </MainToolbarButton>
     <DrawToolSplitButton :current-draw-type="currentDrawType" @select="drawShape" />
+    <MainToolbarButton
+      v-if="!controlMeasureArmed"
+      title="Freehand"
+      @click="toggleFreehand()"
+      :active="freehand"
+    >
+      <FreehandIcon class="size-5" />
+    </MainToolbarButton>
     <div class="border-border mx-1 h-5 border-l" />
     <ControlMeasureSplitButton
       :armed-kind="armedGraphicKind"
@@ -118,14 +126,6 @@ const toggleFreehand = useToggle(freehand);
     </MainToolbarButton>
     <MainToolbarButton title="Snap to grid" @click="toggleSnap()" :active="snap">
       <SnapIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      v-if="!controlMeasureArmed"
-      title="Freehand"
-      @click="toggleFreehand()"
-      :active="freehand"
-    >
-      <FreehandIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton title="Edit" @click="startModify()" :active="isModifying">
       <EditIcon class="size-5" />

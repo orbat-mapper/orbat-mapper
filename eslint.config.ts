@@ -15,7 +15,7 @@ const LEGACY_OPENLAYERS_FILES = [
   "src/components/{MapContainer,ScenarioMap,ScenarioMapLogic,MapContextMenu,MeasurementToolbar,LayersPanel,BaseLayerSwitcher}.vue",
   "src/components/{MapContainer.test,ScenarioMapLogic.test,LayersPanel.test,BaseLayerSwitcher.test}.ts",
   "src/composables/{geoEditing,geoMeasurement,geoUnitLayers,geoUnitHistory,geoHover,geoDayNight,geoRangeRings,geoBoxDraw,boxDrawEngineOL,geoImageLayerInteraction,geoScaleLine,geoShowLocation,openlayersHelpers}.ts",
-  "src/composables/geoUnitHistory.test.ts",
+  "src/composables/{geoEditing,geoUnitHistory}.test.ts",
   "src/modules/scenarioeditor/{ScenarioEditorMap,SearchScenarioActions,ScenarioMapSettings,ScenarioBoundingBox}.vue",
   "src/modules/scenarioeditor/{scenarioEvents,scenarioDrawHelpers,scenarioFeatureLayers,scenarioMapLayers,useScenarioDraw,featureLayerUtilsOl,olInjects}.ts",
   "src/modules/scenarioeditor/{ScenarioEditorMap.test,featureLayerUtils.select.test,featureLayerUtils.items.test,featureLayerUtils.topHit.test,scenarioDrawHelpers.test,useScenarioDraw.test,recordHierarchyChangesUi.test}.ts",

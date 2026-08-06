@@ -1,6 +1,7 @@
 import { featureCollection } from "@turf/helpers";
 import turfCircle from "@turf/circle";
 import type { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import {
   IconLayersOutline,
   IconMapMarker,
@@ -16,8 +17,11 @@ import type { MenuItemData } from "@/components/types";
 import type { GeometryLayerItem, ScenarioLayerItem } from "@/types/scenarioLayerItems";
 import {
   isGeometryLayerItemLike,
+  isTacticalGraphicLayerItem,
   toGeometryLayerItemGeoJsonProperties,
 } from "@/types/scenarioLayerItems";
+import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
+import { controlMeasureToGeoJsonFeatures } from "@/importexport/export/controlMeasureGeoJson";
 
 export const LayerTypes = {
   scenarioFeature: "SCENARIO_FEATURE",
@@ -51,9 +55,7 @@ const geometryIconMap: any = {
 };
 
 export type GeometryFeatureLike =
-  | GeometryLayerItem
-  | NGeometryLayerItem
-  | ScenarioFeature;
+  GeometryLayerItem | NGeometryLayerItem | ScenarioFeature;
 
 export function getGeometryKind(item: GeometryFeatureLike): string {
   return "geometryMeta" in item ? item.geometryMeta.geometryKind : item.meta.type;
@@ -112,34 +114,53 @@ export const featureMenuItems: MenuItemData<ScenarioFeatureActions>[] = [
 export function layerItemsToGeoJsonString(
   items: (ScenarioLayerItem | NGeometryLayerItem | ScenarioFeature)[],
 ) {
-  const fc = featureCollection(
-    items.filter(isGeometryFeatureLike).map((f) => {
-      const properties =
-        "geometryMeta" in f
-          ? toGeometryLayerItemGeoJsonProperties(f)
-          : {
-              name: f.meta.name,
-              description: f.meta.description,
-              ...f.properties,
-            };
-      const radius = getGeometryRadius(f);
-      if (
-        getGeometryKind(f) === "Circle" &&
-        radius !== undefined &&
-        f.geometry.type === "Point"
-      ) {
-        const poly = turfCircle(f.geometry.coordinates, radius, {
-          units: "meters",
-        });
-        return { ...poly, id: f.id, properties };
+  const features: Feature<Geometry, GeoJsonProperties>[] = [];
+  for (const item of items) {
+    if (isTacticalGraphicLayerItem(item)) {
+      const graphicKind = String(item.graphicKind);
+      if (!isSupportedTacticalGraphic(item)) {
+        console.warn(
+          `Unsupported control measure kind '${graphicKind}' omitted from GeoJSON export.`,
+        );
+        continue;
       }
-      return {
-        type: "Feature" as const,
-        id: f.id,
-        properties,
-        geometry: f.geometry,
-      };
-    }),
-  );
+      features.push(
+        ...controlMeasureToGeoJsonFeatures(item, {
+          includeId: true,
+          includeGeneratedLabels: true,
+        }),
+      );
+      continue;
+    }
+    if (!isGeometryFeatureLike(item)) continue;
+    const f = item;
+    const properties =
+      "geometryMeta" in f
+        ? toGeometryLayerItemGeoJsonProperties(f)
+        : {
+            name: f.meta.name,
+            description: f.meta.description,
+            ...f.properties,
+          };
+    const radius = getGeometryRadius(f);
+    if (
+      getGeometryKind(f) === "Circle" &&
+      radius !== undefined &&
+      f.geometry.type === "Point"
+    ) {
+      const poly = turfCircle(f.geometry.coordinates, radius, {
+        units: "meters",
+      });
+      features.push({ ...poly, id: f.id, properties });
+      continue;
+    }
+    features.push({
+      type: "Feature" as const,
+      id: f.id,
+      properties,
+      geometry: f.geometry,
+    });
+  }
+  const fc = featureCollection(features);
   return JSON.stringify(fc, null, 2);
 }

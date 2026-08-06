@@ -1,10 +1,15 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
-import { computed, defineComponent, nextTick, onMounted, ref } from "vue";
+import { computed, defineComponent, inject, nextTick, onMounted, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMap from "@/modules/scenarioeditor/ScenarioEditorMap.vue";
-import { activeLayerKey, activeParentKey, activeScenarioKey } from "@/components/injects";
+import {
+  activeLayerKey,
+  activeParentKey,
+  activeScenarioKey,
+  scenarioDrawKey,
+} from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
@@ -151,7 +156,13 @@ describe("ScenarioEditorMap", () => {
         },
         // The hoisted `useScenarioDraw` resolves the active OpenLayers layer on mount.
         geo: {
-          layerItemsLayers: { value: [] },
+          layerItemsLayers: {
+            value: [] as Array<{
+              id: string;
+              name: string;
+              features: unknown[];
+            }>,
+          },
           getGeometryLayerItemById: vi.fn(() => ({})),
           deleteFeature: vi.fn(),
         },
@@ -219,6 +230,10 @@ describe("ScenarioEditorMap", () => {
     setActivePinia(pinia);
     const toolbarStore = useMainToolbarStore(pinia);
     toolbarStore.currentToolbar = "draw";
+    const activeScenario = createActiveScenario().scenario;
+    activeScenario.geo.layerItemsLayers.value = [
+      { id: "layer-1", name: "Features", features: [] },
+    ];
 
     const wrapper = mount(ScenarioEditorMap, {
       global: {
@@ -226,7 +241,7 @@ describe("ScenarioEditorMap", () => {
         provide: {
           [activeParentKey as symbol]: ref(null),
           [activeLayerKey as symbol]: ref("layer-1"),
-          [activeScenarioKey as symbol]: createActiveScenario().scenario,
+          [activeScenarioKey as symbol]: activeScenario,
         },
         stubs: {
           ScenarioMapModeShell: ScenarioMapModeShellStub,
@@ -242,7 +257,15 @@ describe("ScenarioEditorMap", () => {
           }),
           MapEditorDrawToolbar: defineComponent({
             name: "MapEditorDrawToolbar",
-            template: "<div data-test='draw-toolbar'>draw-toolbar</div>",
+            setup() {
+              return { draw: inject(scenarioDrawKey)! };
+            },
+            template:
+              "<button data-test='draw-toolbar' @click=\"draw.startDrawing('LineString')\">draw-toolbar</button>",
+          }),
+          DrawSessionActionBar: defineComponent({
+            name: "DrawSessionActionBar",
+            template: "<div data-test='draw-session-bar'>draw-session-bar</div>",
           }),
           MapEditorUnitTrackToolbar: defineComponent({
             name: "MapEditorUnitTrackToolbar",
@@ -283,6 +306,13 @@ describe("ScenarioEditorMap", () => {
         .exists(),
     ).toBe(false);
     expect(wrapper.find("[data-test='route-toolbar']").exists()).toBe(false);
+
+    await wrapper.get("[data-test='draw-toolbar']").trigger("click");
+    await nextTick();
+
+    expect(wrapper.find("[data-test='draw-toolbar']").exists()).toBe(false);
+    expect(wrapper.find("[data-test='draw-session-bar']").exists()).toBe(true);
+    expect(wrapper.find("[data-test='map-toolbar']").exists()).toBe(true);
   });
 
   it("closes routing instead of clearing selection when the details panel is closed in route mode", async () => {

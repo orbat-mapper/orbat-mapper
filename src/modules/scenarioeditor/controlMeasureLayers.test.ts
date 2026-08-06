@@ -13,6 +13,10 @@ function layer(id: string, itemIds: string[]): NScenarioOverlayLayer {
   return { id, kind: "overlay", name: id, items: itemIds } as NScenarioOverlayLayer;
 }
 
+function controlMeasureLayer(id: string, itemIds: string[]): NScenarioOverlayLayer {
+  return { ...layer(id, itemIds), specialization: "controlMeasure" };
+}
+
 function cm(
   id: string,
   graphicKind = "boundary",
@@ -43,6 +47,17 @@ function geometry(id: string): NScenarioLayerItem {
 }
 
 describe("getControlMeasureLayerGroups", () => {
+  it("includes an empty specialized control-measure layer", () => {
+    const preparedLayer = {
+      ...layer("prepared", []),
+      specialization: "controlMeasure" as const,
+    };
+
+    expect(getControlMeasureLayerGroups([{ layer: preparedLayer, items: [] }])).toEqual([
+      { layer: preparedLayer, items: [] },
+    ]);
+  });
+
   it("returns nothing when the scenario holds no control measures", () => {
     // Lazy by construction: no section, so the stored model stays untouched.
     expect(
@@ -54,7 +69,7 @@ describe("getControlMeasureLayerGroups", () => {
   });
 
   it("groups control measures under the layer that owns them, in store order", () => {
-    const l = layer("layer-1", ["g1", "cm1", "cm2"]);
+    const l = controlMeasureLayer("layer-1", ["g1", "cm1", "cm2"]);
     const groups = getControlMeasureLayerGroups([
       { layer: l, items: [geometry("g1"), cm("cm1"), cm("cm2")] },
     ]);
@@ -66,9 +81,9 @@ describe("getControlMeasureLayerGroups", () => {
 
   it("keeps one group per layer rather than hiding scattered control measures", () => {
     const groups = getControlMeasureLayerGroups([
-      { layer: layer("layer-1", ["cm1"]), items: [cm("cm1")] },
+      { layer: controlMeasureLayer("layer-1", ["cm1"]), items: [cm("cm1")] },
       { layer: layer("layer-2", ["g1"]), items: [geometry("g1")] },
-      { layer: layer("layer-3", ["cm2"]), items: [cm("cm2")] },
+      { layer: controlMeasureLayer("layer-3", ["cm2"]), items: [cm("cm2")] },
     ]);
 
     expect(groups.map((g) => g.layer.id)).toEqual(["layer-1", "layer-3"]);
@@ -77,12 +92,20 @@ describe("getControlMeasureLayerGroups", () => {
   it("lists an unsupported graphicKind alongside the supported ones", () => {
     const groups = getControlMeasureLayerGroups([
       {
-        layer: layer("layer-1", ["cm1", "cm2"]),
+        layer: controlMeasureLayer("layer-1", ["cm1", "cm2"]),
         items: [cm("cm1"), cm("cm2", "from-the-future")],
       },
     ]);
 
     expect(groups[0]!.items.map((i) => i.id)).toEqual(["cm1", "cm2"]);
+  });
+
+  it("does not infer specialization from tactical-graphic contents", () => {
+    expect(
+      getControlMeasureLayerGroups([
+        { layer: layer("unspecialized", ["cm1"]), items: [cm("cm1")] },
+      ]),
+    ).toEqual([]);
   });
 });
 

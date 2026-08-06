@@ -297,6 +297,20 @@ function canonicalizeOverlayLayer(
     );
   }
 
+  const isControlMeasureLayer =
+    (rest as { specialization?: string }).specialization === "controlMeasure";
+  const mismatchedItemCount = canonicalItems.filter((item) =>
+    isControlMeasureLayer
+      ? item.kind !== "tacticalGraphic"
+      : item.kind === "tacticalGraphic",
+  ).length;
+  if (mismatchedItemCount > 0) {
+    console.warn(
+      `Layer "${layer.name}" (${layer.id}) contains ${mismatchedItemCount} mismatched items for its specialization. ` +
+        `They were preserved but the editor will not author more mixed content.`,
+    );
+  }
+
   return { ...rest, id: String(rest.id), kind: "overlay", items: canonicalItems };
 }
 

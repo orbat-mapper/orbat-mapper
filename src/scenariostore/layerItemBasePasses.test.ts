@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useScenarioTime } from "@/scenariostore/time";
+import { useGeo } from "@/scenariostore/geo";
 import {
   isSupportedGraphicKind,
   isSupportedTacticalGraphic,
@@ -202,5 +203,30 @@ describe("kind-agnostic time projection", () => {
     const { histogram } = time.computeTimeHistogram();
     const total = histogram.reduce((sum, entry) => sum + entry.count, 0);
     expect(total).toBe(3);
+  });
+});
+
+describe("kind-agnostic state management", () => {
+  it("deletes a control-measure state entry and clears its projection", () => {
+    const store = useNewScenarioStore(createScenario());
+    const geo = useGeo(store);
+    const time = useScenarioTime(store);
+    time.setCurrentTime(Date.parse(T2));
+
+    expect(projectedState(store, "tacticalGraphic-1").controlPoints).toBeDefined();
+    geo.deleteLayerItemStateEntry("tacticalGraphic-1", 0);
+
+    expect(item(store, "tacticalGraphic-1").state).toEqual([]);
+    expect(item(store, "tacticalGraphic-1")._state).toBeUndefined();
+  });
+
+  it("clears all state entries from a control measure in one operation", () => {
+    const store = useNewScenarioStore(createScenario());
+    const geo = useGeo(store);
+
+    geo.clearLayerItemState("tacticalGraphic-1");
+
+    expect(item(store, "tacticalGraphic-1").state).toEqual([]);
+    expect(item(store, "tacticalGraphic-1")._state).toBeUndefined();
   });
 });

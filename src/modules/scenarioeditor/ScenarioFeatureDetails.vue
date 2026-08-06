@@ -37,7 +37,7 @@ import ScenarioFeatureDropdownMenu from "@/modules/scenarioeditor/ScenarioFeatur
 import type { ScenarioFeatureActions } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";
 import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
-import ScenarioFeatureState from "@/modules/scenarioeditor/ScenarioFeatureState.vue";
+import ScenarioLayerItemState from "@/modules/scenarioeditor/ScenarioLayerItemState.vue";
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
@@ -457,7 +457,7 @@ function assignFeatureToUnit() {
           </div>
         </TabsContent>
         <TabsContent value="2" class="mx-4">
-          <ScenarioFeatureState v-if="feature" :feature="feature" />
+          <ScenarioLayerItemState v-if="feature" :item="feature" />
           <div
             v-if="feature && canAssignFeatureToUnit"
             class="border-border mt-4 space-y-3 border-t pt-4"

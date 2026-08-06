@@ -41,7 +41,7 @@ import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearch
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
-import ControlMeasureDrawHint from "@/modules/scenarioeditor/ControlMeasureDrawHint.vue";
+import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -117,6 +117,7 @@ const scenarioDraw = useScenarioDraw({
   engine: scenarioMapEngineRef,
   renderFeed: tacticalGraphicRenderFeed,
 });
+const { isDrawing } = scenarioDraw;
 provide(scenarioDrawKey, scenarioDraw);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
@@ -282,12 +283,6 @@ function onCloseActiveDetailsPanel() {
             class="flex-auto bg-radial from-gray-800 to-gray-950"
           />
         </MaplibreContextMenu>
-        <div
-          class="pointer-events-none absolute top-14 left-1/2 z-10 -translate-x-1/2"
-          data-testid="control-measure-draw-hint"
-        >
-          <ControlMeasureDrawHint />
-        </div>
       </div>
       <MlMapLogic
         v-if="mlMap"
@@ -302,10 +297,11 @@ function onCloseActiveDetailsPanel() {
     </template>
     <template #footer-overlays>
       <footer
-        v-if="mlMap && ui.showToolbar && !isMobile"
+        v-if="mlMap && !isMobile && (ui.showToolbar || isDrawing)"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
       >
         <MapEditorMainToolbar
+          v-if="ui.showToolbar"
           :can-move-units="true"
           :can-rotate-units="true"
           :can-measure="true"
@@ -325,37 +321,44 @@ function onCloseActiveDetailsPanel() {
           </template>
         </MapEditorMainToolbar>
         <MapEditorUnitTrackToolbar
-          v-if="toolbarStore.currentToolbar === 'track'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
           class="absolute bottom-14 sm:bottom-16"
         />
         <MapEditorMeasurementToolbar
-          v-if="toolbarStore.currentToolbar === 'measurements'"
+          v-if="
+            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+          "
           class="absolute bottom-14 sm:bottom-16"
         />
+        <DrawSessionActionBar v-if="isDrawing" class="absolute bottom-14 sm:bottom-16" />
         <MapEditorDrawToolbar
-          v-if="toolbarStore.currentToolbar === 'draw'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
           class="absolute bottom-14 sm:bottom-16"
         />
       </footer>
     </template>
     <template #mobile-toolbar>
       <div
-        v-if="mlMap && ui.showToolbar && isMobile"
+        v-if="mlMap && isMobile && (ui.showToolbar || isDrawing)"
         class="border-border bg-background pointer-events-auto border-t px-1 py-2"
       >
+        <DrawSessionActionBar v-if="isDrawing" class="mb-2" />
         <MapEditorUnitTrackToolbar
-          v-if="toolbarStore.currentToolbar === 'track'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
           class="mb-2"
         />
         <MapEditorMeasurementToolbar
-          v-if="toolbarStore.currentToolbar === 'measurements'"
+          v-if="
+            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+          "
           class="mb-2"
         />
         <MapEditorDrawToolbar
-          v-if="toolbarStore.currentToolbar === 'draw'"
+          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
           class="mb-2"
         />
         <MapEditorMainToolbar
+          v-if="ui.showToolbar"
           :can-move-units="true"
           :can-rotate-units="true"
           :can-measure="true"

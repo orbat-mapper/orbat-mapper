@@ -7,6 +7,7 @@ import { activeScenarioKey } from "@/components/injects";
 import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import { identityColor } from "@/symbology/identityColors";
+import { ScenarioLayerActions } from "@/types/constants";
 
 vi.mock("@/stores/selectedStore", () => ({
   useSelectedItems: () => ({
@@ -47,7 +48,7 @@ function mountLayer(items: NTacticalGraphicLayerItem[]) {
     props: {
       layer,
       items,
-      layerMenuItems: [],
+      layerMenuItems: [{ label: "Zoom to", action: ScenarioLayerActions.Zoom }],
       itemMenuItems: [],
     },
     global: {
@@ -74,10 +75,18 @@ describe("ControlMeasureLayer", () => {
     expect(rows[0]!.text()).toContain("PL BLUE");
   });
 
+  it("places the drag handle to the left like an ordinary layer item", () => {
+    const { wrapper } = mountLayer([cm("cm1")]);
+    const row = wrapper.find("[data-feature-id]");
+
+    expect(row.element.firstElementChild?.tagName).toBe("SPAN");
+    expect(row.element.children[1]?.tagName).toBe("BUTTON");
+  });
+
   it("tints the icon with the resolved stroke colour", () => {
     // Read time only: the identity is projected, never stored as a colour.
     const { wrapper } = mountLayer([cm("cm1", { standardIdentity: "6" })]);
-    const icon = wrapper.find("[data-feature-id] svg");
+    const icon = wrapper.find("[data-feature-id] > button svg");
 
     // jsdom normalises whitespace inside the rgb() triple.
     expect(icon.attributes("style")?.replace(/\s/g, "")).toContain(
@@ -90,7 +99,7 @@ describe("ControlMeasureLayer", () => {
       cm("cm1", { standardIdentity: "6", style: { strokeColor: "rgb(1, 2, 3)" } }),
     ]);
 
-    expect(wrapper.find("[data-feature-id] svg").attributes("style")).toContain(
+    expect(wrapper.find("[data-feature-id] > button svg").attributes("style")).toContain(
       "rgb(1, 2, 3)",
     );
   });
@@ -123,5 +132,22 @@ describe("ControlMeasureLayer", () => {
 
     expect(geo.updateLayer).toHaveBeenCalledWith("cm-layer", { isHidden: true });
     expect(geo.updateLayer).toHaveBeenCalledWith("cm-layer", { locked: true });
+  });
+
+  it("disables layer zoom when there is no currently visible extent", () => {
+    const empty = mountLayer([]).wrapper;
+    const visible = mountLayer([cm("cm1")]).wrapper;
+    const unsupported = mountLayer([
+      cm("cm1", { graphicKind: "from-the-future" as never }),
+    ]).wrapper;
+    const zoomAction = (wrapper: typeof empty) =>
+      wrapper
+        .findAllComponents({ name: "DotsMenu" })
+        .flatMap((menu) => menu.props("items"))
+        .find((item: any) => item.action === ScenarioLayerActions.Zoom);
+
+    expect(zoomAction(empty).disabled).toBe(true);
+    expect(zoomAction(visible).disabled).toBeFalsy();
+    expect(zoomAction(unsupported).disabled).toBe(true);
   });
 });
