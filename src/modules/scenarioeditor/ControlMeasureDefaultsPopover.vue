@@ -51,10 +51,7 @@ const selectedItems = computed<NTacticalGraphicLayerItem[]>(() => {
 const primaryItem = computed(() => selectedItems.value[0]);
 const editsSelection = computed(() => selectedItems.value.length > 0);
 
-function changedFields(
-  before: object | undefined,
-  after: object,
-) {
+function changedFields(before: object | undefined, after: object) {
   const beforeValues = before as Record<string, unknown> | undefined;
   const afterValues = after as Record<string, unknown>;
   return [...new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].filter(
@@ -196,7 +193,10 @@ function updateSettings(data: ControlMeasureStyleUpdate) {
         />
         <ControlMeasureEchelonSelect
           :graphic-kind="primaryItem?.graphicKind ?? lastKind"
-          :options="primaryItem ? resolveControlMeasureOptions(primaryItem) : defaults.options"
+          :options="
+            primaryItem ? resolveControlMeasureOptions(primaryItem) : defaults.options
+          "
+          inline
           @update="updateSettings({ options: $event })"
         />
       </PanelDataGrid>

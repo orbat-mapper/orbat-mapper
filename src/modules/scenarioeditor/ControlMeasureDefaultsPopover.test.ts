@@ -125,7 +125,7 @@ describe("ControlMeasureDefaultsPopover", () => {
 
     const select = wrapper.findComponent(SymbolCodeSelect);
     expect(select.props("label")).toBe("Echelon");
-    expect(select.classes()).toContain("col-span-2");
+    expect(select.classes()).toContain("contents");
     expect(
       (select.props("items") as { code: string; sidc: string }[]).find(
         (item) => item.code === "brigade",

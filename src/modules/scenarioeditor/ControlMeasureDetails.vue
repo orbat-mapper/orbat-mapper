@@ -54,6 +54,7 @@ import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue"
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
+import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
@@ -185,7 +186,7 @@ function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplif
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { textAmplifiers });
 }
 
-function doAmplifierOptionsUpdate(options: TacticalGraphicOptions) {
+function doControlMeasureOptionsUpdate(options: TacticalGraphicOptions) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
 }
 
@@ -362,6 +363,12 @@ function doDelete() {
               :show-heading="false"
               @update="doStyleUpdate"
             />
+            <ControlMeasureEchelonSelect
+              :graphic-kind="item.graphicKind as ControlMeasureId"
+              :options="resolvedOptions"
+              inline
+              @update="doControlMeasureOptionsUpdate"
+            />
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
@@ -371,7 +378,7 @@ function doDelete() {
             :text-amplifiers="item.textAmplifiers"
             :options="resolvedOptions"
             @update="doAmplifierUpdate"
-            @update-options="doAmplifierOptionsUpdate"
+            @update-options="doControlMeasureOptionsUpdate"
           />
           <p v-else class="text-muted-foreground pt-4 text-sm">
             Amplifiers are unavailable for this unsupported control measure.

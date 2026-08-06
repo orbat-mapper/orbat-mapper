@@ -29,6 +29,18 @@ function labels(wrapper: ReturnType<typeof mountSettings>): string[] {
 }
 
 describe("the UI-only styling gate", () => {
+  it("gives every native select the full control-column width", () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const nativeSelectWrappers = wrapper.findAll("[data-slot='native-select-wrapper']");
+
+    expect(nativeSelectWrappers).toHaveLength(3);
+    expect(
+      nativeSelectWrappers.every((selectWrapper) =>
+        selectWrapper.classes().includes("w-full"),
+      ),
+    ).toBe(true);
+  });
+
   it("offers colour and fill on a Generic Graphics kind that can be filled", () => {
     const wrapper = mountSettings({ graphicKind: "polygon" });
     expect(labels(wrapper)).toContain("Color");

@@ -45,6 +45,17 @@ const ControlMeasureAmplifiersStub = defineComponent({
   template: "<div data-test='amplifier-settings' />",
 });
 
+const ControlMeasureEchelonSelectStub = defineComponent({
+  name: "ControlMeasureEchelonSelect",
+  props: {
+    graphicKind: String,
+    options: Object,
+    inline: Boolean,
+  },
+  emits: ["update"],
+  template: "<div data-test='echelon-select' />",
+});
+
 const baseStubs = {
   DetailsPanelHeader: {
     template:
@@ -57,6 +68,7 @@ const baseStubs = {
   TabsContent: { template: "<section><slot /></section>" },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
   ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
+  ControlMeasureEchelonSelect: ControlMeasureEchelonSelectStub,
   ScenarioLayerItemState: true,
   EditMetaForm: true,
   IconButton: {
@@ -208,10 +220,12 @@ describe("ControlMeasureDetails tabs", () => {
       graphicKind: "boundary",
       options: { echelon: "battalion" },
     });
-    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+    const settings = wrapper.findComponent(ControlMeasureEchelonSelectStub);
 
+    expect(settings.props("graphicKind")).toBe("boundary");
     expect(settings.props("options")).toEqual({ echelon: "battalion" });
-    await settings.vm.$emit("update-options", { echelon: "brigade" });
+    expect(settings.props("inline")).toBe(true);
+    await settings.vm.$emit("update", { echelon: "brigade" });
 
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       options: { echelon: "brigade" },

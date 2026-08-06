@@ -9,6 +9,7 @@ import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { SID, UNIT_SYMBOLSET_VALUE } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
+import { cn } from "@/lib/utils";
 
 const ECHELON_CODE_BY_VALUE: Record<string, string> = {
   none: "00",
@@ -31,6 +32,7 @@ const ECHELON_CODE_BY_VALUE: Record<string, string> = {
 const props = defineProps<{
   graphicKind?: ControlMeasureId;
   options?: TacticalGraphicOptions;
+  inline?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -88,7 +90,7 @@ const selectedEchelon = computed({
   <SymbolCodeSelect
     v-if="echelonOptions.length"
     v-model="selectedEchelon"
-    class="col-span-2 w-full"
+    :class="cn(inline ? 'contents' : 'w-full')"
     label="Echelon"
     :items="echelonItems"
   />

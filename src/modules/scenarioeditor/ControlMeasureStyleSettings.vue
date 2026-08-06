@@ -177,7 +177,12 @@ const fillPatternModel = computed({
   </div>
 
   <label for="cm-identity" class="self-center">Identity</label>
-  <NativeSelect id="cm-identity" class="w-full" v-model="identityModel">
+  <NativeSelect
+    id="cm-identity"
+    class="w-full"
+    wrapper-class="w-full"
+    v-model="identityModel"
+  >
     <NativeSelectOption
       v-for="identity in standardIdentityValues"
       :key="identity.code"
@@ -188,13 +193,23 @@ const fillPatternModel = computed({
   </NativeSelect>
 
   <label for="cm-color-mode" class="self-center">Colors</label>
-  <NativeSelect id="cm-color-mode" class="w-full" v-model="colorModeModel">
+  <NativeSelect
+    id="cm-color-mode"
+    class="w-full"
+    wrapper-class="w-full"
+    v-model="colorModeModel"
+  >
     <NativeSelectOption value="identity">Identity</NativeSelectOption>
     <NativeSelectOption value="monochrome">Monochrome</NativeSelectOption>
   </NativeSelect>
 
   <label for="cm-status" class="self-center">Status</label>
-  <NativeSelect id="cm-status" class="w-full" v-model="statusModel">
+  <NativeSelect
+    id="cm-status"
+    class="w-full"
+    wrapper-class="w-full"
+    v-model="statusModel"
+  >
     <NativeSelectOption value="present">Present</NativeSelectOption>
     <NativeSelectOption value="planned">Planned</NativeSelectOption>
   </NativeSelect>
@@ -226,7 +241,12 @@ const fillPatternModel = computed({
 
   <template v-if="showFillPattern">
     <label for="cm-fill-pattern" class="self-center">Fill</label>
-    <NativeSelect id="cm-fill-pattern" class="w-full" v-model="fillPatternModel">
+    <NativeSelect
+      id="cm-fill-pattern"
+      class="w-full"
+      wrapper-class="w-full"
+      v-model="fillPatternModel"
+    >
       <NativeSelectOption value="">Default</NativeSelectOption>
       <NativeSelectOption
         v-for="pattern in CONTROL_MEASURE_FILL_PATTERNS"
