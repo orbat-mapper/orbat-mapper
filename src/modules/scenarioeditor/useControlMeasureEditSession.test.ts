@@ -223,7 +223,7 @@ describe("useControlMeasureEditSession", () => {
     expect(settled).toEqual([{ committed: true, featureId: "cm-1" }]);
     expect(edit.featureId.value).toBeNull();
 
-    // One settled session, one undo step.
+    // One changed, settled session; one undo step.
     scenario.store.undo();
     expect(storedControlPoints(scenario)).toEqual([
       [10, 60],

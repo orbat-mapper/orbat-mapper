@@ -129,13 +129,16 @@ export function useTacticalGraphicRenderFeed(
       ?.setHighlightedGraphics(highlightedIdsFor(lastPlan, selectedFeatureIds.value));
   }
 
-  // `featureStateCounter` is the store's own render signal — it is bumped by time
-  // scrubbing, by `_hidden` flips and by every layer-item write. Layer add/remove/
-  // move/update bypass it entirely and arrive as feature-layer events instead, so
-  // both are needed for the feed to be complete. The surface replays its last batch
-  // itself on `style.load`, so a basemap swap needs nothing here.
+  // Time is an input in its own right: a newly drawn graphic has no `state[]`, so its
+  // first time scrub may not bump `featureStateCounter`, but it must still settle an
+  // open recording edit. Counter changes made by the clock itself are batched with the
+  // time change; a settled edit's store write may schedule an authoritative follow-up
+  // render. Layer add/remove/move/update bypass both and arrive as feature-layer events
+  // instead. The surface replays its last batch itself on `style.load`, so a basemap
+  // swap needs nothing here.
   watch(
     [
+      () => scenario.store.state.currentTime,
       () => scenario.store.state.featureStateCounter,
       () => uiStore.layersPanelActive,
       options.surface,

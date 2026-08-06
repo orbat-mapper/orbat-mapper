@@ -23,7 +23,7 @@ function graphic(id: string): NScenarioLayerItem {
 }
 
 function createHarness() {
-  const state = reactive({ featureStateCounter: 0 });
+  const state = reactive({ currentTime: 0, featureStateCounter: 0 });
   const featureLayerEvent = createEventHook<unknown>();
   const undoRedo = createEventHook<unknown>();
   const layers = reactive<{ value: unknown[] }>({ value: [] });
@@ -70,24 +70,29 @@ describe("useTacticalGraphicRenderFeed", () => {
 
     expect(h.render).toHaveBeenCalledTimes(1);
 
-    // The store's own render signal: time scrubbing, `_hidden` flips, item writes.
-    h.state.featureStateCounter++;
+    // Time is explicit: a graphic without timed state does not bump the counter below.
+    h.state.currentTime++;
     await nextTick();
     expect(h.render).toHaveBeenCalledTimes(2);
+
+    // The store's render signal for `_hidden` flips and item writes.
+    h.state.featureStateCounter++;
+    await nextTick();
+    expect(h.render).toHaveBeenCalledTimes(3);
 
     // A layer-visibility toggle must settle too — that is why the guard is on the
     // feed rather than on the clock.
     useUiStore().layersPanelActive = !useUiStore().layersPanelActive;
     await nextTick();
-    expect(h.render).toHaveBeenCalledTimes(3);
+    expect(h.render).toHaveBeenCalledTimes(4);
 
     // Layer add/remove/move/update bypass featureStateCounter entirely.
     await h.featureLayerEvent.trigger({ type: "addLayer" });
-    expect(h.render).toHaveBeenCalledTimes(4);
+    expect(h.render).toHaveBeenCalledTimes(5);
 
     // Undoing a top-level control-measure edit touches neither of the above.
     await h.undoRedo.trigger({});
-    expect(h.render).toHaveBeenCalledTimes(5);
+    expect(h.render).toHaveBeenCalledTimes(6);
 
     scope.stop();
   });

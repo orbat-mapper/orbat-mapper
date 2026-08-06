@@ -33,8 +33,9 @@ import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 import ControlMeasureLayer from "@/modules/scenarioeditor/ControlMeasureLayer.vue";
-import { getControlMeasureLayerGroups } from "@/modules/scenarioeditor/controlMeasureLayers";
 import {
+  createControlMeasureLayer,
+  getControlMeasureLayerGroups,
   isControlMeasureLayer,
   NEW_CONTROL_MEASURE_LAYER_NAME,
 } from "@/modules/scenarioeditor/controlMeasureLayers";
@@ -186,12 +187,6 @@ const controlMeasureOnlyLayerIds = computed(
   () => new Set(controlMeasureGroups.value.map(({ layer }) => layer.id)),
 );
 
-/**
- * Control-measure layers expose the same applicable management actions as feature
- * layers. Their move actions are constrained to their own family below.
- */
-const controlMeasureLayerMenuItems = layerMenuItems;
-
 const availableItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
   featureMenuItems.map((item) => ({
     ...item,
@@ -200,9 +195,6 @@ const availableItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(
       (item.action === "pan" && !canPanFeatures.value),
   })),
 );
-
-const controlMeasureItemMenuItems = availableItemMenuItems;
-const availableFeatureMenuItems = availableItemMenuItems;
 
 const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeatureId } =
   useSelectedItems();
@@ -523,13 +515,7 @@ function addNewLayer() {
 }
 
 function addNewControlMeasureLayer() {
-  const addedLayer = geo.addLayer({
-    id: nanoid(),
-    name: NEW_CONTROL_MEASURE_LAYER_NAME,
-    specialization: "controlMeasure",
-    items: [],
-    _isNew: false,
-  });
+  const addedLayer = createControlMeasureLayer(geo, NEW_CONTROL_MEASURE_LAYER_NAME);
   if (!addedLayer) return;
   activeLayerId.value = addedLayer.id;
   editedLayerId.value = addedLayer.id;
@@ -675,7 +661,7 @@ onUnmounted(() => {
           :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
           :layer="layer as unknown as NScenarioLayer"
           :layer-menu-items="layerMenuItems"
-          :feature-menu-items="availableFeatureMenuItems"
+          :feature-menu-items="availableItemMenuItems"
           v-model:activeLayerId="activeLayerId"
           v-model:editedLayerId="editedLayerId"
           @feature-click="onFeatureClick"
@@ -708,8 +694,8 @@ onUnmounted(() => {
         :key="group.layer.id"
         :layer="group.layer"
         :items="group.items"
-        :layer-menu-items="controlMeasureLayerMenuItems"
-        :item-menu-items="controlMeasureItemMenuItems"
+        :layer-menu-items="layerMenuItems"
+        :item-menu-items="availableItemMenuItems"
         v-model:activeLayerId="activeLayerId"
         v-model:editedLayerId="editedLayerId"
         @item-click="onFeatureClick"

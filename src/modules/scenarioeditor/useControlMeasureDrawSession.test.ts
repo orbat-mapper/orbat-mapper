@@ -14,7 +14,9 @@ import type { TScenario } from "@/scenariostore";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
+import type { NewControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import { useSelectedItems } from "@/stores/selectedStore";
 import "@/dayjs";
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -41,7 +43,7 @@ function controlMeasureIds(scenario: TScenario): string[] {
   );
 }
 
-function setup() {
+function setup(defaults?: NewControlMeasureDefaults) {
   const scenario = createScenario();
   const fake = createTacticalDrawSurfaceFake({ generateId: () => "cm-1" });
   const { feed, renders } = createTacticalGraphicRenderFeedFake();
@@ -52,6 +54,7 @@ function setup() {
       scenario,
       surface: () => fake.surface,
       renderFeed: feed,
+      defaults: defaults ? () => defaults : undefined,
       onSettled: (result) => settled.push(result),
     }),
   )!;
@@ -75,6 +78,14 @@ describe("useControlMeasureDrawSession", () => {
       echelon: "battalion",
       echelonSizePixels: 16,
     });
+  });
+
+  it("applies sticky smoothing over the kind's default options", () => {
+    const { draw, fake } = setup({ options: { smooth: true } });
+    draw.start("phase-line");
+
+    const draft = fake.calls.draw[0] as { options?: Record<string, unknown> };
+    expect(draft.options).toMatchObject({ smooth: true });
   });
 
   it("draws ground-anchored, so the pixel size bakes to meters at commit", () => {
@@ -123,6 +134,21 @@ describe("useControlMeasureDrawSession", () => {
     // One settled session, one undo step.
     scenario.store.undo();
     expect(controlMeasureIds(scenario)).toEqual([]);
+  });
+
+  it("selects the newly created control measure", async () => {
+    const { activeFeatureId, selectedFeatureIds } = useSelectedItems();
+    selectedFeatureIds.value.clear();
+    selectedFeatureIds.value.add("previous-feature");
+    const { draw, fake } = setup();
+
+    draw.start("phase-line");
+    fake.drawSession!.commit();
+    await nextTick();
+    await nextTick();
+
+    expect(activeFeatureId.value).toBe("cm-1");
+    expect([...selectedFeatureIds.value]).toEqual(["cm-1"]);
   });
 
   it("treats an abort as a normal outcome that writes nothing", async () => {

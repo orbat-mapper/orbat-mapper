@@ -120,9 +120,9 @@ kinds, whose declared timed state has never actually projected.
 ## Commit on settle
 
 A tactical-draw **session** — an open draw or edit interaction — is transient and
-**never touches the scenario store**. Exactly one scenario-store update happens per
-settled session, so a whole drawn control measure is one undo step and an aborted
-session leaves zero undo steps by construction.
+**never touches the scenario store**. At most one scenario-store update happens per
+settled session: a changed edit or committed draw is one undo step, while an unchanged
+edit or aborted draw leaves zero undo steps by construction.
 
 While a session is open, Ctrl+Z drives tactical-draw's own `SessionHistory`; with no
 session open it drives scenario undo. During a **draw** session Ctrl+Z is swallowed

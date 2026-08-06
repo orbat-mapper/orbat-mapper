@@ -27,8 +27,9 @@ import {
   activeFeatureSelectInteractionKey,
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
-import { injectStrict, nanoid } from "@/utils";
+import { injectStrict } from "@/utils";
 import { useEditingInteraction, type DrawType } from "@/composables/geoEditing";
+import { DRAW_TYPE_POINT_LIMITS } from "@/geo/drawTypes";
 import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
@@ -60,7 +61,7 @@ import {
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { useNotifications } from "@/composables/notifications";
 import {
-  CONTROL_MEASURE_LAYER_NAME,
+  createControlMeasureLayer,
   isControlMeasureLayer,
 } from "@/modules/scenarioeditor/controlMeasureLayers";
 
@@ -295,13 +296,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       notify({ message: "Unlock or add a control-measure layer to draw." });
       return false;
     }
-    const created = activeScenario.geo.addLayer({
-      id: nanoid(),
-      name: CONTROL_MEASURE_LAYER_NAME,
-      specialization: "controlMeasure",
-      items: [],
-      _isNew: false,
-    });
+    const created = createControlMeasureLayer(activeScenario.geo);
     if (!created) return false;
     activeLayerIdRef.value = created.id;
     lastUsedControlMeasureLayerId.value = created.id;
@@ -564,13 +559,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     if (armed.value.kind === "plainDraw") {
       const { drawType } = armed.value;
       const pointCount = interaction.value?.drawPointCount?.value ?? 0;
-      const minPoints = drawType === "Point" ? 1 : drawType === "Polygon" ? 3 : 2;
-      const maxPoints =
-        drawType === "Point"
-          ? 1
-          : drawType === "Circle" || drawType === "Rectangle"
-            ? 2
-            : undefined;
+      const { min: minPoints, max: maxPoints } = DRAW_TYPE_POINT_LIMITS[drawType];
       return {
         family: "plain",
         drawType,
@@ -951,33 +940,31 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     return true;
   }
 
-  function handleUndoKey(event?: KeyboardEvent): boolean {
-    if (armed.value.kind === "cmDraw") {
-      // Swallowed outright. `DrawSession` has no history and no remove-last-point, so
-      // letting the key reach scenario undo would settle a half-drawn graphic into the
-      // store. During draw there is only abort.
+  /**
+   * Undo and redo behave identically apart from which direction they drive.
+   *
+   * During a control-measure draw the key is swallowed outright: `DrawSession` has no
+   * history and no remove-last-point, so letting it reach scenario undo would settle a
+   * half-drawn graphic into the store — during draw there is only abort. An edit
+   * session *does* have history, so the key drives that instead of scenario undo, and
+   * is still swallowed when there is nothing left, because the alternative is undoing
+   * whatever the user did before opening the session.
+   */
+  function handleHistoryKey(direction: "undo" | "redo") {
+    return (event?: KeyboardEvent): boolean => {
+      if (armed.value.kind === "cmDraw") {
+        event?.stopPropagation();
+        return true;
+      }
+      if (armed.value.kind !== "cmEdit") return false;
       event?.stopPropagation();
+      controlMeasureEdit[direction]();
       return true;
-    }
-    if (armed.value.kind !== "cmEdit") return false;
-    // An edit session *does* have history, so the key drives that instead of scenario
-    // undo — and is still swallowed when there is nothing left to undo, because the
-    // alternative is undoing whatever the user did before opening the session.
-    event?.stopPropagation();
-    controlMeasureEdit.undo();
-    return true;
+    };
   }
 
-  function handleRedoKey(event?: KeyboardEvent): boolean {
-    if (armed.value.kind === "cmDraw") {
-      event?.stopPropagation();
-      return true;
-    }
-    if (armed.value.kind !== "cmEdit") return false;
-    event?.stopPropagation();
-    controlMeasureEdit.redo();
-    return true;
-  }
+  const handleUndoKey = handleHistoryKey("undo");
+  const handleRedoKey = handleHistoryKey("redo");
 
   function ownedUndoState() {
     // During a draw there is only abort, so both directions are unavailable rather
@@ -1024,10 +1011,8 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     isModifying,
     cancel: () => arm({ kind: "none" }),
     isDrawing,
-    /** Non-null exactly while a control-measure draw session is open. */
-    controlMeasureDrawProgress: controlMeasureDraw.progress,
     controlMeasureDrawDestinationLayerId: controlMeasureDraw.destinationLayerId,
-    commitControlMeasureDraw: () => controlMeasureDraw.commit(),
+    /** The one draw-progress view; `drawSessionProgress.family` distinguishes them. */
     drawSessionProgress,
     finishDrawSession,
     /** Non-null exactly while a control-measure edit session is open. */

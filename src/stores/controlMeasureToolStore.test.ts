@@ -100,4 +100,10 @@ describe("authoring defaults", () => {
     store.setDefaults({ style: undefined });
     expect(store.defaults.style).toBeUndefined();
   });
+
+  it("keeps generator options sticky for later control measures", () => {
+    const store = useControlMeasureToolStore();
+    store.setDefaults({ options: { smooth: true } });
+    expect(store.defaults.options).toEqual({ smooth: true });
+  });
 });

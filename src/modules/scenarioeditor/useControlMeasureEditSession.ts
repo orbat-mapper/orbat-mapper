@@ -5,9 +5,10 @@
  * Two things make it *not* a copy of the draw session:
  *
  * 1. **An edit closes and keeps its work; only a draw aborts.** Every settle path —
- *    a time scrub, a layer-visibility toggle, arming another tool, Escape — folds the
- *    working geometry into the store. There is deliberately no discard gesture: the
- *    fold is one undo step, so scenario undo *is* the discard.
+ *    a time scrub, a layer-visibility toggle, arming another tool, Escape — closes the
+ *    session and folds changed work into the store. An unchanged edit writes nothing.
+ *    There is deliberately no discard gesture: a changed fold is one undo step, so
+ *    scenario undo *is* the discard.
  * 2. **Its lifecycle has an explicit owner.** A details-panel gesture owns a one-off
  *    session; persistent toolbar Edit owns sessions opened or transferred by selection
  *    changes. An unarmed map click still only selects — it never creates an edit.
@@ -20,6 +21,7 @@
  */
 import { onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
+import { isEqual } from "es-toolkit";
 import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
   EditMode,
@@ -38,6 +40,7 @@ import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import {
   applyScenarioControlMeasureEdit,
+  toControlMeasureEditUpdate,
   toEditStartMeasure,
 } from "@/modules/scenarioeditor/controlMeasureEditHelpers";
 
@@ -156,10 +159,19 @@ export function useControlMeasureEditSession(
     live.close();
   }
 
-  function fold(measure: Parameters<typeof applyScenarioControlMeasureEdit>[1]) {
-    applyScenarioControlMeasureEdit(options.scenario, measure, {
-      recordShape: options.recordShape?.() ?? false,
-    });
+  function fold(
+    measure: Parameters<typeof applyScenarioControlMeasureEdit>[1],
+    startUpdate: ReturnType<typeof toControlMeasureEditUpdate>,
+  ) {
+    // A render settle closes even an untouched session. Compare against the snapshot
+    // captured when this particular session opened, not against the store's current
+    // projection: a time scrub may already have projected a different timed state by
+    // the time the feed reaches us.
+    if (!isEqual(startUpdate, toControlMeasureEditUpdate(measure))) {
+      applyScenarioControlMeasureEdit(options.scenario, measure, {
+        recordShape: options.recordShape?.() ?? false,
+      });
+    }
     if (closingFromSettle) return;
     // Required by the library's contract, not an optimisation: it hands the override
     // back and expects the host's next render to be authoritative.
@@ -192,6 +204,9 @@ export function useControlMeasureEditSession(
 
     featureId.value = itemId;
     const startMeasure = toEditStartMeasure(layerItem);
+    // Detached from the object tactical-draw receives, so a library-owned mutation of
+    // its working graphic cannot move the comparison baseline along with the edit.
+    const startUpdate = toControlMeasureEditUpdate(startMeasure);
     surface
       .edit(startMeasure, {
         // Whatever the graphic already encodes, so an edit never silently re-anchors
@@ -213,7 +228,7 @@ export function useControlMeasureEditSession(
           editSession.history.subscribe(readHistory);
           // The fold channel. Fires exactly once, synchronously from within the
           // `close()` that produced it, and never on abort.
-          editSession.onCommit((snapshot) => fold(snapshot.graphic));
+          editSession.onCommit((snapshot) => fold(snapshot.graphic, startUpdate));
         },
       })
       .then(() => {

@@ -38,6 +38,24 @@ const ControlMeasureStyleSettingsStub = defineComponent({
   template: "<div data-test='style-settings' />",
 });
 
+const ControlMeasureAmplifiersStub = defineComponent({
+  name: "ControlMeasureAmplifiers",
+  props: ["graphicKind", "textAmplifiers", "options"],
+  emits: ["update", "update-options"],
+  template: "<div data-test='amplifier-settings' />",
+});
+
+const ControlMeasureEchelonSelectStub = defineComponent({
+  name: "ControlMeasureEchelonSelect",
+  props: {
+    graphicKind: String,
+    options: Object,
+    inline: Boolean,
+  },
+  emits: ["update"],
+  template: "<div data-test='echelon-select' />",
+});
+
 const baseStubs = {
   DetailsPanelHeader: {
     template:
@@ -49,6 +67,8 @@ const baseStubs = {
   ScrollTabs: ScrollTabsStub,
   TabsContent: { template: "<section><slot /></section>" },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
+  ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
+  ControlMeasureEchelonSelect: ControlMeasureEchelonSelectStub,
   ScenarioLayerItemState: true,
   EditMetaForm: true,
   IconButton: {
@@ -129,7 +149,7 @@ describe("ControlMeasureDetails tabs", () => {
     setActivePinia(pinia);
   });
 
-  it("shows Style, Details and State, with Debug gated by debug mode", async () => {
+  it("shows Style, Amplifiers, Details and State, with Debug gated by debug mode", async () => {
     const uiStore = useUiStore();
     const tabStore = useTabStore();
     const { wrapper } = mountDetails();
@@ -137,20 +157,22 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Details", value: "1" },
-      { label: "State", value: "2" },
+      { label: "Amplifiers", value: "1" },
+      { label: "Details", value: "2" },
+      { label: "State", value: "3" },
     ]);
 
     uiStore.debugMode = true;
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Details", value: "1" },
-      { label: "State", value: "2" },
-      { label: "Debug", value: "3" },
+      { label: "Amplifiers", value: "1" },
+      { label: "Details", value: "2" },
+      { label: "State", value: "3" },
+      { label: "Debug", value: "4" },
     ]);
 
-    tabStore.controlMeasureDetailsTab = 3;
+    tabStore.controlMeasureDetailsTab = 4;
     uiStore.debugMode = false;
     await nextTick();
     expect(tabStore.controlMeasureDetailsTab).toBe(0);
@@ -158,7 +180,7 @@ describe("ControlMeasureDetails tabs", () => {
 
   it("falls back from a remembered Debug tab when mounting outside debug mode", () => {
     const tabStore = useTabStore();
-    tabStore.controlMeasureDetailsTab = 3;
+    tabStore.controlMeasureDetailsTab = 4;
 
     mountDetails();
 
@@ -176,7 +198,57 @@ describe("ControlMeasureDetails tabs", () => {
     expect(tabStore.featureDetailsTab).toBe(2);
 
     await wrapper.find("button[title='Edit data']").trigger("click");
-    expect(tabStore.controlMeasureDetailsTab).toBe(1);
+    expect(tabStore.controlMeasureDetailsTab).toBe(2);
+  });
+
+  it("writes text amplifiers through the settle-first control-measure path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      textAmplifiers: { T: "ALPHA" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+
+    expect(settings.props("graphicKind")).toBe("phase-line");
+    expect(settings.props("textAmplifiers")).toEqual({ T: "ALPHA" });
+    await settings.vm.$emit("update", { T: "BRAVO" });
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      textAmplifiers: { T: "BRAVO" },
+    });
+  });
+
+  it("writes generic text options through the amplifiers tab", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "text",
+      options: { text: "ALPHA", textAlign: "center" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+
+    expect(settings.props("graphicKind")).toBe("text");
+    expect(settings.props("options")).toEqual({ text: "ALPHA", textAlign: "center" });
+    await settings.vm.$emit("update-options", {
+      text: "BRAVO",
+      textAlign: "center",
+    });
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { text: "BRAVO", textAlign: "center" },
+    });
+  });
+
+  it("writes echelon options through the settle-first control-measure path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "boundary",
+      options: { echelon: "battalion" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureEchelonSelectStub);
+
+    expect(settings.props("graphicKind")).toBe("boundary");
+    expect(settings.props("options")).toEqual({ echelon: "battalion" });
+    expect(settings.props("inline")).toBe(true);
+    await settings.vm.$emit("update", { echelon: "brigade" });
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { echelon: "brigade" },
+    });
   });
 
   it("keeps style writes on the settle-first control-measure path", async () => {

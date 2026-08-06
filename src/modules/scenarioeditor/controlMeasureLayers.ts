@@ -7,6 +7,7 @@ import type {
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
+import { nanoid } from "@/utils";
 
 /**
  * The name a lazily created control-measures layer is given.
@@ -16,6 +17,27 @@ import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
  */
 export const CONTROL_MEASURE_LAYER_NAME = "Control measures";
 export const NEW_CONTROL_MEASURE_LAYER_NAME = "New control-measure layer";
+
+/**
+ * Add a new, explicitly specialized control-measure layer.
+ *
+ * The specialization — not the contents — is what makes a layer a control-measure
+ * layer, so every creation path goes through here and none can forget to set it.
+ */
+export function createControlMeasureLayer(
+  geo: {
+    addLayer: (layer: NScenarioOverlayLayer) => NScenarioOverlayLayer | undefined;
+  },
+  name: string = CONTROL_MEASURE_LAYER_NAME,
+): NScenarioOverlayLayer | undefined {
+  return geo.addLayer({
+    id: nanoid(),
+    name,
+    specialization: "controlMeasure",
+    items: [],
+    _isNew: false,
+  } as NScenarioOverlayLayer);
+}
 
 export function isControlMeasureLayer(
   layer: Pick<NScenarioOverlayLayer, "specialization">,

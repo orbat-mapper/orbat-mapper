@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useId } from "vue";
 import {
+  previewLabelBackgroundWidth,
   PREVIEW_FILL_PATTERNS,
   PREVIEW_PATTERN_DOT_RADIUS,
   PREVIEW_PATTERN_TILE,
@@ -8,7 +9,8 @@ import {
 } from "@orbat-mapper/control-measures/preview";
 import type { PreviewShape } from "@orbat-mapper/control-measures/preview";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
-import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
+import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 import {
   PREVIEW_VERTEX_RADIUS,
   buildControlMeasurePreview,
@@ -22,15 +24,37 @@ import {
  * colour the same way an icon component does.
  */
 const props = withDefaults(
-  defineProps<{ kind: ControlMeasureId; strokeWidth?: number }>(),
-  { strokeWidth: 4 },
+  defineProps<{
+    kind: ControlMeasureId;
+    strokeWidth?: number;
+    textAmplifiers?: TextAmplifiers;
+    options?: TacticalGraphicOptions;
+    width?: number;
+    height?: number;
+    pad?: number;
+    fallbackFontSize?: number;
+    maxFontSize?: number;
+    nonScalingStroke?: boolean;
+  }>(),
+  { strokeWidth: 4, width: 100, height: 100, pad: 8, fallbackFontSize: 14 },
 );
 
-const preview = computed(() => buildControlMeasurePreview(props.kind));
+const preview = computed(() =>
+  buildControlMeasurePreview(
+    props.kind,
+    { width: props.width, height: props.height, pad: props.pad },
+    props.textAmplifiers,
+    props.options,
+    {
+      fallbackFontSize: props.fallbackFontSize,
+      maxFontSize: props.maxFontSize,
+    },
+  ),
+);
 const geometry = computed(() => CONTROL_MEASURE_METADATA[props.kind]?.geometry);
 
 // Pattern ids are document-global, so every instance gets its own prefix.
-const patternPrefix = useId();
+const patternPrefix = useId().replace(/:/g, "-");
 const usedPatterns = computed(() =>
   PREVIEW_FILL_PATTERNS.filter((pattern) =>
     preview.value.shapes.some((shape) => shape.fillPattern === pattern.id),
@@ -40,6 +64,17 @@ const usedPatterns = computed(() =>
 function fillFor(shape: PreviewShape): string {
   if (shape.fillPattern) return `url(#${patternPrefix}-${shape.fillPattern})`;
   return shape.filled ? "currentColor" : "none";
+}
+
+function labelFontSize(shape: PreviewShape): number {
+  return previewFontSize(shape, {
+    fallbackFontSize: props.fallbackFontSize,
+    maxFontSize: props.maxFontSize,
+  });
+}
+
+function textBackgroundWidth(shape: PreviewShape): number {
+  return previewLabelBackgroundWidth(shape.text, labelFontSize(shape));
 }
 </script>
 
@@ -84,6 +119,7 @@ function fillFor(shape: PreviewShape): string {
         :d="shape.d"
         stroke="currentColor"
         :stroke-width="strokeWidth"
+        :vector-effect="nonScalingStroke ? 'non-scaling-stroke' : undefined"
       />
       <path
         v-else-if="shape.type === 'polygon'"
@@ -91,6 +127,7 @@ function fillFor(shape: PreviewShape): string {
         stroke="currentColor"
         :stroke-width="strokeWidth"
         :fill="fillFor(shape)"
+        :vector-effect="nonScalingStroke ? 'non-scaling-stroke' : undefined"
       />
       <circle
         v-else-if="shape.type === 'circle'"
@@ -99,20 +136,34 @@ function fillFor(shape: PreviewShape): string {
         :r="PREVIEW_VERTEX_RADIUS"
         fill="currentColor"
       />
-      <text
+      <g
         v-else-if="shape.type === 'text' && shape.cx !== undefined"
-        :x="shape.cx"
-        :y="shape.cy"
-        :font-size="previewFontSize(shape)"
-        :text-anchor="shape.textAnchor ?? 'middle'"
         :transform="svgTextTransform(shape)"
-        :font-style="shape.textStyle === 'italic' ? 'italic' : undefined"
-        dominant-baseline="central"
-        fill="currentColor"
-        stroke="none"
       >
-        {{ shape.text }}
-      </text>
+        <rect
+          v-if="shape.textBackground"
+          :x="Number(shape.cx) - textBackgroundWidth(shape) / 2"
+          :y="Number(shape.cy) - (labelFontSize(shape) + 4) / 2"
+          :width="textBackgroundWidth(shape)"
+          :height="labelFontSize(shape) + 4"
+          rx="1.5"
+          fill="var(--background)"
+        />
+        <text
+          :x="shape.cx"
+          :y="shape.cy"
+          :font-size="labelFontSize(shape)"
+          :text-anchor="shape.textAnchor ?? 'middle'"
+          :font-style="shape.textStyle === 'italic' ? 'italic' : undefined"
+          font-family="sans-serif"
+          font-weight="600"
+          dominant-baseline="central"
+          fill="currentColor"
+          stroke="none"
+        >
+          {{ shape.text }}
+        </text>
+      </g>
     </template>
 
     <!-- Degenerate render (an empty sample, or a kind the library could not draw):
@@ -131,6 +182,7 @@ function fillFor(shape: PreviewShape): string {
         stroke="currentColor"
         :stroke-width="strokeWidth"
         stroke-dasharray="10 8"
+        :vector-effect="nonScalingStroke ? 'non-scaling-stroke' : undefined"
       />
       <path
         v-else
@@ -138,6 +190,7 @@ function fillFor(shape: PreviewShape): string {
         stroke="currentColor"
         :stroke-width="strokeWidth"
         stroke-dasharray="10 8"
+        :vector-effect="nonScalingStroke ? 'non-scaling-stroke' : undefined"
       />
     </template>
   </svg>

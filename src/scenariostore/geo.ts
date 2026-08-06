@@ -782,6 +782,28 @@ export function useGeo(store: NewScenarioStore) {
     data: ScenarioLayerItemUpdate,
     options: UpdateOptions = {},
   ) {
+    writeLayerItemFields(itemId, data, options, {
+      fields: Object.keys(data) as (keyof ScenarioLayerItemUpdate)[],
+      afterWrite: updateLayerItemHidden,
+    });
+  }
+
+  /**
+   * The one write path behind `updateLayerItem` and `updateTacticalGraphic`: unwrap
+   * the undoable/noEmit options, refuse a locked item or locked owner, copy the
+   * permitted fields, and emit. Keeping it single means the lock rule, the undo label
+   * and the event shape cannot drift between the doors that use it.
+   */
+  function writeLayerItemFields<TData extends object>(
+    itemId: FeatureId,
+    data: TData,
+    options: UpdateOptions,
+    spec: {
+      fields: readonly (keyof TData)[];
+      guard?: (item: NScenarioLayerItem) => boolean;
+      afterWrite?: (item: NScenarioLayerItem, currentTime: number) => void;
+    },
+  ) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
 
@@ -789,13 +811,15 @@ export function useGeo(store: NewScenarioStore) {
     // for the whole draft.
     const apply = (item: NScenarioLayerItem | undefined, currentTime: number) => {
       if (!item) return;
+      if (spec.guard && !spec.guard(item)) return;
       const owner = getOverlayLayerFromMap(state.layerStackMap, item._pid);
       if (owner?.locked || item.locked) return;
-      Object.entries(data).forEach(([key, value]) => {
+      spec.fields.forEach((field) => {
+        const value = data[field];
         if (value === undefined) return;
-        (item as unknown as Record<string, unknown>)[key] = value;
+        (item as unknown as Record<string, unknown>)[field as string] = value;
       });
-      updateLayerItemHidden(item, currentTime);
+      spec.afterWrite?.(item, currentTime);
     };
 
     if (undoable) {
@@ -806,7 +830,6 @@ export function useGeo(store: NewScenarioStore) {
         { label: "updateFeature", value: itemId },
       );
     } else {
-      if (!state.layerItemMap[itemId]) return;
       apply(state.layerItemMap[itemId], state.currentTime);
     }
     if (noEmit) return;
@@ -831,34 +854,10 @@ export function useGeo(store: NewScenarioStore) {
     data: TacticalGraphicLayerItemUpdate,
     options: UpdateOptions = {},
   ) {
-    const undoable = options.undoable ?? true;
-    const noEmit = options.noEmit ?? false;
-
-    // No return value: the immer producer treats a returned value as a replacement
-    // for the whole draft.
-    const apply = (item: NScenarioLayerItem | undefined) => {
-      if (!item || !isNTacticalGraphicLayerItem(item)) return;
-      const owner = getOverlayLayerFromMap(state.layerStackMap, item._pid);
-      if (owner?.locked || item.locked) return;
-      TACTICAL_GRAPHIC_UPDATE_FIELDS.forEach((field) => {
-        const value = data[field];
-        if (value === undefined) return;
-        (item as unknown as Record<string, unknown>)[field] = value;
-      });
-    };
-
-    if (undoable) {
-      update(
-        (s) => {
-          apply(s.layerItemMap[itemId]);
-        },
-        { label: "updateFeature", value: itemId },
-      );
-    } else {
-      apply(state.layerItemMap[itemId]);
-    }
-    if (noEmit) return;
-    featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
+    writeLayerItemFields(itemId, data, options, {
+      fields: TACTICAL_GRAPHIC_UPDATE_FIELDS,
+      guard: isNTacticalGraphicLayerItem,
+    });
   }
 
   /**

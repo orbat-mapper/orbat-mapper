@@ -439,7 +439,7 @@ describe("useScenarioDraw", () => {
     await nextTick();
     await nextTick();
 
-    expect(draw.controlMeasureDrawProgress.value).toBeNull();
+    expect(draw.drawSessionProgress.value).toBeNull();
     expect(draw.armed.value).toEqual({ kind: "none" });
     expect(mapSelectStore.selectionSuppressed).toBe(false);
   });

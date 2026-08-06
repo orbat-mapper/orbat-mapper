@@ -29,6 +29,18 @@ function labels(wrapper: ReturnType<typeof mountSettings>): string[] {
 }
 
 describe("the UI-only styling gate", () => {
+  it("gives every native select the full control-column width", () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const nativeSelectWrappers = wrapper.findAll("[data-slot='native-select-wrapper']");
+
+    expect(nativeSelectWrappers).toHaveLength(3);
+    expect(
+      nativeSelectWrappers.every((selectWrapper) =>
+        selectWrapper.classes().includes("w-full"),
+      ),
+    ).toBe(true);
+  });
+
   it("offers colour and fill on a Generic Graphics kind that can be filled", () => {
     const wrapper = mountSettings({ graphicKind: "polygon" });
     expect(labels(wrapper)).toContain("Color");
@@ -47,10 +59,31 @@ describe("the UI-only styling gate", () => {
     expect(labels(wrapper)).not.toContain("Fill");
   });
 
-  it("offers everything for the defaults, which belong to no kind yet", () => {
-    const wrapper = mountSettings({});
+  it("gates defaults using the kind they will create", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "phase-line", editingDefaults: true },
+    });
+    expect(labels(wrapper)).not.toContain("Color");
+    expect(labels(wrapper)).not.toContain("Fill");
+  });
+
+  it("offers supported styling for defaults of a generic kind", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "polygon", editingDefaults: true },
+    });
     expect(labels(wrapper)).toContain("Color");
     expect(labels(wrapper)).toContain("Fill");
+  });
+
+  it("offers a capability only when every selected kind supports it", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: {
+        graphicKind: "polygon",
+        graphicKinds: ["polygon", "phase-line"],
+      },
+    });
+    expect(labels(wrapper)).not.toContain("Color");
+    expect(labels(wrapper)).not.toContain("Fill");
   });
 
   it("still shows a doctrinal kind's imported colour, because it renders", () => {
@@ -88,7 +121,9 @@ describe("what it emits", () => {
       graphicKind: "polygon",
       measureStyle: { strokeWidth: 3, color: "#ff0000" },
     });
-    await wrapper.find("button").trigger("click");
+    await wrapper
+      .get("button[title='Use the color the standard identity resolves to']")
+      .trigger("click");
     expect(wrapper.emitted("update")).toEqual([[{ style: { strokeWidth: 3 } }]]);
   });
 
@@ -99,6 +134,45 @@ describe("what it emits", () => {
     });
     await wrapper.findAll("select")[3]!.setValue("");
     expect(wrapper.emitted("update")).toEqual([[{ style: {} }]]);
+  });
+});
+
+describe("the stroke-width presets", () => {
+  it("offers Thin, Medium, and Heavy for a stroked control measure", () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const choices = wrapper.get("[aria-label='Stroke width']");
+
+    expect(
+      choices.findAll("button").map((button) => button.attributes("aria-label")),
+    ).toEqual([
+      "Thin stroke, 1 pixel",
+      "Medium stroke, 2 pixels",
+      "Heavy stroke, 4 pixels",
+    ]);
+    expect(
+      choices
+        .findAll("button")
+        .find((button) => button.attributes("aria-label") === "Medium stroke, 2 pixels")
+        ?.attributes("data-state"),
+    ).toBe("on");
+  });
+
+  it("hides stroke width for a text-only graphic", () => {
+    const wrapper = mountSettings({ graphicKind: "text" });
+    expect(wrapper.find("[aria-label='Stroke width']").exists()).toBe(false);
+  });
+
+  it("merges a chosen preset into the authored style", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "phase-line",
+      measureStyle: { color: "#123456" },
+    });
+
+    await wrapper.get("button[aria-label='Heavy stroke, 4 pixels']").trigger("click");
+
+    expect(wrapper.emitted("update")).toEqual([
+      [{ style: { color: "#123456", strokeWidth: 4 } }],
+    ]);
   });
 });
 
@@ -123,8 +197,15 @@ describe("the smoothing toggle", () => {
     expect(smoothSwitch(wrapper).exists()).toBe(false);
   });
 
-  it("is not offered for the defaults, which belong to no kind", () => {
+  it("is not offered for defaults without a chosen kind", () => {
     expect(smoothSwitch(mountSettings({})).exists()).toBe(false);
+  });
+
+  it("is offered for defaults of a kind that supports smoothing", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "phase-line", editingDefaults: true },
+    });
+    expect(smoothSwitch(wrapper).exists()).toBe(true);
   });
 
   it("reflects an authored option over the library default", () => {
