@@ -95,6 +95,41 @@ describe("ControlMeasureAmplifiers", () => {
     });
   });
 
+  it("edits generic text without losing its other options", async () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: {
+        graphicKind: "text",
+        options: { text: "ALPHA", textAlign: "right", sizePixels: 32 },
+      },
+      global: { stubs: { ControlMeasurePreview: PreviewStub } },
+    });
+    const textarea = wrapper.get("textarea");
+
+    expect((textarea.element as HTMLTextAreaElement).value).toBe("ALPHA");
+    expect(wrapper.text()).not.toContain("This control measure has no text amplifiers.");
+
+    (textarea.element as HTMLTextAreaElement).value = "BRAVO\nCHARLIE";
+    await textarea.trigger("input");
+    expect(wrapper.emitted("update-options")).toBeUndefined();
+    expect(wrapper.getComponent(PreviewStub).props("options")).toEqual({
+      text: "BRAVO\nCHARLIE",
+    });
+
+    await textarea.trigger("change");
+    expect(wrapper.emitted("update-options")).toEqual([
+      [{ text: "BRAVO\nCHARLIE", textAlign: "right", sizePixels: 32 }],
+    ]);
+  });
+
+  it("shows the generic text default when no text option is stored", () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: { graphicKind: "text" },
+      global: { stubs: { ControlMeasurePreview: PreviewStub } },
+    });
+
+    expect((wrapper.get("textarea").element as HTMLTextAreaElement).value).toBe("Text");
+  });
+
   it("does not show an echelon selector for measures without one", () => {
     const wrapper = mount(ControlMeasureAmplifiers, {
       props: { graphicKind: "phase-line" },

@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
+import {
+  CONTROL_MEASURE_METADATA,
+  getDefaultOptions,
+} from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
   TextAmplifierDescriptor,
   TextAmplifiers,
 } from "@orbat-mapper/control-measures";
 import { Input } from "@/components/ui/input";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
@@ -32,12 +37,27 @@ const previewAmplifiers = computed<TextAmplifiers>(() =>
     descriptors.value.map((descriptor) => [descriptor.key, `<${descriptor.key}>`]),
   ),
 );
+const isGenericText = computed(() => props.graphicKind === "text");
+const genericText = ref("");
+
+watch(
+  () => [props.graphicKind, props.options?.text] as const,
+  ([graphicKind, text]) => {
+    const defaults = getDefaultOptions(graphicKind) as TacticalGraphicOptions;
+    genericText.value = String(text ?? defaults.text ?? "");
+  },
+  { immediate: true },
+);
+
 // The registry's representative sample owns preview-only geometry tuning (for
 // example Strong Point's rounded outline and compact tic/echelon sizing). Only
 // the option edited in this panel should override that sample.
-const previewOptions = computed<TacticalGraphicOptions | undefined>(() =>
-  props.options?.echelon === undefined ? undefined : { echelon: props.options.echelon },
-);
+const previewOptions = computed<TacticalGraphicOptions | undefined>(() => {
+  if (isGenericText.value) return { text: genericText.value };
+  return props.options?.echelon === undefined
+    ? undefined
+    : { echelon: props.options.echelon };
+});
 const values = ref<TextAmplifiers>({});
 
 watch(
@@ -67,6 +87,10 @@ function commit() {
 function setHostile(descriptor: TextAmplifierDescriptor, checked: boolean) {
   setValue(descriptor.key, checked ? (descriptor.placeholder ?? "ENY") : "");
   commit();
+}
+
+function commitGenericText() {
+  emit("update-options", { ...props.options, text: genericText.value });
 }
 </script>
 
@@ -101,6 +125,20 @@ function setHostile(descriptor: TextAmplifierDescriptor, checked: boolean) {
       @update="emit('update-options', $event)"
     />
 
+    <Field v-if="isGenericText">
+      <FieldLabel for="control-measure-generic-text">Text</FieldLabel>
+      <FieldDescription>
+        The text to render. Explicit line breaks are preserved.
+      </FieldDescription>
+      <Textarea
+        id="control-measure-generic-text"
+        :model-value="genericText"
+        placeholder="Text"
+        @update:model-value="genericText = String($event)"
+        @change="commitGenericText"
+      />
+    </Field>
+
     <div v-if="descriptors.length" class="space-y-4">
       <div v-for="descriptor in descriptors" :key="descriptor.key" class="space-y-1.5">
         <div class="flex items-baseline justify-between gap-3">
@@ -133,7 +171,7 @@ function setHostile(descriptor: TextAmplifierDescriptor, checked: boolean) {
         />
       </div>
     </div>
-    <p v-else class="text-muted-foreground text-sm">
+    <p v-else-if="!isGenericText" class="text-muted-foreground text-sm">
       This control measure has no text amplifiers.
     </p>
   </div>

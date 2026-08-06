@@ -215,6 +215,25 @@ describe("ControlMeasureDetails tabs", () => {
     });
   });
 
+  it("writes generic text options through the amplifiers tab", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "text",
+      options: { text: "ALPHA", textAlign: "center" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+
+    expect(settings.props("graphicKind")).toBe("text");
+    expect(settings.props("options")).toEqual({ text: "ALPHA", textAlign: "center" });
+    await settings.vm.$emit("update-options", {
+      text: "BRAVO",
+      textAlign: "center",
+    });
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { text: "BRAVO", textAlign: "center" },
+    });
+  });
+
   it("writes echelon options through the settle-first control-measure path", async () => {
     const { wrapper, updateControlMeasure } = mountDetails({
       graphicKind: "boundary",
