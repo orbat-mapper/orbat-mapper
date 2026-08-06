@@ -15,6 +15,7 @@ import {
 } from "vue";
 import { storeToRefs } from "pinia";
 import type { ControlMeasureKind } from "@orbat-mapper/control-measures";
+import type { SnapCandidateProvider } from "@orbat-mapper/tactical-draw";
 import {
   activeLayerKey,
   activeScenarioKey,
@@ -44,6 +45,10 @@ import {
 import { newControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
+import {
+  getUnitSnapCandidates,
+  isUnitSnapMap,
+} from "@/modules/scenarioeditor/unitSnapCandidates";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
@@ -346,6 +351,14 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    */
   const canControlMeasures = computed(() => Boolean(engineRef.value?.draw));
 
+  // The map is resolved on each snap resolution rather than captured — it is replaced
+  // on every basemap swap, and the rendered features are the current time's positions.
+  const unitSnapCandidates: SnapCandidateProvider = (request) => {
+    const native = nativeMap.value;
+    if (!isUnitSnapMap(native)) return [];
+    return getUnitSnapCandidates(native, request);
+  };
+
   // One `snap` button, two mechanisms: the plain interactions read the ref directly,
   // tactical-draw takes engine-level snapping options. Re-asserted rather than diffed —
   // the surface documents this call as cheap and idempotent, and re-asserting is what
@@ -353,7 +366,11 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   watchEffect(() => {
     engineRef.value?.draw?.setSnappingOptions({
       enabled: snap.value,
-      sources: { graphics: true, graphicGeometry: true },
+      sources: {
+        graphics: true,
+        graphicGeometry: true,
+        external: unitSnapCandidates,
+      },
     });
   });
 
@@ -713,6 +730,10 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureEditFeatureId: controlMeasureEdit.featureId,
     controlMeasureEditCanUndo: controlMeasureEdit.canUndo,
     controlMeasureEditCanRedo: controlMeasureEdit.canRedo,
+    /** Label-drag mode — additive to reshape, and sticky across edit sessions. */
+    controlMeasureLabelDrag: controlMeasureEdit.labelDrag,
+    setControlMeasureLabelDrag: (enabled: boolean) =>
+      controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
     startControlMeasureEdit: (featureId: FeatureId) => arm({ kind: "cmEdit", featureId }),
     /** `engine.draw` is defined — control measures can be authored on this engine. */

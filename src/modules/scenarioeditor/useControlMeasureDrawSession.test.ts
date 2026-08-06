@@ -59,6 +59,30 @@ function setup() {
 }
 
 describe("useControlMeasureDrawSession", () => {
+  /**
+   * The size-anchor handshake (ADR-0020, and how tactrace drives it): the draft carries
+   * the kind's own defaults, several of which declare a *pixel* form of a dimension
+   * alongside a meter one, and the pixel form wins while the gesture is live. The
+   * default `"ground"` anchor then bakes it to meters at the committing resolution, so
+   * an echelon glyph comes out sized for the zoom it was drawn at.
+   */
+  it("seeds a draw with the kind's default options, pixel size forms included", () => {
+    const { draw, fake } = setup();
+    draw.start("boundary");
+
+    const draft = fake.calls.draw[0] as { options?: Record<string, unknown> };
+    expect(draft.options).toMatchObject({
+      echelon: "battalion",
+      echelonSizePixels: 16,
+    });
+  });
+
+  it("draws ground-anchored, so the pixel size bakes to meters at commit", () => {
+    const { draw, fake } = setup();
+    draw.start("boundary");
+    expect(fake.calls.drawSizeAnchor).toEqual(["ground"]);
+  });
+
   it("exposes the session's own point bounds while drawing", () => {
     const { draw } = setup();
     draw.start("phase-line");
