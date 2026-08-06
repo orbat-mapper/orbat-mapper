@@ -51,11 +51,13 @@ const primaryItem = computed(() => selectedItems.value[0]);
 const editsSelection = computed(() => selectedItems.value.length > 0);
 
 function changedFields(
-  before: Record<string, unknown> | undefined,
-  after: Record<string, unknown>,
+  before: object | undefined,
+  after: object,
 ) {
+  const beforeValues = before as Record<string, unknown> | undefined;
+  const afterValues = after as Record<string, unknown>;
   return [...new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].filter(
-    (key) => before?.[key] !== after[key],
+    (key) => beforeValues?.[key] !== afterValues[key],
   );
 }
 
