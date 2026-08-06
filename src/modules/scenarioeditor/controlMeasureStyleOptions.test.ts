@@ -68,6 +68,7 @@ describe("newControlMeasureDefaults", () => {
     colorMode: "identity",
     status: "planned",
     style: { color: "#ff0000", fillPattern: "hatch" },
+    options: { smooth: true },
   } as const;
 
   it("keeps the host-owned fields for every kind", () => {
@@ -75,6 +76,7 @@ describe("newControlMeasureDefaults", () => {
       standardIdentity: "3",
       colorMode: "identity",
       status: "planned",
+      options: { smooth: true },
     });
   });
 
@@ -89,6 +91,16 @@ describe("newControlMeasureDefaults", () => {
     expect(newControlMeasureDefaults(defaults, "line").style).toEqual({
       color: "#ff0000",
     });
+  });
+
+  it("drops sticky smoothing for kinds that do not support it", () => {
+    expect(newControlMeasureDefaults(defaults, "text").options).toBeUndefined();
+  });
+
+  it("copies sticky smoothing for kinds that support it", () => {
+    const result = newControlMeasureDefaults(defaults, "phase-line");
+    expect(result.options).toEqual({ smooth: true });
+    expect(result.options).not.toBe(defaults.options);
   });
 
   it("emits no style at all when nothing survives the gate", () => {

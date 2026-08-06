@@ -41,10 +41,9 @@ export const DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS: NewControlMeasureDefaults = {
  * additionally persist across reloads via localStorage; the authoring defaults stay
  * session-only.
  *
- * `defaults.style` is the *authored* style a new graphic may be born with. It is kept
- * ungated here and narrowed per kind on the way out (`newControlMeasureDefaults`), so a
- * colour picked for a polygon stays remembered while the user draws a phase line in
- * between.
+ * Authored style and generator options are kept ungated here and narrowed per kind on
+ * the way out (`newControlMeasureDefaults`). A polygon fill or smoothing choice stays
+ * remembered while the user works with a kind that cannot expose that control.
  */
 export const useControlMeasureToolStore = defineStore("controlMeasureTool", {
   state: () => ({

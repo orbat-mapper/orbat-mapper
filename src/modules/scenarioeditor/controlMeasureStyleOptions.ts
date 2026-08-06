@@ -128,13 +128,25 @@ export function newControlMeasureDefaults(
   defaults: NewControlMeasureDefaults,
   graphicKind: ControlMeasureKind,
 ): NewControlMeasureDefaults {
-  const { style, ...hostOwned } = defaults;
-  if (!style || !isStyleableControlMeasureKind(graphicKind)) return { ...hostOwned };
-  const authored: ControlMeasureStyle = {};
-  if (style.color !== undefined) authored.color = style.color;
-  if (style.fillPattern !== undefined && canAuthorFillPattern(graphicKind)) {
-    authored.fillPattern = style.fillPattern;
+  const { style, options, ...hostOwned } = defaults;
+  const narrowed: NewControlMeasureDefaults = { ...hostOwned };
+
+  if (style && isStyleableControlMeasureKind(graphicKind)) {
+    const authored: ControlMeasureStyle = {};
+    if (style.color !== undefined) authored.color = style.color;
+    if (style.fillPattern !== undefined && canAuthorFillPattern(graphicKind)) {
+      authored.fillPattern = style.fillPattern;
+    }
+    if (Object.keys(authored).length > 0) narrowed.style = authored;
   }
-  if (Object.keys(authored).length === 0) return { ...hostOwned };
-  return { ...hostOwned, style: authored };
+
+  if (
+    options &&
+    canSmoothControlMeasureKind(graphicKind) &&
+    typeof (options as Record<string, unknown>).smooth === "boolean"
+  ) {
+    narrowed.options = { smooth: options.smooth } as TacticalGraphicOptions;
+  }
+
+  return narrowed;
 }

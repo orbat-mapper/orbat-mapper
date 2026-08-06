@@ -8,6 +8,7 @@ import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { CONTROL_MEASURE_LAYER_NAME } from "@/modules/scenarioeditor/controlMeasureLayers";
 import {
   addScenarioControlMeasure,
+  draftOptionsForNewControlMeasure,
   draftStyleForNewControlMeasure,
   toTacticalGraphicLayerItem,
 } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
@@ -76,6 +77,13 @@ describe("toTacticalGraphicLayerItem", () => {
     expect(item.status).toBe("planned");
   });
 
+  it("keeps sticky options when the engine snapshot does not replace them", () => {
+    const item = toTacticalGraphicLayerItem(measure(), {
+      options: { smooth: true },
+    });
+    expect(item.options).toEqual({ smooth: true });
+  });
+
   it("copies the control points out of the measure the engine still holds", () => {
     const source = measure();
     const item = toTacticalGraphicLayerItem(source);
@@ -106,6 +114,14 @@ describe("draftStyleForNewControlMeasure", () => {
         status: "planned",
       }),
     ).toEqual({ color: MONOCHROME_COLOR, strokeDash: [...PLANNED_STROKE_DASH] });
+  });
+});
+
+describe("draftOptionsForNewControlMeasure", () => {
+  it("overrides the library default with sticky options", () => {
+    expect(
+      draftOptionsForNewControlMeasure("phase-line", { options: { smooth: true } }),
+    ).toEqual(expect.objectContaining({ smooth: true }));
   });
 });
 

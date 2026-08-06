@@ -47,10 +47,31 @@ describe("the UI-only styling gate", () => {
     expect(labels(wrapper)).not.toContain("Fill");
   });
 
-  it("offers everything for the defaults, which belong to no kind yet", () => {
-    const wrapper = mountSettings({});
+  it("gates defaults using the kind they will create", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "phase-line", editingDefaults: true },
+    });
+    expect(labels(wrapper)).not.toContain("Color");
+    expect(labels(wrapper)).not.toContain("Fill");
+  });
+
+  it("offers supported styling for defaults of a generic kind", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "polygon", editingDefaults: true },
+    });
     expect(labels(wrapper)).toContain("Color");
     expect(labels(wrapper)).toContain("Fill");
+  });
+
+  it("offers a capability only when every selected kind supports it", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: {
+        graphicKind: "polygon",
+        graphicKinds: ["polygon", "phase-line"],
+      },
+    });
+    expect(labels(wrapper)).not.toContain("Color");
+    expect(labels(wrapper)).not.toContain("Fill");
   });
 
   it("still shows a doctrinal kind's imported colour, because it renders", () => {
@@ -123,8 +144,15 @@ describe("the smoothing toggle", () => {
     expect(smoothSwitch(wrapper).exists()).toBe(false);
   });
 
-  it("is not offered for the defaults, which belong to no kind", () => {
+  it("is not offered for defaults without a chosen kind", () => {
     expect(smoothSwitch(mountSettings({})).exists()).toBe(false);
+  });
+
+  it("is offered for defaults of a kind that supports smoothing", () => {
+    const wrapper = mount(ControlMeasureStyleSettings, {
+      props: { graphicKind: "phase-line", editingDefaults: true },
+    });
+    expect(smoothSwitch(wrapper).exists()).toBe(true);
   });
 
   it("reflects an authored option over the library default", () => {
