@@ -10,6 +10,8 @@ import { createPinia, setActivePinia } from "pinia";
 import { computed, defineComponent, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { scenarioDrawKey } from "@/components/injects";
 import type { ArmedTool } from "@/modules/scenarioeditor/useScenarioDraw";
 
@@ -22,6 +24,8 @@ function mountToolbar({
   canControlMeasures = true,
   armed = { kind: "none" } as ArmedTool,
 } = {}) {
+  // The control-measure pins and last-used kind live in localStorage.
+  localStorage.clear();
   const pinia = createPinia();
   setActivePinia(pinia);
   const scenarioDraw = {
@@ -44,7 +48,7 @@ function mountToolbar({
       provide: { [scenarioDrawKey as symbol]: scenarioDraw },
     },
   });
-  return { wrapper, scenarioDraw };
+  return { wrapper, scenarioDraw, mainToolbarStore: useMainToolbarStore() };
 }
 
 function buttonByTitle(
@@ -64,29 +68,40 @@ describe("MapEditorDrawToolbar capability gating", () => {
   it("renders the control-measure buttons disabled, not hidden, without a surface", () => {
     const { wrapper } = mountToolbar({ canControlMeasures: false });
 
-    // Four pinned kinds, the picker button and the defaults popover trigger.
+    // Both halves of the control-measure split button and the defaults popover trigger.
     const gated = wrapper
       .findAll("button")
       .filter((button) => button.attributes("title")?.startsWith(NO_ENGINE_SUPPORT));
-    expect(gated.length).toBeGreaterThanOrEqual(6);
+    expect(gated.length).toBeGreaterThanOrEqual(3);
     for (const button of gated) expect(button.attributes("disabled")).toBeDefined();
 
-    // The plain-shape tools are untouched by the gate.
-    expect(buttonByTitle(wrapper, "Polygon")[0]!.attributes("disabled")).toBeUndefined();
+    // The plain-shape split button is untouched by the gate ("Line" is its default).
+    expect(buttonByTitle(wrapper, "Line")[0]!.attributes("disabled")).toBeUndefined();
   });
 
   it("enables them and names the kind once the engine has a surface", () => {
     const { wrapper, scenarioDraw } = mountToolbar({ canControlMeasures: true });
 
-    const phaseLine = buttonByTitle(wrapper, "Phase line");
-    expect(phaseLine).toHaveLength(1);
-    expect(phaseLine[0]!.attributes("disabled")).toBeUndefined();
+    const mainAttack = buttonByTitle(wrapper, "Main Attack");
+    expect(mainAttack).toHaveLength(1);
+    expect(mainAttack[0]!.attributes("disabled")).toBeUndefined();
 
-    phaseLine[0]!.trigger("click");
+    mainAttack[0]!.trigger("click");
     expect(scenarioDraw.arm).toHaveBeenCalledWith({
       kind: "cmDraw",
-      graphicKind: "phase-line",
+      graphicKind: "main-attack",
     });
+  });
+
+  // Both split buttons only emit; the toolbar arms and remembers what it armed, so the
+  // pill re-arms the same tool next time — one convention for both tool families.
+  it("arms and remembers the shape the draw split button picks", async () => {
+    const { wrapper, scenarioDraw, mainToolbarStore } = mountToolbar();
+
+    await wrapper.findComponent(DrawToolSplitButton).vm.$emit("select", "Circle");
+
+    expect(scenarioDraw.startDrawing).toHaveBeenCalledWith("Circle");
+    expect(mainToolbarStore.lastDrawType).toBe("Circle");
   });
 
   it("hides freehand and disables translate while a control measure is armed", () => {

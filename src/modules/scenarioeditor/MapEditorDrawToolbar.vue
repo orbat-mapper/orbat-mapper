@@ -5,28 +5,23 @@ import {
   IconLockOpenVariantOutline,
   IconLockOutline,
   IconMagnet as SnapIcon,
-  IconMapMarker as PointIcon,
   IconSquareEditOutline as EditIcon,
   IconTrashCanOutline as DeleteIcon,
-  IconVectorCircleVariant as CircleIcon,
-  IconVectorLine as LineStringIcon,
-  IconVectorPolygon as PolygonIcon,
-  IconVectorRectangle as RectangleIcon,
   IconClockEditOutline as IconClockEdit,
   IconGesture as FreehandIcon,
 } from "@iconify-prerendered/vue-mdi";
 
-import { IconShapePolygonPlus as MoreGraphicsIcon } from "@iconify-prerendered/vue-mdi";
 import { computed, ref } from "vue";
 
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
+import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
+import ControlMeasureSplitButton from "@/modules/scenarioeditor/ControlMeasureSplitButton.vue";
 import MapEditorSubToolbar from "@/modules/scenarioeditor/MapEditorSubToolbar.vue";
-import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
 import ControlMeasurePickerDialog from "@/modules/scenarioeditor/ControlMeasurePickerDialog.vue";
 import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
-import { getControlMeasureKindOption } from "@/modules/scenarioeditor/controlMeasurePicker";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { DrawType } from "@/geo/drawTypes";
 import { useToggle } from "@vueuse/core";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { storeToRefs } from "pinia";
@@ -37,7 +32,7 @@ import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 const { selectedFeatureIds } = useSelectedItems();
 
-const { addMultiple } = storeToRefs(useMainToolbarStore());
+const { addMultiple, lastDrawType } = storeToRefs(useMainToolbarStore());
 const toggleAddMultiple = useToggle(addMultiple);
 
 const recordStore = useRecordingStore();
@@ -63,7 +58,7 @@ const {
 } = injectStrict(scenarioDrawKey);
 
 const controlMeasureStore = useControlMeasureToolStore();
-const { pinnedKinds } = storeToRefs(controlMeasureStore);
+const { lastKind } = storeToRefs(controlMeasureStore);
 const pickerOpen = ref(false);
 
 const armedGraphicKind = computed(() =>
@@ -80,14 +75,16 @@ const controlMeasureArmed = computed(
   () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
 );
 
-const NO_ENGINE_SUPPORT = "Control measures are not supported by this map engine";
-
-function controlMeasureTitle(kind: ControlMeasureId) {
-  if (!canControlMeasures.value) return NO_ENGINE_SUPPORT;
-  return getControlMeasureKindOption(kind)?.name ?? kind;
+// Both split buttons only emit; arming — and remembering what was armed, so the pill
+// re-arms it next time — belongs to the toolbar, which is also where the picker dialog
+// lands.
+function drawShape(drawType: DrawType) {
+  lastDrawType.value = drawType;
+  startDrawing(drawType);
 }
 
 function drawControlMeasure(kind: ControlMeasureId) {
+  lastKind.value = kind;
   arm({ kind: "cmDraw", graphicKind: kind });
 }
 
@@ -101,60 +98,14 @@ const toggleFreehand = useToggle(freehand);
     <MainToolbarButton title="Select" :active="!currentDrawType" @click="cancel()">
       <SelectIcon class="size-5" />
     </MainToolbarButton>
-    <MainToolbarButton
-      title="Point"
-      @click="startDrawing('Point')"
-      :active="currentDrawType === 'Point'"
-    >
-      <PointIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Line"
-      @click="startDrawing('LineString')"
-      :active="currentDrawType === 'LineString'"
-    >
-      <LineStringIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Polygon"
-      @click="startDrawing('Polygon')"
-      :active="currentDrawType === 'Polygon'"
-    >
-      <PolygonIcon class="size-5" />
-    </MainToolbarButton>
-
-    <MainToolbarButton
-      title="Rectangle"
-      @click="startDrawing('Rectangle')"
-      :active="currentDrawType === 'Rectangle'"
-    >
-      <RectangleIcon class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      title="Circle"
-      @click="startDrawing('Circle')"
-      :active="currentDrawType === 'Circle'"
-    >
-      <CircleIcon class="size-5" />
-    </MainToolbarButton>
+    <DrawToolSplitButton :current-draw-type="currentDrawType" @select="drawShape" />
     <div class="border-border mx-1 h-5 border-l" />
-    <MainToolbarButton
-      v-for="kind in pinnedKinds"
-      :key="kind"
-      :title="controlMeasureTitle(kind)"
-      :active="armedGraphicKind === kind"
+    <ControlMeasureSplitButton
+      :armed-kind="armedGraphicKind"
       :disabled="!canControlMeasures"
-      @click="drawControlMeasure(kind)"
-    >
-      <ControlMeasurePreview :kind="kind" class="size-5" />
-    </MainToolbarButton>
-    <MainToolbarButton
-      :title="canControlMeasures ? 'More control measures' : NO_ENGINE_SUPPORT"
-      :disabled="!canControlMeasures"
-      @click="pickerOpen = true"
-    >
-      <MoreGraphicsIcon class="size-5" />
-    </MainToolbarButton>
+      @select="drawControlMeasure"
+      @more="pickerOpen = true"
+    />
     <ControlMeasureDefaultsPopover :disabled="!canControlMeasures" />
     <div class="border-border mx-1 h-5 border-l" />
     <MainToolbarButton
