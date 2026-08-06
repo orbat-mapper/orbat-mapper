@@ -10,14 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
+import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
+import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
 const props = defineProps<{
   graphicKind: ControlMeasureId;
   textAmplifiers?: TextAmplifiers;
+  options?: TacticalGraphicOptions;
 }>();
 
 const emit = defineEmits<{
   update: [textAmplifiers: TextAmplifiers];
+  "update-options": [options: TacticalGraphicOptions];
 }>();
 
 const descriptors = computed<readonly TextAmplifierDescriptor[]>(
@@ -76,10 +80,17 @@ function setHostile(descriptor: TextAmplifierDescriptor, checked: boolean) {
           :height="116"
           :pad="14"
           :stroke-width="2"
+          :options="options"
           class="h-36 w-full"
         />
       </div>
     </div>
+
+    <ControlMeasureEchelonSelect
+      :graphic-kind="graphicKind"
+      :options="options"
+      @update="emit('update-options', $event)"
+    />
 
     <div v-if="descriptors.length" class="space-y-4">
       <div v-for="descriptor in descriptors" :key="descriptor.key" class="space-y-1.5">

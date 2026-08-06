@@ -2,7 +2,9 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { defineComponent, nextTick } from "vue";
+import { createPinia } from "pinia";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 const PreviewStub = defineComponent({
   name: "ControlMeasurePreview",
@@ -44,6 +46,40 @@ describe("ControlMeasureAmplifiers", () => {
     await nextTick();
 
     expect(wrapper.emitted("update")).toEqual([[{ N: "ENY" }]]);
+  });
+
+  it("shows and commits the echelon selector for echelon-bearing measures", async () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: {
+        graphicKind: "boundary",
+        options: { echelon: "battalion" },
+      },
+      global: {
+        plugins: [createPinia()],
+        stubs: { ControlMeasurePreview: PreviewStub },
+      },
+    });
+    const select = wrapper.findComponent(SymbolCodeSelect);
+    expect(select.props("label")).toBe("Echelon");
+    expect(
+      (select.props("items") as { code: string; sidc: string }[]).find(
+        (item) => item.code === "brigade",
+      )?.sidc,
+    ).toBe("10031000180000000000");
+
+    select.vm.$emit("update:modelValue", "brigade");
+    await nextTick();
+
+    expect(wrapper.emitted("update-options")).toEqual([[{ echelon: "brigade" }]]);
+  });
+
+  it("does not show an echelon selector for measures without one", () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: { graphicKind: "phase-line" },
+      global: { stubs: { ControlMeasurePreview: PreviewStub } },
+    });
+
+    expect(wrapper.findComponent(SymbolCodeSelect).exists()).toBe(false);
   });
 
   it("explains when a measure has no amplifier fields", () => {

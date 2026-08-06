@@ -18,6 +18,7 @@ import type {
   ProjectDimensions,
 } from "@orbat-mapper/control-measures/preview";
 import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
+import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
 /**
  * The box every preview is fit into. Unitless — the SVG scales to whatever size the
@@ -51,9 +52,10 @@ export function buildControlMeasurePreview(
   kind: ControlMeasureId,
   dims: ProjectDimensions = CONTROL_MEASURE_PREVIEW_DIMENSIONS,
   textAmplifiers?: TextAmplifiers,
+  options?: TacticalGraphicOptions,
 ): ControlMeasurePreviewModel {
   const { shapes, ok } = projectRenderToShapes(
-    renderRepresentative(kind, { textAmplifiers }),
+    renderRepresentative(kind, { textAmplifiers, options }),
     dims,
   );
   // The plain box fits geometry only, so an anchored label can hang outside it.

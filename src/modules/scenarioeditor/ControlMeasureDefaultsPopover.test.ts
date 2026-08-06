@@ -5,6 +5,7 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
+import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
@@ -104,6 +105,28 @@ describe("ControlMeasureDefaultsPopover", () => {
       style: { color: "#ff0000" },
     });
     expect(useControlMeasureToolStore().defaults.style).toEqual({ color: "#ff0000" });
+  });
+
+  it("shows the echelon selector in the palette for echelon-bearing measures", async () => {
+    const selected = item("cm-1", "boundary", undefined);
+    const { wrapper, updateControlMeasure } = mountPopover([selected]);
+    useSelectedItems().selectedFeatureIds.value = new Set([selected.id]);
+    await nextTick();
+
+    const select = wrapper.findComponent(SymbolCodeSelect);
+    expect(select.props("label")).toBe("Echelon");
+    expect(select.classes()).toContain("col-span-2");
+    expect(
+      (select.props("items") as { code: string; sidc: string }[]).find(
+        (item) => item.code === "brigade",
+      )?.sidc,
+    ).toBe("10031000180000000000");
+    select.vm.$emit("update:modelValue", "brigade");
+    await nextTick();
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { echelon: "brigade" },
+    });
   });
 
   it("preserves unrelated styling when changing a multi-selection", async () => {

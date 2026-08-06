@@ -9,6 +9,7 @@ import {
 import type { PreviewShape } from "@orbat-mapper/control-measures/preview";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
+import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 import {
   PREVIEW_VERTEX_RADIUS,
   buildControlMeasurePreview,
@@ -26,6 +27,7 @@ const props = withDefaults(
     kind: ControlMeasureId;
     strokeWidth?: number;
     textAmplifiers?: TextAmplifiers;
+    options?: TacticalGraphicOptions;
     width?: number;
     height?: number;
     pad?: number;
@@ -38,6 +40,7 @@ const preview = computed(() =>
     props.kind,
     { width: props.width, height: props.height, pad: props.pad },
     props.textAmplifiers,
+    props.options,
   ),
 );
 const geometry = computed(() => CONTROL_MEASURE_METADATA[props.kind]?.geometry);

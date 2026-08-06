@@ -46,7 +46,10 @@ import {
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import type {
+  NTacticalGraphicLayerItem,
+  TacticalGraphicOptions,
+} from "@/types/scenarioLayerItems";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
@@ -180,6 +183,10 @@ function doStyleUpdate(data: ControlMeasureStyleUpdate) {
 
 function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplifiers"]) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { textAmplifiers });
+}
+
+function doAmplifierOptionsUpdate(options: TacticalGraphicOptions) {
+  if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
 }
 
 function resetLabelPositions() {
@@ -362,7 +369,9 @@ function doDelete() {
             v-if="supported"
             :graphic-kind="item.graphicKind as ControlMeasureId"
             :text-amplifiers="item.textAmplifiers"
+            :options="resolvedOptions"
             @update="doAmplifierUpdate"
+            @update-options="doAmplifierOptionsUpdate"
           />
           <p v-else class="text-muted-foreground pt-4 text-sm">
             Amplifiers are unavailable for this unsupported control measure.

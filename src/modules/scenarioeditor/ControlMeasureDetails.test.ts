@@ -40,8 +40,8 @@ const ControlMeasureStyleSettingsStub = defineComponent({
 
 const ControlMeasureAmplifiersStub = defineComponent({
   name: "ControlMeasureAmplifiers",
-  props: ["graphicKind", "textAmplifiers"],
-  emits: ["update"],
+  props: ["graphicKind", "textAmplifiers", "options"],
+  emits: ["update", "update-options"],
   template: "<div data-test='amplifier-settings' />",
 });
 
@@ -200,6 +200,21 @@ describe("ControlMeasureDetails tabs", () => {
     await settings.vm.$emit("update", { T: "BRAVO" });
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       textAmplifiers: { T: "BRAVO" },
+    });
+  });
+
+  it("writes echelon options through the settle-first control-measure path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "boundary",
+      options: { echelon: "battalion" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+
+    expect(settings.props("options")).toEqual({ echelon: "battalion" });
+    await settings.vm.$emit("update-options", { echelon: "brigade" });
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { echelon: "brigade" },
     });
   });
 

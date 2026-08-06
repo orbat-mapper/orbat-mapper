@@ -17,6 +17,7 @@ import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
+import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -192,6 +193,11 @@ function updateSettings(data: ControlMeasureStyleUpdate) {
             primaryItem ? resolveControlMeasureOptions(primaryItem) : defaults.options
           "
           @update="updateSettings"
+        />
+        <ControlMeasureEchelonSelect
+          :graphic-kind="primaryItem?.graphicKind ?? lastKind"
+          :options="primaryItem ? resolveControlMeasureOptions(primaryItem) : defaults.options"
+          @update="updateSettings({ options: $event })"
         />
       </PanelDataGrid>
     </PopoverContent>
