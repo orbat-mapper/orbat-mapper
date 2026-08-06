@@ -15,8 +15,8 @@
  *   symbology — the model and `toControlMeasure` stay uniform, so an imported colour
  *   on a doctrinal kind still renders.
  *
- * `graphicKind` is `undefined` when editing the defaults, which belong to no kind yet:
- * every control is offered, and the gate is applied per kind when a graphic is born.
+ * Defaults are edited for the toolbar's currently chosen kind, so the same capability
+ * gate applies before and after a graphic is born.
  */
 import { computed, toRaw } from "vue";
 import type {
@@ -47,8 +47,12 @@ import {
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 
 const props = defineProps<{
-  /** `undefined` while editing the defaults — see the block comment. */
+  /** The edited item kind, or the kind that the toolbar defaults will create. */
   graphicKind?: ControlMeasureKind;
+  /** All edited kinds, when the host applies one control to a multi-selection. */
+  graphicKinds?: ControlMeasureKind[];
+  /** Identifies toolbar-default mode for its explanatory copy. */
+  editingDefaults?: boolean;
   /** Named `measureStyle`, not `style`: Vue reserves `style` for the fallthrough attribute. */
   measureStyle?: ControlMeasureStyle;
   standardIdentity?: SidValue;
@@ -61,12 +65,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: "update", value: ControlMeasureStyleUpdate): void }>();
 
-const isDefaults = computed(() => props.graphicKind === undefined);
+const isDefaults = computed(() => {
+  if (props.editingDefaults !== undefined) return props.editingDefaults;
+  return props.graphicKind === undefined;
+});
+const editedKinds = computed(() =>
+  props.graphicKinds?.length
+    ? props.graphicKinds
+    : props.graphicKind !== undefined
+      ? [props.graphicKind]
+      : [],
+);
 const showColor = computed(
-  () => isDefaults.value || isStyleableControlMeasureKind(props.graphicKind),
+  () =>
+    editedKinds.value.length > 0 &&
+    editedKinds.value.every(isStyleableControlMeasureKind),
 );
 const showFillPattern = computed(
-  () => isDefaults.value || canAuthorFillPattern(props.graphicKind),
+  () => editedKinds.value.length > 0 && editedKinds.value.every(canAuthorFillPattern),
 );
 
 /** What the graphic actually draws as, authored colour or identity projection. */
@@ -120,11 +136,12 @@ const statusModel = computed({
 /**
  * Smoothing is a generator *option*, not a style — the emit carries `options`, and the
  * whole object is replaced from a raw copy for the same reason `nextStyle` does it.
- * Offered only for the kinds whose registry entry declares a `smooth` param, and never
- * for the defaults, which belong to no kind (see `canSmoothControlMeasureKind`).
+ * Offered only for kinds whose registry entry declares a `smooth` param. Toolbar
+ * defaults now belong to the currently chosen kind, so smoothing can be sticky too.
  */
 const showSmooth = computed(
-  () => !isDefaults.value && canSmoothControlMeasureKind(props.graphicKind),
+  () =>
+    editedKinds.value.length > 0 && editedKinds.value.every(canSmoothControlMeasureKind),
 );
 
 const smoothModel = computed({
@@ -217,7 +234,6 @@ const fillPatternModel = computed({
   </template>
 
   <p v-if="isDefaults" class="text-muted-foreground col-span-2 text-xs">
-    Color and fill apply to the generic graphics only — every other kind takes its color
-    from its standard identity.
+    These settings apply to new {{ graphicKind ? "graphics of this kind" : "graphics" }}.
   </p>
 </template>

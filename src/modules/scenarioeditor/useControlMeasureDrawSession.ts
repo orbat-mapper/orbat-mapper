@@ -159,15 +159,13 @@ export function useControlMeasureDrawSession(
     const destinationLayerId = options.destinationLayerId?.();
     const surface = options.surface();
     if (!surface) return false;
+    const defaults = options.defaults?.(graphicKind) ?? {};
     openDestinationLayerId.value =
       destinationLayerId == null ? null : String(destinationLayerId);
     const draft = {
       kind: graphicKind,
-      options: draftOptionsForNewControlMeasure(graphicKind),
-      style: draftStyleForNewControlMeasure(
-        graphicKind,
-        options.defaults?.(graphicKind) ?? {},
-      ),
+      options: draftOptionsForNewControlMeasure(graphicKind, defaults),
+      style: draftStyleForNewControlMeasure(graphicKind, defaults),
     } as DrawMeasureDraft;
     surface
       .draw(draft, {
