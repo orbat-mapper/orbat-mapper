@@ -23,6 +23,7 @@ import type { TacticalDrawSurface } from "@/geo/engines/maplibre/tacticalDrawSur
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import {
   addScenarioControlMeasure,
+  draftOptionsForNewControlMeasure,
   draftStyleForNewControlMeasure,
   type NewControlMeasureDefaults,
 } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
@@ -141,6 +142,7 @@ export function useControlMeasureDrawSession(
     if (!surface) return;
     const draft = {
       kind: graphicKind,
+      options: draftOptionsForNewControlMeasure(graphicKind),
       style: draftStyleForNewControlMeasure(
         graphicKind,
         options.defaults?.(graphicKind) ?? {},
@@ -148,6 +150,11 @@ export function useControlMeasureDrawSession(
     } as DrawMeasureDraft;
     surface
       .draw(draft, {
+        // The default, stated because it is the whole point of seeding the pixel-form
+        // size options above: `"ground"` bakes them to meters at the resolution the
+        // gesture commits at, so the graphic is sized for the zoom it was drawn at and
+        // is zoom-independent afterwards. `"screen"` would persist the pixel intent.
+        sizeAnchor: "ground",
         onSession(live) {
           if (token !== generation) return;
           session = live;

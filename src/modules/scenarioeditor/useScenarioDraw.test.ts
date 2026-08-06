@@ -21,6 +21,7 @@ import {
   activeNativeMapKey,
 } from "@/modules/scenarioeditor/olInjects";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
+import type { RenderedUnitFeature } from "@/modules/scenarioeditor/unitSnapCandidates";
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),
@@ -129,14 +130,22 @@ function mountHarness({
   return { wrapper, draw: exposedDraw, engineRef, scenario, keyboardOwnerRef };
 }
 
-function createEngine() {
+function createEngine({
+  renderedFeatures = [],
+}: { renderedFeatures?: RenderedUnitFeature[] } = {}) {
   // The shared surface fake. Sessions are opened but never settled here: these tests
   // are about the armed-tool owner, not about what a settled session folds in — that
   // is `controlMeasureAuthoring.test.ts`.
   const fake = createTacticalDrawSurfaceFake();
+  // Stable across calls: `unitSnapCandidates` re-reads the native map on every snap
+  // resolution, so a fresh object per call would hide a captured-map regression.
+  const nativeMap = {
+    getLayersOrder: vi.fn(() => ["unitLayer"]),
+    queryRenderedFeatures: vi.fn(() => renderedFeatures),
+  };
   return {
     map: {
-      getNativeMap: () => ({ queryRenderedFeatures: vi.fn() }),
+      getNativeMap: () => nativeMap,
     },
     layers: {},
     draw: fake.surface,
@@ -238,15 +247,44 @@ describe("useScenarioDraw", () => {
 
     expect(snapping[snapping.length - 1]).toEqual({
       enabled: true,
-      sources: { graphics: true, graphicGeometry: true },
+      sources: {
+        graphics: true,
+        graphicGeometry: true,
+        external: expect.any(Function),
+      },
     });
 
     draw.snap.value = false;
     await nextTick();
     expect(snapping[snapping.length - 1]).toEqual({
       enabled: false,
-      sources: { graphics: true, graphicGeometry: true },
+      sources: {
+        graphics: true,
+        graphicGeometry: true,
+        external: expect.any(Function),
+      },
     });
+  });
+
+  it("offers rendered units to tactical-draw as external snap candidates", async () => {
+    const { engineRef } = mountHarness();
+    const engine = createEngine({
+      renderedFeatures: [
+        {
+          layer: { id: "unitLayer" },
+          geometry: { type: "Point", coordinates: [10, 20] },
+          properties: { id: "unit-1" },
+        },
+      ],
+    });
+    engineRef.value = engine;
+    await nextTick();
+    const { snapping } = engine.surfaceFake.calls;
+    const external = snapping[snapping.length - 1]?.sources?.external;
+
+    expect(
+      external?.({ coordinate: [0, 0], pixel: [100, 100], interaction: "draw" }),
+    ).toEqual([{ id: "unit:unit-1", coordinate: [10, 20], kind: "unit", priority: 1 }]);
   });
 
   it("gates control measures on the engine having a tactical-draw surface", async () => {

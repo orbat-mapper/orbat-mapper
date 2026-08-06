@@ -37,6 +37,7 @@ import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   resolveControlMeasureControlPoints,
+  resolveControlMeasureOptions,
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
@@ -51,6 +52,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   selectedIds: SelectedScenarioFeatures;
@@ -97,6 +99,11 @@ const kindName = computed(() => {
 // would disagree with what is drawn.
 const controlPointCount = computed(() =>
   item.value ? resolveControlMeasureControlPoints(item.value).length : 0,
+);
+// Projected too, for the same reason as `strokeColor` and `controlPointCount`: a
+// recorded options patch is what the map is drawing with at the current time.
+const resolvedOptions = computed(() =>
+  item.value ? resolveControlMeasureOptions(item.value) : undefined,
 );
 const hDescription = computed(() => renderMarkdown(item.value?.description || ""));
 
@@ -157,6 +164,17 @@ function toggleEditShape() {
   }
   scenarioDraw.startControlMeasureEdit(item.value.id);
 }
+
+/**
+ * Additive to reshape rather than a separate mode the panel swaps into: the handles and
+ * the transform box stay live, so nothing is taken away by turning it on. The flag
+ * lives on the session composable, not here, because it is sticky across edits — see
+ * `useControlMeasureEditSession`.
+ */
+const labelDragModel = computed({
+  get: () => scenarioDraw.controlMeasureLabelDrag.value,
+  set: (value: boolean) => scenarioDraw.setControlMeasureLabelDrag(value),
+});
 
 function doZoom() {
   const [first] = [...props.selectedIds];
@@ -235,14 +253,25 @@ function doDelete() {
 
     <div
       v-if="isEditingShape"
-      class="border-border bg-muted/50 mb-4 flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
+      class="border-border bg-muted/50 mb-4 space-y-2 rounded-md border p-2 text-sm"
     >
-      <p class="text-muted-foreground">
-        Drag the handles to reshape. Ctrl+Z undoes within the edit.
-      </p>
-      <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
-        Done
-      </Button>
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-muted-foreground">
+          {{
+            labelDragModel
+              ? "Click a label to select it, then drag or rotate it."
+              : "Drag the handles to reshape."
+          }}
+          Ctrl+Z undoes within the edit.
+        </p>
+        <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
+          Done
+        </Button>
+      </div>
+      <label class="flex items-center gap-2">
+        <Switch v-model="labelDragModel" />
+        <span>Move labels</span>
+      </label>
     </div>
 
     <template v-if="item">
@@ -257,6 +286,7 @@ function doDelete() {
           :standard-identity="item.standardIdentity"
           :color-mode="item.colorMode"
           :status="item.status"
+          :options="resolvedOptions"
           @update="doStyleUpdate"
         />
       </PanelDataGrid>

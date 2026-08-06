@@ -167,6 +167,8 @@ function createMockMap() {
     addImage: vi.fn(),
     removeImage: vi.fn(),
     queryRenderedFeatures: vi.fn(() => []),
+    // The interactive query scopes itself to the live style's layer ids.
+    getLayersOrder: vi.fn(() => [...layers.keys()]),
     getCanvas: vi.fn(() => canvas),
     getCanvasContainer: vi.fn(() => canvasContainer),
     dragPan,
@@ -1617,6 +1619,37 @@ describe("MlMapLogic", () => {
       layerId: "layer-1",
       options: { noZoom: true },
     });
+  });
+
+  /**
+   * Unscoped, the hover query made MapLibre evaluate every layer in the style — the
+   * basemap and the whole tactical-draw stack included — only for the collector to
+   * discard everything but these four families. It also surfaced as a warning from the
+   * adapter's per-feature style expressions on every mouse move.
+   */
+  it("queries only the layers whose hits it keeps", () => {
+    const mockMap = createMockMap();
+    mockMap.map.getLayersOrder.mockReturnValue([
+      "background",
+      "positron-water",
+      "unitLayer",
+      "scenario-feature-layer-1-line",
+      "scenario-kml-layer-kml-1-point-circle",
+      "tactical-draw-graphics-group-1-circle",
+    ]);
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({ layerItem: undefined })),
+    });
+
+    mockMap.emit("mousemove", { point: { x: 12, y: 20 }, originalEvent: {} });
+
+    const [, options] = mockMap.map.queryRenderedFeatures.mock.calls.at(-1)!;
+    expect(options?.layers).toEqual([
+      "unitLayer",
+      "scenario-feature-layer-1-line",
+      "scenario-kml-layer-kml-1-point-circle",
+    ]);
   });
 
   it("opens rendered KML features as reference feature details on click", () => {

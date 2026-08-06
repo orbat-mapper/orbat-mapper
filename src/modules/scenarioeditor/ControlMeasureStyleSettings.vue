@@ -25,10 +25,12 @@ import type {
 } from "@orbat-mapper/control-measures";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { standardIdentityValues } from "@/symbology/values";
 import type { SidValue } from "@/symbology/values";
 import type {
   TacticalGraphicColorMode,
+  TacticalGraphicOptions,
   TacticalGraphicStatus,
 } from "@/types/scenarioLayerItems";
 import { resolveControlMeasureColorFrom } from "@/geo/controlMeasures";
@@ -38,7 +40,9 @@ import {
   type ControlMeasureFillPattern,
   type ControlMeasureStyleUpdate,
   canAuthorFillPattern,
+  canSmoothControlMeasureKind,
   fillPatternLabel,
+  isControlMeasureSmoothed,
   isStyleableControlMeasureKind,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 
@@ -50,6 +54,8 @@ const props = defineProps<{
   standardIdentity?: SidValue;
   colorMode?: TacticalGraphicColorMode;
   status?: TacticalGraphicStatus;
+  /** The stored generator options — the source of the smoothing state. */
+  options?: TacticalGraphicOptions;
 }>();
 
 const emit = defineEmits<{ (e: "update", value: ControlMeasureStyleUpdate): void }>();
@@ -108,6 +114,24 @@ const colorModeModel = computed({
 const statusModel = computed({
   get: () => props.status ?? "present",
   set: (value: string) => emit("update", { status: value as TacticalGraphicStatus }),
+});
+
+/**
+ * Smoothing is a generator *option*, not a style — the emit carries `options`, and the
+ * whole object is replaced from a raw copy for the same reason `nextStyle` does it.
+ * Offered only for the kinds whose registry entry declares a `smooth` param, and never
+ * for the defaults, which belong to no kind (see `canSmoothControlMeasureKind`).
+ */
+const showSmooth = computed(
+  () => !isDefaults.value && canSmoothControlMeasureKind(props.graphicKind),
+);
+
+const smoothModel = computed({
+  get: () => isControlMeasureSmoothed(props.graphicKind, props.options),
+  set: (value: boolean) =>
+    emit("update", {
+      options: { ...toRaw(props.options), smooth: value } as TacticalGraphicOptions,
+    }),
 });
 
 /** `""` is the "no authored pattern" option — the library's own default then applies. */
@@ -176,6 +200,17 @@ const fillPatternModel = computed({
         {{ fillPatternLabel(pattern) }}
       </NativeSelectOption>
     </NativeSelect>
+  </template>
+
+  <template v-if="showSmooth">
+    <label for="cm-smooth" class="self-center">Smooth</label>
+    <div>
+      <Switch
+        id="cm-smooth"
+        v-model="smoothModel"
+        title="Round the corners by curving through the control points"
+      />
+    </div>
   </template>
 
   <p v-if="isDefaults" class="text-muted-foreground col-span-2 text-xs">

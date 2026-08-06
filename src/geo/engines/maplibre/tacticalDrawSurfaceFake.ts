@@ -28,10 +28,12 @@ import { TacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
   DrawMeasureDraft,
   DrawSession,
+  EditMode,
   EditSession,
   Graphic,
   GraphicSnapshot,
   PickEvent,
+  SizeAnchor,
   SnappingOptions,
   TacticalDrawAbortReason,
 } from "@orbat-mapper/tactical-draw";
@@ -84,6 +86,9 @@ export interface FakeEditSessionHandle {
   readonly settled: boolean;
   readonly undoCount: number;
   readonly redoCount: number;
+  /** The mode set the session is in: seeded by `edit()`, then moved by `setModes`. */
+  readonly modes: readonly EditMode[];
+  setSessionModes(modes: readonly EditMode[]): void;
   /** Move the working geometry. This is what a settled edit folds into the store. */
   setControlPoints(points: Position[]): void;
   /** Replace the working graphic wholesale (options, amplifiers, style, …). */
@@ -101,7 +106,10 @@ export interface TacticalDrawSurfaceFake {
   readonly editSession: FakeEditSessionHandle | null;
   readonly calls: {
     draw: DrawMeasureDraft[];
+    /** The size anchor each `draw()` / `edit()` was opened with, parallel to the above. */
+    drawSizeAnchor: (SizeAnchor | undefined)[];
     edit: ControlMeasure[];
+    editSizeAnchor: (SizeAnchor | undefined)[];
     cancel: (TacticalDrawAbortReason | undefined)[];
     render: (readonly Graphic[])[];
     highlight: (readonly string[])[];
@@ -134,7 +142,9 @@ export function createTacticalDrawSurfaceFake(
 
   const calls: TacticalDrawSurfaceFake["calls"] = {
     draw: [],
+    drawSizeAnchor: [],
     edit: [],
+    editSizeAnchor: [],
     cancel: [],
     render: [],
     highlight: [],
@@ -232,6 +242,7 @@ export function createTacticalDrawSurfaceFake(
     let settled = false;
     let undoCount = 0;
     let redoCount = 0;
+    let modes: readonly EditMode[] = [];
     const historyState = { canUndo: false, canRedo: false };
     const historyListeners = new Set<(state: typeof historyState) => void>();
     let commitHandler: ((snap: GraphicSnapshot<ControlMeasure>) => void) | null = null;
@@ -275,6 +286,12 @@ export function createTacticalDrawSurfaceFake(
         settled = true;
         settle(new TacticalDrawAbortError("session"));
       },
+      get modes() {
+        return modes;
+      },
+      setModes(next: readonly EditMode[]) {
+        modes = [...next];
+      },
       onCommit(handler: (snap: GraphicSnapshot<ControlMeasure>) => void) {
         commitHandler = handler;
         return () => (commitHandler = null);
@@ -292,6 +309,13 @@ export function createTacticalDrawSurfaceFake(
       },
       get redoCount() {
         return redoCount;
+      },
+      /** The mode set the session is currently in — seeded by `edit()`, then `setModes`. */
+      get modes() {
+        return modes;
+      },
+      setSessionModes(next: readonly EditMode[]) {
+        modes = [...next];
       },
       setControlPoints(points) {
         working = { ...working, controlPoints: [...points] } as ControlMeasure;
@@ -331,9 +355,13 @@ export function createTacticalDrawSurfaceFake(
     },
     draw(
       draft: DrawMeasureDraft,
-      drawOptions?: { onSession?: (session: DrawSession) => void },
+      drawOptions?: {
+        sizeAnchor?: SizeAnchor;
+        onSession?: (session: DrawSession) => void;
+      },
     ) {
       calls.draw.push(draft);
+      calls.drawSizeAnchor.push(drawOptions?.sizeAnchor);
       if (detached) return Promise.reject(detachedAbort());
       return new Promise<GraphicSnapshot<ControlMeasure>>((resolve, reject) => {
         drawHandle = createDrawSession(draft, (result) => {
@@ -346,9 +374,14 @@ export function createTacticalDrawSurfaceFake(
     },
     edit(
       measure: ControlMeasure,
-      editOptions?: { onSession?: (session: EditSession) => void },
+      editOptions?: {
+        sizeAnchor?: SizeAnchor;
+        modes?: readonly EditMode[];
+        onSession?: (session: EditSession) => void;
+      },
     ) {
       calls.edit.push(measure);
+      calls.editSizeAnchor.push(editOptions?.sizeAnchor);
       if (detached) return Promise.reject(detachedAbort());
       return new Promise<GraphicSnapshot<ControlMeasure>>((resolve, reject) => {
         editHandle = createEditSession(measure, (result) => {
@@ -356,6 +389,7 @@ export function createTacticalDrawSurfaceFake(
           if (result instanceof TacticalDrawAbortError) reject(result);
           else resolve(result);
         });
+        if (editOptions?.modes) editHandle.setSessionModes(editOptions.modes);
         editOptions?.onSession?.(editHandle.session);
       });
     },
