@@ -17,7 +17,8 @@ import type {
   PreviewShape,
   ProjectDimensions,
 } from "@orbat-mapper/control-measures/preview";
-import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
+import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
 /**
  * The box every preview is fit into. Unitless — the SVG scales to whatever size the
@@ -36,8 +37,17 @@ export const PREVIEW_FALLBACK_FONT_SIZE = 14;
 /** Radius of a `circle` shape, which the library leaves to the consumer. */
 export const PREVIEW_VERTEX_RADIUS = 3;
 
-export function previewFontSize(shape: PreviewShape): number {
-  return shape.heightPx ?? PREVIEW_FALLBACK_FONT_SIZE;
+export interface PreviewFontSizing {
+  fallbackFontSize?: number;
+  maxFontSize?: number;
+}
+
+export function previewFontSize(
+  shape: PreviewShape,
+  sizing: PreviewFontSizing = {},
+): number {
+  const size = shape.heightPx ?? sizing.fallbackFontSize ?? PREVIEW_FALLBACK_FONT_SIZE;
+  return Math.min(size, sizing.maxFontSize ?? Number.POSITIVE_INFINITY);
 }
 
 export interface ControlMeasurePreviewModel {
@@ -50,8 +60,18 @@ export interface ControlMeasurePreviewModel {
 export function buildControlMeasurePreview(
   kind: ControlMeasureId,
   dims: ProjectDimensions = CONTROL_MEASURE_PREVIEW_DIMENSIONS,
+  textAmplifiers?: TextAmplifiers,
+  options?: TacticalGraphicOptions,
+  fontSizing?: PreviewFontSizing,
 ): ControlMeasurePreviewModel {
-  const { shapes, ok } = projectRenderToShapes(renderRepresentative(kind), dims);
+  const { shapes, ok } = projectRenderToShapes(
+    renderRepresentative(kind, { textAmplifiers, options }),
+    dims,
+  );
   // The plain box fits geometry only, so an anchored label can hang outside it.
-  return { shapes, ok, viewBox: viewBoxString(shapes, dims, previewFontSize) };
+  return {
+    shapes,
+    ok,
+    viewBox: viewBoxString(shapes, dims, (shape) => previewFontSize(shape, fontSizing)),
+  };
 }

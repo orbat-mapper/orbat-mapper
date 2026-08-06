@@ -21,7 +21,7 @@ import {
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import type { DrawType } from "@/geo/drawTypes";
+import { canFinishPathDraw, type DrawType } from "@/geo/drawTypes";
 import { unwrapPositionRelative } from "@/geo/longitude";
 import {
   getRenderedMidpoint as getMapLibreRenderedMidpoint,
@@ -464,13 +464,7 @@ export function useMapLibreDrawInteraction(
       cancelDrawing();
       return true;
     }
-    const minimum = currentDrawType.value === "Polygon" ? 3 : 2;
-    if (
-      (currentDrawType.value !== "LineString" && currentDrawType.value !== "Polygon") ||
-      count < minimum
-    ) {
-      return false;
-    }
+    if (!canFinishPathDraw(currentDrawType.value, count)) return false;
     finishPathDrawing(false);
     return true;
   }

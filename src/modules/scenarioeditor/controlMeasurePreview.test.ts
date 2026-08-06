@@ -25,6 +25,21 @@ describe("the picker preview", () => {
     expect(width).toBeGreaterThan(CONTROL_MEASURE_PREVIEW_DIMENSIONS.width);
   });
 
+  it("applies authored text amplifiers to the representative preview", () => {
+    const { shapes } = buildControlMeasurePreview(
+      "phase-line",
+      CONTROL_MEASURE_PREVIEW_DIMENSIONS,
+      { T: "BLUE" },
+    );
+
+    expect(
+      shapes.some((shape) => shape.type === "text" && shape.text?.includes("BLUE")),
+    ).toBe(true);
+    expect(
+      shapes.some((shape) => shape.type === "text" && shape.text?.includes("ECHO")),
+    ).toBe(false);
+  });
+
   it("renders every registered kind without throwing", () => {
     for (const kind of CONTROL_MEASURE_IDS) {
       expect(() => buildControlMeasurePreview(kind)).not.toThrow();

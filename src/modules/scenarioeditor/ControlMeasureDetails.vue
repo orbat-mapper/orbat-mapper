@@ -46,11 +46,16 @@ import {
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import type {
+  NTacticalGraphicLayerItem,
+  TacticalGraphicOptions,
+} from "@/types/scenarioLayerItems";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
+import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
+import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
@@ -76,10 +81,11 @@ const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const tabList = computed(() => {
   const tabs = [
     { label: "Style", value: "0" },
-    { label: "Details", value: "1" },
-    { label: "State", value: "2" },
+    { label: "Amplifiers", value: "1" },
+    { label: "Details", value: "2" },
+    { label: "State", value: "3" },
   ];
-  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "3" });
+  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "4" });
   return tabs;
 });
 
@@ -93,7 +99,7 @@ const selectedTabString = computed({
 watch(
   () => uiStore.debugMode,
   (debugMode) => {
-    if (!debugMode && selectedTab.value === 3) selectedTab.value = 0;
+    if (!debugMode && selectedTab.value === 4) selectedTab.value = 0;
   },
   { immediate: true },
 );
@@ -151,7 +157,7 @@ watch(
 const isEditMode = ref(false);
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
-  selectedTab.value = 1;
+  selectedTab.value = 2;
 }
 
 function showStylePanel() {
@@ -174,6 +180,14 @@ function updateName(name: string) {
  */
 function doStyleUpdate(data: ControlMeasureStyleUpdate) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, data);
+}
+
+function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplifiers"]) {
+  if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { textAmplifiers });
+}
+
+function doControlMeasureOptionsUpdate(options: TacticalGraphicOptions) {
+  if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
 }
 
 function resetLabelPositions() {
@@ -349,9 +363,28 @@ function doDelete() {
               :show-heading="false"
               @update="doStyleUpdate"
             />
+            <ControlMeasureEchelonSelect
+              :graphic-kind="item.graphicKind as ControlMeasureId"
+              :options="resolvedOptions"
+              inline
+              @update="doControlMeasureOptionsUpdate"
+            />
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
+          <ControlMeasureAmplifiers
+            v-if="supported"
+            :graphic-kind="item.graphicKind as ControlMeasureId"
+            :text-amplifiers="item.textAmplifiers"
+            :options="resolvedOptions"
+            @update="doAmplifierUpdate"
+            @update-options="doControlMeasureOptionsUpdate"
+          />
+          <p v-else class="text-muted-foreground pt-4 text-sm">
+            Amplifiers are unavailable for this unsupported control measure.
+          </p>
+        </TabsContent>
+        <TabsContent value="2" class="mx-4">
           <PanelDataGrid class="mt-4">
             <div class="text-muted-foreground">Kind</div>
             <div class="truncate">{{ kindName }}</div>
@@ -370,12 +403,12 @@ function doDelete() {
             <div v-html="hDescription"></div>
           </div>
         </TabsContent>
-        <TabsContent value="2" class="mx-4">
+        <TabsContent value="3" class="mx-4">
           <ScenarioLayerItemState :item="item" heading="Control measure state" />
         </TabsContent>
         <TabsContent
           v-if="uiStore.debugMode"
-          value="3"
+          value="4"
           class="prose prose-sm dark:prose-invert mx-4 max-w-none"
         >
           <pre>{{ item }}</pre>

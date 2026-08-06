@@ -12,7 +12,8 @@ import {
   getGeometryIcon,
 } from "@/modules/scenarioeditor/featureLayerUtils";
 import type { ScenarioFeatureActions } from "@/types/constants";
-import type { NGeometryLayerItem } from "@/types/internalModels";
+import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
+import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import {
   draggable,
   dropTargetForElements,
@@ -34,7 +35,7 @@ import type { MenuItemData } from "@/components/types";
 
 interface Props {
   feature: NGeometryLayerItem;
-  layer: any;
+  layer: Pick<NScenarioLayer, "isHidden">;
   selected?: boolean;
   active?: boolean;
   menuItems?: MenuItemData<ScenarioFeatureActions>[];
@@ -77,7 +78,7 @@ onMounted(() => {
       canDrop: ({ source }) => {
         const data = source.data;
         if (!isScenarioFeatureDragItem(data)) return false;
-        return data.feature !== props.feature;
+        return data.feature !== props.feature && !isNTacticalGraphicLayerItem(data.feature);
       },
       getData: ({ input, element }) => {
         const data = getScenarioFeatureDragItem({ feature: props.feature });

@@ -29,28 +29,27 @@ import type {
   TacticalGraphicStatus,
 } from "@/types/scenarioLayerItems";
 import type { SidValue } from "@/symbology/values";
-import { nanoid } from "@/utils";
 import { resolveControlMeasureStyle } from "@/geo/controlMeasures";
 import {
-  CONTROL_MEASURE_LAYER_NAME,
+  createControlMeasureLayer,
   getControlMeasureLayerGroups,
 } from "@/modules/scenarioeditor/controlMeasureLayers";
 
 /**
  * The fields a newly drawn control measure is born with.
  *
- * The three projections from ADR-0006 plus the authored `style`, which is the
- * library's `ControlMeasureStyle` **verbatim** and is stored as-is. Nothing derived
- * gets in: the identity/status projections still resolve at read time, and it is the
- * caller's job to have narrowed `style` to what the kind may be authored with — see
- * `newControlMeasureDefaults` in `controlMeasureStyleOptions.ts`, where that UI-only
- * gate lives.
+ * The three projections from ADR-0006 plus authored `style` and sticky generator
+ * `options`. Nothing derived gets in: identity/status still resolve at read time, and
+ * the caller narrows style/options to capabilities of the chosen kind — see
+ * `newControlMeasureDefaults` in `controlMeasureStyleOptions.ts`.
  */
 export interface NewControlMeasureDefaults {
   standardIdentity?: SidValue;
   colorMode?: TacticalGraphicColorMode;
   status?: TacticalGraphicStatus;
   style?: ControlMeasureStyle;
+  /** Sticky generator options are narrowed per kind before a draw starts. */
+  options?: TacticalGraphicOptions;
 }
 
 /**
@@ -75,6 +74,7 @@ function newItemShell(
     ...(defaults.colorMode !== undefined ? { colorMode: defaults.colorMode } : {}),
     ...(defaults.status !== undefined ? { status: defaults.status } : {}),
     ...(defaults.style !== undefined ? { style: { ...defaults.style } } : {}),
+    ...(defaults.options !== undefined ? { options: { ...defaults.options } } : {}),
   };
 }
 
@@ -95,7 +95,7 @@ export function draftStyleForNewControlMeasure(
 
 /**
  * The generator options a new control measure is drawn with: the kind's own registry
- * defaults, verbatim.
+ * defaults, with supported session-sticky options applied over them.
  *
  * This is what makes an echelon glyph or a label come out sized for the zoom it was
  * drawn at rather than at a fixed ground size. Several kinds declare both a meter and a
@@ -117,8 +117,12 @@ export function draftStyleForNewControlMeasure(
  */
 export function draftOptionsForNewControlMeasure(
   measureKind: ControlMeasure["kind"],
+  defaults: NewControlMeasureDefaults = {},
 ): TacticalGraphicOptions {
-  return { ...(getDefaultOptions(measureKind) as TacticalGraphicOptions) };
+  return {
+    ...(getDefaultOptions(measureKind) as TacticalGraphicOptions),
+    ...defaults.options,
+  };
 }
 
 /**
@@ -158,13 +162,7 @@ export function toTacticalGraphicLayerItem(
 function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | undefined {
   const existing = getControlMeasureLayerGroups(scenario.geo.layersItems.value)[0];
   if (existing) return existing.layer.id;
-  return scenario.geo.addLayer({
-    id: nanoid(),
-    name: CONTROL_MEASURE_LAYER_NAME,
-    specialization: "controlMeasure",
-    items: [],
-    _isNew: false,
-  })?.id;
+  return createControlMeasureLayer(scenario.geo)?.id;
 }
 
 function nextControlMeasureName(

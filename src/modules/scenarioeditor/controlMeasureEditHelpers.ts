@@ -3,8 +3,9 @@
  * `controlMeasureDrawHelpers.ts`, and pure in the same way: no map, no session, just
  * the fold from a settled `ControlMeasure` back onto the stored item.
  *
- * ADR-0006: exactly one store write per settled session, so an edit is one undo step
- * however many vertex drags it contained.
+ * ADR-0006: at most one store write per settled session, so a changed edit is one undo
+ * step however many vertex drags it contained. The session owner filters unchanged
+ * settles before reaching this helper.
  */
 import { cloneControlMeasure } from "@orbat-mapper/control-measures";
 import type { ControlMeasure } from "@orbat-mapper/control-measures";
@@ -67,13 +68,13 @@ export interface ApplyControlMeasureEditOptions {
 }
 
 /**
- * The one store write a settled edit session performs.
+ * The one store write a changed, settled edit session performs.
  *
  * With recording off it is a single top-level write. With recording on **shape only**
  * becomes timed: `controlPoints` goes into a `state[]` patch at the current time, while
  * option and amplifier edits stay top-level and timeless — there is no sensible reading
  * of "this graphic was a different *kind of option* at T". The two writes are grouped so
- * a settled session is still exactly one undo step (ADR-0006).
+ * a changed session is still exactly one undo step (ADR-0006).
  *
  * Creation deliberately ignores recording, exactly as `addScenarioDrawFeature` does.
  */

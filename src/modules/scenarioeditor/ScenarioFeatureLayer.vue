@@ -21,6 +21,7 @@ import {
   ScenarioLayerActions,
 } from "@/types/constants";
 import type { FeatureId } from "@/types/scenarioGeoModels";
+import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { onMounted, onUnmounted, ref } from "vue";
 import {
@@ -44,6 +45,8 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import DropIndicator from "@/components/DropIndicator.vue";
 import { Button } from "@/components/ui/button";
+import { isControlMeasureLayer } from "@/modules/scenarioeditor/controlMeasureLayers";
+import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 
 const props = defineProps<{
   layer: NScenarioLayer;
@@ -129,12 +132,22 @@ onMounted(() => {
     }),
     dropTargetForElements({
       element: elRef.value!,
-      canDrop: ({ source }) =>
-        (isScenarioFeatureDragItem(source.data) &&
-          source.data.feature._pid !== props.layer.id) ||
-        (isScenarioFeatureLayerDragItem(source.data) &&
-          source.data.layer.id !== props.layer.id) ||
-        isScenarioMapLayerDragItem(source.data),
+      canDrop: ({ source }) => {
+        if (isScenarioFeatureDragItem(source.data)) {
+          return (
+            !isNTacticalGraphicLayerItem(source.data.feature) &&
+            source.data.feature._pid !== props.layer.id
+          );
+        }
+        if (isScenarioFeatureLayerDragItem(source.data)) {
+          return (
+            !isControlMeasureLayer(
+              source.data.layer as unknown as NScenarioOverlayLayer,
+            ) && source.data.layer.id !== props.layer.id
+          );
+        }
+        return isScenarioMapLayerDragItem(source.data);
+      },
       onDragEnter: ({ self }) => {
         isDragOver.value = true;
         const closestEdge = extractClosestEdge(self.data);

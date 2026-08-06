@@ -22,7 +22,7 @@ import LineString from "ol/geom/LineString";
 import type { EventsKey } from "ol/events";
 import { unByKey } from "ol/Observable";
 
-import type { DrawType } from "@/geo/drawTypes";
+import { canFinishPathDraw, type DrawType } from "@/geo/drawTypes";
 
 export type { DrawType };
 
@@ -327,13 +327,7 @@ export function useEditingInteraction(
       cancel();
       return true;
     }
-    const minimum = currentDrawType.value === "Polygon" ? 3 : 2;
-    if (
-      (currentDrawType.value !== "LineString" && currentDrawType.value !== "Polygon") ||
-      count < minimum
-    ) {
-      return false;
-    }
+    if (!canFinishPathDraw(currentDrawType.value, count)) return false;
     if (!currentDrawInteraction.finishDrawing()) return false;
     // `onDrawEnd` leaves the interaction armed when add-multiple is enabled; an
     // explicit Done never does.

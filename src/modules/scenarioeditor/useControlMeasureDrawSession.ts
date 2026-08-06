@@ -21,6 +21,7 @@ import type { ControlMeasureKind } from "@orbat-mapper/control-measures";
 import type { TScenario } from "@/scenariostore";
 import type { TacticalDrawSurface } from "@/geo/engines/maplibre/tacticalDrawSurface";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
+import { useSelectedItems } from "@/stores/selectedStore";
 import {
   addScenarioControlMeasure,
   draftOptionsForNewControlMeasure,
@@ -80,6 +81,7 @@ export interface ControlMeasureDrawSession {
 export function useControlMeasureDrawSession(
   options: UseControlMeasureDrawSessionOptions,
 ): ControlMeasureDrawSession {
+  const { activeFeatureId } = useSelectedItems();
   const progress = shallowRef<ControlMeasureDrawProgress | null>(null);
   const openDestinationLayerId = shallowRef<string | null>(null);
 
@@ -137,6 +139,9 @@ export function useControlMeasureDrawSession(
       options.onSettled({ committed: false, graphicKind });
       return;
     }
+    // Match the ordinary-feature draw path: a successfully created graphic becomes
+    // the sole active feature immediately, which also opens its details panel.
+    activeFeatureId.value = added.id;
     // Required by the library's contract, not an optimisation: it hands the override
     // back and expects the host's next render to be authoritative.
     options.renderFeed?.render("commit");
@@ -154,15 +159,13 @@ export function useControlMeasureDrawSession(
     const destinationLayerId = options.destinationLayerId?.();
     const surface = options.surface();
     if (!surface) return false;
+    const defaults = options.defaults?.(graphicKind) ?? {};
     openDestinationLayerId.value =
       destinationLayerId == null ? null : String(destinationLayerId);
     const draft = {
       kind: graphicKind,
-      options: draftOptionsForNewControlMeasure(graphicKind),
-      style: draftStyleForNewControlMeasure(
-        graphicKind,
-        options.defaults?.(graphicKind) ?? {},
-      ),
+      options: draftOptionsForNewControlMeasure(graphicKind, defaults),
+      style: draftStyleForNewControlMeasure(graphicKind, defaults),
     } as DrawMeasureDraft;
     surface
       .draw(draft, {
