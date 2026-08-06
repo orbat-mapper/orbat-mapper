@@ -19,6 +19,7 @@ import {
   isTacticalDrawProbeEnabled,
   startTacticalDrawProbe,
 } from "@/geo/engines/maplibre/tacticalDrawProbe";
+import { useTacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useGeoStore } from "@/stores/geoStore";
@@ -27,7 +28,10 @@ import {
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  scenarioDrawKey,
+  tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
+import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
 import ScenarioMapModeShell from "@/modules/scenarioeditor/ScenarioMapModeShell.vue";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
@@ -37,6 +41,7 @@ import MaplibreSearchScenarioActions from "@/modules/maplibreview/MaplibreSearch
 import MapEditorMainToolbar from "@/modules/scenarioeditor/MapEditorMainToolbar.vue";
 import MapEditorUnitTrackToolbar from "@/modules/scenarioeditor/MapEditorUnitTrackToolbar.vue";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
+import ControlMeasureDrawHint from "@/modules/scenarioeditor/ControlMeasureDrawHint.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -98,6 +103,21 @@ provide(
   activeScenarioMapEngineKey,
   scenarioMapEngineRef as ShallowRef<ScenarioMapEngine | undefined>,
 );
+// Owned here rather than in `MlMapLogic` because this is where the tactical-draw
+// surface is constructed and destroyed, and because M2 hoists `useScenarioDraw` to
+// this same view — `arm()` settles through the provided feed.
+const tacticalGraphicRenderFeed = useTacticalGraphicRenderFeed(activeScenario, {
+  surface: () => scenarioMapEngineRef.value?.draw,
+});
+provide(tacticalGraphicRenderFeedKey, tacticalGraphicRenderFeed);
+// The armed-tool owner lives here, not in `MapEditorDrawToolbar`, which is `v-if`'d.
+// The engine ref is passed rather than injected: Vue never resolves a component's own
+// `provide`. Arming settles through the feed provided just above.
+const scenarioDraw = useScenarioDraw({
+  engine: scenarioMapEngineRef,
+  renderFeed: tacticalGraphicRenderFeed,
+});
+provide(scenarioDrawKey, scenarioDraw);
 provide(routeDetailsPanelKey, {
   activeRoutingUnitName,
   addRouteLeg,
@@ -190,6 +210,10 @@ onMounted(async () => {
 });
 
 function disposeMaplibreBinding() {
+  // Settle before the surface goes: an open session must not outlive the façade it is
+  // running on. The feed's own scope-dispose settle fires too late for this path.
+  scenarioDraw.arm({ kind: "none" });
+  tacticalGraphicRenderFeed.settle("teardown");
   cleanupTacticalDrawProbe?.();
   cleanupTacticalDrawProbe = null;
   cleanupScenarioBinding?.();
@@ -258,6 +282,12 @@ function onCloseActiveDetailsPanel() {
             class="flex-auto bg-radial from-gray-800 to-gray-950"
           />
         </MaplibreContextMenu>
+        <div
+          class="pointer-events-none absolute top-14 left-1/2 z-10 -translate-x-1/2"
+          data-testid="control-measure-draw-hint"
+        >
+          <ControlMeasureDrawHint />
+        </div>
       </div>
       <MlMapLogic
         v-if="mlMap"

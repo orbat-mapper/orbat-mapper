@@ -1,0 +1,197 @@
+{
+  "id": "control-measure-fixture",
+  "type": "ORBAT-mapper",
+  "version": "3.4.0",
+  "meta": {
+    "createdDate": "2025-06-01T00:00:00.000Z",
+    "lastModifiedDate": "2025-06-01T00:00:00.000Z"
+  },
+  "name": "Control measure fixture",
+  "description": "Hand-authored M1 fixture: a scenario that contains control measures, an annotation and a measurement, all with timed state, plus one graphicKind this build cannot draw.",
+  "startTime": "2025-06-01T00:00:00Z",
+  "timeZone": "UTC",
+  "symbologyStandard": "2525d",
+  "sides": [],
+  "events": [],
+  "layerStack": [
+    {
+      "id": "layer-control-measures",
+      "kind": "overlay",
+      "name": "Control measures",
+      "items": [
+        {
+          "id": "cm-phase-line",
+          "kind": "tacticalGraphic",
+          "name": "PL BLUE",
+          "graphicKind": "phase-line",
+          "standardIdentity": "3",
+          "controlPoints": [
+            [10, 60],
+            [11, 60]
+          ],
+          "textAmplifiers": { "T": "BLUE" },
+          "state": [
+            {
+              "t": "2025-06-01T12:00:00Z",
+              "patch": {
+                "controlPoints": [
+                  [10, 61],
+                  [11, 61]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "cm-boundary-planned",
+          "kind": "tacticalGraphic",
+          "name": "Planned boundary",
+          "graphicKind": "boundary",
+          "standardIdentity": "6",
+          "status": "planned",
+          "controlPoints": [
+            [10, 59],
+            [11, 59]
+          ]
+        },
+        {
+          "id": "cm-monochrome",
+          "kind": "tacticalGraphic",
+          "name": "Monochrome phase line",
+          "graphicKind": "phase-line",
+          "standardIdentity": "3",
+          "colorMode": "monochrome",
+          "controlPoints": [
+            [10, 58],
+            [11, 58]
+          ]
+        },
+        {
+          "id": "cm-authored-style",
+          "kind": "tacticalGraphic",
+          "name": "Authored style",
+          "graphicKind": "phase-line",
+          "standardIdentity": "3",
+          "status": "planned",
+          "style": { "color": "#ff00ff", "strokeDash": [1, 2] },
+          "controlPoints": [
+            [10, 57],
+            [11, 57]
+          ]
+        },
+        {
+          "id": "cm-late",
+          "kind": "tacticalGraphic",
+          "name": "Not yet in force",
+          "graphicKind": "phase-line",
+          "visibleFromT": "2025-06-01T06:00:00Z",
+          "controlPoints": [
+            [10, 56],
+            [11, 56]
+          ]
+        },
+        {
+          "id": "cm-hidden",
+          "kind": "tacticalGraphic",
+          "name": "Manually hidden",
+          "graphicKind": "phase-line",
+          "isHidden": true,
+          "controlPoints": [
+            [10, 55],
+            [11, 55]
+          ]
+        },
+        {
+          "id": "cm-unknown-kind",
+          "kind": "tacticalGraphic",
+          "name": "From a newer library",
+          "graphicKind": "phase-line-from-the-future",
+          "controlPoints": [
+            [10, 54],
+            [11, 54]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "layer-mixed",
+      "kind": "overlay",
+      "name": "Mixed",
+      "items": [
+        {
+          "id": "geo-point",
+          "kind": "geometry",
+          "name": "HQ",
+          "geometry": { "type": "Point", "coordinates": [10, 60] },
+          "geometryMeta": { "geometryKind": "Point" },
+          "style": {},
+          "state": [
+            {
+              "id": "geo-point-state-1",
+              "t": "2025-06-01T12:00:00Z",
+              "patch": {
+                "geometry": { "type": "Point", "coordinates": [12, 62] }
+              }
+            }
+          ]
+        },
+        {
+          "id": "cm-bottom-layer",
+          "kind": "tacticalGraphic",
+          "name": "Bottom layer boundary",
+          "graphicKind": "boundary",
+          "controlPoints": [
+            [12, 60],
+            [13, 60]
+          ]
+        },
+        {
+          "id": "annotation-note",
+          "kind": "annotation",
+          "annotationType": "label",
+          "name": "Note",
+          "anchor": { "type": "point", "position": [10, 60] },
+          "content": { "text": "before" },
+          "visibleFromT": "2025-06-01T06:00:00Z",
+          "state": [
+            {
+              "t": "2025-06-01T12:00:00Z",
+              "patch": { "content": { "text": "after" } }
+            }
+          ]
+        },
+        {
+          "id": "measurement-distance",
+          "kind": "measurement",
+          "measurementType": "distance",
+          "name": "Frontage",
+          "precision": 1,
+          "source": {
+            "type": "geometry",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [10, 60],
+                [11, 61]
+              ]
+            }
+          },
+          "state": [
+            {
+              "id": "measurement-state-1",
+              "t": "2025-06-01T12:00:00Z",
+              "patch": { "precision": 3 }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "rangeRingGroups": [],
+    "statuses": [],
+    "supplyClasses": [],
+    "supplyUoMs": [],
+    "symbolFillColors": []
+  }
+}

@@ -25,6 +25,7 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
+import { useOwnedUndoRedo } from "@/modules/scenarioeditor/useOwnedUndoRedo";
 import { useShareHistory } from "@/composables/scenarioShare";
 import { LockIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
@@ -41,10 +42,12 @@ const emit = defineEmits<{
   uiAction: [value: UiAction];
 }>();
 
+const activeScenario = injectStrict(activeScenarioKey);
 const {
-  store: { undo, redo, canRedo, canUndo },
   io: { hasDistinctOpenedBaseline, hasSavedBaseline },
-} = injectStrict(activeScenarioKey);
+} = activeScenario;
+// Routed through the armed-tool owner, like the toolbar's Undo button and Ctrl+Z.
+const { undo, redo, canUndo, canRedo } = useOwnedUndoRedo(activeScenario);
 
 const route = useRoute();
 const uiSettings = useUiStore();

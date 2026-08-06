@@ -9,7 +9,11 @@ import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import { isNGeometryLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isNGeometryLayerItem,
+  isNTacticalGraphicLayerItem,
+} from "@/types/scenarioLayerItems";
+import { controlMeasureExtentFeature } from "@/geo/controlMeasures";
 import { featureCollection } from "@turf/helpers";
 import turfCenter from "@turf/center";
 import turfCircle from "@turf/circle";
@@ -289,7 +293,14 @@ export function useScenarioFeatureActions(
 
   function toGeoJsonFeature(featureId: FeatureId) {
     const item = state.layerItemMap[featureId];
-    if (!item || !isNGeometryLayerItem(item)) return null;
+    if (!item) return null;
+    // Zoom and pan are shared chrome over every layer-item kind — the same Z/P
+    // shortcuts and the same context menu act on whatever is selected. A control
+    // measure has no `geometry`, so it frames through its control points instead.
+    if (isNTacticalGraphicLayerItem(item)) {
+      return controlMeasureExtentFeature(item) ?? null;
+    }
+    if (!isNGeometryLayerItem(item)) return null;
     const geometry = item._state?.geometry ?? item.geometry;
     if (!geometry) return null;
     const radius = "radius" in item.geometryMeta ? item.geometryMeta.radius : undefined;

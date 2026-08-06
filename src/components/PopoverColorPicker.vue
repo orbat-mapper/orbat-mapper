@@ -17,6 +17,17 @@ const props = withDefaults(defineProps<Props>(), {
   showNone: false,
 });
 
+/**
+ * Fired once, when the picker closes.
+ *
+ * The custom `<input type="color">` below is bound with `v-model`, so it emits on
+ * every frame of an OS colour drag. A host that must not see that stream — control
+ * measures, where the tactical-draw library never releases a fill-pattern texture and
+ * so leaks ~16 kB per intermediate colour (ADR-0006) — buffers the model locally and
+ * writes on this event instead.
+ */
+const emit = defineEmits<{ (e: "settle"): void }>();
+
 const selectedColor = defineModel<string>({ default: defaultColors[1].selectedColor });
 
 const uiStore = useUiStore();
@@ -88,6 +99,7 @@ function onOpen(isOpen: boolean) {
         selectedColor: "ring-black",
       });
     }
+    emit("settle");
   }
 }
 </script>

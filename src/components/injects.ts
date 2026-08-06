@@ -12,6 +12,11 @@ import type {
   MeasurementInteractionOptions,
   MeasurementTypes,
 } from "@/geo/measurementTypes";
+import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
+import type {
+  ScenarioDraw,
+  ScenarioKeyboardOwner,
+} from "@/modules/scenarioeditor/useScenarioDraw";
 
 export const activeParentKey = Symbol("Active unit") as InjectionKey<
   Ref<EntityId | undefined | null>
@@ -45,7 +50,9 @@ export const searchActionsKey = Symbol("Search actions") as InjectionKey<{
   onImageLayerSelectHook: EventHook<{ layerId: FeatureId }>;
   onFeatureSelectHook: EventHook<{
     featureId: FeatureId;
-    layerId: FeatureId;
+    // Optional: the handler resolves the owning layer from the item itself when it is
+    // not supplied, which is what a tactical-draw pick can offer.
+    layerId?: FeatureId;
     options?: { noZoom?: boolean };
   }>;
   onEventSelectHook: EventHook<EventSearchResult>;
@@ -87,3 +94,31 @@ export const measurementInteractionFactoryKey = Symbol(
 export const routeDetailsPanelKey = Symbol(
   "Route details panel",
 ) as InjectionKey<RouteDetailsPanelContext>;
+
+/**
+ * The control-measure render feed. Provided by the MapLibre scenario view, which owns
+ * the tactical-draw surface. M2's session owner registers its settle handler here and
+ * re-renders through it after folding a commit; on OpenLayers it is simply absent.
+ */
+export const tacticalGraphicRenderFeedKey = Symbol(
+  "Tactical graphic render feed",
+) as InjectionKey<TacticalGraphicRenderFeed>;
+
+/**
+ * The armed-tool owner. Provided by whichever scenario map view is mounted, so the
+ * draw toolbar and the details panel share one instance instead of each creating its
+ * own — the toolbar is `v-if`'d and unmounts, and control-measure editing is driven
+ * from the details panel with the toolbar closed.
+ */
+export const scenarioDrawKey = Symbol("Scenario draw") as InjectionKey<ScenarioDraw>;
+
+/**
+ * Registration holder for the keyboard owner (Escape / Enter / Ctrl+Z).
+ *
+ * Provided by `ScenarioEditor`, *above* the map views, because that is where undo/redo
+ * is bound and a component cannot inject what its descendant provides. The map view's
+ * `useScenarioDraw` writes itself in and clears it on scope dispose.
+ */
+export const scenarioKeyboardOwnerKey = Symbol("Scenario keyboard owner") as InjectionKey<
+  ShallowRef<ScenarioKeyboardOwner | null>
+>;

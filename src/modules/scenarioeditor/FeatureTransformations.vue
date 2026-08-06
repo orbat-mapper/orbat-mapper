@@ -51,9 +51,12 @@ const selectedItems = computed(() => {
   if (props.unitMode) {
     return Array.from(selectedUnitIds.value).map((id) => scn.helpers.getUnitById(id));
   } else {
-    return Array.from(selectedFeatureIds.value).map(
-      (id) => scn.geo.getGeometryLayerItemById(id)?.layerItem,
-    );
+    // Filtered, not mapped one-to-one: a mixed selection falls through to the feature
+    // panel, and `getGeometryLayerItemById` returns nothing for a control measure —
+    // an `undefined` here would reach `selectedItems.value[0]` as the transform target.
+    return Array.from(selectedFeatureIds.value)
+      .map((id) => scn.geo.getGeometryLayerItemById(id)?.layerItem)
+      .filter((layerItem) => !!layerItem);
   }
 });
 const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);

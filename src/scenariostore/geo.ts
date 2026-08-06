@@ -19,14 +19,19 @@ import type {
 } from "@/types/internalModels";
 import type {
   CurrentGeometryLayerItemState,
+  CurrentScenarioLayerItemState,
   FullScenarioLayerItemsLayer,
   GeometryLayerItem,
   ScenarioLayerItem,
+  ScenarioLayerItemUpdate,
+  TacticalGraphicLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import {
-  createInitialGeometryLayerItemState,
+  computeScenarioLayerItemHidden,
   isNGeometryLayerItem,
-  projectGeometryLayerItemState,
+  isNTacticalGraphicLayerItem,
+  projectScenarioLayerItemStateAt,
+  TACTICAL_GRAPHIC_UPDATE_FIELDS,
 } from "@/types/scenarioLayerItems";
 import type {
   NScenarioOverlayLayer,
@@ -61,8 +66,15 @@ export type ScenarioFeatureLayerEvent =
   | { type: "removeLayer" | "moveLayer"; id: FeatureId }
   | { type: "updateLayer"; id: FeatureId; data: ScenarioLayerUpdate }
   | { type: "deleteFeature"; id: FeatureId }
-  | { type: "updateFeature"; id: FeatureId; data: GeometryLayerItemUpdate }
-  | { type: "addFeature"; id: FeatureId; data: NGeometryLayerItem }
+  | {
+      type: "updateFeature";
+      id: FeatureId;
+      data:
+        | GeometryLayerItemUpdate
+        | ScenarioLayerItemUpdate
+        | TacticalGraphicLayerItemUpdate;
+    }
+  | { type: "addFeature"; id: FeatureId; data: NScenarioLayerItem }
   | { type: "moveFeature"; id: FeatureId; fromLayer?: FeatureId; toLayer?: FeatureId };
 
 export type UpdateOptions = {
@@ -131,11 +143,25 @@ function getReferenceLayerFromMap(
   return isScenarioReferenceLayer(layer) ? (layer as NScenarioReferenceLayer) : undefined;
 }
 
-function updateGeometryItemHidden(feature: NGeometryLayerItem, currentTime: number) {
-  const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-  const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
-  feature._hidden = timeHidden || !!feature.isHidden;
+/**
+ * Kind-agnostic base pass. `_hidden` lives on `ScenarioLayerItemBase`, so this
+ * applies to every layer-item kind, not just geometry.
+ */
+function updateLayerItemHidden(item: NScenarioLayerItem, currentTime: number) {
+  item._hidden = computeScenarioLayerItemHidden(item, currentTime);
+}
+
+/**
+ * Each kind narrows `_state` to its own current-state interface, so writing the
+ * shared base-pass result needs one deliberate widening here rather than a cast at
+ * every call site. The fold itself is kind-correct: it only ever merges patches
+ * that came off this item's own `state[]`.
+ */
+function setProjectedLayerItemState(
+  item: NScenarioLayerItem,
+  projected: CurrentScenarioLayerItemState,
+) {
+  (item as { _state?: CurrentScenarioLayerItemState | null })._state = projected;
 }
 
 function mergeGeometryUserData(
@@ -572,15 +598,19 @@ export function useGeo(store: NewScenarioStore) {
     mapLayerEvent.trigger({ type: "remove", id: layerId, data: {} });
   }
 
+  // Kind-agnostic: `tacticalGraphic` items are added through this same path, so a
+  // control measure is one `layerItemMap` entry and one undo step like any other layer
+  // item. `kind` still defaults to `"geometry"`, which is what every pre-existing
+  // caller relies on.
   function addFeature(
-    data: Omit<NGeometryLayerItem, "_pid">,
+    data: ScenarioLayerItem,
     layerId: FeatureId,
     options: UpdateOptions = {},
   ) {
     const noEmit = options.noEmit ?? false;
-    const newFeature = klona(data) as NGeometryLayerItem;
+    const newFeature = klona(data) as NScenarioLayerItem;
     if (!newFeature.id) newFeature.id = nanoid();
-    if (!newFeature.kind) newFeature.kind = "geometry";
+    if (!newFeature.kind) (newFeature as NGeometryLayerItem).kind = "geometry";
     newFeature._pid = layerId;
     update(
       (s) => {
@@ -686,7 +716,7 @@ export function useGeo(store: NewScenarioStore) {
           if (_hidden !== undefined) feature._hidden = _hidden;
           if (_state !== undefined) feature._state = _state;
 
-          updateGeometryItemHidden(feature, s.currentTime);
+          updateLayerItemHidden(feature, s.currentTime);
         },
         {
           label: isGeometry ? "updateFeatureGeometry" : "updateFeature",
@@ -707,7 +737,7 @@ export function useGeo(store: NewScenarioStore) {
       }
       const { geometry, geometryMeta, style, userData, ...topLevelData } = data;
       Object.assign(layerItem, topLevelData);
-      updateGeometryItemHidden(layerItem, state.currentTime);
+      updateLayerItemHidden(layerItem, state.currentTime);
     }
     if (data.state) {
       updateFeatureState(featureId);
@@ -717,6 +747,140 @@ export function useGeo(store: NewScenarioStore) {
     if (isGeometry) {
       featureLayerEvent.trigger({ type: "moveFeature", id: featureId }).then();
     }
+  }
+
+  /**
+   * Kind-agnostic counterpart to `updateFeature` for the shared base fields.
+   *
+   * `updateFeature` narrows to geometry before it reaches `style`/`geometry`/
+   * `geometryMeta`, so it silently no-ops on a `tacticalGraphic`. The layers panel's
+   * visibility and lock toggles are shared chrome over every kind, so they go through
+   * here instead. Geometry callers keep using `updateFeature` — this is deliberately
+   * the smaller door, not a replacement.
+   */
+  function updateLayerItem(
+    itemId: FeatureId,
+    data: ScenarioLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+
+    // No return value: the immer producer treats a returned value as a replacement
+    // for the whole draft.
+    const apply = (item: NScenarioLayerItem | undefined, currentTime: number) => {
+      if (!item) return;
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined) return;
+        (item as unknown as Record<string, unknown>)[key] = value;
+      });
+      updateLayerItemHidden(item, currentTime);
+    };
+
+    if (undoable) {
+      update(
+        (s) => {
+          apply(s.layerItemMap[itemId], s.currentTime);
+        },
+        { label: "updateFeature", value: itemId },
+      );
+    } else {
+      if (!state.layerItemMap[itemId]) return;
+      apply(state.layerItemMap[itemId], state.currentTime);
+    }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
+  }
+
+  /**
+   * The `tacticalGraphic` counterpart to `updateFeature`.
+   *
+   * `updateFeature` narrows to geometry and silently no-ops on a control measure, and
+   * `updateLayerItem` only carries the shared base fields — neither can persist what a
+   * settled edit session produced. This is the third, deliberately narrow door: it
+   * copies only `TACTICAL_GRAPHIC_UPDATE_FIELDS`, so `state`/`_state`/`_pid`/`kind`
+   * stay unreachable and the timed projection cannot be corrupted through it.
+   *
+   * One `update()` is one undo step, which is what ADR-0006's "exactly one store write
+   * per settled session" asks for. Recording — writing shape into `state[]` instead of
+   * top-level — is step 17's; this always writes top-level.
+   */
+  function updateTacticalGraphic(
+    itemId: FeatureId,
+    data: TacticalGraphicLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    const undoable = options.undoable ?? true;
+    const noEmit = options.noEmit ?? false;
+
+    // No return value: the immer producer treats a returned value as a replacement
+    // for the whole draft.
+    const apply = (item: NScenarioLayerItem | undefined) => {
+      if (!item || !isNTacticalGraphicLayerItem(item)) return;
+      TACTICAL_GRAPHIC_UPDATE_FIELDS.forEach((field) => {
+        const value = data[field];
+        if (value === undefined) return;
+        (item as unknown as Record<string, unknown>)[field] = value;
+      });
+    };
+
+    if (undoable) {
+      update(
+        (s) => {
+          apply(s.layerItemMap[itemId]);
+        },
+        { label: "updateFeature", value: itemId },
+      );
+    } else {
+      apply(state.layerItemMap[itemId]);
+    }
+    if (noEmit) return;
+    featureLayerEvent.trigger({ type: "updateFeature", id: itemId, data }).then();
+  }
+
+  /**
+   * The `tacticalGraphic` counterpart to `addFeatureStateGeometry`: record **shape**
+   * into `state[]` at `atTime` rather than writing it top-level.
+   *
+   * Shape is the only recordable thing on a control measure — option, style and
+   * amplifier edits are timeless and go through `updateTacticalGraphic`. The patch type
+   * is deliberately wider than this writer, so an imported scenario carrying a richer
+   * patch still projects (`TacticalGraphicLayerItemState`).
+   */
+  function addTacticalGraphicStateControlPoints(
+    itemId: FeatureId,
+    controlPoints: Position[],
+    atTime?: number,
+  ) {
+    update(
+      (s) => {
+        const item = s.layerItemMap[itemId];
+        if (!item || !isNTacticalGraphicLayerItem(item)) return;
+        const t = atTime ?? s.currentTime;
+        const nextState = [...(item.state ?? [])];
+        for (let i = 0, len = nextState.length; i < len; i++) {
+          if (t < nextState[i].t) {
+            nextState.splice(i, 0, { id: nanoid(), t, patch: { controlPoints } });
+            item.state = nextState;
+            return;
+          } else if (t === nextState[i].t) {
+            nextState[i] = {
+              ...nextState[i],
+              patch: { ...nextState[i].patch, controlPoints },
+            };
+            item.state = nextState;
+            return;
+          }
+        }
+        nextState.push({ id: nanoid(), t, patch: { controlPoints } });
+        item.state = nextState;
+      },
+      { label: "updateFeatureState", value: itemId },
+    );
+
+    // `_state` is recomputed from the whole projection rather than assigned inline:
+    // an earlier patch may carry fields this writer never touches.
+    updateFeatureState(itemId);
   }
 
   function deleteFeatureStateEntry(featureId: FeatureId, index: number) {
@@ -729,27 +893,31 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(featureId);
   }
 
-  function updateFeatureState(featureId: FeatureId, undoable = false) {
-    const feature = getGeometryLayerItemFromMap(state.layerItemMap, featureId);
+  /**
+   * Kind-agnostic base pass: fold `state[]` onto `_state` at the current time.
+   *
+   * Geometry layers its own seed on top (`createInitialScenarioLayerItemState`), so
+   * the geometry projection is byte-identical to what this used to compute; every
+   * other kind now projects at all, which it never did before.
+   */
+  function updateFeatureState(featureId: FeatureId) {
+    const feature = state.layerItemMap[featureId];
     if (!feature) return;
-    const timestamp = state.currentTime;
     if (!feature.state || !feature.state.length) {
       store.state.featureStateCounter++;
       feature._state = undefined;
+      // The projection just went away, so a patched visibility went with it.
+      updateLayerItemHidden(feature, state.currentTime);
       return;
     }
-    let currentState = createInitialGeometryLayerItemState(feature);
-    for (const s of feature.state) {
-      if (s.t <= timestamp) {
-        currentState = {
-          ...currentState,
-          ...projectGeometryLayerItemState(s),
-        };
-      } else {
-        break;
-      }
-    }
-    feature._state = currentState;
+    setProjectedLayerItemState(
+      feature,
+      projectScenarioLayerItemStateAt(feature, state.currentTime),
+    );
+    // After the projection, never before: `_hidden` resolves the visibility fields
+    // through `_state`, so a timed patch of `isHidden` only lands if it is computed
+    // from the fresh projection.
+    updateLayerItemHidden(feature, state.currentTime);
     store.state.featureStateCounter++;
   }
 
@@ -776,9 +944,12 @@ export function useGeo(store: NewScenarioStore) {
       items.push({ id: layer.id, type: "layer", name: layer.name });
       const mappedFeatures: LayerFeatureItem[] = layer.items.map((layerItem) => {
         if (!isNGeometryLayerItem(layerItem)) {
+          // Non-geometry kinds have no `geometryKind`, so the item kind itself is the
+          // discriminator search results and icons key off. It used to be a flat
+          // `"Point"` placeholder, which made every control measure look like a marker.
           return {
             id: layerItem.id,
-            type: "Point",
+            type: layerItem.kind,
             name: layerItem.name || "",
             description: layerItem.description,
             _pid: layer.id,
@@ -821,6 +992,9 @@ export function useGeo(store: NewScenarioStore) {
     duplicateFeature,
     deleteFeature,
     updateFeature,
+    updateLayerItem,
+    updateTacticalGraphic,
+    addTacticalGraphicStateControlPoints,
     deleteFeatureStateEntry,
     itemsInfo,
     layerItemsLayers,

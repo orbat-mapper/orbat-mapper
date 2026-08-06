@@ -10,8 +10,11 @@ import {
   type GeometryLayerItem,
   type NScenarioLayerItem,
   isNGeometryLayerItem,
+  isNTacticalGraphicLayerItem,
   toGeometryLayerItemGeoJsonProperties,
 } from "@/types/scenarioLayerItems";
+import type { Feature, GeoJsonProperties, Geometry } from "geojson";
+import { controlMeasureToGeoJsonFeatures } from "@/importexport/export/controlMeasureGeoJson";
 
 export function useGeoJsonConverter(scenario: TScenario) {
   const { geo, unitActions } = scenario;
@@ -41,27 +44,34 @@ export function useGeoJsonConverter(scenario: TScenario) {
 
   function convertScenarioFeaturesToGeoJson(options: Partial<GeoJsonSettings> = {}) {
     const includeIdInProperties = options.includeIdInProperties ?? false;
-    return featureCollection(
-      geo.layerItemsLayers.value
-        .map((layer) => layer.items)
-        .flat(1)
-        .filter((layerItem): layerItem is NScenarioLayerItem & GeometryLayerItem =>
-          isNGeometryLayerItem(layerItem),
-        )
-        .map((f) => {
-          const { id, geometry } = f;
-          const properties = toGeometryLayerItemGeoJsonProperties(f);
-          return {
-            type: "Feature",
-            id: options.includeId ? id : undefined,
-            properties: {
-              id: includeIdInProperties ? id : undefined,
-              ...properties,
-            },
-            geometry,
-          };
-        }),
-    );
+    const layerItems = geo.layerItemsLayers.value.map((layer) => layer.items).flat(1);
+
+    const geometryFeatures: Feature<Geometry, GeoJsonProperties>[] = layerItems
+      .filter((layerItem): layerItem is NScenarioLayerItem & GeometryLayerItem =>
+        isNGeometryLayerItem(layerItem),
+      )
+      .map((f) => {
+        const { id, geometry } = f;
+        const properties = toGeometryLayerItemGeoJsonProperties(f);
+        return {
+          type: "Feature",
+          id: options.includeId ? id : undefined,
+          properties: {
+            id: includeIdInProperties ? id : undefined,
+            ...properties,
+          },
+          geometry,
+        };
+      });
+
+    // Control measures fan out: one stored item becomes N rendered features. They are
+    // appended after the plain shapes rather than interleaved, mirroring the map, where
+    // the tactical-draw stack draws above the flat scenario feature source (ADR-0006).
+    const controlMeasureFeatures = layerItems
+      .filter(isNTacticalGraphicLayerItem)
+      .flatMap((item) => controlMeasureToGeoJsonFeatures(item, options));
+
+    return featureCollection([...geometryFeatures, ...controlMeasureFeatures]);
   }
 
   return { convertUnitsToGeoJson, convertScenarioFeaturesToGeoJson };
