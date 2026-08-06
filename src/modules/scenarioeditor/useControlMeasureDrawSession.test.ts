@@ -15,6 +15,7 @@ import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDr
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import { useSelectedItems } from "@/stores/selectedStore";
 import "@/dayjs";
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -123,6 +124,21 @@ describe("useControlMeasureDrawSession", () => {
     // One settled session, one undo step.
     scenario.store.undo();
     expect(controlMeasureIds(scenario)).toEqual([]);
+  });
+
+  it("selects the newly created control measure", async () => {
+    const { activeFeatureId, selectedFeatureIds } = useSelectedItems();
+    selectedFeatureIds.value.clear();
+    selectedFeatureIds.value.add("previous-feature");
+    const { draw, fake } = setup();
+
+    draw.start("phase-line");
+    fake.drawSession!.commit();
+    await nextTick();
+    await nextTick();
+
+    expect(activeFeatureId.value).toBe("cm-1");
+    expect([...selectedFeatureIds.value]).toEqual(["cm-1"]);
   });
 
   it("treats an abort as a normal outcome that writes nothing", async () => {
