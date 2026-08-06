@@ -38,6 +38,13 @@ const ControlMeasureStyleSettingsStub = defineComponent({
   template: "<div data-test='style-settings' />",
 });
 
+const ControlMeasureAmplifiersStub = defineComponent({
+  name: "ControlMeasureAmplifiers",
+  props: ["graphicKind", "textAmplifiers"],
+  emits: ["update"],
+  template: "<div data-test='amplifier-settings' />",
+});
+
 const baseStubs = {
   DetailsPanelHeader: {
     template:
@@ -49,6 +56,7 @@ const baseStubs = {
   ScrollTabs: ScrollTabsStub,
   TabsContent: { template: "<section><slot /></section>" },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
+  ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
   ScenarioLayerItemState: true,
   EditMetaForm: true,
   IconButton: {
@@ -129,7 +137,7 @@ describe("ControlMeasureDetails tabs", () => {
     setActivePinia(pinia);
   });
 
-  it("shows Style, Details and State, with Debug gated by debug mode", async () => {
+  it("shows Style, Amplifiers, Details and State, with Debug gated by debug mode", async () => {
     const uiStore = useUiStore();
     const tabStore = useTabStore();
     const { wrapper } = mountDetails();
@@ -137,20 +145,22 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Details", value: "1" },
-      { label: "State", value: "2" },
+      { label: "Amplifiers", value: "1" },
+      { label: "Details", value: "2" },
+      { label: "State", value: "3" },
     ]);
 
     uiStore.debugMode = true;
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Details", value: "1" },
-      { label: "State", value: "2" },
-      { label: "Debug", value: "3" },
+      { label: "Amplifiers", value: "1" },
+      { label: "Details", value: "2" },
+      { label: "State", value: "3" },
+      { label: "Debug", value: "4" },
     ]);
 
-    tabStore.controlMeasureDetailsTab = 3;
+    tabStore.controlMeasureDetailsTab = 4;
     uiStore.debugMode = false;
     await nextTick();
     expect(tabStore.controlMeasureDetailsTab).toBe(0);
@@ -158,7 +168,7 @@ describe("ControlMeasureDetails tabs", () => {
 
   it("falls back from a remembered Debug tab when mounting outside debug mode", () => {
     const tabStore = useTabStore();
-    tabStore.controlMeasureDetailsTab = 3;
+    tabStore.controlMeasureDetailsTab = 4;
 
     mountDetails();
 
@@ -176,7 +186,21 @@ describe("ControlMeasureDetails tabs", () => {
     expect(tabStore.featureDetailsTab).toBe(2);
 
     await wrapper.find("button[title='Edit data']").trigger("click");
-    expect(tabStore.controlMeasureDetailsTab).toBe(1);
+    expect(tabStore.controlMeasureDetailsTab).toBe(2);
+  });
+
+  it("writes text amplifiers through the settle-first control-measure path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      textAmplifiers: { T: "ALPHA" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureAmplifiersStub);
+
+    expect(settings.props("graphicKind")).toBe("phase-line");
+    expect(settings.props("textAmplifiers")).toEqual({ T: "ALPHA" });
+    await settings.vm.$emit("update", { T: "BRAVO" });
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      textAmplifiers: { T: "BRAVO" },
+    });
   });
 
   it("keeps style writes on the settle-first control-measure path", async () => {
