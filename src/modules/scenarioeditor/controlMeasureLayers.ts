@@ -32,11 +32,12 @@ export function createControlMeasureLayer(
 ): NScenarioOverlayLayer | undefined {
   return geo.addLayer({
     id: nanoid(),
+    kind: "overlay",
     name,
     specialization: "controlMeasure",
     items: [],
     _isNew: false,
-  } as NScenarioOverlayLayer);
+  });
 }
 
 export function isControlMeasureLayer(
