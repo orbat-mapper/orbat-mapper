@@ -89,7 +89,15 @@ jobs:
           # Check if PR is still open before trying to close it
           PR_STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
           if [ "$PR_STATE" = "OPEN" ]; then
-            gh pr close "$PR_NUMBER" --delete-branch=false --comment "Closed after approval-driven hard sync. Deploy now points to main without a merge commit."
+            if ! gh pr close "$PR_NUMBER" --delete-branch=false --comment "Closed after approval-driven hard sync. Deploy now points to main without a merge commit."; then
+              # Updating deploy to the PR head can make GitHub mark the PR merged
+              # between the state check and close request. Treat that race as success.
+              PR_STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
+              if [ "$PR_STATE" != "MERGED" ] && [ "$PR_STATE" != "CLOSED" ]; then
+                exit 1
+              fi
+              echo "PR became $PR_STATE before it could be closed."
+            fi
           else
             echo "PR state is $PR_STATE. No manual close required."
           fi
