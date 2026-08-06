@@ -8,7 +8,7 @@ import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 
 const PreviewStub = defineComponent({
   name: "ControlMeasurePreview",
-  props: ["kind", "textAmplifiers"],
+  props: ["kind", "textAmplifiers", "options"],
   template: "<div data-test='preview' />",
 });
 
@@ -71,6 +71,28 @@ describe("ControlMeasureAmplifiers", () => {
     await nextTick();
 
     expect(wrapper.emitted("update-options")).toEqual([[{ echelon: "brigade" }]]);
+  });
+
+  it("keeps strong-point preview geometry representative while reflecting its echelon", () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: {
+        graphicKind: "strong-point",
+        options: {
+          echelon: "battalion",
+          echelonSize: 750,
+          smooth: false,
+          smoothResolution: 16,
+        },
+      },
+      global: {
+        plugins: [createPinia()],
+        stubs: { ControlMeasurePreview: PreviewStub },
+      },
+    });
+
+    expect(wrapper.getComponent(PreviewStub).props("options")).toEqual({
+      echelon: "battalion",
+    });
   });
 
   it("does not show an echelon selector for measures without one", () => {

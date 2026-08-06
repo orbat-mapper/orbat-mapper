@@ -32,6 +32,12 @@ const previewAmplifiers = computed<TextAmplifiers>(() =>
     descriptors.value.map((descriptor) => [descriptor.key, `<${descriptor.key}>`]),
   ),
 );
+// The registry's representative sample owns preview-only geometry tuning (for
+// example Strong Point's rounded outline and compact tic/echelon sizing). Only
+// the option edited in this panel should override that sample.
+const previewOptions = computed<TacticalGraphicOptions | undefined>(() =>
+  props.options?.echelon === undefined ? undefined : { echelon: props.options.echelon },
+);
 const values = ref<TextAmplifiers>({});
 
 watch(
@@ -79,8 +85,11 @@ function setHostile(descriptor: TextAmplifierDescriptor, checked: boolean) {
           :width="232"
           :height="116"
           :pad="14"
-          :stroke-width="2"
-          :options="options"
+          :stroke-width="1"
+          :fallback-font-size="10"
+          :max-font-size="16"
+          non-scaling-stroke
+          :options="previewOptions"
           class="h-36 w-full"
         />
       </div>
