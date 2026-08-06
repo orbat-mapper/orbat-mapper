@@ -8,7 +8,7 @@ import {
 } from "@orbat-mapper/control-measures/preview";
 import type { PreviewShape } from "@orbat-mapper/control-measures/preview";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
-import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
 import {
   PREVIEW_VERTEX_RADIUS,
   buildControlMeasurePreview,
@@ -22,11 +22,24 @@ import {
  * colour the same way an icon component does.
  */
 const props = withDefaults(
-  defineProps<{ kind: ControlMeasureId; strokeWidth?: number }>(),
-  { strokeWidth: 4 },
+  defineProps<{
+    kind: ControlMeasureId;
+    strokeWidth?: number;
+    textAmplifiers?: TextAmplifiers;
+    width?: number;
+    height?: number;
+    pad?: number;
+  }>(),
+  { strokeWidth: 4, width: 100, height: 100, pad: 8 },
 );
 
-const preview = computed(() => buildControlMeasurePreview(props.kind));
+const preview = computed(() =>
+  buildControlMeasurePreview(
+    props.kind,
+    { width: props.width, height: props.height, pad: props.pad },
+    props.textAmplifiers,
+  ),
+);
 const geometry = computed(() => CONTROL_MEASURE_METADATA[props.kind]?.geometry);
 
 // Pattern ids are document-global, so every instance gets its own prefix.

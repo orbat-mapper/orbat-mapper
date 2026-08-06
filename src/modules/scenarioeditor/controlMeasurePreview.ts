@@ -17,7 +17,7 @@ import type {
   PreviewShape,
   ProjectDimensions,
 } from "@orbat-mapper/control-measures/preview";
-import type { ControlMeasureId } from "@orbat-mapper/control-measures";
+import type { ControlMeasureId, TextAmplifiers } from "@orbat-mapper/control-measures";
 
 /**
  * The box every preview is fit into. Unitless — the SVG scales to whatever size the
@@ -50,8 +50,12 @@ export interface ControlMeasurePreviewModel {
 export function buildControlMeasurePreview(
   kind: ControlMeasureId,
   dims: ProjectDimensions = CONTROL_MEASURE_PREVIEW_DIMENSIONS,
+  textAmplifiers?: TextAmplifiers,
 ): ControlMeasurePreviewModel {
-  const { shapes, ok } = projectRenderToShapes(renderRepresentative(kind), dims);
+  const { shapes, ok } = projectRenderToShapes(
+    renderRepresentative(kind, { textAmplifiers }),
+    dims,
+  );
   // The plain box fits geometry only, so an anchored label can hang outside it.
   return { shapes, ok, viewBox: viewBoxString(shapes, dims, previewFontSize) };
 }
