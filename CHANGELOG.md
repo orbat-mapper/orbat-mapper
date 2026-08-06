@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## August 2026
+
+### Added
+
+- Added control-measure authoring and editing in MapLibre mode. Choose from a searchable catalogue, draw measures with snapping, organize them in scenario layers, and edit their geometry from the map or details panel.
+- Added control-measure styling and labels, including identity colours, line width, echelon, text amplifiers, and free-form text where supported. Defaults can be configured before drawing, with live previews.
+- Added GeoJSON import, export, clipboard, undo/redo, and scenario persistence support for control measures.
+
+### Changed
+
+- Combined the scenario feature drawing tools and control-measure tools into compact split buttons that retain the most recently used tool.
+- OpenLayers mode now shows a once-per-session notice that the legacy map is deprecated.
+
+### Fixed
+
+- Fixed zooming to a circle feature so the view frames the full circle instead of only its centre point.
+
 ## July 2026
 
 ### Added
