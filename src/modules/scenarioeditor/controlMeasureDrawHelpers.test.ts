@@ -130,6 +130,7 @@ describe("addScenarioControlMeasure", () => {
     const layers = scenario.geo.layersItems.value;
     expect(layers).toHaveLength(1);
     expect(layers[0].layer.name).toBe(CONTROL_MEASURE_LAYER_NAME);
+    expect(layers[0].layer.specialization).toBe("controlMeasure");
     expect(controlMeasureItems(scenario)).toHaveLength(1);
   });
 
@@ -145,12 +146,47 @@ describe("addScenarioControlMeasure", () => {
     ]);
   });
 
+  it("names new control measures from their kind with an unused sequence number", () => {
+    const scenario = createScenario();
+    addScenarioControlMeasure(scenario, measure());
+    addScenarioControlMeasure(scenario, measure({ id: "cm-2" }));
+
+    expect(controlMeasureItems(scenario).map((item) => item.name)).toEqual([
+      "Phase line 1",
+      "Phase line 2",
+    ]);
+  });
+
+  it("does not duplicate a generated name after a control measure is deleted", () => {
+    const scenario = createScenario();
+    addScenarioControlMeasure(scenario, measure());
+    addScenarioControlMeasure(scenario, measure({ id: "cm-2" }));
+    scenario.geo.deleteFeature("cm-1");
+
+    addScenarioControlMeasure(scenario, measure({ id: "cm-3" }));
+
+    expect(controlMeasureItems(scenario).map((item) => item.name)).toEqual([
+      "Phase line 2",
+      "Phase line 1",
+    ]);
+  });
+
   it("is one undo step even when it also created the layer", () => {
     const scenario = createScenario();
     addScenarioControlMeasure(scenario, measure());
 
     scenario.store.undo();
 
+    expect(controlMeasureItems(scenario)).toHaveLength(0);
+    expect(scenario.geo.layersItems.value).toHaveLength(0);
+  });
+
+  it("does not silently redirect when an explicit destination no longer exists", () => {
+    const scenario = createScenario();
+
+    const added = addScenarioControlMeasure(scenario, measure(), {}, "deleted-layer");
+
+    expect(added).toBeUndefined();
     expect(controlMeasureItems(scenario)).toHaveLength(0);
     expect(scenario.geo.layersItems.value).toHaveLength(0);
   });

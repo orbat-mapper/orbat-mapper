@@ -6,6 +6,30 @@ to this project and not obvious from the code.
 
 ## Language
 
+### Layers
+
+**Active layer**:
+The single overlay layer that receives newly authored items. Its specialization and
+the editor's current authoring rules determine which kinds of items can be added;
+activating a control-measure layer replaces the active feature layer, and vice versa.
+When the user switches authoring families, the editor restores the most recently used
+compatible layer, creating one only if none exists.
+
+**Feature layer**:
+An unspecialized overlay layer. The current editor authors geometry, annotations, and
+measurements into it; future mixed-item authoring can broaden that behavior without a
+stored-model migration.
+
+**Layer specialization**:
+An optional restriction expressing that an overlay layer is dedicated to one content
+family. Existing layers remain unspecialized; specialization is not a required
+category on every layer.
+
+**Locked layer**:
+A layer whose contents cannot be added, edited, duplicated, deleted, reordered, or
+moved. The layer itself can still be shown or hidden, renamed, time-bounded,
+reordered, unlocked, or deleted.
+
 ### Geometry
 
 **Geometry layer item**:
@@ -39,11 +63,25 @@ where the kind and its extra fields cannot yet be guaranteed to line up.
 
 ### Control measures
 
+**Control-measure layer**:
+An overlay layer specialized for control measures. Its identity persists even while
+empty; it is not inferred from the items it happens to contain. The current editor
+does not author mixed content.
+
+**Control-measure stack**:
+The ordered collection of control-measure layers. Layers can be reordered within this
+stack, but the whole stack renders above all feature layers; cross-family interleaving
+is not currently supported.
+
 **Control measure**:
 A doctrinal tactical graphic — boundary, axis of advance, phase line, fire
 support area, … — drawn and rendered by the `@orbat-mapper/control-measures`
 registry rather than by our own shape pipeline (see [[adr-0006]]). Not a geometry
 layer item, and deliberately not a `geometryKind`.
+
+**Control-measure state**:
+A control measure's time-indexed form. Its identity persists while its control points,
+and therefore its geometry, can vary across scenario time.
 
 **graphicKind**:
 Which control measure it is — the library's `ControlMeasureKind`. Named
@@ -63,7 +101,7 @@ Neither exists in the control-measures library — both are **host projections**
 resolved at the `toControlMeasure` seam and never written into storage. Identity
 colours come from milsymbol's saturated colour mode, the same source the unit
 symbols use, so a control measure matches a unit of the same identity.
-_Avoid_: storing a resolved colour. The stored `style.color` is an *authored*
+_Avoid_: storing a resolved colour. The stored `style.color` is an _authored_
 override; absent it, colour is derived per render.
 
 **Session** (draw session / edit session):
@@ -134,7 +172,7 @@ identity changes underneath you on every re-attach.
 Specifically the removed OpenLayers-based scenario editor view — a historical
 term kept so old commits and docs stay intelligible.
 _Avoid_: using "legacy" for other retired routes (`/maplibre`, `/globe` are old
-*URLs* that redirect, not the legacy view).
+_URLs_ that redirect, not the legacy view).
 
 ### Offline use
 
@@ -143,7 +181,7 @@ How much infrastructure a deployment still depends on, on two independent axes �
 where the **application** is delivered from, and where the **map data** comes
 from. Three named rungs: **Level 1 — Self-hosted** (own web server, own tile
 server), **Level 2 — Local map file** (served application, basemap read from the
-user's disk), **Level 3 — Standalone file** (application *and* basemap read from
+user's disk), **Level 3 — Standalone file** (application _and_ basemap read from
 the user's disk). The numbering is a ladder of removed infrastructure, not a
 ranking of "how offline" — a Level 2 deployment on a public host still needs the
 network to load the application.
@@ -156,12 +194,12 @@ _Avoid_: "offline basemap" (a self-hosted tile server is also offline), "embedde
 basemap" (nothing is embedded — the archive stays a file the user picks).
 
 **PMTiles archive**:
-A basemap archive holding *tiles only*. Raster archives are self-describing;
+A basemap archive holding _tiles only_. Raster archives are self-describing;
 vector archives carry no style, glyphs or sprites, so the application supplies
 those (see [[adr-0003]]).
 
 **Mapbundle**:
-A basemap archive (a ZIP) holding tiles *and* the styles, glyphs and sprites that
+A basemap archive (a ZIP) holding tiles _and_ the styles, glyphs and sprites that
 go with them, so it needs nothing from the application to render.
 
 **Flavour**:

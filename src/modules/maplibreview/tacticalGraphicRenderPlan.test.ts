@@ -101,6 +101,21 @@ describe("buildTacticalGraphicRenderPlan", () => {
     expect(plan.graphics.map((g) => g.id)).toEqual(["bottom-a", "top-a", "top-b"]);
   });
 
+  it("keeps specialized empty layers harmless while preserving stack order", () => {
+    const plan = buildTacticalGraphicRenderPlan(
+      [
+        layer("top", [graphic("top")], { specialization: "controlMeasure" }),
+        layer("prepared", [], { specialization: "controlMeasure" }),
+        layer("bottom", [graphic("bottom")], {
+          specialization: "controlMeasure",
+        }),
+      ],
+      visible,
+    );
+
+    expect(plan.graphics.map((graphic) => graphic.id)).toEqual(["bottom", "top"]);
+  });
+
   it("filters out an unsupported graphicKind and reports it", () => {
     const plan = buildTacticalGraphicRenderPlan(
       [

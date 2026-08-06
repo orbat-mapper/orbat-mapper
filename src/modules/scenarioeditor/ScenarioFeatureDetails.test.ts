@@ -54,7 +54,7 @@ describe("ScenarioFeatureDetails", () => {
     IconButton: true,
     ItemMedia: true,
     ScenarioFeatureDropdownMenu: true,
-    ScenarioFeatureState: true,
+    ScenarioLayerItemState: true,
     EditMetaForm: true,
     EditMediaForm: true,
     FeatureTransformations: true,

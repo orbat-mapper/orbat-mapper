@@ -56,6 +56,7 @@ const props = defineProps<{
   status?: TacticalGraphicStatus;
   /** The stored generator options — the source of the smoothing state. */
   options?: TacticalGraphicOptions;
+  showHeading?: boolean;
 }>();
 
 const emit = defineEmits<{ (e: "update", value: ControlMeasureStyleUpdate): void }>();
@@ -143,7 +144,9 @@ const fillPatternModel = computed({
 </script>
 
 <template>
-  <div class="col-span-2 mt-2 -mb-1 font-semibold">Style</div>
+  <div v-if="showHeading !== false" class="col-span-2 mt-2 -mb-1 font-semibold">
+    Style
+  </div>
 
   <label for="cm-identity" class="self-center">Identity</label>
   <NativeSelect id="cm-identity" class="w-full" v-model="identityModel">

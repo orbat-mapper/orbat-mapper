@@ -494,7 +494,11 @@ export type ScenarioLayerItemState =
   | TacticalGraphicLayerItemState
   | MeasurementLayerItemState;
 
+export type ScenarioLayerSpecialization = "controlMeasure";
+
 export interface ScenarioLayerItemsLayer extends Omit<ScenarioLayer, "features"> {
+  /** Optional authoring restriction. Omitted layers retain existing feature behavior. */
+  specialization?: ScenarioLayerSpecialization;
   items: ScenarioLayerItem[];
 }
 

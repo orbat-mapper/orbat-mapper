@@ -61,7 +61,7 @@ const EDITED_POINTS = [
   [21, 71],
 ];
 
-function createScenario(): TScenario {
+function createScenario(layerStack?: any[]): TScenario {
   const store = useNewScenarioStore({
     id: "scenario-1",
     type: "ORBAT-mapper",
@@ -70,11 +70,12 @@ function createScenario(): TScenario {
     startTime: "2025-01-01T00:00:00Z",
     sides: [],
     events: [],
-    layerStack: [
+    layerStack: layerStack ?? [
       {
         id: "layer-1",
         kind: "overlay",
         name: "Control measures",
+        specialization: "controlMeasure",
         items: [
           {
             id: "cm-1",
@@ -102,10 +103,12 @@ function storedItem(scenario: TScenario, id = "cm-1"): any {
   return scenario.store.state.layerItemMap[id];
 }
 
-function setup(setupOptions: { realFeed?: boolean } = {}) {
+function setup(
+  setupOptions: { realFeed?: boolean; scenario?: TScenario; activeLayerId?: string } = {},
+) {
   const pinia = createPinia();
   setActivePinia(pinia);
-  const scenario = createScenario();
+  const scenario = setupOptions.scenario ?? createScenario();
   const fake = createTacticalDrawSurfaceFake({
     generateId: () => "cm-new",
     editControlPoints: EDITED_POINTS,
@@ -117,6 +120,7 @@ function setup(setupOptions: { realFeed?: boolean } = {}) {
     draw: fake.surface,
   });
   const exposed = {} as ReturnType<typeof useScenarioDraw>;
+  const activeLayerId = ref(setupOptions.activeLayerId ?? "layer-1");
   const wrapper = mount(
     defineComponent({
       setup() {
@@ -137,7 +141,7 @@ function setup(setupOptions: { realFeed?: boolean } = {}) {
         provide: {
           [activeScenarioKey as symbol]: scenario,
           [activeScenarioMapEngineKey as symbol]: engineRef,
-          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeLayerKey as symbol]: activeLayerId,
           [activeNativeMapKey as symbol]: shallowRef(null),
           [activeFeatureSelectInteractionKey as symbol]: shallowRef(null),
         },
@@ -152,12 +156,147 @@ function setup(setupOptions: { realFeed?: boolean } = {}) {
     fake,
     feed: feedFake,
     draw: exposed,
+    activeLayerId,
     mutations: () => mutations,
   };
 }
 
 describe("drawing a control measure", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("commits to the active unlocked control-measure layer", async () => {
+    const scenario = createScenario([
+      {
+        id: "feature-layer",
+        kind: "overlay",
+        name: "Features",
+        items: [],
+      },
+      {
+        id: "cm-top",
+        kind: "overlay",
+        name: "Top control measures",
+        specialization: "controlMeasure",
+        items: [],
+      },
+      {
+        id: "cm-active",
+        kind: "overlay",
+        name: "Active control measures",
+        specialization: "controlMeasure",
+        items: [],
+      },
+    ]);
+    const { draw, fake } = setup({ scenario, activeLayerId: "cm-active" });
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    fake.drawSession!.commit();
+    await nextTick();
+    await nextTick();
+
+    expect(storedItem(scenario, "cm-new")._pid).toBe("cm-active");
+  });
+
+  it("creates and activates a specialized destination before the first draw", () => {
+    const scenario = createScenario([
+      { id: "feature-layer", kind: "overlay", name: "Features", items: [] },
+    ]);
+    const { draw, fake, activeLayerId } = setup({
+      scenario,
+      activeLayerId: "feature-layer",
+    });
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+
+    const created = scenario.geo.overlayLayers.value.find(
+      (layer) => layer.specialization === "controlMeasure",
+    );
+    expect(created).toMatchObject({ name: "Control measures", items: [] });
+    expect(activeLayerId.value).toBe(created?.id);
+    expect(fake.drawSession).not.toBeNull();
+  });
+
+  it("does not create another layer when every control-measure layer is locked", () => {
+    const scenario = createScenario([
+      {
+        id: "cm-locked",
+        kind: "overlay",
+        name: "Locked",
+        specialization: "controlMeasure",
+        locked: true,
+        items: [],
+      },
+    ]);
+    const { draw, fake } = setup({ scenario, activeLayerId: "cm-locked" });
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+
+    expect(scenario.geo.overlayLayers.value).toHaveLength(1);
+    expect(fake.drawSession).toBeNull();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
+  it("uses the topmost compatible layer, then restores last-used destinations by family", async () => {
+    const scenario = createScenario([
+      { id: "feature-a", kind: "overlay", name: "Feature A", items: [] },
+      { id: "feature-b", kind: "overlay", name: "Feature B", items: [] },
+      {
+        id: "cm-top",
+        kind: "overlay",
+        name: "CM top",
+        specialization: "controlMeasure",
+        items: [],
+      },
+      {
+        id: "cm-last",
+        kind: "overlay",
+        name: "CM last",
+        specialization: "controlMeasure",
+        items: [],
+      },
+    ]);
+    const { draw, activeLayerId } = setup({ scenario, activeLayerId: "feature-b" });
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    expect(activeLayerId.value).toBe("cm-top");
+
+    activeLayerId.value = "cm-last";
+    await nextTick();
+    draw.startDrawing("Point");
+    expect(activeLayerId.value).toBe("feature-b");
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    expect(activeLayerId.value).toBe("cm-last");
+  });
+
+  it("refuses to edit a control measure in a locked layer", () => {
+    const scenario = createScenario([
+      {
+        id: "cm-locked",
+        kind: "overlay",
+        name: "Locked",
+        specialization: "controlMeasure",
+        locked: true,
+        items: [
+          {
+            id: "cm-1",
+            kind: "tacticalGraphic",
+            graphicKind: "phase-line",
+            controlPoints: [
+              [10, 60],
+              [11, 61],
+            ],
+          },
+        ],
+      },
+    ]);
+    const { draw, fake } = setup({ scenario, activeLayerId: "cm-locked" });
+
+    draw.startControlMeasureEdit("cm-1");
+
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(fake.editSession).toBeNull();
+  });
 
   it("writes exactly once, on settle, and undoes as one step", async () => {
     const { draw, scenario, fake, mutations } = setup();
@@ -211,6 +350,22 @@ describe("drawing a control measure", () => {
     // A second session, for the next graphic of the same kind.
     expect(fake.calls.draw).toHaveLength(2);
     expect(fake.drawSession).not.toBeNull();
+  });
+
+  it("makes explicit Done commit and exit even when addMultiple is on", async () => {
+    const { draw, fake, scenario } = setup();
+    useMainToolbarStore().addMultiple = true;
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    expect(draw.drawSessionProgress.value?.canCommit).toBe(true);
+    expect(draw.finishDrawSession()).toBe(true);
+    await nextTick();
+    await nextTick();
+
+    expect(controlMeasureIds(scenario)).toEqual(["cm-1", "cm-new"]);
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(fake.calls.draw).toHaveLength(1);
+    expect(fake.drawSession).toBeNull();
   });
 
   it("does not re-arm on any abort of a locked tool", async () => {
@@ -301,6 +456,25 @@ describe("the keyboard contract", () => {
     expect(draw.handleEnter()).toBe(false);
     expect(draw.handleUndoKey()).toBe(false);
     expect(draw.handleRedoKey()).toBe(false);
+  });
+});
+
+describe("changing control-measure options while editing its shape", () => {
+  it("keeps a Smooth toggle made while the edit session is open", async () => {
+    const { draw, scenario } = setup({ realFeed: true });
+    scenario.geo.updateTacticalGraphic("cm-1", { options: { smooth: false } });
+    await nextTick();
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+
+    // This is the store write emitted by ControlMeasureStyleSettings when Smooth is
+    // toggled in the details panel. The real feed then settles and reopens the edit.
+    draw.updateControlMeasure("cm-1", { options: { smooth: true } });
+    expect(storedItem(scenario).options).toEqual({ smooth: true });
+    await nextTick();
+    await nextTick();
+
+    expect(storedItem(scenario).options).toEqual({ smooth: true });
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-1" });
   });
 });
 

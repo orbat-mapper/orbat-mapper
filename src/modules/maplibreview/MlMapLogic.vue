@@ -767,12 +767,25 @@ function pickControlMeasureAt(
   pixel: [number, number],
   originalEvent?: unknown,
 ): ControlMeasurePick | undefined {
-  const hit = engineRef.value?.draw?.ownsInteractionAt(pixel, { originalEvent });
+  const hit = tacticalDrawHitAt(pixel, originalEvent);
   if (!hit) return undefined;
   if (hit.measureId === undefined) return {};
   const { layerItem, layer } = activeScenario.geo.getLayerItemById(hit.measureId);
   if (!layerItem) return {};
   return { featureId: layerItem.id, layerId: layer?.id };
+}
+
+function tacticalDrawHitAt(
+  pixel: [number, number],
+  originalEvent?: unknown,
+  tolerance?: number,
+) {
+  const draw = engineRef.value?.draw;
+  if (!draw) return null;
+  return draw.ownsInteractionAt(
+    pixel,
+    tolerance === undefined ? { originalEvent } : { tolerance, originalEvent },
+  );
 }
 
 type ShiftClickTarget =
@@ -940,6 +953,14 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function onMapMouseMove(e: MapMouseEvent) {
+  // Drawing, box selection, and other map interactions acquire the shared selection
+  // suppression token while they own pointer input. Their mousemove handlers also own
+  // the cursor, so the general hover path must not overwrite (for example) a drawing
+  // crosshair with a feature pointer immediately after the tool is armed.
+  if (selectionSuppressed.value) {
+    clearHoveredFeatures();
+    return;
+  }
   if (rotateInteraction.isRotating.value) {
     clearHoveredFeatures();
     return;
@@ -976,6 +997,26 @@ function onMapMouseMove(e: MapMouseEvent) {
     return;
   }
   const features = queryInteractiveFeatures(e.point, HOVER_HIT_TOLERANCE_PX);
+  const topHit = features[0];
+
+  // Units keep their standing priority over everything drawn above them. Otherwise
+  // tactical-draw owns the hover before a plain feature underneath, matching the click
+  // path's topmost semantics without querying its internal MapLibre layers directly.
+  const tacticalHit =
+    topHit && isUnitLayerId(topHit.layer.id)
+      ? null
+      : tacticalDrawHitAt(
+          [e.point.x, e.point.y],
+          e.originalEvent,
+          HOVER_HIT_TOLERANCE_PX,
+        );
+  if (tacticalHit) {
+    mlMap.getCanvas().style.cursor = tacticalHit.layer === "handles" ? "grab" : "pointer";
+    // A control measure renders above the plain-feature stack, so do not show the
+    // tooltip/highlight of an ordinary feature hidden underneath it.
+    updateHoveredScenarioFeatures([], e);
+    return;
+  }
   mlMap.getCanvas().style.cursor = features.length ? "pointer" : "";
   updateHoveredScenarioFeatures(features, e);
 }

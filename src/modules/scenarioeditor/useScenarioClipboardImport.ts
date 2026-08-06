@@ -37,16 +37,19 @@ export function useScenarioClipboardImport(options: ScenarioClipboardImportOptio
   } = options;
 
   function getTargetLayerId() {
-    if (
-      activeLayerId.value &&
-      state.layerStackMap[activeLayerId.value]?.kind === "overlay"
-    ) {
+    const isWritableFeatureLayer = (layerId: FeatureId) => {
+      const layer = state.layerStackMap[layerId];
+      return (
+        layer?.kind === "overlay" &&
+        layer.specialization !== "controlMeasure" &&
+        !layer.locked
+      );
+    };
+    if (activeLayerId.value && isWritableFeatureLayer(activeLayerId.value)) {
       return activeLayerId.value;
     }
 
-    return state.layerStack.find(
-      (layerId) => state.layerStackMap[layerId]?.kind === "overlay",
-    );
+    return state.layerStack.find(isWritableFeatureLayer);
   }
 
   function pasteGeoJSON(data: unknown) {
@@ -85,9 +88,18 @@ export function useScenarioClipboardImport(options: ScenarioClipboardImportOptio
     const addedFeatureIds: string[] = [];
     groupUpdate(() => {
       importedFeatures.forEach((feature) => {
-        addedFeatureIds.push(geo.addFeature(feature, targetLayerId));
+        const addedFeatureId = geo.addFeature(feature, targetLayerId);
+        if (addedFeatureId) addedFeatureIds.push(addedFeatureId);
       });
     });
+
+    if (!addedFeatureIds.length) {
+      send({
+        message: "No writable feature layer available for pasted GeoJSON",
+        type: "error",
+      });
+      return false;
+    }
 
     clearSelection();
     activeFeatureId.value = addedFeatureIds[0];

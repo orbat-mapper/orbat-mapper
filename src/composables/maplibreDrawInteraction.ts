@@ -9,7 +9,15 @@ import { featureCollection, lineString, point, polygon } from "@turf/helpers";
 import turfCircle from "@turf/circle";
 import type { Feature as GeoJsonFeature, Geometry, Point, Position } from "geojson";
 import { tryOnBeforeUnmount } from "@vueuse/core";
-import { ref, toValue, unref, watch, type MaybeRef, type MaybeRefOrGetter } from "vue";
+import {
+  computed,
+  ref,
+  toValue,
+  unref,
+  watch,
+  type MaybeRef,
+  type MaybeRefOrGetter,
+} from "vue";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -95,8 +103,8 @@ export function useMapLibreDrawInteraction(
   const isModifying = ref(false);
   const vertices = ref<Position[]>([]);
   let dragState: DragState | null = null;
-  let circleCenter: Position | null = null;
-  let rectangleCorner: Position | null = null;
+  const circleCenter = ref<Position | null>(null);
+  const rectangleCorner = ref<Position | null>(null);
   let drawingDoubleClickZoomEnabled: boolean | null = null;
   const touchDoubleTap = createTouchDoubleTapTracker();
 
@@ -135,8 +143,8 @@ export function useMapLibreDrawInteraction(
     currentDrawType.value = null;
     isDrawing.value = false;
     vertices.value = [];
-    circleCenter = null;
-    rectangleCorner = null;
+    circleCenter.value = null;
+    rectangleCorner.value = null;
     touchDoubleTap.reset();
     mapAdapter.removeGeoJsonOverlay(DRAW_PREVIEW_OVERLAY_ID);
     options.onDrawingChange?.(false);
@@ -170,18 +178,18 @@ export function useMapLibreDrawInteraction(
     }
 
     if (currentDrawType.value === "Circle") {
-      if (!circleCenter) {
-        circleCenter = position;
+      if (!circleCenter.value) {
+        circleCenter.value = position;
         renderPreview(point(position).geometry);
         return;
       }
       commitFeature({
-        geometry: point(circleCenter).geometry,
+        geometry: point(circleCenter.value).geometry,
         geometryMeta: {
           geometryKind: "Circle",
           radius: distanceMeters(
-            circleCenter,
-            unwrapPositionRelative(circleCenter, position),
+            circleCenter.value,
+            unwrapPositionRelative(circleCenter.value, position),
           ),
         },
       });
@@ -189,14 +197,14 @@ export function useMapLibreDrawInteraction(
     }
 
     if (currentDrawType.value === "Rectangle") {
-      if (!rectangleCorner) {
-        rectangleCorner = position;
+      if (!rectangleCorner.value) {
+        rectangleCorner.value = position;
         renderPreview(point(position).geometry);
         return;
       }
-      const opposite = unwrapPositionRelative(rectangleCorner, position);
+      const opposite = unwrapPositionRelative(rectangleCorner.value, position);
       commitFeature({
-        geometry: createRectanglePolygon(rectangleCorner, opposite),
+        geometry: createRectanglePolygon(rectangleCorner.value, opposite),
         geometryMeta: { geometryKind: "Polygon", shape: "rectangle" },
       });
       return;
@@ -229,20 +237,20 @@ export function useMapLibreDrawInteraction(
         appendFreehandVertex(position);
         return;
       }
-      if (currentDrawType.value === "Circle" && circleCenter) {
+      if (currentDrawType.value === "Circle" && circleCenter.value) {
         renderPreview(
           createCirclePreview(
-            circleCenter,
-            unwrapPositionRelative(circleCenter, position),
+            circleCenter.value,
+            unwrapPositionRelative(circleCenter.value, position),
           ),
         );
         return;
       }
-      if (currentDrawType.value === "Rectangle" && rectangleCorner) {
+      if (currentDrawType.value === "Rectangle" && rectangleCorner.value) {
         renderPreview(
           createRectanglePolygon(
-            rectangleCorner,
-            unwrapPositionRelative(rectangleCorner, position),
+            rectangleCorner.value,
+            unwrapPositionRelative(rectangleCorner.value, position),
           ),
         );
         return;
@@ -383,10 +391,13 @@ export function useMapLibreDrawInteraction(
     finishPathDrawing();
   }
 
-  function commitFeature(input: {
-    geometry: Geometry;
-    geometryMeta: GeometryLayerItem["geometryMeta"];
-  }) {
+  function commitFeature(
+    input: {
+      geometry: Geometry;
+      geometryMeta: GeometryLayerItem["geometryMeta"];
+    },
+    keepActive = unref(options.addMultiple),
+  ) {
     options.addFeature({
       kind: "geometry",
       id: "",
@@ -395,32 +406,73 @@ export function useMapLibreDrawInteraction(
       style: {},
       userData: {},
     });
-    if (unref(options.addMultiple)) {
+    if (keepActive) {
       vertices.value = [];
-      circleCenter = null;
-      rectangleCorner = null;
+      circleCenter.value = null;
+      rectangleCorner.value = null;
       mapAdapter.removeGeoJsonOverlay(DRAW_PREVIEW_OVERLAY_ID);
       return;
     }
     cancelDrawing();
   }
 
-  function finishPathDrawing() {
+  function finishPathDrawing(keepActive = unref(options.addMultiple)) {
     const drawType = currentDrawType.value;
     const coordinates = normalizePathCoordinates(vertices.value);
     if (drawType === "LineString" && coordinates.length >= 2) {
-      commitFeature({
-        geometry: lineString(coordinates).geometry,
-        geometryMeta: { geometryKind: "LineString" },
-      });
+      commitFeature(
+        {
+          geometry: lineString(coordinates).geometry,
+          geometryMeta: { geometryKind: "LineString" },
+        },
+        keepActive,
+      );
     }
     if (drawType === "Polygon" && coordinates.length >= 3) {
       const ring = closeRing(coordinates);
-      commitFeature({
-        geometry: polygon([ring]).geometry,
-        geometryMeta: { geometryKind: "Polygon" },
-      });
+      commitFeature(
+        {
+          geometry: polygon([ring]).geometry,
+          geometryMeta: { geometryKind: "Polygon" },
+        },
+        keepActive,
+      );
     }
+  }
+
+  const drawPointCount = computed(() => {
+    switch (currentDrawType.value) {
+      case "LineString":
+      case "Polygon":
+        return vertices.value.length;
+      case "Circle":
+        return circleCenter.value ? 1 : 0;
+      case "Rectangle":
+        return rectangleCorner.value ? 1 : 0;
+      default:
+        return 0;
+    }
+  });
+
+  /**
+   * Explicit Done/Enter path. Unlike automatic completion, it never honours
+   * add-multiple: the user's intent is to leave the armed draw session.
+   */
+  function finishDrawing() {
+    const count = drawPointCount.value;
+    if (count === 0) {
+      cancelDrawing();
+      return true;
+    }
+    const minimum = currentDrawType.value === "Polygon" ? 3 : 2;
+    if (
+      (currentDrawType.value !== "LineString" && currentDrawType.value !== "Polygon") ||
+      count < minimum
+    ) {
+      return false;
+    }
+    finishPathDrawing(false);
+    return true;
   }
 
   function renderPathPreview(pointer: Position) {
@@ -698,10 +750,12 @@ export function useMapLibreDrawInteraction(
     isModifying,
     cancel,
     isDrawing,
+    drawPointCount,
     // Escape and Enter are no longer owned here. `useScenarioDraw` is the sole
     // keyboard owner (ADR-0006): the three non-propagation-stopping Escape listeners
     // collapsed into one that only acts when a tool is armed.
     finishPathDrawing,
+    finishDrawing,
     destroy,
   };
 }

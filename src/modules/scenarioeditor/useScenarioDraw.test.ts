@@ -22,6 +22,10 @@ import {
 } from "@/modules/scenarioeditor/olInjects";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import type { RenderedUnitFeature } from "@/modules/scenarioeditor/unitSnapCandidates";
+import type {
+  SettleReason,
+  TacticalGraphicRenderFeed,
+} from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),
@@ -30,6 +34,7 @@ const mocks = vi.hoisted(() => ({
   mapLibreStartModify: vi.fn(),
   mapLibreCancel: vi.fn(),
   mapLibreFinishPathDrawing: vi.fn(),
+  mapLibreFinishDrawing: vi.fn(() => true),
 }));
 
 vi.mock("@/composables/maplibreDrawInteraction", () => ({
@@ -48,6 +53,8 @@ function createInteraction() {
     isModifying: ref(false),
     cancel: mocks.mapLibreCancel,
     isDrawing: ref(false),
+    drawPointCount: ref(0),
+    finishDrawing: mocks.mapLibreFinishDrawing,
     finishPathDrawing: mocks.mapLibreFinishPathDrawing,
     destroy: vi.fn(),
   };
@@ -62,15 +69,17 @@ function createScenario() {
       layerItemsLayers: { value: [] },
       getGeometryLayerItemById: vi.fn(() => ({})),
       getLayerItemById: vi.fn((id: string) => ({
-        layerItem: {
-          id,
-          kind: "tacticalGraphic",
-          graphicKind: "phase-line",
-          controlPoints: [
-            [0, 0],
-            [1, 1],
-          ],
-        },
+        layerItem: id.startsWith("cm-")
+          ? {
+              id,
+              kind: "tacticalGraphic",
+              graphicKind: "phase-line",
+              controlPoints: [
+                [0, 0],
+                [1, 1],
+              ],
+            }
+          : { id, kind: "geometry" },
       })),
       updateTacticalGraphic: vi.fn(),
       deleteFeature: vi.fn(),
@@ -78,12 +87,22 @@ function createScenario() {
   };
 }
 
-function createRenderFeed() {
+function createRenderFeed({ renderedIds = [] }: { renderedIds?: string[] } = {}) {
+  const settleHandlers = new Set<(reason: SettleReason) => void>();
+  const settle = vi.fn((reason: SettleReason) => {
+    for (const handler of [...settleHandlers]) handler(reason);
+  });
+  const render = vi.fn((reason: SettleReason = "render") => settle(reason));
   return {
-    render: vi.fn(),
-    settle: vi.fn(),
-    onSettle: vi.fn(() => vi.fn()),
-    lastPlan: null,
+    render,
+    settle,
+    onSettle: vi.fn((handler: (reason: SettleReason) => void) => {
+      settleHandlers.add(handler);
+      return () => settleHandlers.delete(handler);
+    }),
+    lastPlan: {
+      graphics: renderedIds.map((id) => ({ id })),
+    } as TacticalGraphicRenderFeed["lastPlan"],
   };
 }
 
@@ -158,6 +177,7 @@ function createEngine({
 describe("useScenarioDraw", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useSelectedItems().clear();
     mocks.useMapLibreDrawInteraction.mockImplementation(() => createInteraction());
   });
 
@@ -208,7 +228,187 @@ describe("useScenarioDraw", () => {
     expect(draw.armed.value).toEqual({ kind: "none" });
   });
 
-  it("suppresses selection while anything is armed and restores it on disarm", async () => {
+  it("uses the Edit toggle to edit the selected control measure", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    useSelectedItems().activeFeatureId.value = "cm-1";
+
+    draw.startModify();
+
+    expect(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+    expect(draw.isModifying.value).toBe(true);
+
+    draw.startModify();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(draw.isModifying.value).toBe(false);
+  });
+
+  it("lets Edit mode select a control measure and starts editing it", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    const mapSelectStore = useMapSelectStore();
+
+    draw.startModify();
+    await nextTick();
+
+    // The map click path must remain live while Edit is waiting for a target.
+    expect.soft(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+
+    // This is what the map selection path writes after a control-measure pick.
+    useSelectedItems().activeFeatureId.value = "cm-1";
+    await nextTick();
+
+    expect.soft(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+
+    const session = engine.surfaceFake.editSession;
+    useSelectedItems().clear();
+    await nextTick();
+    await nextTick();
+
+    expect.soft(session?.settled).toBe(true);
+    expect.soft(draw.armed.value).toEqual({ kind: "plainModify" });
+    expect.soft(draw.isModifying.value).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+  });
+
+  it("switches directly between control measures in persistent Edit mode", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    const selectedItems = useSelectedItems();
+    const mapSelectStore = useMapSelectStore();
+
+    selectedItems.activeFeatureId.value = "cm-1";
+    draw.startModify();
+    await nextTick();
+
+    expect.soft(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+    // Persistent Edit mode must leave the map selection path live so the click that
+    // settles cm-1 can also select cm-2, as it does for ordinary features.
+    expect.soft(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect.soft(mapSelectStore.selectionSuppressed).toBe(false);
+
+    // The map click path replaces the active selection in this same gesture.
+    selectedItems.activeFeatureId.value = "cm-2";
+    await nextTick();
+    await nextTick();
+
+    expect(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-2",
+      resume: "plainModify",
+    });
+    expect(engine.surfaceFake.editSession?.startMeasure.id).toBe("cm-2");
+  });
+
+  it("switches directly from a control measure to an ordinary feature", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    const selectedItems = useSelectedItems();
+
+    selectedItems.activeFeatureId.value = "cm-1";
+    draw.startModify();
+    await nextTick();
+    const controlMeasureSession = engine.surfaceFake.editSession;
+
+    // This is the selection replacement made by the ordinary-feature click path.
+    selectedItems.activeFeatureId.value = "feature-1";
+    await nextTick();
+    await nextTick();
+
+    expect.soft(controlMeasureSession?.settled).toBe(true);
+    expect.soft(draw.armed.value).toEqual({ kind: "plainModify" });
+    expect(mocks.mapLibreStartModify).toHaveBeenCalled();
+  });
+
+  it("keeps a visible control measure in edit mode across a time-driven render", async () => {
+    const renderFeed = createRenderFeed({ renderedIds: ["cm-1"] });
+    const { draw, engineRef } = mountHarness({ renderFeed });
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    useSelectedItems().activeFeatureId.value = "cm-1";
+
+    draw.startModify();
+    await nextTick();
+    const firstSession = engine.surfaceFake.editSession;
+
+    // A scenario-time change increments featureStateCounter, which makes the real
+    // render feed settle the open session before rendering the new time slice.
+    renderFeed.render();
+    await nextTick();
+    await nextTick();
+
+    expect.soft(firstSession?.settled).toBe(true);
+    expect.soft(draw.armed.value).toEqual({
+      kind: "cmEdit",
+      featureId: "cm-1",
+      resume: "plainModify",
+    });
+    expect(engine.surfaceFake.editSession).not.toBe(firstSession);
+    expect(engine.surfaceFake.editSession?.startMeasure.id).toBe("cm-1");
+  });
+
+  it("keeps a visible details-panel control measure edit across a time-driven render", async () => {
+    const renderFeed = createRenderFeed({ renderedIds: ["cm-1"] });
+    const { draw, engineRef } = mountHarness({ renderFeed });
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+
+    draw.startControlMeasureEdit("cm-1");
+    const firstSession = engine.surfaceFake.editSession;
+    renderFeed.render();
+    await nextTick();
+    await nextTick();
+
+    expect.soft(firstSession?.settled).toBe(true);
+    expect.soft(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-1" });
+    expect(engine.surfaceFake.editSession).not.toBe(firstSession);
+    expect(engine.surfaceFake.editSession?.startMeasure.id).toBe("cm-1");
+  });
+
+  it("keeps a details-panel control-measure edit as a one-off gesture", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+
+    draw.startControlMeasureEdit("cm-1");
+    engine.surfaceFake.editSession!.close();
+    await nextTick();
+    await nextTick();
+
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(draw.isModifying.value).toBe(false);
+  });
+
+  it("suppresses selection while a control-measure session owns map clicks", async () => {
     const { draw, engineRef } = mountHarness();
     engineRef.value = createEngine();
     await nextTick();
@@ -224,6 +424,23 @@ describe("useScenarioDraw", () => {
     await nextTick();
     expect(mapSelectStore.unitSelectEnabled).toBe(true);
     expect(mapSelectStore.featureSelectEnabled).toBe(true);
+    expect(mapSelectStore.selectionSuppressed).toBe(false);
+  });
+
+  it("disarms when the tactical-draw surface disappears before a deferred draw starts", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+    const mapSelectStore = useMapSelectStore();
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    engineRef.value = undefined;
+    await nextTick();
+    await nextTick();
+
+    expect(draw.controlMeasureDrawProgress.value).toBeNull();
+    expect(draw.armed.value).toEqual({ kind: "none" });
     expect(mapSelectStore.selectionSuppressed).toBe(false);
   });
 
@@ -296,7 +513,7 @@ describe("useScenarioDraw", () => {
     expect(draw.canControlMeasures.value).toBe(true);
   });
 
-  it("disarms when the draw toolbar closes, but leaves a control-measure edit alone", async () => {
+  it("disarms toolbar tools when Draw closes, but leaves a one-off edit alone", async () => {
     const { draw, engineRef } = mountHarness();
     engineRef.value = createEngine();
     await nextTick();
@@ -317,6 +534,25 @@ describe("useScenarioDraw", () => {
     expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-1" });
   });
 
+  it("disarms a toolbar-originated control-measure edit when Draw closes", async () => {
+    const { draw, engineRef } = mountHarness();
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    const toolbarStore = useMainToolbarStore();
+    toolbarStore.currentToolbar = "draw";
+    useSelectedItems().activeFeatureId.value = "cm-1";
+    draw.startModify();
+    await nextTick();
+    const session = engine.surfaceFake.editSession;
+
+    toolbarStore.currentToolbar = null;
+    await nextTick();
+
+    expect.soft(session?.settled).toBe(true);
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
   it("registers itself as the keyboard owner and handles Escape only while armed", async () => {
     const { draw, engineRef, keyboardOwnerRef } = mountHarness();
     engineRef.value = createEngine();
@@ -333,7 +569,7 @@ describe("useScenarioDraw", () => {
     expect(draw.armed.value).toEqual({ kind: "none" });
   });
 
-  it("finishes a plain path draw on Enter and falls through when unarmed", async () => {
+  it("uses Enter as explicit Done for empty and valid plain draws", async () => {
     const { draw, engineRef } = mountHarness();
     engineRef.value = createEngine();
     await nextTick();
@@ -343,7 +579,40 @@ describe("useScenarioDraw", () => {
 
     draw.startDrawing("LineString");
     expect(draw.handleEnter()).toBe(true);
-    expect(mocks.mapLibreFinishPathDrawing).toHaveBeenCalled();
+    expect(mocks.mapLibreFinishDrawing).not.toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+
+    draw.startDrawing("LineString");
+    const interaction =
+      mocks.useMapLibreDrawInteraction.mock.results[
+        mocks.useMapLibreDrawInteraction.mock.results.length - 1
+      ].value;
+    interaction.drawPointCount.value = 2;
+    expect(draw.handleEnter()).toBe(true);
+    expect(mocks.mapLibreFinishDrawing).toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+
+  it("keeps an incomplete plain draw armed when Done is unavailable", async () => {
+    const { draw, engineRef } = mountHarness();
+    engineRef.value = createEngine();
+    await nextTick();
+
+    draw.startDrawing("Polygon");
+    const interaction =
+      mocks.useMapLibreDrawInteraction.mock.results[
+        mocks.useMapLibreDrawInteraction.mock.results.length - 1
+      ].value;
+    interaction.drawPointCount.value = 2;
+
+    expect(draw.drawSessionProgress.value).toMatchObject({
+      pointCount: 2,
+      minPoints: 3,
+      canCommit: false,
+    });
+    expect(draw.finishDrawSession()).toBe(false);
+    expect(mocks.mapLibreFinishDrawing).not.toHaveBeenCalled();
+    expect(draw.armed.value).toEqual({ kind: "plainDraw", drawType: "Polygon" });
   });
 
   it("swallows Ctrl+Z during a control-measure session only", async () => {
@@ -373,9 +642,31 @@ describe("useScenarioDraw", () => {
 
     draw.deleteSelected();
 
-    expect(renderFeed.settle).toHaveBeenCalledWith("commit");
+    expect(renderFeed.settle).toHaveBeenCalledWith("delete");
     expect(scenario.store.groupUpdate).toHaveBeenCalled();
     expect(scenario.geo.deleteFeature).toHaveBeenCalledWith("feature-1");
     expect(scenario.geo.deleteFeature).toHaveBeenCalledWith("feature-2");
+  });
+
+  it("settles an edited control measure before deleting it", async () => {
+    const scenario = createScenario();
+    const renderFeed = createRenderFeed();
+    const { draw, engineRef } = mountHarness({ scenario, renderFeed });
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().currentToolbar = "draw";
+    useSelectedItems().activeFeatureId.value = "cm-1";
+    draw.startModify();
+    await nextTick();
+    const session = engine.surfaceFake.editSession!;
+    scenario.geo.deleteFeature.mockImplementation(() => {
+      expect(session.settled).toBe(true);
+    });
+
+    draw.deleteSelected();
+
+    expect(renderFeed.settle).toHaveBeenCalledWith("delete");
+    expect(scenario.geo.deleteFeature).toHaveBeenCalledWith("cm-1");
   });
 });

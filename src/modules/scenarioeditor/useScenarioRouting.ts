@@ -517,8 +517,19 @@ export function useScenarioRouting(
       routingStore.setError("Finish at least one routed leg before saving a route.");
       return false;
     }
-    const targetLayerId =
-      activeLayerId.value ?? activeScenario.geo.layerItemsLayers.value[0]?.id;
+    const writableFeatureLayers = activeScenario.geo.layerItemsLayers.value.filter(
+      (layer) => layer.specialization !== "controlMeasure" && !layer.locked,
+    );
+    const currentLayer = activeLayerId.value
+      ? activeScenario.geo.getLayerById(activeLayerId.value)
+      : undefined;
+    const activeLayer =
+      currentLayer &&
+      currentLayer.specialization !== "controlMeasure" &&
+      !currentLayer.locked
+        ? currentLayer
+        : undefined;
+    const targetLayerId = activeLayer?.id ?? writableFeatureLayers[0]?.id;
     const targetLayer = targetLayerId
       ? activeScenario.geo.getLayerById(targetLayerId)
       : null;

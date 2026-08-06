@@ -104,6 +104,20 @@ describe("MapEditorDrawToolbar capability gating", () => {
     expect(mainToolbarStore.lastDrawType).toBe("Circle");
   });
 
+  it("places Freehand with the plain drawing tools", () => {
+    const { wrapper } = mountToolbar();
+    const buttons = wrapper.findAll("button");
+    const freehandIndex = buttons.findIndex(
+      (button) => button.attributes("title") === "Freehand",
+    );
+    const controlMeasureIndex = buttons.findIndex(
+      (button) => button.attributes("title") === "Main Attack",
+    );
+
+    expect(freehandIndex).toBeGreaterThan(-1);
+    expect(freehandIndex).toBeLessThan(controlMeasureIndex);
+  });
+
   it("hides freehand and disables translate while a control measure is armed", () => {
     const armed = { kind: "cmDraw", graphicKind: "phase-line" } as ArmedTool;
     const { wrapper } = mountToolbar({ armed });

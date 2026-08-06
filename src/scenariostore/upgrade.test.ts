@@ -129,7 +129,7 @@ describe("upgradeScenarioIfNecessary", () => {
     expect(getOverlayLayers(upgraded)[0]).not.toHaveProperty("features");
   });
 
-  it("keeps annotation, tacticalGraphic and measurement items without warning", () => {
+  it("keeps mixed items and warns about tactical graphics in an unspecialized layer", () => {
     const feature = createFeature();
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const scenario = createScenario({
@@ -186,7 +186,8 @@ describe("upgradeScenarioIfNecessary", () => {
       "tacticalGraphic-1",
       "measurement-1",
     ]);
-    expect(warnSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain("mismatched items");
   });
 
   it("warns once for the whole scenario about unsupported graphicKinds", () => {
@@ -231,9 +232,12 @@ describe("upgradeScenarioIfNecessary", () => {
     // Stored verbatim, never dropped and never replaced by a placeholder.
     expect(getOverlayLayers(upgraded)[0].items).toHaveLength(2);
     expect(getOverlayLayers(upgraded)[1].items).toHaveLength(1);
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toContain("from-the-future=2");
-    expect(warnSpy.mock.calls[0][0]).toContain("also-unknown=1");
+    const unsupportedWarning = warnSpy.mock.calls.find(([message]) =>
+      String(message).includes("Unsupported control measure kinds"),
+    );
+    expect(unsupportedWarning).toBeDefined();
+    expect(unsupportedWarning![0]).toContain("from-the-future=2");
+    expect(unsupportedWarning![0]).toContain("also-unknown=1");
   });
 
   it("still drops items whose kind is entirely unknown", () => {

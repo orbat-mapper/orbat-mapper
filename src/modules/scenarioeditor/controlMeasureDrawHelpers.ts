@@ -10,8 +10,15 @@
  * is therefore the only writer, and it groups the lazy layer creation together with the
  * item add so a drawn control measure is one undo step even the first time.
  */
-import { getDefaultOptions } from "@orbat-mapper/control-measures";
-import type { ControlMeasure, ControlMeasureStyle } from "@orbat-mapper/control-measures";
+import {
+  CONTROL_MEASURE_METADATA,
+  getDefaultOptions,
+} from "@orbat-mapper/control-measures";
+import type {
+  ControlMeasure,
+  ControlMeasureId,
+  ControlMeasureStyle,
+} from "@orbat-mapper/control-measures";
 import type { Position } from "geojson";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -144,12 +151,9 @@ export function toTacticalGraphicLayerItem(
 }
 
 /**
- * The layer a new control measure goes into: the first one that already holds control
- * measures, otherwise a freshly created "Control measures" layer.
- *
- * Created lazily rather than up front so a scenario that never gets one keeps the
- * stored model M1 landed untouched, and so the section only appears in the layers panel
- * once there is something in it. Returns `undefined` only when the write itself failed.
+ * Fallback for callers that do not pass the destination selected by the armed-tool
+ * owner: use the topmost specialized layer, otherwise create one explicitly specialized
+ * as a control-measure layer.
  */
 function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | undefined {
   const existing = getControlMeasureLayerGroups(scenario.geo.layersItems.value)[0];
@@ -157,9 +161,30 @@ function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | unde
   return scenario.geo.addLayer({
     id: nanoid(),
     name: CONTROL_MEASURE_LAYER_NAME,
+    specialization: "controlMeasure",
     items: [],
     _isNew: false,
   })?.id;
+}
+
+function nextControlMeasureName(
+  scenario: TScenario,
+  layerId: FeatureId,
+  measureKind: ControlMeasure["kind"],
+): string {
+  const baseName =
+    CONTROL_MEASURE_METADATA[measureKind as ControlMeasureId]?.name ??
+    String(measureKind);
+  const layer = scenario.geo.getLayerById(layerId);
+  const existingNames = new Set(
+    layer?.items
+      .map((itemId) => scenario.geo.getLayerItemById(itemId).layerItem?.name)
+      .filter((name): name is string => name !== undefined),
+  );
+
+  let sequence = 1;
+  while (existingNames.has(`${baseName} ${sequence}`)) sequence++;
+  return `${baseName} ${sequence}`;
 }
 
 /**
@@ -174,15 +199,16 @@ export function addScenarioControlMeasure(
   scenario: TScenario,
   measure: ControlMeasure,
   defaults: NewControlMeasureDefaults = {},
+  destinationLayerId?: FeatureId,
 ): TacticalGraphicLayerItem | undefined {
   const item = toTacticalGraphicLayerItem(measure, defaults);
   let added = false;
   scenario.store.groupUpdate(
     () => {
-      const layerId = getOrCreateControlMeasureLayerId(scenario);
+      const layerId = destinationLayerId ?? getOrCreateControlMeasureLayerId(scenario);
       if (!layerId) return;
-      scenario.geo.addFeature(item, layerId);
-      added = true;
+      item.name = nextControlMeasureName(scenario, layerId, measure.kind);
+      added = Boolean(scenario.geo.addFeature(item, layerId));
     },
     { label: "addFeature", value: item.id },
   );

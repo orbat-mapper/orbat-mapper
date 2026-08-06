@@ -18,6 +18,9 @@ import type Feature from "ol/Feature";
 import Collection from "ol/Collection";
 import Geometry from "ol/geom/Geometry";
 import Polygon from "ol/geom/Polygon";
+import LineString from "ol/geom/LineString";
+import type { EventsKey } from "ol/events";
+import { unByKey } from "ol/Observable";
 
 import type { DrawType } from "@/geo/drawTypes";
 
@@ -56,6 +59,8 @@ export function useEditingInteraction(
   const currentDrawType = ref<DrawType | null>(null);
   const isModifying = ref(false);
   const isDrawing = ref(false);
+  const drawPointCount = ref(0);
+  let sketchChangeKey: EventsKey | null = null;
 
   const emit = options.emit;
 
@@ -67,9 +72,14 @@ export function useEditingInteraction(
     olMap.addInteraction(rectangleDraw);
 
     useOlEvent(lineDraw.on("drawend", onDrawEnd));
+    useOlEvent(lineDraw.on("drawstart", onDrawStart));
     useOlEvent(polygonDraw.on("drawend", onDrawEnd));
+    useOlEvent(polygonDraw.on("drawstart", onDrawStart));
     useOlEvent(pointDraw.on("drawend", onDrawEnd));
+    useOlEvent(pointDraw.on("drawstart", onDrawStart));
     useOlEvent(circleDraw.on("drawend", onDrawEnd));
+    useOlEvent(circleDraw.on("drawstart", onDrawStart));
+    useOlEvent(rectangleDraw.on("drawstart", onDrawStart));
     useOlEvent(
       rectangleDraw.on("drawend", (event) => {
         // Tag the box so the editor recognizes it as a rectangle and keeps it
@@ -217,7 +227,41 @@ export function useEditingInteraction(
     { immediate: true },
   );
 
+  function clearSketchTracking() {
+    if (sketchChangeKey) unByKey(sketchChangeKey);
+    sketchChangeKey = null;
+    drawPointCount.value = 0;
+  }
+
+  function updateDrawPointCount(feature: Feature) {
+    const geometry = feature.getGeometry();
+    if (!geometry) return;
+    if (geometry.getType() === "LineString") {
+      drawPointCount.value = Math.max(
+        1,
+        (geometry as LineString).getCoordinates().length - 1,
+      );
+      return;
+    }
+    if (geometry.getType() === "Polygon") {
+      const ring = ((geometry as Polygon).getCoordinates()[0] ?? []) as number[][];
+      drawPointCount.value = Math.max(1, ring.length - 1);
+      return;
+    }
+    drawPointCount.value = 1;
+  }
+
+  function onDrawStart(event: DrawEvent) {
+    clearSketchTracking();
+    updateDrawPointCount(event.feature);
+    const geometry = event.feature.getGeometry();
+    if (geometry) {
+      sketchChangeKey = geometry.on("change", () => updateDrawPointCount(event.feature));
+    }
+  }
+
   function onDrawEnd(e: DrawEvent) {
+    clearSketchTracking();
     if (!unref(addMultiple)) {
       // currentDrawInteraction?.setActive(false);
       // currentDrawType.value = null;
@@ -265,6 +309,7 @@ export function useEditingInteraction(
   }
 
   function cancel() {
+    clearSketchTracking();
     select.setActive(true);
     stopModify();
 
@@ -272,6 +317,28 @@ export function useEditingInteraction(
     currentDrawInteraction = null;
     currentDrawType.value = null;
     isDrawing.value = false;
+  }
+
+  /** Explicit Done/Enter path; automatic draw-end remains add-multiple aware. */
+  function finishDrawing() {
+    if (!currentDrawInteraction) return false;
+    const count = drawPointCount.value;
+    if (count === 0) {
+      cancel();
+      return true;
+    }
+    const minimum = currentDrawType.value === "Polygon" ? 3 : 2;
+    if (
+      (currentDrawType.value !== "LineString" && currentDrawType.value !== "Polygon") ||
+      count < minimum
+    ) {
+      return false;
+    }
+    if (!currentDrawInteraction.finishDrawing()) return false;
+    // `onDrawEnd` leaves the interaction armed when add-multiple is enabled; an
+    // explicit Done never does.
+    if (isDrawing.value) cancel();
+    return true;
   }
 
   onUnmounted(() => {
@@ -301,7 +368,16 @@ export function useEditingInteraction(
     { immediate: true },
   );
 
-  return { startDrawing, currentDrawType, startModify, isModifying, cancel, isDrawing };
+  return {
+    startDrawing,
+    currentDrawType,
+    startModify,
+    isModifying,
+    cancel,
+    isDrawing,
+    drawPointCount,
+    finishDrawing,
+  };
 }
 
 // Rebuilds an axis-aligned box ring after a single corner was dragged: the

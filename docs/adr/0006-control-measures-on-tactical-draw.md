@@ -141,14 +141,46 @@ The second collides with everything that re-renders on its own schedule —
 time-scrubbing, layer-visibility toggles, tool switching. It is resolved by
 **settle-first**: anything that feeds `render()` settles any open session before
 re-rendering (an edit closes and keeps its work; a draw aborts). The guard is placed
-on **the render feed, not the clock**, so a visibility toggle settles too, and arming
-a different tool is a second settle trigger with the same disposition.
+on **the render feed, not the clock**, so a visibility toggle settles too. Arming a
+different tool, host deletions, and details-panel writes to host-owned control-measure
+fields are additional settle triggers with the same disposition. The details write
+settles _before_ its store update so the session's older snapshot cannot overwrite the
+new value. A protective render settle reopens a still-rendered edit after the new batch
+is authoritative: toolbar edits only while Draw remains open, and details-panel edits
+independently of the toolbar.
 
 ## A separate render layer, with interleaving deferred
 
 Control measures render through tactical-draw, stacked **above** the flat scenario
 feature source that `maplibreScenarioFeatures.ts` maintains. They are not merged into
 it.
+
+The editor may hold multiple explicitly specialized control-measure layers. They form
+their own ordered stack: their relative order is honoured by tactical-draw and they
+may be reordered against one another, but the UI does not allow them to be interleaved
+with feature or reference layers. An empty control-measure layer remains one; its
+optional `specialization: "controlMeasure"` is persisted rather than inferred from
+its contents. Existing overlay layers remain unspecialized, leaving a future mixed-item
+model open without migrating every layer.
+
+Control-measure layers have the same applicable interactions as feature layers:
+active-layer selection, rename/timing, visibility, content locking, zoom, deletion,
+item and layer reordering, moving items between compatible layers, duplication, and
+GeoJSON copy of the rendered projection. Content locking prevents authoring and item
+changes but not management of the layer itself. There is no layer-count cap.
+
+There is still one active overlay layer. Switching authoring families restores the
+most recently used compatible unlocked layer (the topmost compatible layer when the
+session has no history). If no control-measure layer exists, choosing a control-measure
+tool creates and activates `Control measures`; if layers exist but all are locked, the
+tool asks the user to unlock or add one rather than creating another silently. Explicit
+layer creation instead creates `New control-measure layer`, activates it, and opens its
+inline editor.
+
+The editor enforces homogeneous authoring in this stage, but loading stays tolerant:
+items that do not match a layer's specialization are preserved and warned about rather
+than rejected or rewritten. Specialization cannot be converted through the UI in this
+iteration.
 
 The accepted cost is stated plainly: **a control measure always draws above every
 plain shape, regardless of layer order in the layers panel.** A user can reorder
@@ -159,8 +191,11 @@ limitation, not a subtlety, and it is **temporary**: stage two unifies the rende
 The same split produces a second visible consequence: **topmost wins on selection**,
 with tactical-draw's `onPick` short-circuiting the plain-feature query when nothing is
 armed, so a plain shape lying under a control-measure fill is unclickable until stage
-two. (When a tool *is* armed, clicks are swallowed entirely by the existing
-selection-disable watcher, generalised from `isDrawing` to "anything armed".)
+two. Draw sessions and one-off control-measure edits suppress selection while they own
+map clicks. Persistent toolbar Edit is the exception: host selection remains live so
+one click can settle the current control measure and transfer editing to another
+control measure or to an ordinary feature. Clearing selection settles the current
+control-measure target but leaves persistent Edit armed, matching ordinary features.
 
 Outbound rendering is reached through a pure `buildTacticalGraphicRenderPlan`,
 mirroring the existing `buildScenarioFeatureRenderPlan`, so the store-to-`Graphic[]`
@@ -171,7 +206,7 @@ enters the scenario store.
 ### Rendering facts that are load-bearing
 
 The adapter is constructed in **`viewChangeMode: "settle"`**. Treat this as
-load-bearing, not a tuning knob. MapLibre emits `zoom` on every frame of a *pure pan*,
+load-bearing, not a tuning knob. MapLibre emits `zoom` on every frame of a _pure pan_,
 so the default `"continuous"` mode re-renders the entire stack per frame — measured at
 **1400 `updateData` calls in one 2 s pan over 50 graphics**, collapsing pan to 15 fps.
 In `"settle"` mode the same scene holds 59 fps, and the interactive ceiling moves from
@@ -203,7 +238,7 @@ lockfile. The exact pin is also what lets the scenario file version stand in for
 library version, since a range would break that correspondence.
 
 The library is treated as **trusted code**, not as a subject under test. Its
-`/testing` conformance suites are adapter-*author* suites and we consume a published
+`/testing` conformance suites are adapter-_author_ suites and we consume a published
 adapter, so they are of no use here. Where a fake is needed, it impersonates a
 **host-owned** seam (`TacticalDrawSurface`, which absorbs the session methods) rather
 than a `Pick<TacticalDraw, …>` that goes stale on every façade re-attach and every
@@ -238,6 +273,11 @@ alpha bump.
 - **Escape now takes two presses** to also clear selection, because the armed tool
   consumes the first. In exchange, three separate non-propagation-stopping Escape
   listeners collapse to one owner.
+- **Explicit completion exits; automatic completion may repeat.** Done and Enter commit
+  a valid draw and disarm even when add-multiple is enabled. Fixed-length completion,
+  double-click and touch double-tap remain add-multiple-aware and may re-arm the same
+  tool. An empty explicit completion simply disarms; an incomplete draft cannot be
+  completed and must either receive more points or be cancelled.
 - **`useScenarioDraw` is hoisted** out of `MapEditorDrawToolbar` (which is `v-if`'d and
   therefore unmounts) to the map view, and provided. Side effect, and an improvement:
   `snap`/`translate`/`freehand` stop silently resetting every time the toolbar is
@@ -261,15 +301,19 @@ alpha bump.
   `DEFINITIONS[kind]` on an unknown kind throws a raw `TypeError` that would blank the
   entire layer. No placeholder graphic is substituted — a generic stand-in would carry
   the real id, so editing it would commit the wrong kind over the unknown one. (#637)
-- **Mobile is not designed.** The whole keyboard layer decided here (Escape/Enter/
-  Ctrl+Z) does not exist on a phone; this ADR assumes a keyboard. Touch behaviour is
-  handled when stage two unifies the draw stack. (#647)
+- **An active draw owns essential session chrome.** The ordinary Draw sub-toolbar is
+  replaced by one status/Snap/Cancel/Done bar for both plain shapes and control measures
+  on desktop and mobile; there is no separate control-measure hint. The bar reports live
+  point progress, stays visible even when the persistent toolbar preference is off, and
+  survives responsive layout changes without settling the session. Plain MapLibre and
+  legacy OpenLayers drawing expose the same point-progress and explicit-finish
+  contract. (#647)
 
 ## What stage two owns
 
 Named here so nothing above reads as permanent by omission: migrating plain
 point/line/circle/polygon onto tactical-draw, retiring `maplibreScenarioFeatures.ts`,
 unifying z-order so control measures and plain shapes interleave, `translate` /
-`syncTransformGraphics`, the `external` snapping provider, and mobile interaction. The
-~150–200 interactive ceiling is a budget over *all* rendered graphics, so migrated
+`syncTransformGraphics`, and the `external` snapping provider. The
+~150–200 interactive ceiling is a budget over _all_ rendered graphics, so migrated
 plain shapes draw against the same allowance rather than a fresh one.
