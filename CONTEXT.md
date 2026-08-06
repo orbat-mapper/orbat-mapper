@@ -109,8 +109,8 @@ An open control-measure interaction owned by tactical-draw. Transient — nothin
 reaches the scenario store while it is open.
 
 **Commit on settle**:
-Exactly one scenario-store update per settled session, so a whole drawn control
-measure is one undo step and an aborted session leaves none.
+At most one scenario-store update per settled session. A changed session is one undo
+step; an unchanged edit or aborted draw leaves none.
 
 **Settle-first**:
 The rule that anything feeding `render()` settles an open session before

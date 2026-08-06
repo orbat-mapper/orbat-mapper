@@ -16,6 +16,7 @@ import { defineComponent, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
+import { useScenarioTime } from "@/scenariostore/time";
 import type { TScenario } from "@/scenariostore";
 import { useScenarioDraw } from "@/modules/scenarioeditor/useScenarioDraw";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -479,6 +480,45 @@ describe("changing control-measure options while editing its shape", () => {
 });
 
 describe("recording a control measure's shape", () => {
+  it("updates the timeline histogram when time settles the first recorded edit", async () => {
+    const { draw, scenario } = setup({ realFeed: true });
+    useRecordingStore().isRecordingGeometry = true;
+    const time = useScenarioTime(scenario.store);
+    const recordedAt = Date.parse("2025-01-02T00:00:00Z");
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    time.setCurrentTime(recordedAt);
+    await nextTick();
+    await nextTick();
+
+    expect(storedItem(scenario).state).toHaveLength(1);
+    expect(time.computeTimeHistogram().histogram).toEqual([{ t: recordedAt, count: 1 }]);
+  });
+
+  it("does not record unchanged geometry when a time scrub settles the edit", async () => {
+    const { draw, scenario, fake } = setup({ realFeed: true });
+    useRecordingStore().isRecordingGeometry = true;
+    // The shared fake opens edits on EDITED_POINTS. Align both the stored base and its
+    // initial timed projection so the session is genuinely unchanged when settled.
+    scenario.geo.updateTacticalGraphic("cm-1", { controlPoints: EDITED_POINTS });
+    scenario.geo.addTacticalGraphicStateControlPoints(
+      "cm-1",
+      EDITED_POINTS,
+      Date.parse("2025-01-01T00:00:00Z"),
+    );
+    await nextTick();
+
+    draw.arm({ kind: "cmEdit", featureId: "cm-1" });
+    useScenarioTime(scenario.store).setCurrentTime(Date.parse("2025-01-02T00:00:00Z"));
+    await nextTick();
+    await nextTick();
+
+    // The protective render still reopens persistent Edit, but it must not create a
+    // second entry containing the exact same control points at the new timestamp.
+    expect(fake.calls.edit).toHaveLength(2);
+    expect(storedItem(scenario).state).toHaveLength(1);
+  });
+
   it("puts controlPoints in timed state while everything else stays top-level", async () => {
     const { draw, scenario, fake } = setup();
     useRecordingStore().isRecordingGeometry = true;
