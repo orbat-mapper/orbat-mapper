@@ -24,10 +24,10 @@ import {
   RESOURCE_KINDS,
 } from "@/scenariostore/unitResources";
 import {
-  createInitialGeometryLayerItemState,
+  computeScenarioLayerItemHidden,
   type CurrentGeometryLayerItemState,
-  isNGeometryLayerItem,
-  projectGeometryLayerItemState,
+  type CurrentScenarioLayerItemState,
+  projectScenarioLayerItemStateAt,
 } from "@/types/scenarioLayerItems";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 
@@ -153,30 +153,23 @@ export function useScenarioTime(store: NewScenarioStore) {
       if (oldHidden !== layer._hidden) {
         state.featureStateCounter++;
       }
+      // Kind-agnostic: this is the projection that actually fires on a time scrub.
+      // It used to bail on anything but geometry, which is why annotation and
+      // measurement timed state has never projected under the clock.
       layer.items.forEach((featureId) => {
         const feature = state.layerItemMap[featureId];
-        if (!feature || !isNGeometryLayerItem(feature)) return;
-        const visibleFromT = feature.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-        const visibleUntilT = feature.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-        const oldHidden = feature._hidden;
-        feature._hidden =
-          timestamp <= visibleFromT || timestamp >= visibleUntilT || !!feature.isHidden;
-        if (oldHidden !== feature._hidden) {
+        if (!feature) return;
+        // Projection first: `_hidden` resolves `isHidden`/`visibleFromT`/
+        // `visibleUntilT` through `_state`, so computing it against the pre-scrub
+        // projection would ignore any timed patch of them.
+        if (feature.state?.length) {
+          (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
+            projectScenarioLayerItemStateAt(feature, timestamp);
           state.featureStateCounter++;
         }
-        if (feature.state?.length) {
-          let currentState = createInitialGeometryLayerItemState(feature);
-          for (const s of feature.state) {
-            if (s.t <= timestamp) {
-              currentState = {
-                ...currentState,
-                ...projectGeometryLayerItemState(s),
-              };
-            } else {
-              break;
-            }
-          }
-          feature._state = currentState;
+        const oldHidden = feature._hidden;
+        feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);
+        if (oldHidden !== feature._hidden) {
           state.featureStateCounter++;
         }
       });
@@ -249,16 +242,15 @@ export function useScenarioTime(store: NewScenarioStore) {
       });
     });
 
-    Object.values(state.layerItemMap)
-      .filter(isNGeometryLayerItem)
-      .forEach((feature) => {
-        (feature?.state || []).forEach((s) => {
-          // round to nearest hour
-          const t = Math.round(s.t / 3600000) * 3600000;
-          histogram[t] = (histogram[t] || 0) + 1;
-          max = Math.max(max, histogram[t]);
-        });
+    // Every layer-item kind carries timed state, so every kind contributes here.
+    Object.values(state.layerItemMap).forEach((feature) => {
+      ((feature?.state ?? []) as { t: number }[]).forEach((s) => {
+        // round to nearest hour
+        const t = Math.round(s.t / 3600000) * 3600000;
+        histogram[t] = (histogram[t] || 0) + 1;
+        max = Math.max(max, histogram[t]);
       });
+    });
 
     return {
       histogram: Object.entries(histogram).map(([k, v]) => ({ t: +k, count: v })),

@@ -27,6 +27,9 @@ vi.mock("@/geo/engines/openlayers/olMapAdapter", () => ({
     constructor(public map: unknown) {}
     setViewConstraints() {}
     updateSize() {}
+    getNativeMap() {
+      return this.map;
+    }
     getCenter() {
       return [30, 40];
     }
@@ -86,7 +89,9 @@ vi.mock("@/components/ScenarioMap.vue", () => ({
     setup(_, { emit }) {
       onMounted(() => {
         emit("mapReady", {
-          olMap: {},
+          // `useScenarioDraw` is hoisted into this view, so its OpenLayers layer
+          // lookup now runs on mount rather than with the draw toolbar.
+          olMap: { addLayer: vi.fn(), addInteraction: vi.fn() },
           featureSelectInteraction: {
             setMap: vi.fn(),
           },
@@ -143,6 +148,12 @@ describe("ScenarioEditorMap", () => {
             ...(overrides.state as object | undefined),
           },
           groupUpdate: (fn: () => void) => fn(),
+        },
+        // The hoisted `useScenarioDraw` resolves the active OpenLayers layer on mount.
+        geo: {
+          layerItemsLayers: { value: [] },
+          getGeometryLayerItemById: vi.fn(() => ({})),
+          deleteFeature: vi.fn(),
         },
         time: {
           setCurrentTime: vi.fn(),

@@ -25,7 +25,6 @@ import { klona } from "klona";
 import type { EntityId } from "@/types/base";
 import type {
   NEquipmentData,
-  NGeometryLayerItem,
   NPersonnelData,
   NRangeRingGroup,
   NScenarioEvent,
@@ -54,6 +53,10 @@ import {
   type LoadableScenario,
 } from "@/scenariostore/upgrade";
 import { SYMBOL_FILL_COLORS } from "@/config/colors.ts";
+import type {
+  LoadableGeometryLayerItemState,
+  ScenarioLayerItemState,
+} from "@/types/scenarioLayerItems";
 import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
 import type {
   NScenarioOverlayLayer,
@@ -427,25 +430,24 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
         items: itemIds,
       } as NScenarioOverlayLayer;
       layer.items.forEach((item) => {
-        if (item.kind !== "geometry") {
-          layerItemMap[item.id] = {
-            ...item,
-            _pid: layer.id,
-          } as NScenarioLayerItem;
-          return;
-        }
-        const tmp = { ...item };
-        tmp.state = tmp.state?.map((s) => ({
-          ...normalizeGeometryLayerItemState({
-            ...s,
-            t: +dayjs(s.t),
-            id: s.id || nanoid(),
-          }),
-        }));
+        // Kind-agnostic base pass. Every kind gets its visibility bounds and its
+        // state timestamps coerced to numbers and its state ids backfilled; only
+        // the legacy flat-`geometry` lift is geometry-specific. Before this, the
+        // `kind !== "geometry"` escape hatch stored other kinds verbatim, leaving
+        // ISO strings where the runtime expects epoch millis.
+        const mapped = mapVisibility({ ...item });
+        const stateEntries = (mapped as { state?: ScenarioLayerItemState[] }).state;
+        const nextState = stateEntries?.map((s) => {
+          const base = { ...s, t: +dayjs(s.t), id: s.id || nanoid() };
+          return mapped.kind === "geometry"
+            ? normalizeGeometryLayerItemState(base as LoadableGeometryLayerItemState)
+            : base;
+        });
         layerItemMap[item.id] = {
-          ...mapVisibility(tmp),
+          ...mapped,
+          ...(nextState ? { state: nextState } : {}),
           _pid: layer.id,
-        } as NGeometryLayerItem;
+        } as NScenarioLayerItem;
       });
       return;
     }

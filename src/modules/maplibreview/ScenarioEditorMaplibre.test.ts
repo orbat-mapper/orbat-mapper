@@ -32,6 +32,9 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
     constructor(public map: unknown) {}
     setViewConstraints() {}
+    getNativeMap() {
+      return this.map;
+    }
     getCenter() {
       return [33, 44];
     }
@@ -44,13 +47,32 @@ vi.mock("@/geo/mapLibreMapAdapter", () => ({
   },
 }));
 
-vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", () => ({
-  createTacticalDrawSurface: vi.fn(() => ({
-    adapter: {},
-    tacticalDraw: null,
-    render: vi.fn(),
-    onGraphicPick: vi.fn(() => vi.fn()),
-    destroy: destroyTacticalDrawSurface,
+// The one shared medium-fidelity fake of the surface seam, rather than a view-local
+// copy that has to be widened every time the seam grows.
+vi.mock("@/geo/engines/maplibre/tacticalDrawSurface", async () => {
+  const { createTacticalDrawSurfaceFake } =
+    await import("@/geo/engines/maplibre/tacticalDrawSurfaceFake");
+  return {
+    createTacticalDrawSurface: vi.fn(
+      () =>
+        createTacticalDrawSurfaceFake({ onDestroy: () => destroyTacticalDrawSurface() })
+          .surface,
+    ),
+  };
+});
+
+// The hoisted `useScenarioDraw` builds the plain draw interaction against the native
+// map; this view test has no real maplibre-gl instance.
+vi.mock("@/composables/maplibreDrawInteraction", () => ({
+  useMapLibreDrawInteraction: vi.fn(() => ({
+    startDrawing: vi.fn(),
+    currentDrawType: ref(null),
+    startModify: vi.fn(),
+    isModifying: ref(false),
+    cancel: vi.fn(),
+    isDrawing: ref(false),
+    finishPathDrawing: vi.fn(),
+    destroy: vi.fn(),
   })),
 }));
 
@@ -194,15 +216,21 @@ describe("ScenarioEditorMaplibre", () => {
         state: {
           id: "scenario-1",
           mapSettings: {},
+          featureStateCounter: 0,
           layerStack: ["layer-1"],
           layerStackMap: {
             "layer-1": { id: "layer-1", kind: "overlay", name: "Features", items: [] },
           },
         },
         groupUpdate: (fn: () => void) => fn(),
+        // The control-measure render feed subscribes to undo/redo and to layer
+        // events; both hand back a vueuse-style `{ off }`.
+        onUndoRedo: vi.fn(() => ({ off: vi.fn() })),
       },
       geo: {
         addFeature: vi.fn((feature) => feature.id),
+        layerItemsLayers: computed(() => []),
+        onFeatureLayerEvent: vi.fn(() => ({ off: vi.fn() })),
       },
     };
   }

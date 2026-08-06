@@ -21,6 +21,7 @@ import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { type ToolbarType, useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
+import { useOwnedUndoRedo } from "@/modules/scenarioeditor/useOwnedUndoRedo";
 import { storeToRefs } from "pinia";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useEventBus, useToggle } from "@vueuse/core";
@@ -70,12 +71,16 @@ const emit = defineEmits([
   "show-settings",
 ]);
 
+const activeScenario = injectStrict(activeScenarioKey);
 const {
-  store: { undo, redo, canRedo, canUndo, groupUpdate, state },
+  store: { groupUpdate, state },
   unitActions,
   geo: { addUnitPosition },
   helpers: { getSideById },
-} = injectStrict(activeScenarioKey);
+} = activeScenario;
+// Not `store.undo` directly: an open control-measure session owns undo, and a click on
+// this button has to reach the same owner Ctrl+Z does. See ADR-0006.
+const { undo, redo, canUndo, canRedo } = useOwnedUndoRedo(activeScenario);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 
 const store = useMainToolbarStore();
@@ -316,7 +321,7 @@ watchEffect(() => {
       <MainToolbarButton
         :active="store.currentToolbar === 'draw'"
         @click="toggleToolbarIfSupported('draw')"
-        :title="props.canDraw ? 'Draw' : 'Draw not supported in MapLibre mode yet'"
+        :title="props.canDraw ? 'Draw' : 'Draw not supported by this map engine'"
         :disabled="!props.canDraw"
       >
         <DrawIcon class="size-6" />

@@ -8,7 +8,7 @@ import type {
 import { featureCollection, lineString, point, polygon } from "@turf/helpers";
 import turfCircle from "@turf/circle";
 import type { Feature as GeoJsonFeature, Geometry, Point, Position } from "geojson";
-import { onKeyStroke, tryOnBeforeUnmount } from "@vueuse/core";
+import { tryOnBeforeUnmount } from "@vueuse/core";
 import { ref, toValue, unref, watch, type MaybeRef, type MaybeRefOrGetter } from "vue";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
@@ -98,8 +98,6 @@ export function useMapLibreDrawInteraction(
   let circleCenter: Position | null = null;
   let rectangleCorner: Position | null = null;
   let drawingDoubleClickZoomEnabled: boolean | null = null;
-  let cleanupEsc: (() => void) | undefined;
-  let cleanupEnter: (() => void) | undefined;
   const touchDoubleTap = createTouchDoubleTapTracker();
 
   function startDrawing(drawType: DrawType) {
@@ -667,15 +665,18 @@ export function useMapLibreDrawInteraction(
   mlMap.on("touchend", onTouchEnd);
   mlMap.on("touchcancel", onMouseUp);
 
-  cleanupEsc = onKeyStroke("Escape", () => cancel());
-  cleanupEnter = onKeyStroke("Enter", () => finishPathDrawing());
-
   watch(
     () => [...options.getSelectedFeatures().map((feature) => feature.id)],
     () => renderHandles(),
   );
 
-  tryOnBeforeUnmount(() => {
+  // Idempotent: `useScenarioDraw` is hoisted above the draw toolbar and rebuilds this
+  // interaction when the map is recreated, so `destroy()` may race the owning
+  // component's unmount hook.
+  let destroyed = false;
+  function destroy() {
+    if (destroyed) return;
+    destroyed = true;
     mlMap.off("click", onClick);
     mlMap.off("dblclick", onDoubleClick);
     mlMap.off("mousemove", onMouseMove);
@@ -685,10 +686,10 @@ export function useMapLibreDrawInteraction(
     mlMap.off("mouseup", onMouseUp);
     mlMap.off("touchend", onTouchEnd);
     mlMap.off("touchcancel", onMouseUp);
-    cleanupEsc?.();
-    cleanupEnter?.();
     cancel();
-  });
+  }
+
+  tryOnBeforeUnmount(destroy);
 
   return {
     startDrawing,
@@ -697,6 +698,11 @@ export function useMapLibreDrawInteraction(
     isModifying,
     cancel,
     isDrawing,
+    // Escape and Enter are no longer owned here. `useScenarioDraw` is the sole
+    // keyboard owner (ADR-0006): the three non-propagation-stopping Escape listeners
+    // collapsed into one that only acts when a tool is armed.
+    finishPathDrawing,
+    destroy,
   };
 }
 

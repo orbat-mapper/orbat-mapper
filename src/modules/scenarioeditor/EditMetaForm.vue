@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
 import type { NGeometryLayerItem, NScenarioEvent, NUnit } from "@/types/internalModels";
+import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { createShortUnitName } from "@/utils/shortUnitName";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { storeToRefs } from "pinia";
@@ -27,9 +28,17 @@ const SimpleMarkdownInput = defineAsyncComponent(
 );
 
 const props = defineProps<{
-  item?: NUnit | NGeometryLayerItem | NScenarioEvent | null;
+  item?: MetaFormItem | null;
 }>();
 const emit = defineEmits(["cancel", "update"]);
+
+/**
+ * A control measure carries the same name/description/externalUrl trio as a geometry
+ * item, so the form serves both — `isLayerItemType` keys off the item kind rather than
+ * hard-coding `"geometry"`.
+ */
+type MetaFormItem =
+  NUnit | NGeometryLayerItem | NTacticalGraphicLayerItem | NScenarioEvent;
 
 type ItemMetaForm = {
   name: string;
@@ -49,19 +58,17 @@ const form = ref<Partial<ItemMetaForm>>({
   subTitle: "",
 });
 
-const isScenarioFeatureType = (
-  item: NUnit | NGeometryLayerItem | NScenarioEvent,
-): item is NGeometryLayerItem => {
-  return "kind" in item && item.kind === "geometry";
+const isLayerItemType = (
+  item: MetaFormItem,
+): item is NGeometryLayerItem | NTacticalGraphicLayerItem => {
+  return "kind" in item && (item.kind === "geometry" || item.kind === "tacticalGraphic");
 };
 
-const isScenarioEventType = (
-  item: NUnit | NGeometryLayerItem | NScenarioEvent,
-): item is NScenarioEvent => {
+const isScenarioEventType = (item: MetaFormItem): item is NScenarioEvent => {
   return "startTime" in item || ("_type" in item && item._type === "scenario");
 };
 
-const isUnitType = (item: NUnit | NGeometryLayerItem | NScenarioEvent): item is NUnit => {
+const isUnitType = (item: MetaFormItem): item is NUnit => {
   return "sidc" in item;
 };
 
@@ -77,7 +84,7 @@ watch(
   () => props.item,
   (item) => {
     if (!item) return;
-    if (isScenarioFeatureType(item)) {
+    if (isLayerItemType(item)) {
       form.value = {
         name: item?.name ?? "",
         description: item?.description ?? "",

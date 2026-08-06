@@ -7,6 +7,7 @@ import { injectStrict } from "@/utils";
 import {
   activeScenarioKey,
   routeDetailsPanelKey,
+  scenarioKeyboardOwnerKey,
   searchActionsKey,
 } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
@@ -27,6 +28,10 @@ const {
 } = activeScenario;
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
 const routeDetailsPanel = inject(routeDetailsPanelKey, null);
+// The armed-tool owner gets first refusal on Escape and Enter, the same shape the route
+// details panel already uses. Three separate non-propagation-stopping Escape listeners
+// collapsed onto it (ADR-0006); unarmed, it returns false and nothing changes.
+const scenarioKeyboardOwner = inject(scenarioKeyboardOwnerKey, null);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
 const {
@@ -69,14 +74,24 @@ const duplicateUnit = () => {
   activeUnitId.value && unitActions.cloneUnit(activeUnitId.value);
 };
 
+// The owner's first refusal for the *plain* tools only. A control-measure session is
+// already gone by the time this runs: `useScenarioDraw` takes Escape in the capture
+// phase on `window`, because this handler is skipped on three conditions
+// (`shortcutsEnabled`, `escEnabled`, a Reka target) in which tactical-draw's own window
+// listener would otherwise abort an open edit and discard its work.
 function handleEscape(e: KeyboardEvent) {
   if (uiStore.escEnabled) {
     if (isRekaComponent(e)) return;
+    if (scenarioKeyboardOwner?.value?.handleEscape(e)) return;
     if (routeDetailsPanel?.handleEscape()) return;
     clearSelected();
     activeUnitStore.clearActiveUnit();
     activeScenarioEventId.value = null;
   }
+}
+
+function handleEnter(e: KeyboardEvent) {
+  scenarioKeyboardOwner?.value?.handleEnter(e);
 }
 
 function isRekaComponent(e: KeyboardEvent) {
@@ -161,6 +176,7 @@ function handleSpecialKeys(e: KeyboardEvent) {
     @keydown.c.exact="createNewUnit"
     @keydown.d.exact="duplicateUnit"
     @keydown.esc="handleEscape"
+    @keydown.enter.exact="handleEnter"
     @keydown.z.exact="handleZoomShortcut"
     @keydown.p.exact="handlePanShortcut"
     @keydown.alt.p.exact="handlePlaybackShortcut"

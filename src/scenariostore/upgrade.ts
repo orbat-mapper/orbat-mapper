@@ -16,10 +16,15 @@ import type {
   LoadableGeometryLayerItemState,
   LoadableGeometryLayerMeta,
   MeasurementLayerItem,
+  ScenarioLayerItemKind,
   ScenarioLayerItemsLayer,
   TacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
 import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
+import {
+  countUnsupportedGraphicKinds,
+  formatUnsupportedGraphicKindWarning,
+} from "@/scenariostore/tacticalGraphics";
 import type {
   ScenarioOverlayLayer,
   ScenarioReferenceLayer,
@@ -65,9 +70,7 @@ export type LoadableOverlayLayer =
     });
 
 export type LoadableScenarioLayer =
-  | ScenarioStackLayer
-  | LoadableOverlayLayer
-  | ScenarioMapLayer;
+  ScenarioStackLayer | LoadableOverlayLayer | ScenarioMapLayer;
 
 export type LoadableScenario = Omit<Scenario, "layerStack"> & {
   layerStack?: LoadableScenarioLayer[];
@@ -211,9 +214,17 @@ function upgradeGeometryItemToSharedBase(
   };
 }
 
+const KNOWN_LAYER_ITEM_KINDS: ReadonlySet<string> = new Set<ScenarioLayerItemKind>([
+  "geometry",
+  "annotation",
+  "tacticalGraphic",
+  "measurement",
+]);
+
 function canonicalizeOverlayLayer(
   layer: LoadableOverlayLayer,
   scenarioId?: string,
+  unsupportedGraphicKinds: Record<string, number> = {},
 ): ScenarioOverlayLayer {
   if (!Array.isArray(layer.items)) {
     const { features = [], ...rest } = layer as Exclude<
@@ -260,7 +271,19 @@ function canonicalizeOverlayLayer(
     }
 
     const kind = item.kind || "unknown";
-    skippedKinds[kind] = (skippedKinds[kind] || 0) + 1;
+    if (!KNOWN_LAYER_ITEM_KINDS.has(kind)) {
+      // Still dropped: an item whose *kind* is unknown has no shape this build can
+      // reason about at all. An unknown tacticalGraphic `graphicKind` is a different
+      // thing entirely — that item is kept verbatim below.
+      skippedKinds[kind] = (skippedKinds[kind] || 0) + 1;
+      return;
+    }
+
+    // annotation / tacticalGraphic / measurement pass through untouched. They used
+    // to be dropped here, which is why no such item has ever reached the store.
+    const canonicalItem = item as ScenarioLayerItemsLayer["items"][number];
+    canonicalItems.push({ ...canonicalItem, id: String(canonicalItem.id) });
+    countUnsupportedGraphicKinds([canonicalItem], unsupportedGraphicKinds);
   });
 
   const skippedKindsEntries = Object.entries(skippedKinds);
@@ -307,6 +330,16 @@ function canonicalizeReferenceLayer(layer: ScenarioMapLayer): ScenarioReferenceL
 }
 
 function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
+  // Aggregated across the whole scenario so an unknown control-measure kind produces
+  // exactly one warning at load, not one per item and not one per layer.
+  const unsupportedGraphicKinds: Record<string, number> = {};
+  const warnOnceAboutUnsupportedGraphicKinds = () => {
+    const message = formatUnsupportedGraphicKindWarning(
+      unsupportedGraphicKinds,
+      scenario.id,
+    );
+    if (message) console.warn(message);
+  };
   if (Array.isArray(scenario.layerStack)) {
     const canonicalLayerStack: Scenario["layerStack"] = [];
     scenario.layerStack.forEach((layer) => {
@@ -334,7 +367,9 @@ function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
         "kind" in layer &&
         layer.kind === "overlay"
       ) {
-        canonicalLayerStack.push(canonicalizeOverlayLayer(layer, scenario.id));
+        canonicalLayerStack.push(
+          canonicalizeOverlayLayer(layer, scenario.id, unsupportedGraphicKinds),
+        );
         return;
       }
       if (isScenarioMapLayer(layer)) {
@@ -342,9 +377,14 @@ function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
         return;
       }
       canonicalLayerStack.push(
-        canonicalizeOverlayLayer(layer as LoadableOverlayLayer, scenario.id),
+        canonicalizeOverlayLayer(
+          layer as LoadableOverlayLayer,
+          scenario.id,
+          unsupportedGraphicKinds,
+        ),
       );
     });
+    warnOnceAboutUnsupportedGraphicKinds();
     return {
       ...scenario,
       layerStack: canonicalLayerStack,
@@ -355,8 +395,9 @@ function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
     canonicalizeReferenceLayer(layer),
   );
   const legacyOverlayLayers = (scenario.layers ?? []).map((layer) =>
-    canonicalizeOverlayLayer(layer, scenario.id),
+    canonicalizeOverlayLayer(layer, scenario.id, unsupportedGraphicKinds),
   );
+  warnOnceAboutUnsupportedGraphicKinds();
   return {
     ...scenario,
     layerStack: [...legacyMapLayers, ...legacyOverlayLayers],
@@ -467,6 +508,10 @@ function upgradeGeometryLayerItemsToSharedBase(scenario: Scenario): Scenario {
 }
 
 function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
+  // The sibling `tacticalGraphic.standard` rewrite that used to live here is gone
+  // with the field: the control-measure library is 2525E-only, so `standard` selected
+  // between nothing. It could never have fired anyway — canonicalizeOverlayLayer
+  // dropped every tacticalGraphic item before this ran.
   const symbologyStandardMap: Record<string, string> = { "2525": "2525d", app6: "app6d" };
   const upgradedScenario = { ...scenario };
   if (upgradedScenario.symbologyStandard != null) {
@@ -476,21 +521,6 @@ function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
       ] as typeof upgradedScenario.symbologyStandard) ??
       upgradedScenario.symbologyStandard;
   }
-  upgradedScenario.layerStack = upgradedScenario.layerStack.map((layer) => {
-    if (layer.kind !== "overlay") return layer;
-    return {
-      ...layer,
-      items: layer.items.map((item) => {
-        if (item.kind !== "tacticalGraphic") return item;
-        const tg = item as TacticalGraphicLayerItem;
-        if (tg.standard == null) return tg;
-        const upgraded = symbologyStandardMap[tg.standard];
-        return upgraded
-          ? { ...tg, standard: upgraded as TacticalGraphicLayerItem["standard"] }
-          : tg;
-      }),
-    };
-  });
   return upgradedScenario;
 }
 

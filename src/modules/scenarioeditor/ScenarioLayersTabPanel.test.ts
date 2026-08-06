@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { ref, shallowRef } from "vue";
 import ScenarioLayersTabPanel from "@/modules/scenarioeditor/ScenarioLayersTabPanel.vue";
+import type { NScenarioLayerItem } from "@/types/scenarioLayerItems";
+import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import {
   activeLayerKey,
   activeScenarioKey,
@@ -139,5 +141,118 @@ describe("ScenarioLayersTabPanel", () => {
       label: "Zoom to",
       disabled: true,
     });
+  });
+});
+
+describe("ScenarioLayersTabPanel control-measures section", () => {
+  function overlayLayer(id: string, itemIds: string[]): NScenarioOverlayLayer {
+    return {
+      id,
+      kind: "overlay",
+      name: id,
+      items: itemIds,
+      _isOpen: true,
+    } as NScenarioOverlayLayer;
+  }
+
+  function cm(id: string): NScenarioLayerItem {
+    return {
+      id,
+      kind: "tacticalGraphic",
+      graphicKind: "boundary",
+      controlPoints: [
+        [10, 60],
+        [11, 61],
+      ],
+      _pid: "cm-layer",
+    } as unknown as NScenarioLayerItem;
+  }
+
+  function geometry(id: string): NScenarioLayerItem {
+    return {
+      id,
+      kind: "geometry",
+      _pid: "mixed-layer",
+      geometry: { type: "Point", coordinates: [10, 60] },
+      geometryMeta: { geometryKind: "Point" },
+      style: {},
+    } as unknown as NScenarioLayerItem;
+  }
+
+  function mountWithLayers(
+    layersItems: { layer: NScenarioOverlayLayer; items: NScenarioLayerItem[] }[],
+  ) {
+    const stackLayers = layersItems.map(({ layer }) => layer);
+    return mount(ScenarioLayersTabPanel, {
+      global: {
+        provide: {
+          [activeLayerKey as symbol]: ref(null),
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            map: {} as never,
+            layers: { capabilities: {}, zoomToFeature: vi.fn() },
+          }),
+          [activeScenarioKey as symbol]: {
+            geo: {
+              mapLayers: ref([]),
+              layerItemsLayers: ref(stackLayers),
+              layersItems: ref(layersItems),
+              stackLayers: ref(stackLayers),
+              getGeometryLayerItemById: (id: string) => ({
+                layerItem: layersItems
+                  .flatMap((l) => l.items)
+                  .find((i) => i.id === id && i.kind === "geometry"),
+              }),
+              updateLayer: vi.fn(),
+              updateLayerItem: vi.fn(),
+              deleteFeature: vi.fn(),
+              deleteLayer: vi.fn(),
+            },
+            store: { groupUpdate: vi.fn((fn: () => void) => fn()) },
+          },
+        },
+        stubs: {
+          ChevronPanel: { template: "<div><slot name='label' /><slot /></div>" },
+          DotsMenu: true,
+          SplitButton: true,
+          EditLayerInlineForm: true,
+          ScenarioFeatureLayer: {
+            props: ["layer"],
+            template: "<div class='tree-layer' :data-tree-layer-id='layer.id' />",
+          },
+        },
+      },
+    });
+  }
+
+  it("renders nothing until a control measure exists", () => {
+    const wrapper = mountWithLayers([
+      { layer: overlayLayer("plain", ["g1"]), items: [geometry("g1")] },
+    ]);
+
+    expect(wrapper.findAllComponents({ name: "ControlMeasureLayer" })).toHaveLength(0);
+    expect(wrapper.findAll(".tree-layer")).toHaveLength(1);
+  });
+
+  it("renders one section outside the tree and drops the layer from the tree", () => {
+    const wrapper = mountWithLayers([
+      { layer: overlayLayer("cm-layer", ["cm1"]), items: [cm("cm1")] },
+    ]);
+
+    expect(wrapper.findAllComponents({ name: "ControlMeasureLayer" })).toHaveLength(1);
+    // The section IS the layer, so the tree must not also render a header for it.
+    expect(wrapper.find('[data-tree-layer-id="cm-layer"]').exists()).toBe(false);
+    expect(wrapper.find('[data-feature-id="cm1"]').exists()).toBe(true);
+  });
+
+  it("keeps a mixed layer in the tree so its geometry items stay listed", () => {
+    const wrapper = mountWithLayers([
+      {
+        layer: overlayLayer("mixed-layer", ["g1", "cm1"]),
+        items: [geometry("g1"), cm("cm1")],
+      },
+    ]);
+
+    expect(wrapper.find('[data-tree-layer-id="mixed-layer"]').exists()).toBe(true);
+    expect(wrapper.findAllComponents({ name: "ControlMeasureLayer" })).toHaveLength(1);
   });
 });
