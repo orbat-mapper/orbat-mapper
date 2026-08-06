@@ -9,9 +9,10 @@
  * control measure with an authored colour on a doctrinal kind still renders with it.
  * Nothing here may ever be consulted by the store or by `toControlMeasure`.
  *
- * Everything is derived from the library's own metadata (`entity` and `paints`), so
- * there is no parallel list of kinds or of fill patterns to drift out of step with
- * the registry.
+ * Stroke width follows `paints.stroke`; colour and fill remain restricted by entity
+ * and fill capability. Everything is derived from the library's own metadata, so
+ * there is no parallel list of kinds or patterns to drift out of step with the
+ * registry.
  */
 import {
   CONTROL_MEASURE_METADATA,
@@ -44,6 +45,13 @@ export type ControlMeasureStyleUpdate = Pick<
 /** The registry entity holding the kinds that carry no doctrinal colour of their own. */
 export const GENERIC_GRAPHICS_ENTITY = "Generic Graphics";
 
+export const CONTROL_MEASURE_STROKE_WIDTH_DEFAULT = 2;
+export const CONTROL_MEASURE_STROKE_WIDTH_PRESETS = [
+  { label: "Thin", value: 1 },
+  { label: "Medium", value: CONTROL_MEASURE_STROKE_WIDTH_DEFAULT },
+  { label: "Heavy", value: 4 },
+] as const;
+
 function metadataFor(kind: ControlMeasureKind | undefined) {
   if (kind === undefined) return undefined;
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
@@ -65,6 +73,11 @@ export function isStyleableControlMeasureKind(
  */
 export function canAuthorFillPattern(kind: ControlMeasureKind | undefined): boolean {
   return isStyleableControlMeasureKind(kind) && metadataFor(kind)?.paints.fill === "user";
+}
+
+/** Stroke width is meaningful for every kind whose registry output paints a stroke. */
+export function canAuthorStrokeWidth(kind: ControlMeasureKind | undefined): boolean {
+  return metadataFor(kind)?.paints.stroke === true;
 }
 
 /**
@@ -131,11 +144,16 @@ export function newControlMeasureDefaults(
   const { style, options, ...hostOwned } = defaults;
   const narrowed: NewControlMeasureDefaults = { ...hostOwned };
 
-  if (style && isStyleableControlMeasureKind(graphicKind)) {
+  if (style) {
     const authored: ControlMeasureStyle = {};
-    if (style.color !== undefined) authored.color = style.color;
-    if (style.fillPattern !== undefined && canAuthorFillPattern(graphicKind)) {
-      authored.fillPattern = style.fillPattern;
+    if (canAuthorStrokeWidth(graphicKind) && style.strokeWidth !== undefined) {
+      authored.strokeWidth = style.strokeWidth;
+    }
+    if (isStyleableControlMeasureKind(graphicKind)) {
+      if (style.color !== undefined) authored.color = style.color;
+      if (style.fillPattern !== undefined && canAuthorFillPattern(graphicKind)) {
+        authored.fillPattern = style.fillPattern;
+      }
     }
     if (Object.keys(authored).length > 0) narrowed.style = authored;
   }

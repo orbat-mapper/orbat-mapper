@@ -9,6 +9,7 @@ import {
   CONTROL_MEASURE_FILL_PATTERNS,
   GENERIC_GRAPHICS_ENTITY,
   canAuthorFillPattern,
+  canAuthorStrokeWidth,
   fillPatternLabel,
   isStyleableControlMeasureKind,
   newControlMeasureDefaults,
@@ -46,6 +47,12 @@ describe("the styling gate", () => {
     expect(canAuthorFillPattern("classic-arrow")).toBe(false);
     expect(canAuthorFillPattern("line")).toBe(false);
   });
+
+  it("offers stroke width exactly where the registry paints a stroke", () => {
+    expect(canAuthorStrokeWidth("phase-line")).toBe(true);
+    expect(canAuthorStrokeWidth("polygon")).toBe(true);
+    expect(canAuthorStrokeWidth("text")).toBe(false);
+  });
 });
 
 describe("fill pattern options", () => {
@@ -67,7 +74,7 @@ describe("newControlMeasureDefaults", () => {
     standardIdentity: "3",
     colorMode: "identity",
     status: "planned",
-    style: { color: "#ff0000", fillPattern: "hatch" },
+    style: { color: "#ff0000", fillPattern: "hatch", strokeWidth: 4 },
     options: { smooth: true },
   } as const;
 
@@ -76,6 +83,7 @@ describe("newControlMeasureDefaults", () => {
       standardIdentity: "3",
       colorMode: "identity",
       status: "planned",
+      style: { strokeWidth: 4 },
       options: { smooth: true },
     });
   });
@@ -84,12 +92,14 @@ describe("newControlMeasureDefaults", () => {
     expect(newControlMeasureDefaults(defaults, "polygon").style).toEqual({
       color: "#ff0000",
       fillPattern: "hatch",
+      strokeWidth: 4,
     });
   });
 
   it("drops the fill pattern where it would be inert, but keeps the colour", () => {
     expect(newControlMeasureDefaults(defaults, "line").style).toEqual({
       color: "#ff0000",
+      strokeWidth: 4,
     });
   });
 

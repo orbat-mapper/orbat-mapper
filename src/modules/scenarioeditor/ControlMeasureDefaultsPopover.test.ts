@@ -89,6 +89,16 @@ describe("ControlMeasureDefaultsPopover", () => {
     expect(store.defaults.options).toEqual({ smooth: true });
   });
 
+  it("shows stroke-width presets in the palette popover", async () => {
+    const { wrapper } = mountPopover([]);
+    const store = useControlMeasureToolStore();
+    store.lastKind = "phase-line";
+    await nextTick();
+
+    await wrapper.get("button[aria-label='Heavy stroke, 4 pixels']").trigger("click");
+    expect(store.defaults.style?.strokeWidth).toBe(4);
+  });
+
   it("applies settings to the selected control measure instead of defaults", async () => {
     const selected = item("cm-1", "polygon", { color: "#112233" });
     const { wrapper, updateControlMeasure } = mountPopover([selected]);

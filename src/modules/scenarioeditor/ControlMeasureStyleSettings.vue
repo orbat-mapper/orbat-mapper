@@ -11,9 +11,9 @@
  *   slider drags and rolls back on commit; nothing here ever writes mid-gesture, so
  *   every emit is already one settled change and the host can write it undoably once.
  * - **No gating anywhere but here.** Colour and fill pattern are offered only for the
- *   7 Generic Graphics kinds (ADR-0006), but that is a UI judgement about doctrinal
- *   symbology — the model and `toControlMeasure` stay uniform, so an imported colour
- *   on a doctrinal kind still renders.
+ *   7 Generic Graphics kinds (ADR-0006), while stroke width follows the registry's
+ *   paint capability. Those are UI judgements — the model and `toControlMeasure` stay
+ *   uniform, so imported styling still renders.
  *
  * Defaults are edited for the toolbar's currently chosen kind, so the same capability
  * gate applies before and after a graphic is born.
@@ -35,11 +35,14 @@ import type {
 } from "@/types/scenarioLayerItems";
 import { resolveControlMeasureColorFrom } from "@/geo/controlMeasures";
 import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import ControlMeasureStrokeWidthChoices from "@/modules/scenarioeditor/ControlMeasureStrokeWidthChoices.vue";
 import {
   CONTROL_MEASURE_FILL_PATTERNS,
+  CONTROL_MEASURE_STROKE_WIDTH_DEFAULT,
   type ControlMeasureFillPattern,
   type ControlMeasureStyleUpdate,
   canAuthorFillPattern,
+  canAuthorStrokeWidth,
   canSmoothControlMeasureKind,
   fillPatternLabel,
   isControlMeasureSmoothed,
@@ -83,6 +86,9 @@ const showColor = computed(
 );
 const showFillPattern = computed(
   () => editedKinds.value.length > 0 && editedKinds.value.every(canAuthorFillPattern),
+);
+const showStrokeWidth = computed(
+  () => editedKinds.value.length > 0 && editedKinds.value.every(canAuthorStrokeWidth),
 );
 
 /** What the graphic actually draws as, authored colour or identity projection. */
@@ -131,6 +137,11 @@ const colorModeModel = computed({
 const statusModel = computed({
   get: () => props.status ?? "present",
   set: (value: string) => emit("update", { status: value as TacticalGraphicStatus }),
+});
+
+const strokeWidthModel = computed({
+  get: () => props.measureStyle?.strokeWidth ?? CONTROL_MEASURE_STROKE_WIDTH_DEFAULT,
+  set: (value: number) => updateStyle({ strokeWidth: value }),
 });
 
 /**
@@ -187,6 +198,11 @@ const fillPatternModel = computed({
     <NativeSelectOption value="present">Present</NativeSelectOption>
     <NativeSelectOption value="planned">Planned</NativeSelectOption>
   </NativeSelect>
+
+  <template v-if="showStrokeWidth">
+    <div class="self-center">Stroke width</div>
+    <ControlMeasureStrokeWidthChoices v-model="strokeWidthModel" />
+  </template>
 
   <template v-if="showColor">
     <div class="self-center">Color</div>

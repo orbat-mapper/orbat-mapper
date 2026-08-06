@@ -109,7 +109,9 @@ describe("what it emits", () => {
       graphicKind: "polygon",
       measureStyle: { strokeWidth: 3, color: "#ff0000" },
     });
-    await wrapper.find("button").trigger("click");
+    await wrapper
+      .get("button[title='Use the color the standard identity resolves to']")
+      .trigger("click");
     expect(wrapper.emitted("update")).toEqual([[{ style: { strokeWidth: 3 } }]]);
   });
 
@@ -120,6 +122,45 @@ describe("what it emits", () => {
     });
     await wrapper.findAll("select")[3]!.setValue("");
     expect(wrapper.emitted("update")).toEqual([[{ style: {} }]]);
+  });
+});
+
+describe("the stroke-width presets", () => {
+  it("offers Thin, Medium, and Heavy for a stroked control measure", () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const choices = wrapper.get("[aria-label='Stroke width']");
+
+    expect(
+      choices.findAll("button").map((button) => button.attributes("aria-label")),
+    ).toEqual([
+      "Thin stroke, 1 pixel",
+      "Medium stroke, 2 pixels",
+      "Heavy stroke, 4 pixels",
+    ]);
+    expect(
+      choices
+        .findAll("button")
+        .find((button) => button.attributes("aria-label") === "Medium stroke, 2 pixels")
+        ?.attributes("data-state"),
+    ).toBe("on");
+  });
+
+  it("hides stroke width for a text-only graphic", () => {
+    const wrapper = mountSettings({ graphicKind: "text" });
+    expect(wrapper.find("[aria-label='Stroke width']").exists()).toBe(false);
+  });
+
+  it("merges a chosen preset into the authored style", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "phase-line",
+      measureStyle: { color: "#123456" },
+    });
+
+    await wrapper.get("button[aria-label='Heavy stroke, 4 pixels']").trigger("click");
+
+    expect(wrapper.emitted("update")).toEqual([
+      [{ style: { color: "#123456", strokeWidth: 4 } }],
+    ]);
   });
 });
 
