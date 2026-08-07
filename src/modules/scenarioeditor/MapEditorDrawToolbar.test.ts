@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.vue";
 import DrawToolSplitButton from "@/modules/scenarioeditor/DrawToolSplitButton.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import { useSelectedItems } from "@/stores/selectedStore";
 import { scenarioDrawKey } from "@/components/injects";
 import type { ArmedTool } from "@/modules/scenarioeditor/useScenarioDraw";
 
@@ -34,6 +35,7 @@ function mountToolbar({
     startModify: vi.fn(),
     isModifying: computed(() => false),
     cancel: vi.fn(),
+    duplicateSelected: vi.fn(),
     deleteSelected: vi.fn(),
     snap: ref(true),
     translate: ref(false),
@@ -63,7 +65,20 @@ function buttonByTitle(
 const NO_ENGINE_SUPPORT = "Control measures are not supported by this map engine";
 
 describe("MapEditorDrawToolbar capability gating", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useSelectedItems().clear();
+  });
+
+  it("duplicates the current selection from the draw toolbar", async () => {
+    const { wrapper, scenarioDraw } = mountToolbar();
+    useSelectedItems().selectedFeatureIds.value.add("feature-1");
+    await wrapper.vm.$nextTick();
+
+    await buttonByTitle(wrapper, "Duplicate selected")[0]!.trigger("click");
+
+    expect(scenarioDraw.duplicateSelected).toHaveBeenCalledOnce();
+  });
 
   it("renders the control-measure buttons disabled, not hidden, without a surface", () => {
     const { wrapper } = mountToolbar({ canControlMeasures: false });

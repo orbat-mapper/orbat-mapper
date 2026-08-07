@@ -9,10 +9,12 @@ All notable changes to this project will be documented in this file.
 - Added control-measure authoring and editing in MapLibre mode. Choose from a searchable catalogue, draw measures with snapping, organize them in scenario layers, and edit their geometry from the map or details panel.
 - Added control-measure styling and labels, including identity colours, line width, echelon, text amplifiers, and free-form text where supported. Defaults can be configured before drawing, with live previews.
 - Added GeoJSON import, export, clipboard, undo/redo, and scenario persistence support for control measures.
+- Added feature and control-measure duplication actions to the details panel and draw toolbar. Control-measure details now also show the doctrinal description for the selected measure.
 
 ### Changed
 
 - Newly drawn control measures now enter edit mode automatically. A selected control measure can also be edited by clicking it again.
+- Duplicated graphics are offset by 24 screen pixels, receive an incrementing name, and become selected. A duplicated control measure enters edit mode immediately.
 - Combined the scenario feature drawing tools and control-measure tools into compact split buttons that retain the most recently used tool.
 - OpenLayers mode now shows a once-per-session notice that the legacy map is deprecated.
 
@@ -20,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed zooming to a circle feature so the view frames the full circle instead of only its centre point.
 - Fixed MapLibre control measures being drawn beneath image layers instead of above them according to the scenario layer stack.
+- Fixed duplicating a control measure after dragging a previous copy, which could create the next copy at an invalid position.
 
 ## July 2026
 

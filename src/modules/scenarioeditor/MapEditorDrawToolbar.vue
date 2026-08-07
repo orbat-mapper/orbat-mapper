@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  IconContentCopy as DuplicateIcon,
   IconCursorDefaultOutline as SelectIcon,
   IconCursorMove as MoveIcon,
   IconLockOpenVariantOutline,
@@ -48,6 +49,7 @@ const {
   startModify,
   isModifying,
   cancel,
+  duplicateSelected,
   deleteSelected,
   snap,
   translate,
@@ -148,6 +150,13 @@ const toggleFreehand = useToggle(freehand);
       :active="translate"
     >
       <MoveIcon class="size-5" />
+    </MainToolbarButton>
+    <MainToolbarButton
+      title="Duplicate selected"
+      :disabled="selectedFeatureIds.size === 0"
+      @click="duplicateSelected()"
+    >
+      <DuplicateIcon class="size-5" />
     </MainToolbarButton>
     <MainToolbarButton
       title="Delete"

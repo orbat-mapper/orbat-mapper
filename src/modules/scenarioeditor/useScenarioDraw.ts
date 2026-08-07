@@ -823,6 +823,45 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     );
   }
 
+  function duplicateSelected() {
+    const selectedIds = [...selectedFeatureIds.value];
+    if (!selectedIds.length) return;
+
+    // A tactical-draw edit is transient. Fold it before duplicateFeature reads the
+    // authoritative item, matching the details-panel duplicate action.
+    if (
+      controlMeasureEdit.featureId.value !== null &&
+      selectedIds.includes(controlMeasureEdit.featureId.value)
+    ) {
+      renderFeed?.settle("arm");
+    }
+
+    const duplicatedIds: FeatureId[] = [];
+    activeScenario.store.groupUpdate(
+      () => {
+        selectedIds.forEach((featureId) => {
+          const duplicatedId = activeScenario.geo.duplicateFeature(
+            featureId,
+            mapAdapter.value,
+          );
+          if (duplicatedId !== undefined) duplicatedIds.push(duplicatedId);
+        });
+      },
+      { label: "batchLayer", value: "dummy" },
+    );
+    if (!duplicatedIds.length) return;
+
+    selectedFeatureIds.value.clear();
+    duplicatedIds.forEach((featureId) => selectedFeatureIds.value.add(featureId));
+
+    if (duplicatedIds.length === 1) {
+      const duplicate = activeScenario.geo.getLayerItemById(duplicatedIds[0]).layerItem;
+      if (duplicate && isNTacticalGraphicLayerItem(duplicate)) {
+        arm({ kind: "cmEdit", featureId: duplicate.id });
+      }
+    }
+  }
+
   /**
    * Update host-owned control-measure fields without letting an open shape session
    * fold its older snapshot over the new values. Settling first is synchronous; the
@@ -1032,6 +1071,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     /** `engine.draw` is defined — control measures can be authored on this engine. */
     canControlMeasures,
     updateControlMeasure,
+    duplicateSelected,
     deleteSelected,
     handleEscape,
     handleEnter,
