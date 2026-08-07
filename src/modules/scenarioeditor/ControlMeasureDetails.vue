@@ -132,6 +132,12 @@ const kindName = computed(() => {
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId]?.name ?? String(kind);
 });
 
+const kindDescription = computed(() => {
+  const kind = item.value?.graphicKind;
+  if (!kind || !supported.value) return "";
+  return CONTROL_MEASURE_METADATA[kind as ControlMeasureId]?.description ?? "";
+});
+
 // The **projected** points, like `strokeColor` above and like the map: a recorded
 // shape patch replaces `controlPoints` at the current time, so the top-level array
 // would disagree with what is drawn.
@@ -391,6 +397,14 @@ function doDelete() {
             <div class="text-muted-foreground">Points</div>
             <div>{{ controlPointCount }}</div>
           </PanelDataGrid>
+
+          <p
+            v-if="kindDescription"
+            data-test="control-measure-kind-description"
+            class="text-muted-foreground mt-4 text-sm"
+          >
+            {{ kindDescription }}
+          </p>
 
           <div v-if="isEditMode" class="mt-4">
             <EditMetaForm

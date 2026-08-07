@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent, nextTick, ref, shallowRef } from "vue";
+import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 
 import ControlMeasureDetails from "@/modules/scenarioeditor/ControlMeasureDetails.vue";
 import {
@@ -185,6 +186,24 @@ describe("ControlMeasureDetails tabs", () => {
     mountDetails();
 
     expect(tabStore.controlMeasureDetailsTab).toBe(0);
+  });
+
+  it("shows the control measure metadata description in the Details tab", () => {
+    const { wrapper } = mountDetails();
+
+    expect(wrapper.get("[data-test='control-measure-kind-description']").text()).toBe(
+      CONTROL_MEASURE_METADATA["phase-line"].description,
+    );
+  });
+
+  it("does not show a metadata description for an unsupported kind", () => {
+    const { wrapper } = mountDetails({
+      graphicKind: "phase-line-from-the-future" as NTacticalGraphicLayerItem["graphicKind"],
+    });
+
+    expect(wrapper.find("[data-test='control-measure-kind-description']").exists()).toBe(
+      false,
+    );
   });
 
   it("uses independent tab state for the palette and edit-data actions", async () => {
