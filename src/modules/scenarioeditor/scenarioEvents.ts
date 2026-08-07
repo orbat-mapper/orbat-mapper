@@ -1,6 +1,10 @@
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { useGeoStore } from "@/stores/geoStore";
 
+const SCENARIO_EVENT_UNIT_PADDING: [number, number, number, number] = [
+  50, 50, 50, 50,
+];
+
 export function useScenarioEvents() {
   const {
     time: { onGoToScenarioEventEvent },
@@ -15,7 +19,11 @@ export function useScenarioEvents() {
     if (where.type === "units") {
       const units = where.units.map((u) => getUnitById(u));
       if (units) {
-        geoStore.zoomToUnits(units, { duration: 900, maxZoom });
+        geoStore.zoomToUnits(units, {
+          duration: 900,
+          maxZoom,
+          padding: SCENARIO_EVENT_UNIT_PADDING,
+        });
       }
     } else if (where.type === "geometry") {
       geoStore.zoomToGeometry(where.geometry, { duration: 900, maxZoom });
