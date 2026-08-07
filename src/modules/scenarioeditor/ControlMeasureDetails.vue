@@ -19,6 +19,7 @@
 import { computed, ref, watch } from "vue";
 import {
   IconAlertOutline,
+  IconContentCopy as DuplicateIcon,
   IconMagnifyExpand as ZoomIcon,
   IconPalette as StyleIcon,
   IconPencil as EditIcon,
@@ -74,7 +75,7 @@ const props = defineProps<Props>();
 const { geo } = injectStrict(activeScenarioKey);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const scenarioDraw = injectStrict(scenarioDrawKey);
-const { clear: clearSelection } = useSelectedItems();
+const { activeFeatureId, clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
 const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
@@ -244,6 +245,18 @@ function doZoom() {
   if (first !== undefined) engineRef.value?.layers.zoomToFeature(first);
 }
 
+function doDuplicate() {
+  if (!item.value) return;
+  // The tactical-draw edit is transient until it settles. Fold a dragged clone into
+  // the scenario store before duplicateFeature reads it; otherwise the next copy is
+  // made from the position at which the edit session originally opened.
+  if (isEditingShape.value) scenarioDraw.cancel();
+  const duplicatedId = geo.duplicateFeature(item.value.id, engineRef.value?.map);
+  if (duplicatedId === undefined) return;
+  activeFeatureId.value = duplicatedId;
+  scenarioDraw.startControlMeasureEdit(duplicatedId);
+}
+
 function doDelete() {
   // Goes through the armed-tool owner so any open session settles before the write.
   scenarioDraw.deleteSelected();
@@ -295,6 +308,9 @@ function doDelete() {
       <template #actions>
         <IconButton title="Zoom to control measure" @click="doZoom()">
           <ZoomIcon class="size-5" />
+        </IconButton>
+        <IconButton v-if="item" title="Duplicate control measure" @click="doDuplicate()">
+          <DuplicateIcon class="size-5" />
         </IconButton>
         <IconButton
           v-if="item"

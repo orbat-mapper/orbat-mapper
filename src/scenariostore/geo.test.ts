@@ -53,6 +53,124 @@ function createUnitScenario() {
 }
 
 describe("scenario geo item accessors", () => {
+  it("offsets duplicates and gives them incrementing names", () => {
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.4.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layerStack: [
+        {
+          id: "layer-1",
+          kind: "overlay",
+          name: "Features",
+          items: [
+            {
+              id: "feature-1",
+              kind: "geometry",
+              name: "Route",
+              geometry: { type: "Point", coordinates: [10, 60] },
+              geometryMeta: { geometryKind: "Point" },
+              style: {},
+              state: [
+                {
+                  id: "state-1",
+                  t: 100,
+                  patch: { geometry: { type: "Point", coordinates: [11, 61] } },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+    const geo = useGeo(store);
+
+    const mapAdapter = {
+      getPixelFromCoordinate: ([longitude, latitude]: number[]) => [
+        longitude * 100,
+        latitude * -100,
+      ],
+      getCoordinateFromPixel: ([x, y]: number[]) => [x / 100, y / -100],
+    } as any;
+    const firstId = geo.duplicateFeature("feature-1", mapAdapter)!;
+    const secondId = geo.duplicateFeature("feature-1", mapAdapter)!;
+    const first = geo.getGeometryLayerItemById(firstId).layerItem!;
+    const second = geo.getGeometryLayerItemById(secondId).layerItem!;
+
+    expect(first.name).toBe("Route (2)");
+    expect(second.name).toBe("Route (3)");
+    expect(first.geometry).toEqual({ type: "Point", coordinates: [10.24, 59.76] });
+    expect(first.state?.[0].patch.geometry).toEqual({
+      type: "Point",
+      coordinates: [11.24, 60.76],
+    });
+  });
+
+  it("offsets duplicated control points and custom label positions", () => {
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.4.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layerStack: [
+        {
+          id: "layer-1",
+          kind: "overlay",
+          specialization: "controlMeasure",
+          name: "Control measures",
+          items: [
+            {
+              id: "cm-1",
+              kind: "tacticalGraphic",
+              name: "Phase Line Alpha",
+              graphicKind: "phase-line",
+              controlPoints: [[10, 60], [11, 61]],
+              amplifierPlacements: { T: { position: [10.5, 60.5] } },
+            },
+          ],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+    const geo = useGeo(store);
+
+    const mapAdapter = {
+      getPixelFromCoordinate: ([longitude, latitude]: number[]) => [
+        longitude * 100,
+        latitude * -100,
+      ],
+      getCoordinateFromPixel: ([x, y]: number[]) => [x / 100, y / -100],
+    } as any;
+    const duplicatedId = geo.duplicateFeature("cm-1", mapAdapter)!;
+    const duplicate = geo.getLayerItemById(duplicatedId).layerItem as any;
+
+    expect(duplicate.name).toBe("Phase Line Alpha (2)");
+    expect(duplicate.controlPoints).toEqual([[10.24, 59.76], [11.24, 60.76]]);
+    expect(duplicate.amplifierPlacements.T.position).toEqual([10.74, 60.26]);
+  });
+
   it("keeps addUnitPosition redraw signal undo/redo aware", () => {
     const store = useNewScenarioStore(createUnitScenario());
     const geo = useGeo(store);

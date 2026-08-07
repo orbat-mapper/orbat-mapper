@@ -278,7 +278,7 @@ function onControlMeasureAction(itemId: FeatureId, action: ScenarioFeatureAction
     geo.moveFeature(itemId, action === "moveUp" ? index - 1 : index + 1);
   }
   if (action === "duplicate") {
-    const newId = geo.duplicateFeature(itemId);
+    const newId = geo.duplicateFeature(itemId, engineRef.value?.map);
     if (newId) activeFeatureId.value = newId;
   }
   if (action === "copyAsGeoJson") {
@@ -482,7 +482,7 @@ function onFeatureAction(
         }
 
         if (action === "duplicate") {
-          const newId = geo.duplicateFeature(featureId);
+          const newId = geo.duplicateFeature(featureId, engineRef.value?.map);
           if (selectedFeatureIds.value.size === 1) {
             activeFeatureId.value = newId;
           }

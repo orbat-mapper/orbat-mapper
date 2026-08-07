@@ -6,10 +6,12 @@ import { shallowRef } from "vue";
 import { defineComponent } from "vue";
 import ScenarioFeatureDetails from "@/modules/scenarioeditor/ScenarioFeatureDetails.vue";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
+import { useSelectedItems } from "@/stores/selectedStore";
 
+const onFeatureAction = vi.fn();
 vi.mock("@/composables/scenarioActions", () => ({
   useScenarioFeatureActions: () => ({
-    onFeatureAction: vi.fn(),
+    onFeatureAction,
   }),
 }));
 
@@ -20,6 +22,8 @@ vi.mock("@/composables/formatting", () => ({
 describe("ScenarioFeatureDetails", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    onFeatureAction.mockReset();
+    useSelectedItems().clear();
   });
 
   function makeScenarioProvide(overrides: Record<string, unknown> = {}) {
@@ -76,6 +80,45 @@ describe("ScenarioFeatureDetails", () => {
         "<button data-test='toggle-field' @click=\"$emit('update:modelValue', !modelValue)\"><slot /></button>",
     }),
   };
+
+  it("duplicates the selected feature from the details toolbar", async () => {
+    onFeatureAction.mockReturnValue(["feature-copy"]);
+    const feature = {
+      id: "feature-1",
+      kind: "geometry",
+      _pid: "layer-1",
+      geometry: { type: "Point", coordinates: [10, 20] },
+      geometryMeta: { geometryKind: "Point" },
+      name: "Alpha",
+      style: {},
+    };
+    const scenario = makeScenarioProvide({
+      geo: {
+        getGeometryLayerItemById: vi.fn(() => ({ layerItem: feature })),
+        updateFeature: vi.fn(),
+      },
+    });
+    const wrapper = mount(ScenarioFeatureDetails, {
+      props: { selectedIds: new Set(["feature-1"]) },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioKey as symbol]: scenario,
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            layers: { capabilities: { featureTransform: false } },
+          }),
+        },
+        stubs: baseStubs,
+      },
+    });
+
+    await wrapper
+      .findComponent('[title="Duplicate feature"]')
+      .vm.$emit("click");
+
+    expect(onFeatureAction).toHaveBeenCalledWith(["feature-1"], "duplicate");
+    expect([...useSelectedItems().selectedFeatureIds.value]).toEqual(["feature-copy"]);
+  });
 
   it("updates feature styling without requiring an OpenLayers select interaction", async () => {
     const updateFeature = vi.fn();

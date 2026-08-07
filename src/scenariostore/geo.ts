@@ -48,6 +48,95 @@ import { moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
 import type { Geometry } from "geojson";
+import { coordEach } from "@turf/meta";
+import type { MapAdapter } from "@/geo/contracts/mapAdapter";
+
+const DUPLICATE_SCREEN_OFFSET_PX = 24;
+const DUPLICATE_FALLBACK_DELTA: readonly [number, number] = [0.0001, -0.0001];
+
+function offsetPosition(position: Position, delta: readonly [number, number]) {
+  position[0] += delta[0];
+  position[1] += delta[1];
+}
+
+function offsetGeometry(geometry: Geometry | undefined, delta: readonly [number, number]) {
+  if (!geometry) return;
+  coordEach(geometry, (coordinate) => offsetPosition(coordinate, delta));
+}
+
+function duplicateName(feature: NScenarioLayerItem, siblings: NScenarioLayerItem[]) {
+  const sourceName = feature.name?.trim() || "Untitled";
+  const match = sourceName.match(/^(.*) \((\d+)\)$/);
+  const baseName = match ? match[1] : sourceName;
+  const siblingNames = new Set(siblings.map((item) => item.name));
+  let counter = match ? Number(match[2]) + 1 : 2;
+  while (siblingNames.has(`${baseName} (${counter})`)) counter++;
+  return `${baseName} (${counter})`;
+}
+
+function duplicateReference(feature: NScenarioLayerItem): Position | undefined {
+  if (isNTacticalGraphicLayerItem(feature)) {
+    return (feature._state?.controlPoints ?? feature.controlPoints)[0];
+  }
+  if (!isNGeometryLayerItem(feature)) return;
+  let reference: Position | undefined;
+  coordEach(feature._state?.geometry ?? feature.geometry, (coordinate) => {
+    reference ??= coordinate;
+  });
+  return reference;
+}
+
+function duplicateDelta(
+  feature: NScenarioLayerItem,
+  mapAdapter?: MapAdapter | null,
+): readonly [number, number] {
+  const reference = duplicateReference(feature);
+  if (
+    !reference ||
+    !mapAdapter ||
+    typeof mapAdapter.getPixelFromCoordinate !== "function" ||
+    typeof mapAdapter.getCoordinateFromPixel !== "function"
+  ) {
+    return DUPLICATE_FALLBACK_DELTA;
+  }
+  const pixel = mapAdapter.getPixelFromCoordinate(reference);
+  if (!pixel) return DUPLICATE_FALLBACK_DELTA;
+  const shifted = mapAdapter.getCoordinateFromPixel([
+    pixel[0] + DUPLICATE_SCREEN_OFFSET_PX,
+    pixel[1] + DUPLICATE_SCREEN_OFFSET_PX,
+  ]);
+  if (!shifted) return DUPLICATE_FALLBACK_DELTA;
+  return [shifted[0] - reference[0], shifted[1] - reference[1]];
+}
+
+function offsetDuplicate(
+  feature: NScenarioLayerItem,
+  delta: readonly [number, number],
+) {
+  if (isNGeometryLayerItem(feature)) {
+    offsetGeometry(feature.geometry, delta);
+    feature.state?.forEach(({ patch }) => offsetGeometry(patch.geometry, delta));
+    offsetGeometry(feature._state?.geometry, delta);
+    return;
+  }
+  if (!isNTacticalGraphicLayerItem(feature)) return;
+  feature.controlPoints.forEach((position) => offsetPosition(position, delta));
+  feature.state?.forEach(({ patch }) =>
+    patch.controlPoints?.forEach((position) => offsetPosition(position, delta)),
+  );
+  feature._state?.controlPoints?.forEach((position) => offsetPosition(position, delta));
+  Object.values(feature.amplifierPlacements ?? {}).forEach((placement) =>
+    offsetPosition(placement.position, delta),
+  );
+  feature.state?.forEach(({ patch }) =>
+    Object.values(patch.amplifierPlacements ?? {}).forEach((placement) =>
+      offsetPosition(placement.position, delta),
+    ),
+  );
+  Object.values(feature._state?.amplifierPlacements ?? {}).forEach((placement) =>
+    offsetPosition(placement.position, delta),
+  );
+}
 
 export type ScenarioMapLayerEvent =
   | {
@@ -663,13 +752,18 @@ export function useGeo(store: NewScenarioStore) {
     featureLayerEvent.trigger({ type: "deleteFeature", id: featureId }).then();
   }
 
-  function duplicateFeature(featureId: FeatureId) {
+  function duplicateFeature(featureId: FeatureId, mapAdapter?: MapAdapter | null) {
     const feature = state.layerItemMap[featureId];
     if (!feature) return;
     const owner = getOverlayLayerFromMap(state.layerStackMap, feature._pid);
     if (!owner || owner.locked || feature.locked) return;
     const copy = klona(feature);
     copy.id = nanoid();
+    copy.name = duplicateName(
+      feature,
+      owner.items.map((id) => state.layerItemMap[id]).filter((item) => !!item),
+    );
+    offsetDuplicate(copy, duplicateDelta(feature, mapAdapter));
     return addFeature(copy, feature._pid);
   }
 
