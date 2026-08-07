@@ -82,6 +82,7 @@ function createScenario() {
           : { id, kind: "geometry" },
       })),
       updateTacticalGraphic: vi.fn(),
+      duplicateFeature: vi.fn(),
       deleteFeature: vi.fn(),
     },
   };
@@ -247,6 +248,22 @@ describe("useScenarioDraw", () => {
     draw.startModify();
     expect(draw.armed.value).toEqual({ kind: "none" });
     expect(draw.isModifying.value).toBe(false);
+  });
+
+  it("duplicates, selects, and edits a control measure from the draw toolbar action", async () => {
+    const scenario = createScenario();
+    scenario.geo.duplicateFeature.mockReturnValue("cm-copy");
+    const { draw, engineRef } = mountHarness({ scenario });
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useSelectedItems().activeFeatureId.value = "cm-1";
+
+    draw.duplicateSelected();
+
+    expect(scenario.geo.duplicateFeature).toHaveBeenCalledWith("cm-1", engine.map);
+    expect([...useSelectedItems().selectedFeatureIds.value]).toEqual(["cm-copy"]);
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-copy" });
   });
 
   it("lets Edit mode select a control measure and starts editing it", async () => {
