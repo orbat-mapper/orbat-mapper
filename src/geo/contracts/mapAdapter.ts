@@ -71,6 +71,8 @@ export interface MapAdapter {
   toLonLat(coordinate: number[]): Position;
   fromLonLat(position: Position): number[];
   getEventCoordinate(event: MouseEvent): Position;
+  getPixelFromCoordinate(coordinate: Position): [number, number] | undefined;
+  getCoordinateFromPixel(pixel: [number, number]): Position | undefined;
 
   // DOM
   getTargetElement(): HTMLElement | undefined;

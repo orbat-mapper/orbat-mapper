@@ -14,6 +14,7 @@ import {
 import { useTabStore } from "@/stores/tabStore";
 import { useUiStore } from "@/stores/uiStore";
 import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import { useSelectedItems } from "@/stores/selectedStore";
 
 let pinia: ReturnType<typeof createPinia>;
 
@@ -108,6 +109,7 @@ function mountDetails(
 ) {
   const item = controlMeasure(itemOverrides);
   const updateControlMeasure = vi.fn();
+  const duplicateFeature = vi.fn();
   const scenarioDraw = {
     updateControlMeasure,
     controlMeasureEditFeatureId: ref<string | number | null>(
@@ -129,6 +131,7 @@ function mountDetails(
           geo: {
             getLayerItemById: vi.fn(() => ({ layerItem: item })),
             updateLayerItem: vi.fn(),
+            duplicateFeature,
           },
         },
         [activeScenarioMapEngineKey as symbol]: shallowRef({
@@ -141,13 +144,14 @@ function mountDetails(
     },
   });
 
-  return { wrapper, updateControlMeasure };
+  return { wrapper, updateControlMeasure, duplicateFeature, scenarioDraw };
 }
 
 describe("ControlMeasureDetails tabs", () => {
   beforeEach(() => {
     pinia = createPinia();
     setActivePinia(pinia);
+    useSelectedItems().clear();
   });
 
   it("shows Style, Amplifiers, Details and State, with Debug gated by debug mode", async () => {
@@ -194,6 +198,36 @@ describe("ControlMeasureDetails tabs", () => {
     expect(wrapper.get("[data-test='control-measure-kind-description']").text()).toBe(
       CONTROL_MEASURE_METADATA["phase-line"].description,
     );
+  });
+
+  it("duplicates the selected control measure from the details toolbar", async () => {
+    const { wrapper, duplicateFeature, scenarioDraw } = mountDetails();
+    duplicateFeature.mockReturnValue("cm-copy");
+
+    await wrapper.find("button[title='Duplicate control measure']").trigger("click");
+
+    expect(duplicateFeature).toHaveBeenCalledWith("cm-1", undefined);
+    expect(useSelectedItems().activeFeatureId.value).toBe("cm-copy");
+    expect(scenarioDraw.startControlMeasureEdit).toHaveBeenCalledWith("cm-copy");
+  });
+
+  it("settles a dragged clone before duplicating it again", async () => {
+    const { wrapper, duplicateFeature, scenarioDraw } = mountDetails({}, true);
+    const originalPoints = [[10, 60], [11, 61]];
+    const draggedPoints = [[20, 70], [21, 71]];
+    let storedPoints = originalPoints;
+    let copiedPoints: number[][] | undefined;
+    scenarioDraw.cancel.mockImplementation(() => {
+      storedPoints = draggedPoints;
+    });
+    duplicateFeature.mockImplementation(() => {
+      copiedPoints = structuredClone(storedPoints);
+      return "cm-copy-2";
+    });
+
+    await wrapper.find("button[title='Duplicate control measure']").trigger("click");
+
+    expect(copiedPoints).toEqual(draggedPoints);
   });
 
   it("does not show a metadata description for an unsupported kind", () => {

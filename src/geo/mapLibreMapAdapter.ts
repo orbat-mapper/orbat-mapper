@@ -154,6 +154,16 @@ export class MapLibreMapAdapter implements MapAdapter {
     return [lngLat.lng, lngLat.lat];
   }
 
+  getPixelFromCoordinate(coordinate: Position): [number, number] {
+    const point = this.mlMap.project(coordinate as [number, number]);
+    return [point.x, point.y];
+  }
+
+  getCoordinateFromPixel(pixel: [number, number]): Position {
+    const lngLat = this.mlMap.unproject(pixel);
+    return [lngLat.lng, lngLat.lat];
+  }
+
   getTargetElement(): HTMLElement | undefined {
     return this.mlMap.getContainer() ?? undefined;
   }

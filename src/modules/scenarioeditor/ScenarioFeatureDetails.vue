@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  IconContentCopy as DuplicateIcon,
   IconImage as ImageIcon,
   IconMagnifyExpand as ZoomIcon,
   IconPalette as StyleIcon,
@@ -284,6 +285,16 @@ function doZoom() {
   featureActions.onFeatureAction([...props.selectedIds], "zoom");
 }
 
+function doDuplicate() {
+  const duplicatedIds = featureActions.onFeatureAction(
+    [...props.selectedIds],
+    "duplicate",
+  );
+  if (!duplicatedIds?.length) return;
+  selectedFeatureIds.value.clear();
+  duplicatedIds.forEach((id) => selectedFeatureIds.value.add(id));
+}
+
 function onAction(action: ScenarioFeatureActions) {
   if (action === "removeMedia") {
     removeMedia();
@@ -376,6 +387,9 @@ function assignFeatureToUnit() {
       <template #actions>
         <IconButton @click="doZoom()" title="Zoom to feature">
           <ZoomIcon class="size-5" />
+        </IconButton>
+        <IconButton title="Duplicate feature" @click="doDuplicate()">
+          <DuplicateIcon class="size-5" />
         </IconButton>
         <IconButton @click="showStylePanel()" title="Change feature style">
           <StyleIcon class="size-5" />

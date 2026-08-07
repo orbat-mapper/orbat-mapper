@@ -338,6 +338,7 @@ export function useScenarioFeatureActions(
     featureOrFeaturesId: FeatureId | FeatureId[],
     action: "zoom" | "pan" | "delete" | string,
   ) {
+    const duplicatedIds: FeatureId[] = [];
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
       zoomToFeatures(featureOrFeaturesId, 17);
@@ -350,12 +351,14 @@ export function useScenarioFeatureActions(
           if (action === "pan") panToFeature(featureId);
           if (action === "delete") geo.deleteFeature(featureId);
           if (action === "duplicate") {
-            geo.duplicateFeature(featureId);
+            const duplicatedId = geo.duplicateFeature(featureId, geoStore.mapAdapter);
+            if (duplicatedId !== undefined) duplicatedIds.push(duplicatedId);
           }
         });
       },
       { label: "batchLayer", value: "dummy" },
     );
+    return duplicatedIds;
   }
 
   return { onFeatureAction };

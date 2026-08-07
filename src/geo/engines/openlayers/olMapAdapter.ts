@@ -142,6 +142,18 @@ export class OlMapAdapter implements MapAdapter {
     return toLonLat(this.olMap.getEventCoordinate(event), this.projection) as Position;
   }
 
+  getPixelFromCoordinate(coordinate: Position): [number, number] | undefined {
+    const pixel = this.olMap.getPixelFromCoordinate(
+      fromLonLat(coordinate, this.projection),
+    );
+    return pixel ? [pixel[0], pixel[1]] : undefined;
+  }
+
+  getCoordinateFromPixel(pixel: [number, number]): Position | undefined {
+    const coordinate = this.olMap.getCoordinateFromPixel(pixel);
+    return coordinate ? (toLonLat(coordinate, this.projection) as Position) : undefined;
+  }
+
   getTargetElement(): HTMLElement | undefined {
     return this.olMap.getTargetElement() ?? undefined;
   }
