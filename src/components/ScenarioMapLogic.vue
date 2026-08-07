@@ -116,7 +116,7 @@ const cleanupScenarioLayerBinding = scenarioLayerController.bindScenario(
 );
 const { rangeLayer, drawRangeRings } = useRangeRingsLayer();
 // Disable temporarily
-const {} = useScenarioEvents(olMap);
+useScenarioEvents();
 
 olMap.addLayer(rangeLayer);
 const { historyLayer, drawHistory, historyModify, waypointSelect, ctrlClickInteraction } =

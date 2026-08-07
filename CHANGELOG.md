@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed selecting a scenario event in MapLibre mode not zooming the map to the event area.
 - Fixed zooming to a circle feature so the view frames the full circle instead of only its centre point.
 - Fixed MapLibre control measures being drawn beneath image layers instead of above them according to the scenario layer stack.
 - Fixed duplicating a control measure after dragging a previous copy, which could create the next copy at an invalid position.

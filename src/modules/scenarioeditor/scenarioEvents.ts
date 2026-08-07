@@ -1,8 +1,7 @@
 import { useActiveScenario } from "@/composables/scenarioUtils";
-import OLMap from "ol/Map";
 import { useGeoStore } from "@/stores/geoStore";
 
-export function useScenarioEvents(olMap: OLMap) {
+export function useScenarioEvents() {
   const {
     time: { onGoToScenarioEventEvent },
     helpers: { getUnitById },

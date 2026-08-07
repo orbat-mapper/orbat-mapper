@@ -52,6 +52,7 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
+import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -63,6 +64,7 @@ const emit = defineEmits<{
 
 const activeScenario = injectStrict(activeScenarioKey);
 const toolbarStore = useMainToolbarStore();
+useScenarioEvents();
 
 const {
   store: { state },
