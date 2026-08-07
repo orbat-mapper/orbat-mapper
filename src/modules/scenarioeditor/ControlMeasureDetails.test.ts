@@ -109,7 +109,6 @@ function mountDetails(
 ) {
   const item = controlMeasure(itemOverrides);
   const updateControlMeasure = vi.fn();
-  const duplicateFeature = vi.fn();
   const scenarioDraw = {
     updateControlMeasure,
     controlMeasureEditFeatureId: ref<string | number | null>(
@@ -120,6 +119,7 @@ function mountDetails(
     cancel: vi.fn(),
     startControlMeasureEdit: vi.fn(),
     deleteSelected: vi.fn(),
+    duplicateSelected: vi.fn(),
   };
 
   const wrapper = mount(ControlMeasureDetails, {
@@ -131,7 +131,6 @@ function mountDetails(
           geo: {
             getLayerItemById: vi.fn(() => ({ layerItem: item })),
             updateLayerItem: vi.fn(),
-            duplicateFeature,
           },
         },
         [activeScenarioMapEngineKey as symbol]: shallowRef({
@@ -144,7 +143,7 @@ function mountDetails(
     },
   });
 
-  return { wrapper, updateControlMeasure, duplicateFeature, scenarioDraw };
+  return { wrapper, updateControlMeasure, scenarioDraw };
 }
 
 describe("ControlMeasureDetails tabs", () => {
@@ -200,39 +199,20 @@ describe("ControlMeasureDetails tabs", () => {
     );
   });
 
+  // Duplication goes through the armed-tool owner, which owns settling the open
+  // shape session. The behaviour itself is covered by useScenarioDraw.test.ts.
   it("duplicates the selected control measure from the details toolbar", async () => {
-    const { wrapper, duplicateFeature, scenarioDraw } = mountDetails();
-    duplicateFeature.mockReturnValue("cm-copy");
+    const { wrapper, scenarioDraw } = mountDetails();
 
     await wrapper.find("button[title='Duplicate control measure']").trigger("click");
 
-    expect(duplicateFeature).toHaveBeenCalledWith("cm-1", undefined);
-    expect(useSelectedItems().activeFeatureId.value).toBe("cm-copy");
-    expect(scenarioDraw.startControlMeasureEdit).toHaveBeenCalledWith("cm-copy");
-  });
-
-  it("settles a dragged clone before duplicating it again", async () => {
-    const { wrapper, duplicateFeature, scenarioDraw } = mountDetails({}, true);
-    const originalPoints = [[10, 60], [11, 61]];
-    const draggedPoints = [[20, 70], [21, 71]];
-    let storedPoints = originalPoints;
-    let copiedPoints: number[][] | undefined;
-    scenarioDraw.cancel.mockImplementation(() => {
-      storedPoints = draggedPoints;
-    });
-    duplicateFeature.mockImplementation(() => {
-      copiedPoints = structuredClone(storedPoints);
-      return "cm-copy-2";
-    });
-
-    await wrapper.find("button[title='Duplicate control measure']").trigger("click");
-
-    expect(copiedPoints).toEqual(draggedPoints);
+    expect(scenarioDraw.duplicateSelected).toHaveBeenCalled();
   });
 
   it("does not show a metadata description for an unsupported kind", () => {
     const { wrapper } = mountDetails({
-      graphicKind: "phase-line-from-the-future" as NTacticalGraphicLayerItem["graphicKind"],
+      graphicKind:
+        "phase-line-from-the-future" as NTacticalGraphicLayerItem["graphicKind"],
     });
 
     expect(wrapper.find("[data-test='control-measure-kind-description']").exists()).toBe(

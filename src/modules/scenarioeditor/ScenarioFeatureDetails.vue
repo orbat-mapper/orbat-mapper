@@ -290,7 +290,7 @@ function doDuplicate() {
     [...props.selectedIds],
     "duplicate",
   );
-  if (!duplicatedIds?.length) return;
+  if (!duplicatedIds.length) return;
   selectedFeatureIds.value.clear();
   duplicatedIds.forEach((id) => selectedFeatureIds.value.add(id));
 }
