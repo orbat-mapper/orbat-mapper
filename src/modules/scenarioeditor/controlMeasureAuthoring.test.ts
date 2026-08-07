@@ -320,6 +320,8 @@ describe("drawing a control measure", () => {
       [11, 61],
       [12, 62],
     ]);
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-new" });
+    expect(fake.editSession).not.toBeNull();
     scenario.store.undo();
     expect(controlMeasureIds(scenario)).toEqual(["cm-1"]);
   });
@@ -353,7 +355,7 @@ describe("drawing a control measure", () => {
     expect(fake.drawSession).not.toBeNull();
   });
 
-  it("makes explicit Done commit and exit even when addMultiple is on", async () => {
+  it("makes explicit Done commit and edit the new measure even when addMultiple is on", async () => {
     const { draw, fake, scenario } = setup();
     useMainToolbarStore().addMultiple = true;
 
@@ -364,9 +366,10 @@ describe("drawing a control measure", () => {
     await nextTick();
 
     expect(controlMeasureIds(scenario)).toEqual(["cm-1", "cm-new"]);
-    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(draw.armed.value).toEqual({ kind: "cmEdit", featureId: "cm-new" });
     expect(fake.calls.draw).toHaveLength(1);
     expect(fake.drawSession).toBeNull();
+    expect(fake.editSession).not.toBeNull();
   });
 
   it("does not re-arm on any abort of a locked tool", async () => {

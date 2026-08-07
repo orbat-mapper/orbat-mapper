@@ -60,9 +60,14 @@ export interface UseControlMeasureDrawSessionOptions {
   destinationLayerId?: () => string | number | null | undefined;
   /**
    * A session ended on its own. The armed-tool owner decides what happens next —
-   * re-arm on commit when `addMultiple`, disarm otherwise.
+   * re-arm drawing when `addMultiple`, edit the new measure otherwise, or disarm on
+   * abort.
    */
-  onSettled: (result: { committed: boolean; graphicKind: ControlMeasureKind }) => void;
+  onSettled: (result: {
+    committed: boolean;
+    graphicKind: ControlMeasureKind;
+    featureId?: string;
+  }) => void;
 }
 
 export interface ControlMeasureDrawSession {
@@ -150,7 +155,7 @@ export function useControlMeasureDrawSession(
     // session `onSettled` is about to open.
     await nextTick();
     if (token !== generation) return;
-    options.onSettled({ committed: true, graphicKind });
+    options.onSettled({ committed: true, graphicKind, featureId: added.id });
   }
 
   function start(graphicKind: ControlMeasureKind) {

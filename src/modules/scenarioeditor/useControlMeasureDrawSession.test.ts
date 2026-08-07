@@ -128,7 +128,9 @@ describe("useControlMeasureDrawSession", () => {
 
     expect(controlMeasureIds(scenario)).toEqual(["cm-1"]);
     expect(renders).toEqual(["commit"]);
-    expect(settled).toEqual([{ committed: true, graphicKind: "phase-line" }]);
+    expect(settled).toEqual([
+      { committed: true, graphicKind: "phase-line", featureId: "cm-1" },
+    ]);
     expect(draw.progress.value).toBeNull();
 
     // One settled session, one undo step.

@@ -539,16 +539,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     // colour is offered for the Generic Graphics kinds only.
     defaults: (graphicKind) =>
       newControlMeasureDefaults(controlMeasureToolStore.defaults, graphicKind),
-    onSettled({ committed, graphicKind }) {
+    onSettled({ committed, graphicKind, featureId }) {
       if (explicitFinishTool === armed.value) {
         explicitFinishTool = null;
-        arm({ kind: "none" });
+        arm(featureId ? { kind: "cmEdit", featureId } : { kind: "none" });
         return;
       }
       // `addMultiple` re-arms on **commit only**, so Escape still escapes a locked
       // tool rather than being answered with a fresh session.
       if (committed && addMultiple.value) {
         arm({ kind: "cmDraw", graphicKind });
+        return;
+      }
+      if (committed && featureId) {
+        arm({ kind: "cmEdit", featureId });
         return;
       }
       if (armed.value.kind === "cmDraw") arm({ kind: "none" });
