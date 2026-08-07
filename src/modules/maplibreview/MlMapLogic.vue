@@ -12,7 +12,7 @@ import {
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
-import { computed, onUnmounted, provide, watch, watchEffect } from "vue";
+import { computed, inject, onUnmounted, provide, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -20,6 +20,7 @@ import { centerOfMass } from "@turf/turf";
 import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  scenarioDrawKey,
   searchActionsKey,
 } from "@/components/injects.ts";
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
@@ -135,6 +136,7 @@ const playback = usePlaybackStore();
 const uiStore = useUiStore();
 const mapSettings = useMapSettingsStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
+const scenarioDraw = inject(scenarioDrawKey, null);
 const { onUnitSelectHook, onFeatureSelectHook, onScenarioActionHook } =
   injectStrict(searchActionsKey);
 const {
@@ -926,6 +928,13 @@ function onMapClick(e: MapMouseEvent) {
     // synthetic click), exactly as for plain features.
     if (additive) return;
     if (controlMeasure.featureId === undefined) return;
+    if (
+      selectedFeatureIds.value.size === 1 &&
+      selectedFeatureIds.value.has(controlMeasure.featureId)
+    ) {
+      scenarioDraw?.startControlMeasureEdit(controlMeasure.featureId);
+      return;
+    }
     onFeatureSelectHook.trigger({
       featureId: controlMeasure.featureId,
       layerId: controlMeasure.layerId,

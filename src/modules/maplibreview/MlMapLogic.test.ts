@@ -5,7 +5,11 @@ import { createPinia, setActivePinia } from "pinia";
 import { computed, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
-import { activeScenarioMapEngineKey, searchActionsKey } from "@/components/injects";
+import {
+  activeScenarioMapEngineKey,
+  scenarioDrawKey,
+  searchActionsKey,
+} from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
@@ -3183,6 +3187,7 @@ describe("MlMapLogic", () => {
           properties: { featureId: "feature-1", layerId: "layer-1" },
         },
       ],
+      scenarioDraw?: { startControlMeasureEdit: (featureId: string) => void },
     ) {
       const mockMap = createMockMap();
       const searchActions = createSearchActions();
@@ -3222,6 +3227,7 @@ describe("MlMapLogic", () => {
               draw: { ownsInteractionAt },
             } as any),
             [searchActionsKey as symbol]: searchActions,
+            ...(scenarioDraw ? { [scenarioDrawKey as symbol]: scenarioDraw } : {}),
           },
         },
       });
@@ -3252,6 +3258,23 @@ describe("MlMapLogic", () => {
       expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
         expect.objectContaining({ featureId: "feature-1" }),
       );
+    });
+
+    it("enters edit mode when clicking the selected control measure again", () => {
+      const startControlMeasureEdit = vi.fn();
+      const { selectedFeatureIds } = useSelectedItems();
+      selectedFeatureIds.value = new Set(["cm-1"]);
+      const h = createControlMeasureHarness(true, [], {
+        startControlMeasureEdit,
+      });
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(startControlMeasureEdit).toHaveBeenCalledWith("cm-1");
+      expect(h.featureSelectSpy).not.toHaveBeenCalled();
     });
 
     it("shows the pointer cursor when hovering a control measure", () => {

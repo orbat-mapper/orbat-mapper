@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Newly drawn control measures now enter edit mode automatically. A selected control measure can also be edited by clicking it again.
 - Combined the scenario feature drawing tools and control-measure tools into compact split buttons that retain the most recently used tool.
 - OpenLayers mode now shows a once-per-session notice that the legacy map is deprecated.
 
