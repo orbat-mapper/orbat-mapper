@@ -75,7 +75,7 @@ describe("newControlMeasureDefaults", () => {
     colorMode: "identity",
     status: "planned",
     style: { color: "#ff0000", fillPattern: "hatch", strokeWidth: 4 },
-    options: { smooth: true },
+    options: { smooth: true, smoothResolution: 8 },
   } as const;
 
   it("keeps the host-owned fields for every kind", () => {
@@ -84,7 +84,7 @@ describe("newControlMeasureDefaults", () => {
       colorMode: "identity",
       status: "planned",
       style: { strokeWidth: 4 },
-      options: { smooth: true },
+      options: { smooth: true, smoothResolution: 8 },
     });
   });
 
@@ -109,7 +109,7 @@ describe("newControlMeasureDefaults", () => {
 
   it("copies sticky smoothing for kinds that support it", () => {
     const result = newControlMeasureDefaults(defaults, "phase-line");
-    expect(result.options).toEqual({ smooth: true });
+    expect(result.options).toEqual({ smooth: true, smoothResolution: 8 });
     expect(result.options).not.toBe(defaults.options);
   });
 

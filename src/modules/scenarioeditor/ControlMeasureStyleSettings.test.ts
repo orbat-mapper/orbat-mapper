@@ -16,6 +16,21 @@ vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
   }),
 }));
 
+vi.mock("@/components/ui/popover", () => ({
+  Popover: defineComponent({ template: "<div><slot /></div>" }),
+  PopoverTrigger: defineComponent({ template: "<div><slot /></div>" }),
+  PopoverContent: defineComponent({ template: "<div><slot /></div>" }),
+}));
+
+vi.mock("@/components/ui/slider", () => ({
+  Slider: defineComponent({
+    name: "Slider",
+    props: ["modelValue", "min", "max", "step", "disabled"],
+    emits: ["update:modelValue"],
+    template: "<div />",
+  }),
+}));
+
 function mountSettings(props: {
   graphicKind?: ControlMeasureKind;
   measureStyle?: ControlMeasureStyle;
@@ -223,6 +238,32 @@ describe("the smoothing toggle", () => {
     await wrapper.findComponent({ name: "Switch" }).vm.$emit("update:modelValue", true);
     expect(wrapper.emitted("update")).toEqual([
       [{ options: { smoothResolution: 24, smooth: true } }],
+    ]);
+  });
+
+  it("offers the registry-defined smooth resolution and disables it while smoothing is off", () => {
+    const wrapper = mountSettings({
+      graphicKind: "phase-line",
+      options: { smooth: false, smoothResolution: 8 },
+    });
+    const slider = wrapper.findComponent({ name: "Slider" });
+    expect(slider.props()).toMatchObject({
+      modelValue: [8],
+      min: 2,
+      max: 64,
+      step: 1,
+      disabled: true,
+    });
+  });
+
+  it("merges a changed smooth resolution into the options", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "phase-line",
+      options: { smooth: true, includePrefix: false },
+    });
+    await wrapper.findComponent({ name: "Slider" }).vm.$emit("update:modelValue", [9]);
+    expect(wrapper.emitted("update")).toEqual([
+      [{ options: { smooth: true, includePrefix: false, smoothResolution: 9 } }],
     ]);
   });
 });

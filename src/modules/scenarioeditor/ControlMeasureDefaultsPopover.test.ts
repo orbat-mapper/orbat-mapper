@@ -26,6 +26,15 @@ vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
   }),
 }));
 
+vi.mock("@/components/ui/slider", () => ({
+  Slider: defineComponent({
+    name: "Slider",
+    props: ["modelValue", "min", "max", "step", "disabled"],
+    emits: ["update:modelValue"],
+    template: "<div />",
+  }),
+}));
+
 function item(
   id: string,
   graphicKind: NTacticalGraphicLayerItem["graphicKind"],

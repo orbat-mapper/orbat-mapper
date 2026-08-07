@@ -22,6 +22,7 @@ import type {
   ControlMeasureId,
   ControlMeasureKind,
   ControlMeasureStyle,
+  ParamDescriptor,
 } from "@orbat-mapper/control-measures";
 import { PREVIEW_FILL_PATTERNS } from "@orbat-mapper/control-measures/preview";
 import type {
@@ -99,6 +100,26 @@ export function canSmoothControlMeasureKind(
   );
 }
 
+/** The numeric sampling control paired with the kind's smoothing toggle. */
+export function getSmoothResolutionParam(
+  kind: ControlMeasureKind | undefined,
+): Extract<ParamDescriptor, { type: "number" }> | undefined {
+  return metadataFor(kind)?.params?.find(
+    (param): param is Extract<ParamDescriptor, { type: "number" }> =>
+      param.key === "smoothResolution" && param.type === "number",
+  );
+}
+
+/** The authored sampling resolution, falling back to the registry's minimum. */
+export function getControlMeasureSmoothResolution(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): number {
+  const authored = (options as Record<string, unknown> | undefined)?.smoothResolution;
+  if (typeof authored === "number") return authored;
+  return getSmoothResolutionParam(kind)?.min ?? 2;
+}
+
 /**
  * The effective smoothing state: the item's own option when it has authored one, and
  * otherwise the library's default for the kind — which is what the map is drawing, so
@@ -158,12 +179,19 @@ export function newControlMeasureDefaults(
     if (Object.keys(authored).length > 0) narrowed.style = authored;
   }
 
-  if (
-    options &&
-    canSmoothControlMeasureKind(graphicKind) &&
-    typeof (options as Record<string, unknown>).smooth === "boolean"
-  ) {
-    narrowed.options = { smooth: options.smooth } as TacticalGraphicOptions;
+  if (options && canSmoothControlMeasureKind(graphicKind)) {
+    const authored = options as Record<string, unknown>;
+    const narrowedOptions: Record<string, unknown> = {};
+    if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
+    if (
+      getSmoothResolutionParam(graphicKind) &&
+      typeof authored.smoothResolution === "number"
+    ) {
+      narrowedOptions.smoothResolution = authored.smoothResolution;
+    }
+    if (Object.keys(narrowedOptions).length > 0) {
+      narrowed.options = narrowedOptions as TacticalGraphicOptions;
+    }
   }
 
   return narrowed;

@@ -23,9 +23,13 @@ import type {
   ControlMeasureKind,
   ControlMeasureStyle,
 } from "@orbat-mapper/control-measures";
+import { Settings2 } from "@lucide/vue";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { standardIdentityValues } from "@/symbology/values";
 import type { SidValue } from "@/symbology/values";
 import type {
@@ -45,6 +49,8 @@ import {
   canAuthorStrokeWidth,
   canSmoothControlMeasureKind,
   fillPatternLabel,
+  getControlMeasureSmoothResolution,
+  getSmoothResolutionParam,
   isControlMeasureSmoothed,
   isStyleableControlMeasureKind,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
@@ -162,6 +168,21 @@ const smoothModel = computed({
     }),
 });
 
+const smoothResolutionParam = computed(() => getSmoothResolutionParam(props.graphicKind));
+const smoothResolutionModel = computed(() =>
+  getControlMeasureSmoothResolution(props.graphicKind, props.options),
+);
+
+function updateSmoothResolution(value: number[] | undefined) {
+  if (value?.[0] === undefined) return;
+  emit("update", {
+    options: {
+      ...toRaw(props.options),
+      smoothResolution: value[0],
+    } as TacticalGraphicOptions,
+  });
+}
+
 /** `""` is the "no authored pattern" option — the library's own default then applies. */
 const fillPatternModel = computed({
   get: () => props.measureStyle?.fillPattern ?? "",
@@ -259,12 +280,43 @@ const fillPatternModel = computed({
 
   <template v-if="showSmooth">
     <label for="cm-smooth" class="self-center">Smooth</label>
-    <div>
+    <div class="flex items-center gap-1.5">
       <Switch
         id="cm-smooth"
         v-model="smoothModel"
         title="Round the corners by curving through the control points"
       />
+      <Popover v-if="smoothResolutionParam">
+        <PopoverTrigger as-child>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            title="Smooth resolution"
+            aria-label="Smooth resolution settings"
+          >
+            <Settings2 />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="end" class="flex w-56 flex-col gap-3 p-3">
+          <div class="flex items-center justify-between gap-2">
+            <Label for="cm-smooth-resolution">Smooth resolution</Label>
+            <span class="text-muted-foreground text-xs tabular-nums">
+              {{ smoothResolutionModel }}
+            </span>
+          </div>
+          <Slider
+            id="cm-smooth-resolution"
+            :model-value="[smoothResolutionModel]"
+            :min="smoothResolutionParam.min"
+            :max="smoothResolutionParam.max"
+            :step="smoothResolutionParam.step ?? 1"
+            :disabled="!smoothModel"
+            aria-label="Smooth resolution"
+            @update:model-value="updateSmoothResolution"
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   </template>
 

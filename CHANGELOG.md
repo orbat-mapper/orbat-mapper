@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Added control-measure authoring and editing in MapLibre mode. Choose from a searchable catalogue, draw measures with snapping, organize them in scenario layers, and edit their geometry from the map or details panel.
 - Added control-measure styling and labels, including identity colours, line width, echelon, text amplifiers, and free-form text where supported. Defaults can be configured before drawing, with live previews.
+- Added a smooth-resolution setting for supported control measures, available from a slider beside the smoothing toggle.
 - Added GeoJSON import, export, clipboard, undo/redo, and scenario persistence support for control measures.
 - Added feature and control-measure duplication actions to the details panel and draw toolbar. Control-measure details now also show the doctrinal description for the selected measure.
 
