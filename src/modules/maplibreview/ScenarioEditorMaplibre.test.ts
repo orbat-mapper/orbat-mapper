@@ -7,6 +7,7 @@ import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibr
 import { activeLayerKey, activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import type { NScenarioEvent } from "@/types/internalModels";
 
 const { mapModeState, routingHandlers, closeDetailsPanelMock } = vi.hoisted(() => ({
   mapModeState: { isMobile: false, hasRouteDetails: false },
@@ -26,7 +27,9 @@ const bindScenario = vi.fn();
 const destroyTacticalDrawSurface = vi.fn();
 const cleanupScenarioBinding = vi.fn();
 const setMapAdapter = vi.fn();
+const zoomToGeometry = vi.fn();
 const initializeMaplibreLayers = vi.fn();
+let goToScenarioEventHandler: ((payload: { event: NScenarioEvent }) => void) | undefined;
 
 vi.mock("@/geo/mapLibreMapAdapter", () => ({
   MapLibreMapAdapter: class MockMapLibreMapAdapter {
@@ -111,6 +114,7 @@ vi.mock("@/stores/maplibreLayersStore", () => ({
 vi.mock("@/stores/geoStore", () => ({
   useGeoStore: () => ({
     setMapAdapter,
+    zoomToGeometry,
   }),
 }));
 
@@ -234,6 +238,15 @@ describe("ScenarioEditorMaplibre", () => {
         ]),
         onFeatureLayerEvent: vi.fn(() => ({ off: vi.fn() })),
       },
+      helpers: {
+        getUnitById: vi.fn(),
+      },
+      time: {
+        onGoToScenarioEventEvent: vi.fn((handler) => {
+          goToScenarioEventHandler = handler;
+          return { off: vi.fn() };
+        }),
+      },
     };
   }
 
@@ -246,12 +259,70 @@ describe("ScenarioEditorMaplibre", () => {
     cleanupScenarioBinding.mockReset();
     destroyTacticalDrawSurface.mockReset();
     setMapAdapter.mockReset();
+    zoomToGeometry.mockReset();
+    goToScenarioEventHandler = undefined;
     initializeMaplibreLayers.mockReset();
     routingHandlers.addRouteLeg.mockReset();
     routingHandlers.clearCurrentLeg.mockReset();
     routingHandlers.finishRoute.mockReset();
     routingHandlers.closeRouting.mockReset();
     closeDetailsPanelMock.mockReset();
+  });
+
+  it("zooms to a selected scenario event area in maplibre mode", async () => {
+    const geometry = {
+      type: "Polygon",
+      coordinates: [
+        [
+          [10, 60],
+          [11, 60],
+          [11, 61],
+          [10, 60],
+        ],
+      ],
+    };
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+    await nextTick();
+
+    expect(goToScenarioEventHandler).toBeTypeOf("function");
+    goToScenarioEventHandler!({
+      event: {
+        id: "event-1",
+        title: "Geometry event",
+        startTime: 0,
+        where: { type: "geometry", geometry, maxZoom: 12 },
+      } as NScenarioEvent,
+    });
+
+    expect(zoomToGeometry).toHaveBeenCalledWith(geometry, {
+      duration: 900,
+      maxZoom: 12,
+    });
+    wrapper.unmount();
   });
 
   it("forwards the initial map view snapshot and emits one on unmount", async () => {
