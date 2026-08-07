@@ -40,7 +40,7 @@ export const useGeoStore = defineStore("geo", () => {
   }
 
   function zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
-    const { duration = 900, maxZoom = 15 } = options;
+    const { duration = 900, maxZoom = 15, padding } = options;
     const points = units
       .map((u) => u._state?.location)
       .filter((loc): loc is Position => !!loc)
@@ -48,7 +48,7 @@ export const useGeoStore = defineStore("geo", () => {
 
     if (!points.length) return;
     const c = featureCollection(points);
-    zoomToGeometry(c, { duration, maxZoom });
+    zoomToGeometry(c, { duration, maxZoom, padding });
   }
 
   function zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {

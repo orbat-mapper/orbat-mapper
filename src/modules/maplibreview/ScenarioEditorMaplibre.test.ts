@@ -28,6 +28,7 @@ const destroyTacticalDrawSurface = vi.fn();
 const cleanupScenarioBinding = vi.fn();
 const setMapAdapter = vi.fn();
 const zoomToGeometry = vi.fn();
+const zoomToUnits = vi.fn();
 const initializeMaplibreLayers = vi.fn();
 let goToScenarioEventHandler: ((payload: { event: NScenarioEvent }) => void) | undefined;
 
@@ -115,6 +116,7 @@ vi.mock("@/stores/geoStore", () => ({
   useGeoStore: () => ({
     setMapAdapter,
     zoomToGeometry,
+    zoomToUnits,
   }),
 }));
 
@@ -260,6 +262,7 @@ describe("ScenarioEditorMaplibre", () => {
     destroyTacticalDrawSurface.mockReset();
     setMapAdapter.mockReset();
     zoomToGeometry.mockReset();
+    zoomToUnits.mockReset();
     goToScenarioEventHandler = undefined;
     initializeMaplibreLayers.mockReset();
     routingHandlers.addRouteLeg.mockReset();
@@ -321,6 +324,59 @@ describe("ScenarioEditorMaplibre", () => {
     expect(zoomToGeometry).toHaveBeenCalledWith(geometry, {
       duration: 900,
       maxZoom: 12,
+    });
+    wrapper.unmount();
+  });
+
+  it("pads unit-backed scenario events so their icons remain visible", async () => {
+    const activeScenario = createActiveScenario();
+    const units = [
+      { id: "unit-1", _state: { location: [10, 60] } },
+      { id: "unit-2", _state: { location: [11, 61] } },
+    ];
+    activeScenario.helpers.getUnitById
+      .mockReturnValueOnce(units[0])
+      .mockReturnValueOnce(units[1]);
+    const wrapper = mount(ScenarioEditorMaplibre, {
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: activeScenario,
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
+          ToggleField: true,
+          Button: true,
+          Label: true,
+          Popover: true,
+          PopoverContent: true,
+          PopoverTrigger: true,
+          Slider: true,
+        },
+      },
+    });
+    await nextTick();
+
+    goToScenarioEventHandler!({
+      event: {
+        id: "event-1",
+        title: "Unit event",
+        startTime: 0,
+        where: { type: "units", units: ["unit-1", "unit-2"] },
+      } as NScenarioEvent,
+    });
+
+    expect(zoomToUnits).toHaveBeenCalledWith(units, {
+      duration: 900,
+      maxZoom: undefined,
+      padding: [50, 50, 50, 50],
     });
     wrapper.unmount();
   });
