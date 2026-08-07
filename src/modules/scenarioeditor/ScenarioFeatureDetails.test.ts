@@ -55,7 +55,10 @@ describe("ScenarioFeatureDetails", () => {
   const baseStubs = {
     GlobalEvents: true,
     EditableLabel: true,
-    IconButton: true,
+    IconButton: {
+      props: ["title"],
+      template: "<button :title='title' @click='$emit(\"click\")'><slot /></button>",
+    },
     ItemMedia: true,
     ScenarioFeatureDropdownMenu: true,
     ScenarioLayerItemState: true,
@@ -112,9 +115,7 @@ describe("ScenarioFeatureDetails", () => {
       },
     });
 
-    await wrapper
-      .findComponent('[title="Duplicate feature"]')
-      .vm.$emit("click");
+    await wrapper.find('button[title="Duplicate feature"]').trigger("click");
 
     expect(onFeatureAction).toHaveBeenCalledWith(["feature-1"], "duplicate");
     expect([...useSelectedItems().selectedFeatureIds.value]).toEqual(["feature-copy"]);

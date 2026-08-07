@@ -342,7 +342,7 @@ export function useScenarioFeatureActions(
     const isArray = Array.isArray(featureOrFeaturesId);
     if (isArray && (action === "zoom" || action === "pan")) {
       zoomToFeatures(featureOrFeaturesId, 17);
-      return;
+      return duplicatedIds;
     }
     groupUpdate(
       () => {

@@ -75,7 +75,7 @@ const props = defineProps<Props>();
 const { geo } = injectStrict(activeScenarioKey);
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const scenarioDraw = injectStrict(scenarioDrawKey);
-const { activeFeatureId, clear: clearSelection } = useSelectedItems();
+const { clear: clearSelection } = useSelectedItems();
 const uiStore = useUiStore();
 const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 
@@ -246,15 +246,9 @@ function doZoom() {
 }
 
 function doDuplicate() {
-  if (!item.value) return;
-  // The tactical-draw edit is transient until it settles. Fold a dragged clone into
-  // the scenario store before duplicateFeature reads it; otherwise the next copy is
-  // made from the position at which the edit session originally opened.
-  if (isEditingShape.value) scenarioDraw.cancel();
-  const duplicatedId = geo.duplicateFeature(item.value.id, engineRef.value?.map);
-  if (duplicatedId === undefined) return;
-  activeFeatureId.value = duplicatedId;
-  scenarioDraw.startControlMeasureEdit(duplicatedId);
+  // Goes through the armed-tool owner so any open shape session settles before the
+  // write; otherwise the copy is made from the position the edit session opened at.
+  scenarioDraw.duplicateSelected();
 }
 
 function doDelete() {

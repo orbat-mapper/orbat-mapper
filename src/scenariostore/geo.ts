@@ -49,6 +49,7 @@ import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
 import type { Geometry } from "geojson";
 import { coordEach } from "@turf/meta";
+import type { AmplifierPlacements } from "@orbat-mapper/control-measures";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 
 const DUPLICATE_SCREEN_OFFSET_PX = 24;
@@ -59,7 +60,10 @@ function offsetPosition(position: Position, delta: readonly [number, number]) {
   position[1] += delta[1];
 }
 
-function offsetGeometry(geometry: Geometry | undefined, delta: readonly [number, number]) {
+function offsetGeometry(
+  geometry: Geometry | undefined,
+  delta: readonly [number, number],
+) {
   if (!geometry) return;
   coordEach(geometry, (coordinate) => offsetPosition(coordinate, delta));
 }
@@ -74,31 +78,34 @@ function duplicateName(feature: NScenarioLayerItem, siblings: NScenarioLayerItem
   return `${baseName} (${counter})`;
 }
 
+/** First position of a nested coordinate array, without walking the rest of it. */
+function firstPosition(coordinates: unknown): Position | undefined {
+  if (!Array.isArray(coordinates)) return;
+  if (typeof coordinates[0] === "number") return coordinates as Position;
+  return firstPosition(coordinates[0]);
+}
+
+function firstGeometryPosition(geometry: Geometry | undefined): Position | undefined {
+  if (!geometry) return;
+  if (geometry.type === "GeometryCollection")
+    return firstGeometryPosition(geometry.geometries[0]);
+  return firstPosition(geometry.coordinates);
+}
+
 function duplicateReference(feature: NScenarioLayerItem): Position | undefined {
   if (isNTacticalGraphicLayerItem(feature)) {
     return (feature._state?.controlPoints ?? feature.controlPoints)[0];
   }
   if (!isNGeometryLayerItem(feature)) return;
-  let reference: Position | undefined;
-  coordEach(feature._state?.geometry ?? feature.geometry, (coordinate) => {
-    reference ??= coordinate;
-  });
-  return reference;
+  return firstGeometryPosition(feature._state?.geometry ?? feature.geometry);
 }
 
 function duplicateDelta(
   feature: NScenarioLayerItem,
-  mapAdapter?: MapAdapter | null,
+  mapAdapter: MapAdapter | null | undefined,
 ): readonly [number, number] {
   const reference = duplicateReference(feature);
-  if (
-    !reference ||
-    !mapAdapter ||
-    typeof mapAdapter.getPixelFromCoordinate !== "function" ||
-    typeof mapAdapter.getCoordinateFromPixel !== "function"
-  ) {
-    return DUPLICATE_FALLBACK_DELTA;
-  }
+  if (!reference || !mapAdapter) return DUPLICATE_FALLBACK_DELTA;
   const pixel = mapAdapter.getPixelFromCoordinate(reference);
   if (!pixel) return DUPLICATE_FALLBACK_DELTA;
   const shifted = mapAdapter.getCoordinateFromPixel([
@@ -109,10 +116,7 @@ function duplicateDelta(
   return [shifted[0] - reference[0], shifted[1] - reference[1]];
 }
 
-function offsetDuplicate(
-  feature: NScenarioLayerItem,
-  delta: readonly [number, number],
-) {
+function offsetDuplicate(feature: NScenarioLayerItem, delta: readonly [number, number]) {
   if (isNGeometryLayerItem(feature)) {
     offsetGeometry(feature.geometry, delta);
     feature.state?.forEach(({ patch }) => offsetGeometry(patch.geometry, delta));
@@ -120,22 +124,23 @@ function offsetDuplicate(
     return;
   }
   if (!isNTacticalGraphicLayerItem(feature)) return;
-  feature.controlPoints.forEach((position) => offsetPosition(position, delta));
-  feature.state?.forEach(({ patch }) =>
-    patch.controlPoints?.forEach((position) => offsetPosition(position, delta)),
-  );
-  feature._state?.controlPoints?.forEach((position) => offsetPosition(position, delta));
-  Object.values(feature.amplifierPlacements ?? {}).forEach((placement) =>
-    offsetPosition(placement.position, delta),
-  );
-  feature.state?.forEach(({ patch }) =>
-    Object.values(patch.amplifierPlacements ?? {}).forEach((placement) =>
-      offsetPosition(placement.position, delta),
-    ),
-  );
-  Object.values(feature._state?.amplifierPlacements ?? {}).forEach((placement) =>
-    offsetPosition(placement.position, delta),
-  );
+  // The same positional fields live in three places: the current value, every timed
+  // patch, and the projected `_state`. Offset all of them so the copy moves as a whole.
+  const offsetSource = (source: {
+    controlPoints?: Position[];
+    amplifierPlacements?: AmplifierPlacements;
+  }) => {
+    source.controlPoints?.forEach((position) => offsetPosition(position, delta));
+    Object.values(source.amplifierPlacements ?? {}).forEach((placement) => {
+      if (!placement) return;
+      // A placement is either a bare `[lon, lat]` (legacy shorthand) or `{ position }`.
+      if (Array.isArray(placement)) offsetPosition(placement, delta);
+      else if (placement.position) offsetPosition(placement.position, delta);
+    });
+  };
+  offsetSource(feature);
+  feature.state?.forEach(({ patch }) => offsetSource(patch));
+  if (feature._state) offsetSource(feature._state);
 }
 
 export type ScenarioMapLayerEvent =
@@ -752,7 +757,10 @@ export function useGeo(store: NewScenarioStore) {
     featureLayerEvent.trigger({ type: "deleteFeature", id: featureId }).then();
   }
 
-  function duplicateFeature(featureId: FeatureId, mapAdapter?: MapAdapter | null) {
+  function duplicateFeature(
+    featureId: FeatureId,
+    mapAdapter: MapAdapter | null | undefined,
+  ) {
     const feature = state.layerItemMap[featureId];
     if (!feature) return;
     const owner = getOverlayLayerFromMap(state.layerStackMap, feature._pid);

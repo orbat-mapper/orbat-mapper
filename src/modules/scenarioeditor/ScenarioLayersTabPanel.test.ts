@@ -468,7 +468,10 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
         provide: {
           [activeLayerKey as symbol]: activeLayerId,
           [activeScenarioMapEngineKey as symbol]: shallowRef({
-            map: {} as never,
+            map: {
+              getPixelFromCoordinate: ([lon, lat]: number[]) => [lon * 100, lat * -100],
+              getCoordinateFromPixel: ([x, y]: number[]) => [x / 100, y / -100],
+            } as never,
             layers: { capabilities: {} },
           }),
           [activeScenarioKey as symbol]: {
