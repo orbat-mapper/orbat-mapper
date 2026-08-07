@@ -107,6 +107,8 @@ export interface TacticalDrawSurface {
   readonly adapter: TacticalDrawMapAdapter;
   /** The façade, or `null` between a basemap swap and the next `style.load`. */
   readonly tacticalDraw: TacticalDraw | null;
+  /** Bottommost native graphics layer, used to place scenario layers underneath it. */
+  getGraphicsAnchorLayerId(): string | undefined;
   /**
    * The one host render entry point. Declarative and host-authoritative: pass the
    * complete, flat, sorted graphic array every time. No-ops while detached.
@@ -272,6 +274,15 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     },
     get tacticalDraw() {
       return tacticalDraw;
+    },
+    getGraphicsAnchorLayerId() {
+      const graphicsLayerId = tacticalDraw?.layerIds.graphics;
+      if (!graphicsLayerId) return;
+      const sourcePrefix = `${graphicsLayerId}-`;
+      return mlMap.getStyle().layers.find((layer) => {
+        const source = "source" in layer ? layer.source : undefined;
+        return typeof source === "string" && source.startsWith(sourcePrefix);
+      })?.id;
     },
     render(graphics) {
       assertRawGraphics(graphics);

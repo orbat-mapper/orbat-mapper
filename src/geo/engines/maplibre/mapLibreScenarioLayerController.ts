@@ -256,6 +256,9 @@ function getImageLayerCoordinates(
 
 export function createMapLibreScenarioLayerController(
   mapAdapter: MapAdapter,
+  options: {
+    getControlMeasureAnchorLayerId?: () => string | undefined;
+  } = {},
 ): ScenarioLayerController {
   const mlMap = mapAdapter.getNativeMap() as MlMap;
   const { selectedFeatureIds } = useSelectedItems();
@@ -642,6 +645,10 @@ export function createMapLibreScenarioLayerController(
   }
 
   function getScenarioStackAnchorLayerId() {
+    const controlMeasureAnchor = options.getControlMeasureAnchorLayerId?.();
+    if (controlMeasureAnchor && safeGetLayer(controlMeasureAnchor)) {
+      return controlMeasureAnchor;
+    }
     if (safeGetLayer(RANGE_RING_FILL_LAYER_ID)) return RANGE_RING_FILL_LAYER_ID;
     return findFirstUnitLayerId(mlMap);
   }

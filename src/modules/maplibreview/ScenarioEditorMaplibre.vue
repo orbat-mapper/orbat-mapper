@@ -167,10 +167,14 @@ function onMapReady(mapInstance: MlMap) {
   const rawMap = markRaw(mapInstance);
   mlMap.value = rawMap;
   const adapter = markRaw(new MapLibreMapAdapter(rawMap));
-  const layers = markRaw(createMapLibreScenarioLayerController(adapter));
   // Never reactive: the tactical-draw engine caches rendered output on `Graphic`
   // object identity, which a Vue proxy would silently defeat.
   const draw = markRaw(createTacticalDrawSurface(rawMap));
+  const layers = markRaw(
+    createMapLibreScenarioLayerController(adapter, {
+      getControlMeasureAnchorLayerId: () => draw.getGraphicsAnchorLayerId(),
+    }),
+  );
   tacticalDrawSurface = draw;
   scenarioMapEngineRef.value = markRaw({
     map: adapter,

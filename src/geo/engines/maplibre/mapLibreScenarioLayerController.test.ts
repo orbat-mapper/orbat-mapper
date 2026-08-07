@@ -796,6 +796,59 @@ describe("createMapLibreScenarioLayerController", () => {
     expect(layer2Index).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
   });
 
+  it("keeps image layers below the control-measure rendering surface", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: "tactical-graphics-fill" } as any);
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, layerItemsLayers, mapLayers, stackLayers } = createScenario();
+    layerItemsLayers.value = [
+      {
+        id: "control-layer",
+        kind: "overlay",
+        name: "Control measures",
+        specialization: "controlMeasure",
+        items: [],
+      },
+    ] as any;
+    mapLayers.value = [
+      {
+        id: "image-1",
+        type: "ImageLayer",
+        name: "Image",
+        url: "data:image/png;base64,",
+        extent: [10, 20, 12, 22],
+      },
+    ];
+    Object.defineProperty(stackLayers, "value", {
+      configurable: true,
+      value: [
+        {
+          id: "image-1",
+          kind: "reference",
+          name: "Image",
+          source: mapLayers.value[0],
+        },
+        layerItemsLayers.value[0],
+      ],
+    });
+    const controller = createMapLibreScenarioLayerController(
+      {
+        getNativeMap: () => mockMap.map,
+        fitGeometry: vi.fn(),
+        fitExtent: vi.fn(),
+        animateView: vi.fn(),
+      } as any,
+      { getControlMeasureAnchorLayerId: () => "tactical-graphics-fill" },
+    );
+
+    controller.bindScenario(scenario);
+
+    const orderedLayerIds = [...mockMap.layers.keys()];
+    expect(orderedLayerIds.indexOf("scenario-image-layer-image-1")).toBeLessThan(
+      orderedLayerIds.indexOf("tactical-graphics-fill"),
+    );
+  });
+
   it("reorders rendered blocks when a reference layer is moved", async () => {
     const mockMap = createMockMap();
     mockMap.map.addLayer({ id: "unitLayer" } as any);

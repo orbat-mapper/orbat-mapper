@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed zooming to a circle feature so the view frames the full circle instead of only its centre point.
+- Fixed MapLibre control measures being drawn beneath image layers instead of above them according to the scenario layer stack.
 
 ## July 2026
 
