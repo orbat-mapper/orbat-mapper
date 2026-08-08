@@ -25,6 +25,7 @@ import {
   addConnectorAttributes,
   addFontAttributes,
   calculateAnchorPoints,
+  getUnitBoxOrigin,
   createChartStyle,
   createGroupElement,
   createInitialNodeStructure,
@@ -410,27 +411,29 @@ class OrbatChart {
         : lastLevelIndex - 1;
     if (lastHorizontalLevel < 0) return;
 
-    const includedNodes = new Set<RenderedUnitNode>();
-    renderedChart.levels.slice(0, lastHorizontalLevel + 1).forEach((level) => {
-      level.branches.forEach((branch) => {
-        branch.units.forEach((unit) => includedNodes.add(unit));
-      });
-    });
-
     const root = renderedChart.levels[0].branches[0]?.units[0];
     if (!root) return;
+
+    // Levels are ordered top down, so a unit's parent is always visited before the
+    // unit itself and membership can be decided in a single pass.
+    const includedNodes = new Set<RenderedUnitNode>();
     const childrenByParent = new Map<RenderedUnitNode, RenderedUnitNode[]>();
-    includedNodes.forEach((unit) => {
-      if (!unit.parent || !includedNodes.has(unit.parent)) return;
-      const children = childrenByParent.get(unit.parent) ?? [];
-      children.push(unit);
-      childrenByParent.set(unit.parent, children);
+    renderedChart.levels.slice(0, lastHorizontalLevel + 1).forEach((level) => {
+      level.branches.forEach((branch) => {
+        branch.units.forEach((unit) => {
+          includedNodes.add(unit);
+          if (!unit.parent || !includedNodes.has(unit.parent)) return;
+          const children = childrenByParent.get(unit.parent) ?? [];
+          children.push(unit);
+          childrenByParent.set(unit.parent, children);
+        });
+      });
     });
 
     const toLayoutItem = (
       unit: RenderedUnitNode,
     ): HorizontalTreeItem<RenderedUnitNode> => {
-      const boxLeft = unit.x - unit.octagonAnchor.x + unit.boundingBox.x;
+      const boxLeft = getUnitBoxOrigin(unit).x;
       return {
         value: unit,
         leftExtent: unit.x - boxLeft,
@@ -439,7 +442,7 @@ class OrbatChart {
       };
     };
 
-    const layout = layoutHorizontalTree(toLayoutItem(root), {
+    const positions = layoutHorizontalTree(toLayoutItem(root), {
       viewportWidth: this.width,
       margin: HORIZONTAL_MARGIN,
       minimumGap: Math.max(
@@ -448,7 +451,7 @@ class OrbatChart {
       ),
       uniformNodeSlots: this.options.unitLevelDistance === UnitLevelDistances.Fixed,
     });
-    layout.positions.forEach((x, unit) => {
+    positions.forEach((x, unit) => {
       unit.x = x;
     });
   }
@@ -461,8 +464,7 @@ class OrbatChart {
     renderedChart.levels.forEach((level) => {
       level.branches.forEach((branch) => {
         branch.units.forEach((unit) => {
-          const unitLeft = unit.x - unit.octagonAnchor.x + unit.boundingBox.x;
-          const unitTop = unit.y - unit.octagonAnchor.y + unit.boundingBox.y;
+          const { x: unitLeft, y: unitTop } = getUnitBoxOrigin(unit);
           left = Math.min(left, unitLeft - HORIZONTAL_MARGIN);
           top = Math.min(top, unitTop - HORIZONTAL_MARGIN);
           right = Math.max(right, unitLeft + unit.boundingBox.width + HORIZONTAL_MARGIN);
