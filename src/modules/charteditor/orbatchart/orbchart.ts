@@ -1,5 +1,5 @@
 import { select } from "d3-selection";
-import { arrSum, flattenArray, walkTree } from "./utils";
+import { walkTree } from "./utils";
 import type {
   BasicUnitNode,
   ChartUnit,
@@ -36,6 +36,10 @@ import {
   putGroupAt,
 } from "./svgRender";
 import Panzoom, { type PanzoomObject } from "@panzoom/panzoom";
+import { layoutHorizontalTree, type HorizontalTreeItem } from "./horizontalTreeLayout";
+
+const HORIZONTAL_MARGIN = 20;
+const MINIMUM_HORIZONTAL_GAP = 16;
 
 function isStackedLayout(layout: LevelLayout) {
   return layout === LevelLayouts.Stacked;
@@ -124,6 +128,7 @@ class OrbatChart {
       this.specificOptions,
     );
     this._doNodeLayout(renderedChart);
+    this._fitViewBoxToNodes(renderedChart);
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     if (enablePanZoom) {
@@ -269,6 +274,7 @@ class OrbatChart {
   }
 
   private _doNodeLayout(renderedChart: RenderedChart) {
+    this._layoutHorizontalLevels(renderedChart);
     const numberOfLevels = this.groupedLevels.length;
     const maxLevels = this.options.maxLevels || numberOfLevels;
     const chartHeight = this.height;
@@ -298,16 +304,6 @@ class OrbatChart {
     const chartWidth = this.width;
     const wrapperGroup = this.wrapperGroup;
 
-    const renderGroups = renderedLevel.branches;
-    const unitsOnLevel = flattenArray<RenderedUnitNode>(
-      renderGroups.map((unitGroup) => unitGroup.units),
-    );
-    const numberOfUnitsOnLevel = unitsOnLevel.length;
-    const totalWidth = arrSum(unitsOnLevel.map((u) => u.boundingBox.width));
-
-    const availableSpace = chartWidth - totalWidth;
-    const padding = availableSpace / numberOfUnitsOnLevel;
-
     switch (levelLayout) {
       case LevelLayouts.Horizontal:
         _doHorizontalLayout();
@@ -327,29 +323,17 @@ class OrbatChart {
     if (levelOptions.debug) drawDebugRect(renderedLevel.groupElement);
 
     function _doHorizontalLayout() {
-      let xIdx = 0;
-      let prevX = -padding / 2;
-
-      renderedLevel.branches.forEach((unitBranch, groupIdx) => {
+      renderedLevel.branches.forEach((unitBranch) => {
         const branchOptions = { ...levelOptions, ...unitBranch.options };
         for (const unitNode of unitBranch.units) {
-          let x;
           const unitOptions = { ...branchOptions, ...unitNode.options };
-          if (unitOptions.unitLevelDistance === UnitLevelDistances.EqualPadding) {
-            x = prevX + unitNode.boundingBox.width / 2 + padding;
-          } else {
-            x = ((xIdx + 1) * chartWidth) / (numberOfUnitsOnLevel + 1);
-          }
-
-          unitNode.x = x;
+          const x = unitNode.x;
           unitNode.y = y;
           calculateAnchorPoints(unitNode);
 
-          prevX = unitNode.x + unitNode.boundingBox.width / 2;
           putGroupAt(unitNode.groupElement, unitNode, x, y, unitOptions.debug);
 
           if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
-          xIdx += 1;
         }
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
@@ -413,6 +397,85 @@ class OrbatChart {
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
     }
+  }
+
+  private _layoutHorizontalLevels(renderedChart: RenderedChart) {
+    if (renderedChart.levels.length === 0) return;
+    const lastLevelIndex = renderedChart.levels.length - 1;
+    const lastHorizontalLevel =
+      this.options.lastLevelLayout === LevelLayouts.Horizontal
+        ? lastLevelIndex
+        : lastLevelIndex - 1;
+    if (lastHorizontalLevel < 0) return;
+
+    const includedNodes = new Set<RenderedUnitNode>();
+    renderedChart.levels.slice(0, lastHorizontalLevel + 1).forEach((level) => {
+      level.branches.forEach((branch) => {
+        branch.units.forEach((unit) => includedNodes.add(unit));
+      });
+    });
+
+    const root = renderedChart.levels[0].branches[0]?.units[0];
+    if (!root) return;
+    const childrenByParent = new Map<RenderedUnitNode, RenderedUnitNode[]>();
+    includedNodes.forEach((unit) => {
+      if (!unit.parent || !includedNodes.has(unit.parent)) return;
+      const children = childrenByParent.get(unit.parent) ?? [];
+      children.push(unit);
+      childrenByParent.set(unit.parent, children);
+    });
+
+    const toLayoutItem = (
+      unit: RenderedUnitNode,
+    ): HorizontalTreeItem<RenderedUnitNode> => {
+      const boxLeft = unit.x - unit.octagonAnchor.x + unit.boundingBox.x;
+      return {
+        value: unit,
+        leftExtent: unit.x - boxLeft,
+        rightExtent: boxLeft + unit.boundingBox.width - unit.x,
+        children: (childrenByParent.get(unit) ?? []).map(toLayoutItem),
+      };
+    };
+
+    const layout = layoutHorizontalTree(toLayoutItem(root), {
+      viewportWidth: this.width,
+      margin: HORIZONTAL_MARGIN,
+      minimumGap: Math.max(
+        MINIMUM_HORIZONTAL_GAP,
+        this.options.connectorOffset * 2 + this.options.lineWidth,
+      ),
+      uniformNodeSlots: this.options.unitLevelDistance === UnitLevelDistances.Fixed,
+    });
+    layout.positions.forEach((x, unit) => {
+      unit.x = x;
+    });
+    if (layout.width > this.width) {
+      this.width = layout.width;
+      this.svg.attr("viewBox", `0 0 ${this.width} ${this.height}`);
+    }
+  }
+
+  private _fitViewBoxToNodes(renderedChart: RenderedChart) {
+    let left = 0;
+    let top = 0;
+    let right = this.width;
+    let bottom = this.height;
+    renderedChart.levels.forEach((level) => {
+      level.branches.forEach((branch) => {
+        branch.units.forEach((unit) => {
+          const unitLeft = unit.x - unit.octagonAnchor.x + unit.boundingBox.x;
+          const unitTop = unit.y - unit.octagonAnchor.y + unit.boundingBox.y;
+          left = Math.min(left, unitLeft - HORIZONTAL_MARGIN);
+          top = Math.min(top, unitTop - HORIZONTAL_MARGIN);
+          right = Math.max(right, unitLeft + unit.boundingBox.width + HORIZONTAL_MARGIN);
+          bottom = Math.max(
+            bottom,
+            unitTop + unit.boundingBox.height + HORIZONTAL_MARGIN,
+          );
+        });
+      });
+    });
+    this.svg.attr("viewBox", `${left} ${top} ${right - left} ${bottom - top}`);
   }
 
   private _drawConnectors(renderedChart: RenderedChart) {
