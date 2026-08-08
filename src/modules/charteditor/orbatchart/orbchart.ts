@@ -120,7 +120,8 @@ class OrbatChart {
 
     // Pass 1: Create g elements and other svg elements
     // Pass 2: Do unit layout
-    // Pass 3: Draw connectors
+    // Pass 3: Fit the completed layout to the requested page
+    // Pass 4: Draw connectors
     renderedChart.levels = createInitialNodeStructure(
       chartGroup,
       this.groupedLevels,
@@ -128,7 +129,7 @@ class OrbatChart {
       this.specificOptions,
     );
     this._doNodeLayout(renderedChart);
-    this._fitViewBoxToNodes(renderedChart);
+    this._fitChartToViewport(renderedChart);
     this._drawConnectors(renderedChart);
     this.renderedChart = renderedChart;
     if (enablePanZoom) {
@@ -449,13 +450,9 @@ class OrbatChart {
     layout.positions.forEach((x, unit) => {
       unit.x = x;
     });
-    if (layout.width > this.width) {
-      this.width = layout.width;
-      this.svg.attr("viewBox", `0 0 ${this.width} ${this.height}`);
-    }
   }
 
-  private _fitViewBoxToNodes(renderedChart: RenderedChart) {
+  private _fitChartToViewport(renderedChart: RenderedChart) {
     let left = 0;
     let top = 0;
     let right = this.width;
@@ -475,7 +472,15 @@ class OrbatChart {
         });
       });
     });
-    this.svg.attr("viewBox", `${left} ${top} ${right - left} ${bottom - top}`);
+    const contentWidth = right - left;
+    const contentHeight = bottom - top;
+    const scale = Math.min(1, this.width / contentWidth, this.height / contentHeight);
+    const translateX = (this.width - contentWidth * scale) / 2 - left * scale;
+    const translateY = -top * scale;
+    this.wrapperGroup.attr(
+      "transform",
+      `translate(${translateX} ${translateY}) scale(${scale})`,
+    );
   }
 
   private _drawConnectors(renderedChart: RenderedChart) {
