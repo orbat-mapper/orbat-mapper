@@ -327,10 +327,20 @@ function aggregateData(unit: ChartUnit) {
   return { aggregatedEquipment, aggregatedPersonnel };
 }
 
+/**
+ * Top left corner of the unit's bounding box (including label) in chart coordinates.
+ * The bounding box is relative to the symbol's octagon anchor, which sits at (x, y).
+ */
+export function getUnitBoxOrigin(unitNode: RenderedUnitNode) {
+  return {
+    x: unitNode.x - unitNode.octagonAnchor.x + unitNode.boundingBox.x,
+    y: unitNode.y - unitNode.octagonAnchor.y + unitNode.boundingBox.y,
+  };
+}
+
 export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
   const { x, y } = unitNode;
-  const boxLeft = x - unitNode.octagonAnchor.x + unitNode.boundingBox.x;
-  const boxTop = y - unitNode.octagonAnchor.y + unitNode.boundingBox.y;
+  const { x: boxLeft, y: boxTop } = getUnitBoxOrigin(unitNode);
   unitNode.ly = boxTop + unitNode.boundingBox.height;
   unitNode.lx = boxLeft;
   unitNode.rx = boxLeft + unitNode.boundingBox.width;

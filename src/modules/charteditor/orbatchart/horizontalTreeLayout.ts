@@ -1,3 +1,6 @@
+/** Stop bisecting the gap once the interval is below half a pixel. */
+const GAP_PRECISION = 0.5;
+
 export interface HorizontalTreeItem<T> {
   value: T;
   leftExtent: number;
@@ -10,12 +13,6 @@ export interface HorizontalTreeLayoutOptions {
   margin: number;
   minimumGap: number;
   uniformNodeSlots: boolean;
-}
-
-export interface HorizontalTreeLayout<T> {
-  positions: Map<T, number>;
-  width: number;
-  gap: number;
 }
 
 interface MeasuredChild<T> {
@@ -88,10 +85,11 @@ function placeTree<T>(tree: MeasuredTree<T>, left: number, positions: Map<T, num
   tree.children.forEach((child) => placeTree(child.tree, left + child.offset, positions));
 }
 
+/** Assigns an x coordinate to every item in the tree, keyed by the item's value. */
 export function layoutHorizontalTree<T>(
   root: HorizontalTreeItem<T>,
   { viewportWidth, margin, minimumGap, uniformNodeSlots }: HorizontalTreeLayoutOptions,
-): HorizontalTreeLayout<T> {
+): Map<T, number> {
   let fixedExtents: { left: number; right: number } | null = null;
   if (uniformNodeSlots) {
     fixedExtents = { left: 0, right: 0 };
@@ -104,13 +102,14 @@ export function layoutHorizontalTree<T>(
   const safeMargin = Math.max(0, margin);
   const safeMinimumGap = Math.max(0, minimumGap);
   const availableWidth = Math.max(0, viewportWidth - safeMargin * 2);
-  let gap = safeMinimumGap;
-  let measured = measureTree(root, gap, fixedExtents);
+  let measured = measureTree(root, safeMinimumGap, fixedExtents);
 
+  // Widen the gap as much as the viewport allows. The width-to-gap relation is
+  // piecewise linear (subtrees clamp), so bisect rather than solve directly.
   if (measured.width < availableWidth) {
     let low = safeMinimumGap;
     let high = Math.max(safeMinimumGap, availableWidth);
-    for (let index = 0; index < 40; index += 1) {
+    while (high - low > GAP_PRECISION) {
       const candidate = (low + high) / 2;
       const candidateTree = measureTree(root, candidate, fixedExtents);
       if (candidateTree.width <= availableWidth) {
@@ -120,12 +119,11 @@ export function layoutHorizontalTree<T>(
         high = candidate;
       }
     }
-    gap = low;
   }
 
   const width = Math.max(viewportWidth, measured.width + safeMargin * 2);
   const positions = new Map<T, number>();
   placeTree(measured, (width - measured.width) / 2, positions);
 
-  return { positions, width, gap };
+  return positions;
 }
