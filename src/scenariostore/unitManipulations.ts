@@ -60,7 +60,7 @@ export type NWalkSideGroupCallback = (
 ) => void | false | true;
 
 export interface ExpandUnitOptions {
-  /** Use the symbol projected for the current scenario time instead of the base sidc. */
+  /** Use symbol and resource values projected for the current scenario time. */
   useCurrentState?: boolean;
 }
 
@@ -1068,6 +1068,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     options: ExpandUnitOptions = {},
   ): Unit {
     const { useCurrentState = false } = options;
+    const equipment = useCurrentState
+      ? (unit._state?.equipment ?? unit.equipment)
+      : unit.equipment;
+    const personnel = useCurrentState
+      ? (unit._state?.personnel ?? unit.personnel)
+      : unit.personnel;
+    const supplies = useCurrentState
+      ? (unit._state?.supplies ?? unit.supplies)
+      : unit.supplies;
     return {
       ...unit,
       state: [],
@@ -1076,17 +1085,17 @@ export function useUnitManipulations(store: NewScenarioStore) {
       subUnits: unit.subUnits.map((subUnitId) =>
         expandUnitWithSymbolOptions(state.unitMap[subUnitId], options),
       ),
-      equipment: unit.equipment?.map(({ id, count }) => ({
+      equipment: equipment?.map(({ id, count, onHand }) => ({
         name: state.equipmentMap[id].name || "",
-        count,
+        count: useCurrentState ? (onHand ?? count) : count,
       })),
-      personnel: unit.personnel?.map(({ id, count }) => ({
+      personnel: personnel?.map(({ id, count, onHand }) => ({
         name: state.personnelMap[id].name || "",
-        count,
+        count: useCurrentState ? (onHand ?? count) : count,
       })),
-      supplies: unit.supplies?.map(({ id, count }) => ({
+      supplies: supplies?.map(({ id, count, onHand }) => ({
         name: state.supplyCategoryMap[id].name || "",
-        count,
+        count: useCurrentState ? (onHand ?? count) : count,
       })),
     };
   }
