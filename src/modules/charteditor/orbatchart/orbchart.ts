@@ -214,10 +214,10 @@ class OrbatChart {
     svg.append("style").text(createChartStyle(this.options));
     svg.attr("width", "100%");
     svg.attr("height", "100%");
-    this.wrapperGroup = createGroupElement(svg, "o-wrapper");
     if (this.options.debug) {
-      this.wrapperGroup
+      svg
         .append<SVGRectElement>("rect")
+        .attr("class", "o-page-boundary")
         .attr("fill", "none")
         .attr("stroke", "red")
         .attr("y", "0")
@@ -226,6 +226,7 @@ class OrbatChart {
         .attr("height", this.height);
     }
 
+    this.wrapperGroup = createGroupElement(svg, "o-wrapper");
     createGroupElement(this.wrapperGroup, "", "o-highlight-layer");
     this.svg = svg;
     return {
