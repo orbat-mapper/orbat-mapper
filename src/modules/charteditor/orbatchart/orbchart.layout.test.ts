@@ -65,7 +65,7 @@ describe.each([UnitLevelDistances.Fixed, UnitLevelDistances.EqualPadding])(
 );
 
 describe("horizontal layout bounds", () => {
-  it("expands the viewBox instead of clipping an oversized label", () => {
+  it("fits an oversized label inside the requested page size", () => {
     const root = unit("A unit name that is wider than the requested chart viewport");
     const chart = new OrbatChart(root, {
       maxLevels: 1,
@@ -77,15 +77,24 @@ describe("horizontal layout bounds", () => {
       height: 200,
     });
 
-    const [viewLeft, , viewWidth] = svg.getAttribute("viewBox")!.split(" ").map(Number);
+    expect(svg.getAttribute("viewBox")).toBe("0 0 200 200");
+
+    const transform = svg
+      .querySelector<SVGGElement>("g.o-wrapper")!
+      .getAttribute("transform")!;
+    const match = transform.match(
+      /^translate\(([-\d.e]+) ([-\d.e]+)\) scale\(([-\d.e]+)\)$/,
+    )!;
+    const translateX = Number(match[1]);
+    const scale = Number(match[3]);
     const renderedRoot = chart.renderedChart.levels[0].branches[0].units[0];
     const contentLeft =
       renderedRoot.x - renderedRoot.octagonAnchor.x + renderedRoot.boundingBox.x;
     const contentRight = contentLeft + renderedRoot.boundingBox.width;
 
-    expect(viewWidth).toBeGreaterThan(200);
-    expect(contentLeft).toBeGreaterThanOrEqual(viewLeft);
-    expect(contentRight).toBeLessThanOrEqual(viewLeft + viewWidth);
+    expect(scale).toBeLessThan(1);
+    expect(contentLeft * scale + translateX).toBeGreaterThanOrEqual(0);
+    expect(contentRight * scale + translateX).toBeLessThanOrEqual(200);
   });
 
   it("preserves a non-horizontal final level relative to its parent", () => {
