@@ -97,6 +97,29 @@ describe("horizontal layout bounds", () => {
     expect(contentRight * scale + translateX).toBeLessThanOrEqual(200);
   });
 
+  it("keeps the debug page boundary in page coordinates", () => {
+    const chart = new OrbatChart(
+      unit("A unit name that is wider than the requested chart viewport"),
+      {
+        debug: true,
+        maxLevels: 1,
+        symbolGenerator: createSymbol,
+      },
+    );
+
+    const svg = chart.toSVG(document.createElement("div"), {
+      width: 200,
+      height: 200,
+    });
+
+    const pageBoundary = svg.querySelector<SVGRectElement>(
+      ":scope > rect.o-page-boundary",
+    );
+    expect(pageBoundary).not.toBeNull();
+    expect(pageBoundary!.getAttribute("width")).toBe("200");
+    expect(pageBoundary!.getAttribute("height")).toBe("200");
+  });
+
   it("preserves a non-horizontal final level relative to its parent", () => {
     const root = unit("root", [
       unit("left", [unit("left-child")]),
