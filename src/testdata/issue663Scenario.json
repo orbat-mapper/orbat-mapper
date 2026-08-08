@@ -1,0 +1,138 @@
+{
+  "id": "issue-663-repro",
+  "type": "ORBAT-mapper",
+  "version": "3.4.0",
+  "meta": {
+    "createdDate": "2026-08-08T08:00:00.000Z",
+    "lastModifiedDate": "2026-08-08T08:00:00.000Z"
+  },
+  "name": "Issue 663 — current TO&E counts",
+  "description": "Regression fixture for issue #663. At 10:00 UTC, each battery's available howitzers fall from 12 to 3 while the assigned count remains 12.",
+  "startTime": "2026-08-08T08:00:00Z",
+  "timeZone": "UTC",
+  "symbologyStandard": "2525d",
+  "sides": [
+    {
+      "id": "blue-side",
+      "name": "Blue force",
+      "standardIdentity": "3",
+      "symbolOptions": {},
+      "subUnits": [],
+      "groups": [
+        {
+          "id": "blue-units",
+          "name": "Blue units",
+          "symbolOptions": {},
+          "subUnits": [
+            {
+              "id": "artillery-battalion",
+              "name": "1st Artillery Battalion",
+              "shortName": "1 ARTY",
+              "sidc": "10031000161303000000",
+              "location": [10.75, 59.91],
+              "subUnits": [
+                {
+                  "id": "alpha-battery",
+                  "name": "Alpha Battery",
+                  "shortName": "A BTY",
+                  "sidc": "10031000151303000000",
+                  "location": [10.7, 59.89],
+                  "equipment": [
+                    {
+                      "name": "155 mm howitzer",
+                      "count": 12
+                    }
+                  ],
+                  "subUnits": [],
+                  "state": [
+                    {
+                      "id": "alpha-losses",
+                      "t": "2026-08-08T10:00:00Z",
+                      "update": {
+                        "equipment": [
+                          {
+                            "name": "155 mm howitzer",
+                            "onHand": 3
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "bravo-battery",
+                  "name": "Bravo Battery",
+                  "shortName": "B BTY",
+                  "sidc": "10031000151303000000",
+                  "location": [10.8, 59.89],
+                  "equipment": [
+                    {
+                      "name": "155 mm howitzer",
+                      "count": 12
+                    }
+                  ],
+                  "subUnits": [],
+                  "state": [
+                    {
+                      "id": "bravo-losses",
+                      "t": "2026-08-08T10:00:00Z",
+                      "update": {
+                        "equipment": [
+                          {
+                            "name": "155 mm howitzer",
+                            "onHand": 3
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ],
+              "state": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "availability-reduced",
+      "title": "Battery availability reduced to 25%",
+      "subTitle": "Assigned: 12; available: 3",
+      "description": "Both batteries retain 12 assigned howitzers but only 3 are currently available.",
+      "startTime": "2026-08-08T10:00:00Z",
+      "where": {
+        "type": "units",
+        "units": ["alpha-battery", "bravo-battery"]
+      }
+    }
+  ],
+  "layerStack": [
+    {
+      "id": "features",
+      "kind": "overlay",
+      "name": "Features",
+      "items": []
+    }
+  ],
+  "equipment": [
+    {
+      "name": "155 mm howitzer",
+      "description": "Generic artillery piece used by the reproduction scenario."
+    }
+  ],
+  "personnel": [],
+  "supplyCategories": [],
+  "settings": {
+    "rangeRingGroups": [],
+    "statuses": [],
+    "supplyClasses": [],
+    "supplyUoMs": [],
+    "symbolFillColors": [],
+    "customSymbols": [],
+    "map": {
+      "baseMapId": "osm"
+    }
+  }
+}

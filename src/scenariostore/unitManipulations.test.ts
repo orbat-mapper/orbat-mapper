@@ -3,6 +3,7 @@ import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useUnitManipulations } from "@/scenariostore/unitManipulations";
 import { useScenarioTime } from "@/scenariostore/time";
 import { clearUnitStyleCache, unitStyleCache } from "@/geo/unitStyles";
+import issue663Scenario from "@/testdata/issue663Scenario.json";
 
 function createScenario() {
   return {
@@ -908,5 +909,24 @@ describe("expandUnitWithSymbolOptions", () => {
       useCurrentState: true,
     });
     expect(unit.sidc).toBe("10031000001100000000");
+  });
+
+  it("uses current on-hand resource counts for subordinate chart units", () => {
+    const store = useNewScenarioStore(issue663Scenario as any);
+    const actions = useUnitManipulations(store);
+    useScenarioTime(store).setCurrentTime(Date.parse("2026-08-08T10:00:00Z"));
+
+    expect(store.state.unitMap["alpha-battery"]._state?.equipment?.[0]).toMatchObject({
+      count: 12,
+      onHand: 3,
+    });
+
+    const unit = actions.expandUnitWithSymbolOptions(
+      store.state.unitMap["artillery-battalion"],
+      { useCurrentState: true },
+    );
+    expect(unit.subUnits?.[0]?.equipment).toEqual([
+      { name: "155 mm howitzer", count: 3 },
+    ]);
   });
 });
