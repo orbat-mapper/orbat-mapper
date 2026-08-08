@@ -329,9 +329,11 @@ function aggregateData(unit: ChartUnit) {
 
 export function calculateAnchorPoints(unitNode: RenderedUnitNode) {
   const { x, y } = unitNode;
-  unitNode.ly = y + (unitNode.boundingBox.height - unitNode.octagonAnchor.y);
-  unitNode.lx = x - unitNode.boundingBox.width / 2;
-  unitNode.rx = x + unitNode.boundingBox.width / 2;
+  const boxLeft = x - unitNode.octagonAnchor.x + unitNode.boundingBox.x;
+  const boxTop = y - unitNode.octagonAnchor.y + unitNode.boundingBox.y;
+  unitNode.ly = boxTop + unitNode.boundingBox.height;
+  unitNode.lx = boxLeft;
+  unitNode.rx = boxLeft + unitNode.boundingBox.width;
   // Todo: should use octagon width instead
   unitNode.lsx = x - unitNode.symbolBoxSize.width / 2;
   unitNode.rsx = x + unitNode.symbolBoxSize.width / 2;
