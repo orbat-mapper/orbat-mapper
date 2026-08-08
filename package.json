@@ -35,7 +35,7 @@
     "@heroicons/vue": "^2.2.0",
     "@iconify-prerendered/vue-mdi": "^0.28.1737398331",
     "@lucide/vue": "^1.30.0",
-    "@orbat-mapper/control-measures": "0.2.0-alpha.32",
+    "@orbat-mapper/control-measures": "0.2.0-alpha.33",
     "@orbat-mapper/convert-symbology": "^1.0.2",
     "@orbat-mapper/tactical-draw": "0.2.0-alpha.41",
     "@orbat-mapper/tactical-draw-adapter-maplibre": "0.2.0-alpha.24",

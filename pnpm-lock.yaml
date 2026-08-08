@@ -42,8 +42,8 @@ importers:
         specifier: ^1.30.0
         version: 1.30.0(vue@3.5.41(typescript@5.9.3))
       '@orbat-mapper/control-measures':
-        specifier: 0.2.0-alpha.32
-        version: 0.2.0-alpha.32
+        specifier: 0.2.0-alpha.33
+        version: 0.2.0-alpha.33
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
@@ -1138,8 +1138,8 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
-  '@orbat-mapper/control-measures@0.2.0-alpha.32':
-    resolution: {integrity: sha512-AC6QAOPN4ElarxZKOzL7av/ckdLQ/uJ37x+FNvubmVb/+klpR3J9Ehl5cagtyQv4L50AFs3DvCjPJdyN9/1h8A==}
+  '@orbat-mapper/control-measures@0.2.0-alpha.33':
+    resolution: {integrity: sha512-+H99B5Costx+wHyZqTXhRGEt3AXFyedcBDW3jfxLQq/c5wi8D+x3GSUay8GPug+Rrmhg3fjqe6xdIk5t6vl0gA==}
 
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
@@ -3544,8 +3544,8 @@ packages:
   murmurhash-js@1.0.0:
     resolution: {integrity: sha512-TvmkNhkv8yct0SVBSy+o8wYzXjE4Zz3PCesbfs8HiCXXdcTuocApFv11UWlNFWKYsP2okqrhb7JNlSm9InBhIw==}
 
-  nanoid@3.3.17:
-    resolution: {integrity: sha512-xQLf0A3HOMlgHq0n247/LRuAOYmB7dXJ/DvAxGvsSBij45XtBSmQycu+F8ODbHwns/XyFZagyL1+J0Offw1E0g==}
+  nanoid@3.3.18:
+    resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -5341,13 +5341,13 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
-  '@orbat-mapper/control-measures@0.2.0-alpha.32': {}
+  '@orbat-mapper/control-measures@0.2.0-alpha.33': {}
 
   '@orbat-mapper/convert-symbology@1.0.2': {}
 
   '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.0-alpha.24(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.2.0-alpha.32
+      '@orbat-mapper/control-measures': 0.2.0-alpha.33
       '@orbat-mapper/tactical-draw': 0.2.0-alpha.41(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)))
       maplibre-gl: 5.24.0
     transitivePeerDependencies:
@@ -5355,7 +5355,7 @@ snapshots:
 
   '@orbat-mapper/tactical-draw@0.2.0-alpha.41(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.2.0-alpha.32
+      '@orbat-mapper/control-measures': 0.2.0-alpha.33
     optionalDependencies:
       vitest: 4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
@@ -8373,7 +8373,7 @@ snapshots:
 
   murmurhash-js@1.0.0: {}
 
-  nanoid@3.3.17: {}
+  nanoid@3.3.18: {}
 
   nanoid@5.1.16: {}
 
@@ -8576,7 +8576,7 @@ snapshots:
 
   postcss@8.5.26:
     dependencies:
-      nanoid: 3.3.17
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
