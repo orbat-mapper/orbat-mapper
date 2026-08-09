@@ -50,6 +50,9 @@ import {
 import { Button } from "@/components/ui/button";
 import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import { importScenarioOverlayLayers } from "@/importexport/importScenarioLayers";
 
 interface Props {
   data: Scenario;
@@ -58,7 +61,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["cancel", "loaded"]);
 const activeScenario = injectStrict(activeScenarioKey);
-const { unitActions, settings, store: scnStore, time } = activeScenario;
+const { unitActions, settings, store: scnStore, time, geo } = activeScenario;
 const { loadScenario } = useBrowserScenarios();
 const { send } = useNotifications();
 const store = useImportStore();
@@ -88,6 +91,7 @@ const selectedPersonnel = ref<UnitPersonnel[]>([]);
 const selectedStatuses = ref<UnitStatus[]>([]);
 const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const selectedCustomSymbols = ref<CustomSymbol[]>([]);
+const selectedLayers = ref<ScenarioOverlayLayer[]>([]);
 const importedState = computed(() => {
   return prepareScenario(props.data);
 });
@@ -121,8 +125,13 @@ function getCombinedSymbolOptions(
 const stats = computed(() => {
   return {
     units: Object.keys(importedState.value.unitMap).length,
+    layers: props.data.layerStack.filter(isScenarioOverlayLayer).length,
   };
 });
+
+const importedLayers = computed(() =>
+  props.data.layerStack.filter(isScenarioOverlayLayer),
+);
 
 const importedSides = computed((): SelectItem[] => {
   return importedState.value.sides
@@ -200,12 +209,6 @@ const currentCustomIcons = computed(() => {
   return Object.values(importedState.value.customSymbolMap);
 });
 
-const isSettingsImport = computed(() =>
-  ["statuses", "equipment", "personnel", "supplyCategories", "customSymbols"].includes(
-    importMode.value,
-  ),
-);
-
 const hasExistingUnits = computed(() => {
   return selectedItems.value.some((item) => item.id in targetState.unitMap);
 });
@@ -240,7 +243,12 @@ const sources = [
     value: "customSymbols",
     label: "Symbols",
   },
+  { value: "layers", label: "Layers" },
 ];
+
+const isUnitImport = computed(() =>
+  ["side", "group", "units"].includes(importMode.value),
+);
 
 watch(selectedSourceSideId, (newSide) => {
   const side = importedState.value.sideMap[newSide];
@@ -433,6 +441,23 @@ const customIconColumns: ColumnDef<CustomSymbol>[] = [
   },
 ];
 
+const layerColumns: ColumnDef<ScenarioOverlayLayer>[] = [
+  { accessorKey: "name", id: "name", header: "Name", size: 400 },
+  {
+    id: "type",
+    header: "Type",
+    accessorFn: (layer) =>
+      layer.specialization === "controlMeasure" ? "Control measures" : "Features",
+    size: 180,
+  },
+  {
+    id: "items",
+    header: "Items",
+    accessorFn: (layer) => layer.items.length,
+    size: 90,
+  },
+];
+
 // check that the item is a unit
 function isUnit(item: Unit | SideGroup): item is Unit {
   return "sidc" in item;
@@ -451,6 +476,15 @@ async function onFormSubmit() {
     doSupplyCategoryImport(selectedSupplyCategories.value);
   } else if (importMode.value === "customSymbols") {
     doCustomSymbolImport(selectedCustomSymbols.value);
+  } else if (importMode.value === "layers") {
+    scnStore.groupUpdate(() => {
+      importScenarioOverlayLayers(
+        importedState.value,
+        targetState,
+        geo,
+        selectedLayers.value.map((layer) => layer.id),
+      );
+    });
   } else if (unitImportMode.value === "state-only") {
     doStateOnlyImport(selectedUnitIds);
   } else if (importMode.value === "side" && selectedSourceSideId.value) {
@@ -704,7 +738,9 @@ function doGroupImport(importedGroupId: string) {
           }}</CardDescription>
         </CardHeader>
         <CardContent class="flex items-center justify-between gap-2 py-2">
-          <span class="text-muted-foreground text-xs">{{ stats.units }} units</span>
+          <span class="text-muted-foreground text-xs">
+            {{ stats.units }} units · {{ stats.layers }} layers
+          </span>
           <Button
             type="button"
             variant="link"
@@ -735,7 +771,7 @@ function doGroupImport(importedGroupId: string) {
       </FieldGroup>
 
       <!-- Source Selection (for unit imports) -->
-      <template v-if="!isSettingsImport">
+      <template v-if="isUnitImport">
         <!-- Import Content Options -->
         <FieldSet>
           <FieldLabel>Content to import</FieldLabel>
@@ -874,7 +910,7 @@ function doGroupImport(importedGroupId: string) {
 
     <!-- Main content: Data grids -->
     <div class="flex h-full min-h-0 flex-col p-6">
-      <template v-if="!isSettingsImport">
+      <template v-if="isUnitImport">
         <div class="mb-4 flex gap-4">
           <FieldSelect
             class="w-64"
@@ -900,6 +936,18 @@ function doGroupImport(importedGroupId: string) {
           select-all
           v-model:selected="selectedItems"
           no-indeterminate
+        />
+      </template>
+
+      <template v-else-if="importMode === 'layers'">
+        <DataGrid
+          :data="importedLayers"
+          :columns="layerColumns"
+          :row-height="40"
+          v-model:selected="selectedLayers"
+          select
+          select-all
+          class="flex-1"
         />
       </template>
 

@@ -176,6 +176,8 @@ export type UpdateOptions = {
   noEmit?: boolean;
   force?: boolean;
   emitOnly?: boolean;
+  /** Preserve malformed/legacy layer contents when copying already-stored data. */
+  allowSpecializationMismatch?: boolean;
 };
 
 export interface MoveLayerOptions {
@@ -711,8 +713,8 @@ export function useGeo(store: NewScenarioStore) {
     if (!destination || destination.locked) return;
     const requiresControlMeasureLayer = newFeature.kind === "tacticalGraphic";
     if (
-      requiresControlMeasureLayer !==
-      (destination.specialization === "controlMeasure")
+      !options.allowSpecializationMismatch &&
+      requiresControlMeasureLayer !== (destination.specialization === "controlMeasure")
     ) {
       return;
     }
