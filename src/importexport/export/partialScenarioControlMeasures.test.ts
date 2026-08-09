@@ -12,7 +12,7 @@ vi.mock("@/importexport/export/kmlExport", () => ({
 }));
 
 describe("partial ORBAT Mapper export", () => {
-  it("retains control-measure layers and their complete parameter bags", () => {
+  function exporter() {
     const source = loadControlMeasureScenarioFixture();
     const activeScenario = {
       io: { toObject: () => source },
@@ -21,9 +21,12 @@ describe("partial ORBAT Mapper export", () => {
       unitActions: {},
       helpers: {},
     } as unknown as TScenario;
+    return useScenarioExport({ activeScenario });
+  }
 
+  it("retains control-measure layers and their complete parameter bags", () => {
     const exported = JSON.parse(
-      useScenarioExport({ activeScenario }).generateOrbatMapper({
+      exporter().generateOrbatMapper({
         sideGroups: [],
         scenarioName: "Control measures only",
         customColors: true,
@@ -52,5 +55,38 @@ describe("partial ORBAT Mapper export", () => {
       [10, 61],
       [11, 61],
     ]);
+  });
+
+  it("exports only explicitly selected layers", () => {
+    const exported = JSON.parse(
+      exporter().generateOrbatMapper({
+        sideGroups: [],
+        layerIds: ["layer-control-measures"],
+        customColors: true,
+        fileName: "selected-layers.json",
+      }),
+    );
+
+    expect(exported.layerStack.map((layer: { id: string }) => layer.id)).toEqual([
+      "layer-control-measures",
+    ]);
+    expect(
+      exported.layerStack[0].items.some(
+        (item: { id: string }) => item.id === "cm-phase-line",
+      ),
+    ).toBe(true);
+  });
+
+  it("exports no layers when the selection is explicitly empty", () => {
+    const exported = JSON.parse(
+      exporter().generateOrbatMapper({
+        sideGroups: [],
+        layerIds: [],
+        customColors: true,
+        fileName: "no-layers.json",
+      }),
+    );
+
+    expect(exported.layerStack).toEqual([]);
   });
 });

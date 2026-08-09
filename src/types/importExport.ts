@@ -1,4 +1,5 @@
 import { type EntityId } from "@/types/base";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ImportedFileInfo } from "@/importexport/fileHandling.ts";
 import type { FeatureCollection } from "geojson";
 
@@ -73,6 +74,8 @@ export interface GeoJsonSettings extends BaseExportSettings {
 
 export interface OrbatMapperExportSettings extends BaseExportSettings {
   sideGroups: EntityId[];
+  /** Undefined preserves the legacy behavior of exporting every layer. */
+  layerIds?: FeatureId[];
   scenarioName?: string;
 }
 
