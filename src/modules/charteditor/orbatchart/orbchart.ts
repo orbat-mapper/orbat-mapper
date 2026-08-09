@@ -50,6 +50,27 @@ function isLeftRightLayout(layout: LevelLayout) {
   return layout === LevelLayouts.TreeRight || layout === LevelLayouts.TreeLeft;
 }
 
+/**
+ * Position a tree unit far enough from its parent's connector trunk that the
+ * unit's complete rendered box, including resource text, clears the line.
+ */
+function getTreeUnitOffset(
+  unit: RenderedUnitNode,
+  layout: LevelLayout,
+  index: number,
+  options: Pick<OrbChartOptions, "connectorOffset" | "lineWidth" | "treeOffset">,
+) {
+  const boxLeftOffset = getUnitBoxOrigin(unit).x - unit.x;
+  const boxRightOffset = boxLeftOffset + unit.boundingBox.width;
+  const clearance = options.connectorOffset + options.lineWidth;
+  const placeRight =
+    layout === LevelLayouts.TreeRight || (layout === LevelLayouts.Tree && index % 2 > 0);
+
+  return placeRight
+    ? Math.max(options.treeOffset, clearance - boxLeftOffset)
+    : -Math.max(options.treeOffset, clearance + boxRightOffset);
+}
+
 export function isTreeLayout(layout: LevelLayout) {
   return (
     layout === LevelLayouts.TreeRight ||
@@ -346,27 +367,52 @@ class OrbatChart {
       const groupsOnLevel = renderedLevel.branches.length;
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
         const branchOptions = { ...levelOptions, ...unitBranch.options };
-        let prevY = y;
+        let rowY = y;
+        let rowBottom = Number.NEGATIVE_INFINITY;
+        let previousInRow: RenderedUnitNode | null = null;
         for (const [yIdx, unitNode] of unitBranch.units.entries()) {
           const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
 
-          if (yIdx % 2) {
-            x += unitOptions.treeOffset;
-          } else {
-            x -= unitOptions.treeOffset;
-          }
-          const ny = prevY;
+          x += getTreeUnitOffset(unitNode, LevelLayouts.Tree, yIdx, unitOptions);
           unitNode.x = x;
-          unitNode.y = ny;
+          unitNode.y = rowY;
           calculateAnchorPoints(unitNode);
 
-          if (yIdx % 2) prevY = unitNode.ly + unitOptions.stackedOffset;
+          // TREE normally shares a row between its left and right unit. Wide
+          // resource tables can meet in the middle, so move the right unit below
+          // the left one only when their rendered boxes actually intersect.
+          if (
+            yIdx % 2 &&
+            previousInRow &&
+            unitNode.lx < previousInRow.rx &&
+            unitNode.rx > previousInRow.lx
+          ) {
+            const boxTopOffset = getUnitBoxOrigin(unitNode).y - unitNode.y;
+            unitNode.y = rowBottom + unitOptions.stackedOffset - boxTopOffset;
+            calculateAnchorPoints(unitNode);
+          }
 
-          putGroupAt(unitNode.groupElement, unitNode, x, ny, unitOptions.debug);
+          rowBottom = Math.max(rowBottom, unitNode.ly);
+
+          putGroupAt(
+            unitNode.groupElement,
+            unitNode,
+            unitNode.x,
+            unitNode.y,
+            unitOptions.debug,
+          );
           if (unitOptions.debug) drawDebugAnchors(wrapperGroup, unitNode);
+
+          if (yIdx % 2) {
+            rowY = rowBottom + unitOptions.stackedOffset;
+            rowBottom = Number.NEGATIVE_INFINITY;
+            previousInRow = null;
+          } else {
+            previousInRow = unitNode;
+          }
         }
         if (branchOptions.debug) drawDebugRect(unitBranch.groupElement, "yellow");
       });
@@ -383,10 +429,8 @@ class OrbatChart {
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
 
-          if (layout === LevelLayouts.TreeRight) {
-            x += unitOptions.treeOffset;
-          } else if (layout === LevelLayouts.TreeLeft) {
-            x -= unitOptions.treeOffset;
+          if (isLeftRightLayout(layout)) {
+            x += getTreeUnitOffset(unitNode, layout, yIdx, unitOptions);
           }
           const ny = prevY;
           unitNode.x = x;
@@ -430,14 +474,49 @@ class OrbatChart {
       });
     });
 
+    const trailingBranchesByParent = new Map<RenderedUnitNode, RenderedBranch>();
+    if (lastHorizontalLevel < lastLevelIndex) {
+      renderedChart.levels[lastLevelIndex].branches.forEach((branch) => {
+        const parent = branch.units[0]?.parent;
+        if (parent) trailingBranchesByParent.set(parent, branch);
+      });
+    }
+
+    const trailingBranchExtents = (unit: RenderedUnitNode) => {
+      const branch = trailingBranchesByParent.get(unit);
+      if (!branch) return null;
+      const level = renderedChart.levels[lastLevelIndex];
+      const levelOptions = { ...this.options, ...level.options };
+      const branchOptions = { ...levelOptions, ...branch.options };
+      let left = 0;
+      let right = 0;
+      branch.units.forEach((child, index) => {
+        const unitOptions = { ...branchOptions, ...child.options };
+        const offset = getTreeUnitOffset(
+          child,
+          this.options.lastLevelLayout,
+          index,
+          unitOptions,
+        );
+        const childBoxLeft = getUnitBoxOrigin(child).x - child.x + offset;
+        left = Math.min(left, childBoxLeft);
+        right = Math.max(right, childBoxLeft + child.boundingBox.width);
+      });
+      return { left, right };
+    };
+
     const toLayoutItem = (
       unit: RenderedUnitNode,
     ): HorizontalTreeItem<RenderedUnitNode> => {
       const boxLeft = getUnitBoxOrigin(unit).x;
+      const trailingExtents = trailingBranchExtents(unit);
       return {
         value: unit,
-        leftExtent: unit.x - boxLeft,
-        rightExtent: boxLeft + unit.boundingBox.width - unit.x,
+        leftExtent: Math.max(unit.x - boxLeft, -(trailingExtents?.left ?? 0)),
+        rightExtent: Math.max(
+          boxLeft + unit.boundingBox.width - unit.x,
+          trailingExtents?.right ?? 0,
+        ),
         children: (childrenByParent.get(unit) ?? []).map(toLayoutItem),
       };
     };
