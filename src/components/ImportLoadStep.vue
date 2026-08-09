@@ -59,7 +59,9 @@ const formatItems: SelectItem<ImportFormat>[] = [
   { label: "XLSX", value: "xlsx" },
 ];
 
-const sourceItems = [
+type InputSource = "file" | "url" | "browser" | "string";
+
+const sourceItems: (SelectItem<InputSource> & { description: string })[] = [
   { label: "Local file", value: "file", description: "Upload from your computer" },
   { label: "URL", value: "url", description: "Load from a web address" },
   { label: "Browser", value: "browser", description: "Open a saved scenario" },
@@ -304,7 +306,14 @@ onMounted(() => {
 
     <template #sidebar>
       <!-- Input Source Selection -->
-      <FieldSet>
+      <SimpleSelect
+        class="lg:hidden"
+        label="Input source"
+        description="Select where to load your data from"
+        :items="sourceItems"
+        v-model="store.inputSource"
+      />
+      <FieldSet class="hidden lg:block">
         <FieldLabel>Input Source</FieldLabel>
         <FieldDescription>Select where to load your data from</FieldDescription>
         <RadioGroup v-model="store.inputSource" class="mt-3 flex flex-col gap-2">
