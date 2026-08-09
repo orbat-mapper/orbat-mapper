@@ -40,11 +40,11 @@ withDefaults(defineProps<Props>(), {
     <!-- Content with optional sidebar -->
     <div
       v-if="hasSidebar"
-      class="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-hidden"
+      class="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
     >
       <!-- Left Sidebar -->
       <aside
-        class="bg-background flex w-full flex-col border-b lg:flex-none lg:flex-col lg:overflow-hidden lg:border-r lg:border-b-0"
+        class="bg-background flex max-h-[50%] w-full flex-col border-b lg:max-h-none lg:flex-none lg:flex-col lg:overflow-hidden lg:border-r lg:border-b-0"
         :class="sidebarWidth"
       >
         <div class="flex-1 overflow-y-auto">
