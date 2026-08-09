@@ -25,6 +25,10 @@ KML (Keyhole Markup Language) is a format that uses XML. Mapping applications su
 geographic data. When you export to KML, you can easily send your scenario data to usual geospatial tools and show it
 there. For more data, see the [KML documentation](https://developers.google.com/kml/documentation).
 
+Control measures are exported as their complete rendered geometry with resolved line,
+fill, opacity, width, and label styling. KML has no portable dash-pattern or patterned-fill
+primitive, so those paint details use a solid fallback in KML/KMZ viewers.
+
 ![Google earh](images/google-earth.png)
 
 ## XLSX

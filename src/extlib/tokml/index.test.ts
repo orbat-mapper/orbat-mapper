@@ -44,4 +44,33 @@ describe("foldersToKML", () => {
       '<hotSpot x="0.5" y="0.75" xunits="fraction" yunits="fraction">',
     );
   });
+
+  it("serializes line, polygon, and label styles for rendered graphics", () => {
+    const root: Root = { type: "root", children: [] };
+    const kml = foldersToKML(root, [
+      {
+        id: "control-measure",
+        lineColor: "ff332211",
+        lineWidth: 4,
+        polyColor: "80332211",
+        polyFill: true,
+        polyOutline: true,
+      },
+      {
+        id: "control-measure-label",
+        labelColor: "ff332211",
+        labelScale: 1.5,
+        hideIcon: true,
+      },
+    ]);
+
+    expect(kml).toContain('<Style id="control-measure">');
+    expect(kml).toContain("<LineStyle><color>ff332211</color><width>4</width>");
+    expect(kml).toContain(
+      "<PolyStyle><color>80332211</color><fill>1</fill><outline>1</outline>",
+    );
+    expect(kml).toContain('<Style id="control-measure-label">');
+    expect(kml).toContain("<IconStyle><scale>0</scale>");
+    expect(kml).toContain("<LabelStyle><color>ff332211</color><scale>1.5</scale>");
+  });
 });

@@ -12,6 +12,9 @@ import type { CustomSymbol, UnitSymbolOptions } from "@/types/scenarioModels.ts"
 import { getCustomSymbolId, getFullUnitSidc } from "@/symbology/helpers.ts";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
+import { controlMeasuresToKml } from "@/importexport/export/controlMeasureKml";
+import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import type { StyleSettings } from "@/extlib/tokml";
 
 type RenderSymbolSettings = {
   sidc: string;
@@ -52,6 +55,8 @@ export function useKmlExport(scenario: TScenario) {
   function createKMLString(opts: KmlKmzExportSettings) {
     const root: Root = { type: "root", children: [] };
     const symbolDataCache = new Map<string, RenderSymbolSettings>();
+    const controlMeasureStyles: StyleSettings[] = [];
+    const warnings: string[] = [];
 
     function createUnitsFolder(units: NUnit[], name: string): Folder {
       const { features } = convertUnitsToGeoJson(units, {
@@ -183,25 +188,53 @@ export function useKmlExport(scenario: TScenario) {
       }
     }
 
-    const features = opts.includeFeatures
-      ? convertScenarioFeaturesToGeoJson().features
-      : [];
-
     if (opts.includeFeatures) {
+      const scenarioLayers = geo.layerItemsLayers.value;
+      const controlMeasureItems = scenarioLayers
+        .flatMap((layer) => layer.items)
+        .filter(isNTacticalGraphicLayerItem);
+      const controlMeasures = controlMeasuresToKml(controlMeasureItems);
+      controlMeasureStyles.push(...controlMeasures.styles);
+      warnings.push(...controlMeasures.warnings);
+
+      const layerFolders: Folder[] = scenarioLayers.map((layer) => {
+        const layerControlMeasureIds = new Set(
+          layer.items.filter(isNTacticalGraphicLayerItem).map((item) => item.id),
+        );
+        // The ordinary GeoJSON path intentionally strips renderer paint and labels.
+        // Replace only its fanned-out control-measure features with the KML-specific
+        // render, leaving ordinary scenario features byte-for-byte compatible.
+        const features = convertScenarioFeaturesToGeoJson({}, layer.items)
+          .features.filter(
+            (feature) => !layerControlMeasureIds.has(String(feature.properties?.cmId)),
+          )
+          .concat(
+            controlMeasures.features.filter((feature) =>
+              layerControlMeasureIds.has(String(feature.properties?.cmId)),
+            ),
+          );
+
+        return {
+          type: "folder",
+          meta: { id: layer.id, name: layer.name },
+          children: features,
+        };
+      });
+
       root.children.push({
         type: "folder",
         meta: { name: "Scenario features" },
-        children: features,
+        children: layerFolders,
       });
     }
 
-    return { root, symbolDataCache };
+    return { root, symbolDataCache, controlMeasureStyles, warnings };
   }
 
   async function generateKml(opts: KmlKmzExportSettings): Promise<string> {
     const { foldersToKML } = await import("@/extlib/tokml");
-    const { root } = createKMLString(opts);
-    return foldersToKML(root, [], {
+    const { root, controlMeasureStyles } = createKMLString(opts);
+    return foldersToKML(root, controlMeasureStyles, {
       listStyle: opts.useRadioFolder ? "radioFolder" : undefined,
     });
   }
@@ -454,8 +487,8 @@ export function useKmlExport(scenario: TScenario) {
     const { foldersToKML } = await import("@/extlib/tokml");
     const data: Record<string, Uint8Array> = {};
     const hotspotCache = new Map<string, HotspotSettings>();
-    const warnings: string[] = [];
-    const { root, symbolDataCache } = createKMLString(opts);
+    const { root, symbolDataCache, controlMeasureStyles, warnings } =
+      createKMLString(opts);
 
     if (opts.embedIcons) {
       for (const [cacheKey, symbolData] of symbolDataCache) {
@@ -525,20 +558,25 @@ export function useKmlExport(scenario: TScenario) {
 
     const kmlString = foldersToKML(
       root,
-      [...symbolDataCache.keys()].map((cacheKey) => {
-        const symbolData = symbolDataCache.get(cacheKey);
-        const customEmbeddedLabel =
-          opts.embedIcons && opts.renderCustomIconLabels && symbolData?.kind === "custom";
-        return {
-          sidc: cacheKey,
-          labelScale: customEmbeddedLabel ? 0 : opts.labelScale,
-          iconScale: opts.iconScale,
-          xOffset: hotspotCache?.get(cacheKey)?.x,
-          yOffset: hotspotCache?.get(cacheKey)?.y,
-          xUnits: hotspotCache?.get(cacheKey)?.xUnits,
-          yUnits: hotspotCache?.get(cacheKey)?.yUnits,
-        };
-      }),
+      [
+        ...controlMeasureStyles,
+        ...[...symbolDataCache.keys()].map((cacheKey) => {
+          const symbolData = symbolDataCache.get(cacheKey);
+          const customEmbeddedLabel =
+            opts.embedIcons &&
+            opts.renderCustomIconLabels &&
+            symbolData?.kind === "custom";
+          return {
+            sidc: cacheKey,
+            labelScale: customEmbeddedLabel ? 0 : opts.labelScale,
+            iconScale: opts.iconScale,
+            xOffset: hotspotCache?.get(cacheKey)?.x,
+            yOffset: hotspotCache?.get(cacheKey)?.y,
+            xUnits: hotspotCache?.get(cacheKey)?.xUnits,
+            yUnits: hotspotCache?.get(cacheKey)?.yUnits,
+          };
+        }),
+      ],
       {
         listStyle: opts.useRadioFolder ? "radioFolder" : undefined,
       },
