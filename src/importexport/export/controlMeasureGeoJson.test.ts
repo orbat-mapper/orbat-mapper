@@ -266,4 +266,25 @@ describe("convertScenarioFeaturesToGeoJson", () => {
     expect(collection.features.every((f) => f.properties?.cmId === "cm1")).toBe(true);
     expect(collection.features.every((f) => f.id === undefined)).toBe(true);
   });
+
+  it("can convert one layer's items without flattening every scenario layer", () => {
+    const scenario = {
+      geo: {
+        layerItemsLayers: {
+          value: [{ items: [geometryItem] }, { items: [phaseLine()] }],
+        },
+      },
+      unitActions: {},
+    } as unknown as TScenario;
+    const { convertScenarioFeaturesToGeoJson } = useGeoJsonConverter(scenario);
+
+    const collection = convertScenarioFeaturesToGeoJson({}, [
+      { ...phaseLine(), _pid: "layer-2" },
+    ]);
+
+    expect(collection.features).not.toContainEqual(
+      expect.objectContaining({ geometry: geometryItem.geometry }),
+    );
+    expect(collection.features.every((f) => f.properties?.cmId === "cm1")).toBe(true);
+  });
 });

@@ -425,4 +425,59 @@ describe("downloadAsKMZ custom symbols", () => {
     const zipData = zipSyncMock.mock.calls[0][0] as Record<string, Uint8Array>;
     expect(Object.keys(zipData).some((k) => k.startsWith("icons/"))).toBe(true);
   });
+
+  it("replaces unstyled GeoJSON control measures with styled rendered KML parts", async () => {
+    const scenario = createMilScenario();
+    scenario.geo.layerItemsLayers = {
+      value: [
+        {
+          id: "layer-control-measures",
+          name: "Control measures",
+          items: [
+            {
+              id: "cm-phase",
+              kind: "tacticalGraphic",
+              graphicKind: "phase-line",
+              controlPoints: [
+                [10, 59],
+                [11, 60],
+              ],
+              style: { color: "#123456", strokeWidth: 4 },
+              textAmplifiers: { T: "RED" },
+            },
+          ],
+        },
+        {
+          id: "layer-empty",
+          name: "Empty reference layer",
+          items: [],
+        },
+      ],
+    } as any;
+    const { generateKml } = useKmlExport(scenario);
+
+    await generateKml(createKmzOptions({ includeUnits: false, includeFeatures: true }));
+
+    const [root, styles] = foldersToKMLMock.mock.calls[0] as any[];
+    expect(styles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lineColor: "ff563412", lineWidth: 4 }),
+        expect.objectContaining({ labelColor: "ff563412", hideIcon: true }),
+      ]),
+    );
+    const scenarioFeaturesFolder = root.children[0];
+    expect(scenarioFeaturesFolder.children).toHaveLength(2);
+    const layerFolder = scenarioFeaturesFolder.children[0];
+    expect(layerFolder.meta).toMatchObject({
+      id: "layer-control-measures",
+      name: "Control measures",
+    });
+    const exportedFeatures = layerFolder.children as any[];
+    expect(exportedFeatures.some((feature) => feature.properties.name)).toBe(true);
+    expect(exportedFeatures.every((feature) => feature.properties.styleUrl)).toBe(true);
+    expect(scenarioFeaturesFolder.children[1].meta).toMatchObject({
+      id: "layer-empty",
+      name: "Empty reference layer",
+    });
+  });
 });

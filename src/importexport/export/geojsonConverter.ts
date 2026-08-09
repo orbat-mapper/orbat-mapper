@@ -42,9 +42,14 @@ export function useGeoJsonConverter(scenario: TScenario) {
     return featureCollection(features) as OrbatMapperGeoJsonCollection;
   }
 
-  function convertScenarioFeaturesToGeoJson(options: Partial<GeoJsonSettings> = {}) {
+  function convertScenarioFeaturesToGeoJson(
+    options: Partial<GeoJsonSettings> = {},
+    sourceItems?: readonly NScenarioLayerItem[],
+  ) {
     const includeIdInProperties = options.includeIdInProperties ?? false;
-    const layerItems = geo.layerItemsLayers.value.map((layer) => layer.items).flat(1);
+    const layerItems = sourceItems
+      ? [...sourceItems]
+      : geo.layerItemsLayers.value.map((layer) => layer.items).flat(1);
 
     const geometryFeatures: Feature<Geometry, GeoJsonProperties>[] = layerItems
       .filter((layerItem): layerItem is NScenarioLayerItem & GeometryLayerItem =>

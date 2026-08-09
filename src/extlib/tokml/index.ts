@@ -47,43 +47,88 @@ export function foldersToKML(
   );
 }
 
-type StyleSettings = {
-  sidc: string;
+export type StyleSettings = {
+  /** Explicit style id for non-unit features. Unit styles retain the sidc shorthand. */
+  id?: string;
+  sidc?: string;
   iconScale?: number;
+  iconHref?: string;
+  hideIcon?: boolean;
   labelScale?: number;
+  labelColor?: string;
+  lineColor?: string;
+  lineWidth?: number;
+  polyColor?: string;
+  polyFill?: boolean;
+  polyOutline?: boolean;
   xOffset?: number;
   yOffset?: number;
   xUnits?: "insetPixels" | "pixels" | "fraction";
   yUnits?: "insetPixels" | "pixels" | "fraction";
 };
 function convertStyle({
+  id,
   sidc,
   iconScale = 1,
+  iconHref,
+  hideIcon = false,
   labelScale = 1,
+  labelColor,
+  lineColor,
+  lineWidth,
+  polyColor,
+  polyFill,
+  polyOutline,
   xOffset,
   yOffset,
   xUnits = "insetPixels",
   yUnits = "insetPixels",
 }: StyleSettings) {
+  const styleId = id ?? `sidc${sidc}`;
+  const href = iconHref ?? (sidc ? `icons/${sidc}.png` : undefined);
   const hasOffset = xOffset !== undefined && yOffset !== undefined;
+  const includeIconStyle = hideIcon || href !== undefined || iconScale !== 1 || hasOffset;
   return [
     BR,
-    x("Style", { id: `sidc${sidc}` }, [
-      x("IconStyle", [
-        x("Icon", [x("href", [u("text", `icons/${sidc}.png`)])]),
-        iconScale !== 1 ? x("scale", [u("text", `${iconScale}`)]) : undefined,
-        hasOffset
-          ? x("hotSpot", {
-              x: `${xOffset}`,
-              y: `${yOffset}`,
-              xunits: xUnits,
-              yunits: yUnits,
-            })
-          : undefined,
-      ]),
-      x("LabelStyle", [
-        labelScale !== 1 ? x("scale", [u("text", `${labelScale}`)]) : undefined,
-      ]), // Add this line for small labels
+    x("Style", { id: styleId }, [
+      includeIconStyle
+        ? x("IconStyle", [
+            href ? x("Icon", [x("href", [u("text", href)])]) : undefined,
+            hideIcon ? x("scale", [u("text", "0")]) : undefined,
+            iconScale !== 1 ? x("scale", [u("text", `${iconScale}`)]) : undefined,
+            hasOffset
+              ? x("hotSpot", {
+                  x: `${xOffset}`,
+                  y: `${yOffset}`,
+                  xunits: xUnits,
+                  yunits: yUnits,
+                })
+              : undefined,
+          ])
+        : undefined,
+      labelColor !== undefined || labelScale !== 1
+        ? x("LabelStyle", [
+            labelColor ? x("color", [u("text", labelColor)]) : undefined,
+            labelScale !== 1 ? x("scale", [u("text", `${labelScale}`)]) : undefined,
+          ])
+        : undefined,
+      lineColor !== undefined || lineWidth !== undefined
+        ? x("LineStyle", [
+            lineColor ? x("color", [u("text", lineColor)]) : undefined,
+            lineWidth !== undefined ? x("width", [u("text", `${lineWidth}`)]) : undefined,
+          ])
+        : undefined,
+      polyColor !== undefined || polyFill !== undefined || polyOutline !== undefined
+        ? x("PolyStyle", [
+            polyColor ? x("color", [u("text", polyColor)]) : undefined,
+            polyFill !== undefined
+              ? x("fill", [u("text", polyFill ? "1" : "0")])
+              : undefined,
+            polyOutline !== undefined
+              ? x("outline", [u("text", polyOutline ? "1" : "0")])
+              : undefined,
+          ])
+        : undefined,
     ]),
   ];
 }
