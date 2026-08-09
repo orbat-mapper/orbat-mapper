@@ -81,6 +81,7 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
 
 export type FolderMode = "one" | "side" | "sideGroup";
 export type TimeMode = "current" | "event" | "multiple";
+export type KmlControlMeasureLabelMode = "native" | "rendered";
 
 export interface KmlKmzExportSettings {
   includeUnits: boolean;
@@ -97,6 +98,7 @@ export interface KmlKmzExportSettings {
   outlineWidth: number;
   renderAmplifiers: boolean;
   renderCustomIconLabels: boolean;
+  controlMeasureLabelMode: KmlControlMeasureLabelMode;
   timeMode: TimeMode;
   exportEventId?: EntityId;
   exportEventIds: EntityId[];

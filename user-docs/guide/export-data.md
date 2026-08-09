@@ -29,6 +29,12 @@ Control measures are exported as their complete rendered geometry with resolved 
 fill, opacity, width, and label styling. KML has no portable dash-pattern or patterned-fill
 primitive, so those paint details use a solid fallback in KML/KMZ viewers.
 
+KMZ export offers two control-measure label modes. **Native** keeps labels searchable and
+compact, but KML viewers draw them upright. **Rendered** embeds labels and text amplifiers
+as transparent images so their orientation, pixel size, anchor, typography, background,
+and halo are retained. Plain KML always uses native labels because it cannot package the
+required image assets.
+
 ![Google earh](images/google-earth.png)
 
 ## XLSX

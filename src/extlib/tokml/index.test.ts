@@ -61,6 +61,7 @@ describe("foldersToKML", () => {
         labelColor: "ff332211",
         labelScale: 1.5,
         hideIcon: true,
+        iconHeading: 135,
       },
     ]);
 
@@ -71,6 +72,7 @@ describe("foldersToKML", () => {
     );
     expect(kml).toContain('<Style id="control-measure-label">');
     expect(kml).toContain("<IconStyle><scale>0</scale>");
+    expect(kml).toContain("<heading>135</heading>");
     expect(kml).toContain("<LabelStyle><color>ff332211</color><scale>1.5</scale>");
   });
 });

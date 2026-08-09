@@ -104,6 +104,7 @@ const form = useLocalStorage(
     outlineWidth: 8,
     renderAmplifiers: false,
     renderCustomIconLabels: false,
+    controlMeasureLabelMode: "native",
     timeMode: "current",
     exportEventId: "",
     exportEventIds: [],
@@ -153,8 +154,8 @@ async function onExport() {
     const andMore = kmzWarnings.length > 2 ? ` (+${kmzWarnings.length - 2} more)` : "";
     send({
       type: "warning",
-      title: "Some custom icons used fallback",
-      message: `${kmzWarnings.length} icon(s) could not be embedded. ${warningExamples}${andMore}`,
+      title: "Export used compatibility fallbacks",
+      message: `${warningExamples}${andMore}`,
       duration: 10000,
     });
   }

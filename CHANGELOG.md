@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added control-measure styling and labels, including identity colours, line width, echelon, text amplifiers, and free-form text where supported. Defaults can be configured before drawing, with live previews.
 - Added a smooth-resolution setting for supported control measures, available from a slider beside the smoothing toggle.
 - Added GeoJSON import, export, clipboard, undo/redo, and scenario persistence support for control measures.
-- Added styled KML/KMZ export for rendered control measures, including generated labels and text amplifiers.
+- Added styled KML/KMZ export for rendered control measures, including generated labels and text amplifiers. KMZ exports can keep labels native or embed them as images to preserve orientation, scaling, anchors, and typography.
 - Added layer selection to partial scenario import and export, including control-measure layers and safe ID remapping when importing into an existing scenario.
 - Added feature and control-measure duplication actions to the details panel and draw toolbar. Control-measure details now also show the doctrinal description for the selected measure.
 
@@ -114,7 +114,7 @@ All notable changes to this project will be documented in this file.
 - Added geometry statistics to scenario feature details.
 - Clicking KML/KMZ features now opens a read-only details view with attached properties, including richer HTML description rendering.
 - Added view constraints support (max extent, min/max zoom) to map settings. Constraints are saved as part of the scenario.
-- Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over. 
+- Added experimental MapLibre mode with globe support. Functionality from the main map view will be gradually ported over.
 - Added a standalone symbol browser page at `/symbol-browser`.
 - Added symbol export with copy and download as PNG and SVG, with configurable size and display options.
 - Added "Copy as GeoJSON" to the feature layer menu, individual feature menu, and feature details panel. Circles are exported as polygons.
@@ -146,7 +146,7 @@ All notable changes to this project will be documented in this file.
 - Fixed overlapping unit/feature selection on the map so the topmost item takes priority.
 - Fixed blank map clicks so they clear selected scenario features.
 - Fixed shift-click selection on the map so it only extends the current selection type instead of switching between units and scenario features.
-- Fixed KMZ/KML feature clicks in the OpenLayers editor so imported reference features no longer crash the map renderer. 
+- Fixed KMZ/KML feature clicks in the OpenLayers editor so imported reference features no longer crash the map renderer.
 - Fixed transform tool updates so existing features update their geometry kind when a transformation changes the geometry type.
 - Fixed the MapLibre scale control so it responds to dynamic measurement unit changes.
 

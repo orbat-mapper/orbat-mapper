@@ -54,6 +54,7 @@ export type StyleSettings = {
   iconScale?: number;
   iconHref?: string;
   hideIcon?: boolean;
+  iconHeading?: number;
   labelScale?: number;
   labelColor?: string;
   lineColor?: string;
@@ -72,6 +73,7 @@ function convertStyle({
   iconScale = 1,
   iconHref,
   hideIcon = false,
+  iconHeading,
   labelScale = 1,
   labelColor,
   lineColor,
@@ -87,7 +89,12 @@ function convertStyle({
   const styleId = id ?? `sidc${sidc}`;
   const href = iconHref ?? (sidc ? `icons/${sidc}.png` : undefined);
   const hasOffset = xOffset !== undefined && yOffset !== undefined;
-  const includeIconStyle = hideIcon || href !== undefined || iconScale !== 1 || hasOffset;
+  const includeIconStyle =
+    hideIcon ||
+    href !== undefined ||
+    iconScale !== 1 ||
+    iconHeading !== undefined ||
+    hasOffset;
   return [
     BR,
     x("Style", { id: styleId }, [
@@ -96,6 +103,9 @@ function convertStyle({
             href ? x("Icon", [x("href", [u("text", href)])]) : undefined,
             hideIcon ? x("scale", [u("text", "0")]) : undefined,
             iconScale !== 1 ? x("scale", [u("text", `${iconScale}`)]) : undefined,
+            iconHeading !== undefined
+              ? x("heading", [u("text", `${iconHeading}`)])
+              : undefined,
             hasOffset
               ? x("hotSpot", {
                   x: `${xOffset}`,

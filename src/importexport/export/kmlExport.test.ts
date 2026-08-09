@@ -192,6 +192,7 @@ function createKmzOptions(overrides: Record<string, unknown> = {}) {
     outlineWidth: 8,
     renderAmplifiers: false,
     renderCustomIconLabels: false,
+    controlMeasureLabelMode: "native" as const,
     timeMode: "current" as const,
     exportEventIds: [],
     useRadioFolder: false,
@@ -456,7 +457,15 @@ describe("downloadAsKMZ custom symbols", () => {
     } as any;
     const { generateKml } = useKmlExport(scenario);
 
-    await generateKml(createKmzOptions({ includeUnits: false, includeFeatures: true }));
+    // Standalone KML cannot package rendered label images, so even a persisted
+    // rendered preference must fall back to portable native KML labels.
+    await generateKml(
+      createKmzOptions({
+        includeUnits: false,
+        includeFeatures: true,
+        controlMeasureLabelMode: "rendered",
+      }),
+    );
 
     const [root, styles] = foldersToKMLMock.mock.calls[0] as any[];
     expect(styles).toEqual(
@@ -475,9 +484,62 @@ describe("downloadAsKMZ custom symbols", () => {
     const exportedFeatures = layerFolder.children as any[];
     expect(exportedFeatures.some((feature) => feature.properties.name)).toBe(true);
     expect(exportedFeatures.every((feature) => feature.properties.styleUrl)).toBe(true);
+    expect(styles.some((style: any) => style.iconHref)).toBe(false);
     expect(scenarioFeaturesFolder.children[1].meta).toMatchObject({
       id: "layer-empty",
       name: "Empty reference layer",
     });
+  });
+
+  it("packages rendered control-measure labels as rotated KMZ images", async () => {
+    const scenario = createMilScenario();
+    scenario.geo.layerItemsLayers = {
+      value: [
+        {
+          id: "layer-control-measures",
+          name: "Control measures",
+          items: [
+            {
+              id: "cm-text",
+              kind: "tacticalGraphic",
+              graphicKind: "text",
+              controlPoints: [[10, 59]],
+              style: { color: "#123456" },
+              options: { text: "ALPHA", rotation: 90, sizePixels: 20 },
+            },
+          ],
+        },
+      ],
+    } as any;
+    const { downloadAsKMZ } = useKmlExport(scenario);
+
+    await downloadAsKMZ(
+      createKmzOptions({
+        includeUnits: false,
+        includeFeatures: true,
+        controlMeasureLabelMode: "rendered",
+      }),
+    );
+
+    const zipData = zipSyncMock.mock.calls[0][0] as Record<string, Uint8Array>;
+    expect(
+      Object.keys(zipData).some((path) =>
+        path.startsWith("icons/control-measure-labels/"),
+      ),
+    ).toBe(true);
+    const [root, styles] = foldersToKMLMock.mock.calls[0] as any[];
+    expect(styles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          iconHref: expect.stringContaining("control-measure-labels"),
+          iconHeading: expect.any(Number),
+          labelScale: 0,
+        }),
+      ]),
+    );
+    const labelFeature = root.children[0].children[0].children.find(
+      (feature: any) => feature.properties.labelText,
+    );
+    expect(labelFeature.properties.name).toBeUndefined();
   });
 });
