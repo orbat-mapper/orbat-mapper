@@ -262,6 +262,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   function generateOrbatMapper({
     scenarioName,
     sideGroups,
+    layerIds,
   }: OrbatMapperExportSettings): string {
     const scn = io.toObject();
     const sidesWithFilteredGroups = scn.sides.map((side) => ({
@@ -271,6 +272,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const newScenario = {
       ...scn,
       sides: sidesWithFilteredGroups.filter((e) => e.groups.length),
+      // Undefined is intentional backward compatibility for callers and saved form
+      // settings created before layer selection existed. An explicit [] exports none.
+      layerStack:
+        layerIds === undefined
+          ? scn.layerStack
+          : scn.layerStack.filter((layer) => layerIds.includes(layer.id)),
     };
     newScenario.id = nanoid();
     newScenario.meta = {
