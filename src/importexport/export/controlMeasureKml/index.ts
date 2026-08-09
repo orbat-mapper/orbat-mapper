@@ -18,10 +18,24 @@ import {
 import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
 import type { TacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { StyleSettings } from "@/extlib/tokml";
+import type { KmlControlMeasureLabelMode } from "@/types/importExport";
+
+export type ControlMeasureLabelImage = {
+  path: string;
+  text: string;
+  fontSize: number;
+  textStyle?: FeaturePartProps["textStyle"];
+  textJustify?: FeaturePartProps["textJustify"];
+  color: string;
+  textBackground: boolean;
+  textHalo: boolean;
+  textHaloColor: string;
+};
 
 export type ControlMeasureKmlExport = {
   features: Feature<Geometry, GeoJsonProperties>[];
   styles: StyleSettings[];
+  labelImages: ControlMeasureLabelImage[];
   warnings: string[];
 };
 
@@ -76,7 +90,7 @@ function styleKey(style: StyleSettings): string {
   return JSON.stringify(style, Object.keys(style).sort());
 }
 
-function kmlStyleForPart(
+function nativeKmlStyleForPart(
   id: string,
   geometry: Geometry,
   properties: FeaturePartProps,
@@ -106,6 +120,47 @@ function kmlStyleForPart(
   };
 }
 
+function headingFromRotation(rotation: number | undefined): number {
+  if (rotation === undefined) return 0;
+  const heading = 180 - (rotation * 180) / Math.PI;
+  return ((heading % 360) + 360) % 360;
+}
+
+function labelImageKey(image: Omit<ControlMeasureLabelImage, "path">): string {
+  return JSON.stringify(image, Object.keys(image).sort());
+}
+
+function renderedLabelImage(
+  properties: FeaturePartProps,
+): Omit<ControlMeasureLabelImage, "path"> {
+  const style = properties.style ?? {};
+  return {
+    text: properties.text ?? "",
+    fontSize: properties.textSizePixels ?? 14,
+    ...(properties.textStyle ? { textStyle: properties.textStyle } : {}),
+    ...(properties.textJustify ? { textJustify: properties.textJustify } : {}),
+    color: style.strokeColor ?? "#000000",
+    textBackground: properties.textBackground === true,
+    textHalo: properties.textHalo === true,
+    textHaloColor: properties.textHaloColor ?? "#ffffff",
+  };
+}
+
+function renderedLabelStyle(path: string, properties: FeaturePartProps): StyleSettings {
+  const anchorX =
+    properties.textAnchor === "start" ? 0 : properties.textAnchor === "end" ? 1 : 0.5;
+  return {
+    id: "",
+    iconHref: path,
+    iconHeading: headingFromRotation(properties.rotation),
+    xOffset: anchorX,
+    yOffset: 0.5,
+    xUnits: "fraction",
+    yUnits: "fraction",
+    labelScale: 0,
+  };
+}
+
 /**
  * Render stored control measures into styled KML-ready placemarks.
  *
@@ -115,12 +170,16 @@ function kmlStyleForPart(
  */
 export function controlMeasuresToKml(
   items: readonly TacticalGraphicLayerItem[],
+  options: { labelMode?: KmlControlMeasureLabelMode } = {},
 ): ControlMeasureKmlExport {
   const features: Feature<Geometry, GeoJsonProperties>[] = [];
   const styles: StyleSettings[] = [];
+  const labelImages: ControlMeasureLabelImage[] = [];
   const styleIds = new Map<string, string>();
+  const labelImagePaths = new Map<string, string>();
   let hasDash = false;
   let hasPattern = false;
+  let hasGroundSizedLabel = false;
 
   for (const item of items) {
     if (!isSupportedTacticalGraphic(item)) continue;
@@ -130,7 +189,23 @@ export function controlMeasuresToKml(
     const itemProperties = toTacticalGraphicGeoJsonProperties(item);
 
     for (const feature of rendered.features) {
-      const candidate = kmlStyleForPart("", feature.geometry, feature.properties);
+      const isLabel =
+        feature.geometry.type === "Point" && typeof feature.properties.text === "string";
+      let candidate: StyleSettings;
+      if (isLabel && options.labelMode === "rendered") {
+        const image = renderedLabelImage(feature.properties);
+        const imageKey = labelImageKey(image);
+        let path = labelImagePaths.get(imageKey);
+        if (!path) {
+          path = `icons/control-measure-labels/label-${labelImages.length}.png`;
+          labelImagePaths.set(imageKey, path);
+          labelImages.push({ path, ...image });
+        }
+        candidate = renderedLabelStyle(path, feature.properties);
+        hasGroundSizedLabel ||= feature.properties.textSizeMeters !== undefined;
+      } else {
+        candidate = nativeKmlStyleForPart("", feature.geometry, feature.properties);
+      }
       const key = styleKey({ ...candidate, id: "" });
       let id = styleIds.get(key);
       if (!id) {
@@ -142,20 +217,27 @@ export function controlMeasuresToKml(
       const partStyle = feature.properties.style;
       hasDash ||= Boolean(partStyle?.strokeDash?.length);
       hasPattern ||= Boolean(partStyle?.fillPattern && partStyle.fillPattern !== "solid");
-      const isLabel =
-        feature.geometry.type === "Point" && typeof feature.properties.text === "string";
+      const exportedItemProperties = { ...itemProperties };
+      if (isLabel && options.labelMode === "rendered") {
+        delete exportedItemProperties.name;
+      }
 
       features.push({
         type: "Feature",
         id: feature.id,
         geometry: feature.geometry,
         properties: {
-          ...itemProperties,
+          ...exportedItemProperties,
           cmId: item.id,
           part: feature.properties.part,
           index: feature.properties.index,
           styleUrl: `#${id}`,
-          ...(isLabel ? { name: feature.properties.text } : {}),
+          ...(isLabel && options.labelMode !== "rendered"
+            ? { name: feature.properties.text }
+            : {}),
+          ...(isLabel && options.labelMode === "rendered"
+            ? { labelText: feature.properties.text }
+            : {}),
           ...(feature.properties.rotation !== undefined
             ? { labelRotation: feature.properties.rotation }
             : {}),
@@ -176,5 +258,71 @@ export function controlMeasuresToKml(
       `KML does not define portable ${unsupported}; affected control-measure parts use their resolved color and width as a solid fallback.`,
     );
   }
-  return { features, styles, warnings };
+  if (hasGroundSizedLabel) {
+    warnings.push(
+      "KML point icons cannot retain meter-based label sizing across zoom levels; affected rendered labels use the 14px engine fallback.",
+    );
+  }
+  return { features, styles, labelImages, warnings };
+}
+
+function fontForLabel(image: ControlMeasureLabelImage): string {
+  const fontStyle = image.textStyle === "italic" ? "italic" : "normal";
+  const fontWeight = image.textStyle === "light" ? "300" : "400";
+  return `${fontStyle} ${fontWeight} ${image.fontSize}px sans-serif`;
+}
+
+/** Rasterize one rendered-label resource for packaging inside a KMZ archive. */
+export async function renderControlMeasureLabelBlob(
+  image: ControlMeasureLabelImage,
+): Promise<Blob> {
+  const text = image.textStyle === "caps" ? image.text.toUpperCase() : image.text;
+  const lines = text.split("\n");
+  const measureCanvas = document.createElement("canvas");
+  const measureContext = measureCanvas.getContext("2d");
+  if (!measureContext) throw new Error("Failed to create label measurement context");
+  measureContext.font = fontForLabel(image);
+  const lineHeight = Math.ceil(image.fontSize * 1.2);
+  const widestLine = Math.max(
+    1,
+    ...lines.map((line) => Math.ceil(measureContext.measureText(line).width)),
+  );
+  const effectWidth = image.textBackground
+    ? Math.max(3, image.fontSize * 0.22)
+    : image.textHalo
+      ? Math.max(2, image.fontSize / 4)
+      : 0;
+  const padding = Math.ceil(effectWidth + 2);
+  const canvas = document.createElement("canvas");
+  canvas.width = widestLine + padding * 2;
+  canvas.height = lineHeight * Math.max(1, lines.length) + padding * 2;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Failed to create label canvas context");
+
+  context.font = fontForLabel(image);
+  context.textBaseline = "top";
+  context.textAlign = image.textJustify ?? "center";
+  context.fillStyle = image.color;
+  const textX =
+    context.textAlign === "left"
+      ? padding
+      : context.textAlign === "right"
+        ? canvas.width - padding
+        : canvas.width / 2;
+  if (image.textBackground || image.textHalo) {
+    context.strokeStyle = image.textBackground ? "#ffffff" : image.textHaloColor;
+    context.lineWidth = effectWidth;
+    context.lineJoin = "round";
+  }
+  lines.forEach((line, index) => {
+    const y = padding + index * lineHeight;
+    if (image.textBackground || image.textHalo) context.strokeText(line, textX, y);
+    context.fillText(line, textX, y);
+  });
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/png"),
+  );
+  if (!blob) throw new Error("Failed to encode rendered control-measure label");
+  return blob;
 }

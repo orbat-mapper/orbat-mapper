@@ -12,7 +12,11 @@ import type { CustomSymbol, UnitSymbolOptions } from "@/types/scenarioModels.ts"
 import { getCustomSymbolId, getFullUnitSidc } from "@/symbology/helpers.ts";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore.ts";
-import { controlMeasuresToKml } from "@/importexport/export/controlMeasureKml";
+import {
+  controlMeasuresToKml,
+  renderControlMeasureLabelBlob,
+  type ControlMeasureLabelImage,
+} from "@/importexport/export/controlMeasureKml";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { StyleSettings } from "@/extlib/tokml";
 
@@ -52,10 +56,14 @@ export function useKmlExport(scenario: TScenario) {
   const mapSettings = useMapSettingsStore();
   const { selectedUnitIds } = useSelectedItems();
 
-  function createKMLString(opts: KmlKmzExportSettings) {
+  function createKMLString(
+    opts: KmlKmzExportSettings,
+    options: { packageRenderedLabels?: boolean } = {},
+  ) {
     const root: Root = { type: "root", children: [] };
     const symbolDataCache = new Map<string, RenderSymbolSettings>();
     const controlMeasureStyles: StyleSettings[] = [];
+    const controlMeasureLabelImages: ControlMeasureLabelImage[] = [];
     const warnings: string[] = [];
 
     function createUnitsFolder(units: NUnit[], name: string): Folder {
@@ -193,8 +201,14 @@ export function useKmlExport(scenario: TScenario) {
       const controlMeasureItems = scenarioLayers
         .flatMap((layer) => layer.items)
         .filter(isNTacticalGraphicLayerItem);
-      const controlMeasures = controlMeasuresToKml(controlMeasureItems);
+      const controlMeasures = controlMeasuresToKml(controlMeasureItems, {
+        labelMode:
+          options.packageRenderedLabels && opts.controlMeasureLabelMode === "rendered"
+            ? "rendered"
+            : "native",
+      });
       controlMeasureStyles.push(...controlMeasures.styles);
+      controlMeasureLabelImages.push(...controlMeasures.labelImages);
       warnings.push(...controlMeasures.warnings);
 
       const layerFolders: Folder[] = scenarioLayers.map((layer) => {
@@ -228,7 +242,13 @@ export function useKmlExport(scenario: TScenario) {
       });
     }
 
-    return { root, symbolDataCache, controlMeasureStyles, warnings };
+    return {
+      root,
+      symbolDataCache,
+      controlMeasureStyles,
+      controlMeasureLabelImages,
+      warnings,
+    };
   }
 
   async function generateKml(opts: KmlKmzExportSettings): Promise<string> {
@@ -487,8 +507,24 @@ export function useKmlExport(scenario: TScenario) {
     const { foldersToKML } = await import("@/extlib/tokml");
     const data: Record<string, Uint8Array> = {};
     const hotspotCache = new Map<string, HotspotSettings>();
-    const { root, symbolDataCache, controlMeasureStyles, warnings } =
-      createKMLString(opts);
+    const {
+      root,
+      symbolDataCache,
+      controlMeasureStyles,
+      controlMeasureLabelImages,
+      warnings,
+    } = createKMLString(opts, { packageRenderedLabels: true });
+
+    for (const labelImage of controlMeasureLabelImages) {
+      try {
+        const blob = await renderControlMeasureLabelBlob(labelImage);
+        data[labelImage.path] = await blobToUint8Array(blob);
+      } catch {
+        warnings.push(
+          `Control-measure label "${labelImage.text}" could not be rendered as an image.`,
+        );
+      }
+    }
 
     if (opts.embedIcons) {
       for (const [cacheKey, symbolData] of symbolDataCache) {

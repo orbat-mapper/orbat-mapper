@@ -54,4 +54,35 @@ describe("controlMeasuresToKml", () => {
     ]);
     expect(result.warnings).toEqual([expect.stringContaining("dash patterns")]);
   });
+
+  it("creates image-backed styles with original rotation and anchor in rendered mode", () => {
+    const result = controlMeasuresToKml(
+      [
+        {
+          id: "text-1",
+          kind: "tacticalGraphic",
+          graphicKind: "text",
+          controlPoints: [[10, 59]],
+          style: { color: "#123456" },
+          options: { text: "ALPHA", rotation: 0, sizePixels: 20, textAlign: "right" },
+        },
+      ],
+      { labelMode: "rendered" },
+    );
+
+    expect(result.labelImages).toEqual([
+      expect.objectContaining({ text: "ALPHA", fontSize: 20 }),
+    ]);
+    expect(result.styles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          iconHref: result.labelImages[0]?.path,
+          iconHeading: 0,
+          labelScale: 0,
+        }),
+      ]),
+    );
+    const label = result.features.find((feature) => feature.properties?.labelText);
+    expect(label?.properties?.name).toBeUndefined();
+  });
 });

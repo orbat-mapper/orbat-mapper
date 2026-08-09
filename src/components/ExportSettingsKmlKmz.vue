@@ -50,6 +50,13 @@ const labelScale = computed({
   },
 });
 
+const controlMeasureLabelMode = computed({
+  get: () => (isKmz.value ? form.value.controlMeasureLabelMode : "native"),
+  set: (value: "native" | "rendered") => {
+    form.value.controlMeasureLabelMode = value;
+  },
+});
+
 const events = computed(() => {
   return store.state.events
     .map((e) => store.state.eventMap[e])
@@ -120,6 +127,28 @@ function toggleAllEvents() {
             >Side and groups (nested)</InputRadio
           >
         </MRadioGroup>
+      </InputGroupTemplate>
+      <InputGroupTemplate
+        v-if="form.includeFeatures"
+        class="col-span-full"
+        label="Control-measure labels"
+      >
+        <MRadioGroup class="mt-4 sm:flex sm:gap-6">
+          <InputRadio v-model="controlMeasureLabelMode" value="native">
+            Native — searchable, always upright
+          </InputRadio>
+          <InputRadio
+            v-model="controlMeasureLabelMode"
+            value="rendered"
+            :disabled="!isKmz"
+          >
+            Rendered — preserve appearance and orientation (KMZ)
+          </InputRadio>
+        </MRadioGroup>
+        <template #description>
+          Rendered labels are embedded as images. Plain KML uses native labels because it
+          cannot package image assets.
+        </template>
       </InputGroupTemplate>
     </div>
 
