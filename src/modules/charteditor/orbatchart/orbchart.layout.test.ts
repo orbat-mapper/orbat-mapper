@@ -1,6 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { OrbatChart } from "./orbchart";
-import { UnitLevelDistances, type ChartUnit } from "./types";
+import { getUnitBoxOrigin } from "./svgRender";
+import {
+  LevelLayouts,
+  UnitLevelDistances,
+  type ChartUnit,
+  type RenderedUnitNode,
+} from "./types";
 
 const sidc = "10031000151211004600";
 const originalGetBBox = Object.getOwnPropertyDescriptor(SVGElement.prototype, "getBBox");
@@ -22,9 +28,16 @@ beforeAll(() => {
   Object.defineProperty(SVGElement.prototype, "getBBox", {
     configurable: true,
     value(this: SVGElement) {
-      const label = this.querySelector("text")?.textContent ?? "";
-      const width = Math.max(40, label.length * 8);
-      return { x: 20 - width / 2, y: 0, width, height: 40 };
+      const textElements = Array.from(this.querySelectorAll("text"));
+      const width = Math.max(
+        40,
+        ...textElements.map((text) => (text.textContent?.length ?? 0) * 8),
+      );
+      const bottom = Math.max(
+        40,
+        ...textElements.map((text) => Number(text.getAttribute("y")) + 16),
+      );
+      return { x: 20 - width / 2, y: 0, width, height: bottom };
     },
   });
 });
@@ -140,3 +153,75 @@ describe("horizontal layout bounds", () => {
     expect(childBranches[1].units[0].x).toBe(parents[1].x + 60);
   });
 });
+
+function resourceUnit(id: string): ChartUnit {
+  return {
+    ...unit(id),
+    equipment: Array.from({ length: 4 }, (_, index) => ({
+      name: `${id} extremely long equipment category description ${index + 1}`,
+      count: index + 1,
+    })),
+    personnel: Array.from({ length: 6 }, (_, index) => ({
+      name: `${id} personnel category ${index + 1}`,
+      count: index + 1,
+    })),
+  };
+}
+
+function boxesOverlap(a: RenderedUnitNode, b: RenderedUnitNode) {
+  const aOrigin = getUnitBoxOrigin(a);
+  const bOrigin = getUnitBoxOrigin(b);
+  return (
+    aOrigin.x < bOrigin.x + b.boundingBox.width &&
+    aOrigin.x + a.boundingBox.width > bOrigin.x &&
+    aOrigin.y < bOrigin.y + b.boundingBox.height &&
+    aOrigin.y + a.boundingBox.height > bOrigin.y
+  );
+}
+
+describe.each([LevelLayouts.Tree, LevelLayouts.TreeLeft, LevelLayouts.TreeRight])(
+  "resource table spacing for %s",
+  (lastLevelLayout) => {
+    it("keeps resource tables from different units from overlapping", () => {
+      const root = unit("root", [
+        unit("left-parent", [resourceUnit("left-1"), resourceUnit("left-2")]),
+        unit("right-parent", [resourceUnit("right-1"), resourceUnit("right-2")]),
+      ]);
+      const chart = new OrbatChart(root, {
+        lastLevelLayout,
+        maxLevels: 3,
+        showEquipment: true,
+        showPersonnel: true,
+        symbolGenerator: createSymbol,
+      });
+
+      const svg = chart.toSVG(document.createElement("div"), {
+        width: 600,
+        height: 600,
+      });
+
+      const lastLevelUnits = chart.renderedChart.levels[2].branches.flatMap(
+        (branch) => branch.units,
+      );
+      for (const [index, unitNode] of lastLevelUnits.entries()) {
+        for (const otherNode of lastLevelUnits.slice(index + 1)) {
+          expect(
+            boxesOverlap(unitNode, otherNode),
+            `${unitNode.unit.id} overlaps ${otherNode.unit.id}`,
+          ).toBe(false);
+        }
+      }
+
+      const trunkPath = svg.querySelector<SVGPathElement>("#o-connectors-level-2 path");
+      const trunkX = Number(trunkPath?.getAttribute("d")?.match(/^M ([-\d.e]+),/)?.[1]);
+      expect(Number.isFinite(trunkX)).toBe(true);
+      for (const unitNode of lastLevelUnits) {
+        const origin = getUnitBoxOrigin(unitNode);
+        expect(
+          trunkX <= origin.x || trunkX >= origin.x + unitNode.boundingBox.width,
+          `${unitNode.unit.id} table crosses the connector trunk`,
+        ).toBe(true);
+      }
+    });
+  },
+);
