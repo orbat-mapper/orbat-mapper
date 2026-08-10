@@ -201,6 +201,7 @@ export function drawDebugRect(groupElement: GElementSelection, fill = "#ccc") {
 function drawDebugPoint(parentElement: any, x: number, y: number, fillColor = "red") {
   parentElement
     .append("circle")
+    .attr("class", "dbg-point")
     .attr("cx", x)
     .attr("cy", y)
     .attr("r", 4)
