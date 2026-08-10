@@ -36,21 +36,36 @@ export const canvasSizeItems = [
 
 const MM2PX = 3.779527559055118;
 
+const physicalSizes: Record<string, { width: number; height: number }> = {
+  A4: { width: 210, height: 297 },
+  A4landscape: { width: 297, height: 210 },
+  A3: { width: 297, height: 420 },
+  A2: { width: 420, height: 594 },
+  A1: { width: 594, height: 841 },
+  A0: { width: 841, height: 1189 },
+  A0landscape: { width: 1189, height: 841 },
+  huuuge: { width: 3000, height: 3000 },
+};
+
 function mm2px(mm: number) {
   return Math.round(mm * MM2PX);
 }
 
 export function sizeToWidthHeight(size: string) {
-  if (size === "A4") return { width: mm2px(210), height: mm2px(297) };
-  if (size === "A4landscape") return { width: mm2px(297), height: mm2px(210) };
-  if (size === "A3") return { width: mm2px(297), height: mm2px(420) };
+  const physicalSize = physicalSizes[size];
+  if (physicalSize) {
+    return {
+      width: mm2px(physicalSize.width),
+      height: mm2px(physicalSize.height),
+    };
+  }
   if (size === "16:9") return { width: 1600, height: 900 };
   if (size === "16:10") return { width: 1920, height: 1200 };
   if (size === "4:3") return { width: 1600, height: 1200 };
-  if (size === "A2") return { width: mm2px(420), height: mm2px(594) };
-  if (size === "A1") return { width: mm2px(594), height: mm2px(841) };
-  if (size === "A0") return { width: mm2px(841), height: mm2px(1189) };
-  if (size === "A0landscape") return { width: mm2px(1189), height: mm2px(841) };
-  if (size === "huuuge") return { width: mm2px(3000), height: mm2px(3000) };
   return { width: 600, height: 600 };
+}
+
+export function sizeToPhysicalWidthHeight(size: string) {
+  const physicalSize = physicalSizes[size];
+  return physicalSize ? { ...physicalSize } : null;
 }
