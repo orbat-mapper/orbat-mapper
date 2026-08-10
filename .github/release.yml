@@ -1,0 +1,6 @@
+changelog:
+  exclude:
+    labels:
+      - deploy
+    authors:
+      - github-actions
