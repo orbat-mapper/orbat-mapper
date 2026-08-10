@@ -94,41 +94,37 @@ function cleanExportStyle(style: string) {
     .trim();
 }
 
+function createMetadataElement(tag: string, id: string, text: string) {
+  const element = document.createElementNS(SVG_NS, tag);
+  element.setAttribute("id", id);
+  element.textContent = text;
+  return element;
+}
+
 function addMetadata(
   svg: SVGSVGElement,
   options: OrbatChartExportOptions,
   viewBox: ViewBox,
 ) {
-  const firstChild = svg.firstChild;
-  if (options.title) {
-    const title = document.createElementNS(SVG_NS, "title");
-    title.setAttribute("id", "orbat-export-title");
-    title.textContent = options.title;
-    svg.insertBefore(title, firstChild);
-  }
-  if (options.description) {
-    const description = document.createElementNS(SVG_NS, "desc");
-    description.setAttribute("id", "orbat-export-description");
-    description.textContent = options.description;
-    const title = svg.querySelector(":scope > title");
-    svg.insertBefore(description, title?.nextSibling ?? svg.firstChild);
-  }
   const metadata = document.createElementNS(SVG_NS, "metadata");
   metadata.textContent = JSON.stringify({
     generator: "ORBAT Mapper",
     exportedAt: new Date().toISOString(),
     bounds: viewBox,
   });
-  const description = svg.querySelector(":scope > desc");
-  const title = svg.querySelector(":scope > title");
-  svg.insertBefore(
-    metadata,
-    description?.nextSibling ?? title?.nextSibling ?? svg.firstChild,
-  );
-  const labelledBy = [
-    options.title ? "orbat-export-title" : null,
-    options.description ? "orbat-export-description" : null,
-  ].filter(Boolean);
+  const labelledBy: string[] = [];
+  const nodes: Element[] = [];
+  if (options.title) {
+    nodes.push(createMetadataElement("title", "orbat-export-title", options.title));
+    labelledBy.push("orbat-export-title");
+  }
+  if (options.description) {
+    nodes.push(
+      createMetadataElement("desc", "orbat-export-description", options.description),
+    );
+    labelledBy.push("orbat-export-description");
+  }
+  svg.prepend(...nodes, metadata);
   if (labelledBy.length) {
     svg.setAttribute("role", "img");
     svg.setAttribute("aria-labelledby", labelledBy.join(" "));
@@ -144,10 +140,8 @@ function addBackground(svg: SVGSVGElement, viewBox: ViewBox, color: string | nul
   background.setAttribute("width", String(viewBox.width));
   background.setAttribute("height", String(viewBox.height));
   background.setAttribute("fill", color);
-  const firstVisualChild = Array.from(svg.children).find(
-    (child) => !["title", "desc", "metadata", "style", "defs"].includes(child.tagName),
-  );
-  svg.insertBefore(background, firstVisualChild ?? null);
+  // Added before the metadata block is prepended, so it stays behind the artwork.
+  svg.prepend(background);
 }
 
 function cloneForExport(
@@ -195,8 +189,8 @@ function cloneForExport(
   clone.querySelectorAll("style").forEach((style) => {
     style.textContent = cleanExportStyle(style.textContent ?? "");
   });
-  addMetadata(clone, options, viewBox);
   addBackground(clone, viewBox, options.backgroundColor ?? null);
+  addMetadata(clone, options, viewBox);
   return clone;
 }
 
@@ -227,9 +221,10 @@ async function renderPng(svgText: string, width: number, height: number) {
   const objectUrl = URL.createObjectURL(
     new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }),
   );
+  let canvas: HTMLCanvasElement | null = null;
   try {
     const image = await loadSvgImage(objectUrl);
-    const canvas = document.createElement("canvas");
+    canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d");
@@ -238,6 +233,8 @@ async function renderPng(svgText: string, width: number, height: number) {
     return await canvasToBlob(canvas);
   } finally {
     URL.revokeObjectURL(objectUrl);
+    // Release the backing store immediately — it can reach hundreds of megabytes.
+    if (canvas) canvas.width = canvas.height = 0;
   }
 }
 
@@ -264,8 +261,10 @@ export function prepareOrbatChartExport(
       `Export is too large (${(width * height).toLocaleString()} pixels). The limit is ${MAX_EXPORT_PIXELS.toLocaleString()} pixels.`,
     );
   }
-  const clone = cloneForExport(source, options, viewBox, width, height);
-  const svgText = serializeSvg(clone);
+  // Cloning and serializing is deferred to render() so callers can cheaply measure an
+  // export — the dialog re-measures on every option change.
+  const serialize = () =>
+    serializeSvg(cloneForExport(source, options, viewBox, width, height));
   return {
     width,
     height,
@@ -273,7 +272,9 @@ export function prepareOrbatChartExport(
       options.format === "png" ? width * height * ESTIMATED_RASTER_BYTES_PER_PIXEL : 0,
     render: () =>
       options.format === "svg"
-        ? Promise.resolve(new Blob([svgText], { type: "image/svg+xml;charset=utf-8" }))
-        : renderPng(svgText, width, height),
+        ? Promise.resolve(
+            new Blob([serialize()], { type: "image/svg+xml;charset=utf-8" }),
+          )
+        : renderPng(serialize(), width, height),
   };
 }

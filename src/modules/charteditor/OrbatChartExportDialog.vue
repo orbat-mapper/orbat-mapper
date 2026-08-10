@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import filenamify from "filenamify";
+import filenamify from "filenamify/browser";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import InputGroup from "@/components/InputGroup.vue";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DialogFooter } from "@/components/ui/dialog";
 import { saveBlobToLocalFile } from "@/utils/files";
+import { getErrorMessage } from "@/utils";
 import { useNotifications } from "@/composables/notifications";
 import {
   prepareOrbatChartExport,
@@ -102,7 +103,7 @@ const exportSummary = computed(() => {
     return {
       text: "Export unavailable",
       memory: "",
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     };
   }
 });
@@ -127,7 +128,7 @@ async function onExport() {
     send({ message: `Exported ${name}`, type: "success" });
     open.value = false;
   } catch (error) {
-    exportError.value = error instanceof Error ? error.message : String(error);
+    exportError.value = getErrorMessage(error);
     send({ message: exportError.value, type: "error" });
   } finally {
     exporting.value = false;

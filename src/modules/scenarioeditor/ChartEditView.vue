@@ -28,7 +28,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import { useSearchActions } from "@/composables/searchActions";
 import { useSelectedItems } from "@/stores/selectedStore";
 import OrbatChartExportDialog from "@/modules/charteditor/OrbatChartExportDialog.vue";
-import filenamify from "filenamify";
+import filenamify from "filenamify/browser";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -84,8 +84,9 @@ const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
 
-const width = computed(() => sizeToWidthHeight(options.paperSize).width);
-const height = computed(() => sizeToWidthHeight(options.paperSize).height);
+const chartSize = computed(() => sizeToWidthHeight(options.paperSize));
+const width = computed(() => chartSize.value.width);
+const height = computed(() => chartSize.value.height);
 const chartId = "orbat-chart";
 const showExportDialog = ref(false);
 const exportFileName = computed(() => {
