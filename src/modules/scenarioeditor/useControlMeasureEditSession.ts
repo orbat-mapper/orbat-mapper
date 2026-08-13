@@ -27,6 +27,7 @@ import type {
   EditMode,
   EditSession,
   GraphicEditSession,
+  ImageGraphic,
   PointSymbol,
 } from "@orbat-mapper/tactical-draw";
 import type { TScenario } from "@/scenariostore";
@@ -88,11 +89,12 @@ export interface ControlMeasureEditSession {
 }
 
 /**
- * `edit()` hands back a union because a point symbol is editable too. Only control
- * measures are ever passed in here, and only `EditSession` carries `controlPoints`.
+ * `edit()` hands back a union because anchored graphics are editable too. Only
+ * control measures are ever passed in here, and only `EditSession` carries
+ * `controlPoints`.
  */
 function asControlMeasureEditSession(
-  live: EditSession | GraphicEditSession<PointSymbol>,
+  live: EditSession | GraphicEditSession<PointSymbol> | GraphicEditSession<ImageGraphic>,
 ): EditSession | null {
   return "controlPoints" in live ? live : null;
 }
