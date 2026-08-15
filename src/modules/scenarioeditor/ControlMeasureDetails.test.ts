@@ -47,6 +47,13 @@ const ControlMeasureAmplifiersStub = defineComponent({
   template: "<div data-test='amplifier-settings' />",
 });
 
+const ControlMeasureExtendedStyleSettingsStub = defineComponent({
+  name: "ControlMeasureExtendedStyleSettings",
+  props: ["graphicKind", "options"],
+  emits: ["update"],
+  template: "<div data-test='extended-style-settings' />",
+});
+
 const ControlMeasureEchelonSelectStub = defineComponent({
   name: "ControlMeasureEchelonSelect",
   props: {
@@ -69,6 +76,7 @@ const baseStubs = {
   ScrollTabs: ScrollTabsStub,
   TabsContent: { template: "<section><slot /></section>" },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
+  ControlMeasureExtendedStyleSettings: ControlMeasureExtendedStyleSettingsStub,
   ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
   ControlMeasureEchelonSelect: ControlMeasureEchelonSelectStub,
   ScenarioLayerItemState: true,
@@ -153,7 +161,7 @@ describe("ControlMeasureDetails tabs", () => {
     useSelectedItems().clear();
   });
 
-  it("shows Style, Amplifiers, Details and State, with Debug gated by debug mode", async () => {
+  it("shows styling, amplifier, details and state tabs, with Debug gated by debug mode", async () => {
     const uiStore = useUiStore();
     const tabStore = useTabStore();
     const { wrapper } = mountDetails();
@@ -161,22 +169,24 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "1" },
-      { label: "Details", value: "2" },
-      { label: "State", value: "3" },
+      { label: "Extended styling", value: "1" },
+      { label: "Amplifiers", value: "2" },
+      { label: "Details", value: "3" },
+      { label: "State", value: "4" },
     ]);
 
     uiStore.debugMode = true;
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "1" },
-      { label: "Details", value: "2" },
-      { label: "State", value: "3" },
-      { label: "Debug", value: "4" },
+      { label: "Extended styling", value: "1" },
+      { label: "Amplifiers", value: "2" },
+      { label: "Details", value: "3" },
+      { label: "State", value: "4" },
+      { label: "Debug", value: "5" },
     ]);
 
-    tabStore.controlMeasureDetailsTab = 4;
+    tabStore.controlMeasureDetailsTab = 5;
     uiStore.debugMode = false;
     await nextTick();
     expect(tabStore.controlMeasureDetailsTab).toBe(0);
@@ -184,7 +194,7 @@ describe("ControlMeasureDetails tabs", () => {
 
   it("falls back from a remembered Debug tab when mounting outside debug mode", () => {
     const tabStore = useTabStore();
-    tabStore.controlMeasureDetailsTab = 4;
+    tabStore.controlMeasureDetailsTab = 5;
 
     mountDetails();
 
@@ -236,7 +246,7 @@ describe("ControlMeasureDetails tabs", () => {
   it("uses independent tab state for the palette and edit-data actions", async () => {
     const tabStore = useTabStore();
     tabStore.featureDetailsTab = 2;
-    tabStore.controlMeasureDetailsTab = 2;
+    tabStore.controlMeasureDetailsTab = 3;
     const { wrapper } = mountDetails();
 
     await wrapper.find("button[title='Change control measure style']").trigger("click");
@@ -244,7 +254,7 @@ describe("ControlMeasureDetails tabs", () => {
     expect(tabStore.featureDetailsTab).toBe(2);
 
     await wrapper.find("button[title='Edit data']").trigger("click");
-    expect(tabStore.controlMeasureDetailsTab).toBe(2);
+    expect(tabStore.controlMeasureDetailsTab).toBe(3);
   });
 
   it("writes text amplifiers through the settle-first control-measure path", async () => {
@@ -277,6 +287,22 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       options: { text: "BRAVO", textAlign: "center" },
+    });
+  });
+
+  it("writes extended styling options through the settle-first path", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "classic-arrow",
+      options: { arrowheadStyle: "triangle" },
+    });
+    const settings = wrapper.findComponent(ControlMeasureExtendedStyleSettingsStub);
+
+    expect(settings.props("graphicKind")).toBe("classic-arrow");
+    expect(settings.props("options")).toEqual({ arrowheadStyle: "triangle" });
+    await settings.vm.$emit("update", { arrowheadStyle: "barbed" });
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { arrowheadStyle: "barbed" },
     });
   });
 
