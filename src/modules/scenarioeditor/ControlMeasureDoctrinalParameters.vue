@@ -98,7 +98,7 @@ function updateText(parameter: Extract<ParamDescriptor, { type: "text" }>, event
         class="w-full"
         wrapper-class="w-full"
         :title="parameter.description"
-        :model-value="valueFor(parameter)"
+        :model-value="valueFor(parameter) as string | number | undefined"
         @update:model-value="updateOption(parameter.key, $event)"
       >
         <NativeSelectOption

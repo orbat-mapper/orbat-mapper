@@ -47,13 +47,6 @@ const ControlMeasureAmplifiersStub = defineComponent({
   template: "<div data-test='amplifier-settings' />",
 });
 
-const ControlMeasureExtendedStyleSettingsStub = defineComponent({
-  name: "ControlMeasureExtendedStyleSettings",
-  props: ["graphicKind", "options"],
-  emits: ["update"],
-  template: "<div data-test='extended-style-settings' />",
-});
-
 const ControlMeasureEchelonSelectStub = defineComponent({
   name: "ControlMeasureEchelonSelect",
   props: {
@@ -76,7 +69,6 @@ const baseStubs = {
   ScrollTabs: ScrollTabsStub,
   TabsContent: { template: "<section><slot /></section>" },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
-  ControlMeasureExtendedStyleSettings: ControlMeasureExtendedStyleSettingsStub,
   ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
   ControlMeasureEchelonSelect: ControlMeasureEchelonSelectStub,
   ScenarioLayerItemState: true,
@@ -169,7 +161,6 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Extended styling", value: "1" },
       { label: "Amplifiers", value: "2" },
       { label: "Details", value: "3" },
       { label: "State", value: "4" },
@@ -179,7 +170,6 @@ describe("ControlMeasureDetails tabs", () => {
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Extended styling", value: "1" },
       { label: "Amplifiers", value: "2" },
       { label: "Details", value: "3" },
       { label: "State", value: "4" },
@@ -287,22 +277,6 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       options: { text: "BRAVO", textAlign: "center" },
-    });
-  });
-
-  it("writes extended styling options through the settle-first path", async () => {
-    const { wrapper, updateControlMeasure } = mountDetails({
-      graphicKind: "classic-arrow",
-      options: { arrowheadStyle: "triangle" },
-    });
-    const settings = wrapper.findComponent(ControlMeasureExtendedStyleSettingsStub);
-
-    expect(settings.props("graphicKind")).toBe("classic-arrow");
-    expect(settings.props("options")).toEqual({ arrowheadStyle: "triangle" });
-    await settings.vm.$emit("update", { arrowheadStyle: "barbed" });
-
-    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
-      options: { arrowheadStyle: "barbed" },
     });
   });
 
