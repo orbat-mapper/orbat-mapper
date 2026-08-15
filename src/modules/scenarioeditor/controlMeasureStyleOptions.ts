@@ -54,10 +54,56 @@ export const CONTROL_MEASURE_STROKE_WIDTH_PRESETS = [
   { label: "Heavy", value: 4 },
 ] as const;
 
-function metadataFor(kind: ControlMeasureKind | undefined) {
+/** The registry entry for a kind, with the single `ControlMeasureId` cast in one place. */
+export function metadataFor(kind: ControlMeasureKind | undefined) {
   if (kind === undefined) return undefined;
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
 }
+
+/**
+ * What the generator actually runs with: the library's defaults for the kind, with the
+ * item's authored options on top. Every surface that has to show "what the map is
+ * drawing" — visibility predicates, field values, smoothing state — resolves it here.
+ */
+export function effectiveControlMeasureOptions(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): Record<string, unknown> {
+  return {
+    ...(kind === undefined
+      ? undefined
+      : (getDefaultOptions(kind as ControlMeasureId) as Record<string, unknown>)),
+    ...(options as Record<string, unknown> | undefined),
+  };
+}
+
+/**
+ * The doctrinal generator parameters a kind offers, already narrowed by the descriptor's
+ * own `visibleWhen`. Both the amplifier panel and its empty-state check read this, so the
+ * section and its "nothing here" message can never disagree.
+ */
+export function doctrinalControlMeasureParams(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+  { includeText = false }: { includeText?: boolean } = {},
+): readonly ParamDescriptor[] {
+  const effective = effectiveControlMeasureOptions(kind, options);
+  return (metadataFor(kind)?.params ?? []).filter(
+    (parameter) =>
+      (includeText || parameter.type !== "text") &&
+      resolveParameterSemanticRole(parameter) === "doctrinal" &&
+      (parameter.visibleWhen?.(effective) ?? true),
+  );
+}
+
+/**
+ * Option keys the Style tab already owns, so the extended-styling tab knows to leave them
+ * alone. One list rather than a hard-coded copy on each side.
+ */
+export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
+  "smooth",
+  "smoothResolution",
+];
 
 /** True for exactly the 7 Generic Graphics kinds — the ones the UI lets you colour. */
 export function isStyleableControlMeasureKind(
@@ -130,12 +176,54 @@ export function isControlMeasureSmoothed(
   kind: ControlMeasureKind | undefined,
   options: TacticalGraphicOptions | undefined,
 ): boolean {
-  const authored = (options as Record<string, unknown> | undefined)?.smooth;
-  if (typeof authored === "boolean") return authored;
-  if (kind === undefined) return false;
-  const defaults = getDefaultOptions(kind as ControlMeasureId) as
-    Record<string, unknown> | undefined;
-  return defaults?.smooth === true;
+  return effectiveControlMeasureOptions(kind, options).smooth === true;
+}
+
+/**
+ * The label-size knob for kinds that declare `capturesLabelSize`. The pair is a
+ * screen/ground denomination like the other size pairs: an authored ground `labelSize`
+ * (with no pixel override) keeps the metre-denominated descriptor, everything else is
+ * sized in screen pixels. Kept here beside the other metadata-derived accessors so the
+ * bounds are reachable and testable without mounting a component.
+ */
+const LABEL_SIZE_PARAMS = {
+  ground: {
+    key: "labelSize",
+    label: "Label size",
+    description: "Label text height in meters.",
+    type: "number",
+    min: 50,
+    max: 20_000,
+    step: 50,
+    unit: "m",
+  },
+  pixels: {
+    key: "labelSizePixels",
+    label: "Label size",
+    description: "Label text height in screen pixels.",
+    type: "number",
+    min: 8,
+    max: 48,
+    step: 1,
+    unit: "px",
+  },
+} as const satisfies Record<string, ParamDescriptor>;
+
+/** True when the kind sizes its label in ground metres rather than screen pixels. */
+export function usesGroundLabelSize(
+  options: TacticalGraphicOptions | undefined,
+): boolean {
+  return options?.labelSizePixels === undefined && options?.labelSize !== undefined;
+}
+
+export function getLabelSizeParam(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): ParamDescriptor | undefined {
+  if (!metadataFor(kind)?.capturesLabelSize) return undefined;
+  return usesGroundLabelSize(options)
+    ? LABEL_SIZE_PARAMS.ground
+    : LABEL_SIZE_PARAMS.pixels;
 }
 
 /** `"solid"` has no preview tile — it is the absence of a pattern, not one of them. */
@@ -183,11 +271,8 @@ export function newControlMeasureDefaults(
   if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
-    if (
-      canSmoothControlMeasureKind(graphicKind) &&
-      typeof authored.smooth === "boolean"
-    ) {
-      narrowedOptions.smooth = authored.smooth;
+    if (canSmoothControlMeasureKind(graphicKind)) {
+      if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
       if (
         getSmoothResolutionParam(graphicKind) &&
         typeof authored.smoothResolution === "number"

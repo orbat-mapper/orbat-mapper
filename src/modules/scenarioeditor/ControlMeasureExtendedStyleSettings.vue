@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, toRaw, useId } from "vue";
 import {
-  CONTROL_MEASURE_METADATA,
   applyBoxTransformOptions,
   foldsBoxTransformOptions,
-  getDefaultOptions,
   resolveParameterPresentationTier,
   resolveParameterSemanticRole,
 } from "@orbat-mapper/control-measures";
+import {
+  CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS,
+  effectiveControlMeasureOptions,
+  getLabelSizeParam,
+  metadataFor,
+} from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { DEFAULT_LABEL_SIZE_PIXELS } from "@orbat-mapper/tactical-draw";
 import { ChevronRight } from "@lucide/vue";
 import {
@@ -44,51 +48,20 @@ function fieldId(key: string): string {
   return `${instanceId}-cm-extended-${key}`;
 }
 
-const metadata = computed(
-  () => CONTROL_MEASURE_METADATA[props.graphicKind as ControlMeasureId],
+const metadata = computed(() => metadataFor(props.graphicKind));
+
+/** Shared label sizing is declared by the per-kind `capturesLabelSize` flag. */
+const labelSizeParameter = computed<ParamDescriptor | undefined>(() =>
+  getLabelSizeParam(props.graphicKind, props.options),
 );
+
 const effectiveOptions = computed<Record<string, unknown>>(() => ({
-  ...(getDefaultOptions(props.graphicKind as ControlMeasureId) as Record<
-    string,
-    unknown
-  >),
-  ...(props.options as Record<string, unknown> | undefined),
-  ...(metadata.value?.capturesLabelSize &&
-  props.options?.labelSizePixels === undefined &&
-  props.options?.labelSize === undefined
+  ...effectiveControlMeasureOptions(props.graphicKind, props.options),
+  ...(labelSizeParameter.value?.key === "labelSizePixels" &&
+  props.options?.labelSizePixels === undefined
     ? { labelSizePixels: DEFAULT_LABEL_SIZE_PIXELS }
     : undefined),
 }));
-
-/** Shared label sizing is declared by the per-kind `capturesLabelSize` flag. */
-const labelSizeParameter = computed<ParamDescriptor | undefined>(() => {
-  if (!metadata.value?.capturesLabelSize) return undefined;
-  if (
-    props.options?.labelSizePixels === undefined &&
-    props.options?.labelSize !== undefined
-  ) {
-    return {
-      key: "labelSize",
-      label: "Label size",
-      description: "Label text height in meters.",
-      type: "number",
-      min: 50,
-      max: 20_000,
-      step: 50,
-      unit: "m",
-    };
-  }
-  return {
-    key: "labelSizePixels",
-    label: "Label size",
-    description: "Label text height in screen pixels.",
-    type: "number",
-    min: 8,
-    max: 48,
-    step: 1,
-    unit: "px",
-  };
-});
 
 /**
  * A screen/ground size pair is represented by two adjacent number descriptors with
@@ -117,8 +90,8 @@ function inactiveSizePairKeys(parameters: readonly ParamDescriptor[]): Set<strin
  * another kind gains the capability in a future package release.
  */
 function isTransformBoxParameter(parameter: ParamDescriptor): boolean {
+  if (parameter.type !== "number") return false;
   const kind = props.graphicKind as ControlMeasureId;
-  if (!foldsBoxTransformOptions(kind) || parameter.type !== "number") return false;
 
   const probeOptions = { ...effectiveOptions.value };
   if (parameter.key.endsWith("Pixels")) {
@@ -147,27 +120,35 @@ function isTransformBoxParameter(parameter: ParamDescriptor): boolean {
 const appearanceParameters = computed(() => {
   const parameters = metadata.value?.params ?? [];
   const inactiveSizeKeys = inactiveSizePairKeys(parameters);
-  const visible = parameters
-    .filter((parameter) => resolveParameterSemanticRole(parameter) === "appearance")
-    // Smoothing, including its advanced resolution, already lives in Style.
-    .filter((parameter) => !["smooth", "smoothResolution"].includes(parameter.key))
-    .filter((parameter) => !inactiveSizeKeys.has(parameter.key))
-    .filter((parameter) => !isTransformBoxParameter(parameter))
-    .filter((parameter) => parameter.visibleWhen?.(effectiveOptions.value) ?? true);
+  // Whether the transform box folds any option at all is a static per-kind fact, so
+  // the expensive per-parameter probe is skipped entirely for kinds without it.
+  const foldsTransform = foldsBoxTransformOptions(props.graphicKind as ControlMeasureId);
+  const visible = parameters.filter(
+    (parameter) =>
+      resolveParameterSemanticRole(parameter) === "appearance" &&
+      // Smoothing, including its advanced resolution, already lives in Style.
+      !CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS.includes(parameter.key) &&
+      !inactiveSizeKeys.has(parameter.key) &&
+      (parameter.visibleWhen?.(effectiveOptions.value) ?? true) &&
+      !(foldsTransform && isTransformBoxParameter(parameter)),
+  );
   if (labelSizeParameter.value) visible.push(labelSizeParameter.value);
   return visible;
 });
 
-const standardParameters = computed(() =>
-  appearanceParameters.value.filter(
-    (parameter) => resolveParameterPresentationTier(parameter) !== "advanced",
-  ),
-);
-const advancedParameters = computed(() =>
-  appearanceParameters.value.filter(
-    (parameter) => resolveParameterPresentationTier(parameter) === "advanced",
-  ),
-);
+const parameterTiers = computed(() => {
+  const standard: ParamDescriptor[] = [];
+  const advanced: ParamDescriptor[] = [];
+  for (const parameter of appearanceParameters.value) {
+    (resolveParameterPresentationTier(parameter) === "advanced"
+      ? advanced
+      : standard
+    ).push(parameter);
+  }
+  return { standard, advanced };
+});
+const standardParameters = computed(() => parameterTiers.value.standard);
+const advancedParameters = computed(() => parameterTiers.value.advanced);
 
 function valueFor(parameter: ParamDescriptor): string | number | boolean | undefined {
   return effectiveOptions.value[parameter.key] as string | number | boolean | undefined;
