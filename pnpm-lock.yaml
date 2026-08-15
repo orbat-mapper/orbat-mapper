@@ -42,17 +42,17 @@ importers:
         specifier: ^1.31.0
         version: 1.31.0(vue@3.5.41(typescript@5.9.3))
       '@orbat-mapper/control-measures':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.5.0
+        version: 0.5.0
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
       '@orbat-mapper/tactical-draw':
-        specifier: ^0.3.1
-        version: 0.3.1(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: ^0.3.2
+        version: 0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw-adapter-maplibre':
-        specifier: ^0.2.3
-        version: 0.2.3(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: ^0.2.4
+        version: 0.2.4(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@panzoom/panzoom':
         specifier: ^4.6.2
         version: 4.6.2
@@ -325,8 +325,8 @@ importers:
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
       '@tsconfig/node24':
-        specifier: ^24.0.4
-        version: 24.0.4
+        specifier: ^24.0.5
+        version: 24.0.5
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
@@ -427,8 +427,8 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
       vue-tsc:
-        specifier: ^3.3.9
-        version: 3.3.9(typescript@5.9.3)
+        specifier: ^3.3.10
+        version: 3.3.10(typescript@5.9.3)
 
 packages:
 
@@ -1138,19 +1138,19 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
-  '@orbat-mapper/control-measures@0.4.0':
-    resolution: {integrity: sha512-jp4OfukyAuNsxmweMX+ifl7V/UpDZbIuo0HHJY7ktrJ1XZl8TDHvj4khpReosiO9Q/y2IvVsfvIbl5LZsMNfEg==}
+  '@orbat-mapper/control-measures@0.5.0':
+    resolution: {integrity: sha512-VVcv/t9qfD7AuOSSbfza+DSV1VSx90gJFlVsUX0nX1WXkmMndWgqDypekuoYKgG64VSuZ/6tgOHUZix/WreXbQ==}
 
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.3':
-    resolution: {integrity: sha512-WIn3tJz68LZi630e54MmacT7qeR66j6koFV6JiDJ2Da3qKs2GMiD40guvWmc2kmxiBbCmXn31AA2y7mV8AQh5w==}
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.4':
+    resolution: {integrity: sha512-jkutb2224PnBKRkrrKmYfMWn+eDO+6n2KzbEtvRHXnF01GlZZaLHEPmPnb7xlj8/FrodBeHSCc3uRDITOrIg3A==}
     peerDependencies:
       maplibre-gl: '>=5.8.0 <6.0.0'
 
-  '@orbat-mapper/tactical-draw@0.3.1':
-    resolution: {integrity: sha512-8pN0i/8JkwFLnQbSOI33oXazuoo8/H+WdPICs9T/Dhk6vBevp/UB76lI6z7GXsMhDs3Q0heImuBUQPJWCdljiA==}
+  '@orbat-mapper/tactical-draw@0.3.2':
+    resolution: {integrity: sha512-8GKDjWljeZxtCMgRPUfCGTBBuYYrEB2k4HImusDg6JFMU0fC6HwllxyHMU6n/Z7GF1NcRX8AZNKzJNaIOK1BQg==}
     peerDependencies:
       vitest: '>=4.0.0'
     peerDependenciesMeta:
@@ -1648,8 +1648,8 @@ packages:
   '@tmcw/togeojson@7.1.2':
     resolution: {integrity: sha512-QKnFs9DAuqqBVj4d6c69tV1Dj2TspSBTqffivoN0YoBCVdP/JY1+WaYCJbzU49RkoU5NOSOJ3jtFHCdEUVh21A==}
 
-  '@tsconfig/node24@24.0.4':
-    resolution: {integrity: sha512-2A933l5P5oCbv6qSxHs7ckKwobs8BDAe9SJ/Xr2Hy+nDlwmLE1GhFh/g/vXGRZWgxBg9nX/5piDtHR9Dkw/XuA==}
+  '@tsconfig/node24@24.0.5':
+    resolution: {integrity: sha512-DWC54fGPuhZgg3Ighg4Y/A/bA3ZdB5hnzAuv/MkQ/X85sVsBsMQxu8t7khutdYeiNksBbFdDyeqv1HSW2Zl8aA==}
 
   '@turf/along@7.4.0':
     resolution: {integrity: sha512-uWh26sph1bJm3eO1toaoq9fbPRNxtbQlW/u0m04n7m6uFyGrUu4qE+8DTDQeF+cHGWbMQft4zshHZy0rz4Nyog==}
@@ -2300,8 +2300,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@3.3.9':
-    resolution: {integrity: sha512-in/68oAa4BCtVY6n/nkuhLIkV8DHYd2UivedJ6cMZ6UYtlq9jaoaSNUBHYCVO44z3nKg7MdE5OBoHKt5SxeBKQ==}
+  '@vue/language-core@3.3.10':
+    resolution: {integrity: sha512-CR7ByBbgPHqhxrioKPOcZBqttaozzLNwtkCzXQ+uF8gLPHnUe03srPnGpdtHD3zp+bq5iyVkZ1WNx7W564RPwg==}
 
   '@vue/reactivity@3.5.41':
     resolution: {integrity: sha512-rznsqKM0np0x18EjzF8x88MpEhdNsffbvFbckLL5+oUKz1BxAImEmO7J1ArRYSyo6aQaVoBDp7jEkT91OOxydA==}
@@ -2806,8 +2806,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  electron-to-chromium@1.5.405:
-    resolution: {integrity: sha512-bNglH7lPH5l+yHOes7Zr4VqxhOy4BQ9ZBUX4VdoFgxMpzJk7W1ZoO3Vgd9Pxa9PyjQ76sfm2aKH/nzEcCNRlew==}
+  electron-to-chromium@1.5.406:
+    resolution: {integrity: sha512-hWH5ORBi3d0IipnMh7BN5GDTaAmrSSSWmznwt2zltdiRNEWoEQyTwF0FFSBxzHO7hLSRT6loQu3IQGV0wg/Tvg==}
 
   emoji-regex-xs@1.0.0:
     resolution: {integrity: sha512-LRlerrMYoIDrT6jgpeZ2YYl/L8EulRTt5hQcYjy5AInh7HWXKimpqx68aknBFpGL2+/IcogTcaydJEgaTmOpDg==}
@@ -3591,8 +3591,8 @@ packages:
     resolution: {integrity: sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA==}
     engines: {node: '>=12.20.0'}
 
-  ohash@2.0.11:
-    resolution: {integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==}
+  ohash@2.0.12:
+    resolution: {integrity: sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw==}
 
   ol-ext@4.0.38:
     resolution: {integrity: sha512-fJmMcUYV8tfNhaHTl93eV1esBo1L8QHdOjJsBzapomgpmXiW7PGv91i6tmvXU4mL2z0gFrupuzs8BMLGi6T0QQ==}
@@ -3605,8 +3605,8 @@ packages:
   oniguruma-to-es@3.1.1:
     resolution: {integrity: sha512-bUH8SDvPkH3ho3dvwJwfonjlQ4R80vjyvrU8YpxuROddv55vAEJrTuCuCVUhhsHbtlD9tGGbaNApGQckXhS8iQ==}
 
-  open@11.0.0:
-    resolution: {integrity: sha512-smsWv2LzFjP03xmvFoJ331ss6h+jixfA4UUV/Bsiyuu4YJPfN+FIQGOIiv4w9/+MoHkfkJ22UIaQWRVFRfH6Vw==}
+  open@11.0.1:
+    resolution: {integrity: sha512-NzwMUB6C1D0+Kd+9iMS/H4k+Ck3cTX6Ckyfr/gAGlmvSE1LUQZnEZvWBi4PYmMwH/S5SMeTXnE+9uAz8uF+pWw==}
     engines: {node: '>=20'}
 
   optionator@0.9.4:
@@ -3733,6 +3733,10 @@ packages:
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
+    engines: {node: '>=20'}
+
+  powershell-utils@0.2.0:
+    resolution: {integrity: sha512-ZlsFlG7MtSFCoc5xreOvBAozCJ6Pf06opgJjh9ONEv418xpZSAzNjstD36C6+JwOnfSqOW/9uDkqKjezTdxZhw==}
     engines: {node: '>=20'}
 
   preact@10.29.8:
@@ -4409,8 +4413,8 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  vue-component-type-helpers@3.3.9:
-    resolution: {integrity: sha512-3c/UfMe0SqyEfcGTyH7mfshHagJ9QTCbppCb0/uGpHZpFug7+If3GeGZN7I0YheKEExemx3xldQPoO7PQSOLQg==}
+  vue-component-type-helpers@3.3.10:
+    resolution: {integrity: sha512-t7IQivQ3oD4D01b7s7a9AWzHAcr3DGBIa/1jZREsFQJcFgSL92gqUkqNiHTYgzTt7QDuJa0I9wCeDwEtZICoBQ==}
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -4452,8 +4456,8 @@ packages:
       vite:
         optional: true
 
-  vue-tsc@3.3.9:
-    resolution: {integrity: sha512-TS3Y1ux/IRoE8OCP2PpACAeOseuIs0UvWrcr7u+w3PmfY+SlCfEf8zjrBgnQksHUgLpthi5vHlffcQTQTdPBZA==}
+  vue-tsc@3.3.10:
+    resolution: {integrity: sha512-YaDVxcW+CGtaOt3pZahMG5jYPx0hsUTxyEoPOTSMebcGUXP9lIBabQ14vfKMORb2CqqK5CxsNo/d1d+4IQwiKg==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -4534,8 +4538,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  wsl-utils@0.3.1:
-    resolution: {integrity: sha512-g/eziiSUNBSsdDJtCLB8bdYEUMj4jR7AGeUo96p/3dTafgjHhpF4RiCFPiRILwjQoDXx5MqkBr4fwWtR3Ky4Wg==}
+  wsl-utils@1.0.0:
+    resolution: {integrity: sha512-Hl0ZOAs672vg+06kfujwRhoS6/jehvULrlFkuF2dRu6pHgA8U06h3xqNIqNNU1LTXPcedxByAR4GS6pwQK0mgA==}
     engines: {node: '>=20'}
 
   xast-util-to-xml@4.0.0:
@@ -5341,21 +5345,21 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
-  '@orbat-mapper/control-measures@0.4.0': {}
+  '@orbat-mapper/control-measures@0.5.0': {}
 
   '@orbat-mapper/convert-symbology@1.0.2': {}
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.3(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.4(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.4.0
-      '@orbat-mapper/tactical-draw': 0.3.1(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+      '@orbat-mapper/control-measures': 0.5.0
+      '@orbat-mapper/tactical-draw': 0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       maplibre-gl: 5.24.0
     transitivePeerDependencies:
       - vitest
 
-  '@orbat-mapper/tactical-draw@0.3.1(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw@0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.4.0
+      '@orbat-mapper/control-measures': 0.5.0
     optionalDependencies:
       vitest: 4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
 
@@ -5700,7 +5704,7 @@ snapshots:
 
   '@tmcw/togeojson@7.1.2': {}
 
-  '@tsconfig/node24@24.0.4': {}
+  '@tsconfig/node24@24.0.5': {}
 
   '@turf/along@7.4.0':
     dependencies:
@@ -7220,7 +7224,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vue/language-core@3.3.9':
+  '@vue/language-core@3.3.10':
     dependencies:
       '@volar/language-core': 2.4.28
       '@vue/compiler-dom': 3.5.41
@@ -7259,7 +7263,7 @@ snapshots:
       '@vue/compiler-dom': 3.5.41
       js-beautify: 1.15.4
       vue: 3.5.41(typescript@5.9.3)
-      vue-component-type-helpers: 3.3.9
+      vue-component-type-helpers: 3.3.10
     optionalDependencies:
       '@vue/server-renderer': 3.5.41
 
@@ -7447,7 +7451,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.14
       caniuse-lite: 1.0.30001809
-      electron-to-chromium: 1.5.405
+      electron-to-chromium: 1.5.406
       node-releases: 2.0.53
       update-browserslist-db: 1.3.1(browserslist@4.28.8)
 
@@ -7644,7 +7648,7 @@ snapshots:
       minimatch: 9.0.9
       semver: 7.8.5
 
-  electron-to-chromium@1.5.405: {}
+  electron-to-chromium@1.5.406: {}
 
   emoji-regex-xs@1.0.0: {}
 
@@ -8412,7 +8416,7 @@ snapshots:
 
   obug@2.1.4: {}
 
-  ohash@2.0.11: {}
+  ohash@2.0.12: {}
 
   ol-ext@4.0.38(ol@10.10.0):
     dependencies:
@@ -8433,14 +8437,14 @@ snapshots:
       regex: 6.1.0
       regex-recursion: 6.0.2
 
-  open@11.0.0:
+  open@11.0.1:
     dependencies:
       default-browser: 5.5.0
       define-lazy-prop: 3.0.0
       is-in-ssh: 1.0.0
       is-inside-container: 1.0.0
-      powershell-utils: 0.1.0
-      wsl-utils: 0.3.1
+      powershell-utils: 0.2.0
+      wsl-utils: 1.0.0
 
   optionator@0.9.4:
     dependencies:
@@ -8584,6 +8588,8 @@ snapshots:
 
   powershell-utils@0.1.0: {}
 
+  powershell-utils@0.2.0: {}
+
   preact@10.29.8: {}
 
   prelude-ls@1.2.1: {}
@@ -8668,7 +8674,7 @@ snapshots:
       '@vueuse/shared': 14.4.0(vue@3.5.41(typescript@5.9.3))
       aria-hidden: 1.2.6
       defu: 6.1.7
-      ohash: 2.0.11
+      ohash: 2.0.12
       vue: 3.5.41(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -9023,8 +9029,8 @@ snapshots:
       ansis: 4.3.1
       error-stack-parser-es: 1.0.5
       obug: 2.1.4
-      ohash: 2.0.11
-      open: 11.0.0
+      ohash: 2.0.12
+      open: 11.0.1
       perfect-debounce: 2.1.0
       sirv: 3.0.2
       unplugin-utils: 0.3.2
@@ -9171,7 +9177,7 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-component-type-helpers@3.3.9: {}
+  vue-component-type-helpers@3.3.10: {}
 
   vue-demi@0.14.10(vue@3.5.41(typescript@5.9.3)):
     dependencies:
@@ -9229,10 +9235,10 @@ snapshots:
       - unloader
       - webpack
 
-  vue-tsc@3.3.9(typescript@5.9.3):
+  vue-tsc@3.3.10(typescript@5.9.3):
     dependencies:
       '@volar/typescript': 2.4.28
-      '@vue/language-core': 3.3.9
+      '@vue/language-core': 3.3.10
       typescript: 5.9.3
 
   vue@3.5.41(typescript@5.9.3):
@@ -9295,7 +9301,7 @@ snapshots:
 
   ws@8.21.3: {}
 
-  wsl-utils@0.3.1:
+  wsl-utils@1.0.0:
     dependencies:
       is-wsl: 3.1.1
       powershell-utils: 0.1.0
