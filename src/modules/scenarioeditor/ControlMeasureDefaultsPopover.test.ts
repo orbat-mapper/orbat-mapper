@@ -6,6 +6,7 @@ import { createPinia, setActivePinia } from "pinia";
 import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasureDefaultsPopover.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
+import { NativeSelect } from "@/components/ui/native-select";
 import { activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
@@ -28,7 +29,7 @@ vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
 
 vi.mock("@/components/ui/slider", () => ({
   Slider: defineComponent({
-    name: "Slider",
+    name: "SliderStub",
     props: ["modelValue", "min", "max", "step", "disabled"],
     emits: ["update:modelValue"],
     template: "<div />",
@@ -146,6 +147,21 @@ describe("ControlMeasureDefaultsPopover", () => {
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       options: { echelon: "brigade" },
     });
+  });
+
+  it("derives non-text doctrinal parameters from the control-measure metadata", async () => {
+    const { wrapper } = mountPopover([]);
+    const store = useControlMeasureToolStore();
+    store.lastKind = "minefield";
+    await nextTick();
+
+    expect(wrapper.text()).toContain("Mine type");
+    const select = wrapper.findComponent(NativeSelect);
+    expect(select.exists()).toBe(true);
+
+    await wrapper.get("#cm-doctrinal-mineType").setValue("antitank");
+    await nextTick();
+    expect(store.defaults.options).toEqual({ mineType: "antitank" });
   });
 
   it("preserves unrelated styling when changing a multi-selection", async () => {
