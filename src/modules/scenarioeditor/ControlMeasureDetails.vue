@@ -40,7 +40,6 @@ import { useTabStore } from "@/stores/tabStore";
 import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
-  resolveControlMeasureControlPoints,
   resolveControlMeasureOptions,
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
@@ -145,30 +144,8 @@ const kindMetadata = computed(() => {
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
 });
 
-const coordinateRequirement = computed(() => {
-  const metadata = kindMetadata.value;
-  if (!metadata) return "";
-  const { minCoordinates: min, maxCoordinates: max } = metadata;
-  if (min === undefined && max === undefined) return "Unspecified";
-  if (min !== undefined && max !== undefined && min === max) return String(min);
-  if (min !== undefined && max !== undefined) return `${min}–${max}`;
-  if (min !== undefined) return `${min}+`;
-  return `Up to ${max}`;
-});
-
-const geometryLabel = computed(() => {
-  const geometry = kindMetadata.value?.geometry;
-  return geometry ? geometry.charAt(0).toUpperCase() + geometry.slice(1) : "";
-});
-
-// The **projected** points, like `strokeColor` above and like the map: a recorded
-// shape patch replaces `controlPoints` at the current time, so the top-level array
-// would disagree with what is drawn.
-const controlPointCount = computed(() =>
-  item.value ? resolveControlMeasureControlPoints(item.value).length : 0,
-);
-// Projected too, for the same reason as `strokeColor` and `controlPointCount`: a
-// recorded options patch is what the map is drawing with at the current time.
+// Projected like `strokeColor` above: a recorded options patch is what the map is
+// drawing with at the current time.
 const resolvedOptions = computed(() =>
   item.value ? resolveControlMeasureOptions(item.value) : undefined,
 );
@@ -430,21 +407,8 @@ function doDelete() {
               <div class="text-muted-foreground">Entity</div>
               <div>{{ kindMetadata.entity }}</div>
               <div class="text-muted-foreground">Type</div>
-              <div>
-                {{ kindMetadata.entityType }}
-                <span v-if="kindMetadata.entitySubtype">
-                  / {{ kindMetadata.entitySubtype }}
-                </span>
-              </div>
-              <div class="text-muted-foreground">Geometry</div>
-              <div>{{ geometryLabel }}</div>
-              <div class="text-muted-foreground">Required points</div>
-              <div>{{ coordinateRequirement }}</div>
-              <div class="text-muted-foreground">Symbol code</div>
-              <div class="font-mono text-xs">{{ kindMetadata.value }}</div>
+              <div>{{ kindMetadata.entityType }}</div>
             </template>
-            <div class="text-muted-foreground">Current points</div>
-            <div>{{ controlPointCount }}</div>
           </PanelDataGrid>
 
           <p
