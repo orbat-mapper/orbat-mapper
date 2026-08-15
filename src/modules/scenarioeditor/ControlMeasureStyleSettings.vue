@@ -212,8 +212,7 @@ const fillPatternModel = computed({
     </NativeSelectOption>
   </NativeSelect>
 
-  <div aria-hidden="true"></div>
-  <label for="cm-color-mode" class="flex items-center gap-2">
+  <label for="cm-color-mode" class="col-span-2 flex items-center gap-2">
     <Switch
       id="cm-color-mode"
       :model-value="colorMode === 'monochrome'"

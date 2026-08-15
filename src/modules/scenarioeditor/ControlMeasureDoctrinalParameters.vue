@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, toRaw } from "vue";
 import {
-  CONTROL_MEASURE_METADATA,
-  getDefaultOptions,
-  resolveParameterSemanticRole,
-} from "@orbat-mapper/control-measures";
+  doctrinalControlMeasureParams,
+  effectiveControlMeasureOptions,
+} from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import type {
   ControlMeasureId,
   ControlMeasureKind,
@@ -30,28 +29,20 @@ const emit = defineEmits<{
   (e: "update", value: TacticalGraphicOptions): void;
 }>();
 
-const effectiveOptions = computed<Record<string, unknown>>(() => ({
-  ...(props.graphicKind
-    ? (getDefaultOptions(props.graphicKind as ControlMeasureId) as Record<
-        string,
-        unknown
-      >)
-    : undefined),
-  ...(props.options as Record<string, unknown> | undefined),
-}));
+const effectiveOptions = computed(() =>
+  effectiveControlMeasureOptions(props.graphicKind, props.options),
+);
 
 /**
  * The compact toolbar omits text parameters; the amplifier panel opts into them.
  * Both surfaces follow the registry so a newly added doctrinal field does not require
  * another kind-specific component.
  */
-const parameters = computed(() => {
-  if (!props.graphicKind) return [];
-  return (CONTROL_MEASURE_METADATA[props.graphicKind as ControlMeasureId]?.params ?? [])
-    .filter((parameter) => props.includeText || parameter.type !== "text")
-    .filter((parameter) => resolveParameterSemanticRole(parameter) === "doctrinal")
-    .filter((parameter) => parameter.visibleWhen?.(effectiveOptions.value) ?? true);
-});
+const parameters = computed(() =>
+  doctrinalControlMeasureParams(props.graphicKind, props.options, {
+    includeText: props.includeText,
+  }),
+);
 
 function valueFor(parameter: ParamDescriptor): string | number | boolean | undefined {
   return effectiveOptions.value[parameter.key] as string | number | boolean | undefined;

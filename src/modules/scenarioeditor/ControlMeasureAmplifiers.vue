@@ -3,8 +3,8 @@ import { computed, ref, watch } from "vue";
 import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
-  resolveParameterSemanticRole,
 } from "@orbat-mapper/control-measures";
+import { doctrinalControlMeasureParams } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import type {
   ControlMeasureId,
   TextAmplifierDescriptor,
@@ -33,10 +33,13 @@ const emit = defineEmits<{
 const descriptors = computed<readonly TextAmplifierDescriptor[]>(
   () => CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? [],
 );
-const hasDoctrinalParameters = computed(() =>
-  (CONTROL_MEASURE_METADATA[props.graphicKind]?.params ?? []).some(
-    (parameter) => resolveParameterSemanticRole(parameter) === "doctrinal",
-  ),
+// The same filter the child renders from, so the section and the "nothing here"
+// message can never disagree.
+const hasDoctrinalParameters = computed(
+  () =>
+    doctrinalControlMeasureParams(props.graphicKind, props.options, {
+      includeText: true,
+    }).length > 0,
 );
 const previewAmplifiers = computed<TextAmplifiers>(() =>
   Object.fromEntries(
