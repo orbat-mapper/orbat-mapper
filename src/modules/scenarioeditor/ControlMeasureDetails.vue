@@ -54,6 +54,7 @@ import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue"
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
+import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
@@ -81,11 +82,12 @@ const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const tabList = computed(() => {
   const tabs = [
     { label: "Style", value: "0" },
-    { label: "Amplifiers", value: "1" },
-    { label: "Details", value: "2" },
-    { label: "State", value: "3" },
+    { label: "Extended styling", value: "1" },
+    { label: "Amplifiers", value: "2" },
+    { label: "Details", value: "3" },
+    { label: "State", value: "4" },
   ];
-  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "4" });
+  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "5" });
   return tabs;
 });
 
@@ -99,7 +101,7 @@ const selectedTabString = computed({
 watch(
   () => uiStore.debugMode,
   (debugMode) => {
-    if (!debugMode && selectedTab.value === 4) selectedTab.value = 0;
+    if (!debugMode && selectedTab.value === 5) selectedTab.value = 0;
   },
   { immediate: true },
 );
@@ -163,7 +165,7 @@ watch(
 const isEditMode = ref(false);
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
-  selectedTab.value = 2;
+  selectedTab.value = 3;
 }
 
 function showStylePanel() {
@@ -387,6 +389,17 @@ function doDelete() {
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
+          <ControlMeasureExtendedStyleSettings
+            v-if="supported"
+            :graphic-kind="item.graphicKind"
+            :options="resolvedOptions"
+            @update="doControlMeasureOptionsUpdate"
+          />
+          <p v-else class="text-muted-foreground pt-4 text-sm">
+            Extended styling is unavailable for this unsupported control measure.
+          </p>
+        </TabsContent>
+        <TabsContent value="2" class="mx-4">
           <ControlMeasureAmplifiers
             v-if="supported"
             :graphic-kind="item.graphicKind as ControlMeasureId"
@@ -399,7 +412,7 @@ function doDelete() {
             Amplifiers are unavailable for this unsupported control measure.
           </p>
         </TabsContent>
-        <TabsContent value="2" class="mx-4">
+        <TabsContent value="3" class="mx-4">
           <PanelDataGrid class="mt-4">
             <div class="text-muted-foreground">Kind</div>
             <div class="truncate">{{ kindName }}</div>
@@ -430,12 +443,12 @@ function doDelete() {
             <div v-html="hDescription"></div>
           </div>
         </TabsContent>
-        <TabsContent value="3" class="mx-4">
+        <TabsContent value="4" class="mx-4">
           <ScenarioLayerItemState :item="item" heading="Control measure state" />
         </TabsContent>
         <TabsContent
           v-if="uiStore.debugMode"
-          value="4"
+          value="5"
           class="prose prose-sm dark:prose-invert mx-4 max-w-none"
         >
           <pre>{{ item }}</pre>
