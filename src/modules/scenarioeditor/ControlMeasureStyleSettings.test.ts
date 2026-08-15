@@ -24,7 +24,7 @@ vi.mock("@/components/ui/popover", () => ({
 
 vi.mock("@/components/ui/slider", () => ({
   Slider: defineComponent({
-    name: "Slider",
+    name: "SliderStub",
     props: ["modelValue", "min", "max", "step", "disabled"],
     emits: ["update:modelValue"],
     template: "<div />",
@@ -48,7 +48,7 @@ describe("the UI-only styling gate", () => {
     const wrapper = mountSettings({ graphicKind: "phase-line" });
     const nativeSelectWrappers = wrapper.findAll("[data-slot='native-select-wrapper']");
 
-    expect(nativeSelectWrappers).toHaveLength(3);
+    expect(nativeSelectWrappers).toHaveLength(2);
     expect(
       nativeSelectWrappers.every((selectWrapper) =>
         selectWrapper.classes().includes("w-full"),
@@ -114,8 +114,18 @@ describe("the UI-only styling gate", () => {
 describe("what it emits", () => {
   it("emits the host-owned field on its own", async () => {
     const wrapper = mountSettings({ graphicKind: "phase-line" });
-    await wrapper.findAll("select")[2]!.setValue("planned");
+    await wrapper.findAll("select")[1]!.setValue("planned");
     expect(wrapper.emitted("update")).toEqual([[{ status: "planned" }]]);
+  });
+
+  it("uses a switch to change the color mode", async () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const colors = wrapper.get("#cm-color-mode");
+
+    expect(colors.attributes("data-state")).toBe("unchecked");
+    await colors.trigger("click");
+
+    expect(wrapper.emitted("update")).toEqual([[{ colorMode: "monochrome" }]]);
   });
 
   it("emits the whole style, merged, so nothing authored is lost", async () => {
@@ -147,7 +157,7 @@ describe("what it emits", () => {
       graphicKind: "polygon",
       measureStyle: { fillPattern: "hatch" },
     });
-    await wrapper.findAll("select")[3]!.setValue("");
+    await wrapper.findAll("select")[2]!.setValue("");
     expect(wrapper.emitted("update")).toEqual([[{ style: {} }]]);
   });
 });
@@ -225,9 +235,9 @@ describe("the smoothing toggle", () => {
 
   it("reflects an authored option over the library default", () => {
     const off = mountSettings({ graphicKind: "phase-line" });
-    expect(off.findComponent({ name: "Switch" }).props("modelValue")).toBe(false);
+    expect(smoothSwitch(off).attributes("data-state")).toBe("unchecked");
     const on = mountSettings({ graphicKind: "phase-line", options: { smooth: true } });
-    expect(on.findComponent({ name: "Switch" }).props("modelValue")).toBe(true);
+    expect(smoothSwitch(on).attributes("data-state")).toBe("checked");
   });
 
   it("emits the whole options object, merged, so nothing authored is lost", async () => {
@@ -235,7 +245,7 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smoothResolution: 24, smooth: false },
     });
-    await wrapper.findComponent({ name: "Switch" }).vm.$emit("update:modelValue", true);
+    await smoothSwitch(wrapper).trigger("click");
     expect(wrapper.emitted("update")).toEqual([
       [{ options: { smoothResolution: 24, smooth: true } }],
     ]);
@@ -246,7 +256,7 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smooth: false, smoothResolution: 8 },
     });
-    const slider = wrapper.findComponent({ name: "Slider" });
+    const slider = wrapper.findComponent({ name: "SliderStub" });
     expect(slider.props()).toMatchObject({
       modelValue: [8],
       min: 2,
@@ -261,7 +271,9 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smooth: true, includePrefix: false },
     });
-    await wrapper.findComponent({ name: "Slider" }).vm.$emit("update:modelValue", [9]);
+    await wrapper
+      .findComponent({ name: "SliderStub" })
+      .vm.$emit("update:modelValue", [9]);
     expect(wrapper.emitted("update")).toEqual([
       [{ options: { smooth: true, includePrefix: false, smoothResolution: 9 } }],
     ]);

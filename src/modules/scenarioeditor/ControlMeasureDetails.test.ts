@@ -199,16 +199,17 @@ describe("ControlMeasureDetails tabs", () => {
     );
   });
 
-  it("shows the catalog identity and geometry metadata in the Details tab", () => {
+  it("shows only the requested catalog metadata in the Details tab", () => {
     const { wrapper } = mountDetails();
     const text = wrapper.text().replace(/\s+/g, "");
 
+    expect(text).toContain("KindPhaseline");
     expect(text).toContain("EntityManeuverLines");
     expect(text).toContain("TypePhaseLine");
-    expect(text).toContain("GeometryLine");
-    expect(text).toContain("Requiredpoints2+");
-    expect(text).toContain("Symbolcode140300");
-    expect(text).toContain("Currentpoints2");
+    expect(text).not.toContain("Geometry");
+    expect(text).not.toContain("Requiredpoints");
+    expect(text).not.toContain("Symbolcode");
+    expect(text).not.toContain("Currentpoints");
   });
 
   // Duplication goes through the armed-tool owner, which owns settling the open
