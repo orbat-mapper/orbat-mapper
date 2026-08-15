@@ -35,10 +35,10 @@
     "@heroicons/vue": "^2.2.0",
     "@iconify-prerendered/vue-mdi": "^0.28.1737398331",
     "@lucide/vue": "^1.31.0",
-    "@orbat-mapper/control-measures": "^0.4.0",
+    "@orbat-mapper/control-measures": "^0.5.0",
     "@orbat-mapper/convert-symbology": "^1.0.2",
-    "@orbat-mapper/tactical-draw": "^0.3.1",
-    "@orbat-mapper/tactical-draw-adapter-maplibre": "^0.2.3",
+    "@orbat-mapper/tactical-draw": "^0.3.2",
+    "@orbat-mapper/tactical-draw-adapter-maplibre": "^0.2.4",
     "@panzoom/panzoom": "^4.6.2",
     "@popperjs/core": "^2.11.8",
     "@protomaps/basemaps": "^5.7.2",
@@ -131,7 +131,7 @@
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "@tsconfig/node24": "^24.0.4",
+    "@tsconfig/node24": "^24.0.5",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-scale-chromatic": "^3.1.0",
     "@types/d3-selection": "^3.0.11",
@@ -165,7 +165,7 @@
     "vite-plugin-vue-devtools": "^8.2.1",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.10",
-    "vue-tsc": "^3.3.9"
+    "vue-tsc": "^3.3.10"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0",
