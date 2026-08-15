@@ -54,7 +54,6 @@ import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue"
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
-import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
@@ -82,7 +81,6 @@ const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const tabList = computed(() => {
   const tabs = [
     { label: "Style", value: "0" },
-    { label: "Extended styling", value: "1" },
     { label: "Amplifiers", value: "2" },
     { label: "Details", value: "3" },
     { label: "State", value: "4" },
@@ -387,17 +385,6 @@ function doDelete() {
               @update="doControlMeasureOptionsUpdate"
             />
           </PanelDataGrid>
-        </TabsContent>
-        <TabsContent value="1" class="mx-4">
-          <ControlMeasureExtendedStyleSettings
-            v-if="supported"
-            :graphic-kind="item.graphicKind"
-            :options="resolvedOptions"
-            @update="doControlMeasureOptionsUpdate"
-          />
-          <p v-else class="text-muted-foreground pt-4 text-sm">
-            Extended styling is unavailable for this unsupported control measure.
-          </p>
         </TabsContent>
         <TabsContent value="2" class="mx-4">
           <ControlMeasureAmplifiers
