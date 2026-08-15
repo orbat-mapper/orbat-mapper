@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
+  resolveParameterSemanticRole,
 } from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
@@ -15,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
-import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
+import ControlMeasureDoctrinalParameters from "@/modules/scenarioeditor/ControlMeasureDoctrinalParameters.vue";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
 const props = defineProps<{
@@ -31,6 +32,11 @@ const emit = defineEmits<{
 
 const descriptors = computed<readonly TextAmplifierDescriptor[]>(
   () => CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? [],
+);
+const hasDoctrinalParameters = computed(() =>
+  (CONTROL_MEASURE_METADATA[props.graphicKind]?.params ?? []).some(
+    (parameter) => resolveParameterSemanticRole(parameter) === "doctrinal",
+  ),
 );
 const previewAmplifiers = computed<TextAmplifiers>(() =>
   Object.fromEntries(
@@ -119,9 +125,12 @@ function commitGenericText() {
       </div>
     </div>
 
-    <ControlMeasureEchelonSelect
+    <ControlMeasureDoctrinalParameters
+      v-if="hasDoctrinalParameters"
       :graphic-kind="graphicKind"
       :options="options"
+      include-text
+      field-layout
       @update="emit('update-options', $event)"
     />
 
@@ -171,8 +180,11 @@ function commitGenericText() {
         />
       </div>
     </div>
-    <p v-else-if="!isGenericText" class="text-muted-foreground text-sm">
-      This control measure has no text amplifiers.
+    <p
+      v-else-if="!isGenericText && !hasDoctrinalParameters"
+      class="text-muted-foreground text-sm"
+    >
+      This control measure has no doctrinal amplifier fields.
     </p>
   </div>
 </template>

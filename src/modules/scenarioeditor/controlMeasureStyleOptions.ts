@@ -17,6 +17,7 @@
 import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
+  resolveParameterSemanticRole,
 } from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
@@ -179,15 +180,33 @@ export function newControlMeasureDefaults(
     if (Object.keys(authored).length > 0) narrowed.style = authored;
   }
 
-  if (options && canSmoothControlMeasureKind(graphicKind)) {
+  if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
-    if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
     if (
-      getSmoothResolutionParam(graphicKind) &&
-      typeof authored.smoothResolution === "number"
+      canSmoothControlMeasureKind(graphicKind) &&
+      typeof authored.smooth === "boolean"
     ) {
-      narrowedOptions.smoothResolution = authored.smoothResolution;
+      narrowedOptions.smooth = authored.smooth;
+      if (
+        getSmoothResolutionParam(graphicKind) &&
+        typeof authored.smoothResolution === "number"
+      ) {
+        narrowedOptions.smoothResolution = authored.smoothResolution;
+      }
+    }
+
+    // Doctrinal generator choices are kind-specific just like smoothing, but unlike
+    // free text they belong in the compact draw palette. Derive the allow-list from
+    // semantic metadata so future modifiers flow through without a host-side list.
+    for (const parameter of metadataFor(graphicKind)?.params ?? []) {
+      if (
+        parameter.type !== "text" &&
+        resolveParameterSemanticRole(parameter) === "doctrinal" &&
+        authored[parameter.key] !== undefined
+      ) {
+        narrowedOptions[parameter.key] = authored[parameter.key];
+      }
     }
     if (Object.keys(narrowedOptions).length > 0) {
       narrowed.options = narrowedOptions as TacticalGraphicOptions;

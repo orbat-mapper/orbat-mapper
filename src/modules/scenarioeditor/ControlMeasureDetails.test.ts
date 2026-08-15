@@ -199,6 +199,18 @@ describe("ControlMeasureDetails tabs", () => {
     );
   });
 
+  it("shows the catalog identity and geometry metadata in the Details tab", () => {
+    const { wrapper } = mountDetails();
+    const text = wrapper.text().replace(/\s+/g, "");
+
+    expect(text).toContain("EntityManeuverLines");
+    expect(text).toContain("TypePhaseLine");
+    expect(text).toContain("GeometryLine");
+    expect(text).toContain("Requiredpoints2+");
+    expect(text).toContain("Symbolcode140300");
+    expect(text).toContain("Currentpoints2");
+  });
+
   // Duplication goes through the armed-tool owner, which owns settling the open
   // shape session. The behaviour itself is covered by useScenarioDraw.test.ts.
   it("duplicates the selected control measure from the details toolbar", async () => {

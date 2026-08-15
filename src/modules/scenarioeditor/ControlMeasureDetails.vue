@@ -139,6 +139,28 @@ const kindDescription = computed(() => {
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId]?.description ?? "";
 });
 
+const kindMetadata = computed(() => {
+  const kind = item.value?.graphicKind;
+  if (!kind || !supported.value) return undefined;
+  return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
+});
+
+const coordinateRequirement = computed(() => {
+  const metadata = kindMetadata.value;
+  if (!metadata) return "";
+  const { minCoordinates: min, maxCoordinates: max } = metadata;
+  if (min === undefined && max === undefined) return "Unspecified";
+  if (min !== undefined && max !== undefined && min === max) return String(min);
+  if (min !== undefined && max !== undefined) return `${min}–${max}`;
+  if (min !== undefined) return `${min}+`;
+  return `Up to ${max}`;
+});
+
+const geometryLabel = computed(() => {
+  const geometry = kindMetadata.value?.geometry;
+  return geometry ? geometry.charAt(0).toUpperCase() + geometry.slice(1) : "";
+});
+
 // The **projected** points, like `strokeColor` above and like the map: a recorded
 // shape patch replaces `controlPoints` at the current time, so the top-level array
 // would disagree with what is drawn.
@@ -404,7 +426,24 @@ function doDelete() {
           <PanelDataGrid class="mt-4">
             <div class="text-muted-foreground">Kind</div>
             <div class="truncate">{{ kindName }}</div>
-            <div class="text-muted-foreground">Points</div>
+            <template v-if="kindMetadata">
+              <div class="text-muted-foreground">Entity</div>
+              <div>{{ kindMetadata.entity }}</div>
+              <div class="text-muted-foreground">Type</div>
+              <div>
+                {{ kindMetadata.entityType }}
+                <span v-if="kindMetadata.entitySubtype">
+                  / {{ kindMetadata.entitySubtype }}
+                </span>
+              </div>
+              <div class="text-muted-foreground">Geometry</div>
+              <div>{{ geometryLabel }}</div>
+              <div class="text-muted-foreground">Required points</div>
+              <div>{{ coordinateRequirement }}</div>
+              <div class="text-muted-foreground">Symbol code</div>
+              <div class="font-mono text-xs">{{ kindMetadata.value }}</div>
+            </template>
+            <div class="text-muted-foreground">Current points</div>
             <div>{{ controlPointCount }}</div>
           </PanelDataGrid>
 

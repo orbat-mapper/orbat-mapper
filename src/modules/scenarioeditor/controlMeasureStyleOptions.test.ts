@@ -113,6 +113,21 @@ describe("newControlMeasureDefaults", () => {
     expect(result.options).not.toBe(defaults.options);
   });
 
+  it("carries non-text doctrinal options only onto kinds that declare them", () => {
+    const doctrinal = {
+      ...defaults,
+      options: { ...defaults.options, mineType: "antitank" },
+    } as const;
+
+    expect(newControlMeasureDefaults(doctrinal, "minefield").options).toEqual({
+      mineType: "antitank",
+    });
+    expect(newControlMeasureDefaults(doctrinal, "phase-line").options).toEqual({
+      smooth: true,
+      smoothResolution: 8,
+    });
+  });
+
   it("emits no style at all when nothing survives the gate", () => {
     const colourless = { standardIdentity: "3", style: { fillPattern: "dots" } } as const;
     expect(newControlMeasureDefaults(colourless, "line")).toEqual({
