@@ -3,8 +3,17 @@ import { createPinia, setActivePinia } from "pinia";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
+const runtimeEnvironment = vi.hoisted(() => ({ canReadHostedConfig: true }));
+
+vi.mock("@/utils/runtimeEnvironment", () => ({
+  get canReadHostedConfig() {
+    return runtimeEnvironment.canReadHostedConfig;
+  },
+}));
+
 beforeEach(() => {
   setActivePinia(createPinia());
+  runtimeEnvironment.canReadHostedConfig = true;
 });
 
 afterEach(() => {
@@ -13,9 +22,25 @@ afterEach(() => {
 });
 
 describe("a config that cannot be read", () => {
+  it("does not request a server-only config in the standalone build", async () => {
+    runtimeEnvironment.canReadHostedConfig = false;
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    const store = useMaplibreLayersStore();
+
+    await store.initialize();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(store.layers.map((layer) => layer.sourceType)).toEqual([
+      "style",
+      "style",
+      "style",
+      "style",
+    ]);
+  });
+
   it("offers the fallback basemaps", async () => {
-    // The standalone build always lands here: a file:// page has no server to read the config
-    // from. It keeps the fallbacks, because whether they load is a property of the network.
+    // A served build also keeps working when its optional config is missing.
     const fetchSpy = vi.fn(async () => {
       throw new TypeError("Failed to fetch");
     });
