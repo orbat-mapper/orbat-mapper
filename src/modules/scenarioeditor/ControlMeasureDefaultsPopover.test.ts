@@ -7,7 +7,11 @@ import ControlMeasureDefaultsPopover from "@/modules/scenarioeditor/ControlMeasu
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { NativeSelect } from "@/components/ui/native-select";
-import { activeScenarioKey, scenarioDrawKey } from "@/components/injects";
+import {
+  activeScenarioKey,
+  activeScenarioMapEngineKey,
+  scenarioDrawKey,
+} from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
@@ -66,6 +70,9 @@ function mountPopover(items: NTacticalGraphicLayerItem[]) {
           store: { groupUpdate },
         },
         [scenarioDrawKey as symbol]: { updateControlMeasure },
+        [activeScenarioMapEngineKey as symbol]: {
+          value: { draw: { adapter: { getResolution: () => 10 } } },
+        },
       },
     },
   });
@@ -146,6 +153,22 @@ describe("ControlMeasureDefaultsPopover", () => {
 
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       options: { echelon: "brigade" },
+    });
+  });
+
+  it("resets the selected measure size for the current zoom from the palette", async () => {
+    const selected = item("cm-1", "boundary", undefined);
+    selected.options = { echelonSize: 9999 };
+    const { wrapper, updateControlMeasure } = mountPopover([selected]);
+    useSelectedItems().selectedFeatureIds.value = new Set([selected.id]);
+    await nextTick();
+
+    await wrapper
+      .get("button[aria-label='Reset size for current zoom']")
+      .trigger("click");
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: expect.objectContaining({ echelonSize: 160 }),
     });
   });
 

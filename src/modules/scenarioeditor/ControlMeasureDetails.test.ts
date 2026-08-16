@@ -134,7 +134,7 @@ function mountDetails(
           },
         },
         [activeScenarioMapEngineKey as symbol]: shallowRef({
-          draw: {},
+          draw: { adapter: { getResolution: () => 10 } },
           layers: { zoomToFeature: vi.fn() },
         }),
         [scenarioDrawKey as symbol]: scenarioDraw,
@@ -304,6 +304,21 @@ describe("ControlMeasureDetails tabs", () => {
     expect(settings.props("showHeading")).toBe(false);
     await settings.vm.$emit("update", { status: "planned" });
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", { status: "planned" });
+  });
+
+  it("resets ground sizes for the current zoom from the Style tab", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "boundary",
+      options: { echelonSize: 9999 },
+    });
+
+    await wrapper
+      .get("button[aria-label='Reset size for current zoom']")
+      .trigger("click");
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: expect.objectContaining({ echelonSize: 160 }),
+    });
   });
 
   it("resets custom label positions through the settle-first update path", async () => {

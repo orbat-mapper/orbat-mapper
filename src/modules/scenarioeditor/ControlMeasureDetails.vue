@@ -23,6 +23,7 @@ import {
   IconMagnifyExpand as ZoomIcon,
   IconPalette as StyleIcon,
   IconPencil as EditIcon,
+  IconRestore as ResetIcon,
   IconVectorPolyline as ShapeIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { storeToRefs } from "pinia";
@@ -44,7 +45,10 @@ import {
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
-import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
+import {
+  resetControlMeasureSizesForResolution,
+  type ControlMeasureStyleUpdate,
+} from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type {
   NTacticalGraphicLayerItem,
@@ -194,6 +198,22 @@ function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplif
 
 function doControlMeasureOptionsUpdate(options: TacticalGraphicOptions) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
+}
+
+const resetSizeOptions = computed(() =>
+  item.value
+    ? resetControlMeasureSizesForResolution(
+        item.value.graphicKind,
+        resolvedOptions.value,
+        engineRef.value?.draw?.adapter?.getResolution?.(),
+      )
+    : null,
+);
+
+function resetSizeForCurrentZoom() {
+  if (item.value && resetSizeOptions.value) {
+    scenarioDraw.updateControlMeasure(item.value.id, { options: resetSizeOptions.value });
+  }
 }
 
 function resetLabelPositions() {
@@ -384,6 +404,18 @@ function doDelete() {
               inline
               @update="doControlMeasureOptionsUpdate"
             />
+            <div></div>
+            <Button
+              v-if="resetSizeOptions"
+              type="button"
+              variant="outline"
+              size="sm"
+              aria-label="Reset size for current zoom"
+              @click="resetSizeForCurrentZoom"
+            >
+              <ResetIcon class="mr-1 size-4" />
+              Reset size
+            </Button>
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="2" class="mx-4">

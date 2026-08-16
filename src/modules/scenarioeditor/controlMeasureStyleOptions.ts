@@ -226,6 +226,51 @@ export function getLabelSizeParam(
     : LABEL_SIZE_PARAMS.pixels;
 }
 
+const PIXEL_SIZE_SUFFIX = "Pixels";
+
+/**
+ * Restore every ground-anchored dimension to the library's intended on-screen size at
+ * the current zoom. Drawing normally performs this conversion at commit; this is the
+ * explicit way to re-anchor an existing graphic (or the sticky draw defaults) after
+ * the author has moved to a different zoom level.
+ */
+export function resetControlMeasureSizesForResolution(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+  metersPerPixel: number | undefined,
+): TacticalGraphicOptions | null {
+  const metadata = metadataFor(kind);
+  if (!metadata || !(metersPerPixel && metersPerPixel > 0)) return null;
+
+  const defaults = getDefaultOptions(kind as ControlMeasureId) as Record<string, unknown>;
+  const next = { ...options } as Record<string, unknown>;
+  const parameterKeys = new Set(
+    (metadata.params ?? []).map((parameter) => parameter.key),
+  );
+  let reset = false;
+
+  for (const parameter of metadata.params ?? []) {
+    if (!parameter.key.endsWith(PIXEL_SIZE_SUFFIX)) continue;
+    const meterKey = parameter.key.slice(0, -PIXEL_SIZE_SUFFIX.length);
+    if (!parameterKeys.has(meterKey)) continue;
+    const defaultPixels = defaults[parameter.key];
+    if (typeof defaultPixels !== "number") continue;
+    delete next[parameter.key];
+    next[meterKey] = defaultPixels * metersPerPixel;
+    reset = true;
+  }
+
+  if (metadata.capturesLabelSize) {
+    delete next.labelSizePixels;
+    next.labelSize = 14 * metersPerPixel;
+    reset = true;
+  }
+
+  if (!reset) return null;
+  delete next.metersPerPixel;
+  return next as TacticalGraphicOptions;
+}
+
 /** `"solid"` has no preview tile — it is the absence of a pattern, not one of them. */
 export const CONTROL_MEASURE_FILL_PATTERNS: ControlMeasureFillPattern[] = [
   "solid",
