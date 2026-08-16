@@ -7,9 +7,11 @@ import {
   NavigationControl,
   type MapProjectionEvent,
   ScaleControl,
+  setWorkerUrl,
   type MapMouseEvent,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import maplibreWorkerUrl from "@/modules/maplibreview/maplibreWorkerUrl";
 import { storeToRefs } from "pinia";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
 import type { MapProjection } from "@/stores/mapSettingsStore";
@@ -24,6 +26,8 @@ import {
   toLngLatPair,
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+
+setWorkerUrl(maplibreWorkerUrl);
 
 defineOptions({
   inheritAttrs: false,
@@ -155,6 +159,8 @@ onMounted(async () => {
     center: props.initialView ? toLngLatPair(props.initialView.center) : [0, 0],
     zoom: props.initialView?.zoom ?? 3,
     bearing: radiansToBearingDegrees(props.initialView?.rotation ?? 0),
+    // Preserve v5 tile overscaling and queryRenderedFeatures behavior.
+    zoomLevelsToOverscale: undefined,
     canvasContextAttributes: {
       preserveDrawingBuffer: true,
     },

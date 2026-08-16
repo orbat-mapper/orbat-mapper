@@ -35,6 +35,8 @@ const maplibreMock = vi.hoisted(() => {
 
     addImage() {}
 
+    setMissingStyleImageResolver() {}
+
     getCanvas() {
       const canvas = document.createElement("canvas");
       canvas.toBlob = (callback: BlobCallback) => {
@@ -73,7 +75,7 @@ const maplibreMock = vi.hoisted(() => {
 });
 
 vi.mock("maplibre-gl", () => ({
-  default: { Map: maplibreMock.FakeMap },
+  Map: maplibreMock.FakeMap,
 }));
 
 vi.mock("../symbolImageRegistry", async (importOriginal) => {

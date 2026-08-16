@@ -4,7 +4,6 @@ import {
   type GeoJSONSource,
   type MapGeoJSONFeature,
   type MapMouseEvent,
-  type MapStyleImageMissingEvent,
   type MapTouchEvent,
   type Map as MlMap,
   type PointLike,
@@ -72,6 +71,7 @@ import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 import { SID_INDEX } from "@/symbology/sidc";
+import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
 const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
 const NATIVE_CAPTURE_OPTIONS = { capture: true };
@@ -534,21 +534,21 @@ async function buildSymbolImageData(
   return buildMilSymbolImageData(imageId, cachedSymbol, pixelRatio);
 }
 
-function styleImageMissing(e: MapStyleImageMissingEvent) {
-  if (usedImageIds.has(e.id) || mlMap.hasImage(e.id)) return;
+function resolveMissingStyleImage(id: string) {
+  if (usedImageIds.has(id) || mlMap.hasImage(id)) return;
 
-  const symbolCode = e.id.startsWith("sel-") ? e.id.slice(4) : e.id;
+  const symbolCode = id.startsWith("sel-") ? id.slice(4) : id;
   const cachedSymbol = symbolCache.get(symbolCode);
   if (cachedSymbol?.kind === "custom") {
-    createCustomSymbolImage(e.id, cachedSymbol);
+    createCustomSymbolImage(id, cachedSymbol);
     return;
   }
 
   const pixelRatio = getSpritePixelRatio();
-  const data = buildMilSymbolImageData(e.id, cachedSymbol, pixelRatio);
+  const data = buildMilSymbolImageData(id, cachedSymbol, pixelRatio);
   if (data) {
-    mlMap.addImage(e.id, data, { pixelRatio });
-    usedImageIds.add(e.id);
+    mlMap.addImage(id, data, { pixelRatio });
+    usedImageIds.add(id);
   }
 }
 
@@ -567,7 +567,10 @@ function onStyleLoad() {
 
 useMaplibreDayNightTerminator(engineRef, activeScenario);
 
-mlMap.on("styleimagemissing", styleImageMissing);
+const unregisterMissingStyleImageResolver = registerMissingStyleImageResolver(
+  mlMap,
+  resolveMissingStyleImage,
+);
 mlMap.on("style.load", onStyleLoad);
 onStyleLoad();
 
@@ -1128,7 +1131,7 @@ mlMap
 mlMap.on("mousedown", onUnitDragStart);
 mlMap.on("touchstart", onUnitDragStart);
 mlMap.on("mousemove", onMapMouseMove);
-mlMap.on("mouseleave", onMapMouseLeave);
+mlMap.on("mouseleave" as never, onMapMouseLeave);
 mlMap.on("touchmove", onMapTouchMove);
 mlMap.on("mouseup", onUnitDragEnd);
 mlMap.on("touchend", onUnitDragEnd);
@@ -1338,7 +1341,7 @@ onUnmounted(() => {
   clearSuppressNextNativeClick();
   boxSelect.cleanup();
   disposeUnitHistory();
-  mlMap.off("styleimagemissing", styleImageMissing);
+  unregisterMissingStyleImageResolver();
   mlMap.off("style.load", onStyleLoad);
   mlMap.off("click", onMapClick);
   mlMap
@@ -1350,7 +1353,7 @@ onUnmounted(() => {
   mlMap.off("mousedown", onUnitDragStart);
   mlMap.off("touchstart", onUnitDragStart);
   mlMap.off("mousemove", onMapMouseMove);
-  mlMap.off("mouseleave", onMapMouseLeave);
+  mlMap.off("mouseleave" as never, onMapMouseLeave);
   mlMap.off("touchmove", onMapTouchMove);
   mlMap.off("mouseup", onUnitDragEnd);
   mlMap.off("touchend", onUnitDragEnd);

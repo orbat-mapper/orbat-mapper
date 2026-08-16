@@ -122,6 +122,7 @@ function firstLayerIndexForSource(
 
 function createMockMap() {
   const listeners = new Map<string, Set<(event?: unknown) => void>>();
+  let missingStyleImageResolver: ((id: string) => void | Promise<void>) | null = null;
   const sources = new Map<
     string,
     { setData: ReturnType<typeof vi.fn>; updateImage: ReturnType<typeof vi.fn> }
@@ -196,6 +197,11 @@ function createMockMap() {
     hasImage: vi.fn(() => false),
     loadImage: vi.fn(),
     addImage: vi.fn(),
+    setMissingStyleImageResolver: vi.fn(
+      (resolver: ((id: string) => void | Promise<void>) | null) => {
+        missingStyleImageResolver = resolver;
+      },
+    ),
     setLayoutProperty: vi.fn(),
     setPaintProperty: vi.fn(),
     getContainer: vi.fn(() => container),
@@ -222,6 +228,9 @@ function createMockMap() {
     canvas,
     emit(event: string, payload?: unknown) {
       listeners.get(event)?.forEach((handler) => handler(payload));
+    },
+    resolveMissingImage(id: string) {
+      return missingStyleImageResolver?.(id);
     },
     clearStyle() {
       sources.clear();
@@ -1891,9 +1900,6 @@ describe("createMapLibreScenarioLayerController", () => {
     cleanup();
 
     expect(mockMap.map.off).toHaveBeenCalledWith("style.load", expect.any(Function));
-    expect(mockMap.map.off).toHaveBeenCalledWith(
-      "styleimagemissing",
-      expect.any(Function),
-    );
+    expect(mockMap.map.setMissingStyleImageResolver).toHaveBeenLastCalledWith(null);
   });
 });

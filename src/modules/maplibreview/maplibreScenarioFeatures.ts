@@ -10,14 +10,10 @@ import type {
   Point,
   Position,
 } from "geojson";
-import type {
-  GeoJSONSource,
-  Map as MlMap,
-  MapGeoJSONFeature,
-  MapStyleImageMissingEvent,
-} from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap, MapGeoJSONFeature } from "maplibre-gl";
 import { toRgbaColor } from "@/utils/cssColor";
 import { getSpritePixelRatio } from "@/modules/maplibreview/spriteConfig";
+import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 import {
   drawArrowSymbol,
   getArrowGlobeIconOffset,
@@ -1140,8 +1136,9 @@ function ensureImage(
 export class MapLibreScenarioFeatureManager {
   private plans = new Map<string, ScenarioLayerRenderPlan>();
   private imageDefinitions = new Map<string, ImageDefinition>();
-  private styleImageMissingHandler = (event: MapStyleImageMissingEvent) => {
-    ensureImage(this.mlMap, event.id, this.imageDefinitions.get(event.id));
+  private unregisterMissingStyleImageResolver: () => void;
+  private resolveMissingStyleImage = (id: string) => {
+    ensureImage(this.mlMap, id, this.imageDefinitions.get(id));
   };
 
   constructor(
@@ -1153,12 +1150,15 @@ export class MapLibreScenarioFeatureManager {
       featureIds: new Set(),
     }),
   ) {
-    this.mlMap.on("styleimagemissing", this.styleImageMissingHandler);
+    this.unregisterMissingStyleImageResolver = registerMissingStyleImageResolver(
+      this.mlMap,
+      this.resolveMissingStyleImage,
+    );
   }
 
   destroy() {
     this.clear();
-    this.mlMap.off("styleimagemissing", this.styleImageMissingHandler);
+    this.unregisterMissingStyleImageResolver();
   }
 
   clear() {
