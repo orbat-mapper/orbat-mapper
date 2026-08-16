@@ -38,6 +38,10 @@ export function createAppHistory() {
   // origin has no IndexedDB and no working file picker).
   "src/utils/runtimeEnvironment.ts": `export const isGeoSearchAvailable = false;
 export const canPersistFileHandles = false;`,
+  // MapLibre v6 requires an explicit worker URL under Vite. The hosted build emits a cacheable
+  // worker asset; the standalone build turns the same bundled worker into an in-document URL.
+  "src/modules/maplibreview/maplibreWorkerUrl.ts": `import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&inline&url";
+export default workerUrl;`,
 };
 
 function replaceStandaloneModules(): Plugin {

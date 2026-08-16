@@ -1,6 +1,6 @@
-import type { Map as MlMap } from "maplibre-gl";
+import type { GeoJSONSource, Map as MlMap, MapMouseEvent } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
-import { toBbox, type Bbox, type BoxDrawEngine } from "./boxDrawEngine";
+import { toBbox, type BoxDrawEngine } from "./boxDrawEngine";
 
 const ML_BOX_SOURCE = "__boxDrawSource";
 const ML_BOX_FILL = "__boxDrawFill";
@@ -8,8 +8,8 @@ const ML_BOX_LINE = "__boxDrawLine";
 
 export function createMLBoxDrawEngine(mlMap: MlMap): BoxDrawEngine {
   let start: [number, number] | null = null;
-  let clickHandler: ((e: maplibregl.MapMouseEvent) => void) | null = null;
-  let mouseMoveHandler: ((e: maplibregl.MapMouseEvent) => void) | null = null;
+  let clickHandler: ((e: MapMouseEvent) => void) | null = null;
+  let mouseMoveHandler: ((e: MapMouseEvent) => void) | null = null;
 
   function addPreviewLayers() {
     if (!mlMap.getSource(ML_BOX_SOURCE)) {
@@ -42,7 +42,7 @@ export function createMLBoxDrawEngine(mlMap: MlMap): BoxDrawEngine {
 
   function updatePreview(current: [number, number]) {
     if (!start) return;
-    const source = mlMap.getSource(ML_BOX_SOURCE) as maplibregl.GeoJSONSource | undefined;
+    const source = mlMap.getSource(ML_BOX_SOURCE) as GeoJSONSource | undefined;
     if (!source) return;
     source.setData(bboxPolygon(toBbox(start, current)));
   }
@@ -57,7 +57,7 @@ export function createMLBoxDrawEngine(mlMap: MlMap): BoxDrawEngine {
     start(onEnd) {
       mlMap.getCanvas().style.cursor = "crosshair";
 
-      mouseMoveHandler = (e: maplibregl.MapMouseEvent) => {
+      mouseMoveHandler = (e: MapMouseEvent) => {
         mlMap.getCanvas().style.cursor = "crosshair";
         if (!start) return;
         updatePreview([e.lngLat.lng, e.lngLat.lat]);
@@ -65,7 +65,7 @@ export function createMLBoxDrawEngine(mlMap: MlMap): BoxDrawEngine {
 
       mlMap.on("mousemove", mouseMoveHandler);
 
-      clickHandler = (e: maplibregl.MapMouseEvent) => {
+      clickHandler = (e: MapMouseEvent) => {
         if (!start) {
           start = [e.lngLat.lng, e.lngLat.lat];
           addPreviewLayers();
