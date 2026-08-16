@@ -3,7 +3,7 @@ import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import baseConfig from "./vite.config";
+import baseConfig from "./vite.config.ts";
 import { inlineMaplibreWorkerInBundle } from "./scripts/inlineMaplibreWorker.ts";
 
 const repoPath = (path: string) => fileURLToPath(new URL(path, import.meta.url));
