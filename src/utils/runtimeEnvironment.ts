@@ -28,3 +28,12 @@ export const isGeoSearchAvailable = true;
  * browser has the API at all.
  */
 export const canPersistFileHandles = true;
+
+/**
+ * True when this build has a web server that can provide files from `public/config/`.
+ *
+ * A standalone file uses its built-in basemap defaults. Trying the hosted path first would turn
+ * `/config/maplibreConfig.json` into a file:// URL, which browsers must reject as a cross-origin
+ * fetch from an opaque origin.
+ */
+export const canReadHostedConfig = true;

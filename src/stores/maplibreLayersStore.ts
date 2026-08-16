@@ -13,6 +13,7 @@ import {
 import { unregisterArchive } from "@/geo/pmtilesProtocol";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { customBasemapToLayerConfig } from "@/geo/customBasemap";
+import { canReadHostedConfig } from "@/utils/runtimeEnvironment";
 
 /**
  * The basemaps to use when `config/maplibreConfig.json` cannot be read.
@@ -66,15 +67,16 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
   }
 
   async function runInitialize() {
-    try {
-      const res = await fetch("/config/maplibreConfig.json");
-      const config = (await res.json()) as MlLayerConfigFile;
-      layers.value = config && config.length > 0 ? config : FALLBACK_LAYERS;
-    } catch (e) {
-      // A standalone file has no server to read the config from, thus it always lands here and
-      // offers the fallbacks. They load if the computer can reach them, and the user selects
-      // "No base map" or "Open PMTiles archive…" if it cannot.
-      console.warn("Could not read config/maplibreConfig.json", e);
+    if (canReadHostedConfig) {
+      try {
+        const res = await fetch("/config/maplibreConfig.json");
+        const config = (await res.json()) as MlLayerConfigFile;
+        layers.value = config && config.length > 0 ? config : FALLBACK_LAYERS;
+      } catch (e) {
+        console.warn("Could not read config/maplibreConfig.json", e);
+        layers.value = FALLBACK_LAYERS;
+      }
+    } else {
       layers.value = FALLBACK_LAYERS;
     }
     addCustomBasemaps();
