@@ -42,17 +42,17 @@ importers:
         specifier: ^1.31.0
         version: 1.31.0(vue@3.5.41(typescript@5.9.3))
       '@orbat-mapper/control-measures':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: ^0.5.1
+        version: 0.5.1
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
       '@orbat-mapper/tactical-draw':
-        specifier: ^0.3.2
-        version: 0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: ^0.3.3
+        version: 0.3.3(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw-adapter-maplibre':
-        specifier: ^0.2.4
-        version: 0.2.4(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: ^0.3.0
+        version: 0.3.0(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@panzoom/panzoom':
         specifier: ^4.6.2
         version: 4.6.2
@@ -228,8 +228,8 @@ importers:
         specifier: ^8.0.3
         version: 8.0.3
       immer:
-        specifier: ^11.1.16
-        version: 11.1.16
+        specifier: ^11.1.17
+        version: 11.1.17
       klona:
         specifier: ^2.0.6
         version: 2.0.6
@@ -709,8 +709,8 @@ packages:
   '@codemirror/view@6.43.8':
     resolution: {integrity: sha512-qtItTDssZ/5GFfi94hrILu9j/VUeFPDPkhovEfmWFj2ipTxnzPB8DdHgfbb8HYTzLTYhrndKmyQxXUz/PDLenw==}
 
-  '@csstools/color-helpers@6.1.0':
-    resolution: {integrity: sha512-064IFJdjTfUqnjpCVpMOdbr8FLQBhinbZj6yRv2An2E41O/pLEXqfFRWqGq/SxlE5PEUYTlvWsG2r8MswAVvkg==}
+  '@csstools/color-helpers@6.1.1':
+    resolution: {integrity: sha512-gLNsunvwf3mCi5u5o46/Z/JcJMnhbHSaZ69rkgPzNM3J4s8hWwpPUQB6/tt0EDFyCiWzxANlx+2LJwpYj4zS1w==}
     engines: {node: '>=20.19.0'}
 
   '@csstools/css-calc@3.3.0':
@@ -720,8 +720,8 @@ packages:
       '@csstools/css-parser-algorithms': ^4.0.0
       '@csstools/css-tokenizer': ^4.0.0
 
-  '@csstools/css-color-parser@4.1.10':
-    resolution: {integrity: sha512-UZhQLIUyJaaMepqehrCODwCg2KW25vFvLWBmqYFaPclYvvxzj/sG8LBOhBFCp11i9uE7t1EyS+RAoV9tztPFyw==}
+  '@csstools/css-color-parser@4.2.0':
+    resolution: {integrity: sha512-5+5LEmFuY1AjXdYhmgjTJogtQnP1evJ1zrBZGUNZ0thkpwnnmKxcHdAMn/OtFjAb25zA+jKDVYVRl+5G7rjv1A==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@csstools/css-parser-algorithms': ^4.0.0
@@ -733,8 +733,8 @@ packages:
     peerDependencies:
       '@csstools/css-tokenizer': ^4.0.0
 
-  '@csstools/css-syntax-patches-for-csstree@1.1.7':
-    resolution: {integrity: sha512-fQ+05118eQS1cofO3aJpB5efgpBZMvIzwr/sbC8kDLVA5XLG8q1kJV5yzrUAI1f7lvhPnm8fgIjzFB8/O/5Dig==}
+  '@csstools/css-syntax-patches-for-csstree@1.1.8':
+    resolution: {integrity: sha512-CpMLjAvwQg3BL5S0IeqsZNMH7EQrEWi0kLKOC13ZBF0ZwERiLWlibNPJr8G1kdU3Ms/r2KiNrF81pUh2HwAHdg==}
     peerDependencies:
       css-tree: ^3.2.1
     peerDependenciesMeta:
@@ -1138,19 +1138,19 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
-  '@orbat-mapper/control-measures@0.5.0':
-    resolution: {integrity: sha512-VVcv/t9qfD7AuOSSbfza+DSV1VSx90gJFlVsUX0nX1WXkmMndWgqDypekuoYKgG64VSuZ/6tgOHUZix/WreXbQ==}
+  '@orbat-mapper/control-measures@0.5.1':
+    resolution: {integrity: sha512-Pw3y1EPNTRzuIyYnoMr5MTYTdh+XWex9ypULOx+7mz4HmhZeXaBUAyjFrqoG56Cnrtc6QzZiQ+VLObc9cvcPKQ==}
 
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.4':
-    resolution: {integrity: sha512-jkutb2224PnBKRkrrKmYfMWn+eDO+6n2KzbEtvRHXnF01GlZZaLHEPmPnb7xlj8/FrodBeHSCc3uRDITOrIg3A==}
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.3.0':
+    resolution: {integrity: sha512-zTDPrt5yuagiPbMToZu4NgXQpJZ08Fq/wS91G/n9RVK07wFxZPrGjNiw0WA7YIJFznKNPnJYzOla9Ycp11528g==}
     peerDependencies:
-      maplibre-gl: '>=5.8.0 <6.0.0'
+      maplibre-gl: '>=5.8.0 <7.0.0'
 
-  '@orbat-mapper/tactical-draw@0.3.2':
-    resolution: {integrity: sha512-8GKDjWljeZxtCMgRPUfCGTBBuYYrEB2k4HImusDg6JFMU0fC6HwllxyHMU6n/Z7GF1NcRX8AZNKzJNaIOK1BQg==}
+  '@orbat-mapper/tactical-draw@0.3.3':
+    resolution: {integrity: sha512-Wokr5nCGmPbb/vuGndkh1SXkefc6VP6HV6n/+NeYg7//eewXqDOKZKx8c0MJXrf3BTDymTMneZO0uiNJIlcq7g==}
     peerDependencies:
       vitest: '>=4.0.0'
     peerDependenciesMeta:
@@ -2806,8 +2806,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  electron-to-chromium@1.5.406:
-    resolution: {integrity: sha512-hWH5ORBi3d0IipnMh7BN5GDTaAmrSSSWmznwt2zltdiRNEWoEQyTwF0FFSBxzHO7hLSRT6loQu3IQGV0wg/Tvg==}
+  electron-to-chromium@1.5.407:
+    resolution: {integrity: sha512-4R8XgQOdfxexCd/u63lRm6wCHjECwI45MV9wxAs2ggtfWe2hwlo1ql97jKsju2IcJ+jFSTwBssyYoiWhh7mauQ==}
 
   emoji-regex-xs@1.0.0:
     resolution: {integrity: sha512-LRlerrMYoIDrT6jgpeZ2YYl/L8EulRTt5hQcYjy5AInh7HWXKimpqx68aknBFpGL2+/IcogTcaydJEgaTmOpDg==}
@@ -3120,8 +3120,8 @@ packages:
     resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==}
     engines: {node: '>= 4'}
 
-  immer@11.1.16:
-    resolution: {integrity: sha512-Xs7H9rBc+kti1J6RueUvbEBkmOz7jqj11XYgf+YMXAYzu8EeE7hwZ9poLXdVfVnGmJu7QAf41T7H2KuF6QoK6Q==}
+  immer@11.1.17:
+    resolution: {integrity: sha512-8Vu44Y0MuMBlTQz/jQ8HEMYNq/bBqk87MnBwYR5mC8AthfhEXidZ5aT/oA/CUqboa8THKltnD9L3xyqhU/Sy1Q==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -4708,7 +4708,7 @@ snapshots:
   '@asamuzakjp/css-color@4.1.2':
     dependencies:
       '@csstools/css-calc': 3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-color-parser': 4.1.10(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-color-parser': 4.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
       lru-cache: 11.5.2
@@ -4985,16 +4985,16 @@ snapshots:
       style-mod: 4.1.3
       w3c-keyname: 2.2.8
 
-  '@csstools/color-helpers@6.1.0': {}
+  '@csstools/color-helpers@6.1.1': {}
 
   '@csstools/css-calc@3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
 
-  '@csstools/css-color-parser@4.1.10(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
+  '@csstools/css-color-parser@4.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
     dependencies:
-      '@csstools/color-helpers': 6.1.0
+      '@csstools/color-helpers': 6.1.1
       '@csstools/css-calc': 3.3.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
@@ -5003,7 +5003,7 @@ snapshots:
     dependencies:
       '@csstools/css-tokenizer': 4.0.0
 
-  '@csstools/css-syntax-patches-for-csstree@1.1.7(css-tree@3.2.1)':
+  '@csstools/css-syntax-patches-for-csstree@1.1.8(css-tree@3.2.1)':
     optionalDependencies:
       css-tree: 3.2.1
 
@@ -5345,21 +5345,21 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
-  '@orbat-mapper/control-measures@0.5.0': {}
+  '@orbat-mapper/control-measures@0.5.1': {}
 
   '@orbat-mapper/convert-symbology@1.0.2': {}
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.2.4(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.3.0(maplibre-gl@5.24.0)(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.5.0
-      '@orbat-mapper/tactical-draw': 0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+      '@orbat-mapper/control-measures': 0.5.1
+      '@orbat-mapper/tactical-draw': 0.3.3(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       maplibre-gl: 5.24.0
     transitivePeerDependencies:
       - vitest
 
-  '@orbat-mapper/tactical-draw@0.3.2(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw@0.3.3(vitest@4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.5.0
+      '@orbat-mapper/control-measures': 0.5.1
     optionalDependencies:
       vitest: 4.1.10(@types/node@25.9.5)(jsdom@27.4.0)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
 
@@ -7451,7 +7451,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.14
       caniuse-lite: 1.0.30001809
-      electron-to-chromium: 1.5.406
+      electron-to-chromium: 1.5.407
       node-releases: 2.0.53
       update-browserslist-db: 1.3.1(browserslist@4.28.8)
 
@@ -7544,7 +7544,7 @@ snapshots:
   cssstyle@5.3.7:
     dependencies:
       '@asamuzakjp/css-color': 4.1.2
-      '@csstools/css-syntax-patches-for-csstree': 1.1.7(css-tree@3.2.1)
+      '@csstools/css-syntax-patches-for-csstree': 1.1.8(css-tree@3.2.1)
       css-tree: 3.2.1
       lru-cache: 11.5.2
 
@@ -7648,7 +7648,7 @@ snapshots:
       minimatch: 9.0.9
       semver: 7.8.5
 
-  electron-to-chromium@1.5.406: {}
+  electron-to-chromium@1.5.407: {}
 
   emoji-regex-xs@1.0.0: {}
 
@@ -7997,7 +7997,7 @@ snapshots:
 
   ignore@7.0.6: {}
 
-  immer@11.1.16: {}
+  immer@11.1.17: {}
 
   import-fresh@3.3.1:
     dependencies:
