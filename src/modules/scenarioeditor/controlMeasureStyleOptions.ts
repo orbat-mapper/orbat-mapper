@@ -1,8 +1,8 @@
 /**
  * What the styling UI is allowed to offer, per control-measure kind.
  *
- * ADR-0006 gates authored colours and fill patterns to the **7 Generic Graphics
- * kinds, in the UI only**: a doctrinal kind carries its colour from its standard
+ * ADR-0006 gates authored colours and fill patterns to **Generic Graphics kinds,
+ * in the UI only**: a doctrinal kind carries its colour from its standard
  * identity, and offering a colour picker on a Phase Line invites the user to break
  * the very symbology they picked it for. The model and the resolver stay uniform —
  * `toControlMeasure` resolves `style.color` for every kind alike — so an imported
@@ -105,7 +105,7 @@ export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
   "smoothResolution",
 ];
 
-/** True for exactly the 7 Generic Graphics kinds — the ones the UI lets you colour. */
+/** True for exactly the Generic Graphics kinds — the ones the UI lets you colour. */
 export function isStyleableControlMeasureKind(
   kind: ControlMeasureKind | undefined,
 ): boolean {
@@ -316,6 +316,12 @@ export function newControlMeasureDefaults(
   if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
+    if (
+      canAuthorFillPattern(graphicKind) &&
+      typeof authored.filled === "boolean"
+    ) {
+      narrowedOptions.filled = authored.filled;
+    }
     if (canSmoothControlMeasureKind(graphicKind)) {
       if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
       if (
