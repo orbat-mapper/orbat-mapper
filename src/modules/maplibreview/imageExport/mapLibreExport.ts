@@ -1,5 +1,6 @@
-import maplibregl, {
+import {
   type LngLatBoundsLike,
+  Map as MlMapConstructor,
   type Map as MlMap,
   type StyleImage,
 } from "maplibre-gl";
@@ -376,7 +377,7 @@ async function renderViaHiddenMap(
   let hiddenMap: MlMap | null = null;
   try {
     const style = cloneStyleForExport(sourceMap.getStyle());
-    hiddenMap = new maplibregl.Map({
+    hiddenMap = new MlMapConstructor({
       container,
       style,
       ...(camera.bounds
@@ -384,6 +385,8 @@ async function renderViaHiddenMap(
         : { center: camera.center, zoom: camera.zoom }),
       interactive: false,
       attributionControl: false,
+      // Match the live map's v5-compatible overscaling behavior.
+      zoomLevelsToOverscale: undefined,
       pixelRatio: outputScale,
       // MapLibre clamps the canvas to maxCanvasSize (default [4096, 4096]) and
       // silently lowers the effective pixel ratio to fit. At high output scales
@@ -405,9 +408,9 @@ async function renderViaHiddenMap(
     // markers, etc.) is copied from the source map as-is.
     const symbolSource = getSymbolImageSource(sourceMap);
     const ownedIds = symbolSource ? new Set(symbolSource.usedImageIds()) : null;
-    hiddenMap.on("styleimagemissing", (e) => {
-      if (ownedIds?.has(e.id)) return;
-      copyImageBetweenMaps(sourceMap, hiddenMap!, e.id);
+    hiddenMap.setMissingStyleImageResolver((id) => {
+      if (ownedIds?.has(id)) return;
+      copyImageBetweenMaps(sourceMap, hiddenMap!, id);
     });
 
     await new Promise<void>((resolve, reject) => {
@@ -649,25 +652,29 @@ function scaleUnitSymbolLayers(map: MlMap, scale: number) {
     map.setLayoutProperty(
       layer.id,
       "icon-size",
-      multiplyStyleValue(layout["icon-size"], scale),
+      multiplyStyleValue(layout["icon-size"], scale) as never,
     );
     map.setLayoutProperty(
       layer.id,
       "text-size",
-      multiplyStyleValue(layout["text-size"], scale),
+      multiplyStyleValue(layout["text-size"], scale) as never,
     );
-    map.setLayoutProperty(layer.id, "text-offset", scaledTextOffsetExpression(scale));
+    map.setLayoutProperty(
+      layer.id,
+      "text-offset",
+      scaledTextOffsetExpression(scale) as never,
+    );
 
     const paint = layer.paint ?? {};
     map.setPaintProperty(
       layer.id,
       "text-halo-width",
-      multiplyStyleValue(paint["text-halo-width"], scale),
+      multiplyStyleValue(paint["text-halo-width"], scale) as never,
     );
     map.setPaintProperty(
       layer.id,
       "text-halo-blur",
-      multiplyStyleValue(paint["text-halo-blur"], scale),
+      multiplyStyleValue(paint["text-halo-blur"], scale) as never,
     );
   }
 }

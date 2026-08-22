@@ -89,6 +89,7 @@ function createSearchActions() {
 
 function createMockMap() {
   const listeners = new Map<string, Set<(event?: unknown) => void>>();
+  let missingStyleImageResolver: ((id: string) => void | Promise<void>) | null = null;
   const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
   const layers = new Map<string, unknown>();
   const canvas = document.createElement("canvas");
@@ -170,6 +171,11 @@ function createMockMap() {
     hasImage: vi.fn(() => false),
     addImage: vi.fn(),
     removeImage: vi.fn(),
+    setMissingStyleImageResolver: vi.fn(
+      (resolver: ((id: string) => void | Promise<void>) | null) => {
+        missingStyleImageResolver = resolver;
+      },
+    ),
     queryRenderedFeatures: vi.fn(() => []),
     // The interactive query scopes itself to the live style's layer ids.
     getLayersOrder: vi.fn(() => [...layers.keys()]),
@@ -197,6 +203,9 @@ function createMockMap() {
     },
     emit(event: string, payload?: unknown) {
       listeners.get(event)?.forEach((handler) => handler(payload));
+    },
+    resolveMissingImage(id: string) {
+      return missingStyleImageResolver?.(id);
     },
   };
 }
@@ -418,7 +427,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
 
     expect(symbolGenerator).toHaveBeenCalledWith(
       "SFGPUCI----K",
@@ -468,7 +477,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     expect(unitData.features[0].properties.sidc).toBe("10031000001100000000");
-    mockMap.emit("styleimagemissing", { id: unitData.features[0].properties.symbolKey });
+    mockMap.resolveMissingImage(unitData.features[0].properties.symbolKey);
 
     expect(symbolGenerator).toHaveBeenCalledWith(
       "10031000001100000000",
@@ -511,7 +520,7 @@ describe("MlMapLogic", () => {
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
     // Bake the on-screen sprite, which records the id as in-use.
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
 
     const source = getSymbolImageSource(mockMap.map);
     expect(source).toBeDefined();
@@ -570,7 +579,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
 
     expect(symbolGenerator).toHaveBeenCalledWith(
       "SFGPUCI----K",
@@ -718,7 +727,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(symbolGenerator).not.toHaveBeenCalled();
@@ -779,7 +788,7 @@ describe("MlMapLogic", () => {
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
     expect(symbolKey).toMatch(/^sel-/);
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(symbolGenerator).not.toHaveBeenCalled();
@@ -842,7 +851,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = source?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     const addImageCalls = mockMap.map.addImage.mock.calls;
@@ -962,7 +971,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = source?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
 
     expect(symbolGenerator).toHaveBeenCalledWith(
       "SFGPUCI----K",
@@ -1074,7 +1083,7 @@ describe("MlMapLogic", () => {
     const setDataCalls = source?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     const symbolKey = unitData.features[0].properties.symbolKey;
-    mockMap.emit("styleimagemissing", { id: symbolKey });
+    mockMap.resolveMissingImage(symbolKey);
 
     expect(symbolGenerator).toHaveBeenCalledWith(
       "SFGPUCI----K",

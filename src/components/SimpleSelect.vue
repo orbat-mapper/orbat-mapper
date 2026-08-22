@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useId } from "vue";
 import { type SelectItem } from "./types";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -16,6 +16,7 @@ const props = withDefaults(
 );
 
 const selectedValue = defineModel<string | number | null>({ required: false });
+const selectId = useId();
 const computedValues = computed(() => {
   if (props.items) return props.items;
 
@@ -28,10 +29,10 @@ const computedValues = computed(() => {
 
 <template>
   <Field>
-    <FieldLabel
+    <FieldLabel :for="selectId"
       ><slot name="label">{{ label }}</slot></FieldLabel
     >
-    <NativeSelect v-model="selectedValue">
+    <NativeSelect :id="selectId" v-model="selectedValue">
       <NativeSelectOption v-if="addNone" :value="null">None</NativeSelectOption>
       <NativeSelectOption
         v-for="val in computedValues"

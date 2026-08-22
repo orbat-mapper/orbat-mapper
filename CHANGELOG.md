@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added styled KML/KMZ export for rendered control measures, including generated labels and text amplifiers. KMZ exports can keep labels native or embed them as images to preserve orientation, scaling, anchors, and typography.
 - Added layer selection to partial scenario import and export, including control-measure layers and safe ID remapping when importing into an existing scenario.
 - Added feature and control-measure duplication actions to the details panel and draw toolbar. Control-measure details now also show the doctrinal description for the selected measure.
+- Added a reset-size action to the control-measure Style tab and draw palette, letting graphics restore their intended visual size for the current map zoom.
 
 ### Changed
 

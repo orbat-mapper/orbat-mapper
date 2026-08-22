@@ -10,8 +10,8 @@
  * - **No preview/rollback dance.** The feature panel writes non-undoably while a
  *   slider drags and rolls back on commit; nothing here ever writes mid-gesture, so
  *   every emit is already one settled change and the host can write it undoably once.
- * - **No gating anywhere but here.** Colour and fill pattern are offered only for the
- *   7 Generic Graphics kinds (ADR-0006), while stroke width follows the registry's
+ * - **No gating anywhere but here.** Colour and fill controls are offered only for
+ *   Generic Graphics kinds (ADR-0006), while stroke width follows the registry's
  *   paint capability. Those are UI judgements — the model and `toControlMeasure` stay
  *   uniform, so imported styling still renders.
  *
@@ -136,11 +136,11 @@ const identityModel = computed({
   set: (value: string) => emit("update", { standardIdentity: value as SidValue }),
 });
 
-const colorModeModel = computed({
-  get: () => props.colorMode ?? "identity",
-  set: (value: string) =>
-    emit("update", { colorMode: value as TacticalGraphicColorMode }),
-});
+function updateColorMode(monochrome: boolean) {
+  emit("update", {
+    colorMode: (monochrome ? "monochrome" : "identity") as TacticalGraphicColorMode,
+  });
+}
 
 const statusModel = computed({
   get: () => props.status ?? "present",
@@ -189,6 +189,15 @@ const fillPatternModel = computed({
   set: (value: string) =>
     updateStyle({ fillPattern: (value || undefined) as ControlMeasureFillPattern }),
 });
+
+/** Filledness is a generator option; a pattern alone cannot make an outline fill. */
+const filledModel = computed({
+  get: () => props.options?.filled === true,
+  set: (value: boolean) =>
+    emit("update", {
+      options: { ...toRaw(props.options), filled: value } as TacticalGraphicOptions,
+    }),
+});
 </script>
 
 <template>
@@ -212,16 +221,15 @@ const fillPatternModel = computed({
     </NativeSelectOption>
   </NativeSelect>
 
-  <label for="cm-color-mode" class="self-center">Colors</label>
-  <NativeSelect
-    id="cm-color-mode"
-    class="w-full"
-    wrapper-class="w-full"
-    v-model="colorModeModel"
-  >
-    <NativeSelectOption value="identity">Identity</NativeSelectOption>
-    <NativeSelectOption value="monochrome">Monochrome</NativeSelectOption>
-  </NativeSelect>
+  <div></div>
+  <label for="cm-color-mode" class="flex items-center gap-2">
+    <Switch
+      id="cm-color-mode"
+      :model-value="colorMode === 'monochrome'"
+      @update:model-value="updateColorMode(Boolean($event))"
+    />
+    <span>Monochrome</span>
+  </label>
 
   <label for="cm-status" class="self-center">Status</label>
   <NativeSelect
@@ -260,12 +268,19 @@ const fillPatternModel = computed({
   </template>
 
   <template v-if="showFillPattern">
-    <label for="cm-fill-pattern" class="self-center">Fill</label>
+    <div></div>
+    <label for="cm-filled" class="flex items-center gap-2">
+      <Switch id="cm-filled" v-model="filledModel" />
+      <span>Filled</span>
+    </label>
+
+    <label for="cm-fill-pattern" class="self-center">Fill pattern</label>
     <NativeSelect
       id="cm-fill-pattern"
       class="w-full"
       wrapper-class="w-full"
       v-model="fillPatternModel"
+      :disabled="!filledModel"
     >
       <NativeSelectOption value="">Default</NativeSelectOption>
       <NativeSelectOption

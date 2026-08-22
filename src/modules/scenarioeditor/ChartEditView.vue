@@ -25,10 +25,10 @@ import { type ChartTab, ChartTabs } from "@/modules/charteditor/constants";
 import ToggleField from "@/components/ToggleField.vue";
 import ResizablePanel from "@/components/ResizablePanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { promiseTimeout } from "@vueuse/core";
 import { useSearchActions } from "@/composables/searchActions";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { saveBlobToLocalFile } from "@/utils/files";
+import OrbatChartExportDialog from "@/modules/charteditor/OrbatChartExportDialog.vue";
+import filenamify from "filenamify/browser";
 
 const rootUnitStore = useRootUnitStore();
 const options = useChartSettingsStore();
@@ -61,7 +61,7 @@ const breadcrumbItems = computed((): BreadcrumbItem[] => {
     { name: side.name, static: true },
     { name: sideGroup?.name ?? "Root", static: true },
     ...parents.map((e) => ({ name: e.name, static: true })),
-    { name: activeUnit.value?.name!, static: true },
+    { name: activeUnit.value?.name ?? "", static: true },
   ];
 });
 
@@ -75,8 +75,6 @@ const selectedTabString = computed({
   set: (v) => (selectedTab.value = parseInt(v)),
 });
 
-const isInteractive = ref(true);
-
 function changeTab(index: number) {
   selectedTab.value = index;
 }
@@ -86,8 +84,16 @@ const debug = ref(false);
 const currentTab = ref<ChartTab>(ChartTabs.Chart);
 const currentChartElements = useSelectedChartElementStore();
 
-const width = computed(() => sizeToWidthHeight(options.paperSize).width);
-const height = computed(() => sizeToWidthHeight(options.paperSize).height);
+const chartSize = computed(() => sizeToWidthHeight(options.paperSize));
+const width = computed(() => chartSize.value.width);
+const height = computed(() => chartSize.value.height);
+const chartId = "orbat-chart";
+const showExportDialog = ref(false);
+const exportFileName = computed(() => {
+  const name = activeUnit.value?.shortName || activeUnit.value?.name || "orbat-chart";
+  const date = new Date().toLocaleDateString("sv-SE");
+  return filenamify(`${name}-orbat-${date}`);
+});
 
 const onUnitClick = (unitNode: RenderedUnitNode) => {
   currentChartElements.selectUnit(unitNode);
@@ -107,72 +113,13 @@ const onBranchClick: OnBranchClickCallback = (parentId, levelNumber) => {
   currentTab.value = ChartTabs.Branch;
 };
 
-const doSVGDownload = async () => {
-  const origValue = isInteractive.value;
-  isInteractive.value = false;
-  await nextTick();
-  downloadElementAsSVG("chartId");
-  await promiseTimeout(1000);
-  isInteractive.value = origValue;
-};
-
-const doPNGDownload = async () => {
-  const origValue = isInteractive.value;
-  isInteractive.value = false;
-  await nextTick();
-  downloadSvgAsPng("chartId", width.value, height.value);
-  await promiseTimeout(1000);
-  isInteractive.value = origValue;
-};
-
-function downloadSvgAsPng(elementId: string, width: number, height: number) {
-  const svgElement = document.getElementById(elementId);
-  if (!svgElement) return;
-  // need this for Firefox (https://stackoverflow.com/questions/28690643/firefox-error-rendering-an-svg-image-to-html5-canvas-with-drawimage)
-  const savedWidth = svgElement.getAttribute("width") || "";
-  const savedHeight = svgElement.getAttribute("height") || "";
-  const scaleFactor = 2;
-
-  svgElement.setAttribute("width", `${width * scaleFactor}px`);
-  svgElement.setAttribute("height", `${height * scaleFactor}px`);
-  const svgBlob = new Blob([new XMLSerializer().serializeToString(svgElement)], {
-    type: "image/svg+xml",
-  });
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width * scaleFactor;
-  canvas.height = height * scaleFactor;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const objectURL = URL.createObjectURL(svgBlob);
-  const image = new Image();
-
-  image.onload = function () {
-    ctx.drawImage(image, 0, 0);
-    canvas.toBlob((blob) => blob && saveBlobToLocalFile(blob, "orbat-chart.png"));
-    URL.revokeObjectURL(objectURL);
-    svgElement?.setAttribute("width", savedWidth);
-    svgElement?.setAttribute("height", savedHeight);
-  };
-
-  image.src = objectURL;
-}
-
-async function downloadElementAsSVG(elementId: string) {
-  const svgElement = document.getElementById(elementId);
-  if (!svgElement) return;
-  await saveBlobToLocalFile(
-    new Blob([new XMLSerializer().serializeToString(svgElement)], {
-      type: "image/svg+xml",
-    }),
-    "orbat-chart.svg",
-  );
-}
-
-const menuItems: MenuItemData<Function>[] = [
-  { label: "Download as SVG", action: doSVGDownload },
-  { label: "Download as PNG", action: doPNGDownload },
-];
+const menuItems = computed<MenuItemData<() => void>[]>(() => [
+  {
+    label: "Export chart…",
+    action: () => (showExportDialog.value = true),
+    disabled: !activeUnit.value,
+  },
+]);
 </script>
 
 <template>
@@ -226,15 +173,24 @@ const menuItems: MenuItemData<Function>[] = [
         :width="width"
         :height="height"
         :symbol-generator="symbolGenerator"
-        chart-id="chartId"
+        :chart-id="chartId"
         :options="options.$state"
         :specific-options="specificOptions.$state"
         enable-pan-zoom
-        :interactive="isInteractive"
+        interactive
         @unitclick="onUnitClick"
         @levelclick="onLevelClick"
         @branchclick="onBranchClick"
         :debug="debug"
+      />
+      <OrbatChartExportDialog
+        v-if="activeUnit"
+        v-model="showExportDialog"
+        :chart-id="chartId"
+        :paper-size="options.paperSize"
+        :default-file-name="exportFileName"
+        :chart-title="`${activeUnit.name} ORBAT chart`"
+        :description="`Exported from ${state.info.name || 'ORBAT Mapper'}`"
       />
     </main>
   </div>

@@ -110,6 +110,11 @@ const features = [
                   >Symbol Browser</router-link
                 >
               </Button>
+              <span class="text-muted-foreground/70" aria-hidden="true">|</span>
+              <Button as-child variant="link"
+                ><a href="https://tactrace.orbat-mapper.app/" target="_blank"
+                  >TacTrace <ExternalLinkIcon class="text-muted-foreground -ml-1" /></a
+              ></Button>
             </div>
           </div>
         </div>

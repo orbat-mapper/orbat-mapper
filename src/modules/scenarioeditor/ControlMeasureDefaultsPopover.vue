@@ -9,17 +9,28 @@
  * The controls are the same component the details panel uses, so "what a new graphic
  * looks like" and "what this graphic looks like" cannot drift apart.
  */
-import { IconPaletteOutline as DefaultsIcon } from "@iconify-prerendered/vue-mdi";
+import {
+  IconPaletteOutline as DefaultsIcon,
+  IconRestore as ResetIcon,
+} from "@iconify-prerendered/vue-mdi";
 import { storeToRefs } from "pinia";
 import { computed, inject } from "vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
-import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
-import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
-import { activeScenarioKey, scenarioDrawKey } from "@/components/injects";
+import ControlMeasureDoctrinalParameters from "@/modules/scenarioeditor/ControlMeasureDoctrinalParameters.vue";
+import {
+  resetControlMeasureSizesForResolution,
+  type ControlMeasureStyleUpdate,
+} from "@/modules/scenarioeditor/controlMeasureStyleOptions";
+import {
+  activeScenarioKey,
+  activeScenarioMapEngineKey,
+  scenarioDrawKey,
+} from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   isNTacticalGraphicLayerItem,
@@ -37,6 +48,7 @@ const { selectedFeatureIds } = useSelectedItems();
 // scenario editor where the toolbar is rendered.
 const scenario = inject(activeScenarioKey, null);
 const scenarioDraw = inject(scenarioDrawKey, null);
+const engineRef = inject(activeScenarioMapEngineKey, null);
 
 const selectedItems = computed<NTacticalGraphicLayerItem[]>(() => {
   if (!scenario || selectedFeatureIds.value.size === 0) return [];
@@ -153,6 +165,18 @@ function updateSettings(data: ControlMeasureStyleUpdate) {
     apply();
   }
 }
+
+const resetSizeOptions = computed(() =>
+  resetControlMeasureSizesForResolution(
+    editedKind.value,
+    editedOptions.value,
+    engineRef?.value?.draw?.adapter?.getResolution?.(),
+  ),
+);
+
+function resetSizeForCurrentZoom() {
+  if (resetSizeOptions.value) updateSettings({ options: resetSizeOptions.value });
+}
 </script>
 
 <template>
@@ -193,12 +217,23 @@ function updateSettings(data: ControlMeasureStyleUpdate) {
           :options="editedOptions"
           @update="updateSettings"
         />
-        <ControlMeasureEchelonSelect
+        <ControlMeasureDoctrinalParameters
           :graphic-kind="editedKind"
           :options="editedOptions"
-          inline
           @update="updateSettings({ options: $event })"
         />
+        <div></div>
+        <Button
+          v-if="resetSizeOptions"
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label="Reset size for current zoom"
+          @click="resetSizeForCurrentZoom"
+        >
+          <ResetIcon class="mr-1 size-4" />
+          Reset size
+        </Button>
       </PanelDataGrid>
     </PopoverContent>
   </Popover>

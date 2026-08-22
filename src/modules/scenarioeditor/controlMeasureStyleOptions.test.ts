@@ -16,9 +16,9 @@ import {
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 
 describe("the styling gate", () => {
-  it("covers exactly the 7 Generic Graphics kinds", () => {
+  it("covers exactly the 8 Generic Graphics kinds", () => {
     const styleable = CONTROL_MEASURE_IDS.filter(isStyleableControlMeasureKind);
-    expect(styleable).toHaveLength(7);
+    expect(styleable).toHaveLength(8);
     expect(styleable).toEqual(
       CONTROL_MEASURE_IDS.filter(
         (id) => CONTROL_MEASURE_METADATA[id].entity === GENERIC_GRAPHICS_ENTITY,
@@ -42,6 +42,7 @@ describe("the styling gate", () => {
       "polygon",
       "rectangle",
       "circle",
+      "sector",
     ]);
     // Styleable, but its generator pins the pattern, so the control would be inert.
     expect(canAuthorFillPattern("classic-arrow")).toBe(false);
@@ -111,6 +112,38 @@ describe("newControlMeasureDefaults", () => {
     const result = newControlMeasureDefaults(defaults, "phase-line");
     expect(result.options).toEqual({ smooth: true, smoothResolution: 8 });
     expect(result.options).not.toBe(defaults.options);
+  });
+
+  it.each(["circle", "sector"] as const)(
+    "carries sticky filledness onto a %s",
+    (kind) => {
+      const result = newControlMeasureDefaults(
+        { options: { filled: true, resolution: 32 } },
+        kind,
+      );
+      expect(result.options).toEqual({ filled: true });
+    },
+  );
+
+  it("does not carry filledness onto a kind that cannot be filled", () => {
+    expect(
+      newControlMeasureDefaults({ options: { filled: true } }, "line").options,
+    ).toBeUndefined();
+  });
+
+  it("carries non-text doctrinal options only onto kinds that declare them", () => {
+    const doctrinal = {
+      ...defaults,
+      options: { ...defaults.options, mineType: "antitank" },
+    } as const;
+
+    expect(newControlMeasureDefaults(doctrinal, "minefield").options).toEqual({
+      mineType: "antitank",
+    });
+    expect(newControlMeasureDefaults(doctrinal, "phase-line").options).toEqual({
+      smooth: true,
+      smoothResolution: 8,
+    });
   });
 
   it("emits no style at all when nothing survives the gate", () => {

@@ -3,7 +3,8 @@ import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type Plugin } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import baseConfig from "./vite.config";
+import baseConfig from "./vite.config.ts";
+import { inlineMaplibreWorkerInBundle } from "./scripts/inlineMaplibreWorker.ts";
 
 const repoPath = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
@@ -37,7 +38,8 @@ export function createAppHistory() {
   // No place search (it is a service on the internet), and no persisted file handles (an opaque
   // origin has no IndexedDB and no working file picker).
   "src/utils/runtimeEnvironment.ts": `export const isGeoSearchAvailable = false;
-export const canPersistFileHandles = false;`,
+export const canPersistFileHandles = false;
+export const canReadHostedConfig = false;`,
 };
 
 function replaceStandaloneModules(): Plugin {
@@ -115,6 +117,21 @@ function inlinePublicAssets(): Plugin {
 }
 
 /**
+ * Replaces Vite's emitted MapLibre worker URL with a Blob URL backed by the
+ * bundled worker source. `?worker&inline&url` cannot be used here: Vite exports
+ * a worker constructor for that query, while MapLibre's setWorkerUrl requires
+ * an actual string URL.
+ */
+function inlineMaplibreWorker(): Plugin {
+  return {
+    name: "singlefile-inline-maplibre-worker",
+    generateBundle(_options, bundle) {
+      inlineMaplibreWorkerInBundle(bundle);
+    },
+  };
+}
+
+/**
  * Fails the build unless the output is one file that needs nothing else.
  *
  * This is the promise of Level 3, stated once and checked against the artifact, rather than
@@ -155,8 +172,8 @@ function assertSelfContained(): Plugin {
 }
 
 // Level 3 (standalone file) packaging: the normal build, inlined into one HTML file that runs from
-// file://. It bundles no tiles, fonts or scenarios. Workers are inlined at their import sites
-// (`?worker&inline`), thus both builds bundle them the same way.
+// file://. It bundles no tiles, fonts or scenarios. The MapLibre worker is emitted by Vite and
+// folded back into the HTML as a classic-worker Blob URL.
 export default mergeConfig(
   baseConfig,
   defineConfig({
@@ -164,6 +181,7 @@ export default mergeConfig(
     plugins: [
       replaceStandaloneModules(),
       inlinePublicAssets(),
+      inlineMaplibreWorker(),
       viteSingleFile(),
       assertSelfContained(),
     ],

@@ -24,7 +24,7 @@ vi.mock("@/components/ui/popover", () => ({
 
 vi.mock("@/components/ui/slider", () => ({
   Slider: defineComponent({
-    name: "Slider",
+    name: "SliderStub",
     props: ["modelValue", "min", "max", "step", "disabled"],
     emits: ["update:modelValue"],
     template: "<div />",
@@ -48,7 +48,7 @@ describe("the UI-only styling gate", () => {
     const wrapper = mountSettings({ graphicKind: "phase-line" });
     const nativeSelectWrappers = wrapper.findAll("[data-slot='native-select-wrapper']");
 
-    expect(nativeSelectWrappers).toHaveLength(3);
+    expect(nativeSelectWrappers).toHaveLength(2);
     expect(
       nativeSelectWrappers.every((selectWrapper) =>
         selectWrapper.classes().includes("w-full"),
@@ -56,22 +56,25 @@ describe("the UI-only styling gate", () => {
     ).toBe(true);
   });
 
-  it("offers colour and fill on a Generic Graphics kind that can be filled", () => {
-    const wrapper = mountSettings({ graphicKind: "polygon" });
+  it("offers colour, filledness, and a fill pattern on a fillable Generic Graphics kind", () => {
+    const wrapper = mountSettings({ graphicKind: "sector" });
     expect(labels(wrapper)).toContain("Color");
-    expect(labels(wrapper)).toContain("Fill");
+    expect(labels(wrapper)).toContain("Filled");
+    expect(labels(wrapper)).toContain("Fill pattern");
   });
 
   it("offers colour but no fill where a pattern would be inert", () => {
     const wrapper = mountSettings({ graphicKind: "line" });
     expect(labels(wrapper)).toContain("Color");
-    expect(labels(wrapper)).not.toContain("Fill");
+    expect(labels(wrapper)).not.toContain("Filled");
+    expect(labels(wrapper)).not.toContain("Fill pattern");
   });
 
   it("offers neither on a doctrinal kind", () => {
     const wrapper = mountSettings({ graphicKind: "phase-line" });
     expect(labels(wrapper)).not.toContain("Color");
-    expect(labels(wrapper)).not.toContain("Fill");
+    expect(labels(wrapper)).not.toContain("Filled");
+    expect(labels(wrapper)).not.toContain("Fill pattern");
   });
 
   it("gates defaults using the kind they will create", () => {
@@ -79,7 +82,8 @@ describe("the UI-only styling gate", () => {
       props: { graphicKind: "phase-line", editingDefaults: true },
     });
     expect(labels(wrapper)).not.toContain("Color");
-    expect(labels(wrapper)).not.toContain("Fill");
+    expect(labels(wrapper)).not.toContain("Filled");
+    expect(labels(wrapper)).not.toContain("Fill pattern");
   });
 
   it("offers supported styling for defaults of a generic kind", () => {
@@ -87,7 +91,8 @@ describe("the UI-only styling gate", () => {
       props: { graphicKind: "polygon", editingDefaults: true },
     });
     expect(labels(wrapper)).toContain("Color");
-    expect(labels(wrapper)).toContain("Fill");
+    expect(labels(wrapper)).toContain("Filled");
+    expect(labels(wrapper)).toContain("Fill pattern");
   });
 
   it("offers a capability only when every selected kind supports it", () => {
@@ -98,7 +103,8 @@ describe("the UI-only styling gate", () => {
       },
     });
     expect(labels(wrapper)).not.toContain("Color");
-    expect(labels(wrapper)).not.toContain("Fill");
+    expect(labels(wrapper)).not.toContain("Filled");
+    expect(labels(wrapper)).not.toContain("Fill pattern");
   });
 
   it("still shows a doctrinal kind's imported colour, because it renders", () => {
@@ -114,8 +120,18 @@ describe("the UI-only styling gate", () => {
 describe("what it emits", () => {
   it("emits the host-owned field on its own", async () => {
     const wrapper = mountSettings({ graphicKind: "phase-line" });
-    await wrapper.findAll("select")[2]!.setValue("planned");
+    await wrapper.findAll("select")[1]!.setValue("planned");
     expect(wrapper.emitted("update")).toEqual([[{ status: "planned" }]]);
+  });
+
+  it("uses a switch to change the color mode", async () => {
+    const wrapper = mountSettings({ graphicKind: "phase-line" });
+    const colors = wrapper.get("#cm-color-mode");
+
+    expect(colors.attributes("data-state")).toBe("unchecked");
+    await colors.trigger("click");
+
+    expect(wrapper.emitted("update")).toEqual([[{ colorMode: "monochrome" }]]);
   });
 
   it("emits the whole style, merged, so nothing authored is lost", async () => {
@@ -146,9 +162,23 @@ describe("what it emits", () => {
     const wrapper = mountSettings({
       graphicKind: "polygon",
       measureStyle: { fillPattern: "hatch" },
+      options: { filled: true },
     });
-    await wrapper.findAll("select")[3]!.setValue("");
+    await wrapper.findAll("select")[2]!.setValue("");
     expect(wrapper.emitted("update")).toEqual([[{ style: {} }]]);
+  });
+
+  it("enables the generator fill while preserving its other options", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "circle",
+      options: { filled: false, resolution: 32 },
+    });
+
+    await wrapper.get("#cm-filled").trigger("click");
+
+    expect(wrapper.emitted("update")).toEqual([
+      [{ options: { filled: true, resolution: 32 } }],
+    ]);
   });
 });
 
@@ -225,9 +255,9 @@ describe("the smoothing toggle", () => {
 
   it("reflects an authored option over the library default", () => {
     const off = mountSettings({ graphicKind: "phase-line" });
-    expect(off.findComponent({ name: "Switch" }).props("modelValue")).toBe(false);
+    expect(smoothSwitch(off).attributes("data-state")).toBe("unchecked");
     const on = mountSettings({ graphicKind: "phase-line", options: { smooth: true } });
-    expect(on.findComponent({ name: "Switch" }).props("modelValue")).toBe(true);
+    expect(smoothSwitch(on).attributes("data-state")).toBe("checked");
   });
 
   it("emits the whole options object, merged, so nothing authored is lost", async () => {
@@ -235,7 +265,7 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smoothResolution: 24, smooth: false },
     });
-    await wrapper.findComponent({ name: "Switch" }).vm.$emit("update:modelValue", true);
+    await smoothSwitch(wrapper).trigger("click");
     expect(wrapper.emitted("update")).toEqual([
       [{ options: { smoothResolution: 24, smooth: true } }],
     ]);
@@ -246,7 +276,7 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smooth: false, smoothResolution: 8 },
     });
-    const slider = wrapper.findComponent({ name: "Slider" });
+    const slider = wrapper.findComponent({ name: "SliderStub" });
     expect(slider.props()).toMatchObject({
       modelValue: [8],
       min: 2,
@@ -261,7 +291,9 @@ describe("the smoothing toggle", () => {
       graphicKind: "phase-line",
       options: { smooth: true, includePrefix: false },
     });
-    await wrapper.findComponent({ name: "Slider" }).vm.$emit("update:modelValue", [9]);
+    await wrapper
+      .findComponent({ name: "SliderStub" })
+      .vm.$emit("update:modelValue", [9]);
     expect(wrapper.emitted("update")).toEqual([
       [{ options: { smooth: true, includePrefix: false, smoothResolution: 9 } }],
     ]);

@@ -1,8 +1,8 @@
 /**
  * What the styling UI is allowed to offer, per control-measure kind.
  *
- * ADR-0006 gates authored colours and fill patterns to the **7 Generic Graphics
- * kinds, in the UI only**: a doctrinal kind carries its colour from its standard
+ * ADR-0006 gates authored colours and fill patterns to **Generic Graphics kinds,
+ * in the UI only**: a doctrinal kind carries its colour from its standard
  * identity, and offering a colour picker on a Phase Line invites the user to break
  * the very symbology they picked it for. The model and the resolver stay uniform —
  * `toControlMeasure` resolves `style.color` for every kind alike — so an imported
@@ -17,6 +17,7 @@
 import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
+  resolveParameterSemanticRole,
 } from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
@@ -53,12 +54,58 @@ export const CONTROL_MEASURE_STROKE_WIDTH_PRESETS = [
   { label: "Heavy", value: 4 },
 ] as const;
 
-function metadataFor(kind: ControlMeasureKind | undefined) {
+/** The registry entry for a kind, with the single `ControlMeasureId` cast in one place. */
+export function metadataFor(kind: ControlMeasureKind | undefined) {
   if (kind === undefined) return undefined;
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
 }
 
-/** True for exactly the 7 Generic Graphics kinds — the ones the UI lets you colour. */
+/**
+ * What the generator actually runs with: the library's defaults for the kind, with the
+ * item's authored options on top. Every surface that has to show "what the map is
+ * drawing" — visibility predicates, field values, smoothing state — resolves it here.
+ */
+export function effectiveControlMeasureOptions(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): Record<string, unknown> {
+  return {
+    ...(kind === undefined
+      ? undefined
+      : (getDefaultOptions(kind as ControlMeasureId) as Record<string, unknown>)),
+    ...(options as Record<string, unknown> | undefined),
+  };
+}
+
+/**
+ * The doctrinal generator parameters a kind offers, already narrowed by the descriptor's
+ * own `visibleWhen`. Both the amplifier panel and its empty-state check read this, so the
+ * section and its "nothing here" message can never disagree.
+ */
+export function doctrinalControlMeasureParams(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+  { includeText = false }: { includeText?: boolean } = {},
+): readonly ParamDescriptor[] {
+  const effective = effectiveControlMeasureOptions(kind, options);
+  return (metadataFor(kind)?.params ?? []).filter(
+    (parameter) =>
+      (includeText || parameter.type !== "text") &&
+      resolveParameterSemanticRole(parameter) === "doctrinal" &&
+      (parameter.visibleWhen?.(effective) ?? true),
+  );
+}
+
+/**
+ * Option keys the Style tab already owns, so the extended-styling tab knows to leave them
+ * alone. One list rather than a hard-coded copy on each side.
+ */
+export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
+  "smooth",
+  "smoothResolution",
+];
+
+/** True for exactly the Generic Graphics kinds — the ones the UI lets you colour. */
 export function isStyleableControlMeasureKind(
   kind: ControlMeasureKind | undefined,
 ): boolean {
@@ -129,12 +176,99 @@ export function isControlMeasureSmoothed(
   kind: ControlMeasureKind | undefined,
   options: TacticalGraphicOptions | undefined,
 ): boolean {
-  const authored = (options as Record<string, unknown> | undefined)?.smooth;
-  if (typeof authored === "boolean") return authored;
-  if (kind === undefined) return false;
-  const defaults = getDefaultOptions(kind as ControlMeasureId) as
-    Record<string, unknown> | undefined;
-  return defaults?.smooth === true;
+  return effectiveControlMeasureOptions(kind, options).smooth === true;
+}
+
+/**
+ * The label-size knob for kinds that declare `capturesLabelSize`. The pair is a
+ * screen/ground denomination like the other size pairs: an authored ground `labelSize`
+ * (with no pixel override) keeps the metre-denominated descriptor, everything else is
+ * sized in screen pixels. Kept here beside the other metadata-derived accessors so the
+ * bounds are reachable and testable without mounting a component.
+ */
+const LABEL_SIZE_PARAMS = {
+  ground: {
+    key: "labelSize",
+    label: "Label size",
+    description: "Label text height in meters.",
+    type: "number",
+    min: 50,
+    max: 20_000,
+    step: 50,
+    unit: "m",
+  },
+  pixels: {
+    key: "labelSizePixels",
+    label: "Label size",
+    description: "Label text height in screen pixels.",
+    type: "number",
+    min: 8,
+    max: 48,
+    step: 1,
+    unit: "px",
+  },
+} as const satisfies Record<string, ParamDescriptor>;
+
+/** True when the kind sizes its label in ground metres rather than screen pixels. */
+export function usesGroundLabelSize(
+  options: TacticalGraphicOptions | undefined,
+): boolean {
+  return options?.labelSizePixels === undefined && options?.labelSize !== undefined;
+}
+
+export function getLabelSizeParam(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+): ParamDescriptor | undefined {
+  if (!metadataFor(kind)?.capturesLabelSize) return undefined;
+  return usesGroundLabelSize(options)
+    ? LABEL_SIZE_PARAMS.ground
+    : LABEL_SIZE_PARAMS.pixels;
+}
+
+const PIXEL_SIZE_SUFFIX = "Pixels";
+
+/**
+ * Restore every ground-anchored dimension to the library's intended on-screen size at
+ * the current zoom. Drawing normally performs this conversion at commit; this is the
+ * explicit way to re-anchor an existing graphic (or the sticky draw defaults) after
+ * the author has moved to a different zoom level.
+ */
+export function resetControlMeasureSizesForResolution(
+  kind: ControlMeasureKind | undefined,
+  options: TacticalGraphicOptions | undefined,
+  metersPerPixel: number | undefined,
+): TacticalGraphicOptions | null {
+  const metadata = metadataFor(kind);
+  if (!metadata || !(metersPerPixel && metersPerPixel > 0)) return null;
+
+  const defaults = getDefaultOptions(kind as ControlMeasureId) as Record<string, unknown>;
+  const next = { ...options } as Record<string, unknown>;
+  const parameterKeys = new Set(
+    (metadata.params ?? []).map((parameter) => parameter.key),
+  );
+  let reset = false;
+
+  for (const parameter of metadata.params ?? []) {
+    if (!parameter.key.endsWith(PIXEL_SIZE_SUFFIX)) continue;
+    const meterKey = parameter.key.slice(0, -PIXEL_SIZE_SUFFIX.length);
+    if (!parameterKeys.has(meterKey)) continue;
+    const defaultPixels = defaults[parameter.key];
+    if (typeof defaultPixels !== "number") continue;
+    delete next[parameter.key];
+    next[meterKey] = defaultPixels * metersPerPixel;
+    reset = true;
+  }
+
+  if (metadata.capturesLabelSize) {
+    delete next.labelSizePixels;
+    next.labelSize = 14 * metersPerPixel;
+    reset = true;
+  }
+
+  if (!reset) return null;
+  delete next.metersPerPixel;
+  return next as TacticalGraphicOptions;
 }
 
 /** `"solid"` has no preview tile — it is the absence of a pattern, not one of them. */
@@ -179,15 +313,36 @@ export function newControlMeasureDefaults(
     if (Object.keys(authored).length > 0) narrowed.style = authored;
   }
 
-  if (options && canSmoothControlMeasureKind(graphicKind)) {
+  if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
-    if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
     if (
-      getSmoothResolutionParam(graphicKind) &&
-      typeof authored.smoothResolution === "number"
+      canAuthorFillPattern(graphicKind) &&
+      typeof authored.filled === "boolean"
     ) {
-      narrowedOptions.smoothResolution = authored.smoothResolution;
+      narrowedOptions.filled = authored.filled;
+    }
+    if (canSmoothControlMeasureKind(graphicKind)) {
+      if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
+      if (
+        getSmoothResolutionParam(graphicKind) &&
+        typeof authored.smoothResolution === "number"
+      ) {
+        narrowedOptions.smoothResolution = authored.smoothResolution;
+      }
+    }
+
+    // Doctrinal generator choices are kind-specific just like smoothing, but unlike
+    // free text they belong in the compact draw palette. Derive the allow-list from
+    // semantic metadata so future modifiers flow through without a host-side list.
+    for (const parameter of metadataFor(graphicKind)?.params ?? []) {
+      if (
+        parameter.type !== "text" &&
+        resolveParameterSemanticRole(parameter) === "doctrinal" &&
+        authored[parameter.key] !== undefined
+      ) {
+        narrowedOptions[parameter.key] = authored[parameter.key];
+      }
     }
     if (Object.keys(narrowedOptions).length > 0) {
       narrowed.options = narrowedOptions as TacticalGraphicOptions;

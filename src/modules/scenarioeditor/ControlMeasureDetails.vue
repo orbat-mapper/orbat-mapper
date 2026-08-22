@@ -23,6 +23,7 @@ import {
   IconMagnifyExpand as ZoomIcon,
   IconPalette as StyleIcon,
   IconPencil as EditIcon,
+  IconRestore as ResetIcon,
   IconVectorPolyline as ShapeIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { storeToRefs } from "pinia";
@@ -40,12 +41,14 @@ import { useTabStore } from "@/stores/tabStore";
 import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
-  resolveControlMeasureControlPoints,
   resolveControlMeasureOptions,
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
-import type { ControlMeasureStyleUpdate } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
+import {
+  resetControlMeasureSizesForResolution,
+  type ControlMeasureStyleUpdate,
+} from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type {
   NTacticalGraphicLayerItem,
@@ -82,11 +85,11 @@ const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const tabList = computed(() => {
   const tabs = [
     { label: "Style", value: "0" },
-    { label: "Amplifiers", value: "1" },
-    { label: "Details", value: "2" },
-    { label: "State", value: "3" },
+    { label: "Amplifiers", value: "2" },
+    { label: "Details", value: "3" },
+    { label: "State", value: "4" },
   ];
-  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "4" });
+  if (uiStore.debugMode) tabs.push({ label: "Debug", value: "5" });
   return tabs;
 });
 
@@ -100,7 +103,7 @@ const selectedTabString = computed({
 watch(
   () => uiStore.debugMode,
   (debugMode) => {
-    if (!debugMode && selectedTab.value === 4) selectedTab.value = 0;
+    if (!debugMode && selectedTab.value === 5) selectedTab.value = 0;
   },
   { immediate: true },
 );
@@ -139,14 +142,14 @@ const kindDescription = computed(() => {
   return CONTROL_MEASURE_METADATA[kind as ControlMeasureId]?.description ?? "";
 });
 
-// The **projected** points, like `strokeColor` above and like the map: a recorded
-// shape patch replaces `controlPoints` at the current time, so the top-level array
-// would disagree with what is drawn.
-const controlPointCount = computed(() =>
-  item.value ? resolveControlMeasureControlPoints(item.value).length : 0,
-);
-// Projected too, for the same reason as `strokeColor` and `controlPointCount`: a
-// recorded options patch is what the map is drawing with at the current time.
+const kindMetadata = computed(() => {
+  const kind = item.value?.graphicKind;
+  if (!kind || !supported.value) return undefined;
+  return CONTROL_MEASURE_METADATA[kind as ControlMeasureId];
+});
+
+// Projected like `strokeColor` above: a recorded options patch is what the map is
+// drawing with at the current time.
 const resolvedOptions = computed(() =>
   item.value ? resolveControlMeasureOptions(item.value) : undefined,
 );
@@ -164,7 +167,7 @@ watch(
 const isEditMode = ref(false);
 function toggleEditMode() {
   isEditMode.value = !isEditMode.value;
-  selectedTab.value = 2;
+  selectedTab.value = 3;
 }
 
 function showStylePanel() {
@@ -195,6 +198,22 @@ function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplif
 
 function doControlMeasureOptionsUpdate(options: TacticalGraphicOptions) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
+}
+
+const resetSizeOptions = computed(() =>
+  item.value
+    ? resetControlMeasureSizesForResolution(
+        item.value.graphicKind,
+        resolvedOptions.value,
+        engineRef.value?.draw?.adapter?.getResolution?.(),
+      )
+    : null,
+);
+
+function resetSizeForCurrentZoom() {
+  if (item.value && resetSizeOptions.value) {
+    scenarioDraw.updateControlMeasure(item.value.id, { options: resetSizeOptions.value });
+  }
 }
 
 function resetLabelPositions() {
@@ -385,9 +404,21 @@ function doDelete() {
               inline
               @update="doControlMeasureOptionsUpdate"
             />
+            <div></div>
+            <Button
+              v-if="resetSizeOptions"
+              type="button"
+              variant="outline"
+              size="sm"
+              aria-label="Reset size for current zoom"
+              @click="resetSizeForCurrentZoom"
+            >
+              <ResetIcon class="mr-1 size-4" />
+              Reset size
+            </Button>
           </PanelDataGrid>
         </TabsContent>
-        <TabsContent value="1" class="mx-4">
+        <TabsContent value="2" class="mx-4">
           <ControlMeasureAmplifiers
             v-if="supported"
             :graphic-kind="item.graphicKind as ControlMeasureId"
@@ -400,12 +431,16 @@ function doDelete() {
             Amplifiers are unavailable for this unsupported control measure.
           </p>
         </TabsContent>
-        <TabsContent value="2" class="mx-4">
+        <TabsContent value="3" class="mx-4">
           <PanelDataGrid class="mt-4">
             <div class="text-muted-foreground">Kind</div>
             <div class="truncate">{{ kindName }}</div>
-            <div class="text-muted-foreground">Points</div>
-            <div>{{ controlPointCount }}</div>
+            <template v-if="kindMetadata">
+              <div class="text-muted-foreground">Entity</div>
+              <div>{{ kindMetadata.entity }}</div>
+              <div class="text-muted-foreground">Type</div>
+              <div>{{ kindMetadata.entityType }}</div>
+            </template>
           </PanelDataGrid>
 
           <p
@@ -427,12 +462,12 @@ function doDelete() {
             <div v-html="hDescription"></div>
           </div>
         </TabsContent>
-        <TabsContent value="3" class="mx-4">
+        <TabsContent value="4" class="mx-4">
           <ScenarioLayerItemState :item="item" heading="Control measure state" />
         </TabsContent>
         <TabsContent
           v-if="uiStore.debugMode"
-          value="4"
+          value="5"
           class="prose prose-sm dark:prose-invert mx-4 max-w-none"
         >
           <pre>{{ item }}</pre>

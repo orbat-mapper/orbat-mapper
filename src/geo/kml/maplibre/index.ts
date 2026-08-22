@@ -433,7 +433,8 @@ export function createMapLibreKmlLayerRenderer(
     ];
     for (const [suffix, prop, value] of layerProps) {
       const mlLayerId = getMapLibreKmlLayerId(layerId, suffix);
-      if (safeGetLayer(mlLayerId)) mlMap.setPaintProperty(mlLayerId, prop, value as any);
+      if (safeGetLayer(mlLayerId))
+        mlMap.setPaintProperty(mlLayerId, prop as never, value as never);
     }
   }
 

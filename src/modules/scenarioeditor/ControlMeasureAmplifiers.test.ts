@@ -73,6 +73,41 @@ describe("ControlMeasureAmplifiers", () => {
     expect(wrapper.emitted("update-options")).toEqual([[{ echelon: "brigade" }]]);
   });
 
+  it("shows and commits enum doctrinal fields from metadata", async () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: {
+        graphicKind: "minefield",
+        options: { mineType: "unspecified" },
+      },
+      global: { stubs: { ControlMeasurePreview: PreviewStub } },
+    });
+
+    expect(wrapper.text()).toContain("Mine type");
+    expect(wrapper.text()).toContain("Modifier 1 (symbol set 25 values 13–19).");
+    expect(
+      wrapper.get("#cm-doctrinal-mineType").element.closest("[data-slot='field']"),
+    ).not.toBeNull();
+    await wrapper.get("#cm-doctrinal-mineType").setValue("antitank");
+
+    expect(wrapper.emitted("update-options")).toEqual([[{ mineType: "antitank" }]]);
+  });
+
+  it("shows and commits text doctrinal fields from metadata", async () => {
+    const wrapper = mount(ControlMeasureAmplifiers, {
+      props: {
+        graphicKind: "light-line",
+        options: { phaseLineName: "ALPHA" },
+      },
+      global: { stubs: { ControlMeasurePreview: PreviewStub } },
+    });
+    const input = wrapper.get("#cm-doctrinal-phaseLineName");
+
+    expect((input.element as HTMLInputElement).value).toBe("ALPHA");
+    await input.setValue("BRAVO");
+
+    expect(wrapper.emitted("update-options")).toEqual([[{ phaseLineName: "BRAVO" }]]);
+  });
+
   it("keeps strong-point preview geometry representative while reflecting its echelon", () => {
     const wrapper = mount(ControlMeasureAmplifiers, {
       props: {
@@ -145,6 +180,8 @@ describe("ControlMeasureAmplifiers", () => {
       global: { stubs: { ControlMeasurePreview: PreviewStub } },
     });
 
-    expect(wrapper.text()).toContain("This control measure has no text amplifiers.");
+    expect(wrapper.text()).toContain(
+      "This control measure has no doctrinal amplifier fields.",
+    );
   });
 });

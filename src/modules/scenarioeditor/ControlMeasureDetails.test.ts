@@ -134,7 +134,7 @@ function mountDetails(
           },
         },
         [activeScenarioMapEngineKey as symbol]: shallowRef({
-          draw: {},
+          draw: { adapter: { getResolution: () => 10 } },
           layers: { zoomToFeature: vi.fn() },
         }),
         [scenarioDrawKey as symbol]: scenarioDraw,
@@ -153,7 +153,7 @@ describe("ControlMeasureDetails tabs", () => {
     useSelectedItems().clear();
   });
 
-  it("shows Style, Amplifiers, Details and State, with Debug gated by debug mode", async () => {
+  it("shows styling, amplifier, details and state tabs, with Debug gated by debug mode", async () => {
     const uiStore = useUiStore();
     const tabStore = useTabStore();
     const { wrapper } = mountDetails();
@@ -161,22 +161,22 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "1" },
-      { label: "Details", value: "2" },
-      { label: "State", value: "3" },
+      { label: "Amplifiers", value: "2" },
+      { label: "Details", value: "3" },
+      { label: "State", value: "4" },
     ]);
 
     uiStore.debugMode = true;
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "1" },
-      { label: "Details", value: "2" },
-      { label: "State", value: "3" },
-      { label: "Debug", value: "4" },
+      { label: "Amplifiers", value: "2" },
+      { label: "Details", value: "3" },
+      { label: "State", value: "4" },
+      { label: "Debug", value: "5" },
     ]);
 
-    tabStore.controlMeasureDetailsTab = 4;
+    tabStore.controlMeasureDetailsTab = 5;
     uiStore.debugMode = false;
     await nextTick();
     expect(tabStore.controlMeasureDetailsTab).toBe(0);
@@ -184,7 +184,7 @@ describe("ControlMeasureDetails tabs", () => {
 
   it("falls back from a remembered Debug tab when mounting outside debug mode", () => {
     const tabStore = useTabStore();
-    tabStore.controlMeasureDetailsTab = 4;
+    tabStore.controlMeasureDetailsTab = 5;
 
     mountDetails();
 
@@ -197,6 +197,19 @@ describe("ControlMeasureDetails tabs", () => {
     expect(wrapper.get("[data-test='control-measure-kind-description']").text()).toBe(
       CONTROL_MEASURE_METADATA["phase-line"].description,
     );
+  });
+
+  it("shows only the requested catalog metadata in the Details tab", () => {
+    const { wrapper } = mountDetails();
+    const text = wrapper.text().replace(/\s+/g, "");
+
+    expect(text).toContain("KindPhaseline");
+    expect(text).toContain("EntityManeuverLines");
+    expect(text).toContain("TypePhaseLine");
+    expect(text).not.toContain("Geometry");
+    expect(text).not.toContain("Requiredpoints");
+    expect(text).not.toContain("Symbolcode");
+    expect(text).not.toContain("Currentpoints");
   });
 
   // Duplication goes through the armed-tool owner, which owns settling the open
@@ -223,7 +236,7 @@ describe("ControlMeasureDetails tabs", () => {
   it("uses independent tab state for the palette and edit-data actions", async () => {
     const tabStore = useTabStore();
     tabStore.featureDetailsTab = 2;
-    tabStore.controlMeasureDetailsTab = 2;
+    tabStore.controlMeasureDetailsTab = 3;
     const { wrapper } = mountDetails();
 
     await wrapper.find("button[title='Change control measure style']").trigger("click");
@@ -231,7 +244,7 @@ describe("ControlMeasureDetails tabs", () => {
     expect(tabStore.featureDetailsTab).toBe(2);
 
     await wrapper.find("button[title='Edit data']").trigger("click");
-    expect(tabStore.controlMeasureDetailsTab).toBe(2);
+    expect(tabStore.controlMeasureDetailsTab).toBe(3);
   });
 
   it("writes text amplifiers through the settle-first control-measure path", async () => {
@@ -291,6 +304,21 @@ describe("ControlMeasureDetails tabs", () => {
     expect(settings.props("showHeading")).toBe(false);
     await settings.vm.$emit("update", { status: "planned" });
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", { status: "planned" });
+  });
+
+  it("resets ground sizes for the current zoom from the Style tab", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "boundary",
+      options: { echelonSize: 9999 },
+    });
+
+    await wrapper
+      .get("button[aria-label='Reset size for current zoom']")
+      .trigger("click");
+
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: expect.objectContaining({ echelonSize: 160 }),
+    });
   });
 
   it("resets custom label positions through the settle-first update path", async () => {
