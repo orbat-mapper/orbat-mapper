@@ -1,1 +1,0 @@
-export { useMgrsGrid } from "./useMgrsGrid";

@@ -44,6 +44,10 @@ import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.
 import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
+import ReferenceGridControl from "@/modules/maplibreview/ReferenceGridControl.vue";
+import { useReferenceGridLayers } from "@/modules/maplibreview/useReferenceGridLayers";
+import { useReferenceGridStore } from "@/stores/referenceGridStore";
+import { GRID_LABEL_METRICS, GRID_LABEL_TEXT_SHADOW } from "@/lib/grid";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import {
@@ -89,6 +93,12 @@ const {
 
 const mlMap = shallowRef<MlMap>();
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
+const referenceGrid = useReferenceGridStore();
+const { labels: referenceGridLabels, dispose: disposeReferenceGridLayers } =
+  useReferenceGridLayers(
+    () => mlMap.value,
+    () => scenarioMapEngineRef.value?.draw?.adapter,
+  );
 const {
   activeRoutingUnitName,
   addRouteLeg,
@@ -167,6 +177,7 @@ function onMapReady(mapInstance: MlMap) {
   tacticalDrawSurface?.destroy();
   tacticalDrawSurface = null;
   const rawMap = markRaw(mapInstance);
+  referenceGrid.visible = false;
   mlMap.value = rawMap;
   const adapter = markRaw(new MapLibreMapAdapter(rawMap));
   // Never reactive: the tactical-draw engine caches rendered output on `Graphic`
@@ -236,6 +247,7 @@ onBeforeUnmount(() => {
   if (snapshot) {
     emit("map-view-change", snapshot);
   }
+  disposeReferenceGridLayers();
   disposeMaplibreBinding();
 });
 
@@ -302,6 +314,35 @@ function onCloseActiveDetailsPanel() {
       <MaplibreSearchScenarioActions :ml-map="mlMap" />
     </template>
     <template #footer-overlays>
+      <div
+        v-if="referenceGrid.visible"
+        data-reference-grid-labels
+        class="pointer-events-none absolute inset-0 z-10 overflow-hidden font-mono text-xs font-semibold tabular-nums"
+        aria-hidden="true"
+      >
+        <span
+          v-for="label in referenceGridLabels"
+          :key="label.id"
+          class="absolute whitespace-nowrap"
+          :style="{
+            left: `${label.pixel[0]}px`,
+            top: `${label.pixel[1]}px`,
+            color: referenceGrid.color,
+            opacity: referenceGrid.opacity,
+            transform:
+              label.anchor === 'bottom'
+                ? 'translate(-50%, -100%)'
+                : label.anchor === 'left'
+                  ? `translate(${GRID_LABEL_METRICS.edgeOffsetPx}px, -50%)`
+                  : label.anchor === 'zone'
+                    ? `translate(${GRID_LABEL_METRICS.zoneInsetPx}px, calc(-100% - ${GRID_LABEL_METRICS.zoneInsetPx}px))`
+                    : 'translate(0, -50%)',
+            textShadow: GRID_LABEL_TEXT_SHADOW,
+          }"
+        >
+          {{ label.text }}
+        </span>
+      </div>
       <footer
         v-if="mlMap && !isMobile && (ui.showToolbar || isDrawing)"
         class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
@@ -323,6 +364,7 @@ function onCloseActiveDetailsPanel() {
           @show-settings="emit('show-settings')"
         >
           <template #extra-tools>
+            <ReferenceGridControl />
             <MaplibreLabsPopover :ml-map="mlMap" />
           </template>
         </MapEditorMainToolbar>
@@ -380,6 +422,7 @@ function onCloseActiveDetailsPanel() {
           @show-settings="emit('show-settings')"
         >
           <template #extra-tools>
+            <ReferenceGridControl />
             <MaplibreLabsPopover :ml-map="mlMap" />
           </template>
         </MapEditorMainToolbar>
