@@ -47,7 +47,10 @@ import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue"
 import ReferenceGridControl from "@/modules/maplibreview/ReferenceGridControl.vue";
 import { useReferenceGridLayers } from "@/modules/maplibreview/useReferenceGridLayers";
 import { useReferenceGridStore } from "@/stores/referenceGridStore";
-import { GRID_LABEL_METRICS, GRID_LABEL_TEXT_SHADOW } from "@/lib/grid";
+import {
+  REFERENCE_GRID_LABEL_METRICS,
+  REFERENCE_GRID_LABEL_TEXT_SHADOW,
+} from "@/modules/maplibreview/referenceGridPresentation";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { resolveMaplibreBasemap } from "@/modules/maplibreview/maplibreBasemaps";
 import {
@@ -333,11 +336,11 @@ function onCloseActiveDetailsPanel() {
               label.anchor === 'bottom'
                 ? 'translate(-50%, -100%)'
                 : label.anchor === 'left'
-                  ? `translate(${GRID_LABEL_METRICS.edgeOffsetPx}px, -50%)`
+                  ? `translate(${REFERENCE_GRID_LABEL_METRICS.edgeOffsetPx}px, -50%)`
                   : label.anchor === 'zone'
-                    ? `translate(${GRID_LABEL_METRICS.zoneInsetPx}px, calc(-100% - ${GRID_LABEL_METRICS.zoneInsetPx}px))`
+                    ? `translate(${REFERENCE_GRID_LABEL_METRICS.zoneInsetPx}px, calc(-100% - ${REFERENCE_GRID_LABEL_METRICS.zoneInsetPx}px))`
                     : 'translate(0, -50%)',
-            textShadow: GRID_LABEL_TEXT_SHADOW,
+            textShadow: REFERENCE_GRID_LABEL_TEXT_SHADOW,
           }"
         >
           {{ label.text }}

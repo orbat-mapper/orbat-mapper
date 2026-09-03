@@ -1,19 +1,17 @@
 import { ref, watch } from "vue";
 import { defineStore } from "pinia";
-import {
-  DEFAULT_GRID_APPEARANCE,
-  MAX_GRID_STROKE_WIDTH,
-  MIN_GRID_STROKE_WIDTH,
-  isGridColor,
-  type MgrsGridDefinition,
-} from "@/lib/grid";
-
 export type ReferenceGridMode = "mgrs" | "latlong";
-export type MgrsGridInterval = MgrsGridDefinition["interval"];
+export type MgrsGridInterval = 100 | 1_000 | 10_000 | 100_000;
 
 export const REFERENCE_GRID_STORAGE_KEY = "orbat-mapper:reference-grid";
 
 const MGRS_INTERVALS = new Set<MgrsGridInterval>([100, 1_000, 10_000, 100_000]);
+const MIN_GRID_STROKE_WIDTH = 0.1;
+const MAX_GRID_STROKE_WIDTH = 8;
+
+function isGridColor(value: unknown): value is string {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+}
 
 interface StoredReferenceGridPreferences {
   mode: ReferenceGridMode;
@@ -29,7 +27,9 @@ function defaults(): StoredReferenceGridPreferences {
     mode: "mgrs",
     mgrsInterval: 1_000,
     latLongInterval: 0.01,
-    ...DEFAULT_GRID_APPEARANCE,
+    color: "#658cbb",
+    opacity: 0.52,
+    strokeWidth: 1,
   };
 }
 
