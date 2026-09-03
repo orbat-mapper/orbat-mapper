@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## September 2026
+
+### Added
+
+- Added configurable MGRS and latitude/longitude reference grids to MapLibre mode, with adaptive line density and collision-managed labels.
+- Added device-level grid preferences for interval, colour, opacity, and line width. Grid visibility remains session-only and starts hidden when a map is opened.
+
+### Changed
+
+- Replaced the previous experimental MGRS overlay with the reusable reference-grid implementation and moved its controls into the main map toolbar.
+- Reference-grid rendering is now loaded on demand the first time a grid is shown, reducing the initial MapLibre editor download.
+
 ## August 2026
 
 ### Added
