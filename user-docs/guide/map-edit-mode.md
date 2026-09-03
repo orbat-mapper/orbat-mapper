@@ -122,6 +122,15 @@ When you select a map feature, the panel shows:
 The map toolbar has the select, move and rotate modes for units. In rotate mode, drag on a unit (or on the selected
 units) to set the rotation of the symbol at the current scenario time.
 
+### Reference grid
+
+Use the **Grid** button to show or hide a coordinate-reference overlay. Its dropdown offers **MGRS** and
+**latitude/longitude** grids, interval controls, colour, opacity and line width. The map automatically draws a
+readable subset of the selected finest interval as you zoom.
+
+Grid settings are display preferences for the current device and are not stored in the scenario. The selected mode,
+intervals and appearance persist, while every newly opened map starts with the grid hidden.
+
 ## Recording
 
 The recording controls specify which changes go on the scenario timeline while you edit. The **Rec** button in the
