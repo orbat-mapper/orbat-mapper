@@ -52,6 +52,7 @@ import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import {
   importScenarioOverlayLayers,
   previewScenarioOverlayReplacement,
@@ -113,7 +114,7 @@ const layerPreviews = computed(() =>
   ),
 );
 const replacementIds = computed(() => layerPreviews.value.map((p) => p.layerId));
-function previewItemName(id: string, removed: boolean) {
+function previewItemName(id: FeatureId, removed: boolean) {
   const item = (removed ? targetState : importedState.value).layerItemMap[id];
   return item?.name ? `${item.name} (${id})` : id;
 }
