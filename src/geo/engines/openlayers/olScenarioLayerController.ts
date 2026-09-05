@@ -207,8 +207,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     return getScenarioLayersCollection()
       .getArray()
       .find((layer: VectorLayer<any>) => layer.get("id") === layerId) as
-      | VectorLayer<any>
-      | undefined;
+      VectorLayer<any> | undefined;
   }
 
   function getMapOlLayerById(layerId: FeatureId) {
@@ -932,7 +931,12 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       }),
     ];
 
+    const cleanupRestore = scenario.store.onStateRestored?.(() => {
+      clearScenarioLayerVisibilityListeners();
+      refreshManagedLayers({ doClearCache: true, filterVisible: true });
+    });
     cleanupScenarioBinding = () => {
+      cleanupRestore?.off();
       stopObstacleHighlightWatch();
       cleanups.forEach((cleanup) => runCleanup(cleanup));
       clearScenarioLayerVisibilityListeners();
