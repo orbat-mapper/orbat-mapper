@@ -117,7 +117,7 @@ describe("importScenarioOverlayLayers", () => {
       targetStore.state,
       useGeo(targetStore),
       ["control-measures"],
-      () => ids.shift()!,
+      { generateId: () => ids.shift()! },
     );
 
     expect(result).toEqual({
@@ -200,14 +200,9 @@ describe("overlay replacement", () => {
     expect(target.state).toEqual(before);
     for (let i = 0; i < 3; i++) {
       target.groupUpdate(() =>
-        importScenarioOverlayLayers(
-          source,
-          target.state,
-          useGeo(target),
-          ["plan"],
-          undefined,
-          ["plan"],
-        ),
+        importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+          replaceLayerIds: ["plan"],
+        }),
       );
       expect(target.state.layerStack).toEqual(["before", "plan", "after"]);
       expect(Object.keys(target.state.layerItemMap).sort()).toEqual([
@@ -234,14 +229,9 @@ describe("overlay replacement", () => {
     const checkpoint = useImportCheckpoint(target);
     checkpoint.capture();
     target.groupUpdate(() =>
-      importScenarioOverlayLayers(
-        source,
-        target.state,
-        useGeo(target),
-        ["plan"],
-        undefined,
-        ["plan"],
-      ),
+      importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+        replaceLayerIds: ["plan"],
+      }),
     );
     expect(target.state.layerItemMap).toEqual({});
     expect(target.state.layerStackMap.plan).toMatchObject({ items: [] });
@@ -265,14 +255,10 @@ describe("overlay replacement", () => {
     ).state;
     const unrelated = klona(target.state.layerItemMap.collision);
     for (let i = 0; i < 3; i++) {
-      importScenarioOverlayLayers(
-        source,
-        target.state,
-        useGeo(target),
-        ["plan"],
-        () => "remapped",
-        ["plan"],
-      );
+      importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+        generateId: () => "remapped",
+        replaceLayerIds: ["plan"],
+      });
       expect(target.state.layerItemMap.collision).toEqual(unrelated);
       expect(Object.keys(target.state.layerItemMap).sort()).toEqual([
         "collision",
@@ -290,14 +276,9 @@ describe("overlay replacement", () => {
     const source = useNewScenarioStore(scenario("source", [incoming])).state;
     const before = klona(target.state);
     target.groupUpdate(() =>
-      importScenarioOverlayLayers(
-        source,
-        target.state,
-        useGeo(target),
-        [incoming.id],
-        undefined,
-        [incoming.id],
-      ),
+      importScenarioOverlayLayers(source, target.state, useGeo(target), [incoming.id], {
+        replaceLayerIds: [incoming.id],
+      }),
     );
     expect(target.state.layerStackMap[incoming.id]).toMatchObject({
       locked: true,
@@ -319,14 +300,9 @@ describe("overlay replacement", () => {
     const source = useNewScenarioStore(
       scenario("source", [{ ...layer("other", []), name: "plan" }]),
     ).state;
-    importScenarioOverlayLayers(
-      source,
-      target.state,
-      useGeo(target),
-      ["other"],
-      undefined,
-      ["other"],
-    );
+    importScenarioOverlayLayers(source, target.state, useGeo(target), ["other"], {
+      replaceLayerIds: ["other"],
+    });
     expect(target.state.layerStack).toEqual(["plan", "other"]);
   });
 });

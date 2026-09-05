@@ -18,6 +18,13 @@ interface LayerImportGeo {
   updateLayer(layerId: FeatureId, update: ScenarioLayerUpdate): void;
 }
 
+export interface ImportScenarioLayersOptions {
+  /** Id generator used when an incoming layer or item id is already taken. */
+  generateId?: () => string;
+  /** Selected layers whose same-id target layer is replaced instead of copied. */
+  replaceLayerIds?: readonly FeatureId[];
+}
+
 export interface ImportScenarioLayersResult {
   importedLayerIds: string[];
   importedItemIds: FeatureId[];
@@ -53,10 +60,10 @@ export function importScenarioOverlayLayers(
   target: Pick<ScenarioState, "layerStack" | "layerStackMap" | "layerItemMap">,
   geo: LayerImportGeo,
   selectedLayerIds: readonly FeatureId[],
-  generateId: () => string = nanoid,
-  replaceLayerIds: readonly FeatureId[] = [],
+  { generateId = nanoid, replaceLayerIds = [] }: ImportScenarioLayersOptions = {},
 ): ImportScenarioLayersResult {
   const selected = new Set(selectedLayerIds);
+  const replaceIds = new Set(replaceLayerIds);
   const occupiedLayerIds = new Set(Object.keys(target.layerStackMap));
   const occupiedItemIds = new Set(Object.keys(target.layerItemMap));
   const result: ImportScenarioLayersResult = {
@@ -70,8 +77,7 @@ export function importScenarioOverlayLayers(
     if (!sourceLayer || sourceLayer.kind !== "overlay") continue;
 
     const existing = target.layerStackMap[sourceLayer.id];
-    const replace =
-      replaceLayerIds.includes(sourceLayer.id) && existing?.kind === "overlay";
+    const replace = replaceIds.has(sourceLayer.id) && existing?.kind === "overlay";
     const previousIndex = replace ? target.layerStack.indexOf(sourceLayer.id) : -1;
     if (replace) {
       for (const id of existing.items) occupiedItemIds.delete(id);
@@ -125,18 +131,20 @@ export function previewScenarioOverlayReplacement(
   if (incoming?.kind !== "overlay" || existing?.kind !== "overlay") return undefined;
   const oldIds = new Set(existing.items);
   const newIds = new Set(incoming.items);
-  const added = incoming.items.filter((id) => !oldIds.has(id));
-  const removed = existing.items.filter((id) => !newIds.has(id));
-  const changed = incoming.items.filter(
-    (id) =>
-      oldIds.has(id) &&
-      !isEqual(
+  const added: FeatureId[] = [];
+  const changed: FeatureId[] = [];
+  const unchanged: FeatureId[] = [];
+  for (const id of incoming.items) {
+    if (!oldIds.has(id)) added.push(id);
+    else if (
+      isEqual(
         withoutInternalFields(source.layerItemMap[id]),
         withoutInternalFields(target.layerItemMap[id]),
-      ),
-  );
-  const unchanged = incoming.items.filter(
-    (id) => oldIds.has(id) && !changed.includes(id),
-  );
+      )
+    )
+      unchanged.push(id);
+    else changed.push(id);
+  }
+  const removed = existing.items.filter((id) => !newIds.has(id));
   return { layerId, name: existing.name, added, removed, changed, unchanged };
 }

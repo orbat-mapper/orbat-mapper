@@ -96,7 +96,7 @@ const selectedStatuses = ref<UnitStatus[]>([]);
 const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const selectedCustomSymbols = ref<CustomSymbol[]>([]);
 const selectedLayers = ref<ScenarioOverlayLayer[]>([]);
-const layerActions = ref<Record<string, string>>({});
+const layerActions = ref<Record<string, "copy" | "replace">>({});
 const checkpoint = useImportCheckpoint(scnStore);
 const hasCheckpoint = computed(() => !!checkpoint.snapshot.value);
 const matchingLayers = computed(() =>
@@ -107,19 +107,17 @@ const matchingLayers = computed(() =>
 watch(matchingLayers, (layers) => {
   for (const layer of layers) layerActions.value[layer.id] ??= "copy";
 });
-const replacementIds = computed(() =>
-  matchingLayers.value
-    .filter((layer) => layerActions.value[layer.id] === "replace")
-    .map((layer) => layer.id),
-);
 const layerPreviews = computed(() =>
-  replacementIds.value.map((id) =>
-    previewScenarioOverlayReplacement(importedState.value, targetState, id)!,
+  matchingLayers.value.flatMap((layer) =>
+    layerActions.value[layer.id] === "replace"
+      ? (previewScenarioOverlayReplacement(importedState.value, targetState, layer.id) ??
+        [])
+      : [],
   ),
 );
+const replacementIds = computed(() => layerPreviews.value.map((p) => p.layerId));
 function restoreImportCheckpoint() {
   if (checkpoint.restore()) {
-    time.setCurrentTime(targetState.currentTime);
     send({ message: "Restored pre-import checkpoint", type: "success" });
   }
 }
@@ -499,6 +497,7 @@ function isUnit(item: Unit | SideGroup): item is Unit {
 }
 
 async function onFormSubmit() {
+  let didReplaceLayers = false;
   const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
   console.log("import mode", importMode.value);
   if (importMode.value === "equipment") {
@@ -512,7 +511,8 @@ async function onFormSubmit() {
   } else if (importMode.value === "customSymbols") {
     doCustomSymbolImport(selectedCustomSymbols.value);
   } else if (importMode.value === "layers") {
-    if (replacementIds.value.length) checkpoint.capture();
+    didReplaceLayers = replacementIds.value.length > 0;
+    if (didReplaceLayers) checkpoint.capture();
     scnStore.groupUpdate(
       () => {
         importScenarioOverlayLayers(
@@ -520,8 +520,7 @@ async function onFormSubmit() {
           targetState,
           geo,
           selectedLayers.value.map((layer) => layer.id),
-          undefined,
-          replacementIds.value,
+          { replaceLayerIds: replacementIds.value },
         );
       },
       { label: "batchLayer", value: "scenario-import" },
@@ -537,10 +536,9 @@ async function onFormSubmit() {
   targetState.unitStateCounter++;
 
   send({
-    message:
-      replacementIds.value.length && importMode.value === "layers"
-        ? "Imported layers. Restore the pre-import checkpoint from the scenario import dialog, or use Undo."
-        : "Imported data from scenario",
+    message: didReplaceLayers
+      ? "Imported layers. Restore the pre-import checkpoint from the scenario import dialog, or use Undo."
+      : "Imported data from scenario",
     type: "success",
   });
 
@@ -773,13 +771,15 @@ function doGroupImport(importedGroupId: string) {
     </template>
 
     <template #sidebar>
-      <BaseButton v-if="hasCheckpoint" small @click="restoreImportCheckpoint">
-        Restore pre-import checkpoint
-      </BaseButton>
-      <p v-if="hasCheckpoint" class="text-muted-foreground text-sm">
-        Restores the whole scenario, including undoing edits made since the latest
-        replacement. Available until the scenario is closed.
-      </p>
+      <div v-if="hasCheckpoint">
+        <BaseButton small @click="restoreImportCheckpoint">
+          Restore pre-import checkpoint
+        </BaseButton>
+        <p class="text-muted-foreground text-sm">
+          Restores the whole scenario, including undoing edits made since the latest
+          replacement. Available until the scenario is closed.
+        </p>
+      </div>
       <!-- Source Scenario Section -->
       <Card>
         <CardHeader class="py-3">

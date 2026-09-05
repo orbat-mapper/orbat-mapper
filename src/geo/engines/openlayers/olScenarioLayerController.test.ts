@@ -60,6 +60,7 @@ describe("useOlScenarioLayerController", () => {
       },
       store: {
         onUndoRedo: vi.fn(() => ({ off })),
+        onStateRestored: vi.fn(() => ({ off })),
       },
     } as any;
 
