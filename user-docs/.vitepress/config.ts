@@ -1,7 +1,12 @@
-import { DefaultTheme, defineConfig } from "vitepress";
+import { DefaultTheme } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 import Tailwind from "@tailwindcss/vite";
 
-export default defineConfig({
+export default withMermaid({
+  mermaid: {
+    htmlLabels: false,
+    flowchart: { htmlLabels: false },
+  },
   cleanUrls: true,
   title: "ORBAT Mapper",
   description: "",
@@ -15,6 +20,7 @@ export default defineConfig({
       target: "esnext",
     },
     optimizeDeps: {
+      include: ["mermaid"],
       esbuildOptions: {
         target: "esnext",
       },
@@ -31,6 +37,11 @@ export default defineConfig({
     ],
     nav: [
       { text: "Guide", link: "/guide/about-orbat-mapper", activeMatch: "/guide/" },
+      {
+        text: "Wargaming tutorial",
+        link: "/wargaming/team-game",
+        activeMatch: "/wargaming/",
+      },
       //{ text: "Tutorial", link: "/tutorial/introduction", activeMatch: "/tutorial/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
       { text: "Support", link: "/support", activeMatch: "/support" },
@@ -44,6 +55,15 @@ export default defineConfig({
       "/guide/": { base: "/guide/", items: sidebarGuide() },
       "/resources/": { base: "/resources/", items: sidebarResources() },
       "/tutorial/": { base: "/tutorial/", items: sidebarTutorial() },
+      "/wargaming/": {
+        base: "/wargaming/",
+        items: [
+          {
+            text: "Wargaming tutorial",
+            items: [{ text: "Run a two-team game", link: "team-game" }],
+          },
+        ],
+      },
     },
     search: {
       provider: "local",

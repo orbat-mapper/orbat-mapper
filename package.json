@@ -156,6 +156,7 @@
     "eslint-plugin-vue": "~10.5.1",
     "jiti": "^2.7.0",
     "jsdom": "^27.4.0",
+    "mermaid": "^11.17.2",
     "milstandard-e": "0.2.14",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.9.6",
@@ -167,6 +168,7 @@
     "vite-plugin-singlefile": "^2.3.3",
     "vite-plugin-vue-devtools": "^8.2.1",
     "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^4.1.11",
     "vue-tsc": "^3.3.11"
   },
