@@ -1,3 +1,4 @@
+import { isEqual } from "es-toolkit";
 import { nanoid } from "@/utils";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
@@ -12,6 +13,8 @@ interface LayerImportGeo {
     layerId: FeatureId,
     options?: { allowSpecializationMismatch?: boolean },
   ): FeatureId | undefined;
+  deleteLayer(layerId: FeatureId): void;
+  moveLayer(layerId: FeatureId, toIndex: number): void;
   updateLayer(layerId: FeatureId, update: ScenarioLayerUpdate): void;
 }
 
@@ -47,10 +50,11 @@ function availableId(
  */
 export function importScenarioOverlayLayers(
   source: ScenarioState,
-  target: Pick<ScenarioState, "layerStackMap" | "layerItemMap">,
+  target: Pick<ScenarioState, "layerStack" | "layerStackMap" | "layerItemMap">,
   geo: LayerImportGeo,
   selectedLayerIds: readonly FeatureId[],
   generateId: () => string = nanoid,
+  replaceLayerIds: readonly FeatureId[] = [],
 ): ImportScenarioLayersResult {
   const selected = new Set(selectedLayerIds);
   const occupiedLayerIds = new Set(Object.keys(target.layerStackMap));
@@ -65,6 +69,15 @@ export function importScenarioOverlayLayers(
     const sourceLayer = source.layerStackMap[sourceLayerId];
     if (!sourceLayer || sourceLayer.kind !== "overlay") continue;
 
+    const existing = target.layerStackMap[sourceLayer.id];
+    const replace =
+      replaceLayerIds.includes(sourceLayer.id) && existing?.kind === "overlay";
+    const previousIndex = replace ? target.layerStack.indexOf(sourceLayer.id) : -1;
+    if (replace) {
+      for (const id of existing.items) occupiedItemIds.delete(id);
+      geo.deleteLayer(sourceLayer.id);
+      occupiedLayerIds.delete(sourceLayer.id);
+    }
     const layerId = availableId(sourceLayer.id, occupiedLayerIds, generateId);
     const { items, locked, ...layerFields } = withoutInternalFields(sourceLayer);
     const addedLayer = geo.addLayer({
@@ -76,6 +89,7 @@ export function importScenarioOverlayLayers(
       locked: false,
     });
     if (!addedLayer) continue;
+    if (previousIndex >= 0) geo.moveLayer(layerId, previousIndex);
     result.importedLayerIds.push(layerId);
 
     for (const sourceItemId of items) {
@@ -98,4 +112,31 @@ export function importScenarioOverlayLayers(
   }
 
   return result;
+}
+
+/** Read-only replacement preview; authored fields include geometry, styling and history. */
+export function previewScenarioOverlayReplacement(
+  source: ScenarioState,
+  target: ScenarioState,
+  layerId: string,
+) {
+  const incoming = source.layerStackMap[layerId];
+  const existing = target.layerStackMap[layerId];
+  if (incoming?.kind !== "overlay" || existing?.kind !== "overlay") return undefined;
+  const oldIds = new Set(existing.items);
+  const newIds = new Set(incoming.items);
+  const added = incoming.items.filter((id) => !oldIds.has(id));
+  const removed = existing.items.filter((id) => !newIds.has(id));
+  const changed = incoming.items.filter(
+    (id) =>
+      oldIds.has(id) &&
+      !isEqual(
+        withoutInternalFields(source.layerItemMap[id]),
+        withoutInternalFields(target.layerItemMap[id]),
+      ),
+  );
+  const unchanged = incoming.items.filter(
+    (id) => oldIds.has(id) && !changed.includes(id),
+  );
+  return { layerId, name: existing.name, added, removed, changed, unchanged };
 }

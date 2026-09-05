@@ -52,7 +52,11 @@ import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
-import { importScenarioOverlayLayers } from "@/importexport/importScenarioLayers";
+import { useImportCheckpoint } from "@/importexport/importCheckpoint";
+import {
+  importScenarioOverlayLayers,
+  previewScenarioOverlayReplacement,
+} from "@/importexport/importScenarioLayers";
 
 interface Props {
   data: Scenario;
@@ -92,6 +96,37 @@ const selectedStatuses = ref<UnitStatus[]>([]);
 const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const selectedCustomSymbols = ref<CustomSymbol[]>([]);
 const selectedLayers = ref<ScenarioOverlayLayer[]>([]);
+const layerActions = ref<Record<string, string>>({});
+const checkpoint = useImportCheckpoint(scnStore);
+const hasCheckpoint = computed(() => !!checkpoint.snapshot.value);
+const matchingLayers = computed(() =>
+  selectedLayers.value.filter(
+    (layer) => targetState.layerStackMap[layer.id]?.kind === "overlay",
+  ),
+);
+watch(matchingLayers, (layers) => {
+  for (const layer of layers) layerActions.value[layer.id] ??= "copy";
+});
+const replacementIds = computed(() =>
+  matchingLayers.value
+    .filter((layer) => layerActions.value[layer.id] === "replace")
+    .map((layer) => layer.id),
+);
+const layerPreviews = computed(() =>
+  replacementIds.value.map((id) =>
+    previewScenarioOverlayReplacement(importedState.value, targetState, id)!,
+  ),
+);
+function restoreImportCheckpoint() {
+  if (checkpoint.restore()) {
+    time.setCurrentTime(targetState.currentTime);
+    send({ message: "Restored pre-import checkpoint", type: "success" });
+  }
+}
+function previewItemName(id: string, removed: boolean) {
+  const item = (removed ? targetState : importedState.value).layerItemMap[id];
+  return item?.name ? `${item.name} (${id})` : id;
+}
 const importedState = computed(() => {
   return prepareScenario(props.data);
 });
@@ -477,14 +512,20 @@ async function onFormSubmit() {
   } else if (importMode.value === "customSymbols") {
     doCustomSymbolImport(selectedCustomSymbols.value);
   } else if (importMode.value === "layers") {
-    scnStore.groupUpdate(() => {
-      importScenarioOverlayLayers(
-        importedState.value,
-        targetState,
-        geo,
-        selectedLayers.value.map((layer) => layer.id),
-      );
-    });
+    if (replacementIds.value.length) checkpoint.capture();
+    scnStore.groupUpdate(
+      () => {
+        importScenarioOverlayLayers(
+          importedState.value,
+          targetState,
+          geo,
+          selectedLayers.value.map((layer) => layer.id),
+          undefined,
+          replacementIds.value,
+        );
+      },
+      { label: "batchLayer", value: "scenario-import" },
+    );
   } else if (unitImportMode.value === "state-only") {
     doStateOnlyImport(selectedUnitIds);
   } else if (importMode.value === "side" && selectedSourceSideId.value) {
@@ -496,7 +537,10 @@ async function onFormSubmit() {
   targetState.unitStateCounter++;
 
   send({
-    message: "Imported data from scenario",
+    message:
+      replacementIds.value.length && importMode.value === "layers"
+        ? "Imported layers. Restore the pre-import checkpoint from the scenario import dialog, or use Undo."
+        : "Imported data from scenario",
     type: "success",
   });
 
@@ -729,6 +773,13 @@ function doGroupImport(importedGroupId: string) {
     </template>
 
     <template #sidebar>
+      <BaseButton v-if="hasCheckpoint" small @click="restoreImportCheckpoint">
+        Restore pre-import checkpoint
+      </BaseButton>
+      <p v-if="hasCheckpoint" class="text-muted-foreground text-sm">
+        Restores the whole scenario, including undoing edits made since the latest
+        replacement. Available until the scenario is closed.
+      </p>
       <!-- Source Scenario Section -->
       <Card>
         <CardHeader class="py-3">
@@ -770,6 +821,19 @@ function doGroupImport(importedGroupId: string) {
         </FieldSet>
       </FieldGroup>
 
+      <FieldGroup v-if="importMode === 'layers' && matchingLayers.length">
+        <FieldSelect
+          v-for="layer in matchingLayers"
+          :key="layer.id"
+          v-model="layerActions[layer.id]"
+          :label="layer.name"
+          :items="[
+            { value: 'copy', label: 'Import as a separate copy' },
+            { value: 'replace', label: 'Replace existing layer' },
+          ]"
+          description="Matched by layer ID."
+        />
+      </FieldGroup>
       <!-- Source Selection (for unit imports) -->
       <template v-if="isUnitImport">
         <!-- Import Content Options -->
@@ -940,6 +1004,33 @@ function doGroupImport(importedGroupId: string) {
       </template>
 
       <template v-else-if="importMode === 'layers'">
+        <section
+          v-if="layerPreviews.length"
+          aria-label="Layer replacement preview"
+          class="mb-4 max-h-64 shrink-0 overflow-auto"
+        >
+          <p>
+            Replacement preview: incoming properties and all contents replace the existing
+            layer, including lock state and history. Missing items are removed. A
+            pre-import checkpoint will be saved.
+          </p>
+          <details v-for="preview in layerPreviews" :key="preview.layerId" class="mt-2">
+            <summary>
+              {{ preview.name }} ({{ preview.layerId }}):
+              {{ preview.added.length }} added, {{ preview.changed.length }} changed,
+              {{ preview.removed.length }} removed,
+              {{ preview.unchanged.length }} unchanged
+            </summary>
+            <div v-for="kind in ['added', 'changed', 'removed'] as const" :key="kind">
+              <p>{{ kind }}</p>
+              <ul class="list-inside list-disc">
+                <li v-for="id in preview[kind]" :key="id">
+                  {{ previewItemName(id, kind === "removed") }}
+                </li>
+              </ul>
+            </div>
+          </details>
+        </section>
         <DataGrid
           :data="importedLayers"
           :columns="layerColumns"

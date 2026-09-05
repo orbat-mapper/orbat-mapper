@@ -1149,6 +1149,10 @@ export function createMapLibreScenarioLayerController(
       }
     });
 
+    const cleanupRestore = scenario.store.onStateRestored?.(() => {
+      refreshMapLayers();
+      refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+    });
     const cleanupUndoRedo = scenario.store.onUndoRedo(({ action, meta }) => {
       if (!meta) return;
       if (undoActionLabels.includes(meta.label as ActionLabel)) {
@@ -1166,6 +1170,7 @@ export function createMapLibreScenarioLayerController(
       cleanupMapLayers.off();
       cleanupFeatureLayers.off();
       cleanupUndoRedo.off();
+      cleanupRestore?.off();
       stopObstacleHighlightWatch();
       mlMap.off("style.load", onStyleLoad);
       for (const layerId of [...activeImageLayerIds]) {
