@@ -10,35 +10,26 @@ import {
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { computed, h, ref, watch } from "vue";
+import { klona } from "klona";
 import BaseButton from "@/components/BaseButton.vue";
-import { createNameToIdMap, injectStrict, moveItemMutable } from "@/utils";
+import { createNameToIdMap, injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type {
   CustomSymbol,
   Scenario,
-  SideGroup,
-  Unit,
   UnitEquipment,
   UnitPersonnel,
   UnitStatus,
-  UnitSymbolOptions,
 } from "@/types/scenarioModels";
-import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { useBrowserScenarios } from "@/composables/browserScenarios";
-import type { SelectItem } from "@/components/types";
 import { prepareScenario } from "@/scenariostore/newScenarioStore";
-import type { CellContext, ColumnDef } from "@tanstack/vue-table";
-import OrbatCellRenderer from "@/components/OrbatCellRenderer.vue";
+import type { ColumnDef } from "@tanstack/vue-table";
 import DataGrid from "@/modules/grid/DataGrid.vue";
 import ToggleField from "@/components/ToggleField.vue";
-import type { NSideGroup, NSupplyCategory, NUnit } from "@/types/internalModels";
+import type { NSupplyCategory } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
-import { ChevronRightIcon } from "@heroicons/vue/20/solid";
-import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useImportStore } from "@/stores/importExportStore";
-import { addUnitHierarchy } from "@/importexport/convertUtils";
-import dayjs from "dayjs";
-import InlineAlertWarning from "@/components/InlineAlertWarning.vue";
+import ScenarioImportContribution from "@/components/ScenarioImportContribution.vue";
 import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
 import {
   Card,
@@ -63,6 +54,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const contributionOptions = ref<HTMLElement | null>(null);
+const contributionActions = ref<HTMLElement | null>(null);
 const emit = defineEmits(["cancel", "loaded"]);
 const activeScenario = injectStrict(activeScenarioKey);
 const { unitActions, settings, store: scnStore, time, geo } = activeScenario;
@@ -83,13 +76,6 @@ const importMode = ref<
   | "supplyCategories"
   | "customSymbols"
 >("side");
-const unitImportMode = ref<"units-only" | "units-and-state" | "state-only">(
-  "units-and-state",
-);
-const stateMergeMode = ref<"replace" | "add_new">("replace");
-const sideMergeMode = ref<"replace" | "add_new">("replace");
-const groupMergeMode = ref<"replace" | "add_new">("add_new");
-const selectedItems = ref<(Unit | SideGroup)[]>([]);
 const selectedEquipment = ref<UnitEquipment[]>([]);
 const selectedPersonnel = ref<UnitPersonnel[]>([]);
 const selectedStatuses = ref<UnitStatus[]>([]);
@@ -119,34 +105,8 @@ function previewItemName(id: FeatureId, removed: boolean) {
   return item?.name ? `${item.name} (${id})` : id;
 }
 const importedState = computed(() => {
-  return prepareScenario(props.data);
+  return prepareScenario(klona(props.data));
 });
-
-const fmt = useTimeFormatStore();
-
-function getCombinedSymbolOptions(
-  unitOrSideGroup: NUnit | NSideGroup,
-  ignoreUnit = false,
-): UnitSymbolOptions {
-  if (!unitOrSideGroup) return {};
-  const state = importedState.value;
-  let _sid, _gid, reinforcedReduced;
-  if ("sidc" in unitOrSideGroup) {
-    _sid = unitOrSideGroup._sid;
-    _gid = unitOrSideGroup._gid;
-    reinforcedReduced = mapReinforcedStatus2Field(unitOrSideGroup.reinforcedStatus);
-  } else {
-    _sid = unitOrSideGroup._pid;
-    _gid = unitOrSideGroup.id;
-    ignoreUnit = true;
-  }
-  return {
-    ...(state.sideMap[_sid!]?.symbolOptions || {}),
-    ...(state.sideGroupMap[_gid!]?.symbolOptions || {}),
-    ...(ignoreUnit ? {} : unitOrSideGroup.symbolOptions || {}),
-    ...(ignoreUnit ? {} : { reinforcedReduced: reinforcedReduced ?? "" }),
-  };
-}
 
 const stats = computed(() => {
   return {
@@ -158,62 +118,6 @@ const stats = computed(() => {
 const importedLayers = computed(() =>
   props.data.layerStack.filter(isScenarioOverlayLayer),
 );
-
-const importedSides = computed((): SelectItem[] => {
-  return importedState.value.sides
-    .map((id) => importedState.value.sideMap[id])
-    .map((side) => {
-      return {
-        label: side.name,
-        value: side.id,
-      };
-    });
-});
-
-const targetSides = computed((): SelectItem[] => {
-  return targetState.sides
-    .map((id) => targetState.sideMap[id])
-    .map((side) => {
-      return {
-        label: side.name,
-        value: side.id,
-      };
-    });
-});
-
-const importedSideGroups = computed(() => {
-  const sideId = selectedSourceSideId.value;
-  if (!sideId) return [];
-  const side = importedState.value.sideMap[sideId];
-  if (!side) return [];
-  return side.groups
-    .map((id) => importedState.value.sideGroupMap[id])
-    .map((sideGroup) => {
-      return {
-        label: sideGroup.name,
-        value: sideGroup.id,
-      };
-    });
-});
-
-const selectedSourceSideId = ref(importedSides.value[0]?.value as string);
-const selectedTargetSideId = ref(targetSides.value[0]?.value as string);
-const selectedSourceSideGroupId = ref(importedSideGroups.value[0]?.value as string);
-
-const selectedSourceSide = computed(() => {
-  return props.data.sides.find((s) => s.id === selectedSourceSideId.value);
-});
-
-const currentData = computed(() => {
-  const s = props.data.sides.find((s) => s.id === selectedSourceSideId.value);
-
-  if (importMode.value === "side") {
-    return [...(s?.groups ?? []), ...(s?.subUnits ?? [])];
-  }
-
-  const sg = s?.groups.find((g) => g.id === selectedSourceSideGroupId.value);
-  return sg?.subUnits ?? [];
-});
 
 const currentEquipment = computed(() => {
   return props.data.equipment ?? [];
@@ -234,23 +138,6 @@ const currentSupplyCategories = computed(() => {
 const currentCustomIcons = computed(() => {
   return Object.values(importedState.value.customSymbolMap);
 });
-
-const hasExistingUnits = computed(() => {
-  return selectedItems.value.some((item) => item.id in targetState.unitMap);
-});
-
-const hasExistingSide = computed(() => {
-  return selectedSourceSideId.value in targetState.sideMap;
-});
-
-const hasExistingSideGroup = computed(() => {
-  return selectedSourceSideGroupId.value in targetState.sideGroupMap;
-});
-
-const wantsToImportState = computed(
-  () =>
-    unitImportMode.value === "units-and-state" || unitImportMode.value === "state-only",
-);
 
 const sources = [
   { value: "side", label: "Side" },
@@ -275,103 +162,6 @@ const sources = [
 const isUnitImport = computed(() =>
   ["side", "group", "units"].includes(importMode.value),
 );
-
-watch(selectedSourceSideId, (newSide) => {
-  const side = importedState.value.sideMap[newSide];
-  selectedSourceSideGroupId.value = side.groups[0];
-});
-
-watch(hasExistingUnits, (exists) => {
-  if (!exists && unitImportMode.value === "state-only") {
-    unitImportMode.value = "units-and-state";
-  }
-});
-
-function renderExpandCell({ getValue, row }: CellContext<Unit, string>) {
-  const symbolOptions: UnitSymbolOptions & { customSymbolMap?: Record<string, unknown> } =
-    getCombinedSymbolOptions(importedState.value.unitMap[row.original.id]);
-  symbolOptions.customSymbolMap = importedState.value.customSymbolMap ?? {};
-
-  return h(OrbatCellRenderer, {
-    value: getValue(),
-    sidc: row.original.sidc,
-    expanded: row.getIsExpanded(),
-    level: row.depth,
-    canExpand: row.getCanExpand(),
-    onToggle: row.getToggleExpandedHandler(),
-    symbolOptions,
-  });
-}
-
-const computedColumns = computed((): (ColumnDef<Unit> | false)[] => {
-  return [
-    {
-      accessorFn: (f) => f.name,
-      id: "name",
-      cell: renderExpandCell,
-      header: ({ table }) => {
-        return h(
-          "button",
-          {
-            type: "button",
-            title: "Expand/collapse all",
-            onClick: table.getToggleAllRowsExpandedHandler(),
-            class: "flex items-center gap-2",
-          },
-          [
-            h(ChevronRightIcon, {
-              class: [
-                "size-6 transform transition-transform text-muted-foreground",
-                table.getIsAllRowsExpanded() ? "rotate-90" : "",
-              ],
-            }),
-            "Name",
-          ],
-        );
-      },
-      enableGlobalFilter: false,
-      size: 350,
-      enableSorting: false,
-    },
-    {
-      accessorFn: (f) =>
-        f.state?.length
-          ? fmt.trackFormatter.format(+new Date(f.state[f.state.length - 1].t)) +
-            ` (${f.state.length})`
-          : "",
-      id: "t",
-      header: "Last state entry",
-      enableSorting: false,
-      size: 235,
-    },
-    {
-      accessorFn: (f) =>
-        f.id in targetState.unitMap || f.id in targetState.sideGroupMap ? "Yes" : "No",
-      id: "exists",
-      header: "Exists?",
-      enableSorting: false,
-      size: 90,
-    },
-
-    {
-      accessorFn: (f) => {
-        if (!f.state?.length) return "";
-        const existingUnit = targetState.unitMap[f.id];
-        if (!existingUnit) return "";
-        if (!existingUnit.state?.length) return "";
-        const lastTimestamp = existingUnit.state[existingUnit.state.length - 1].t;
-        const lastSourceTimestamp = f.state[f.state.length - 1].t;
-        const diff = +new Date(lastSourceTimestamp) - lastTimestamp;
-        if (diff === 0) return "";
-        return dayjs.duration(diff).toISOString();
-      },
-
-      id: "diff",
-      header: "Diff",
-      enableSorting: false,
-    },
-  ];
-});
 
 const equipmentColumns: ColumnDef<UnitEquipment>[] = [
   {
@@ -484,14 +274,8 @@ const layerColumns: ColumnDef<ScenarioOverlayLayer>[] = [
   },
 ];
 
-// check that the item is a unit
-function isUnit(item: Unit | SideGroup): item is Unit {
-  return "sidc" in item;
-}
-
 async function onFormSubmit() {
   let didReplaceLayers = false;
-  const selectedUnitIds = new Set(selectedItems.value.filter(isUnit).map((u) => u.id));
   console.log("import mode", importMode.value);
   if (importMode.value === "equipment") {
     doEquipmentImport(selectedEquipment.value);
@@ -517,12 +301,6 @@ async function onFormSubmit() {
       },
       { label: "batchLayer", value: "scenario-import" },
     );
-  } else if (unitImportMode.value === "state-only") {
-    doStateOnlyImport(selectedUnitIds);
-  } else if (importMode.value === "side" && selectedSourceSideId.value) {
-    doSideImport(selectedSourceSideId.value);
-  } else if (importMode.value === "group" && selectedSourceSideGroupId.value) {
-    doGroupImport(selectedSourceSideGroupId.value);
   }
   time.setCurrentTime(targetState.currentTime);
   targetState.unitStateCounter++;
@@ -623,127 +401,6 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
     }
   });
 }
-
-function doStateOnlyImport(selectedUnitIds: Set<string>) {
-  scnStore.groupUpdate(() => {
-    for (const importedUnitId of selectedUnitIds) {
-      const importedUnit = importedState.value.unitMap[importedUnitId];
-      if (!importedUnit || !importedUnit.state?.length) {
-        continue;
-      }
-      const existingUnit = targetState.unitMap[importedUnit.id];
-      if (!existingUnit) {
-        continue;
-      }
-      if (stateMergeMode.value === "replace" || !existingUnit.state?.length) {
-        unitActions.setUnitState(existingUnit.id, importedUnit.state);
-      } else {
-        const lastTimestamp = existingUnit.state[existingUnit.state.length - 1].t;
-        const newStates = importedUnit.state.filter((s) => s.t > lastTimestamp);
-        if (newStates.length) {
-          unitActions.setUnitState(existingUnit.id, [
-            ...existingUnit.state,
-            ...newStates,
-          ]);
-        }
-      }
-    }
-  });
-}
-
-function doSideImport(importedSideId: string) {
-  const sideAlreadyExists = hasExistingSide.value;
-
-  const importedSide = importedState.value.sideMap[importedSideId];
-  const createNewId = sideAlreadyExists && sideMergeMode.value === "add_new";
-
-  scnStore.groupUpdate(() => {
-    let deletedSideIndex = -1;
-    if (sideAlreadyExists && sideMergeMode.value === "replace") {
-      deletedSideIndex = targetState.sides.findIndex((id) => id === importedSideId);
-      unitActions.deleteSide(importedSideId);
-    }
-
-    const addedSideId = unitActions.addSide(importedSide, {
-      addDefaultGroup: false,
-      markAsNew: false,
-      newId: createNewId,
-    });
-    if (deletedSideIndex !== -1) {
-      const nextSideId = targetState.sides[deletedSideIndex + 1];
-      if (nextSideId) unitActions.moveSide(addedSideId, nextSideId, "above");
-    }
-    for (const item of currentData.value) {
-      if (isUnit(item)) {
-        addUnitHierarchy(item, addedSideId, activeScenario, {
-          newIds: createNewId,
-          includeState: unitImportMode.value === "units-and-state",
-          sourceState: importedState.value,
-        });
-        continue;
-      }
-      const groupId = item.id;
-      const importedGroup = importedState.value.sideGroupMap[groupId];
-      const addedGroupId = unitActions.addSideGroup(
-        addedSideId,
-        { ...importedGroup, _isNew: false },
-        {
-          newId: createNewId,
-        },
-      );
-      if (!item.subUnits || !addedGroupId) continue;
-      for (const unit of item.subUnits) {
-        addUnitHierarchy(unit, addedGroupId, activeScenario, {
-          newIds: createNewId,
-          includeState: unitImportMode.value === "units-and-state",
-          sourceState: importedState.value,
-        });
-      }
-    }
-  });
-}
-
-function doGroupImport(importedGroupId: string) {
-  const importedGroup = importedState.value.sideGroupMap[importedGroupId];
-  const targetSideId = selectedTargetSideId.value;
-  if (!importedGroup) return;
-  const groupAlreadyExists = importedGroupId in targetState.sideGroupMap;
-  const createNewId = groupAlreadyExists && groupMergeMode.value === "add_new";
-
-  scnStore.groupUpdate(() => {
-    let deletedGroupIndex = -1;
-    if (groupAlreadyExists && groupMergeMode.value === "replace") {
-      deletedGroupIndex = targetState.sideMap[targetSideId].groups.findIndex(
-        (id) => id === importedGroupId,
-      );
-      unitActions.deleteSideGroup(importedGroupId);
-    }
-
-    const importedGroup = importedState.value.sideGroupMap[importedGroupId];
-    const addedGroupId = unitActions.addSideGroup(
-      targetSideId,
-      { ...importedGroup, _isNew: false },
-      {
-        newId: createNewId,
-      },
-    );
-    if (!addedGroupId) return;
-    if (deletedGroupIndex !== -1) {
-      scnStore.update((s) => {
-        const groups = s.sideMap[targetSideId].groups;
-        moveItemMutable(groups, groups.length - 1, deletedGroupIndex);
-      });
-    }
-
-    for (const unit of currentData.value as Unit[]) {
-      addUnitHierarchy(unit, addedGroupId, activeScenario, {
-        newIds: createNewId,
-        includeState: unitImportMode.value === "units-and-state",
-        sourceState: importedState.value,
-      });
-    }
-  });
-}
 </script>
 <template>
   <ImportStepLayout
@@ -757,7 +414,13 @@ function doGroupImport(importedGroupId: string) {
       <BaseButton small @click="emit('cancel')" class="flex-1 sm:flex-none"
         >Cancel</BaseButton
       >
-      <BaseButton primary small @click="onFormSubmit" class="flex-1 sm:flex-none"
+      <div v-show="isUnitImport" ref="contributionActions" />
+      <BaseButton
+        v-if="!isUnitImport"
+        primary
+        small
+        @click="onFormSubmit"
+        class="flex-1 sm:flex-none"
         >Import</BaseButton
       >
     </template>
@@ -804,6 +467,7 @@ function doGroupImport(importedGroupId: string) {
         </FieldSet>
       </FieldGroup>
 
+      <div v-show="isUnitImport" ref="contributionOptions" />
       <FieldGroup v-if="importMode === 'layers' && matchingLayers.length">
         <FieldSelect
           v-for="layer in matchingLayers"
@@ -817,174 +481,18 @@ function doGroupImport(importedGroupId: string) {
           description="Matched by layer ID."
         />
       </FieldGroup>
-      <!-- Source Selection (for unit imports) -->
-      <template v-if="isUnitImport">
-        <!-- Import Content Options -->
-        <FieldSet>
-          <FieldLabel>Content to import</FieldLabel>
-          <RadioGroup v-model="unitImportMode" class="mt-2 flex flex-col gap-2">
-            <FieldLabel for="units-only">
-              <Field orientation="horizontal">
-                <RadioGroupItem id="units-only" value="units-only" />
-                <FieldContent>
-                  <FieldTitle>Units only</FieldTitle>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
-            <FieldLabel for="units-and-state">
-              <Field orientation="horizontal">
-                <RadioGroupItem id="units-and-state" value="units-and-state" />
-                <FieldContent>
-                  <FieldTitle>Units with state</FieldTitle>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
-            <FieldLabel v-if="hasExistingUnits" for="state-only">
-              <Field orientation="horizontal">
-                <RadioGroupItem id="state-only" value="state-only" />
-                <FieldContent>
-                  <FieldTitle>State only (update existing)</FieldTitle>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
-          </RadioGroup>
-        </FieldSet>
-
-        <!-- Conflict Resolution Section -->
-        <FieldSet v-if="hasExistingSide || hasExistingSideGroup || hasExistingUnits">
-          <FieldLabel>Conflict resolution</FieldLabel>
-
-          <!-- Side conflict -->
-          <div
-            v-if="
-              hasExistingSide && importMode === 'side' && unitImportMode !== 'state-only'
-            "
-            class="space-y-2"
-          >
-            <InlineAlertWarning class="text-xs"
-              >Side "{{ selectedSourceSide?.name }}" already exists.</InlineAlertWarning
-            >
-            <RadioGroup v-model="sideMergeMode" class="flex flex-col gap-2">
-              <FieldLabel for="side-replace">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="side-replace" value="replace" />
-                  <FieldContent>
-                    <FieldTitle>Replace existing</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-              <FieldLabel for="side-add_new">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="side-add_new" value="add_new" />
-                  <FieldContent>
-                    <FieldTitle>Create new side</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-            </RadioGroup>
-          </div>
-
-          <!-- Group conflict -->
-          <div
-            v-if="
-              hasExistingSideGroup &&
-              importMode === 'group' &&
-              unitImportMode !== 'state-only'
-            "
-            class="space-y-2"
-          >
-            <InlineAlertWarning class="text-xs"
-              >Group already exists in target scenario.</InlineAlertWarning
-            >
-            <RadioGroup v-model="groupMergeMode" class="flex flex-col gap-2">
-              <FieldLabel for="group-replace">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="group-replace" value="replace" />
-                  <FieldContent>
-                    <FieldTitle>Replace existing</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-              <FieldLabel for="group-add_new">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="group-add_new" value="add_new" />
-                  <FieldContent>
-                    <FieldTitle>Create new group</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-            </RadioGroup>
-            <FieldSelect
-              v-if="groupMergeMode !== 'replace'"
-              label="Target side"
-              :items="targetSides"
-              v-model="selectedTargetSideId"
-            />
-          </div>
-
-          <!-- Unit conflicts (state import) -->
-          <div
-            v-if="
-              hasExistingUnits && wantsToImportState && unitImportMode == 'state-only'
-            "
-            class="space-y-2"
-          >
-            <InlineAlertWarning class="text-xs"
-              >Some units exist in both scenarios.</InlineAlertWarning
-            >
-            <RadioGroup v-model="stateMergeMode" class="flex flex-col gap-2">
-              <FieldLabel for="state-replace">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="state-replace" value="replace" />
-                  <FieldContent>
-                    <FieldTitle>Replace existing state</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-              <FieldLabel for="state-add_new">
-                <Field orientation="horizontal">
-                  <RadioGroupItem id="state-add_new" value="add_new" />
-                  <FieldContent>
-                    <FieldTitle>Add new state only</FieldTitle>
-                  </FieldContent>
-                </Field>
-              </FieldLabel>
-            </RadioGroup>
-          </div>
-        </FieldSet>
-      </template>
     </template>
 
     <!-- Main content: Data grids -->
     <div class="flex h-full min-h-0 flex-col p-6">
-      <template v-if="isUnitImport">
-        <div class="mb-4 flex gap-4">
-          <FieldSelect
-            class="w-64"
-            label="Side"
-            :items="importedSides"
-            v-model="selectedSourceSideId"
-          />
-          <FieldSelect
-            v-if="importMode === 'group' || importMode === 'units'"
-            class="w-64"
-            label="Group"
-            v-model="selectedSourceSideGroupId"
-            :items="importedSideGroups"
-          />
-        </div>
-        <DataGrid
-          :key="selectedSourceSideGroupId"
-          :data="currentData"
-          :columns="computedColumns"
-          :row-height="40"
-          class="flex-1"
-          :get-sub-rows="(row) => row.subUnits ?? row.groups"
-          select-all
-          v-model:selected="selectedItems"
-          no-indeterminate
-        />
-      </template>
+      <ScenarioImportContribution
+        v-if="isUnitImport"
+        :data="data"
+        :options-target="contributionOptions"
+        :actions-target="contributionActions"
+        :mode="importMode === 'side' ? 'side' : 'group'"
+        @applied="!store.keepOpen && emit('loaded')"
+      />
 
       <template v-else-if="importMode === 'layers'">
         <section
