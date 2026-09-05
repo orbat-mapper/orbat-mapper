@@ -375,6 +375,12 @@ export function createMapLibreScenarioLayerController(
     reorderScenarioStackLayers();
   }
 
+  /** Rebuild every map and scenario feature layer from scratch. */
+  function refreshAllLayers() {
+    refreshMapLayers();
+    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+  }
+
   function refreshAfterFeatureUpdate() {
     refreshScenarioFeatureLayers({ doClearCache: false });
   }
@@ -1084,8 +1090,7 @@ export function createMapLibreScenarioLayerController(
         featureIds: routingStore.obstacleFeatureIds,
       }),
     );
-    refreshMapLayers();
-    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+    refreshAllLayers();
 
     const stopObstacleHighlightWatch = watch(
       () => [routingStore.obstaclePickerOpen, routingStore.obstacleSelectionKey] as const,
@@ -1149,10 +1154,7 @@ export function createMapLibreScenarioLayerController(
       }
     });
 
-    const cleanupRestore = scenario.store.onStateRestored?.(() => {
-      refreshMapLayers();
-      refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
-    });
+    const cleanupRestore = scenario.store.onStateRestored(refreshAllLayers);
     const cleanupUndoRedo = scenario.store.onUndoRedo(({ action, meta }) => {
       if (!meta) return;
       if (undoActionLabels.includes(meta.label as ActionLabel)) {
@@ -1170,7 +1172,7 @@ export function createMapLibreScenarioLayerController(
       cleanupMapLayers.off();
       cleanupFeatureLayers.off();
       cleanupUndoRedo.off();
-      cleanupRestore?.off();
+      cleanupRestore.off();
       stopObstacleHighlightWatch();
       mlMap.off("style.load", onStyleLoad);
       for (const layerId of [...activeImageLayerIds]) {

@@ -1,4 +1,4 @@
-import { shallowRef } from "vue";
+import { shallowRef, toRaw } from "vue";
 import { klona } from "klona";
 import type { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
 
@@ -10,13 +10,16 @@ function createCheckpoint(store: NewScenarioStore) {
   return {
     snapshot,
     capture() {
-      snapshot.value = klona(store.state);
+      // Clone the raw state: going through the reactive proxy would instantiate
+      // proxies for the whole scenario tree just to read it.
+      snapshot.value = klona(toRaw(store.state));
     },
     restore() {
-      if (!snapshot.value) return false;
-      const restored = klona(snapshot.value);
-      store.restoreState(restored);
+      const snapshotted = snapshot.value;
+      if (!snapshotted) return false;
+      // The snapshot is dropped here, so the restored state cannot alias it.
       snapshot.value = undefined;
+      store.restoreState(snapshotted);
       return true;
     },
   };

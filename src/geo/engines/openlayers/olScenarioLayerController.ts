@@ -931,12 +931,12 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
       }),
     ];
 
-    const cleanupRestore = scenario.store.onStateRestored?.(() => {
-      clearScenarioLayerVisibilityListeners();
+    const cleanupRestore = scenario.store.onStateRestored(() => {
       refreshManagedLayers({ doClearCache: true, filterVisible: true });
+      initializeScenarioLayerListeners();
     });
     cleanupScenarioBinding = () => {
-      cleanupRestore?.off();
+      cleanupRestore.off();
       stopObstacleHighlightWatch();
       cleanups.forEach((cleanup) => runCleanup(cleanup));
       clearScenarioLayerVisibilityListeners();

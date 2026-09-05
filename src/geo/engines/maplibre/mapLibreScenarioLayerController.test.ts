@@ -243,6 +243,7 @@ function createScenario() {
   const mapLayerHook = createEventHook<any>();
   const featureLayerHook = createEventHook<any>();
   const undoRedoHook = createEventHook<any>();
+  const stateRestoredHook = createEventHook<void>();
   const mapLayers = {
     value: [] as any[],
   };
@@ -323,6 +324,7 @@ function createScenario() {
       },
       store: {
         onUndoRedo: undoRedoHook.on,
+        onStateRestored: stateRestoredHook.on,
       },
     } as any,
     layerItemsLayers,
@@ -331,6 +333,7 @@ function createScenario() {
     mapLayerHook,
     featureLayerHook,
     undoRedoHook,
+    stateRestoredHook,
   };
 }
 
