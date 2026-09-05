@@ -207,8 +207,7 @@ export function useOlScenarioLayerController(olMap: OLMap): ScenarioLayerControl
     return getScenarioLayersCollection()
       .getArray()
       .find((layer: VectorLayer<any>) => layer.get("id") === layerId) as
-      | VectorLayer<any>
-      | undefined;
+      VectorLayer<any> | undefined;
   }
 
   function getMapOlLayerById(layerId: FeatureId) {

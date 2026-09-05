@@ -375,6 +375,12 @@ export function createMapLibreScenarioLayerController(
     reorderScenarioStackLayers();
   }
 
+  /** Rebuild every map and scenario feature layer from scratch. */
+  function refreshAllLayers() {
+    refreshMapLayers();
+    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+  }
+
   function refreshAfterFeatureUpdate() {
     refreshScenarioFeatureLayers({ doClearCache: false });
   }
@@ -1084,8 +1090,7 @@ export function createMapLibreScenarioLayerController(
         featureIds: routingStore.obstacleFeatureIds,
       }),
     );
-    refreshMapLayers();
-    refreshScenarioFeatureLayers({ doClearCache: true, filterVisible: true });
+    refreshAllLayers();
 
     const stopObstacleHighlightWatch = watch(
       () => [routingStore.obstaclePickerOpen, routingStore.obstacleSelectionKey] as const,

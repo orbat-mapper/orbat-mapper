@@ -103,6 +103,7 @@ export function doctrinalControlMeasureParams(
 export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
   "smooth",
   "smoothResolution",
+  "multilineLabel",
 ];
 
 /** True for exactly the Generic Graphics kinds — the ones the UI lets you colour. */
@@ -143,6 +144,17 @@ export function canSmoothControlMeasureKind(
   return (
     metadataFor(kind)?.params?.some(
       (param) => param.key === "smooth" && param.type === "boolean",
+    ) ?? false
+  );
+}
+
+/** Multiline labels are available only where the registry declares the option. */
+export function canUseMultilineControlMeasureLabel(
+  kind: ControlMeasureKind | undefined,
+): boolean {
+  return (
+    metadataFor(kind)?.params?.some(
+      (param) => param.key === "multilineLabel" && param.type === "boolean",
     ) ?? false
   );
 }
@@ -316,10 +328,7 @@ export function newControlMeasureDefaults(
   if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
-    if (
-      canAuthorFillPattern(graphicKind) &&
-      typeof authored.filled === "boolean"
-    ) {
+    if (canAuthorFillPattern(graphicKind) && typeof authored.filled === "boolean") {
       narrowedOptions.filled = authored.filled;
     }
     if (canSmoothControlMeasureKind(graphicKind)) {
