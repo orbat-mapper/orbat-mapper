@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { type OrbatMapperExportSettings } from "@/types/importExport.ts";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
 import { nanoid } from "@/utils";
 import { buildRecipientScenario } from "@/importexport/export/recipientScenario";
+import { suggestExportNames } from "@/importexport/export/exportNames";
 import type { Unit } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -20,10 +21,11 @@ const {
   store: { state },
 } = injectStrict(activeScenarioKey);
 
-form.value.scenarioName = state.info.name;
 // Existing persisted export settings predate layer selection. Start those users with
 // every layer selected, preserving the export behavior they had before this option.
 if (form.value.layerIds === undefined) form.value.layerIds = [...state.layerStack];
+
+if (form.value.emptySideIds === undefined) form.value.emptySideIds = [];
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
@@ -33,10 +35,29 @@ const layers = computed(() => {
   return state.layerStack.map((id) => state.layerStackMap[id]).filter(Boolean);
 });
 
+const automaticScenarioName = ref(
+  !form.value.scenarioName || form.value.scenarioName === state.info.name,
+);
+const automaticFileName = ref(
+  !form.value.fileName || form.value.fileName === "scenario.json",
+);
+const suggestedNames = computed(() =>
+  suggestExportNames(state.info.name, sides.value, state.layerStack, form.value),
+);
+watch(
+  suggestedNames,
+  (names) => {
+    if (automaticScenarioName.value) form.value.scenarioName = names.scenarioName;
+    if (automaticFileName.value) form.value.fileName = names.fileName;
+  },
+  { immediate: true },
+);
+
 interface ExportPreset {
   id: string;
   name: string;
   sideGroups: string[];
+  emptySideIds?: string[];
   layerIds: NonNullable<OrbatMapperExportSettings["layerIds"]>;
   scenarioName?: string;
   fileName: string;
@@ -61,6 +82,7 @@ function savePreset(replace = false) {
     id: replace ? selectedPreset.value : nanoid(),
     name: presetName.value.trim(),
     sideGroups: [...form.value.sideGroups],
+    emptySideIds: [...(form.value.emptySideIds ?? [])],
     layerIds: [...(form.value.layerIds ?? state.layerStack)],
     scenarioName: form.value.scenarioName,
     fileName: form.value.fileName,
@@ -72,19 +94,27 @@ function savePreset(replace = false) {
 function loadPreset() {
   const preset = presets.value.find((p) => p.id === selectedPreset.value);
   if (!preset) return;
+  automaticScenarioName.value = false;
+  automaticFileName.value = false;
   const groups = preset.sideGroups.filter((id) => state.sideGroupMap[id]);
+  const emptySides = (preset.emptySideIds ?? []).filter(
+    (id) => state.sideMap[id]?.groups.length === 0,
+  );
   const layers = preset.layerIds.filter((id) => state.layerStackMap[id]);
   form.value = {
     ...form.value,
     sideGroups: groups,
+    emptySideIds: emptySides,
     layerIds: layers,
     scenarioName: preset.scenarioName,
     fileName: preset.fileName,
   };
   presetName.value = preset.name;
   notice.value =
-    groups.length !== preset.sideGroups.length || layers.length !== preset.layerIds.length
-      ? "Some saved groups or layers no longer exist and were omitted. Review the selection."
+    groups.length !== preset.sideGroups.length ||
+    emptySides.length !== (preset.emptySideIds ?? []).length ||
+    layers.length !== preset.layerIds.length
+      ? "Some saved selections no longer exist or are no longer empty and were omitted. Review the selection."
       : `Loaded ${preset.name}.`;
 }
 function deletePreset() {
@@ -110,6 +140,13 @@ function countUnits(units: Unit[]): number {
 
 function toggleSide(sideId: string) {
   const groups = state.sideMap[sideId].groups;
+  if (!groups.length) {
+    const selected = form.value.emptySideIds ?? [];
+    form.value.emptySideIds = selected.includes(sideId)
+      ? selected.filter((id) => id !== sideId)
+      : [...selected, sideId];
+    return;
+  }
   if (form.value.sideGroups.some((g) => groups.includes(g))) {
     form.value.sideGroups = form.value.sideGroups.filter((g) => !groups.includes(g));
   } else {
@@ -174,7 +211,7 @@ function toggleSide(sideId: string) {
         <p role="status" class="text-sm">{{ notice }}</p>
       </div>
     </details>
-    <InputGroupTemplate label="Select which side groups you want to export">
+    <InputGroupTemplate label="Select which sides and groups you want to export">
       <div class="divide-y">
         <div v-for="v in sides" :key="v.id" class="grid grid-cols-4 gap-4 py-3">
           <button
@@ -185,6 +222,12 @@ function toggleSide(sideId: string) {
             {{ v.name }}
           </button>
 
+          <InputCheckbox
+            v-if="!v.groups.length"
+            label="Include side"
+            :value="v.id"
+            v-model="form.emptySideIds"
+          />
           <InputCheckbox
             v-for="g in v.groups"
             :label="state.sideGroupMap[g].name"
@@ -214,8 +257,16 @@ function toggleSide(sideId: string) {
         This scenario has no layers.
       </p>
     </InputGroupTemplate>
-    <InputGroup label="Scenario name" v-model="form.scenarioName" />
-    <InputGroup label="Name of downloaded file" v-model="form.fileName" />
+    <InputGroup
+      label="Scenario name"
+      v-model="form.scenarioName"
+      @update:model-value="automaticScenarioName = false"
+    />
+    <InputGroup
+      label="Name of downloaded file"
+      v-model="form.fileName"
+      @update:model-value="automaticFileName = false"
+    />
     <section class="space-y-3 rounded-md border p-4" aria-label="Recipient preview">
       <Button
         type="button"
@@ -236,9 +287,10 @@ function toggleSide(sideId: string) {
             JSON.stringify(preview, null, 2)
           }}</pre>
         </details>
-        <h4 class="font-medium">Included groups</h4>
-        <p v-if="!preview.sides.length" class="text-sm">No groups included.</p>
+        <h4 class="font-medium">Included sides and groups</h4>
+        <p v-if="!preview.sides.length" class="text-sm">No sides or groups included.</p>
         <template v-for="side in preview.sides" :key="side.id">
+          <p v-if="!side.groups.length" class="text-sm">{{ side.name }} — no groups</p>
           <details v-for="group in side.groups" :key="group.id">
             <summary class="cursor-pointer">
               {{ side.name }} / {{ group.name }} — {{ countUnits(group.subUnits) }} units

@@ -4,17 +4,24 @@ import type { OrbatMapperExportSettings } from "@/types/importExport";
 /** Shared by the preview and download so both include exactly the same content. */
 export function buildRecipientScenario(
   scenario: Scenario,
-  settings: Pick<OrbatMapperExportSettings, "sideGroups" | "layerIds" | "scenarioName">,
+  settings: Pick<
+    OrbatMapperExportSettings,
+    "sideGroups" | "emptySideIds" | "layerIds" | "scenarioName"
+  >,
 ): Scenario {
   return {
     ...scenario,
     name: settings.scenarioName || scenario.name,
     sides: scenario.sides
+      .filter((side) =>
+        side.groups.length
+          ? side.groups.some((group) => settings.sideGroups.includes(group.id))
+          : settings.emptySideIds?.includes(side.id),
+      )
       .map((side) => ({
         ...side,
         groups: side.groups.filter((group) => settings.sideGroups.includes(group.id)),
-      }))
-      .filter((side) => side.groups.length),
+      })),
     layerStack:
       settings.layerIds === undefined
         ? scenario.layerStack

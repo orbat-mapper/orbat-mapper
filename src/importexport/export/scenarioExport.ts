@@ -260,24 +260,15 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     );
   }
 
-  function generateOrbatMapper({
-    scenarioName,
-    sideGroups,
-    layerIds,
-  }: OrbatMapperExportSettings): string {
+  function generateOrbatMapper(settings: OrbatMapperExportSettings): string {
     const scn = io.toObject();
-    const newScenario = buildRecipientScenario(scn, {
-      scenarioName,
-      sideGroups,
-      layerIds,
-    });
+    const newScenario = buildRecipientScenario(scn, settings);
     newScenario.id = nanoid();
     newScenario.meta = {
       ...scn.meta!,
       exportedFrom: scn.id,
       exportedDate: new Date().toISOString(),
     };
-    if (scenarioName) newScenario.name = scenarioName;
     return JSON.stringify(newScenario, undefined, 2);
   }
 

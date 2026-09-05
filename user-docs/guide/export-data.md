@@ -18,13 +18,18 @@ To start the export, select _Export scenario_ from the _File_ menu.
 ## ORBAT Mapper
 
 Choose **ORBAT Mapper** to export selected side groups and layers as a scenario file.
-Set the scenario name and downloaded filename before exporting.
+For a side without groups, select **Include side** to include it in the file.
+The scenario name and filename are suggested from the source name and selected sides
+(for example, **Northern Exercise — Blue** and `northern-exercise-blue.json`).
+Layers-only exports use a **Layers** suffix; exporting all content keeps the source name.
+Suggestions update with your selections until you edit the corresponding field.
+Names loaded from a preset are preserved. You can add a turn label manually, such as **Turn 3**.
 
 ### Reuse an export preset
 
 Select the groups and layers for a recipient, expand **Export presets**, and enter a **Preset name** (for example,
 “Blue contacts update”), and click **Save as new preset**. A preset remembers the
-selected groups and layers, scenario name, and filename.
+selected groups, empty sides and layers, scenario name, and filename.
 
 Choose a **Saved preset** to restore its settings. After making changes, click
 **Update preset** to save them, or **Save as new preset** to keep another variation.
