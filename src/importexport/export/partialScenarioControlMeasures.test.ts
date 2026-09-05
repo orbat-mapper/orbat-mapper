@@ -1,3 +1,4 @@
+import { buildRecipientScenario } from "./recipientScenario";
 import { describe, expect, it, vi } from "vitest";
 import { useScenarioExport } from "@/importexport/export/scenarioExport";
 import { loadControlMeasureScenarioFixture } from "@/testdata/controlMeasureScenario";
@@ -23,6 +24,26 @@ describe("partial ORBAT Mapper export", () => {
     } as unknown as TScenario;
     return useScenarioExport({ activeScenario });
   }
+
+  it("previews the downloaded content, including scenario-wide data", () => {
+    const settings = {
+      sideGroups: [],
+      layerIds: ["layer-control-measures"],
+      scenarioName: "Blue update",
+      customColors: true,
+      fileName: "blue.json",
+    };
+    const source = loadControlMeasureScenarioFixture();
+    const preview = buildRecipientScenario(source, settings);
+    const downloaded = JSON.parse(exporter().generateOrbatMapper(settings));
+    const { id: previewId, meta: previewMeta, ...previewContent } = preview;
+    const { id: downloadId, meta: downloadMeta, ...downloadContent } = downloaded;
+    expect(downloadContent).toEqual(JSON.parse(JSON.stringify(previewContent)));
+    expect(downloadId).not.toBe(previewId);
+    expect(downloadMeta).toMatchObject({ ...previewMeta, exportedFrom: previewId });
+    expect(preview.events).toEqual(source.events);
+    expect(source.layerStack.length).toBeGreaterThan(preview.layerStack.length);
+  });
 
   it("retains control-measure layers and their complete parameter bags", () => {
     const exported = JSON.parse(

@@ -2,6 +2,7 @@
 
 ORBAT Mapper can export units and features to these data formats:
 
+- [ORBAT Mapper](#orbat-mapper)
 - [GeoJSON](#geojson)
 - [KML/KMZ](#kml)
 - [MilX](#milx)
@@ -13,6 +14,39 @@ ORBAT Mapper can export units and features to these data formats:
 To start the export, select _Export scenario_ from the _File_ menu.
 
 ![Export menu](images/export.png)
+
+## ORBAT Mapper
+
+Choose **ORBAT Mapper** to export selected side groups and layers as a scenario file.
+Set the scenario name and downloaded filename before exporting.
+
+### Reuse an export preset
+
+Select the groups and layers for a recipient, expand **Export presets**, and enter a **Preset name** (for example,
+“Blue contacts update”), and click **Save as new preset**. A preset remembers the
+selected groups and layers, scenario name, and filename.
+
+Choose a **Saved preset** to restore its settings. After making changes, click
+**Update preset** to save them, or **Save as new preset** to keep another variation.
+**Delete preset** removes the saved preset without changing the current selection.
+
+Presets are stored in this browser for the current scenario; they are not included
+in downloaded scenario files. New groups and layers are not automatically added.
+If a saved group or layer has been deleted, loading the preset omits it and displays
+a notice. Review the selection before exporting.
+
+### Preview recipient data
+
+Click **Preview recipient data** to inspect included groups, unit counts, layers,
+and scenario-wide data. Expand entries to inspect their stored contents, or expand
+**Inspect complete recipient data** to see everything together. The preview updates
+when you change your selections.
+
+Hidden units and layers are still included when their group or layer is selected.
+Descriptions, events, templates, catalogs, settings, and stored unit histories may
+also contain information you do not intend to share. Group and layer selection does
+not remove scenario-wide data. Review these contents before distributing a file.
+The downloaded file receives a new scenario ID and export timestamp.
 
 ## GeoJSON
 
