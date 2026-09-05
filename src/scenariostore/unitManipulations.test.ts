@@ -930,3 +930,59 @@ describe("expandUnitWithSymbolOptions", () => {
     ]);
   });
 });
+
+describe("cloneSide without groups", () => {
+  it.each([false, true])(
+    "duplicates a completely empty side with includeState=%s",
+    (includeState) => {
+      const scenario = createScenario();
+      scenario.sides[0].groups = [];
+      const store = useNewScenarioStore(scenario);
+      const id = useUnitManipulations(store).cloneSide("side-1", { includeState })!;
+      expect(store.state.sideMap[id]).toMatchObject({
+        name: "Blue (copy)",
+        groups: [],
+        subUnits: [],
+      });
+      expect(store.state.sides).toContain(id);
+    },
+  );
+
+  it.each([false, true])(
+    "duplicates direct units with includeState=%s",
+    (includeState) => {
+      const scenario = createScenario();
+      const side = scenario.sides[0];
+      const unit = side.groups[0].subUnits[0];
+      unit.state = [{ id: "move", t: "2025-01-01T01:00:00Z", location: [11, 61] }];
+      unit.subUnits = [
+        { id: "child", name: "Child", sidc: unit.sidc, subUnits: [], state: unit.state },
+      ];
+      side.subUnits = [unit];
+      side.groups = [];
+      const store = useNewScenarioStore(scenario);
+      const actions = useUnitManipulations(store);
+      const id = actions.cloneSide(side.id, { includeState })!;
+      const copy = store.state.sideMap[id];
+      expect(copy.name).toBe("Blue (copy)");
+      expect(copy.groups).toEqual([]);
+      expect(copy.subUnits).toHaveLength(1);
+      const root = store.state.unitMap[copy.subUnits[0]!];
+      expect(root.id).not.toBe(unit.id);
+      expect(root._pid).toBe(id);
+      expect(root.name).toBe(unit.name);
+      expect(root.state).toHaveLength(includeState ? 1 : 0);
+      const child = store.state.unitMap[root.subUnits[0]!];
+      expect(child.id).not.toBe("child");
+      expect(child._pid).toBe(root.id);
+      expect(child._sid).toBe(id);
+      expect(child.state).toHaveLength(includeState ? 1 : 0);
+      expect(store.state.sideMap[side.id].subUnits).toEqual([unit.id]);
+      store.undo();
+      expect(store.state.sideMap[id]).toBeUndefined();
+      expect(Object.keys(store.state.unitMap)).toHaveLength(2);
+      store.redo();
+      expect(store.state.sideMap[id].subUnits).toHaveLength(1);
+    },
+  );
+});
