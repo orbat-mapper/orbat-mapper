@@ -52,7 +52,6 @@ import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
-import { useImportCheckpoint } from "@/importexport/importCheckpoint";
 import {
   importScenarioOverlayLayers,
   previewScenarioOverlayReplacement,
@@ -97,8 +96,6 @@ const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const selectedCustomSymbols = ref<CustomSymbol[]>([]);
 const selectedLayers = ref<ScenarioOverlayLayer[]>([]);
 const layerActions = ref<Record<string, "copy" | "replace">>({});
-const checkpoint = useImportCheckpoint(scnStore);
-const hasCheckpoint = computed(() => !!checkpoint.snapshot.value);
 const matchingLayers = computed(() =>
   selectedLayers.value.filter(
     (layer) => targetState.layerStackMap[layer.id]?.kind === "overlay",
@@ -116,11 +113,6 @@ const layerPreviews = computed(() =>
   ),
 );
 const replacementIds = computed(() => layerPreviews.value.map((p) => p.layerId));
-function restoreImportCheckpoint() {
-  if (checkpoint.restore()) {
-    send({ message: "Restored pre-import checkpoint", type: "success" });
-  }
-}
 function previewItemName(id: string, removed: boolean) {
   const item = (removed ? targetState : importedState.value).layerItemMap[id];
   return item?.name ? `${item.name} (${id})` : id;
@@ -512,7 +504,6 @@ async function onFormSubmit() {
     doCustomSymbolImport(selectedCustomSymbols.value);
   } else if (importMode.value === "layers") {
     didReplaceLayers = replacementIds.value.length > 0;
-    if (didReplaceLayers) checkpoint.capture();
     scnStore.groupUpdate(
       () => {
         importScenarioOverlayLayers(
@@ -537,7 +528,7 @@ async function onFormSubmit() {
 
   send({
     message: didReplaceLayers
-      ? "Imported layers. Restore the pre-import checkpoint from the scenario import dialog, or use Undo."
+      ? "Imported layers. Use Undo to revert the replacement."
       : "Imported data from scenario",
     type: "success",
   });
@@ -771,15 +762,6 @@ function doGroupImport(importedGroupId: string) {
     </template>
 
     <template #sidebar>
-      <div v-if="hasCheckpoint">
-        <BaseButton small @click="restoreImportCheckpoint">
-          Restore pre-import checkpoint
-        </BaseButton>
-        <p class="text-muted-foreground text-sm">
-          Restores the whole scenario, including undoing edits made since the latest
-          replacement. Available until the scenario is closed.
-        </p>
-      </div>
       <!-- Source Scenario Section -->
       <Card>
         <CardHeader class="py-3">
@@ -1011,8 +993,8 @@ function doGroupImport(importedGroupId: string) {
         >
           <p>
             Replacement preview: incoming properties and all contents replace the existing
-            layer, including lock state and history. Missing items are removed. A
-            pre-import checkpoint will be saved.
+            layer, including lock state and history. Missing items are removed. Undo
+            reverts the whole import in one step.
           </p>
           <details v-for="preview in layerPreviews" :key="preview.layerId" class="mt-2">
             <summary>

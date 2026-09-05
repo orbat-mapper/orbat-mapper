@@ -547,8 +547,5 @@ export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   store.onUndoRedo(() => {
     scenarioTime.setCurrentTime(store.state.currentTime);
   });
-  store.onStateRestored(() => {
-    scenarioTime.setCurrentTime(store.state.currentTime);
-  });
   return store;
 }
