@@ -46,7 +46,6 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     action: "undo" | "redo";
   }>();
   const mutationHook = createEventHook<void>();
-  const stateRestoredHook = createEventHook<void>();
 
   const update = (
     updater: (currentState: T) => void,
@@ -124,14 +123,6 @@ export function useImmerStore<T extends object, M>(baseState: T) {
 
   return {
     state,
-    restoreState(snapshot: T) {
-      update((current) => Object.assign(current, snapshot));
-      // History may contain edits after the checkpoint; those patches no longer
-      // describe the restored state and must not be replayed against it.
-      clearUndoRedoStack();
-      stateRestoredHook.trigger();
-    },
-    onStateRestored: stateRestoredHook.on,
     update,
     redo,
     undo,

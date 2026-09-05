@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
 import { klona } from "klona";
-import { useImportCheckpoint } from "@/importexport/importCheckpoint";
 import {
   importScenarioOverlayLayers,
   previewScenarioOverlayReplacement,
@@ -220,14 +219,10 @@ describe("overlay replacement", () => {
     );
   });
 
-  it("replaces with an empty layer and restores the complete checkpoint after later edits", () => {
+  it("replaces with an empty layer and reverts the whole replacement in one undo", () => {
     const target = useNewScenarioStore(scenario("target", [layer("plan")]));
     const source = useNewScenarioStore(scenario("source", [layer("plan", [])])).state;
     const before = klona(target.state);
-    const onRestore = vi.fn();
-    target.onStateRestored(onRestore);
-    const checkpoint = useImportCheckpoint(target);
-    checkpoint.capture();
     target.groupUpdate(() =>
       importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
         replaceLayerIds: ["plan"],
@@ -235,15 +230,10 @@ describe("overlay replacement", () => {
     );
     expect(target.state.layerItemMap).toEqual({});
     expect(target.state.layerStackMap.plan).toMatchObject({ items: [] });
-    useGeo(target).addLayer({ id: "later", name: "later", items: [] });
-    expect(useImportCheckpoint(target)).toBe(checkpoint);
-    expect(checkpoint.restore()).toBe(true);
-    expect(onRestore).toHaveBeenCalledOnce();
-    expect(target.canUndo.value).toBe(false);
+    target.undo();
     expect(target.state.layerStack).toEqual(before.layerStack);
     expect(target.state.layerStackMap).toEqual(before.layerStackMap);
     expect(target.state.layerItemMap).toEqual(before.layerItemMap);
-    expect(checkpoint.restore()).toBe(false);
   });
 
   it("preserves unrelated items on collision and does not accumulate remapped items", () => {
