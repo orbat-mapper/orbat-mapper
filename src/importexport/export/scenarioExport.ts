@@ -1,3 +1,4 @@
+import { buildRecipientScenario } from "./recipientScenario";
 import { featureCollection } from "@turf/helpers";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -265,20 +266,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     layerIds,
   }: OrbatMapperExportSettings): string {
     const scn = io.toObject();
-    const sidesWithFilteredGroups = scn.sides.map((side) => ({
-      ...side,
-      groups: side.groups.filter((g) => sideGroups.includes(g.id)),
-    }));
-    const newScenario = {
-      ...scn,
-      sides: sidesWithFilteredGroups.filter((e) => e.groups.length),
-      // Undefined is intentional backward compatibility for callers and saved form
-      // settings created before layer selection existed. An explicit [] exports none.
-      layerStack:
-        layerIds === undefined
-          ? scn.layerStack
-          : scn.layerStack.filter((layer) => layerIds.includes(layer.id)),
-    };
+    const newScenario = buildRecipientScenario(scn, {
+      scenarioName,
+      sideGroups,
+      layerIds,
+    });
     newScenario.id = nanoid();
     newScenario.meta = {
       ...scn.meta!,
