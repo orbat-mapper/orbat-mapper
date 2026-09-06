@@ -18,12 +18,15 @@ import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
   resolveParameterSemanticRole,
+  resolveSizePair,
 } from "@orbat-mapper/control-measures";
 import type {
   ControlMeasureId,
   ControlMeasureKind,
   ControlMeasureStyle,
   ParamDescriptor,
+  ControlMeasureSizePair,
+  SizeUnit,
 } from "@orbat-mapper/control-measures";
 import { PREVIEW_FILL_PATTERNS } from "@orbat-mapper/control-measures/preview";
 import type {
@@ -233,12 +236,47 @@ export function getLabelSizeParam(
   options: TacticalGraphicOptions | undefined,
 ): ParamDescriptor | undefined {
   if (!metadataFor(kind)?.capturesLabelSize) return undefined;
-  return usesGroundLabelSize(options)
-    ? LABEL_SIZE_PARAMS.ground
-    : LABEL_SIZE_PARAMS.pixels;
+  const pair = metadataFor(kind)?.sizePairs?.find(
+    (pair) => pair.captureOnDraw && pair.rendering === "text",
+  );
+  if (!pair || kind === undefined) return undefined;
+  const resolved = resolveSizePair({
+    kind: kind as ControlMeasureId,
+    options,
+    dimension: pair.id,
+  });
+  return sizePairParameter(
+    kind,
+    pair,
+    resolved.status === "resolved" ? resolved.unit : pair.defaultUnit,
+  );
 }
 
-const PIXEL_SIZE_SUFFIX = "Pixels";
+/** Keep the application's label slider bounds; other dimensions use registry hints. */
+export function sizePairParameter(
+  kind: ControlMeasureKind,
+  pair: ControlMeasureSizePair,
+  unit: SizeUnit,
+): ParamDescriptor {
+  const key = unit === "px" ? pair.pixels : pair.meters;
+  if (pair.captureOnDraw && pair.rendering === "text") {
+    return {
+      ...LABEL_SIZE_PARAMS[unit === "px" ? "pixels" : "ground"],
+      key,
+      label: pair.label,
+    };
+  }
+  return (
+    metadataFor(kind)?.params?.find((parameter) => parameter.key === key) ?? {
+      key,
+      label: pair.label,
+      type: "number",
+      unit,
+      min: 1,
+      step: 1,
+    }
+  );
+}
 
 /**
  * Restore every ground-anchored dimension to the library's intended on-screen size at
@@ -252,29 +290,32 @@ export function resetControlMeasureSizesForResolution(
   metersPerPixel: number | undefined,
 ): TacticalGraphicOptions | null {
   const metadata = metadataFor(kind);
-  if (!metadata || !(metersPerPixel && metersPerPixel > 0)) return null;
+  if (
+    !metadata ||
+    !Number.isFinite(metersPerPixel) ||
+    !(metersPerPixel && metersPerPixel > 0)
+  )
+    return null;
 
   const defaults = getDefaultOptions(kind as ControlMeasureId) as Record<string, unknown>;
   const next = { ...options } as Record<string, unknown>;
-  const parameterKeys = new Set(
-    (metadata.params ?? []).map((parameter) => parameter.key),
-  );
   let reset = false;
 
-  for (const parameter of metadata.params ?? []) {
-    if (!parameter.key.endsWith(PIXEL_SIZE_SUFFIX)) continue;
-    const meterKey = parameter.key.slice(0, -PIXEL_SIZE_SUFFIX.length);
-    if (!parameterKeys.has(meterKey)) continue;
-    const defaultPixels = defaults[parameter.key];
-    if (typeof defaultPixels !== "number") continue;
-    delete next[parameter.key];
-    next[meterKey] = defaultPixels * metersPerPixel;
-    reset = true;
-  }
-
-  if (metadata.capturesLabelSize) {
-    delete next.labelSizePixels;
-    next.labelSize = 14 * metersPerPixel;
+  for (const pair of metadata.sizePairs ?? []) {
+    // Reset retains the application's draw-sized pixel defaults, even when the
+    // pair's un-authored editing default is meters (for example boundary).
+    const defaultPixels =
+      pair.defaultUnit === "px"
+        ? (pair.defaultValue ?? defaults[pair.pixels])
+        : defaults[pair.pixels];
+    if (
+      typeof defaultPixels !== "number" ||
+      !Number.isFinite(defaultPixels) ||
+      defaultPixels <= 0
+    )
+      continue;
+    delete next[pair.pixels];
+    next[pair.meters] = defaultPixels * metersPerPixel;
     reset = true;
   }
 

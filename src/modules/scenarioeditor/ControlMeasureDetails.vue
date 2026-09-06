@@ -57,6 +57,9 @@ import type {
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
+import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
+import ControlMeasureSizeSettings from "@/modules/scenarioeditor/ControlMeasureSizeSettings.vue";
+import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
@@ -115,6 +118,29 @@ const item = computed<NTacticalGraphicLayerItem | null>(() => {
 });
 
 const isMultiMode = computed(() => props.selectedIds.size > 1);
+const sizeTargets = computed(() =>
+  [...props.selectedIds].flatMap((id) => {
+    const { layerItem } = geo.getLayerItemById(id);
+    return layerItem && isNTacticalGraphicLayerItem(layerItem)
+      ? [
+          {
+            id,
+            graphicKind: layerItem.graphicKind,
+            options: resolveControlMeasureOptions(layerItem),
+          },
+        ]
+      : [];
+  }),
+);
+
+function constructionResolution() {
+  return engineRef.value?.draw?.adapter?.getResolution?.();
+}
+
+function updateSizes(updates: ControlMeasureSizeUpdate[]) {
+  scenarioDraw.updateControlMeasureSizes(updates);
+}
+
 const supported = computed(() =>
   item.value ? isSupportedGraphicKind(item.value.graphicKind) : false,
 );
@@ -417,6 +443,13 @@ function doDelete() {
               Reset size
             </Button>
           </PanelDataGrid>
+          <ControlMeasureExtendedStyleSettings
+            v-if="supported"
+            :graphic-kind="item.graphicKind"
+            :options="resolvedOptions"
+            :get-resolution="constructionResolution"
+            @update="doControlMeasureOptionsUpdate"
+          />
         </TabsContent>
         <TabsContent value="2" class="mx-4">
           <ControlMeasureAmplifiers
@@ -475,7 +508,12 @@ function doDelete() {
       </ScrollTabs>
     </div>
 
-    <div v-else-if="isMultiMode" class="mt-4">
+    <div v-else-if="isMultiMode" class="mt-4 flex flex-col gap-4">
+      <ControlMeasureSizeSettings
+        :targets="sizeTargets"
+        :get-resolution="constructionResolution"
+        @update="updateSizes"
+      />
       <Button type="button" variant="outline" size="sm" @click="doDelete()">
         Delete selected
       </Button>
