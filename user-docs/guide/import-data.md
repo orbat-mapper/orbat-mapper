@@ -26,6 +26,10 @@ automatically. If it does not, select the correct format from the _Select import
 
 ## ORBAT Mapper scenarios
 
+For a practice turn with Red, Blue, and a white-cell controller, see
+[Run a two-team wargame](./team-game/index.md). For detailed exchange settings, see
+the [Team-game file exchange reference](./team-game/file-exchange.md).
+
 Use **Side** or **Group** import to add or update data in your current scenario
 from another scenario file. Choose the side or group you want to import.
 To update only part of a side, use **Group** import and import each group separately.

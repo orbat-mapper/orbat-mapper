@@ -1,7 +1,12 @@
-import { DefaultTheme, defineConfig } from "vitepress";
+import { DefaultTheme } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 import Tailwind from "@tailwindcss/vite";
 
-export default defineConfig({
+export default withMermaid({
+  mermaid: {
+    htmlLabels: false,
+    flowchart: { htmlLabels: false },
+  },
   cleanUrls: true,
   title: "ORBAT Mapper",
   description: "",
@@ -15,6 +20,7 @@ export default defineConfig({
       target: "esnext",
     },
     optimizeDeps: {
+      include: ["mermaid"],
       esbuildOptions: {
         target: "esnext",
       },
@@ -81,6 +87,8 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         { text: "Import data", link: "import-data" },
         { text: "Export data", link: "export-data" },
         { text: "Share scenarios", link: "sharing-scenarios" },
+        { text: "Run a two-team wargame", link: "team-game/" },
+        { text: "Team-game file exchange", link: "team-game/file-exchange" },
         { text: "Text to ORBAT", link: "text-to-orbat" },
       ],
     },
