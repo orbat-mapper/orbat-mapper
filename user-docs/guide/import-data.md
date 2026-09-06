@@ -27,7 +27,7 @@ automatically. If it does not, select the correct format from the _Select import
 ## ORBAT Mapper scenarios
 
 For a complete file-exchange workflow with Red, Blue, and a white-cell controller,
-see [Run a game with two teams and a white cell](../wargaming/team-game.md).
+see [Run a game with two teams and a white cell](./team-game/index.md).
 
 Use **Side** or **Group** import to add or update data in your current scenario
 from another scenario file. Choose the side or group you want to import.

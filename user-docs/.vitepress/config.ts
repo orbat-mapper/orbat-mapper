@@ -37,11 +37,6 @@ export default withMermaid({
     ],
     nav: [
       { text: "Guide", link: "/guide/about-orbat-mapper", activeMatch: "/guide/" },
-      {
-        text: "Wargaming tutorial",
-        link: "/wargaming/team-game",
-        activeMatch: "/wargaming/",
-      },
       //{ text: "Tutorial", link: "/tutorial/introduction", activeMatch: "/tutorial/" },
       { text: "Resources", link: "/resources/tools", activeMatch: "/resources/" },
       { text: "Support", link: "/support", activeMatch: "/support" },
@@ -55,15 +50,6 @@ export default withMermaid({
       "/guide/": { base: "/guide/", items: sidebarGuide() },
       "/resources/": { base: "/resources/", items: sidebarResources() },
       "/tutorial/": { base: "/tutorial/", items: sidebarTutorial() },
-      "/wargaming/": {
-        base: "/wargaming/",
-        items: [
-          {
-            text: "Wargaming tutorial",
-            items: [{ text: "Run a two-team game", link: "team-game" }],
-          },
-        ],
-      },
     },
     search: {
       provider: "local",
@@ -101,6 +87,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         { text: "Import data", link: "import-data" },
         { text: "Export data", link: "export-data" },
         { text: "Share scenarios", link: "sharing-scenarios" },
+        { text: "Run a two-team game", link: "team-game/" },
         { text: "Text to ORBAT", link: "text-to-orbat" },
       ],
     },
