@@ -39,7 +39,6 @@
     "@orbat-mapper/convert-symbology": "^1.0.2",
     "@orbat-mapper/tactical-draw": "0.6.1",
     "@orbat-mapper/tactical-draw-adapter-maplibre": "^0.3.16",
-    "@orbat-mapper/tactical-map-sheet": "^0.3.10",
     "@panzoom/panzoom": "^4.6.2",
     "@popperjs/core": "^2.11.8",
     "@protomaps/basemaps": "^5.7.2",
