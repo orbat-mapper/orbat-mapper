@@ -28,8 +28,10 @@ mapbundle is the supported route for any other schema, because it carries its ow
 
 - Labels are browser-rasterised, so they are flatter than server SDF glyphs and their metrics
   come from whatever font the system resolves for the style's font-stack name.
-- RTL scripts are mis-shaped, because `setRTLTextPlugin` is not registered anywhere in the
-  application. This predates the decision and is not made worse by it.
+- Arabic shaping and bidirectional ordering use the bundled RTL text plugin, registered
+  during map initialization. Its script and embedded WebAssembly are carried in a data URL
+  so both hosted and standalone maps work without a plugin CDN. Workers cannot fetch a page's
+  Blob URL from the opaque origin of a standalone `file://` page.
 - The sprite is five flavours × (`1x`, `@2x`) × (`.png`, `.json`) — 20 files, ~143 KB committed,
   ~51 KB for one flavour. Both densities are required: MapLibre fails the whole sprite, not just
   the missing sheet, when a high-DPI display asks for `@2x` and it is absent. The hosted build
