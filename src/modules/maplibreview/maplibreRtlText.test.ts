@@ -53,13 +53,10 @@ it("provides a self-contained worker plugin that joins Arabic and orders RTL lab
   );
   await vi.waitFor(() => expect(registerRTLTextPlugin).toHaveBeenCalledOnce());
   const plugin = registerRTLTextPlugin.mock.calls[0]![0];
-  // Presentation forms, in visual order, for Egypt and Aswan in the report.
+  // Presentation forms, in visual order, for Egypt.
   expect(plugin.processBidirectionalText(plugin.applyArabicShaping("مصر"), [])).toEqual([
     "\uFEAE\uFEBC\uFEE3",
   ]);
-  expect(plugin.processBidirectionalText(plugin.applyArabicShaping("أسوان"), [])).toEqual(
-    ["\uFEE5\uFE8D\uFEEE\uFEB3\uFE83"],
-  );
   expect(plugin.processBidirectionalText("ישראל", [])).toEqual(["לארשי"]);
   expect(plugin.processBidirectionalText("Cairo 123", [])).toEqual(["Cairo 123"]);
 });

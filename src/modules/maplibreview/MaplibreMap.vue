@@ -30,7 +30,7 @@ import {
 
 setWorkerUrl(maplibreWorkerUrl);
 void initializeRtlText().catch((error) => {
-  console.error("Failed to initialize map RTL text support", String(error));
+  console.error("Failed to initialize map RTL text support", error);
 });
 
 defineOptions({
