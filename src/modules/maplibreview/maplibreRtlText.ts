@@ -1,5 +1,5 @@
 import { getRTLTextPluginStatus, setRTLTextPlugin } from "maplibre-gl";
-import pluginSource from "maplibre-rtl-plugin/mapbox-gl-rtl-text.js?raw";
+import pluginSource from "virtual:maplibre-rtl-text-source";
 
 export async function initializeRtlText(): Promise<void> {
   const status = getRTLTextPluginStatus();

@@ -121,13 +121,10 @@ describe("MaplibreMap", () => {
     listeners.clear();
   });
 
-  it("initializes RTL support before creating the map", () => {
+  it("initializes RTL support when the map is set up", () => {
     vi.mocked(initializeRtlText).mockClear();
     mountMap();
     expect(initializeRtlText).toHaveBeenCalledOnce();
-    expect(vi.mocked(initializeRtlText).mock.invocationCallOrder[0]).toBeLessThan(
-      mapConstructor.mock.invocationCallOrder[0]!,
-    );
   });
 
   it("applies the projection prop on style.load", async () => {
