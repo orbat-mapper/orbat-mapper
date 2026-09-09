@@ -1020,6 +1020,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     let newSideId: EntityId | undefined;
     groupUpdate(() => {
       newSideId = addSide(newSide, { markAsNew: false, addDefaultGroup: false });
+      [...getBaseSubUnits(side)].forEach((unitId) => {
+        const newUnitId = cloneUnit(unitId, {
+          target: "end",
+          includeSubordinates: true,
+          includeState,
+          modifyName: false,
+        });
+        newUnitId && newSideId && changeUnitParent(newUnitId, newSideId);
+      });
       side.groups.forEach((groupId) => {
         const newGroupId = cloneSideGroup(groupId, { includeState, modifyName: false });
         newGroupId && newSideId && changeSideGroupParent(newGroupId, newSideId, "on");

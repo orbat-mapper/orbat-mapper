@@ -48,6 +48,8 @@ import {
   canAuthorFillPattern,
   canAuthorStrokeWidth,
   canSmoothControlMeasureKind,
+  canUseMultilineControlMeasureLabel,
+  effectiveControlMeasureOptions,
   fillPatternLabel,
   getControlMeasureSmoothResolution,
   getSmoothResolutionParam,
@@ -165,6 +167,20 @@ const smoothModel = computed({
   set: (value: boolean) =>
     emit("update", {
       options: { ...toRaw(props.options), smooth: value } as TacticalGraphicOptions,
+    }),
+});
+
+const showMultilineLabel = gatedOnEveryKind(canUseMultilineControlMeasureLabel);
+const multilineLabelModel = computed({
+  get: () =>
+    effectiveControlMeasureOptions(props.graphicKind, props.options).multilineLabel ===
+    true,
+  set: (value: boolean) =>
+    emit("update", {
+      options: {
+        ...toRaw(props.options),
+        multilineLabel: value,
+      } as TacticalGraphicOptions,
     }),
 });
 
@@ -291,6 +307,15 @@ const filledModel = computed({
         {{ fillPatternLabel(pattern) }}
       </NativeSelectOption>
     </NativeSelect>
+  </template>
+
+  <template v-if="showMultilineLabel">
+    <label for="cm-multiline-label" class="self-center">Multiline label</label>
+    <Switch
+      id="cm-multiline-label"
+      v-model="multilineLabelModel"
+      title="Place the doctrinal label above Field T on separate centered lines"
+    />
   </template>
 
   <template v-if="showSmooth">

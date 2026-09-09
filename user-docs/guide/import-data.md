@@ -2,6 +2,7 @@
 
 ORBAT Mapper can import units and features from these sources and formats:
 
+- [ORBAT Mapper scenarios](#orbat-mapper-scenarios)
 - [GeoJSON](#geojson)
 - [MilX](#milx)
 - [Spatial Illusions ORBAT Builder](#spatial-illusions-orbat-builder)
@@ -22,6 +23,57 @@ start the import. Select the file for the import and click _Load_. Usually ORBAT
 automatically. If it does not, select the correct format from the _Select import format_ dropdown list.
 
 ![An image](images/import.png)
+
+## ORBAT Mapper scenarios
+
+Use **Side** or **Group** import to add or update data in your current scenario
+from another scenario file. Choose the side or group you want to import.
+To update only part of a side, use **Group** import and import each group separately.
+Other sides and groups are left unchanged.
+
+- **Update included units** is the default. Select the units to update. Existing
+  sides, groups and units are matched by ID, not name. For example, adding a location
+  to an existing unit updates that unit without creating a duplicate. Units missing
+  from the file retain their fields and parent.
+- **Replace entire side/group** treats the incoming scope as complete, including all
+  its units. Existing units and groups missing from the file are removed. Inspect the removal list.
+- **Import as a separate copy** creates fresh IDs for intentional duplication and
+  remaps hierarchy references within the copy.
+
+For included units and groups, incoming authored fields replace existing fields,
+including clearing fields absent from the incoming object. Incoming parentage and
+sibling order apply to included units; omitted siblings follow them in their existing
+order. This is not field-level conflict resolution. References to missing parents or
+units outside the selected scope block the import.
+
+**Units only** preserves existing history. **Units with state** also imports history.
+**State only** updates matching selected units' history without creating missing units
+or changing unit fields or structural parentage. It does not remove omitted units,
+even with the replacement action. History can be replaced (an empty history clears it)
+or appended. Append ignores states at or before the latest existing timestamp.
+Timed hierarchy references in imported history must remain within the selected scope.
+
+Choose import options in the sidebar. The first available side or group is selected
+automatically; use the selector above the unit table to choose another.
+Use the table's checkboxes to select units; expand rows to see their hierarchy.
+The **Changes** column describes each entry's planned changes. Hover over a shortened
+description to read it in full.
+Turn on **Show changed entries only** to hide unchanged entries. Added entries and
+parent rows remain visible, including entries you have unchecked. The filter compares
+all incoming entries; the preview and Import button still use your selection.
+Filtering does not change your selection; removals are
+listed under **Review changes**.
+The summary below the table shows the selected action and target, with counts of units
+updated, added, removed and left unchanged. Units omitted from an update are identified separately.
+Expand **Review changes** for descriptions such as “Location added,” parent changes using
+unit names, and counts of history entries added, updated or removed. Expand **Advanced
+details** to inspect IDs and the full before-and-after data. Unchanged items are listed
+separately in a collapsible section.
+
+Previewing and canceling leave the active scenario untouched. **Import**
+uses that same plan.
+
+Use **Undo** immediately after import to revert the entire import in one step.
 
 ## GeoJSON
 

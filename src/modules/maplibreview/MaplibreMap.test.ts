@@ -7,6 +7,11 @@ import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
+import { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText";
+
+vi.mock("@/modules/maplibreview/maplibreRtlText", () => ({
+  initializeRtlText: vi.fn().mockResolvedValue(undefined),
+}));
 
 const setStyle = vi.fn();
 const setProjection = vi.fn();
@@ -114,6 +119,12 @@ describe("MaplibreMap", () => {
     getZoom.mockClear();
     getBearing.mockClear();
     listeners.clear();
+  });
+
+  it("initializes RTL support when the map is set up", () => {
+    vi.mocked(initializeRtlText).mockClear();
+    mountMap();
+    expect(initializeRtlText).toHaveBeenCalledOnce();
   });
 
   it("applies the projection prop on style.load", async () => {

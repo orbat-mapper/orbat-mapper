@@ -897,8 +897,7 @@ function onMapClick(e: MapMouseEvent) {
   // select underneath it.
   if (selectionSuppressed.value) return;
   if (routingStore.active) return;
-  if (moveUnitEnabled.value) return;
-  if (handleHistoryMapClick(e)) return;
+  if (!moveUnitEnabled.value && handleHistoryMapClick(e)) return;
   const additive = e.originalEvent.shiftKey;
 
   const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
@@ -910,7 +909,8 @@ function onMapClick(e: MapMouseEvent) {
   // short-circuit to the *plain-feature* query; an area graphic covering a formation
   // must not make its units unselectable.
   if (topHit && isUnitLayerId(topHit.layer.id)) {
-    if (!unitSelectEnabled.value) return;
+    // Move mode handles unit clicks on drag end.
+    if (moveUnitEnabled.value || !unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     if (!unitId) return;
     if (additive) return;
@@ -945,6 +945,9 @@ function onMapClick(e: MapMouseEvent) {
     });
     return;
   }
+
+  // Keep move mode's unit/empty-map behavior after resolving control measures.
+  if (moveUnitEnabled.value) return;
 
   if (!topHit) {
     if (!additive && selectionEnabled) clearSelectedItems();
