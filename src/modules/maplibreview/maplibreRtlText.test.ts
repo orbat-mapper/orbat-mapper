@@ -1,6 +1,7 @@
 // @vitest-environment node
-import { beforeEach, expect, it, vi } from "vitest";
-import { initializeRtlText } from "./maplibreRtlText";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { initializeRtlText as initializeHostedRtlText } from "./maplibreRtlText";
+import { initializeRtlText as initializeStandaloneRtlText } from "./maplibreRtlText.standalone";
 import { setRTLTextPlugin } from "maplibre-gl";
 
 const state = vi.hoisted(() => ({ status: "unavailable", url: "" }));
@@ -18,29 +19,40 @@ beforeEach(() => {
   state.url = "";
 });
 
-it("registers only once across map remounts", async () => {
-  await initializeRtlText();
-  await initializeRtlText();
-  expect(setRTLTextPlugin).toHaveBeenCalledExactlyOnceWith(state.url, false);
-});
-
-it("registers when a worker has already requested RTL support", async () => {
-  state.status = "requested";
-  await initializeRtlText();
-  expect(setRTLTextPlugin).toHaveBeenCalledOnce();
-});
-
-it.each(["deferred", "loading", "loaded", "error"])(
-  "does not replace a plugin in the %s state",
-  async (status) => {
-    state.status = status;
+describe.each([
+  ["hosted", initializeHostedRtlText],
+  ["standalone", initializeStandaloneRtlText],
+] as const)("%s registration", (_build, initializeRtlText) => {
+  it("registers only once across map remounts", async () => {
     await initializeRtlText();
-    expect(setRTLTextPlugin).not.toHaveBeenCalled();
-  },
-);
+    await initializeRtlText();
+    expect(setRTLTextPlugin).toHaveBeenCalledExactlyOnceWith(state.url, false);
+  });
+
+  it("registers when a worker has already requested RTL support", async () => {
+    state.status = "requested";
+    await initializeRtlText();
+    expect(setRTLTextPlugin).toHaveBeenCalledOnce();
+  });
+
+  it.each(["deferred", "loading", "loaded", "error"])(
+    "does not replace a plugin in the %s state",
+    async (status) => {
+      state.status = status;
+      await initializeRtlText();
+      expect(setRTLTextPlugin).not.toHaveBeenCalled();
+    },
+  );
+});
+
+it("provides a separate script URL for hosted workers", async () => {
+  await initializeHostedRtlText();
+  expect(state.url).not.toMatch(/^(data:|blob:)/);
+  expect(state.url).toContain("mapbox-gl-rtl-text");
+});
 
 it("provides a self-contained worker plugin that joins Arabic and orders RTL labels", async () => {
-  await initializeRtlText();
+  await initializeStandaloneRtlText();
   // A file:// page's worker cannot fetch a Blob URL from its opaque origin.
   expect(state.url).toMatch(/^data:text\/javascript/);
   const source = await (await fetch(state.url)).text();
