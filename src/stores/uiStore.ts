@@ -23,11 +23,13 @@ export const useUiStore = defineStore("ui", {
     // Set when an external trigger (e.g. the context menu) should open the
     // image export form in the Tools tab; the Tools panel consumes and resets it.
     requestExportTool: false,
+    showCoaGenerationPanel: false,
     showSearch: false,
     searchGeoMode: false,
     mapLayersPanelOpen: true,
     showToolbar: true,
     showTimeline: useLocalStorage("showTimeline", true),
+    timelineCollapsed: useLocalStorage("timelineCollapsed", false),
     showLeftPanel: true,
     showOrbatBreadcrumbs: useLocalStorage("showOrbatBreadcrumbs", true),
     goToNextOnSubmit: useLocalStorage("goToNextOnSubmit", true),
@@ -75,6 +77,7 @@ export const useWidthStore = defineStore("panelWidth", {
   state: () => ({
     orbatPanelWidth: useLocalStorage("orbatPanelWidth", 400),
     detailsWidth: useLocalStorage("detailsPanelWidth", 400),
+    timelineHeight: useLocalStorage("timelineHeight", 100),
   }),
   actions: {
     resetOrbatPanelWidth() {
@@ -83,6 +86,10 @@ export const useWidthStore = defineStore("panelWidth", {
 
     resetDetailsWidth() {
       this.detailsWidth = 400;
+    },
+
+    resetTimelineHeight() {
+      this.timelineHeight = 100;
     },
   },
 });

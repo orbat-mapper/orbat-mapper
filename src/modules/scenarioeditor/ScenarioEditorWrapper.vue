@@ -10,8 +10,21 @@ import ScenarioNotFoundPage from "@/modules/scenarioeditor/ScenarioNotFoundPage.
 import type { Scenario } from "@/types/scenarioModels";
 import ScenarioDraftRecoveryModal from "@/modules/scenarioeditor/ScenarioDraftRecoveryModal.vue";
 import ScenarioLeavePromptModal from "@/modules/scenarioeditor/ScenarioLeavePromptModal.vue";
+import {
+  fetchTrafficReportsPayload,
+  importTrafficReports,
+} from "@/importexport/importTrafficReports";
+import { useGeoStore } from "@/stores/geoStore";
+import { useNotifications } from "@/composables/notifications";
+import { useRoute, useRouter } from "vue-router";
 
 const props = defineProps<{ scenarioId: string }>();
+
+const route = useRoute();
+const router = useRouter();
+const geoStore = useGeoStore();
+const { send: notify } = useNotifications();
+const trafficImportStarted = ref(false);
 
 const { scenario, isReady } = useScenario();
 const localReady = ref(false);
@@ -85,6 +98,35 @@ async function loadScenarioForEditor(scenarioId: string) {
     console.error("Scenario not found in indexeddb");
   }
   localReady.value = true;
+  await maybeImportTrafficReports();
+}
+
+async function maybeImportTrafficReports() {
+  if (route.query.importTrafficReports !== "1" || trafficImportStarted.value) return;
+  trafficImportStarted.value = true;
+  try {
+    const payload = await fetchTrafficReportsPayload();
+    const result = importTrafficReports(scenario.value, payload);
+    if (result.center) {
+      geoStore.panToLocation(result.center, 1200);
+    }
+    await scenario.value.io.saveToIndexedDb();
+    notify({
+      type: "success",
+      message: `Imported ${result.importedFeatures} traffic reports (map markers + neutral symbols).`,
+    });
+  } catch (error) {
+    console.error(error);
+    notify({
+      type: "error",
+      message:
+        error instanceof Error ? error.message : "Failed to import traffic reports.",
+    });
+  } finally {
+    const nextQuery = { ...route.query };
+    delete nextQuery.importTrafficReports;
+    await router.replace({ query: nextQuery });
+  }
 }
 
 function promptToSaveBeforeLeaving() {

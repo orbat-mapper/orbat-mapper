@@ -16,7 +16,7 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   const toolbarStore = useMainToolbarStore();
   const widthStore = useWidthStore();
   const { showLeftPanel } = storeToRefs(ui);
-  const { orbatPanelWidth, detailsWidth } = storeToRefs(widthStore);
+  const { orbatPanelWidth, detailsWidth, timelineHeight } = storeToRefs(widthStore);
   const breakpoints = useBreakpoints(breakpointsTailwind);
   const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -35,6 +35,7 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   const hasSelection = computed(() =>
     Boolean(
       hasRouteDetails.value ||
+      ui.showCoaGenerationPanel ||
       selectedFeatureIds.value.size ||
       selectedUnitIds.value.size ||
       activeScenarioEventId.value ||
@@ -58,11 +59,35 @@ export function useScenarioMapModeController(resizeMap: () => void) {
   });
 
   watch(
+    () => ui.showCoaGenerationPanel,
+    (open) => {
+      if (open) detailsPanelClosed.value = false;
+    },
+  );
+
+  watch(
+    () =>
+      selectedFeatureIds.value.size ||
+      selectedUnitIds.value.size ||
+      activeScenarioEventId.value ||
+      activeReferenceFeature.value ||
+      activeMapLayerId.value ||
+      showScenarioInfo.value ||
+      hasRouteDetails.value,
+    (hasOtherContent) => {
+      if (hasOtherContent) ui.showCoaGenerationPanel = false;
+    },
+  );
+
+  watch(
     [
       showLeftPanel,
       orbatPanelWidth,
       showDetailsSidebar,
       detailsWidth,
+      timelineHeight,
+      () => ui.timelineCollapsed,
+      () => ui.showTimeline,
       () => ui.detailsPanelMode,
       isMobile,
     ],
@@ -102,6 +127,7 @@ export function useScenarioMapModeController(resizeMap: () => void) {
 
   function onCloseDetailsPanel() {
     detailsPanelClosed.value = true;
+    ui.showCoaGenerationPanel = false;
     clearSelected();
   }
 

@@ -52,6 +52,65 @@ Make a standalone build, that is one HTML file that runs from your disk without 
 
 For the different deployment options, see https://vitejs.dev/guide/static-deploy.html.
 
+## Shared traffic with ITDX-2026
+
+ORBAT Mapper and the [Watchtower MLCOA demo](https://github.com/Panoptica-Technologies/ITDX-2026)
+(ITDX-2026) share one synthetic intelligence traffic file:
+
+`public/traffic_reports_payload.json`
+
+It contains 100 map features (HUMINT, UAS, CONTACT, and related formats) for
+OPERATION BULLDOG. Each feature stores report text in `description` and structured
+fields (`timestamp_utc`, `report_type`, `equipment`, `mgrs`, and so on) in
+`userData`.
+
+### Import into a scenario
+
+After `pnpm run dev`, either:
+
+- Open `/scenario/<scenarioId>?importTrafficReports=1` to load the bundled payload, or
+- Use the scenario editor traffic-reports layer to import a JSONL file (converted to
+  the same payload shape in-app).
+
+Reports appear on the map as point features on the traffic reports layer.
+
+### Match the Streamlit demo
+
+Clone ITDX-2026 next to this repository:
+
+```text
+Repo/
+├── ITDX-2026/
+└── martin-orbat-mapper/
+```
+
+ITDX Streamlit reads the same payload via `scenario/script.yaml`:
+
+```yaml
+traffic:
+  enabled: true
+  path: ../martin-orbat-mapper/public/traffic_reports_payload.json
+```
+
+Run the operator UI from the ITDX repo:
+
+```console
+cd ../ITDX-2026
+uv sync --extra dev
+make ui
+```
+
+Both applications then parse identical report text and timestamps through their
+respective loaders (`scenario/traffic_loader.py` in ITDX, `importTrafficReports.ts`
+here).
+
+### COA generation
+
+With the ITDX API running (`uv run uvicorn engine.api:app --port 8765` in the
+ITDX repo), open **COA generation** in the scenario editor. On Reset, ORBAT syncs
+traffic from the map layer into ITDX SQLite (`data/traffic.db`) and starts an
+hourly MLCOA run. Vite proxies `/api/coa` to port 8765 during development.
+
 ## Use ORBAT Mapper without an internet connection
 
 ORBAT Mapper is a static client side web application. It can operate without an internet connection, but you must first

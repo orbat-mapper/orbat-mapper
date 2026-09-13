@@ -41,6 +41,15 @@ function maplibreRtlTextSource(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools(), tailwindcss(), maplibreRtlTextSource()],
+  server: {
+    proxy: {
+      "/api/coa": {
+        target: "http://127.0.0.1:8765",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/coa/, ""),
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

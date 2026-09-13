@@ -7,6 +7,7 @@ import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import { useScenarioMapModeController } from "@/modules/scenarioeditor/useScenarioMapModeController";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUiStore } from "@/stores/uiStore";
 
 const Harness = defineComponent({
   setup() {
@@ -27,6 +28,39 @@ describe("useScenarioMapModeController", () => {
     setActivePinia(pinia);
     const toolbarStore = useMainToolbarStore(pinia);
     toolbarStore.currentToolbar = "route";
+
+    const wrapper = mount(Harness, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeScenarioKey as symbol]: {
+            store: {
+              state: {
+                currentTime: 0,
+              },
+            },
+            time: {
+              setCurrentTime: vi.fn(),
+              add: vi.fn(),
+              subtract: vi.fn(),
+              goToNextScenarioEvent: vi.fn(),
+              goToPrevScenarioEvent: vi.fn(),
+            },
+          } as any,
+          [timeModalKey as symbol]: {
+            getModalTimestamp: vi.fn(),
+          },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toBe("open");
+  });
+
+  it("opens the details panel when COA generation is requested", () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUiStore(pinia).showCoaGenerationPanel = true;
 
     const wrapper = mount(Harness, {
       global: {

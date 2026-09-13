@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Traffic Reports Import</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        line-height: 1.5;
+      }
+      .ok {
+        color: #166534;
+      }
+      .err {
+        color: #991b1b;
+      }
+      pre {
+        background: #f3f4f6;
+        padding: 1rem;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Traffic Reports Import (legacy)</h1>
+    <p>
+      Prefer the in-app importer:
+      <a href="/scenario/5p7PvhlVlj?importTrafficReports=1"
+        >/scenario/5p7PvhlVlj?importTrafficReports=1</a
+      >
+    </p>
+    <p id="status">Loading payload…</p>
+    <pre id="log"></pre>
+    <script>
+      const logEl = document.getElementById("log");
+      const statusEl = document.getElementById("status");
+
+      function log(message) {
+        logEl.textContent += message + "\n";
+      }
+
+      function openScenarioDb() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("scenario-db", 5);
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      function txGet(store, key) {
+        return new Promise((resolve, reject) => {
+          const request = store.get(key);
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      function txPut(store, value, key) {
+        return new Promise((resolve, reject) => {
+          const request = key === undefined ? store.put(value) : store.put(value, key);
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      function removeExistingTrafficSide(scenario) {
+        scenario.sides = (scenario.sides || []).filter((side) => side.id !== "trafficReportsSide");
+      }
+
+      async function importPayload(payload) {
+        const db = await openScenarioDb();
+        const scenarioId = payload.scenarioId;
+        const scenario = await txGet(db.transaction("scenario-blobs", "readonly").objectStore("scenario-blobs"), scenarioId);
+        if (!scenario) {
+          throw new Error(`Scenario ${scenarioId} not found in IndexedDB`);
+        }
+
+        removeExistingTrafficSide(scenario);
+        scenario.sides.push(payload.side);
+        if (payload.startTime) {
+          scenario.startTime = payload.startTime;
+        }
+        scenario.meta = scenario.meta || {};
+        scenario.meta.lastModifiedDate = new Date().toISOString();
+
+        const tx = db.transaction(["scenario-blobs", "scenario-metadata"], "readwrite");
+        await txPut(tx.objectStore("scenario-blobs"), scenario, scenarioId);
+
+        const metadata = await txGet(tx.objectStore("scenario-metadata"), scenarioId);
+        if (metadata) {
+          metadata.modified = new Date();
+          await txPut(tx.objectStore("scenario-metadata"), metadata);
+        }
+
+        await new Promise((resolve, reject) => {
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+
+        const draftTx = db.transaction("scenario-drafts", "readwrite");
+        draftTx.objectStore("scenario-drafts").delete(scenarioId);
+        await new Promise((resolve, reject) => {
+          draftTx.oncomplete = () => resolve();
+          draftTx.onerror = () => reject(draftTx.error);
+        });
+
+        return scenarioId;
+      }
+
+      async function main() {
+        const params = new URLSearchParams(location.search);
+        const scenarioId = params.get("scenarioId") || "5p7PvhlVlj";
+        const auto = params.get("auto") === "1";
+
+        try {
+          const response = await fetch("/traffic_reports_payload.json", { cache: "no-store" });
+          if (!response.ok) throw new Error(`Failed to load payload (${response.status})`);
+          const payload = await response.json();
+          payload.scenarioId = scenarioId;
+          log(`Loaded ${payload.unitCount} units for scenario ${scenarioId}`);
+          await importPayload(payload);
+          statusEl.textContent = `Imported ${payload.unitCount} neutral traffic-report symbols. Reload the scenario page.`;
+          statusEl.className = "ok done";
+          log("Import complete.");
+          if (auto) {
+            setTimeout(() => {
+              location.href = `/scenario/${scenarioId}`;
+            }, 800);
+          }
+        } catch (error) {
+          statusEl.textContent = error.message || String(error);
+          statusEl.className = "err";
+          log(String(error));
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>

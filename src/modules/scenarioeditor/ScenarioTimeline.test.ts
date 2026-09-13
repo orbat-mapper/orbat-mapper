@@ -14,10 +14,11 @@ vi.mock("@vueuse/core", async () => {
   const actual = await vi.importActual<typeof import("@vueuse/core")>("@vueuse/core");
   const { ref } = await import("vue");
   const width = ref(1000);
+  const height = ref(100);
 
   return {
     ...actual,
-    useElementSize: () => ({ width }),
+    useElementSize: () => ({ width, height }),
     useThrottleFn: (fn: (...args: any[]) => any) => fn,
   };
 });

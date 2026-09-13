@@ -75,7 +75,7 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           <circle cx="100" cy="70" r="10" class="fill-gray-900 dark:fill-gray-300" />
         </svg>
         <span class="ml-2 hidden font-medium tracking-tight lg:inline-flex"
-          >ORBAT-Mapper</span
+          >Watchtower-MIL</span
         >
         <ChevronDownIcon
           class="text-muted-foreground group-hover:text-muted-foreground/80 ml-1 h-5 w-5"

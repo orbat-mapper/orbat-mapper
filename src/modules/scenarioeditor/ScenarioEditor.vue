@@ -63,6 +63,10 @@ import {
   NEW_SCENARIO_ROUTE,
 } from "@/router/names";
 import { useFileDropZone } from "@/composables/filedragdrop";
+import {
+  importTrafficReportsJsonlFile,
+  isTrafficReportsJsonlFile,
+} from "@/composables/trafficReportsJsonlImport";
 import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/commandPalette/CommandPalette.vue";
@@ -73,6 +77,7 @@ import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
+import CoaGenerationMenu from "@/modules/scenarioeditor/CoaGenerationMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
 import { CircleAlertIcon, GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
@@ -439,12 +444,18 @@ watchOnce(
 const { handleDroppedFiles } = useBasemapArchives();
 
 /**
- * Routes dropped files. Basemap archives (.pmtiles/.mapbundle) are loaded as basemaps; everything
- * else goes to the import wizard. A mixed drop is split, not rejected.
+ * Routes dropped files. Basemap archives (.pmtiles/.mapbundle) are loaded as basemaps,
+ * traffic report JSONL goes straight to its own importer, and everything else goes to the
+ * import wizard. A mixed drop is split, not rejected.
  */
 function onDrop(files: File[] | null) {
   if (!files || !files.length) return;
-  handleDroppedFiles(files, openImportWizard);
+  const trafficReports = files.filter(isTrafficReportsJsonlFile);
+  for (const file of trafficReports) {
+    void importTrafficReportsJsonlFile(props.activeScenario, file);
+  }
+  const remaining = files.filter((file) => !isTrafficReportsJsonlFile(file));
+  if (remaining.length) handleDroppedFiles(remaining, openImportWizard);
 }
 
 function openImportWizard(files: File[]) {
@@ -530,6 +541,7 @@ if (firstOverlayLayerId) {
           <PlaybackMenu
             v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === LEGACY_MAP_ROUTE"
           />
+          <CoaGenerationMenu />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
               class="bg-muted-foreground/20 border-0 lg:hidden"
