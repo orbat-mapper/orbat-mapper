@@ -59,7 +59,19 @@ const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
 const isDragging = ref(false);
 const redrawCounter = ref(0);
-const { width } = useElementSize(el);
+const { width, height: containerHeight } = useElementSize(el);
+
+/** Natural content height before the resizable panel scales rows. */
+const NATURAL_TIMELINE_HEIGHT = 94;
+const verticalScale = computed(() => {
+  const height = containerHeight?.value ?? 0;
+  if (!height) return 1;
+  return Math.max(0.85, Math.min(2.5, height / NATURAL_TIMELINE_HEIGHT));
+});
+
+function scaledRowHeight(basePx: number) {
+  return `${basePx * verticalScale.value}px`;
+}
 
 const hourFormatter = utcFormat("%H");
 function getMinorFormatter(majorWidth: number) {
@@ -391,7 +403,7 @@ function onContextMenuAction(action: TimelineAction) {
     <div
       ref="el"
       data-testid="scenario-timeline"
-      class="bg-sidebar border-border relative mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
+      class="bg-sidebar border-border relative flex h-full w-full min-h-0 transform flex-col overflow-x-hidden overflow-y-hidden text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
       @pointermove="onPointerMove"
@@ -401,27 +413,32 @@ function onContextMenuAction(action: TimelineAction) {
       @mouseleave="showHoverMarker = false"
       @contextmenu="onContextMenuOpen($event, onContextMenu)"
     >
-      <div class="bg-sidebar flex h-3.5 items-center justify-center overflow-clip">
+      <div
+        class="bg-sidebar flex shrink-0 items-center justify-center overflow-clip"
+        :style="{ height: scaledRowHeight(14) }"
+      >
         <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
       </div>
       <div
-        class="touch-none text-sm select-none"
+        class="min-h-0 flex-1 touch-none text-sm select-none"
         :class="animate ? 'transition-all' : 'transition-none'"
         :style="`transform:translate(${totalXOffset}px)`"
       >
         <div class="flex justify-center">
           <div
-            class="relative h-4 flex-none text-center"
-            :style="`width: ${timelineWidth}px`"
+            class="relative flex-none text-center"
+            :style="{ width: `${timelineWidth}px`, height: scaledRowHeight(16) }"
           >
             <div
               v-for="{ x, count } in binsWithX"
               :key="x"
-              class="absolute top-1 h-2 w-4 rounded border border-gray-500"
-              :style="`left: ${x}px; width: ${Math.max(
-                majorWidth / 24,
-                8,
-              )}px;background-color: ${countColor(count)}`"
+              class="absolute top-1 rounded border border-gray-500"
+              :style="{
+                left: `${x}px`,
+                width: `${Math.max(majorWidth / 24, 8)}px`,
+                height: scaledRowHeight(8),
+                backgroundColor: countColor(count),
+              }"
               @mousemove.stop
               :title="`${count} unit events`"
             ></div>
@@ -430,8 +447,12 @@ function onContextMenuAction(action: TimelineAction) {
               type="button"
               :key="event.id"
               data-testid="scenario-event-marker"
-              class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
-              :style="`left: ${x}px;`"
+              class="absolute -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
+              :style="{
+                left: `${x}px`,
+                width: scaledRowHeight(16),
+                height: scaledRowHeight(16),
+              }"
               @pointerdown.stop
               @pointerup.stop
               @mousemove.stop
@@ -440,30 +461,32 @@ function onContextMenuAction(action: TimelineAction) {
             />
           </div>
         </div>
-        <div class="flex justify-center">
-          <div
-            class="relative flex-none text-center"
-            :style="`width: ${timelineWidth}px`"
-          ></div>
-        </div>
-        <div class="border-muted-foreground flex h-6 justify-center">
+        <div class="border-muted-foreground flex justify-center">
           <div
             v-for="tick in majorTicks"
             :key="tick.timestamp"
             data-testid="major-tick"
-            class="border-muted-foreground h-6 flex-none overflow-hidden border-r border-b pl-0.5 leading-6 whitespace-nowrap"
-            :style="`width: ${tick.width}px`"
+            class="border-muted-foreground flex-none overflow-hidden border-r border-b pl-0.5 whitespace-nowrap"
+            :style="{
+              width: `${tick.width}px`,
+              height: scaledRowHeight(24),
+              lineHeight: scaledRowHeight(24),
+            }"
           >
             {{ tick.showLabel ? tick.label : "" }}
           </div>
         </div>
-        <div class="flex h-4 justify-center text-xs">
+        <div class="flex justify-center text-xs">
           <div
             v-for="tick in minorTicks"
             :key="tick.timestamp"
             data-testid="minor-tick"
-            class="text-muted-foreground border-muted-foreground h-4 min-h-0 flex-none overflow-hidden border-r pl-0.5 leading-4 whitespace-nowrap"
-            :style="`width: ${tick.width}px`"
+            class="text-muted-foreground border-muted-foreground min-h-0 flex-none overflow-hidden border-r pl-0.5 whitespace-nowrap"
+            :style="{
+              width: `${tick.width}px`,
+              height: scaledRowHeight(16),
+              lineHeight: scaledRowHeight(16),
+            }"
           >
             {{ tick.showLabel ? tick.label : "" }}
           </div>

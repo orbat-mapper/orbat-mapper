@@ -9,7 +9,9 @@ import ScenarioMapLayerDetails from "@/modules/scenarioeditor/ScenarioMapLayerDe
 import ScenarioInfoPanel from "@/modules/scenarioeditor/ScenarioInfoPanel.vue";
 import ReferenceFeatureDetails from "@/modules/scenarioeditor/ReferenceFeatureDetails.vue";
 import MapEditorRouteContent from "@/modules/scenarioeditor/MapEditorRouteContent.vue";
+import CoaGenerationPanel from "@/modules/scenarioeditor/CoaGenerationPanel.vue";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
+import { useUiStore } from "@/stores/uiStore";
 import { injectStrict } from "@/utils";
 import { routeDetailsPanelKey } from "@/components/injects";
 
@@ -27,6 +29,7 @@ const {
   activeDetailsPanel,
 } = useSelectedItems();
 const toolbarStore = useMainToolbarStore();
+const ui = useUiStore();
 const routeDetailsPanel = injectStrict(routeDetailsPanelKey);
 const showRouteContent = computed(() => toolbarStore.currentToolbar === "route");
 </script>
@@ -40,6 +43,10 @@ const showRouteContent = computed(() => toolbarStore.currentToolbar === "route")
     @clear-current-leg="routeDetailsPanel.clearCurrentLeg()"
     @finish="routeDetailsPanel.finishRoute()"
     @end-drawing="routeDetailsPanel.endRouting()"
+  />
+  <CoaGenerationPanel
+    v-else-if="ui.showCoaGenerationPanel"
+    :class="props.contentClass"
   />
   <ControlMeasureDetails
     v-else-if="activeDetailsPanel === 'tacticalGraphic'"

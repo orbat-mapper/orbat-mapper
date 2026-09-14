@@ -63,6 +63,15 @@ import {
   type NScenarioReferenceLayer,
   type NScenarioStackLayer,
 } from "@/types/scenarioStackLayers";
+import { useFileDropZone } from "@/composables/filedragdrop";
+import { trafficReportsImportOptions } from "@/importexport/trafficReportsImportOptions";
+import { Input } from "@/components/ui/input";
+import { UploadIcon } from "@lucide/vue";
+import {
+  importTrafficReportsJsonlFile,
+  isTrafficReportsJsonlFile,
+} from "@/composables/trafficReportsJsonlImport";
+import { TRAFFIC_REPORTS_LAYER_ID } from "@/importexport/importTrafficReports";
 
 const emit = defineEmits(["feature-click"]);
 
@@ -72,10 +81,9 @@ const scenarioDraw = inject(scenarioDrawKey, null);
 const tacticalGraphicRenderFeed = inject(tacticalGraphicRenderFeedKey, null);
 const uiStore = useUiStore();
 const { send: notify } = useNotifications();
-const {
-  geo,
-  store: { groupUpdate },
-} = injectStrict(activeScenarioKey);
+const activeScenario = injectStrict(activeScenarioKey);
+const { geo, store } = activeScenario;
+const { groupUpdate } = store;
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
@@ -200,6 +208,42 @@ const { selectedFeatureIds, selectedMapLayerIds, activeMapLayerId, activeFeature
   useSelectedItems();
 
 const editedLayerId = ref<FeatureId | null>(null);
+const trafficReportsDropZone = ref<HTMLDivElement>();
+const trafficReportsInput = ref<HTMLInputElement>();
+const importingTrafficReports = ref(false);
+// Highlight only. The editor-wide drop target in ScenarioEditor already imports dropped
+// JSONL, and both targets receive the same drop, so importing here too would double it.
+const { isOverDropZone: isOverTrafficReportsDropZone } =
+  useFileDropZone(trafficReportsDropZone);
+
+async function importTrafficReportsJsonl(file: File) {
+  if (!isTrafficReportsJsonlFile(file)) {
+    notify({ type: "error", message: "Select a .jsonl traffic reports file." });
+    return;
+  }
+
+  importingTrafficReports.value = true;
+  try {
+    const imported = await importTrafficReportsJsonlFile(activeScenario, file);
+    if (!imported) return;
+    activeLayerId.value = TRAFFIC_REPORTS_LAYER_ID;
+    await nextTick();
+    engineRef.value?.layers.zoomToScenarioLayer(TRAFFIC_REPORTS_LAYER_ID);
+  } finally {
+    importingTrafficReports.value = false;
+  }
+}
+
+function openTrafficReportsFilePicker() {
+  trafficReportsInput.value?.click();
+}
+
+function onTrafficReportsFileChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) void importTrafficReportsJsonl(file);
+  input.value = "";
+}
 
 function calculateSelectedFeatureIds(newFeatureId: FeatureId): FeatureId[] {
   const lastSelectedId = [...selectedFeatureIds.value].pop();
@@ -651,6 +695,51 @@ onUnmounted(() => {
 
 <template>
   <div>
+    <div
+      ref="trafficReportsDropZone"
+      class="border-border bg-muted/20 hover:border-primary/60 mb-4 rounded-md border-2 border-dashed p-4 text-center transition-colors"
+      :class="{ 'border-primary bg-primary/5': isOverTrafficReportsDropZone }"
+    >
+      <input
+        ref="trafficReportsInput"
+        class="sr-only"
+        type="file"
+        accept=".jsonl,application/x-ndjson"
+        @change="onTrafficReportsFileChange"
+      />
+      <button
+        type="button"
+        class="text-muted-foreground hover:text-foreground flex w-full flex-col items-center gap-1 text-sm"
+        :disabled="importingTrafficReports"
+        @click="openTrafficReportsFilePicker"
+      >
+        <UploadIcon class="size-5" />
+        <span class="font-medium">
+          {{ importingTrafficReports ? "Importing…" : "Drop traffic reports JSONL here" }}
+        </span>
+        <span class="text-xs">or click to select a file</span>
+      </button>
+    </div>
+    <div class="mb-4 grid grid-cols-2 gap-3">
+      <label class="flex flex-col gap-1 text-xs">
+        <span class="text-muted-foreground">Rebase reports to year</span>
+        <Input
+          type="number"
+          min="1900"
+          max="2999"
+          v-model.number="trafficReportsImportOptions.targetYear"
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-xs">
+        <span class="text-muted-foreground">Visible for (min, 0 = keep)</span>
+        <Input
+          type="number"
+          min="0"
+          step="15"
+          v-model.number="trafficReportsImportOptions.visibilityMinutes"
+        />
+      </label>
+    </div>
     <div class="group flex items-center justify-end">
       <DotsMenu :items="mapLayersMenuItems" />
     </div>

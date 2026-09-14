@@ -2,7 +2,7 @@
 import type { StyleValue } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
-import { PanelLeftOpenIcon as ShowPanelIcon } from "@lucide/vue";
+import { PanelLeftOpenIcon as ShowPanelIcon, PanelBottomOpenIcon as ShowTimelineIcon } from "@lucide/vue";
 import MapTimeController from "@/components/MapTimeController.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import MapEditorDetailsPanel from "@/modules/scenarioeditor/MapEditorDetailsPane
 import MapEditorMobilePanel from "@/modules/scenarioeditor/MapEditorMobilePanel.vue";
 import DetailsPanelContent from "@/modules/scenarioeditor/DetailsPanelContent.vue";
 import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioActions.vue";
-import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
+import ScenarioTimelinePanel from "@/modules/scenarioeditor/ScenarioTimelinePanel.vue";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 import { useUiStore } from "@/stores/uiStore";
 
@@ -140,7 +140,18 @@ const ui = useUiStore();
     />
     <slot name="after-keyboard" />
     <UnitBreadcrumbs v-if="ui.showOrbatBreadcrumbs && !isMobile" />
-    <ScenarioTimeline v-if="ui.showTimeline" />
+    <ScenarioTimelinePanel v-if="ui.showTimeline && !isMobile" />
+    <Button
+      v-if="!isMobile && !ui.showTimeline"
+      type="button"
+      variant="secondary"
+      class="pointer-events-auto absolute bottom-2 left-1/2 z-20 h-7 -translate-x-1/2 rounded-md px-2"
+      title="Show timeline"
+      @click="ui.showTimeline = true"
+    >
+      <ShowTimelineIcon class="mr-1 size-4" />
+      Timeline
+    </Button>
     <slot name="modals" />
   </div>
 </template>

@@ -42,6 +42,7 @@ import ScenarioLayerItemState from "@/modules/scenarioeditor/ScenarioLayerItemSt
 import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
 import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
+import ScenarioFeatureLineStringMgrsEditor from "@/modules/scenarioeditor/ScenarioFeatureLineStringMgrsEditor.vue";
 import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeaturesGeometryStats.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import { Button } from "@/components/ui/button";
@@ -444,6 +445,10 @@ function assignFeatureToUnit() {
           </PanelDataGrid>
         </TabsContent>
         <TabsContent value="1" class="mx-4">
+          <ScenarioFeatureLineStringMgrsEditor
+            v-if="feature && geometryType === 'LineString' && !isEditing"
+            :feature="feature"
+          />
           <ScenarioFeatureGeometryStats v-if="feature && !isEditing" :feature="feature" />
           <ScenarioFeaturesGeometryStats
             v-else-if="isMultiMode && selectedFeatures.length"
