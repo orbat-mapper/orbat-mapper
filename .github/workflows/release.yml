@@ -42,12 +42,19 @@ jobs:
       - name: Name standalone app
         run: mv dist-singlefile/index.html orbat-mapper-standalone-${{ github.ref_name }}.html
 
+      - name: Generate release checksums
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum "orbat-mapper-${RELEASE_TAG}.zip" "orbat-mapper-standalone-${RELEASE_TAG}.html" > SHA256SUMS.txt
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             orbat-mapper-${{ github.ref_name }}.zip
             orbat-mapper-standalone-${{ github.ref_name }}.html
+            SHA256SUMS.txt
           generate_release_notes: true
           draft: false
           prerelease: false
