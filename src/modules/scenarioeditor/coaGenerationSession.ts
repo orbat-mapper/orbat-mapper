@@ -12,6 +12,7 @@ import {
   type CoaApiLogEntry,
   type CoaExtendResponse,
   type CoaResetResponse,
+  type EntityEvidence,
 } from "@/modules/scenarioeditor/coaGenerationApi";
 import {
   collectTrafficReports,
@@ -47,6 +48,39 @@ export interface CoaRunSnapshot {
   observationCount: number;
   skippedCount: number;
   stepCount: number;
+  entityEvidence: (EntityEvidence & { stepLabel: string }) | null;
+}
+
+export interface EntityEvidenceRow {
+  entity: string;
+  shares: { hypothesis: string; value: number }[];
+  topHypothesis: string;
+  topShare: number;
+  spread: number;
+}
+
+export function toEntityEvidenceRows(evidence: EntityEvidence): EntityEvidenceRow[] {
+  return evidence.entities.map((entity, entityIndex) => {
+    const logValues = evidence.hypotheses.map(
+      (_, hypothesisIndex) => evidence.log_Z[hypothesisIndex]?.[entityIndex] ?? -Infinity,
+    );
+    const maxLog = Math.max(...logValues);
+    const weights = logValues.map((value) => Math.exp(value - maxLog));
+    const total = weights.reduce((sum, value) => sum + value, 0);
+    const shares = evidence.hypotheses.map((hypothesis, hypothesisIndex) => ({
+      hypothesis,
+      value: weights[hypothesisIndex] / total,
+    }));
+    const top = shares.reduce((best, share) => (share.value > best.value ? share : best));
+
+    return {
+      entity,
+      shares,
+      topHypothesis: top.hypothesis,
+      topShare: top.value,
+      spread: evidence.spread[entityIndex] ?? 0,
+    };
+  });
 }
 
 const PLAY_INTERVAL_MS = 350;
@@ -72,6 +106,7 @@ function defaultSnapshot(): CoaRunSnapshot {
     observationCount: 0,
     skippedCount: 0,
     stepCount: 0,
+    entityEvidence: null,
   };
 }
 
@@ -112,16 +147,20 @@ function formatApiTime(value: string) {
 }
 
 function applyStepResponse(response: Awaited<ReturnType<typeof stepCoaSession>>) {
+  const stepLabel = formatApiTime(response.step_time);
   snapshot.value = {
     ...snapshot.value,
     stepIndex: response.step_index,
-    stepLabel: formatApiTime(response.step_time),
+    stepLabel,
     stepTime: response.step_time,
     mlcoa: response.mlcoa as CoaHypothesisName,
     p_c: response.p_c,
     entropy: response.entropy,
     flags: response.flags,
     done: response.done,
+    entityEvidence: response.entity_evidence
+      ? { ...response.entity_evidence, stepLabel }
+      : snapshot.value.entityEvidence,
   };
   appendApiLog(response.log);
 
@@ -353,12 +392,19 @@ const ranking = computed(() =>
   })).sort((a, b) => b.value - a.value),
 );
 
+const entityEvidenceRows = computed(() =>
+  snapshot.value.entityEvidence
+    ? toEntityEvidenceRows(snapshot.value.entityEvidence)
+    : [],
+);
+
 export function useCoaGenerationSession() {
   return {
     snapshot,
     logEntries,
     sortedLogEntries,
     ranking,
+    entityEvidenceRows,
     playing,
     loading,
     errorMessage,

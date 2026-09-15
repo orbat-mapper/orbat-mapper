@@ -31,6 +31,18 @@ vi.mock("@/modules/scenarioeditor/coaGenerationApi", () => ({
     latency_ms: 12,
     report_count: 1,
     log: [{ t: "2014-06-08T00:00:00+00:00", kind: "MLCOA", message: "MLCOA SPOIL" }],
+    entity_evidence: {
+      hypotheses: ["SPOIL", "INTEG", "DISP", "HOLD"],
+      entities: ["E1", "E2"],
+      log_Z: [
+        [-1000, -1003],
+        [-1001, -1003],
+        [-1002, -1003],
+        [-1003, -1003],
+      ],
+      evidence: 1e-24,
+      spread: [0.12, 0.03],
+    },
   })),
   applyCoaFrago: vi.fn(async () => ({
     mlcoa: "INTEG",
@@ -70,9 +82,8 @@ describe("useCoaGenerationSession", () => {
   });
 
   it("loads traffic reports on reset and records MLCOA log lines when stepping", async () => {
-    const { useCoaGenerationSession, bindCoaGenerationScenario } = await import(
-      "@/modules/scenarioeditor/coaGenerationSession"
-    );
+    const { useCoaGenerationSession, bindCoaGenerationScenario } =
+      await import("@/modules/scenarioeditor/coaGenerationSession");
     bindCoaGenerationScenario({
       store: { state: { id: "scenario-test" } },
       time: { setCurrentTime: vi.fn() },
@@ -82,13 +93,21 @@ describe("useCoaGenerationSession", () => {
 
     expect(session.snapshot.value.observationCount).toBe(1);
     expect(session.snapshot.value.stepIndex).toBe(1);
+    expect(session.snapshot.value.entityEvidence?.entities).toEqual(["E1", "E2"]);
+    expect(session.entityEvidenceRows.value[0].topHypothesis).toBe("SPOIL");
+    expect(session.entityEvidenceRows.value[1].topShare).toBeCloseTo(0.25);
+    expect(
+      session.entityEvidenceRows.value[0].shares.reduce(
+        (sum, share) => sum + share.value,
+        0,
+      ),
+    ).toBeCloseTo(1);
     expect(session.logEntries.value.some((entry) => entry.kind === "MLCOA")).toBe(true);
   });
 
   it("syncs run belief from applied FRAGO priors through the API", async () => {
-    const { useCoaGenerationSession, bindCoaGenerationScenario } = await import(
-      "@/modules/scenarioeditor/coaGenerationSession"
-    );
+    const { useCoaGenerationSession, bindCoaGenerationScenario } =
+      await import("@/modules/scenarioeditor/coaGenerationSession");
     bindCoaGenerationScenario({
       store: { state: { id: "scenario-test" } },
       time: { setCurrentTime: vi.fn() },

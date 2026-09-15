@@ -106,10 +106,35 @@ here).
 
 ### COA generation
 
-With the ITDX API running (`uv run uvicorn engine.api:app --port 8765` in the
-ITDX repo), open **COA generation** in the scenario editor. On Reset, ORBAT syncs
-traffic from the map layer into ITDX SQLite (`data/traffic.db`) and starts an
-hourly MLCOA run. Vite proxies `/api/coa` to port 8765 during development.
+Start the ITDX COA API first (in the sibling `ITDX-2026` repo), then open
+**COA generation** in the scenario editor. On Reset, ORBAT syncs traffic from
+the map layer into ITDX SQLite and starts an hourly MLCOA run. Vite proxies
+`/api/coa` to port 8765 during development.
+
+**Local (no Docker):**
+
+```console
+cd ../ITDX-2026
+uv sync --extra api
+uv run uvicorn engine.api:app --port 8765
+```
+
+**Docker:**
+
+```console
+cd ../ITDX-2026
+docker compose up --build -d
+```
+
+After you patch ITDX API code, rebuild and recreate the container (a plain
+`restart` keeps the old image):
+
+```console
+cd ../ITDX-2026
+docker compose up --build -d
+```
+
+See the ITDX README for logs, health checks, and stopping the stack.
 
 ## Use ORBAT Mapper without an internet connection
 

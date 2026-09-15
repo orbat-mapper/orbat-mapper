@@ -13,6 +13,14 @@ export interface CoaApiLogEntry {
   message: string;
 }
 
+export interface EntityEvidence {
+  hypotheses: string[];
+  entities: string[];
+  log_Z: number[][];
+  evidence: number;
+  spread: number[];
+}
+
 export interface CoaStepResponse {
   done: boolean;
   step_index: number;
@@ -24,6 +32,7 @@ export interface CoaStepResponse {
   latency_ms: number;
   report_count: number;
   log: CoaApiLogEntry[];
+  entity_evidence: EntityEvidence | null;
 }
 
 export interface CoaResetResponse {
