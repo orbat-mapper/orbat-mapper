@@ -272,6 +272,7 @@ async function renderViewportFrame(
     symbolPixelRatio: outputScale,
     symbolDisplayScale: 1,
     resetRotation,
+    flattenTerrain: isGeoreferencedFormat(options.outputFormat),
     decorations: options.decorations,
     decorationReferenceShortSide: options.decorationReferenceShortSide,
     produceRgba: options.outputFormat === "geotiff",
@@ -338,6 +339,7 @@ async function renderViaHiddenMap(
     symbolPixelRatio?: number;
     symbolDisplayScale?: number;
     resetRotation?: boolean;
+    flattenTerrain?: boolean;
     decorations?: MapDecorations;
     decorationReferenceShortSide?: number;
     /**
@@ -377,6 +379,8 @@ async function renderViaHiddenMap(
   let hiddenMap: MlMap | null = null;
   try {
     const style = cloneStyleForExport(sourceMap.getStyle());
+    // An affine georeference assumes a flat surface. Keep hillshading, which is 2D.
+    if (options.flattenTerrain) delete style.terrain;
     hiddenMap = new MlMapConstructor({
       container,
       style,
@@ -533,6 +537,7 @@ async function renderBounds(
     symbolPixelRatio: options.symbolPixelRatio,
     symbolDisplayScale: options.symbolDisplayScale,
     resetRotation,
+    flattenTerrain: isGeoreferencedFormat(options.outputFormat),
     decorations: options.decorations,
     decorationReferenceShortSide: options.decorationReferenceShortSide,
     produceRgba: options.outputFormat === "geotiff",
