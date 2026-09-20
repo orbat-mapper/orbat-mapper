@@ -11,6 +11,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
 
+import TerrainSettings from "./TerrainSettings.vue";
+import { useTerrainStore } from "@/stores/terrainStore";
+
+const terrainSettings = useTerrainStore();
 const props = defineProps<{ mlMap?: MlMap | null }>();
 
 const mapRef = shallowRef<MlMap | undefined>(props.mlMap ?? undefined);
@@ -100,7 +104,12 @@ const hexSizeLabel = computed(() => {
   return `~${parts.join(" · ")}`;
 });
 
-const activeCount = computed(() => Number(showHexGrid.value));
+const activeCount = computed(
+  () =>
+    Number(showHexGrid.value) +
+    Number(terrainSettings.terrainEnabled) +
+    Number(terrainSettings.hillshadeEnabled),
+);
 </script>
 
 <template>
@@ -129,8 +138,12 @@ const activeCount = computed(() => Number(showHexGrid.value));
         </span>
       </MainToolbarButton>
     </PopoverTrigger>
-    <PopoverContent class="w-80 p-0" align="end">
-      <header class="flex items-center gap-2 border-b px-3 py-2">
+    <PopoverContent
+      class="flex max-h-(--reka-popover-content-available-height) w-80 flex-col p-0"
+      align="end"
+      :collision-padding="8"
+    >
+      <header class="flex shrink-0 items-center gap-2 border-b px-3 py-2">
         <FlaskConicalIcon class="size-4 text-amber-500" />
         <div class="flex flex-col">
           <span class="text-sm font-medium">Labs</span>
@@ -138,7 +151,8 @@ const activeCount = computed(() => Number(showHexGrid.value));
         </div>
       </header>
 
-      <div class="max-h-[70vh] space-y-1 overflow-y-auto p-3">
+      <div class="flex max-h-[70vh] min-h-0 flex-col gap-3 overflow-y-auto p-3">
+        <TerrainSettings />
         <section class="rounded-md border">
           <div class="flex items-center justify-between gap-2 px-3 py-2">
             <div class="flex items-center gap-2">

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added the option to replace existing feature and control-measure overlay layers during scenario import, matched by layer ID, or import them as separate copies. Replacement preserves layer order and previews added, changed, removed, and unchanged items. The whole import can be reverted with Undo.
 - Added configurable MGRS and latitude/longitude reference grids to MapLibre mode, with adaptive line density and collision-managed labels.
 - Added device-level grid preferences for interval, colour, opacity, and line width. Grid visibility remains session-only and starts hidden when a map is opened.
+- Added experimental 3D terrain and hillshading to MapLibre mode, available from the Labs menu. Elevation data comes from Mapterhorn and requires a network connection. Terrain exaggeration, hillshade strength, light direction, anchoring, and colours are adjustable, and the pointer location readout shows the ground elevation under the cursor. Terrain and hillshading survive a basemap change, and georeferenced image exports are rendered without terrain.
 
 ### Changed
 

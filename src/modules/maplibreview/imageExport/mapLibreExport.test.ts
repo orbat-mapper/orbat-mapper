@@ -522,6 +522,37 @@ describe("exportViewportFrame (georeferenced)", () => {
     expect(maplibreMock.instances[0].options.bearing).toBe(0);
     expect(maplibreMock.instances[0].options.pitch).toBe(0);
   });
+  it("flattens georeferenced exports but preserves hillshade and the live terrain", async () => {
+    maplibreMock.instances.length = 0;
+    const style = {
+      version: 8,
+      sources: {},
+      layers: [{ id: "shading", type: "hillshade", source: "dem" }],
+      terrain: { source: "dem", exaggeration: 3 },
+    };
+    const sourceMap = sourceMapForFrame();
+    vi.mocked(sourceMap.getStyle).mockReturnValue(style as ReturnType<MlMap["getStyle"]>);
+    await exportViewportFrame(
+      sourceMap,
+      { x: 0, y: 0, width: 600, height: 400 },
+      { outputFormat: "world-file-zip" },
+    );
+    expect(
+      (maplibreMock.instances[0].options.style as ReturnType<MlMap["getStyle"]>).terrain,
+    ).toBeUndefined();
+    expect(
+      (maplibreMock.instances[0].options.style as ReturnType<MlMap["getStyle"]>).layers,
+    ).toEqual(style.layers);
+    expect(style.terrain.exaggeration).toBe(3);
+    await exportViewportFrame(
+      sourceMap,
+      { x: 0, y: 0, width: 600, height: 400 },
+      { outputFormat: "png", resetRotation: true },
+    );
+    expect(
+      (maplibreMock.instances[1].options.style as ReturnType<MlMap["getStyle"]>).terrain,
+    ).toEqual(style.terrain);
+  });
 });
 
 describe("exportViewportFrame (geotiff)", () => {
