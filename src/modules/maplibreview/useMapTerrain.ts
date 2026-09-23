@@ -8,6 +8,7 @@ import {
   syncHillshadeOrder,
   syncMapTerrain,
 } from "./mapTerrain";
+import { installTerrainRttFilter } from "./terrainRttFilter";
 
 /** The map owns listeners and sources; opening/closing Labs only edits preferences. */
 export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
@@ -19,6 +20,7 @@ export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
       let ready = false;
       let frame: number | undefined;
       let basemapIds = new Set<string>();
+      const uninstallRttFilter = installTerrainRttFilter(map);
 
       // getStyle() serializes the whole style; this runs on every settings change,
       // including each tick of a slider drag, so ask only for the layer order.
@@ -69,6 +71,7 @@ export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
       const stop = watch(() => settings.display, sync, { deep: true });
       onCleanup(() => {
         stop();
+        uninstallRttFilter();
         if (frame !== undefined) cancelAnimationFrame(frame);
         map.off("styledataloading", onStyleLoading);
         map.off("style.load", onStyleLoad);

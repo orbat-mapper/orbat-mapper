@@ -46,6 +46,11 @@ function createRangeRings(unit: NUnit): Feature<Polygon, RingIdProperties>[] {
 }
 
 export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
+  // Playback redraws on every tick. Pushing unchanged data still reloads the source's
+  // tiles, and with terrain enabled that re-renders every draped texture it covers.
+  let lastSource: GeoJSONSource | undefined;
+  let lastData: string | undefined;
+
   function setupRangeRingLayers(beforeLayerId?: string) {
     if (!mlMap.getSource(RANGE_RING_SOURCE_ID)) {
       mlMap.addSource(RANGE_RING_SOURCE_ID, {
@@ -140,6 +145,11 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
       properties: resolveRingStyle(f.properties!.id, f.properties!.isGroup),
     }));
 
+    const data = JSON.stringify(features);
+    // A basemap swap replaces the source, which must be filled again.
+    if (source === lastSource && data === lastData) return;
+    lastSource = source;
+    lastData = data;
     source.setData({ type: "FeatureCollection", features });
   }
 
