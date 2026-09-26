@@ -106,6 +106,7 @@ export function doctrinalControlMeasureParams(
 export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
   "smooth",
   "smoothResolution",
+  "smoothMode",
   "multilineLabel",
 ];
 
@@ -159,6 +160,14 @@ export function canUseMultilineControlMeasureLabel(
     metadataFor(kind)?.params?.some(
       (param) => param.key === "multilineLabel" && param.type === "boolean",
     ) ?? false
+  );
+}
+
+/** The available smoothing styles, when this kind supports more than one. */
+export function getSmoothModeParam(kind: ControlMeasureKind | undefined) {
+  return metadataFor(kind)?.params?.find(
+    (param): param is Extract<ParamDescriptor, { type: "enum" }> =>
+      param.key === "smoothMode" && param.type === "enum",
   );
 }
 
@@ -374,6 +383,13 @@ export function newControlMeasureDefaults(
     }
     if (canSmoothControlMeasureKind(graphicKind)) {
       if (typeof authored.smooth === "boolean") narrowedOptions.smooth = authored.smooth;
+      if (
+        getSmoothModeParam(graphicKind)?.options.some(
+          ({ value }) => value === authored.smoothMode,
+        )
+      ) {
+        narrowedOptions.smoothMode = authored.smoothMode;
+      }
       if (
         getSmoothResolutionParam(graphicKind) &&
         typeof authored.smoothResolution === "number"

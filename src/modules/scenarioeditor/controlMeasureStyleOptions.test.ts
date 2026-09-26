@@ -158,3 +158,13 @@ describe("newControlMeasureDefaults", () => {
     expect(result.style).not.toBe(defaults.style);
   });
 });
+
+it("keeps supported smoothing styles in draw defaults", () => {
+  const defaults = { options: { smooth: true, smoothMode: "curve" } };
+  expect(newControlMeasureDefaults(defaults, "main-attack").options).toEqual(
+    defaults.options,
+  );
+  expect(newControlMeasureDefaults(defaults, "phase-line").options).toEqual({
+    smooth: true,
+  });
+});

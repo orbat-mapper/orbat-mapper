@@ -9,7 +9,6 @@
  */
 import { cloneControlMeasure } from "@orbat-mapper/control-measures";
 import type { ControlMeasure } from "@orbat-mapper/control-measures";
-import type { Position } from "geojson";
 import type { TScenario } from "@/scenariostore";
 import type {
   NTacticalGraphicLayerItem,
@@ -43,17 +42,12 @@ export function toEditStartMeasure(item: NTacticalGraphicLayerItem): ControlMeas
 export function toControlMeasureEditUpdate(
   measure: ControlMeasure,
 ): TacticalGraphicLayerItemUpdate {
-  const update: TacticalGraphicLayerItemUpdate = {
-    controlPoints: measure.controlPoints.map((position) => [...position] as Position),
-  };
-  if (measure.options !== undefined) {
-    update.options = { ...(measure.options as TacticalGraphicOptions) };
-  }
-  if (measure.textAmplifiers !== undefined) {
-    update.textAmplifiers = { ...measure.textAmplifiers };
-  }
-  if (measure.amplifierPlacements !== undefined) {
-    update.amplifierPlacements = { ...measure.amplifierPlacements };
+  const copy = cloneControlMeasure(measure);
+  const update: TacticalGraphicLayerItemUpdate = { controlPoints: copy.controlPoints };
+  if (copy.options !== undefined) update.options = copy.options as TacticalGraphicOptions;
+  if (copy.textAmplifiers !== undefined) update.textAmplifiers = copy.textAmplifiers;
+  if (copy.amplifierPlacements !== undefined) {
+    update.amplifierPlacements = copy.amplifierPlacements;
   }
   return update;
 }

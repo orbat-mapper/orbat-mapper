@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 import { effectScope, nextTick } from "vue";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
+import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { TScenario } from "@/scenariostore";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
@@ -28,7 +29,7 @@ const EDITED_POINTS = [
   [21, 71],
 ];
 
-function createScenario(): TScenario {
+function createScenario(graphicKind = "phase-line"): TScenario {
   const store = useNewScenarioStore({
     id: "scenario-1",
     type: "ORBAT-mapper",
@@ -46,7 +47,7 @@ function createScenario(): TScenario {
           {
             id: "cm-1",
             kind: "tacticalGraphic",
-            graphicKind: "phase-line",
+            graphicKind,
             controlPoints: [
               [10, 60],
               [11, 61],
@@ -81,8 +82,8 @@ function storedControlPoints(scenario: TScenario, id = "cm-1") {
   return (scenario.store.state.layerItemMap[id] as any).controlPoints;
 }
 
-function setup({ recordShape = false } = {}) {
-  const scenario = createScenario();
+function setup({ recordShape = false, graphicKind = "phase-line" } = {}) {
+  const scenario = createScenario(graphicKind);
   // The session opens on the stored geometry and is moved to `EDITED_POINTS`, which is
   // what a settled edit must fold in.
   const fake = createTacticalDrawSurfaceFake({ editControlPoints: EDITED_POINTS });
@@ -291,5 +292,49 @@ describe("useControlMeasureEditSession", () => {
     ]);
     expect(item.state).toHaveLength(1);
     expect(item.state[0].patch).toEqual({ controlPoints: EDITED_POINTS });
+  });
+});
+
+describe("width grips", () => {
+  it("toggles live and persists across sessions without changing the graphic", () => {
+    const { edit, fake, scope } = setup({ graphicKind: "main-attack" });
+    edit.start("cm-1");
+    expect(edit.supportsWidthGrips.value).toBe(true);
+    const before = structuredClone(fake.editSession!.session.workingGraphic);
+    edit.setWidthGrips(true);
+    expect(fake.editSession!.session.detailHandles).toBe(true);
+    expect(fake.editSession!.session.workingGraphic).toEqual(before);
+    edit.stop();
+    edit.start("cm-1");
+    expect(fake.editSession!.session.detailHandles).toBe(true);
+    edit.setWidthGrips(false);
+    expect(fake.editSession!.session.detailHandles).toBe(false);
+    edit.start("cm-screen");
+    expect(edit.supportsWidthGrips.value).toBe(false);
+    scope.stop();
+  });
+
+  it("tracks live widths and resets both sides while preserving other options", () => {
+    const { edit, fake, scenario, scope } = setup({ graphicKind: "main-attack" });
+    edit.start("cm-1");
+    expect(edit.canResetVertexWidths.value).toBe(false);
+    const session = fake.editSession!.session;
+    session.setOptions({
+      vertexLeftWidthRatios: [0.4, 0.5],
+      vertexRightWidthRatios: [0.3, 0.6],
+      smooth: true,
+    });
+    expect(edit.canResetVertexWidths.value).toBe(true);
+    edit.resetVertexWidths();
+    expect(edit.canResetVertexWidths.value).toBe(false);
+    expect(session.workingGraphic.options).toEqual({ smooth: true });
+    edit.stop();
+    expect(
+      (scenario.store.state.layerItemMap["cm-1"] as NTacticalGraphicLayerItem).options,
+    ).toEqual({
+      smooth: true,
+    });
+    expect(edit.supportsWidthGrips.value).toBe(false);
+    scope.stop();
   });
 });
