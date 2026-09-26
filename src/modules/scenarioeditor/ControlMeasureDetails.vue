@@ -67,6 +67,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { TabsContent } from "@/components/ui/tabs";
 import ScrollTabs from "@/components/ScrollTabs.vue";
@@ -285,6 +286,11 @@ const labelDragModel = computed({
   set: (value: boolean) => scenarioDraw.setControlMeasureLabelDrag(value),
 });
 
+const widthGripsModel = computed({
+  get: () => scenarioDraw.controlMeasureWidthGrips.value,
+  set: (value: boolean) => scenarioDraw.setControlMeasureWidthGrips(value),
+});
+
 function doZoom() {
   const [first] = [...props.selectedIds];
   if (first !== undefined) engineRef.value?.layers.zoomToFeature(first);
@@ -378,7 +384,7 @@ function doDelete() {
 
     <div
       v-if="isEditingShape"
-      class="border-border bg-muted/50 mb-4 space-y-2 rounded-md border p-2 text-sm"
+      class="border-border bg-muted/50 mb-4 flex flex-col gap-2 rounded-md border p-2 text-sm"
     >
       <div class="flex items-center justify-between gap-2">
         <p class="text-muted-foreground">
@@ -406,6 +412,29 @@ function doDelete() {
           @click="resetLabelPositions()"
         >
           Reset positions
+        </Button>
+      </div>
+      <div
+        v-if="scenarioDraw.controlMeasureSupportsWidthGrips.value"
+        class="flex flex-wrap items-center justify-between gap-2"
+      >
+        <Toggle
+          v-model="widthGripsModel"
+          variant="outline"
+          size="sm"
+          aria-label="Toggle width grips"
+          title="Alt+click a width grip to reset it"
+        >
+          Width grips
+        </Toggle>
+        <Button
+          v-if="scenarioDraw.controlMeasureCanResetVertexWidths.value"
+          type="button"
+          variant="outline"
+          size="sm"
+          @click="scenarioDraw.resetControlMeasureVertexWidths()"
+        >
+          Reset arrow widths
         </Button>
       </div>
     </div>

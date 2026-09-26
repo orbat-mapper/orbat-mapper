@@ -91,6 +91,7 @@ const baseStubs = {
       "<button :title='title' :disabled='disabled' @click='$emit(\"click\")'><slot /></button>",
   },
   Button: {
+    emits: ["click"],
     template: "<button @click='$emit(\"click\")'><slot /></button>",
   },
   Switch: true,
@@ -129,6 +130,11 @@ function mountDetails(
       editingShape ? item.id : null,
     ),
     controlMeasureLabelDrag: ref(false),
+    controlMeasureWidthGrips: ref(false),
+    controlMeasureSupportsWidthGrips: ref(item.graphicKind === "main-attack"),
+    controlMeasureCanResetVertexWidths: ref(false),
+    setControlMeasureWidthGrips: vi.fn(),
+    resetControlMeasureVertexWidths: vi.fn(),
     setControlMeasureLabelDrag: vi.fn(),
     cancel: vi.fn(),
     startControlMeasureEdit: vi.fn(),
@@ -167,6 +173,23 @@ describe("ControlMeasureDetails tabs", () => {
     pinia = createPinia();
     setActivePinia(pinia);
     useSelectedItems().clear();
+  });
+
+  it("offers width grips and reset only for an active supported edit", async () => {
+    const { wrapper, scenarioDraw } = mountDetails({ graphicKind: "main-attack" }, true);
+    await wrapper.get('[aria-label="Toggle width grips"]').trigger("click");
+    expect(scenarioDraw.setControlMeasureWidthGrips).toHaveBeenCalledWith(true);
+    expect(wrapper.text()).not.toContain("Reset arrow widths");
+    scenarioDraw.controlMeasureCanResetVertexWidths.value = true;
+    await nextTick();
+    await wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Reset arrow widths")!
+      .trigger("click");
+    expect(scenarioDraw.resetControlMeasureVertexWidths).toHaveBeenCalledOnce();
+    scenarioDraw.controlMeasureSupportsWidthGrips.value = false;
+    await nextTick();
+    expect(wrapper.find('[aria-label="Toggle width grips"]').exists()).toBe(false);
   });
 
   it("shows styling, amplifier, details and state tabs, with Debug gated by debug mode", async () => {

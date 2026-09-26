@@ -1080,6 +1080,11 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureEditCanRedo: controlMeasureEdit.canRedo,
     /** Label-drag mode — additive to reshape, and sticky across edit sessions. */
     controlMeasureLabelDrag: controlMeasureEdit.labelDrag,
+    controlMeasureWidthGrips: controlMeasureEdit.widthGrips,
+    controlMeasureSupportsWidthGrips: controlMeasureEdit.supportsWidthGrips,
+    controlMeasureCanResetVertexWidths: controlMeasureEdit.canResetVertexWidths,
+    setControlMeasureWidthGrips: controlMeasureEdit.setWidthGrips,
+    resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
     setControlMeasureLabelDrag: (enabled: boolean) =>
       controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
