@@ -24,6 +24,8 @@ export default defineComponent({ name: "OmittedInStandalone", render: () => null
  * section back.
  */
 const STANDALONE_MODULES: Record<string, string> = {
+  // A file:// worker needs the script and its embedded WASM carried in a data URL.
+  "src/modules/maplibreview/maplibreRtlText.ts": `export { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText.standalone";`,
   // The demo scenarios are JSON files and photographs on the server. Neither the cards nor the
   // text above them can work without it.
   "src/views/DemoScenarioCards.vue": NOTHING,

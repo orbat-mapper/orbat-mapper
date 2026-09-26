@@ -192,14 +192,11 @@ vi.mock("@/modules/maplibreview/h3grid", () => ({
   }),
 }));
 
-vi.mock("@/modules/maplibreview/mgrsgrid", () => ({
-  useMgrsGrid: () => ({
-    showMgrsGrid: { value: false },
-    showLabels: { value: false },
-    lineColor: { value: "#000000" },
-    lineOpacity: { value: 0.5 },
-    lineWidth: { value: 1 },
-    currentAccuracy: { value: 0 },
+vi.mock("@/modules/maplibreview/useReferenceGridLayers", () => ({
+  useReferenceGridLayers: () => ({
+    labels: { value: [] },
+    refresh: vi.fn(),
+    dispose: vi.fn(),
   }),
 }));
 

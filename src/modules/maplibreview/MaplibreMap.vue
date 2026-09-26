@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, useAttrs, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  useAttrs,
+  useTemplateRef,
+  watch,
+} from "vue";
 import { useThrottleFn } from "@vueuse/core";
 import {
   GlobeControl,
@@ -12,6 +21,7 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibreWorkerUrl from "@/modules/maplibreview/maplibreWorkerUrl";
+import { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText";
 import { storeToRefs } from "pinia";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
 import type { MapProjection } from "@/stores/mapSettingsStore";
@@ -27,7 +37,14 @@ import {
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
+import { useTerrainStore } from "@/stores/terrainStore";
+import { useMapTerrain } from "./useMapTerrain";
+import { terrainElevationMeters, TERRAIN_SOURCE_ID } from "./mapTerrain";
+
 setWorkerUrl(maplibreWorkerUrl);
+void initializeRtlText().catch((error) => {
+  console.error("Failed to initialize map RTL text support", error);
+});
 
 defineOptions({
   inheritAttrs: false,
@@ -49,6 +66,58 @@ const attrs = useAttrs();
 const mapContainerElement = useTemplateRef("mapContainerElement");
 const formattedLocation = ref("");
 let mlMap: MlMap;
+const terrainMap = shallowRef<MlMap>();
+useMapTerrain(terrainMap);
+const terrainSettings = useTerrainStore();
+const elevation = ref<number | null>(null);
+const formattedElevation = computed(() => {
+  if (elevation.value === null) return "";
+  const imperial = measurementUnit.value === "imperial";
+  return `${Math.round(elevation.value * (imperial ? 3.280839895 : 1))} ${imperial ? "ft" : "m"}`;
+});
+const ELEVATION_SAMPLE_INTERVAL_MS = 100;
+let elevationTimer: ReturnType<typeof setTimeout> | undefined;
+let lastElevationSampleTime = -Infinity;
+
+function clearElevation() {
+  clearTimeout(elevationTimer);
+  elevationTimer = undefined;
+  lastElevationSampleTime = -Infinity;
+  elevation.value = null;
+}
+
+// Mouse movement and DEM tile events share one leading/trailing throttle.
+// Coordinates keep their existing faster refresh; each sample uses the latest pointer.
+function updateElevation() {
+  if (
+    !showLocation.value ||
+    !terrainSettings.terrainEnabled ||
+    terrainSettings.terrainError ||
+    !lastPointerLocation ||
+    !mlMap
+  ) {
+    clearElevation();
+    return;
+  }
+  const remaining = ELEVATION_SAMPLE_INTERVAL_MS - (Date.now() - lastElevationSampleTime);
+  if (remaining > 0) {
+    elevationTimer ??= setTimeout(() => {
+      elevationTimer = undefined;
+      updateElevation();
+    }, remaining);
+    return;
+  }
+  clearTimeout(elevationTimer);
+  elevationTimer = undefined;
+  lastElevationSampleTime = Date.now();
+  elevation.value = terrainElevationMeters(mlMap, [
+    lastPointerLocation[0],
+    lastPointerLocation[1],
+  ]);
+}
+function handleTerrainData(event: { sourceId?: string }) {
+  if (event.sourceId === TERRAIN_SOURCE_ID) updateElevation();
+}
 let replayingContextMenu = false;
 let scaleControl: ScaleControl | null = null;
 let scaleControlAttached = false;
@@ -61,6 +130,7 @@ const { showLocation, coordinateFormat, showScaleLine } =
 const { measurementUnit } = storeToRefs(useMeasurementsStore());
 
 function applyFormattedLocation(position: Position | null) {
+  updateElevation();
   if (!position) {
     formattedLocation.value = "";
     return;
@@ -165,6 +235,7 @@ onMounted(async () => {
       preserveDrawingBuffer: true,
     },
   });
+  terrainMap.value = mlMap;
   scaleControl = new ScaleControl({
     maxWidth: 100,
     unit: measurementUnit.value,
@@ -185,11 +256,13 @@ onMounted(async () => {
   mlMap.on("projectiontransition", handleProjectionTransition);
   mlMap.on("load", handleMapLoad);
   mlMap.on("mousemove", handleMouseMove);
+  mlMap.on("sourcedata", handleTerrainData);
   mlMap.on("moveend", emitMapViewChange);
   mlMap.on("contextmenu", handleContextMenu);
 
   mouseLeaveHandler = () => {
     lastPointerLocation = null;
+    clearElevation();
     formattedLocation.value = "";
   };
   mapContainerDomElement = mapContainerElement.value;
@@ -212,6 +285,17 @@ watch(
   },
 );
 
+watch(
+  () => [
+    terrainSettings.terrainEnabled,
+    terrainSettings.terrainError,
+    terrainSettings.exaggeration,
+  ],
+  updateElevation,
+  // Sample after the terrain watcher has applied the new source/exaggeration.
+  { flush: "post" },
+);
+
 watch(coordinateFormat, () => {
   if (!showLocation.value) return;
   applyFormattedLocation(lastPointerLocation);
@@ -227,6 +311,7 @@ watch(showLocation, (enabled) => {
     applyFormattedLocation(lastPointerLocation);
     return;
   }
+  clearElevation();
   formattedLocation.value = "";
 });
 
@@ -235,6 +320,8 @@ watch(showScaleLine, () => {
 });
 
 onUnmounted(() => {
+  lastPointerLocation = null;
+  clearElevation();
   if (mouseLeaveHandler && mapContainerDomElement) {
     mapContainerDomElement.removeEventListener("mouseleave", mouseLeaveHandler);
   }
@@ -245,6 +332,8 @@ onUnmounted(() => {
   mlMap?.off("mousemove", handleMouseMove);
   mlMap?.off("moveend", emitMapViewChange);
   mlMap?.off("contextmenu", handleContextMenu);
+  mlMap?.off("sourcedata", handleTerrainData);
+  terrainMap.value = undefined;
   mlMap?.remove();
 });
 </script>
@@ -259,6 +348,12 @@ onUnmounted(() => {
       class="location-control pointer-events-none z-10"
     >
       {{ formattedLocation }}
+      <span
+        v-if="formattedElevation"
+        title="Approximate ground elevation above sea level, without terrain exaggeration"
+      >
+        · {{ formattedElevation }}
+      </span>
     </div>
   </div>
 </template>

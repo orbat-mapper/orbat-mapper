@@ -15,6 +15,9 @@ import {
   getSortedRowModel,
   type InitialTableState,
   type RowSelectionState,
+  type Row,
+  type ColumnFiltersState,
+  type VisibilityState,
   useVueTable,
 } from "@tanstack/vue-table";
 import { useVirtualizer } from "@tanstack/vue-virtual";
@@ -34,6 +37,8 @@ interface Props {
   initialState?: InitialTableState;
   getSubRows?: (row: any) => any[];
   noIndeterminate?: boolean;
+  /** Filters displayed rows while retaining hidden selections and ancestor context. */
+  rowFilter?: (row: Props["data"][number]) => boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,10 +97,32 @@ watch(
 );
 
 const computedColumns = computed((): ColumnDef<any, any>[] => {
-  return [props.select && { ...selectColumn }, ...props.columns].filter(
-    (e) => e,
-  ) as ColumnDef<any, any>[];
+  return [
+    props.select && { ...selectColumn },
+    props.rowFilter && {
+      id: "__rowFilter",
+      enableGlobalFilter: false,
+      accessorFn: (row: Props["data"][number]) => row,
+      filterFn: (
+        row: Row<Props["data"][number]>,
+        _columnId: string,
+        predicate: NonNullable<Props["rowFilter"]>,
+      ) => predicate(row.original),
+    },
+    ...props.columns,
+  ].filter((e) => e) as ColumnDef<any, any>[];
 });
+
+const columnFilters = ref<ColumnFiltersState>(props.initialState?.columnFilters ?? []);
+const columnVisibility = ref<VisibilityState>({
+  ...props.initialState?.columnVisibility,
+  __rowFilter: false,
+});
+const rowFilters = computed(() =>
+  props.rowFilter
+    ? [...columnFilters.value, { id: "__rowFilter", value: props.rowFilter }]
+    : columnFilters.value,
+);
 
 const table = useVueTable({
   get data() {
@@ -103,6 +130,12 @@ const table = useVueTable({
   },
   initialState: props.initialState,
   state: {
+    get columnFilters() {
+      return rowFilters.value;
+    },
+    get columnVisibility() {
+      return columnVisibility.value;
+    },
     get rowSelection() {
       return rowSelection.value;
     },
@@ -121,6 +154,8 @@ const table = useVueTable({
   getExpandedRowModel: getExpandedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
   autoResetExpanded: false,
+  onColumnFiltersChange: (value) => valueUpdater(value, columnFilters),
+  onColumnVisibilityChange: (value) => valueUpdater(value, columnVisibility),
   onRowSelectionChange: (updateOrValue) => valueUpdater(updateOrValue, rowSelection),
   // onGroupingChange: (updateOrValue) => valueUpdater(updateOrValue, grouping),
   onGlobalFilterChange: (updateOrValue) => valueUpdater(updateOrValue, query),
@@ -146,7 +181,11 @@ const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
 
 watch([rowSelection, debouncedQuery], () => {
   const sel: any[] = [];
-  table.getFilteredSelectedRowModel().flatRows.forEach((row) => {
+  // A display filter must not turn hidden selections into deselections.
+  const selectedModel = props.rowFilter
+    ? table.getSelectedRowModel()
+    : table.getFilteredSelectedRowModel();
+  selectedModel.flatRows.forEach((row) => {
     sel.push(row.original);
   });
   emit("update:selected", sel);
@@ -288,6 +327,12 @@ const filteredRowCount = computed(() => {
           </tr>
         </tbody>
       </table>
+      <p
+        v-if="rowFilter && !table.getFilteredRowModel().rows.length"
+        class="text-muted-foreground p-4"
+      >
+        No matching entries.
+      </p>
     </section>
   </div>
 </template>

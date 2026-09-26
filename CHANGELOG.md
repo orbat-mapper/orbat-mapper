@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## September 2026
+
+### Added
+
+- Added the option to replace existing feature and control-measure overlay layers during scenario import, matched by layer ID, or import them as separate copies. Replacement preserves layer order and previews added, changed, removed, and unchanged items. The whole import can be reverted with Undo.
+- Added configurable MGRS and latitude/longitude reference grids to MapLibre mode, with adaptive line density and collision-managed labels.
+- Added device-level grid preferences for interval, colour, opacity, and line width. Grid visibility remains session-only and starts hidden when a map is opened.
+- Added experimental 3D terrain and hillshading to MapLibre mode, available from the Labs menu. Elevation data comes from Mapterhorn and requires a network connection. Terrain exaggeration, hillshade strength, light direction, anchoring, and colours are adjustable, and the pointer location readout shows the ground elevation under the cursor. Terrain and hillshading survive a basemap change, and georeferenced image exports are rendered without terrain.
+- Added width grips for editing the arrow width at each vertex of supported control measures. Toggle them from the details panel while editing; the setting is kept between edits. Alt+click a grip to reset it, or use "Reset arrow widths" to clear all width adjustments.
+- Added a choice of smoothing style (Rounded or Curve) for control measures that support more than one, such as main attack arrows. The chosen style is remembered as a drawing default.
+
+### Changed
+
+- Replaced the previous experimental MGRS overlay with the reusable reference-grid implementation and moved its controls into the main map toolbar.
+- Reference-grid rendering is now loaded on demand the first time a grid is shown, reducing the initial MapLibre editor download.
+
+### Fixed
+
+- Fixed side duplication omitting units attached directly to a side, including sides without groups. Both duplicate actions now copy these units and their descendants, retaining unit state when requested.
+
 ## August 2026
 
 ### Added

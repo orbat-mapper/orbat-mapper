@@ -43,6 +43,7 @@ import {
   updateScenarioFeatureGeometry,
   updateScenarioFeatureGeometryFromOlFeature,
 } from "@/modules/scenarioeditor/scenarioDrawHelpers";
+import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import { newControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
@@ -877,6 +878,21 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     activeScenario.geo.updateTacticalGraphic(featureId, update);
   }
 
+  /** Settle once before the group so an open shape edit cannot overwrite sizes. */
+  function updateControlMeasureSizes(updates: ControlMeasureSizeUpdate[]) {
+    if (!updates.length) return;
+    if (updates.some(({ id }) => id === controlMeasureEdit.featureId.value)) {
+      renderFeed?.settle("render");
+    }
+    activeScenario.store.groupUpdate(
+      () => {
+        for (const { id, options } of updates)
+          activeScenario.geo.updateTacticalGraphic(id, { options });
+      },
+      { label: "batchLayer", value: "controlMeasureSizes" },
+    );
+  }
+
   /**
    * The Edit toolbar button is shared by the two editing mechanisms. When the current
    * selection consists only of control measures, edit the first one — the same primary
@@ -1064,6 +1080,11 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureEditCanRedo: controlMeasureEdit.canRedo,
     /** Label-drag mode — additive to reshape, and sticky across edit sessions. */
     controlMeasureLabelDrag: controlMeasureEdit.labelDrag,
+    controlMeasureWidthGrips: controlMeasureEdit.widthGrips,
+    controlMeasureSupportsWidthGrips: controlMeasureEdit.supportsWidthGrips,
+    controlMeasureCanResetVertexWidths: controlMeasureEdit.canResetVertexWidths,
+    setControlMeasureWidthGrips: controlMeasureEdit.setWidthGrips,
+    resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
     setControlMeasureLabelDrag: (enabled: boolean) =>
       controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
@@ -1071,6 +1092,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     /** `engine.draw` is defined — control measures can be authored on this engine. */
     canControlMeasures,
     updateControlMeasure,
+    updateControlMeasureSizes,
     duplicateSelected,
     deleteSelected,
     handleEscape,

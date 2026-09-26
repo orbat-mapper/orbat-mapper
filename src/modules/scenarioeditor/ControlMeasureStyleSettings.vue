@@ -28,6 +28,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { standardIdentityValues } from "@/symbology/values";
@@ -48,9 +49,12 @@ import {
   canAuthorFillPattern,
   canAuthorStrokeWidth,
   canSmoothControlMeasureKind,
+  canUseMultilineControlMeasureLabel,
+  effectiveControlMeasureOptions,
   fillPatternLabel,
   getControlMeasureSmoothResolution,
   getSmoothResolutionParam,
+  getSmoothModeParam,
   isControlMeasureSmoothed,
   isStyleableControlMeasureKind,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
@@ -160,11 +164,61 @@ const strokeWidthModel = computed({
  */
 const showSmooth = gatedOnEveryKind(canSmoothControlMeasureKind);
 
+/** The smoothing-style picker, offered when every edited kind has the same styles. */
+const smoothModeParam = computed(() => {
+  const param = getSmoothModeParam(props.graphicKind);
+  if (!param) return undefined;
+  const values = param.options.map(({ value }) => value);
+  const sharedByAll = editedKinds.value.every((kind) => {
+    const other = getSmoothModeParam(kind)?.options;
+    return (
+      other && values.every((value) => other.some((option) => option.value === value))
+    );
+  });
+  return sharedByAll ? param : undefined;
+});
+/** Compact labels for the toggle group; anything else shows the registry label. */
+const SMOOTH_MODE_SHORT_LABELS: Record<string, string> = { "rounded-corners": "Rounded" };
+/** The selected smoothing style, `""` when smoothing is off. */
+const smoothModeValue = computed(() =>
+  smoothModel.value
+    ? String(
+        effectiveControlMeasureOptions(props.graphicKind, props.options).smoothMode ?? "",
+      )
+    : "",
+);
+function updateSmoothMode(value: unknown) {
+  const mode = smoothModeParam.value?.options.find(
+    (option) => String(option.value) === String(value),
+  );
+  emit("update", {
+    options: {
+      ...toRaw(props.options),
+      smooth: Boolean(mode),
+      ...(mode ? { smoothMode: mode.value } : {}),
+    },
+  });
+}
+
 const smoothModel = computed({
   get: () => isControlMeasureSmoothed(props.graphicKind, props.options),
   set: (value: boolean) =>
     emit("update", {
       options: { ...toRaw(props.options), smooth: value } as TacticalGraphicOptions,
+    }),
+});
+
+const showMultilineLabel = gatedOnEveryKind(canUseMultilineControlMeasureLabel);
+const multilineLabelModel = computed({
+  get: () =>
+    effectiveControlMeasureOptions(props.graphicKind, props.options).multilineLabel ===
+    true,
+  set: (value: boolean) =>
+    emit("update", {
+      options: {
+        ...toRaw(props.options),
+        multilineLabel: value,
+      } as TacticalGraphicOptions,
     }),
 });
 
@@ -293,10 +347,39 @@ const filledModel = computed({
     </NativeSelect>
   </template>
 
+  <template v-if="showMultilineLabel">
+    <label for="cm-multiline-label" class="self-center">Multiline label</label>
+    <Switch
+      id="cm-multiline-label"
+      v-model="multilineLabelModel"
+      title="Place the doctrinal label above Field T on separate centered lines"
+    />
+  </template>
+
   <template v-if="showSmooth">
     <label for="cm-smooth" class="self-center">Smooth</label>
     <div class="flex items-center gap-1.5">
+      <ToggleGroup
+        v-if="smoothModeParam"
+        id="cm-smooth"
+        type="single"
+        variant="outline"
+        size="sm"
+        aria-label="Smooth geometry"
+        :model-value="smoothModeValue"
+        @update:model-value="updateSmoothMode"
+      >
+        <ToggleGroupItem
+          v-for="option in smoothModeParam.options"
+          :key="String(option.value)"
+          :value="String(option.value)"
+          :aria-label="`Smooth: ${option.label}`"
+        >
+          {{ SMOOTH_MODE_SHORT_LABELS[String(option.value)] ?? option.label }}
+        </ToggleGroupItem>
+      </ToggleGroup>
       <Switch
+        v-else
         id="cm-smooth"
         v-model="smoothModel"
         title="Round the corners by curving through the control points"

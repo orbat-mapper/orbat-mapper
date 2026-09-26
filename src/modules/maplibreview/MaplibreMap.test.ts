@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { createPinia, setActivePinia } from "pinia";
@@ -7,6 +7,13 @@ import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
+import { useTerrainStore } from "@/stores/terrainStore";
+import type { StyleSpecification } from "maplibre-gl";
+import { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText";
+
+vi.mock("@/modules/maplibreview/maplibreRtlText", () => ({
+  initializeRtlText: vi.fn().mockResolvedValue(undefined),
+}));
 
 const setStyle = vi.fn();
 const setProjection = vi.fn();
@@ -20,6 +27,8 @@ const off = vi.fn();
 const getCenter = vi.fn(() => ({ lng: 10, lat: 20 }));
 const getZoom = vi.fn(() => 4);
 const getBearing = vi.fn(() => 0);
+let liveStyle: StyleSpecification;
+const queryTerrainElevation = vi.fn(() => 750);
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -27,6 +36,23 @@ vi.mock("maplibre-gl", () => {
       mapConstructor(options);
     }
 
+    isStyleLoaded = () => false;
+    getStyle = () => liveStyle;
+    getLayersOrder = () => liveStyle.layers.map((l) => l.id);
+    getLayer = (id: string) => liveStyle.layers.find((l) => l.id === id);
+    getSource = (id: string) => liveStyle.sources[id];
+    isSourceLoaded = () => true;
+    getTerrain = () => liveStyle.terrain;
+    setTerrain = (terrain: StyleSpecification["terrain"]) => {
+      liveStyle.terrain = terrain;
+    };
+    addSource = (id: string, source: StyleSpecification["sources"][string]) => {
+      liveStyle.sources[id] = source;
+    };
+    removeSource = (id: string) => {
+      delete liveStyle.sources[id];
+    };
+    queryTerrainElevation = queryTerrainElevation;
     addControl = addControl;
     removeControl = removeControl;
     off = off;
@@ -100,6 +126,7 @@ function mountMap(props = defaultProps) {
 }
 
 describe("MaplibreMap", () => {
+  afterEach(() => vi.useRealTimers());
   beforeEach(() => {
     vi.restoreAllMocks();
     setStyle.mockClear();
@@ -114,6 +141,15 @@ describe("MaplibreMap", () => {
     getZoom.mockClear();
     getBearing.mockClear();
     listeners.clear();
+    liveStyle = { version: 8, sources: {}, layers: [] };
+    queryTerrainElevation.mockClear();
+    queryTerrainElevation.mockReturnValue(750);
+  });
+
+  it("initializes RTL support when the map is set up", () => {
+    vi.mocked(initializeRtlText).mockClear();
+    mountMap();
+    expect(initializeRtlText).toHaveBeenCalledOnce();
   });
 
   it("applies the projection prop on style.load", async () => {
@@ -332,5 +368,116 @@ describe("MaplibreMap", () => {
     mapSettingsStore.showLocation = true;
     await nextTick();
     expect(wrapper.text()).toContain("59.988° N 10.123° E");
+  });
+
+  it("keeps terrain across basemap changes and shows natural pointer elevation with unit changes", async () => {
+    const { wrapper } = mountMap();
+    useMapSettingsStore().showLocation = true;
+    const terrain = useTerrainStore();
+    terrain.setExaggeration(3);
+    terrain.terrainEnabled = true;
+    await nextTick();
+    expect(liveStyle.terrain?.exaggeration).toBe(3);
+    for (const handler of listeners.get("mousemove") ?? [])
+      handler({ lngLat: { lng: 10, lat: 60 } });
+    await nextTick();
+    expect(wrapper.text()).toContain("250 m");
+    useMeasurementsStore().measurementUnit = "imperial";
+    await nextTick();
+    expect(wrapper.text()).toContain("820 ft");
+    liveStyle = { version: 8, sources: {}, layers: [] };
+    await wrapper.setProps({ basemapId: "new-basemap" });
+    expect(liveStyle.terrain?.exaggeration).toBe(3);
+    for (const handler of listeners.get("error") ?? [])
+      handler({ sourceId: "orbat-terrain" });
+    await nextTick();
+    expect(wrapper.text()).not.toContain("820 ft");
+    for (const handler of listeners.get("sourcedata") ?? [])
+      handler({ sourceId: "orbat-terrain", isSourceLoaded: true });
+    await nextTick();
+    // Loaded includes errored tiles: only an explicit retry clears the warning.
+    expect(terrain.terrainError).toBe(true);
+    expect(wrapper.text()).not.toContain("820 ft");
+    terrain.terrainEnabled = false;
+    await nextTick();
+    terrain.terrainEnabled = true;
+    await nextTick();
+    expect(terrain.terrainError).toBe(false);
+    expect(wrapper.text()).toContain("820 ft");
+    terrain.terrainEnabled = false;
+    await nextTick();
+    expect(wrapper.text()).not.toContain("820 ft");
+    wrapper.unmount();
+    expect(off).toHaveBeenCalledWith("styledata", expect.any(Function));
+    expect(off).toHaveBeenCalledWith("error", expect.any(Function));
+  });
+  it("coalesces pointer and tile events into 100ms elevation samples using the latest position", async () => {
+    vi.useFakeTimers();
+    const { wrapper } = mountMap();
+    useMapSettingsStore().showLocation = true;
+    useTerrainStore().terrainEnabled = true;
+    await nextTick();
+    const move = (lng: number) => {
+      for (const handler of listeners.get("mousemove") ?? [])
+        handler({ lngLat: { lng, lat: 60 } });
+    };
+    move(10);
+    await nextTick();
+    expect(queryTerrainElevation).toHaveBeenCalledTimes(1);
+    for (let i = 1; i <= 4; i++) {
+      await vi.advanceTimersByTimeAsync(20);
+      move(10 + i);
+      for (const handler of listeners.get("sourcedata") ?? [])
+        handler({ sourceId: "orbat-terrain" });
+    }
+    await nextTick();
+    expect(wrapper.text()).toContain("14.000° E");
+    expect(queryTerrainElevation).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(20);
+    expect(queryTerrainElevation).toHaveBeenCalledTimes(2);
+    expect(queryTerrainElevation).toHaveBeenLastCalledWith([14, 60]);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(queryTerrainElevation).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+  });
+
+  it("cancels pending elevation samples when hidden, on pointer leave, and on unmount", async () => {
+    vi.useFakeTimers();
+    const { wrapper } = mountMap();
+    const settings = useMapSettingsStore();
+    settings.showLocation = true;
+    useTerrainStore().terrainEnabled = true;
+    await nextTick();
+    const move = () => {
+      for (const handler of listeners.get("mousemove") ?? [])
+        handler({ lngLat: { lng: 10, lat: 60 } });
+    };
+    const tile = () => {
+      for (const handler of listeners.get("sourcedata") ?? [])
+        handler({ sourceId: "orbat-terrain" });
+    };
+    move();
+    tile();
+    settings.showLocation = false;
+    await nextTick();
+    queryTerrainElevation.mockClear();
+    tile();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(queryTerrainElevation).not.toHaveBeenCalled();
+    settings.showLocation = true;
+    await nextTick();
+    expect(queryTerrainElevation).toHaveBeenCalledTimes(1);
+    tile();
+    await wrapper.trigger("mouseleave");
+    queryTerrainElevation.mockClear();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(queryTerrainElevation).not.toHaveBeenCalled();
+    expect(wrapper.text()).not.toContain("750 m");
+    move();
+    tile();
+    wrapper.unmount();
+    queryTerrainElevation.mockClear();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(queryTerrainElevation).not.toHaveBeenCalled();
   });
 });

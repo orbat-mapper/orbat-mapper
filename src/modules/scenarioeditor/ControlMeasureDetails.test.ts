@@ -5,6 +5,8 @@ import { createPinia, setActivePinia } from "pinia";
 import { defineComponent, nextTick, ref, shallowRef } from "vue";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 
+import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
+import ControlMeasureSizeSettings from "@/modules/scenarioeditor/ControlMeasureSizeSettings.vue";
 import ControlMeasureDetails from "@/modules/scenarioeditor/ControlMeasureDetails.vue";
 import {
   activeScenarioKey,
@@ -68,6 +70,16 @@ const baseStubs = {
   PanelDataGrid: { template: "<div><slot /></div>" },
   ScrollTabs: ScrollTabsStub,
   TabsContent: { template: "<section><slot /></section>" },
+  ControlMeasureExtendedStyleSettings: {
+    props: ["graphicKind", "options", "getResolution"],
+    emits: ["update"],
+    template: "<div data-test='extended-settings' />",
+  },
+  ControlMeasureSizeSettings: {
+    props: ["targets", "getResolution"],
+    emits: ["update"],
+    template: "<div data-test='size-settings' />",
+  },
   ControlMeasureStyleSettings: ControlMeasureStyleSettingsStub,
   ControlMeasureAmplifiers: ControlMeasureAmplifiersStub,
   ControlMeasureEchelonSelect: ControlMeasureEchelonSelectStub,
@@ -79,6 +91,7 @@ const baseStubs = {
       "<button :title='title' :disabled='disabled' @click='$emit(\"click\")'><slot /></button>",
   },
   Button: {
+    emits: ["click"],
     template: "<button @click='$emit(\"click\")'><slot /></button>",
   },
   Switch: true,
@@ -106,15 +119,22 @@ function controlMeasure(
 function mountDetails(
   itemOverrides: Partial<NTacticalGraphicLayerItem> = {},
   editingShape = false,
+  additionalItems: NTacticalGraphicLayerItem[] = [],
 ) {
   const item = controlMeasure(itemOverrides);
   const updateControlMeasure = vi.fn();
   const scenarioDraw = {
     updateControlMeasure,
+    updateControlMeasureSizes: vi.fn(),
     controlMeasureEditFeatureId: ref<string | number | null>(
       editingShape ? item.id : null,
     ),
     controlMeasureLabelDrag: ref(false),
+    controlMeasureWidthGrips: ref(false),
+    controlMeasureSupportsWidthGrips: ref(item.graphicKind === "main-attack"),
+    controlMeasureCanResetVertexWidths: ref(false),
+    setControlMeasureWidthGrips: vi.fn(),
+    resetControlMeasureVertexWidths: vi.fn(),
     setControlMeasureLabelDrag: vi.fn(),
     cancel: vi.fn(),
     startControlMeasureEdit: vi.fn(),
@@ -123,13 +143,15 @@ function mountDetails(
   };
 
   const wrapper = mount(ControlMeasureDetails, {
-    props: { selectedIds: new Set([item.id]) },
+    props: { selectedIds: new Set([item.id, ...additionalItems.map(({ id }) => id)]) },
     global: {
       plugins: [pinia],
       provide: {
         [activeScenarioKey as symbol]: {
           geo: {
-            getLayerItemById: vi.fn(() => ({ layerItem: item })),
+            getLayerItemById: vi.fn((id) => ({
+              layerItem: [item, ...additionalItems].find((item) => item.id === id),
+            })),
             updateLayerItem: vi.fn(),
           },
         },
@@ -151,6 +173,23 @@ describe("ControlMeasureDetails tabs", () => {
     pinia = createPinia();
     setActivePinia(pinia);
     useSelectedItems().clear();
+  });
+
+  it("offers width grips and reset only for an active supported edit", async () => {
+    const { wrapper, scenarioDraw } = mountDetails({ graphicKind: "main-attack" }, true);
+    await wrapper.get('[aria-label="Toggle width grips"]').trigger("click");
+    expect(scenarioDraw.setControlMeasureWidthGrips).toHaveBeenCalledWith(true);
+    expect(wrapper.text()).not.toContain("Reset arrow widths");
+    scenarioDraw.controlMeasureCanResetVertexWidths.value = true;
+    await nextTick();
+    await wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Reset arrow widths")!
+      .trigger("click");
+    expect(scenarioDraw.resetControlMeasureVertexWidths).toHaveBeenCalledOnce();
+    scenarioDraw.controlMeasureSupportsWidthGrips.value = false;
+    await nextTick();
+    expect(wrapper.find('[aria-label="Toggle width grips"]').exists()).toBe(false);
   });
 
   it("shows styling, amplifier, details and state tabs, with Debug gated by debug mode", async () => {
@@ -338,6 +377,45 @@ describe("ControlMeasureDetails tabs", () => {
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
       amplifierPlacements: {},
     });
+  });
+
+  it("passes authored options and live construction resolution into individual size editing", async () => {
+    const { wrapper, updateControlMeasure } = mountDetails({
+      graphicKind: "destroy",
+      options: { sizeMeters: 123 },
+    });
+    const settings = wrapper.findComponent(ControlMeasureExtendedStyleSettings);
+    expect(settings.props("options")).toEqual({ sizeMeters: 123 });
+    expect(settings.props("getResolution")!()).toBe(10);
+    await settings.vm.$emit("update", { sizePixels: 12.3 });
+    expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {
+      options: { sizePixels: 12.3 },
+    });
+  });
+
+  it("passes each selected graphic to batch sizing and forwards complete records", async () => {
+    const { wrapper, scenarioDraw } = mountDetails(
+      { graphicKind: "destroy", options: { sizePixels: 80, crossAngle: 60 } },
+      false,
+      [
+        controlMeasure({
+          id: "cm-2",
+          graphicKind: "defeat",
+          options: { sizeMeters: 700, crossAngle: 80 },
+        }),
+      ],
+    );
+    const settings = wrapper.findComponent(ControlMeasureSizeSettings);
+    expect(settings.props("targets")).toEqual([
+      { id: "cm-1", graphicKind: "destroy", options: { sizePixels: 80, crossAngle: 60 } },
+      { id: "cm-2", graphicKind: "defeat", options: { sizeMeters: 700, crossAngle: 80 } },
+    ]);
+    const updates = [
+      { id: "cm-1", options: { sizeMeters: 800, crossAngle: 60 } },
+      { id: "cm-2", options: { sizeMeters: 700, crossAngle: 80 } },
+    ];
+    await settings.vm.$emit("update", updates);
+    expect(scenarioDraw.updateControlMeasureSizes).toHaveBeenCalledWith(updates);
   });
 
   it("only shows label reset with the active label-movement controls", () => {

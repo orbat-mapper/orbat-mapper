@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
-import { FlaskConicalIcon, GridIcon, HexagonIcon } from "@lucide/vue";
+import { FlaskConicalIcon, HexagonIcon } from "@lucide/vue";
 import { getHexagonAreaAvg, getHexagonEdgeLengthAvg } from "h3-js";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import ToggleField from "@/components/ToggleField.vue";
@@ -10,8 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
-import { useMgrsGrid } from "@/modules/maplibreview/mgrsgrid";
 
+import TerrainSettings from "./TerrainSettings.vue";
+import { useTerrainStore } from "@/stores/terrainStore";
+
+const terrainSettings = useTerrainStore();
 const props = defineProps<{ mlMap?: MlMap | null }>();
 
 const mapRef = shallowRef<MlMap | undefined>(props.mlMap ?? undefined);
@@ -24,14 +27,6 @@ watch(
 
 const { showHexGrid, hexResolution, autoResolution, lineColor, lineOpacity, lineWidth } =
   useH3HexGrid(mapRef);
-const {
-  showMgrsGrid,
-  showLabels: showMgrsLabels,
-  lineColor: mgrsLineColor,
-  lineOpacity: mgrsLineOpacity,
-  lineWidth: mgrsLineWidth,
-  currentAccuracy: mgrsAccuracy,
-} = useMgrsGrid(mapRef);
 
 const showHexDiameter = ref(true);
 const showHexArea = ref(true);
@@ -53,18 +48,6 @@ const lineWidthSlider = computed({
   get: () => [lineWidth.value],
   set: ([v]: number[]) => {
     lineWidth.value = v;
-  },
-});
-const mgrsLineOpacitySlider = computed({
-  get: () => [mgrsLineOpacity.value],
-  set: ([v]: number[]) => {
-    mgrsLineOpacity.value = v;
-  },
-});
-const mgrsLineWidthSlider = computed({
-  get: () => [mgrsLineWidth.value],
-  set: ([v]: number[]) => {
-    mgrsLineWidth.value = v;
   },
 });
 
@@ -121,17 +104,11 @@ const hexSizeLabel = computed(() => {
   return `~${parts.join(" · ")}`;
 });
 
-const mgrsPrecisionLabel = computed(() => {
-  const accuracy = mgrsAccuracy.value;
-  if (accuracy === 0) return "100 km";
-  if (accuracy === 1) return "10 km";
-  if (accuracy === 2) return "1 km";
-  if (accuracy === 3) return "100 m";
-  return "10 m";
-});
-
 const activeCount = computed(
-  () => Number(showHexGrid.value) + Number(showMgrsGrid.value),
+  () =>
+    Number(showHexGrid.value) +
+    Number(terrainSettings.terrainEnabled) +
+    Number(terrainSettings.hillshadeEnabled),
 );
 </script>
 
@@ -161,8 +138,12 @@ const activeCount = computed(
         </span>
       </MainToolbarButton>
     </PopoverTrigger>
-    <PopoverContent class="w-80 p-0" align="end">
-      <header class="flex items-center gap-2 border-b px-3 py-2">
+    <PopoverContent
+      class="flex max-h-(--reka-popover-content-available-height) w-80 flex-col p-0"
+      align="end"
+      :collision-padding="8"
+    >
+      <header class="flex shrink-0 items-center gap-2 border-b px-3 py-2">
         <FlaskConicalIcon class="size-4 text-amber-500" />
         <div class="flex flex-col">
           <span class="text-sm font-medium">Labs</span>
@@ -170,7 +151,8 @@ const activeCount = computed(
         </div>
       </header>
 
-      <div class="max-h-[70vh] space-y-1 overflow-y-auto p-3">
+      <div class="flex max-h-[70vh] min-h-0 flex-col gap-3 overflow-y-auto p-3">
+        <TerrainSettings />
         <section class="rounded-md border">
           <div class="flex items-center justify-between gap-2 px-3 py-2">
             <div class="flex items-center gap-2">
@@ -260,55 +242,6 @@ const activeCount = computed(
                   >
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="rounded-md border">
-          <div class="flex items-center justify-between gap-2 px-3 py-2">
-            <div class="flex items-center gap-2">
-              <GridIcon class="size-4" />
-              <Label class="text-sm">MGRS grid zones</Label>
-            </div>
-            <ToggleField v-model="showMgrsGrid" />
-          </div>
-          <div v-if="showMgrsGrid" class="space-y-3 border-t px-3 py-3">
-            <div class="flex items-center justify-between">
-              <Label class="text-xs">Precision</Label>
-              <span
-                class="text-muted-foreground text-xs whitespace-nowrap tabular-nums"
-                >{{ mgrsPrecisionLabel }}</span
-              >
-            </div>
-            <div class="space-y-2">
-              <Label for="mgrs-line-color" class="text-xs">Line color</Label>
-              <input
-                id="mgrs-line-color"
-                v-model="mgrsLineColor"
-                type="color"
-                class="h-8 w-full cursor-pointer rounded border"
-              />
-            </div>
-            <div class="space-y-1">
-              <div class="flex items-center justify-between">
-                <Label class="text-xs">Opacity</Label>
-                <span class="text-muted-foreground text-xs">{{
-                  mgrsLineOpacity.toFixed(2)
-                }}</span>
-              </div>
-              <Slider v-model="mgrsLineOpacitySlider" :min="0" :max="1" :step="0.05" />
-            </div>
-            <div class="space-y-1">
-              <div class="flex items-center justify-between">
-                <Label class="text-xs">Line width</Label>
-                <span class="text-muted-foreground text-xs">{{
-                  mgrsLineWidth.toFixed(1)
-                }}</span>
-              </div>
-              <Slider v-model="mgrsLineWidthSlider" :min="0.5" :max="5" :step="0.1" />
-            </div>
-            <div class="border-t pt-3">
-              <ToggleField v-model="showMgrsLabels">Show labels</ToggleField>
             </div>
           </div>
         </section>

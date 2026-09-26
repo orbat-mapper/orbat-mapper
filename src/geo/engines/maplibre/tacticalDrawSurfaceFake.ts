@@ -243,6 +243,11 @@ export function createTacticalDrawSurfaceFake(
     let undoCount = 0;
     let redoCount = 0;
     let modes: readonly EditMode[] = [];
+    let detailHandles = false;
+    const changeListeners = new Set<() => void>();
+    const notifyChange = () => {
+      for (const listener of [...changeListeners]) listener();
+    };
     const historyState = { canUndo: false, canRedo: false };
     const historyListeners = new Set<(state: typeof historyState) => void>();
     let commitHandler: ((snap: GraphicSnapshot<ControlMeasure>) => void) | null = null;
@@ -264,6 +269,25 @@ export function createTacticalDrawSurfaceFake(
           historyListeners.add(listener);
           return () => historyListeners.delete(listener);
         },
+      },
+      get detailHandles() {
+        return detailHandles;
+      },
+      setDetailHandles(visible: boolean) {
+        detailHandles = visible;
+      },
+      onChange(listener: () => void) {
+        changeListeners.add(listener);
+        return () => changeListeners.delete(listener);
+      },
+      setOptions(patch: Record<string, unknown>) {
+        const next = { ...working.options } as Record<string, unknown>;
+        for (const [key, value] of Object.entries(patch)) {
+          if (value === undefined) delete next[key];
+          else next[key] = value;
+        }
+        working = { ...working, options: next } as ControlMeasure;
+        notifyChange();
       },
       graphic: measure,
       get workingGraphic() {
@@ -322,6 +346,7 @@ export function createTacticalDrawSurfaceFake(
       },
       setWorkingGraphic(graphic) {
         working = graphic;
+        notifyChange();
       },
       setHistory(state) {
         Object.assign(historyState, state);
@@ -377,6 +402,7 @@ export function createTacticalDrawSurfaceFake(
       editOptions?: {
         sizeAnchor?: SizeAnchor;
         modes?: readonly EditMode[];
+        detailHandles?: boolean;
         onSession?: (session: EditSession) => void;
       },
     ) {
@@ -390,6 +416,7 @@ export function createTacticalDrawSurfaceFake(
           else resolve(result);
         });
         if (editOptions?.modes) editHandle.setSessionModes(editOptions.modes);
+        editHandle.session.setDetailHandles(editOptions?.detailHandles ?? false);
         editOptions?.onSession?.(editHandle.session);
       });
     },

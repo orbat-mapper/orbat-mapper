@@ -12,7 +12,7 @@ import {
   getRes0Cells,
   cellToChildren,
 } from "h3-js";
-import Pbf from "pbf";
+import { PbfWriter as Pbf } from "pbf";
 
 export const H3_PROTOCOL = "h3tile";
 const EXTENT = 4096;

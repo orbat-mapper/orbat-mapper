@@ -72,6 +72,7 @@ function updateEnum(
   <Field>
     <div class="flex items-center justify-between gap-2">
       <FieldLabel :for="id">{{ parameter.label }}</FieldLabel>
+      <slot name="unit" />
       <span
         v-if="parameter.type === 'number' && boundedNumber"
         class="text-muted-foreground text-xs tabular-nums"

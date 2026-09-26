@@ -145,6 +145,29 @@ only ever touches `onHand`.
 
 ### Map engines
 
+**Reference grid**:
+The single coordinate-reference overlay selected for the map: **MGRS** or
+**latitude/longitude**. Its definition, visibility, and appearance are display
+state and never part of the scenario.
+_Avoid_: including H3, which is an independent analytical overlay rather than a
+reference grid.
+
+**Grid definition**:
+The mode-specific parameters retained for each reference grid even while another
+mode is active, such as its interval. Switching modes selects a definition rather
+than replacing the other definitions. Definitions are device-wide preferences;
+MGRS permits 100 m, 1 km, 10 km, or 100 km, while latitude/longitude accepts any
+positive decimal-degree interval.
+
+**Grid appearance**:
+The device-wide presentation of a reference grid, including colour, opacity, and
+line width. It persists across scenarios but is not part of one.
+
+**Grid visibility**:
+Whether the reference grid is currently shown. Unlike its definition and appearance,
+visibility lasts only for the open map session and a newly opened map starts with the
+grid hidden.
+
 **Map engine**:
 A concrete map rendering stack (MapLibre; formerly also OpenLayers) plugged in
 behind the vendor-agnostic **MapAdapter** contract. Scenario logic talks to the

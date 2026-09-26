@@ -72,9 +72,8 @@ describe("ControlMeasureExtendedStyleSettings", () => {
     expect(text).not.toMatch(/\bSize \(px\)/);
 
     const minefield = mountSettings("minefield");
-    expect(minefield.text()).toContain(
-      "This control measure has no extended styling settings.",
-    );
+    expect(minefield.text()).toContain("Size");
+    expect(minefield.findAll('[aria-label="Size unit"]')).toHaveLength(1);
     expect(minefield.text()).not.toContain("Mine type");
     expect(minefield.text()).not.toContain("Rotation");
   });
@@ -93,6 +92,33 @@ describe("ControlMeasureExtendedStyleSettings", () => {
     expect(text()).toContain("900 m");
     expect(text()).not.toContain("20 px");
   });
+
+  it.each(["destroy", "defeat", "neutralize", "suppress"] as const)(
+    "shows one %s size control with defaults and a working unit toggle",
+    async (kind) => {
+      const wrapper = mount(ControlMeasureExtendedStyleSettings, {
+        props: {
+          graphicKind: kind,
+          getResolution: () => 2.5,
+          options: { crossAngle: 60 },
+        },
+        global: { stubs: { ControlMeasureColorPicker: ControlMeasureColorPickerStub } },
+      });
+      expect(wrapper.findAll('[aria-label="Size unit"]')).toHaveLength(1);
+      expect(wrapper.text()).toContain("80 px");
+      const meters = wrapper.find('button[aria-label="Meters"]');
+      await meters.trigger("click");
+      expect(wrapper.emitted("update")?.at(-1)).toEqual([
+        { crossAngle: 60, sizeMeters: 200 },
+      ]);
+      await wrapper.setProps({ options: { sizeMeters: 125, crossAngle: 60 } });
+      expect(wrapper.text()).toContain("125 m");
+      await wrapper.find('button[aria-label="Pixels"]').trigger("click");
+      expect(wrapper.emitted("update")?.at(-1)).toEqual([
+        { crossAngle: 60, sizePixels: 50 },
+      ]);
+    },
+  );
 
   it("preserves existing options and restores the enum value type", async () => {
     const wrapper = mountSettings("block-arrow", {

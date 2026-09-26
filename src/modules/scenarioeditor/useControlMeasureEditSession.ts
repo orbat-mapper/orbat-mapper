@@ -21,6 +21,7 @@
  */
 import { onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
+import { getControlMeasureVertexAlignedOptions } from "@orbat-mapper/control-measures";
 import { isEqual } from "es-toolkit";
 import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
@@ -74,6 +75,11 @@ export interface ControlMeasureEditSession {
   readonly featureId: Ref<FeatureId | null>;
   /** Is label-drag mode on? Sticky across sessions, like a tool preference. */
   readonly labelDrag: Ref<boolean>;
+  readonly widthGrips: Ref<boolean>;
+  readonly supportsWidthGrips: Ref<boolean>;
+  readonly canResetVertexWidths: Ref<boolean>;
+  setWidthGrips(enabled: boolean): void;
+  resetVertexWidths(): void;
   /** In-session history availability, for the details panel's affordances. */
   readonly canUndo: Ref<boolean>;
   readonly canRedo: Ref<boolean>;
@@ -109,6 +115,21 @@ export function useControlMeasureEditSession(
   // one graphic. Placing several labels means editing several graphics in a row, and
   // having the mode reset under you each time is the annoying half of that.
   const labelDrag = ref(false);
+  const widthGrips = ref(false);
+  const supportsWidthGrips = ref(false);
+  const canResetVertexWidths = ref(false);
+  /** The open session's per-vertex width option keys; empty when it has none. */
+  let widthKeys: readonly string[] = [];
+
+  function setWidthGrips(enabled: boolean) {
+    widthGrips.value = enabled;
+    session?.setDetailHandles(enabled);
+  }
+
+  function resetVertexWidths() {
+    if (!session || !canResetVertexWidths.value) return;
+    session.setOptions(Object.fromEntries(widthKeys.map((key) => [key, undefined])));
+  }
 
   /**
    * `["reshape", "transform"]` is the library's own default and is spelled out because
@@ -146,6 +167,9 @@ export function useControlMeasureEditSession(
     generation += 1;
     session = null;
     featureId.value = null;
+    widthKeys = [];
+    supportsWidthGrips.value = false;
+    canResetVertexWidths.value = false;
     settleReason = undefined;
     canUndo.value = false;
     canRedo.value = false;
@@ -217,11 +241,23 @@ export function useControlMeasureEditSession(
         // frozen to the zoom that happened to be showing when it was reshaped.
         sizeAnchor: getSizeAnchor(startMeasure),
         modes: editModes(),
+        detailHandles: widthGrips.value,
         onSession(live) {
           if (token !== generation) return;
           const editSession = asControlMeasureEditSession(live);
           if (!editSession) return;
           session = editSession;
+          widthKeys = getControlMeasureVertexAlignedOptions(startMeasure.kind);
+          supportsWidthGrips.value = widthKeys.length > 0;
+          const readWidths = () => {
+            const options = editSession.workingGraphic.options as
+              Record<string, unknown> | undefined;
+            canResetVertexWidths.value = widthKeys.some((key) =>
+              Array.isArray(options?.[key]),
+            );
+          };
+          readWidths();
+          editSession.onChange(readWidths);
           const readHistory = () => {
             canUndo.value = editSession.history.state.canUndo;
             canRedo.value = editSession.history.state.canRedo;
@@ -280,6 +316,11 @@ export function useControlMeasureEditSession(
   return {
     featureId,
     labelDrag,
+    widthGrips,
+    supportsWidthGrips,
+    canResetVertexWidths,
+    setWidthGrips,
+    resetVertexWidths,
     canUndo,
     canRedo,
     start,

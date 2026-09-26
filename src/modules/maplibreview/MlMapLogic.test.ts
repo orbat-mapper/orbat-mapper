@@ -3246,45 +3246,53 @@ describe("MlMapLogic", () => {
       return { mockMap, featureSelectSpy, unitSelectSpy, ownsInteractionAt };
     }
 
-    it("selects the control measure instead of the plain shape under it", () => {
-      const h = createControlMeasureHarness(true);
+    it.each([false, true])(
+      "selects the control measure instead of the plain shape under it (move mode: %s)",
+      (moveMode) => {
+        const h = createControlMeasureHarness(true);
+        useUnitSettingsStore().moveUnitEnabled = moveMode;
 
-      h.mockMap.emit("click", {
-        point: { x: 1, y: 2 },
-        originalEvent: { shiftKey: false },
-      });
+        h.mockMap.emit("click", {
+          point: { x: 1, y: 2 },
+          originalEvent: { shiftKey: false },
+        });
 
-      expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
-        originalEvent: { shiftKey: false },
-      });
-      expect(h.featureSelectSpy).toHaveBeenCalledWith({
-        featureId: "cm-1",
-        layerId: "layer-1",
-        options: { noZoom: true },
-      });
-      // Topmost wins: the plain shape underneath is unreachable until stage two
-      // unifies the renderers (ADR-0006). This is the accepted, documented cost.
-      expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
-        expect.objectContaining({ featureId: "feature-1" }),
-      );
-    });
+        expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
+          originalEvent: { shiftKey: false },
+        });
+        expect(h.featureSelectSpy).toHaveBeenCalledWith({
+          featureId: "cm-1",
+          layerId: "layer-1",
+          options: { noZoom: true },
+        });
+        // Topmost wins: the plain shape underneath is unreachable until stage two
+        // unifies the renderers (ADR-0006). This is the accepted, documented cost.
+        expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
+          expect.objectContaining({ featureId: "feature-1" }),
+        );
+      },
+    );
 
-    it("enters edit mode when clicking the selected control measure again", () => {
-      const startControlMeasureEdit = vi.fn();
-      const { selectedFeatureIds } = useSelectedItems();
-      selectedFeatureIds.value = new Set(["cm-1"]);
-      const h = createControlMeasureHarness(true, [], {
-        startControlMeasureEdit,
-      });
+    it.each([false, true])(
+      "enters edit mode when clicking the selected control measure again (move mode: %s)",
+      (moveMode) => {
+        const startControlMeasureEdit = vi.fn();
+        const { selectedFeatureIds } = useSelectedItems();
+        selectedFeatureIds.value = new Set(["cm-1"]);
+        const h = createControlMeasureHarness(true, [], {
+          startControlMeasureEdit,
+        });
+        useUnitSettingsStore().moveUnitEnabled = moveMode;
 
-      h.mockMap.emit("click", {
-        point: { x: 1, y: 2 },
-        originalEvent: { shiftKey: false },
-      });
+        h.mockMap.emit("click", {
+          point: { x: 1, y: 2 },
+          originalEvent: { shiftKey: false },
+        });
 
-      expect(startControlMeasureEdit).toHaveBeenCalledWith("cm-1");
-      expect(h.featureSelectSpy).not.toHaveBeenCalled();
-    });
+        expect(startControlMeasureEdit).toHaveBeenCalledWith("cm-1");
+        expect(h.featureSelectSpy).not.toHaveBeenCalled();
+      },
+    );
 
     it("shows the pointer cursor when hovering a control measure", () => {
       const h = createControlMeasureHarness(true, []);
