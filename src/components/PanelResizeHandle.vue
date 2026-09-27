@@ -42,7 +42,7 @@ function resetWidth() {
   emit("reset");
 }
 
-const throttledOnPointerMove = useThrottleFn(onPointerMove, 10);
+const throttledOnPointerMove = useThrottleFn(onPointerMove, 10, false);
 </script>
 
 <template>

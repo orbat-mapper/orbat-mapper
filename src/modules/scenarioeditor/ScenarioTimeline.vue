@@ -263,7 +263,7 @@ function onPointerMove(evt: PointerEvent) {
   }
 }
 
-const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0);
+const throttledTimeUpdate = useThrottleFn(setCurrentTime, 0, false);
 
 function onHover(e: MouseEvent) {
   updateHoverFromClientX(e.clientX);

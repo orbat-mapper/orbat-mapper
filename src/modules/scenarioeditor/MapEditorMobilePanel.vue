@@ -121,7 +121,7 @@ function onResizePointerMove(event: PointerEvent) {
   mobilePanelHeight.value = clampPanelHeight(startHeight + deltaY);
 }
 
-const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16);
+const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false);
 </script>
 
 <template>
