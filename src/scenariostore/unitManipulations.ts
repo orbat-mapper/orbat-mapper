@@ -99,6 +99,15 @@ function getBaseSubUnits(parent: NSide | NSideGroup | NUnit) {
   return parent._baseSubUnits ?? parent.subUnits;
 }
 
+/** A unit is hidden on the map by its own flag or by a hidden side or side group. */
+export function isUnitHiddenInState(state: ScenarioState, unit: NUnit): boolean {
+  return !!(
+    unit.isHidden ||
+    state.sideMap[unit._sid]?.isHidden ||
+    (unit._gid && state.sideGroupMap[unit._gid]?.isHidden)
+  );
+}
+
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
@@ -493,6 +502,24 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     unit.locked = locked;
+  }
+
+  function setUnitsHidden(unitIds: Iterable<EntityId>, hidden: boolean) {
+    const ids = [...unitIds].filter(
+      (id) => state.unitMap[id] && !!state.unitMap[id].isHidden !== hidden,
+    );
+    if (!ids.length) return;
+    update(
+      (s) => {
+        ids.forEach((id) => {
+          const unit = s.unitMap[id]!;
+          if (hidden) unit.isHidden = true;
+          else delete unit.isHidden;
+        });
+        s.unitStateCounter++;
+      },
+      { label: hidden ? "hideUnits" : "showUnits", value: ids.join(",") },
+    );
   }
 
   function updateUnitProperties(
@@ -1188,12 +1215,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function isUnitHidden(unitId: EntityId): boolean {
     const unit = state.unitMap[unitId];
-    if (!unit) return false;
-
-    return !!(
-      state.sideMap[unit._sid]?.isHidden ||
-      (unit._gid && state.sideGroupMap[unit._gid]?.isHidden)
-    );
+    return !!unit && isUnitHiddenInState(state, unit);
   }
 
   function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
@@ -1295,6 +1317,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitProperties,
     isUnitLocked,
     isUnitHidden,
+    setUnitsHidden,
     updateUnitState,
     batchUpdateUnit,
     batchUpdateUnitStyle,

@@ -27,6 +27,10 @@ export const UnitActions = {
   ClearStateOrDelete: "ClearStateOrDelete",
   Lock: "Lock",
   Unlock: "Unlock",
+  Hide: "Hide",
+  Show: "Show",
+  HideWithSubordinates: "HideWithSubordinates",
+  ShowWithSubordinates: "ShowWithSubordinates",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];

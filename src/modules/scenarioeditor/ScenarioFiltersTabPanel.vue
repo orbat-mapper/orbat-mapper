@@ -16,7 +16,13 @@ import { useSymbologyData } from "@/composables/symbolData";
 import FilterTree, {
   type NestedUnitStatItem,
 } from "@/modules/scenarioeditor/FilterTree.vue";
-import { IconCollapseAll, IconExpandAll } from "@iconify-prerendered/vue-mdi";
+import {
+  IconCollapseAll,
+  IconExpandAll,
+  IconEye,
+  IconEyeOff,
+  IconSelectInverse,
+} from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
@@ -27,10 +33,14 @@ const VISIBILITY_INITIAL_LOCATION_KEY = "visibility-initial-location";
 const VISIBILITY_CURRENT_LOCATION_KEY = "visibility-current-location";
 const VISIBILITY_HAS_LOCATIONS_KEY = "visibility-has-locations";
 const VISIBILITY_NO_LOCATIONS_KEY = "visibility-no-locations";
+const VISIBILITY_HIDDEN_KEY = "visibility-hidden";
+const VISIBILITY_VISIBLE_KEY = "visibility-visible";
 const GENERIC_FILTER_SIDC = "10031000100000000000";
 
 const {
   store: { state },
+  unitActions,
+  geo,
 } = injectStrict(activeScenarioKey);
 
 const { symbology, resolveIconLabel, resolveModifierLabel, loadData } =
@@ -61,6 +71,33 @@ const panelsOpen = ref({
   status: false,
   modifiers: false,
 });
+
+// Units the map draws right now: located at the current time and not hidden by
+// the unit, its side or its side group.
+const visibleOnMapIds = computed(
+  () => new Set(geo.everyVisibleUnit.value.map((unit) => unit.id)),
+);
+
+const selectedHiddenCount = computed(
+  () => [...selectedUnitIds.value].filter((id) => state.unitMap[id]?.isHidden).length,
+);
+const selectedVisibleCount = computed(
+  () => selectedUnitIds.value.size - selectedHiddenCount.value,
+);
+
+function setSelectedHidden(hidden: boolean) {
+  unitActions.setUnitsHidden(selectedUnitIds.value, hidden);
+}
+
+const hiddenUnitIds = computed(() =>
+  Object.values(state.unitMap)
+    .filter((unit) => unit.isHidden)
+    .map((unit) => unit.id),
+);
+
+function showAllHidden() {
+  unitActions.setUnitsHidden(hiddenUnitIds.value, false);
+}
 
 const isAnyPanelOpen = computed(() => Object.values(panelsOpen.value).some((v) => v));
 
@@ -283,11 +320,18 @@ watchEffect(() => {
       label: "Has initial location",
       sidc: GENERIC_FILTER_SIDC,
     },
+    {
+      key: VISIBILITY_VISIBLE_KEY,
+      label: "Visible on map",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+    {
+      key: VISIBILITY_HIDDEN_KEY,
+      label: "Hidden on map",
+      sidc: GENERIC_FILTER_SIDC,
+    },
   ];
-  stats[VISIBILITY_INITIAL_LOCATION_KEY] = stats[VISIBILITY_INITIAL_LOCATION_KEY] || 0;
-  stats[VISIBILITY_CURRENT_LOCATION_KEY] = stats[VISIBILITY_CURRENT_LOCATION_KEY] || 0;
-  stats[VISIBILITY_HAS_LOCATIONS_KEY] = stats[VISIBILITY_HAS_LOCATIONS_KEY] || 0;
-  stats[VISIBILITY_NO_LOCATIONS_KEY] = stats[VISIBILITY_NO_LOCATIONS_KEY] || 0;
+  visibilityTree.value.forEach(({ key }) => (stats[key] ||= 0));
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
   iconTree.value = sortBy(iconStatItems, "label");
@@ -328,6 +372,8 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
     currentLocationKey,
     hasLocationsKey,
     noLocationsKey,
+    hiddenKey,
+    visibleKey,
   } = keys;
   stats[symbolSetKey] = (stats[symbolSetKey] || 0) + 1;
   stats[entityKey] = (stats[entityKey] || 0) + 1;
@@ -338,12 +384,16 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
   stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
   stats[statusKey] = (stats[statusKey] || 0) + 1;
   stats[sidKey] = (stats[sidKey] || 0) + 1;
-  if (initialLocationKey)
-    stats[initialLocationKey] = (stats[initialLocationKey] || 0) + 1;
-  if (currentLocationKey)
-    stats[currentLocationKey] = (stats[currentLocationKey] || 0) + 1;
-  if (hasLocationsKey) stats[hasLocationsKey] = (stats[hasLocationsKey] || 0) + 1;
-  if (noLocationsKey) stats[noLocationsKey] = (stats[noLocationsKey] || 0) + 1;
+  for (const key of [
+    initialLocationKey,
+    currentLocationKey,
+    hasLocationsKey,
+    noLocationsKey,
+    hiddenKey,
+    visibleKey,
+  ]) {
+    if (key) stats[key] = (stats[key] || 0) + 1;
+  }
   if (!hqtfdKey.endsWith("0")) stats[hqtfdKey] = (stats[hqtfdKey] || 0) + 1;
   if (!mod1Key.endsWith("00")) stats[mod1Key] = (stats[mod1Key] || 0) + 1;
   if (!mod2Key.endsWith("00")) stats[mod2Key] = (stats[mod2Key] || 0) + 1;
@@ -377,6 +427,10 @@ function createKeys(unit: NUnit) {
     : undefined;
   const hasLocationsKey = hasLocations ? VISIBILITY_HAS_LOCATIONS_KEY : undefined;
   const noLocationsKey = hasNoLocations ? VISIBILITY_NO_LOCATIONS_KEY : undefined;
+  const hiddenKey = unit.isHidden ? VISIBILITY_HIDDEN_KEY : undefined;
+  const visibleKey = visibleOnMapIds.value.has(unit.id)
+    ? VISIBILITY_VISIBLE_KEY
+    : undefined;
   return {
     sidKey,
     symbolSetKey,
@@ -394,140 +448,40 @@ function createKeys(unit: NUnit) {
     currentLocationKey,
     hasLocationsKey,
     noLocationsKey,
+    hiddenKey,
+    visibleKey,
   };
+}
+
+// Every category key the unit belongs to.
+function unitKeys(unit: NUnit): string[] {
+  return Object.values(createKeys(unit)).filter((key): key is string => !!key);
+}
+
+function isExcluded(keys: string[]) {
+  return keys.some((key) => excludedKeys.value.has(key));
+}
+
+// Selects every unit that is not currently selected, skipping excluded categories.
+function invertSelection() {
+  const inverted = Object.values(state.unitMap)
+    .filter((unit) => !selectedUnitIds.value.has(unit.id) && !isExcluded(unitKeys(unit)))
+    .map((unit) => unit.id);
+  selectedUnitIds.value.clear();
+  inverted.forEach((id) => selectedUnitIds.value.add(id));
 }
 
 function selectByKey(key: string) {
   Object.values(state.unitMap).forEach((unit) => {
-    const {
-      symbolSetKey,
-      entityKey,
-      entityTypeKey,
-      emtKey,
-      sideKey,
-      sideGroupKey,
-      modSymbolSetKey,
-      mod1Key,
-      mod2Key,
-      statusKey,
-      hqtfdKey,
-      sidKey,
-      initialLocationKey,
-      currentLocationKey,
-      hasLocationsKey,
-      noLocationsKey,
-    } = createKeys(unit);
-
-    if (
-      excludedKeys.value.has(symbolSetKey) ||
-      excludedKeys.value.has(entityKey) ||
-      excludedKeys.value.has(entityTypeKey) ||
-      excludedKeys.value.has(emtKey) ||
-      excludedKeys.value.has(sideKey) ||
-      excludedKeys.value.has(sideGroupKey) ||
-      excludedKeys.value.has(modSymbolSetKey) ||
-      excludedKeys.value.has(mod1Key) ||
-      excludedKeys.value.has(mod2Key) ||
-      excludedKeys.value.has(statusKey) ||
-      excludedKeys.value.has(hqtfdKey) ||
-      excludedKeys.value.has(sidKey) ||
-      (!!initialLocationKey && excludedKeys.value.has(initialLocationKey)) ||
-      (!!currentLocationKey && excludedKeys.value.has(currentLocationKey)) ||
-      (!!hasLocationsKey && excludedKeys.value.has(hasLocationsKey)) ||
-      (!!noLocationsKey && excludedKeys.value.has(noLocationsKey))
-    ) {
-      return;
-    }
-    if (key === symbolSetKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === entityKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === entityTypeKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === emtKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sideKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sideGroupKey && !excludedKeys.value.has(sideGroupKey)) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === modSymbolSetKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === mod1Key) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === mod2Key) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === statusKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === hqtfdKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sidKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === initialLocationKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === currentLocationKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === hasLocationsKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === noLocationsKey) {
-      selectedUnitIds.value.add(unit.id);
-    }
+    const keys = unitKeys(unit);
+    if (keys.includes(key) && !isExcluded(keys)) selectedUnitIds.value.add(unit.id);
   });
 }
 
 function clearByKey(key: string) {
   selectedUnitIds.value.forEach((unitId) => {
     const unit = state.unitMap[unitId];
-    const {
-      symbolSetKey,
-      entityKey,
-      entityTypeKey,
-      emtKey,
-      sideKey,
-      sideGroupKey,
-      mod2Key,
-      mod1Key,
-      modSymbolSetKey,
-      statusKey,
-      hqtfdKey,
-      sidKey,
-      initialLocationKey,
-      currentLocationKey,
-      hasLocationsKey,
-      noLocationsKey,
-    } = createKeys(unit);
-    if (key === symbolSetKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === entityKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === entityTypeKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === emtKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sideKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sideGroupKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === mod1Key) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === mod2Key) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === modSymbolSetKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === statusKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === hqtfdKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sidKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === initialLocationKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === currentLocationKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === hasLocationsKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === noLocationsKey) {
-      selectedUnitIds.value.delete(unit.id);
-    }
+    if (unit && unitKeys(unit).includes(key)) selectedUnitIds.value.delete(unitId);
   });
 }
 
@@ -614,6 +568,43 @@ function expandAllIcons() {
         >
       </div>
     </header>
+    <div class="flex flex-wrap items-center gap-1 pb-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="mr-auto"
+        title="Select all units that are not selected, skipping excluded categories"
+        @click="invertSelection()"
+        ><IconSelectInverse class="size-4" />Invert selection</Button
+      >
+      <Button
+        v-if="selectedVisibleCount"
+        variant="outline"
+        size="sm"
+        title="Hide the selected units on the map"
+        @click="setSelectedHidden(true)"
+        ><IconEyeOff class="size-4" />Hide on map
+        <Badge variant="secondary">{{ selectedVisibleCount }}</Badge></Button
+      >
+      <Button
+        v-if="selectedHiddenCount"
+        variant="outline"
+        size="sm"
+        title="Show the selected units on the map"
+        @click="setSelectedHidden(false)"
+        ><IconEye class="size-4" />Show on map
+        <Badge variant="secondary">{{ selectedHiddenCount }}</Badge></Button
+      >
+      <Button
+        v-if="hiddenUnitIds.length"
+        variant="outline"
+        size="sm"
+        title="Show every hidden unit on the map"
+        @click="showAllHidden()"
+        ><IconEye class="size-4" />Show all hidden
+        <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
+      >
+    </div>
     <NewAccordionPanel label="Command level" v-model="panelsOpen.commandLevel">
       <FilterTree
         :tree="emtTree"

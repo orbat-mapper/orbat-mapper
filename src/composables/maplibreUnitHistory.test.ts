@@ -68,6 +68,7 @@ function createHarness() {
   const unit = createUnit();
   const addUnitPosition = vi.fn();
   const unitActions = {
+    isUnitHidden: vi.fn((_id: string) => false),
     deleteUnitStateEntry: vi.fn(),
     updateUnit: vi.fn(),
     updateUnitState: vi.fn(),
@@ -149,6 +150,16 @@ describe("useMaplibreUnitHistory", () => {
 
     const features = sources.get("unitHistoryWaypointSource").data.features;
     expect(features.map((f: any) => f.properties.waypointId)).toContain(WAYPOINT_ID);
+  });
+
+  it("does not draw the track of a hidden unit", () => {
+    const { sources, history, unitActions } = createHarness();
+    history.setupUnitHistoryLayers();
+    unitActions.isUnitHidden.mockReturnValue(true);
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    history.drawHistory();
+
+    expect(sources.get("unitHistoryWaypointSource").data.features).toEqual([]);
   });
 
   it("moves the dragged waypoint instead of appending a position", () => {

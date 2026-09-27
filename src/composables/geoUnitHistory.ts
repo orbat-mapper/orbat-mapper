@@ -15,7 +15,7 @@ import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import MapBrowserEvent from "ol/MapBrowserEvent";
-import { type MaybeRef, ref, watch } from "vue";
+import { computed, type MaybeRef, ref, watch } from "vue";
 
 import { useSelectedItems } from "@/stores/selectedStore";
 import { altKeyOnly, click, singleClick } from "ol/events/condition";
@@ -77,6 +77,12 @@ export function useUnitHistory(
   const fmt = useTimeFormatStore();
   const routingStore = useRoutingStore();
   const { selectedUnitIds } = useSelectedItems();
+  // Selected units hidden on the map, by their own flag or by their side or group.
+  // Their tracks are not drawn and ctrl+click does not add waypoints to them.
+  const hiddenSelectedUnitIds = computed(
+    () =>
+      new Set([...selectedUnitIds.value].filter((id) => unitActions.isUnitHidden(id))),
+  );
   const { waypointLayer, historyLayer, legLayer, viaLayer, arcLayer, labelsLayer } =
     createUnitHistoryLayers();
 
@@ -96,7 +102,7 @@ export function useUnitHistory(
     const clickPosition = toLonLat(olMap.getEventCoordinate(event.originalEvent));
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);
-      if (!unit) return;
+      if (!unit || hiddenSelectedUnitIds.value.has(unitId)) return;
       const lastLocationEntry = unit.state?.filter((s) => s.location).pop();
       let newTime = undefined;
       if (lastLocationEntry) {
@@ -357,7 +363,7 @@ export function useUnitHistory(
     if (!showHistoryRef.value) return;
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);
-      if (!unit?._state?.location) return;
+      if (!unit?._state?.location || hiddenSelectedUnitIds.value.has(unitId)) return;
 
       const { legFeatures, waypointFeatures, viaPointFeatures, arcFeatures } =
         createUnitPathFeatures(unit, {
@@ -390,6 +396,11 @@ export function useUnitHistory(
 
   watch(
     () => fmt.trackFormatter,
+    () => drawHistory(),
+  );
+
+  watch(
+    () => [...hiddenSelectedUnitIds.value].join(),
     () => drawHistory(),
   );
 

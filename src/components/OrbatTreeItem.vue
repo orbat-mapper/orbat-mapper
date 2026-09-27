@@ -13,7 +13,7 @@ import {
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { ChevronRightIcon } from "@heroicons/vue/20/solid";
-import { IconLockOutline } from "@iconify-prerendered/vue-mdi";
+import { IconEyeOff, IconLockOutline } from "@iconify-prerendered/vue-mdi";
 import { useActiveUnitStore } from "@/stores/dragStore";
 import { type UnitAction } from "@/types/constants";
 import DotsMenu from "./DotsMenu.vue";
@@ -297,7 +297,10 @@ const toggleOpen = () => {
         </button>
       </div>
       <div class="flex items-center space-x-1 text-sm">
-        <span class="flex items-center space-x-1" :class="{ 'opacity-20': isDragged }">
+        <span
+          class="flex items-center space-x-1"
+          :class="{ 'opacity-20': isDragged, 'opacity-50': !isDragged && unit.isHidden }"
+        >
           <div
             class="relative flex cursor-move justify-center"
             :style="{ width: settingsStore.orbatIconSize + 'pt' }"
@@ -341,6 +344,11 @@ const toggleOpen = () => {
     </div>
 
     <div class="flex items-center">
+      <IconEyeOff
+        v-if="unit.isHidden"
+        class="text-muted-foreground h-5 w-5"
+        aria-label="Hidden on map"
+      />
       <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
       <DotsMenu
         class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 group-focus/orbat-item:opacity-100"

@@ -112,6 +112,7 @@ export interface Unit {
   template?: EntityId;
   properties?: UnitProperties;
   locked?: boolean;
+  isHidden?: boolean;
   style?: UnitStyle;
   // internal runtime only state
   _state?: CurrentState | null;
