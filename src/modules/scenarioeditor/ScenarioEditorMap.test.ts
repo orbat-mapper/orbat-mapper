@@ -110,11 +110,13 @@ vi.mock("@/components/ScenarioMap.vue", () => ({
 
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
+  props: { showBottomToolbar: Boolean, isMobile: Boolean },
   emits: ["closeDetailsPanel"],
   template: `
     <div>
       <div data-test="map-slot"><slot name="map" /></div>
       <div data-test="footer-overlays-slot"><slot name="footer-overlays" /></div>
+      <div data-test="bottom-toolbar-slot"><slot v-if="showBottomToolbar && !isMobile" name="bottom-toolbar" /></div>
       <div data-test="mobile-toolbar-slot"><slot name="mobile-toolbar" /></div>
       <div data-test="after-keyboard-slot"><slot name="after-keyboard" /></div>
       <div data-test="modals-slot"><slot name="modals" /></div>
@@ -295,13 +297,13 @@ describe("ScenarioEditorMap", () => {
     );
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='map-toolbar']")
         .exists(),
     ).toBe(false);
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='draw-toolbar']")
         .exists(),
     ).toBe(false);

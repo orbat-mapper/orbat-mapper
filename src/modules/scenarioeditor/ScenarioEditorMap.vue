@@ -241,6 +241,7 @@ function onCloseActiveDetailsPanel() {
     :show-left-panel="showLeftPanel"
     :show-details-panel="showDetailsPanel"
     :header-controls-style="headerControlsStyle"
+    :show-bottom-toolbar="Boolean(nativeMapRef) && (ui.showToolbar || isDrawing)"
     @open-left-panel="ui.showLeftPanel = true"
     @close-left-panel="ui.showLeftPanel = false"
     @show-settings="emit('show-settings')"
@@ -260,39 +261,34 @@ function onCloseActiveDetailsPanel() {
         @map-view-change="emit('map-view-change', $event)"
       />
     </template>
-    <template #footer-overlays>
-      <footer
-        v-if="nativeMapRef && !isMobile && (ui.showToolbar || isDrawing)"
-        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
-      >
-        <MapEditorMainToolbar
-          v-if="ui.showToolbar"
-          @open-time-modal="openTimeDialog()"
-          @inc-day="onIncDay()"
-          @dec-day="onDecDay()"
-          @next-event="goToNextScenarioEvent()"
-          @prev-event="goToPrevScenarioEvent()"
-          @show-settings="emit('show-settings')"
-        />
-        <MapEditorMeasurementToolbar
-          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="
-            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
-          "
-        />
-        <DrawSessionActionBar
-          v-if="isDrawing"
-          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-        />
-        <MapEditorDrawToolbar
-          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
-        />
-        <MapEditorUnitTrackToolbar
-          class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
-          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
-        />
-      </footer>
+    <template #bottom-toolbar>
+      <MapEditorMainToolbar
+        v-if="ui.showToolbar"
+        @open-time-modal="openTimeDialog()"
+        @inc-day="onIncDay()"
+        @dec-day="onDecDay()"
+        @next-event="goToNextScenarioEvent()"
+        @prev-event="goToPrevScenarioEvent()"
+        @show-settings="emit('show-settings')"
+      />
+      <MapEditorMeasurementToolbar
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
+        v-if="
+          ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+        "
+      />
+      <DrawSessionActionBar
+        v-if="isDrawing"
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
+      />
+      <MapEditorDrawToolbar
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
+        v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
+      />
+      <MapEditorUnitTrackToolbar
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 sm:bottom-16"
+        v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
+      />
     </template>
     <template #mobile-toolbar>
       <div

@@ -279,6 +279,7 @@ function onCloseActiveDetailsPanel() {
     header-class="flex min-w-0 flex-none items-start justify-between sm:p-2"
     header-controls-class="bg-background/85 pointer-events-auto mr-1 flex min-w-0 max-w-[calc(100vw-0.5rem)] items-center gap-1 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-md p-1 shadow-sm mt-1 backdrop-blur-sm"
     :header-controls-style="headerControlsStyle"
+    :show-bottom-toolbar="Boolean(mlMap) && (ui.showToolbar || isDrawing)"
     @open-left-panel="ui.showLeftPanel = true"
     @close-left-panel="ui.showLeftPanel = false"
     @show-settings="emit('show-settings')"
@@ -346,47 +347,44 @@ function onCloseActiveDetailsPanel() {
           {{ label.text }}
         </span>
       </div>
-      <footer
-        v-if="mlMap && !isMobile && (ui.showToolbar || isDrawing)"
-        class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+    </template>
+    <template #bottom-toolbar>
+      <MapEditorMainToolbar
+        v-if="ui.showToolbar"
+        :can-move-units="true"
+        :can-rotate-units="true"
+        :can-measure="true"
+        :can-draw="true"
+        :can-track="true"
+        :can-add-units="true"
+        location-picker-event-source="dom"
+        @open-time-modal="openTimeDialog()"
+        @inc-day="onIncDay()"
+        @dec-day="onDecDay()"
+        @next-event="goToNextScenarioEvent()"
+        @prev-event="goToPrevScenarioEvent()"
+        @show-settings="emit('show-settings')"
       >
-        <MapEditorMainToolbar
-          v-if="ui.showToolbar"
-          :can-move-units="true"
-          :can-rotate-units="true"
-          :can-measure="true"
-          :can-draw="true"
-          :can-track="true"
-          :can-add-units="true"
-          location-picker-event-source="dom"
-          @open-time-modal="openTimeDialog()"
-          @inc-day="onIncDay()"
-          @dec-day="onDecDay()"
-          @next-event="goToNextScenarioEvent()"
-          @prev-event="goToPrevScenarioEvent()"
-          @show-settings="emit('show-settings')"
-        >
-          <template #extra-tools>
-            <ReferenceGridControl />
-            <MaplibreLabsPopover :ml-map="mlMap" />
-          </template>
-        </MapEditorMainToolbar>
-        <MapEditorUnitTrackToolbar
-          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
-          class="absolute bottom-14 sm:bottom-16"
-        />
-        <MapEditorMeasurementToolbar
-          v-if="
-            ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
-          "
-          class="absolute bottom-14 sm:bottom-16"
-        />
-        <DrawSessionActionBar v-if="isDrawing" class="absolute bottom-14 sm:bottom-16" />
-        <MapEditorDrawToolbar
-          v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
-          class="absolute bottom-14 sm:bottom-16"
-        />
-      </footer>
+        <template #extra-tools>
+          <ReferenceGridControl />
+          <MaplibreLabsPopover :ml-map="mlMap" />
+        </template>
+      </MapEditorMainToolbar>
+      <MapEditorUnitTrackToolbar
+        v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'track'"
+        class="absolute bottom-14 sm:bottom-16"
+      />
+      <MapEditorMeasurementToolbar
+        v-if="
+          ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'measurements'
+        "
+        class="absolute bottom-14 sm:bottom-16"
+      />
+      <DrawSessionActionBar v-if="isDrawing" class="absolute bottom-14 sm:bottom-16" />
+      <MapEditorDrawToolbar
+        v-if="ui.showToolbar && !isDrawing && toolbarStore.currentToolbar === 'draw'"
+        class="absolute bottom-14 sm:bottom-16"
+      />
     </template>
     <template #mobile-toolbar>
       <div

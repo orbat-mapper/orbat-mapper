@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { PanelRightIcon, PinIcon, PinOffIcon } from "@lucide/vue";
 import OverlayPanelIcon from "@/components/OverlayPanelIcon.vue";
 
-defineProps<{ mode: DetailsPanelMode }>();
+withDefaults(defineProps<{ mode: DetailsPanelMode; bottomInset?: number }>(), {
+  bottomInset: 0,
+});
 const emit = defineEmits(["close"]);
 const widthStore = useWidthStore();
 const ui = useUiStore();
@@ -22,7 +24,7 @@ const { detailsPanelPinned: isPinned } = storeToRefs(ui);
 const sidebarClasses =
   "bg-sidebar border-sidebar-border pointer-events-auto relative flex h-full flex-col overflow-hidden border-l shadow-sm";
 const overlayClasses =
-  "bg-sidebar border-sidebar-border pointer-events-auto absolute right-2 top-2 z-30 flex max-h-[70vh] flex-col overflow-clip rounded-md border shadow-sm";
+  "bg-sidebar border-sidebar-border pointer-events-auto absolute right-2 top-2 z-30 flex flex-col overflow-clip rounded-md border shadow-sm";
 </script>
 
 <template>
@@ -32,6 +34,7 @@ const overlayClasses =
       width: widthStore.detailsWidth + 'px',
       minWidth: '250px',
       maxWidth: '50vw',
+      maxHeight: mode === 'overlay' ? `calc(100% - 1rem - ${bottomInset}px)` : undefined,
     }"
   >
     <div class="flex items-center gap-0.5 border-b px-1 py-0.5">
@@ -66,7 +69,7 @@ const overlayClasses =
       </Button>
       <CloseButton @click="emit('close')" class="ml-auto bg-transparent" />
     </div>
-    <div class="flex-auto overflow-auto p-4">
+    <div class="min-h-0 flex-auto [scrollbar-gutter:stable] overflow-auto p-4">
       <slot />
     </div>
     <PanelResizeHandle

@@ -5,7 +5,10 @@ const props = defineProps<{ media: Media }>();
 </script>
 
 <template>
-  <div v-if="media" class="group @-lg:aspect-16/5 relative -mx-4 -mt-4 aspect-16/9">
+  <div
+    v-if="media"
+    class="group @-lg:aspect-16/5 relative -mx-4 -mt-4 aspect-16/9 max-h-[25vh]"
+  >
     <img
       draggable="false"
       class="h-full w-full object-cover"
