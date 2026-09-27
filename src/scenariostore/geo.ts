@@ -51,6 +51,7 @@ import type { Geometry } from "geojson";
 import { coordEach } from "@turf/meta";
 import type { AmplifierPlacements } from "@orbat-mapper/control-measures";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
+import { isUnitHiddenInState } from "@/scenariostore/unitManipulations";
 
 const DUPLICATE_SCREEN_OFFSET_PX = 24;
 const DUPLICATE_FALLBACK_DELTA: readonly [number, number] = [0.0001, -0.0001];
@@ -279,28 +280,9 @@ export function useGeo(store: NewScenarioStore) {
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
   const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
 
-  const hiddenGroups = computed(() => {
-    return new Set(
-      Object.values(state.sideGroupMap)
-        .filter((group) => !!(group.isHidden || state.sideMap[group._pid]?.isHidden))
-        .map((group) => group.id),
-    );
-  });
-
-  const hiddenSides = computed(() => {
-    return new Set(
-      Object.values(state.sideMap)
-        .filter((side) => !!side.isHidden)
-        .map((side) => side.id),
-    );
-  });
-
   const everyVisibleUnit = computed(() => {
     return Object.values(state.unitMap).filter(
-      (unit) =>
-        !(unit._gid
-          ? hiddenGroups.value.has(unit._gid)
-          : hiddenSides.value.has(unit._sid)) && unit._state?.location,
+      (unit) => !isUnitHiddenInState(state, unit) && unit._state?.location,
     );
   });
 

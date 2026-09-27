@@ -257,6 +257,7 @@ function createHoverScenario(
       },
     },
     unitActions: {
+      isUnitHidden: vi.fn(() => false),
       getCombinedSymbolOptions: vi.fn(() => ({})),
     },
     geo: {
@@ -334,6 +335,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -402,6 +404,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({ size: 12, fillColor: "#112233" })),
       },
       geo: {
@@ -451,6 +454,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -498,6 +502,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -551,6 +556,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -601,6 +607,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -648,6 +655,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -702,6 +710,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({ fillColor: "#112233" })),
       },
       geo: {
@@ -762,6 +771,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -823,6 +833,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -892,6 +903,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -948,6 +960,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1007,6 +1020,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1060,6 +1074,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1107,6 +1122,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1169,6 +1185,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1257,6 +1274,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1324,6 +1342,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1416,6 +1435,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1479,6 +1499,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1585,6 +1606,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1896,6 +1918,7 @@ describe("MlMapLogic", () => {
           groupUpdate: (fn: () => void) => fn(),
         },
         unitActions: {
+          isUnitHidden: vi.fn(() => false),
           getCombinedSymbolOptions: vi.fn(() => ({})),
           isUnitLocked: vi.fn(() => false),
         },
@@ -2002,6 +2025,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2069,6 +2093,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2125,6 +2150,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2184,6 +2210,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2255,6 +2282,7 @@ describe("MlMapLogic", () => {
         groupUpdate: (fn: () => void) => fn(),
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2343,6 +2371,7 @@ describe("MlMapLogic", () => {
         groupUpdate: (fn: () => void) => fn(),
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2433,6 +2462,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2516,6 +2546,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2589,6 +2620,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2737,6 +2769,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2794,6 +2827,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2850,6 +2884,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2913,6 +2948,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3073,6 +3109,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3125,6 +3162,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3214,7 +3252,10 @@ describe("MlMapLogic", () => {
             featureStateCounter: 0,
           },
         },
-        unitActions: { getCombinedSymbolOptions: vi.fn(() => ({})) },
+        unitActions: {
+          isUnitHidden: vi.fn(() => false),
+          getCombinedSymbolOptions: vi.fn(() => ({})),
+        },
         geo: {
           everyVisibleUnit: computed(() => []),
           getLayerItemById: vi.fn((id: string) => ({

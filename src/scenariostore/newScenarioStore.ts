@@ -534,7 +534,9 @@ export type ActionLabel =
   | "deleteMapLayer"
   | "updateMapLayer"
   | "moveMapLayer"
-  | "clearUnitState";
+  | "clearUnitState"
+  | "hideUnits"
+  | "showUnits";
 
 export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   const inputState = prepareScenario(data);
