@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StyleValue } from "vue";
+import { type StyleValue, useTemplateRef } from "vue";
 import { GlobalEvents } from "vue-global-events";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import { PanelLeftOpenIcon as ShowPanelIcon } from "@lucide/vue";
@@ -15,6 +15,7 @@ import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioAc
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 import { useUiStore } from "@/stores/uiStore";
+import { useOverlayBottomInset } from "@/composables/useOverlayBottomInset";
 
 withDefaults(
   defineProps<{
@@ -27,6 +28,7 @@ withDefaults(
     headerClass?: string;
     headerControlsClass?: string;
     headerControlsStyle?: StyleValue;
+    showBottomToolbar?: boolean;
   }>(),
   {
     showSearchButton: true,
@@ -34,6 +36,7 @@ withDefaults(
     headerClass: "flex flex-none items-center justify-between sm:p-2",
     headerControlsClass: "pointer-events-auto mr-2 sm:ml-2",
     headerControlsStyle: undefined,
+    showBottomToolbar: false,
   },
 );
 
@@ -51,6 +54,8 @@ const emit = defineEmits<{
 }>();
 
 const ui = useUiStore();
+const bottomToolbarRef = useTemplateRef("bottomToolbarRef");
+const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
 </script>
 
 <template>
@@ -102,10 +107,18 @@ const ui = useUiStore();
             <ShowPanelIcon class="size-4" />
           </Button>
           <slot name="footer-overlays" />
+          <footer
+            v-if="!isMobile && showBottomToolbar"
+            ref="bottomToolbarRef"
+            class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+          >
+            <slot name="bottom-toolbar" />
+          </footer>
         </main>
         <MapEditorDetailsPanel
           v-if="!isMobile && showDetailsPanel && ui.detailsPanelMode === 'overlay'"
           :mode="ui.detailsPanelMode"
+          :bottom-inset="bottomToolbarInset"
           @close="emit('closeDetailsPanel')"
         >
           <DetailsPanelContent />
