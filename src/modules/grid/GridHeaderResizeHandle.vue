@@ -30,7 +30,7 @@ function onPointerMove(evt: PointerEvent) {
   }
 }
 
-const throttledOnPointerMove = useThrottleFn(onPointerMove, 10);
+const throttledOnPointerMove = useThrottleFn(onPointerMove, 10, false);
 </script>
 
 <template>
