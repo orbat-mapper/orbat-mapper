@@ -12,8 +12,13 @@ All notable changes to this project will be documented in this file.
 - Added experimental 3D terrain and hillshading to MapLibre mode, available from the Labs menu. Elevation data comes from Mapterhorn and requires a network connection. Terrain exaggeration, hillshade strength, light direction, anchoring, and colours are adjustable, and the pointer location readout shows the ground elevation under the cursor. Terrain and hillshading survive a basemap change, and georeferenced image exports are rendered without terrain.
 - Added width grips for editing the arrow width at each vertex of supported control measures. Toggle them from the details panel while editing; the setting is kept between edits. Alt+click a grip to reset it, or use "Reset arrow widths" to clear all width adjustments.
 - Added a choice of smoothing style (Rounded or Curve) for control measures that support more than one, such as main attack arrows. The chosen style is remembered as a drawing default.
+- Added per-unit hiding on the map. Hide or show units from the unit details header, the ORBAT tree menu, or the Select tab, including "with subordinates" variants. Hiding a unit does not hide its subordinates. The flag is saved with the scenario, and hidden units are left out of map layers, range rings, unit tracks, and GeoJSON/KML exports. Hidden units are dimmed in the ORBAT tree.
+- Added "Invert selection" and "Show all hidden" actions and "Visible on map" / "Hidden on map" categories to the Select tab.
 
 ### Changed
+
+- Renamed the Filters tab to Select. Clicking a category adds its units to the selection and clicking it again removes them. Each row shows a selected/total count and a tooltip saying what the click will do.
+- Moved the Select tab's Hide, Show, and Clear actions to a footer that appears while units are selected and shows how many selected units are hidden.
 
 - Replaced the previous experimental MGRS overlay with the reusable reference-grid implementation and moved its controls into the main map toolbar.
 - Reference-grid rendering is now loaded on demand the first time a grid is shown, reducing the initial MapLibre editor download.
@@ -21,6 +26,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed side duplication omitting units attached directly to a side, including sides without groups. Both duplicate actions now copy these units and their descendants, retaining unit state when requested.
+- Fixed "Expand all icons" in the Select tab collapsing expanded sides and not toggling reliably. It now toggles only the icon nodes.
 
 ## August 2026
 
