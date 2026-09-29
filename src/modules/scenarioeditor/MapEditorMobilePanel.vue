@@ -126,11 +126,11 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
 
 <template>
   <main
-    class="bg-background overflow-hidden"
+    class="bg-background flex flex-col overflow-hidden"
     :class="[showBottomPanel ? '' : 'h-12']"
     :style="panelStyle"
   >
-    <div id="mob-controls" class="flex h-12 items-center" ref="swipeControlsEl">
+    <div id="mob-controls" class="flex h-12 shrink-0 items-center" ref="swipeControlsEl">
       <div
         v-if="showBottomPanel"
         ref="resizeHandleRef"
@@ -173,7 +173,8 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
     </div>
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filter', 'Tools', 'Details']"
+      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Select', 'Tools', 'Details']"
+      class="min-h-0 flex-1"
       :class="{ hidden: !showBottomPanel }"
     >
       <template #right
@@ -192,7 +193,7 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
       <TabsContent value="3" class="mt-0 p-4 pb-10">
         <ScenarioSettingsPanel />
       </TabsContent>
-      <TabsContent value="4" class="mt-0">
+      <TabsContent value="4" class="mt-0 h-full">
         <ScenarioFiltersTabPanel />
       </TabsContent>
       <TabsContent value="5" class="mt-0 p-4 pb-10">

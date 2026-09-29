@@ -17,6 +17,7 @@ import FilterTree, {
   type NestedUnitStatItem,
 } from "@/modules/scenarioeditor/FilterTree.vue";
 import {
+  IconClose,
   IconCollapseAll,
   IconExpandAll,
   IconEye,
@@ -71,6 +72,20 @@ const panelsOpen = ref({
   status: false,
   modifiers: false,
 });
+
+type FilterSectionId = keyof typeof panelsOpen.value;
+
+const filterSections = computed<
+  { id: FilterSectionId; label: string; tree: NestedUnitStatItem[] }[]
+>(() => [
+  { id: "commandLevel", label: "Command level", tree: emtTree.value },
+  { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
+  { id: "side", label: "Side", tree: sideTree.value },
+  { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
+  { id: "identity", label: "Standard identity", tree: sidTree.value },
+  { id: "status", label: "Status", tree: statusTree.value },
+  { id: "modifiers", label: "Symbol modifiers", tree: modifierTree.value },
+]);
 
 // Units the map draws right now: located at the current time and not hidden by
 // the unit, its side or its side group.
@@ -142,8 +157,6 @@ watchEffect(() => {
 
     const iconSidc = new Sidc(getFullUnitSidc(unit.sidc));
     const originalEmt = iconSidc.emt;
-    const originalMod1 = iconSidc.modifierOne;
-    const originalMod2 = iconSidc.modifierTwo;
     iconSidc.emt = "00";
     iconSidc.hqtfd = "0";
     iconSidc.standardIdentity = "3";
@@ -153,10 +166,6 @@ watchEffect(() => {
     const sidc = iconSidc.toString();
     iconSidc.mainIcon = "000000";
     const sidcSymbolSet = iconSidc.toString();
-    iconSidc.modifierOne = originalMod1;
-    iconSidc.modifierTwo = originalMod2;
-    iconSidc.modifierOne = "00";
-    iconSidc.modifierTwo = "00";
     iconSidc.emt = originalEmt;
     const sidcEmt = iconSidc.toString();
     if (stats[sideKey] === 1) {
@@ -351,10 +360,25 @@ const selectedStats = computed(() => {
   return stats;
 });
 
-function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, number>) {
+// Per category: the units a click would add, skipping excluded categories.
+const addableStats = computed(() => {
+  if (!excludedKeys.value.size) return flatStats.value;
+  const stats: Record<string, number> = {};
+  Object.values(state.unitMap).forEach((unit) => {
+    const keys = createKeys(unit);
+    if (!isExcluded(keyList(keys))) updateUnitStats(unit, stats, keys);
+  });
+  return stats;
+});
+
+function updateUnitStats(
+  unitOrUnitId: string | NUnit,
+  stats: Record<string, number>,
+  precomputedKeys?: ReturnType<typeof createKeys>,
+) {
   const unit =
     typeof unitOrUnitId === "string" ? state.unitMap[unitOrUnitId] : unitOrUnitId;
-  const keys = createKeys(unit);
+  const keys = precomputedKeys ?? createKeys(unit);
   const {
     symbolSetKey,
     entityKey,
@@ -455,7 +479,11 @@ function createKeys(unit: NUnit) {
 
 // Every category key the unit belongs to.
 function unitKeys(unit: NUnit): string[] {
-  return Object.values(createKeys(unit)).filter((key): key is string => !!key);
+  return keyList(createKeys(unit));
+}
+
+function keyList(keys: ReturnType<typeof createKeys>): string[] {
+  return Object.values(keys).filter((key): key is string => !!key);
 }
 
 function isExcluded(keys: string[]) {
@@ -523,31 +551,35 @@ function onSelect(event: CustomEvent<{ value: { key: string } }>) {
   }
 }
 
+function parentKeys(items: NestedUnitStatItem[]): string[] {
+  return items.flatMap((item) =>
+    item.children?.length ? [item.key, ...parentKeys(item.children)] : [],
+  );
+}
+
+// Toggles every expandable main icon node, leaving the other trees as they are.
 function expandAllIcons() {
-  const keys = Object.keys(flatStats.value).filter((key) => !key.startsWith("side-"));
-  const expandedSideKeys = keys.filter((key) => key.startsWith("side-"));
-  if (expandedKeys.value.length - expandedSideKeys.length === keys.length) {
-    expandedKeys.value = [];
-  } else {
-    expandedKeys.value = keys;
-  }
+  const iconKeys = new Set(parentKeys(iconTree.value));
+  const otherKeys = expandedKeys.value.filter((key) => !iconKeys.has(key));
+  const allExpanded = [...iconKeys].every((key) => expandedKeys.value.includes(key));
+  expandedKeys.value = allExpanded ? otherKeys : [...otherKeys, ...iconKeys];
 }
 </script>
 <template>
-  <div class="px-4">
+  <div class="flex min-h-full flex-col px-4">
     <header
       class="bg-sidebar sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
     >
-      <PanelHeading>Select units</PanelHeading>
+      <PanelHeading>Select by category</PanelHeading>
       <div class="flex items-center space-x-1">
         <IconButton
           v-if="isAnyPanelOpen"
-          title="Collapse all filter sections"
+          title="Collapse all sections"
           @click="collapseAll()"
         >
           <IconCollapseAll class="h-5 w-5" />
         </IconButton>
-        <IconButton v-else title="Expand all filter sections" @click="expandAll()">
+        <IconButton v-else title="Expand all sections" @click="expandAll()">
           <IconExpandAll class="h-5 w-5" />
         </IconButton>
         <Button
@@ -558,16 +590,11 @@ function expandAllIcons() {
           >Clear excluded
           <Badge variant="secondary">{{ excludedKeys.size }}</Badge></Button
         >
-        <Button
-          v-if="selectedUnitIds.size"
-          variant="outline"
-          size="sm"
-          @click="selectedUnitIds.clear()"
-          >Clear selected
-          <Badge variant="secondary">{{ selectedUnitIds.size }}</Badge></Button
-        >
       </div>
     </header>
+    <p class="text-muted-foreground pb-2 text-sm">
+      Click a category to add its units to the selection. Click it again to remove them.
+    </p>
     <div class="flex flex-wrap items-center gap-1 pb-2">
       <Button
         variant="ghost"
@@ -576,24 +603,6 @@ function expandAllIcons() {
         title="Select all units that are not selected, skipping excluded categories"
         @click="invertSelection()"
         ><IconSelectInverse class="size-4" />Invert selection</Button
-      >
-      <Button
-        v-if="selectedVisibleCount"
-        variant="outline"
-        size="sm"
-        title="Hide the selected units on the map"
-        @click="setSelectedHidden(true)"
-        ><IconEyeOff class="size-4" />Hide on map
-        <Badge variant="secondary">{{ selectedVisibleCount }}</Badge></Button
-      >
-      <Button
-        v-if="selectedHiddenCount"
-        variant="outline"
-        size="sm"
-        title="Show the selected units on the map"
-        @click="setSelectedHidden(false)"
-        ><IconEye class="size-4" />Show on map
-        <Badge variant="secondary">{{ selectedHiddenCount }}</Badge></Button
       >
       <Button
         v-if="hiddenUnitIds.length"
@@ -605,100 +614,64 @@ function expandAllIcons() {
         <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
       >
     </div>
-    <NewAccordionPanel label="Command level" v-model="panelsOpen.commandLevel">
-      <FilterTree
-        :tree="emtTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Main unit icon" v-model="panelsOpen.mainIcon">
-      <template #header
+    <NewAccordionPanel
+      v-for="section in filterSections"
+      :key="section.id"
+      :label="section.label"
+      v-model="panelsOpen[section.id]"
+    >
+      <template v-if="section.id === 'mainIcon'" #header
         ><IconButton title="Expand all icons" @click.stop="expandAllIcons()"
           ><IconExpandAll /></IconButton
       ></template>
       <FilterTree
-        :tree="iconTree"
+        :tree="section.tree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"
+        :addableStats="addableStats"
         :excludedKeys="excludedKeys"
         @select="onSelect"
-        @clear="clearByKey"
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Side" v-model="panelsOpen.side">
-      <FilterTree
-        :tree="sideTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Map visibility" v-model="panelsOpen.visibility">
-      <FilterTree
-        :tree="visibilityTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Standard identity" v-model="panelsOpen.identity">
-      <FilterTree
-        :tree="sidTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Status" v-model="panelsOpen.status">
-      <FilterTree
-        :tree="statusTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Symbol modifiers" v-model="panelsOpen.modifiers">
-      <FilterTree
-        :tree="modifierTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
+    <footer
+      v-if="selectedUnitIds.size"
+      class="border-border bg-sidebar sticky bottom-0 z-10 -mx-4 mt-auto flex min-h-12 items-center gap-2 border-t px-4 py-2"
+    >
+      <div class="flex flex-col text-sm leading-tight whitespace-nowrap">
+        <span class="font-medium">{{ selectedUnitIds.size }} selected</span>
+        <span v-if="selectedHiddenCount" class="text-muted-foreground text-xs"
+          >{{ selectedHiddenCount }} hidden</span
+        >
+      </div>
+      <div class="ml-auto flex flex-wrap items-center justify-end gap-1">
+        <Button
+          v-if="selectedVisibleCount"
+          variant="outline"
+          size="sm"
+          title="Hide the selected units on the map"
+          @click="setSelectedHidden(true)"
+          ><IconEyeOff class="size-4" />Hide</Button
+        >
+        <Button
+          v-if="selectedHiddenCount"
+          variant="outline"
+          size="sm"
+          title="Show the selected units on the map"
+          @click="setSelectedHidden(false)"
+          ><IconEye class="size-4" />Show</Button
+        >
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          title="Clear the selection"
+          aria-label="Clear the selection"
+          @click="selectedUnitIds.clear()"
+          ><IconClose class="size-4"
+        /></Button>
+      </div>
+    </footer>
   </div>
 </template>

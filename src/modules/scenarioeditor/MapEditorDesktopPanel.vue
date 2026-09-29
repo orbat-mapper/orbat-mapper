@@ -49,7 +49,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
   >
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Filters', 'Tools']"
+      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Select', 'Tools']"
       as="div"
       class="hover-none:mr-3 bg-sidebar"
       :class="{ hidden: !showBottomPanel }"
@@ -68,7 +68,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
       </TabsContent>
       <TabsContent value="2" class="p-4 pb-10"><ScenarioLayersTabPanel /></TabsContent>
       <TabsContent value="3" class="p-4 pb-10"> <ScenarioSettingsPanel /></TabsContent>
-      <TabsContent value="4" class=""> <ScenarioFiltersTabPanel /></TabsContent>
+      <TabsContent value="4" class="h-full"> <ScenarioFiltersTabPanel /></TabsContent>
       <TabsContent value="5" class="p-4 pb-10"> <ScenarioToolsTabPanel /></TabsContent>
     </ScrollTabs>
     <PanelResizeHandle
