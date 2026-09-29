@@ -17,10 +17,42 @@ const props = defineProps<{
   tree: NestedUnitStatItem[];
   stats: Record<string, number>;
   selectedStats: Record<string, number>;
+  addableStats: Record<string, number>;
   excludedKeys: Set<string>;
 }>();
-const emit = defineEmits(["select", "clearByKey", "clear", "exclude", "clearExclude"]);
+const emit = defineEmits(["select", "exclude", "clearExclude"]);
 const expandedKeys = defineModel<string[]>("expandedKeys");
+
+function selectionState(key: string): "none" | "some" | "all" {
+  const selected = props.selectedStats[key] || 0;
+  if (!selected) return "none";
+  return selected >= (props.stats[key] || 0) ? "all" : "some";
+}
+
+function units(count: number) {
+  return `${count} ${count === 1 ? "unit" : "units"}`;
+}
+
+// Says what clicking the row will do.
+function rowTitle(item: NestedUnitStatItem) {
+  const { key, label } = item;
+  const selected = props.selectedStats[key] || 0;
+  if (selected) return `${label}: click to remove ${units(selected)} from the selection`;
+  if (props.excludedKeys.has(key))
+    return `${label}: excluded, so clicking selects nothing`;
+  const addable = props.addableStats[key] || 0;
+  if (!addable) return `${label}: every unit is in an excluded category`;
+  const skipped = (props.stats[key] || 0) - addable;
+  const note = skipped ? ` (${skipped} excluded)` : "";
+  return `${label}: click to add ${units(addable)} to the selection${note}`;
+}
+
+const ariaChecked = { none: "false", some: "mixed", all: "true" } as const;
+const badgeProps = {
+  none: { variant: "outline" },
+  some: { variant: "secondary", class: "border-border" },
+  all: { variant: "default" },
+} as const;
 </script>
 <template>
   <TreeRoot
@@ -36,6 +68,8 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
       :key="item._id"
       :style="{ 'padding-left': `${item.level - 1}em` }"
       v-bind="item.bind"
+      :aria-checked="ariaChecked[selectionState(item._id)]"
+      :title="rowTitle(item.value)"
       @select="emit('select', $event)"
       @toggle="
         (event) => {
@@ -56,49 +90,42 @@ const expandedKeys = defineModel<string[]>("expandedKeys");
         </button>
       </template>
       <span v-else class="h-6 w-6" />
-      <div class="flex w-full items-center justify-between pl-0">
-        <div class="flex cursor-pointer items-center gap-1">
+      <div class="flex w-full min-w-0 items-center gap-2">
+        <div class="flex min-w-0 cursor-pointer items-center gap-1">
           <MilitarySymbol
             :sidc="item.value.sidc"
             :size="16"
             :options="{ monoColor: 'currentColor' }"
-            class="text-foreground/90 w-7"
+            class="text-foreground/90 w-7 shrink-0"
           />
           <span>{{ item.value.label }}</span>
-          <Badge variant="outline" class="ml-1">{{ stats[item.value.key] }}</Badge>
         </div>
         <Badge
-          v-if="selectedStats[item._id]"
-          variant="secondary"
-          class="border-border border"
-          as-child
+          v-bind="badgeProps[selectionState(item._id)]"
+          class="ml-auto shrink-0 tabular-nums"
+          ><template v-if="selectedStats[item._id]"
+            >{{ selectedStats[item._id] }}/</template
+          >{{ stats[item._id] }}</Badge
         >
+        <!-- Fixed-width slot keeps the badges aligned when the button is absent. -->
+        <span class="flex size-5 shrink-0 items-center justify-center">
           <button
+            v-if="excludedKeys.has(item._id)"
             type="button"
-            @click.stop="emit('clear', item._id)"
-            title="Clear selected"
+            @click.stop="emit('clearExclude', item._id)"
+            title="Clear exclude"
           >
-            {{ selectedStats[item._id] }}
+            <IconClose class="text-foreground size-5" />
           </button>
-        </Badge>
-        <button
-          v-else-if="!excludedKeys.has(item._id)"
-          type="button"
-          @click.stop="emit('exclude', item._id)"
-          title="Exclude"
-        >
-          <IconMinusCircleOutline
-            class="group-hover:text-muted-foreground group-focus:text-muted-foreground text-muted-foreground h-5 w-5"
-          />
-        </button>
-        <button
-          v-else
-          type="button"
-          @click.stop="emit('clearExclude', item._id)"
-          title="Clear exclude"
-        >
-          <IconClose class="text-foreground h-5 w-5" />
-        </button>
+          <button
+            v-else-if="!selectedStats[item._id]"
+            type="button"
+            @click.stop="emit('exclude', item._id)"
+            title="Exclude"
+          >
+            <IconMinusCircleOutline class="text-muted-foreground size-5" />
+          </button>
+        </span>
       </div>
     </TreeItem>
   </TreeRoot>
