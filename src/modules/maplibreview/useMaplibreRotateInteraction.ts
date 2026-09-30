@@ -35,8 +35,7 @@ export interface MaplibreRotateInteraction {
 
 /**
  * Drag-to-rotate interaction for unit symbols on a MapLibre map. Activates when
- * `rotateUnitEnabled` is true in the unit settings store and mirrors the
- * OpenLayers `useRotateInteraction` composable (`src/composables/geoUnitLayers.ts`).
+ * `rotateUnitEnabled` is true in the unit settings store.
  *
  * The host is responsible for re-rendering unit features in response to the
  * `onPreview` / `onPreviewEnd` callbacks.

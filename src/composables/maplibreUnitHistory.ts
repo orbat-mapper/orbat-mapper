@@ -378,8 +378,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const arcSource = mlMap.getSource(ARC_SOURCE_ID) as GeoJSONSource | undefined;
     const legSource = mlMap.getSource(LEG_SOURCE_ID) as GeoJSONSource | undefined;
     const waypointSource = mlMap.getSource(WAYPOINT_SOURCE_ID) as
-      | GeoJSONSource
-      | undefined;
+      GeoJSONSource | undefined;
     const viaSource = mlMap.getSource(VIA_SOURCE_ID) as GeoJSONSource | undefined;
     if (!arcSource || !legSource || !waypointSource || !viaSource) return;
 
@@ -634,7 +633,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   /**
    * Grabbing the middle of a leg segment inserts a new via point there and
-   * starts dragging it, like the OpenLayers Modify interaction does.
+   * starts dragging it.
    */
   function onLegMouseDown(e: MapLayerMouseEvent) {
     if (!editHistory.value || dragState || !isPrimaryButton(e)) return;

@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { type CoordinateFormatType } from "@/geo/coordinateFormat";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
-import { DEFAULT_BASEMAP_ID } from "@/config/constants";
 import type { BasemapArchiveKind } from "@/geo/basemapArchive";
 import type { CustomBasemap } from "@/geo/customBasemap";
 
@@ -50,7 +49,6 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     ),
     showScaleLine: useLocalStorage("showScaleLine", true),
     showFeatureTooltip: useLocalStorage("showFeatureTooltip", true),
-    baseLayerName: DEFAULT_BASEMAP_ID,
     maplibreBaseLayerName: useLocalStorage("maplibreBaseLayerName", ""),
     // Only each archive's name, kind and key — never the bytes. On Chromium a file handle for the
     // same key may also be stored in IndexedDB, which lets the archive be opened again; elsewhere

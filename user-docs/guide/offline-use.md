@@ -370,8 +370,3 @@ PMTiles archive.
 
 ORBAT Mapper does not support mapbundles yet. If you select a mapbundle file, ORBAT Mapper shows a message that tells
 you that this format is not yet supported.
-
-## The legacy OpenLayers map (deprecated)
-
-The OpenLayers map is deprecated. Do not use it for new work. It stays available at `/scenario/<scenarioId>/legacy`, and
-it reads a different file: `public/config/mapConfig.json`. It does not support basemap archives.

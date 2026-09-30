@@ -48,7 +48,7 @@ export interface UseControlMeasureDrawSessionOptions {
   scenario: TScenario;
   /** Re-read on every use: the façade is rebuilt on every basemap swap. */
   surface: () => TacticalDrawSurface | undefined | null;
-  /** The settle-first feed. Absent on OpenLayers, which has no tactical-draw. */
+  /** The settle-first feed for tactical drawing. */
   renderFeed?: TacticalGraphicRenderFeed | null;
   /**
    * The session-sticky authoring defaults a new graphic of `graphicKind` is born

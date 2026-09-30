@@ -10,10 +10,6 @@ import { featureCollection, point as turfPoint } from "@turf/helpers";
 import turfBbox from "@turf/bbox";
 import bboxPolygon from "@turf/bbox-polygon";
 import { useSelectedItems } from "@/stores/selectedStore";
-import OLMap from "ol/Map";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import { useBoxDraw } from "@/composables/geoBoxDraw";
 import {
@@ -51,49 +47,8 @@ const formattedBbox = computed(() => {
   return `SW: ${minLat.toFixed(4)}°, ${minLon.toFixed(4)}° — NE: ${maxLat.toFixed(4)}°, ${maxLon.toFixed(4)}°`;
 });
 
-function getNativeMap(): OLMap | MlMap | undefined {
-  const native = geoStore.mapAdapter?.getNativeMap();
-  return native as OLMap | MlMap | undefined;
-}
-
-function isOLMap(map: unknown): map is OLMap {
-  return map instanceof OLMap;
-}
-
-// --- OpenLayers bbox layer ---
-let olBboxLayer: VectorLayer | null = null;
-
-function setupOLLayer(olMap: OLMap) {
-  olBboxLayer = new VectorLayer({
-    source: new VectorSource({}),
-    style: {
-      "stroke-color": "#3b82f6",
-      "stroke-width": 2,
-      "stroke-line-dash": [8, 8],
-      "fill-color": "rgba(59, 130, 246, 0.1)",
-    },
-  });
-  olMap.addLayer(olBboxLayer);
-}
-
-function drawOLBbox() {
-  if (!olBboxLayer) return;
-  const bbox = boundingBox.value;
-  if (bbox && bbox.length === 4) {
-    const polygon = bboxPolygon(bbox as [number, number, number, number]);
-    drawGeoJsonLayer(olBboxLayer, polygon);
-  } else {
-    olBboxLayer.getSource()?.clear();
-  }
-}
-
-function cleanupOLLayer() {
-  const map = getNativeMap();
-  if (olBboxLayer && map && isOLMap(map)) {
-    olBboxLayer.getSource()?.clear();
-    map.removeLayer(olBboxLayer);
-  }
-  olBboxLayer = null;
+function getNativeMap(): MlMap | undefined {
+  return geoStore.mapAdapter?.getNativeMap() as MlMap | undefined;
 }
 
 // --- MapLibre bbox layer ---
@@ -154,14 +109,8 @@ function cleanupMLLayers() {
 
 // --- Engine-agnostic wiring ---
 
-const isOL = computed(() => isOLMap(getNativeMap()));
-
 function drawBboxOnMap() {
-  if (isOL.value) {
-    drawOLBbox();
-  } else {
-    drawMLBbox();
-  }
+  drawMLBbox();
 }
 
 watch(boundingBox, () => {
@@ -171,18 +120,12 @@ watch(boundingBox, () => {
 onMounted(() => {
   const map = getNativeMap();
   if (!map) return;
-  if (isOLMap(map)) {
-    setupOLLayer(map);
-    drawOLBbox();
-  } else {
-    setupMLLayers(map as MlMap);
-    drawMLBbox();
-  }
+  setupMLLayers(map as MlMap);
+  drawMLBbox();
 });
 
 onUnmounted(() => {
   stopDrawing();
-  cleanupOLLayer();
   cleanupMLLayers();
 });
 

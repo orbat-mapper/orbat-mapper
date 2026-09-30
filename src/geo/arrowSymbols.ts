@@ -224,16 +224,13 @@ const ARROW_SYMBOL_DEFINITIONS: Record<ArrowRenderableType, ArrowSymbolDefinitio
     },
   });
 
-// Shared scale formula for arrow markers. Used by both the OpenLayers
-// `createArrowStyles` and the globe `buildFeatureData` so the two renderers
-// size arrowheads identically relative to stroke width.
+// Scale arrow markers relative to stroke width.
 export function getArrowRenderScale(strokeWidth: number): number {
   return Math.max(0.4, strokeWidth / 2.5);
 }
 
 // Native sprite canvas size (in pixels) for a given sprite scale bucket. The
-// globe uses larger canvases at higher bucket scales to avoid upscaling raster
-// data; OpenLayers does not use this and scales vector SVGs directly.
+// map uses larger canvases at higher bucket scales to avoid upscaling raster data.
 export function getArrowSpriteCanvasSize(spriteScale: number): number {
   return Math.max(
     GLOBE_SPRITE_BASE_SIZE,

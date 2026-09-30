@@ -5,7 +5,7 @@ import { defineComponent, ref } from "vue";
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from "vue-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditor from "@/modules/scenarioeditor/ScenarioEditor.vue";
-import { LEGACY_MAP_ROUTE, MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
+import { MAPLIBRE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 import { useSelectedItems } from "@/stores/selectedStore";
 import type { TScenario } from "@/scenariostore";
 
@@ -112,11 +112,6 @@ const routes: RouteRecordRaw[] = [
         name: MAP_EDIT_MODE_ROUTE,
         component: RouteView,
         meta: { helpUrl: "https://docs.orbat-mapper.app/guide/map-edit-mode" },
-      },
-      {
-        path: "legacy",
-        name: LEGACY_MAP_ROUTE,
-        component: RouteView,
       },
       {
         path: "maplibre",
@@ -259,7 +254,7 @@ describe("ScenarioEditor", () => {
     return { pinia, router, wrapper };
   }
 
-  it("imports pasted geojson from the shared editor shell in openlayers mode", async () => {
+  it("imports pasted geojson from the shared editor shell in map mode", async () => {
     const activeScenario = createActiveScenario();
     const event = createPasteEvent({
       text: JSON.stringify({

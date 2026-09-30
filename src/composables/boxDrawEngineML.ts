@@ -1,6 +1,21 @@
 import type { GeoJSONSource, Map as MlMap, MapMouseEvent } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
-import { toBbox, type BoxDrawEngine } from "./boxDrawEngine";
+
+export type Bbox = [number, number, number, number];
+
+export interface BoxDrawEngine {
+  start(onEnd: (bbox: Bbox) => void): void;
+  cleanUp(): void;
+}
+
+function toBbox(a: [number, number], b: [number, number]): Bbox {
+  return [
+    Math.min(a[0], b[0]),
+    Math.min(a[1], b[1]),
+    Math.max(a[0], b[0]),
+    Math.max(a[1], b[1]),
+  ];
+}
 
 const ML_BOX_SOURCE = "__boxDrawSource";
 const ML_BOX_FILL = "__boxDrawFill";

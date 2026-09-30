@@ -6,8 +6,7 @@ export interface ScenarioMapEngine {
   map: MapAdapter;
   layers: ScenarioLayerController;
   /**
-   * The tactical-draw seam, present only on engines that have one. MapLibre is the
-   * only such engine; the OpenLayers engine leaves this undefined.
+   * The tactical-draw surface, available once initialized.
    */
   draw?: TacticalDrawSurface;
   suspendFeatureSelection(): void;

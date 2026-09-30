@@ -16,10 +16,6 @@ import {
   activeScenarioMapEngineKey,
   scenarioKeyboardOwnerKey,
 } from "@/components/injects";
-import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
-} from "@/modules/scenarioeditor/olInjects";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import type { RenderedUnitFeature } from "@/modules/scenarioeditor/unitSnapCandidates";
 import type {
@@ -29,7 +25,6 @@ import type {
 
 const mocks = vi.hoisted(() => ({
   useMapLibreDrawInteraction: vi.fn(),
-  useEditingInteraction: vi.fn(),
   mapLibreStartDrawing: vi.fn(),
   mapLibreStartModify: vi.fn(),
   mapLibreCancel: vi.fn(),
@@ -39,10 +34,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/composables/maplibreDrawInteraction", () => ({
   useMapLibreDrawInteraction: mocks.useMapLibreDrawInteraction,
-}));
-
-vi.mock("@/composables/geoEditing", () => ({
-  useEditingInteraction: mocks.useEditingInteraction,
 }));
 
 function createInteraction() {
@@ -122,8 +113,6 @@ function mountHarness({
 } = {}) {
   setActivePinia(pinia);
   const activeLayer = ref("layer-1");
-  const nativeMap = shallowRef(null);
-  const featureSelect = shallowRef(null);
   const exposedDraw = {} as ReturnType<typeof useScenarioDraw>;
   const wrapper = mount(
     defineComponent({
@@ -140,8 +129,6 @@ function mountHarness({
           [activeScenarioKey as symbol]: scenario,
           [activeScenarioMapEngineKey as symbol]: engineRef,
           [activeLayerKey as symbol]: activeLayer,
-          [activeNativeMapKey as symbol]: nativeMap,
-          [activeFeatureSelectInteractionKey as symbol]: featureSelect,
           [scenarioKeyboardOwnerKey as symbol]: keyboardOwnerRef,
         },
       },

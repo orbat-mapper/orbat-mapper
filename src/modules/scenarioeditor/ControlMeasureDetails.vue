@@ -258,8 +258,7 @@ function doMetaUpdate(data: {
   isEditMode.value = false;
 }
 
-// Editing needs a tactical-draw surface; OpenLayers has none. Step 18 owns the full
-// capability gating, this is the panel's own honest affordance.
+// Shape editing requires a ready tactical-draw surface and a supported graphic.
 const canEditShape = computed(() => Boolean(engineRef.value?.draw) && supported.value);
 const isEditingShape = computed(
   () => !!item.value && scenarioDraw.controlMeasureEditFeatureId.value === item.value.id,
