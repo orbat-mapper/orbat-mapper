@@ -7,6 +7,10 @@ import SimpleSelect from "@/components/SimpleSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import {
+  getSupportedMaplibreBasemaps,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
 import { useGeoStore } from "@/stores/geoStore";
 import { useMapViewStore } from "@/stores/mapViewStore";
 import { Button } from "@/components/ui/button";
@@ -39,16 +43,18 @@ onDrawEnd((bbox) => {
   });
 });
 
-const baseMapItems = computed((): SelectItem[] => {
-  const layers = maplibreLayersStore.layers.map((l) => ({
-    label: l.title ?? l.name,
-    value: l.name,
-  }));
-  return [...layers, { label: "No base map", value: "None" }];
-});
+const baseMapItems = computed((): SelectItem[] =>
+  getSupportedMaplibreBasemaps(maplibreLayersStore.layers).map((option) => ({
+    label: option.title,
+    value: option.id,
+  })),
+);
 
 const baseMap = computed({
-  get: () => store.state.mapSettings.baseMapId,
+  // Scenarios may still hold legacy OpenLayers ids (e.g. "osm"), so resolve to a MapLibre basemap
+  get: () =>
+    resolveMaplibreBasemap(store.state.mapSettings.baseMapId, maplibreLayersStore.layers)
+      .id,
   set: (value: string) => {
     store.update((s) => {
       s.mapSettings.baseMapId = value;
