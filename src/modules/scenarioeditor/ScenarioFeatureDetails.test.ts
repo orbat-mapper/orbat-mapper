@@ -121,7 +121,7 @@ describe("ScenarioFeatureDetails", () => {
     expect([...useSelectedItems().selectedFeatureIds.value]).toEqual(["feature-copy"]);
   });
 
-  it("updates feature styling without requiring an OpenLayers select interaction", async () => {
+  it("updates feature styling through the scenario layer controller", async () => {
     const updateFeature = vi.fn();
     const feature = {
       id: "feature-1",

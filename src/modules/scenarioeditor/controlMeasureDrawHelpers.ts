@@ -3,7 +3,7 @@
  * `ControlMeasure` into a stored `tacticalGraphic` layer item.
  *
  * Kept out of `scenarioDrawHelpers.ts` deliberately — that module is the plain-shape
- * path and pulls in OpenLayers, while nothing here touches a map at all. Everything is
+ * path, while this module handles tactical graphics. Everything is
  * a pure function over the scenario store, so the fold is testable without a session.
  *
  * ADR-0006: exactly **one** store write per settled session. `addScenarioControlMeasure`

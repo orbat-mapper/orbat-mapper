@@ -3,7 +3,7 @@ export type DrawType = "Point" | "LineString" | "Polygon" | "Circle" | "Rectangl
 /**
  * How many pointer-placed points each draw type needs, and accepts at most.
  *
- * Engine-independent policy: the OpenLayers and MapLibre draw adapters and the draw
+ * Shared policy: the MapLibre draw adapter and the draw
  * session's progress hint all read it from here so a "can commit" hint can never
  * disagree with what an explicit Done actually accepts.
  */

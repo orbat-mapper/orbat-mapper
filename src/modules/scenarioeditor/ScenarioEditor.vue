@@ -58,7 +58,6 @@ import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
   GRID_EDIT_ROUTE,
-  LEGACY_MAP_ROUTE,
   MAP_EDIT_MODE_ROUTE,
   NEW_SCENARIO_ROUTE,
 } from "@/router/names";
@@ -70,11 +69,10 @@ import type { PhotonSearchResult } from "@/composables/geosearching";
 import { setTacticalGraphicPredicate, useSelectedItems } from "@/stores/selectedStore";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
-import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
 import DebugInfo from "@/components/DebugInfo.vue";
-import { CircleAlertIcon, GlobeIcon, MapIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
+import { GlobeIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,7 +134,7 @@ provide(currentScenarioTabKey, activeScenarioTab);
 // `selectedStore` is a bare module singleton with no scenario access, so it cannot
 // tell a selected control measure from a selected plain shape on its own — the two
 // share one flat id set. The lookup is registered here, the one place that owns the
-// scenario for its whole life and sits above both map views and the layers panel.
+// scenario for its whole life and sits above the map view and the layers panel.
 onUnmounted(
   setTacticalGraphicPredicate((id) =>
     isNTacticalGraphicLayerItem(props.activeScenario.geo.getLayerItemById(id).layerItem),
@@ -201,8 +199,7 @@ const selectedModeRoute = computed({
     if (
       route.name === MAP_EDIT_MODE_ROUTE ||
       route.name === GRID_EDIT_ROUTE ||
-      route.name === CHART_EDIT_MODE_ROUTE ||
-      route.name === LEGACY_MAP_ROUTE
+      route.name === CHART_EDIT_MODE_ROUTE
     ) {
       return route.name;
     }
@@ -216,19 +213,12 @@ const selectedModeRoute = computed({
 });
 
 const modeOptions = [
-  { value: MAP_EDIT_MODE_ROUTE, label: "MapLibre", icon: GlobeIcon, obsolete: false },
-  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon, obsolete: false },
+  { value: MAP_EDIT_MODE_ROUTE, label: "MapLibre", icon: GlobeIcon },
+  { value: GRID_EDIT_ROUTE, label: "Grid", icon: TableIcon },
   {
     value: CHART_EDIT_MODE_ROUTE,
     label: "Chart",
     icon: IconSitemap,
-    obsolete: false,
-  },
-  {
-    value: LEGACY_MAP_ROUTE,
-    label: "OpenLayers legacy",
-    icon: MapIcon,
-    obsolete: true,
   },
 ] as const;
 
@@ -250,18 +240,13 @@ const showDecryptModal = ref(false);
 const currentEncryptedScenario = ref<EncryptedScenario | null>(null);
 const sharedMapView = ref<ScenarioMapViewSnapshot>();
 const mapRouteProps = computed(() =>
-  route.name === MAP_EDIT_MODE_ROUTE || route.name === LEGACY_MAP_ROUTE
-    ? { initialMapView: sharedMapView.value }
-    : {},
+  route.name === MAP_EDIT_MODE_ROUTE ? { initialMapView: sharedMapView.value } : {},
 );
 
 useTimeFormatterProvider({ activeScenario: props.activeScenario });
 
 const uiStore = useUiStore();
 const { showSearch } = storeToRefs(uiStore);
-
-const mapStore = useMapSettingsStore();
-mapStore.baseLayerName = state.mapSettings.baseMapId;
 
 const originalTitle = useTitle().value;
 const windowTitle = computed(() =>
@@ -527,9 +512,7 @@ if (firstOverlayLayerId) {
         </Button>
         <div class="flex min-w-0 items-center gap-0.5 sm:gap-2">
           <RecordingState />
-          <PlaybackMenu
-            v-if="route.name === MAP_EDIT_MODE_ROUTE || route.name === LEGACY_MAP_ROUTE"
-          />
+          <PlaybackMenu v-if="route.name === MAP_EDIT_MODE_ROUTE" />
           <Select v-model="selectedModeRoute">
             <SelectTrigger
               class="bg-muted-foreground/20 border-0 lg:hidden"
@@ -538,11 +521,6 @@ if (firstOverlayLayerId) {
               <SelectValue>
                 <span class="relative inline-flex">
                   <component :is="activeModeOption.icon" class="size-6 text-green-500" />
-                  <CircleAlertIcon
-                    v-if="activeModeOption.obsolete"
-                    class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3.5 rounded-full"
-                    aria-hidden="true"
-                  />
                 </span>
               </SelectValue>
             </SelectTrigger>
@@ -554,11 +532,6 @@ if (firstOverlayLayerId) {
               >
                 <span class="relative inline-flex">
                   <component :is="mode.icon" class="size-5" />
-                  <CircleAlertIcon
-                    v-if="mode.obsolete"
-                    class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3 rounded-full"
-                    aria-hidden="true"
-                  />
                 </span>
                 <span>{{ mode.label }}</span>
               </SelectItem>
@@ -591,20 +564,6 @@ if (firstOverlayLayerId) {
               class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
             >
               <IconSitemap class="size-6" />
-            </router-link>
-            <router-link
-              :to="{ name: LEGACY_MAP_ROUTE }"
-              title="OpenLayers legacy view (obsolete)"
-              exact-active-class="text-green-500"
-              class="hover:bg-muted hover:text-foreground focus:ring-ring inline-flex items-center justify-center rounded-md p-1.5 focus:ring-2 focus:outline-hidden focus:ring-inset"
-            >
-              <span class="relative inline-flex">
-                <MapIcon class="size-6" />
-                <CircleAlertIcon
-                  class="bg-background text-muted-foreground absolute -right-1 -bottom-1 size-3.5 rounded-full"
-                  aria-hidden="true"
-                />
-              </span>
             </router-link>
           </div>
         </div>

@@ -2,13 +2,8 @@ import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import { createEventHook, onKeyStroke, tryOnBeforeUnmount, type Fn } from "@vueuse/core";
 import { type MaybeRefOrGetter, ref, toValue } from "vue";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
-import OLMap from "ol/Map";
 import type { Map as MlMap } from "maplibre-gl";
-import type { BoxDrawEngine } from "./boxDrawEngine";
-import { createOLBoxDrawEngine } from "./boxDrawEngineOL";
-import { createMLBoxDrawEngine } from "./boxDrawEngineML";
-
-type Bbox = [number, number, number, number];
+import { type Bbox, type BoxDrawEngine, createMLBoxDrawEngine } from "./boxDrawEngineML";
 
 export function useBoxDraw(mapSource: MaybeRefOrGetter<MapAdapter | null | undefined>) {
   const isActive = ref(false);
@@ -49,10 +44,7 @@ export function useBoxDraw(mapSource: MaybeRefOrGetter<MapAdapter | null | undef
     adapter.setCursor("crosshair");
     stopEscListener = onKeyStroke("Escape", () => cancel());
 
-    engine =
-      native instanceof OLMap
-        ? createOLBoxDrawEngine(native)
-        : createMLBoxDrawEngine(native as MlMap);
+    engine = createMLBoxDrawEngine(native as MlMap);
 
     engine.start((bbox) => {
       cleanUp();

@@ -1,15 +1,5 @@
-import Feature from "ol/Feature";
-import Circle from "ol/geom/Circle";
-import LineString from "ol/geom/LineString";
-import GeoJSON from "ol/format/GeoJSON";
-import { add as addCoordinate } from "ol/coordinate";
-import { getLength } from "ol/sphere";
-import { toLonLat } from "ol/proj";
-import { point } from "@turf/helpers";
 import type { Geometry } from "geojson";
-import type VectorLayer from "ol/layer/Vector";
 import { nanoid } from "@/utils";
-import { isCircle } from "@/composables/openlayersHelpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
@@ -26,47 +16,6 @@ function toDrawTargetLayer(layer: { id: FeatureId; items: unknown[] }): DrawTarg
     items: layer.items.map((item) =>
       typeof item === "string" ? item : (item as { id: FeatureId }).id,
     ),
-  };
-}
-
-export function convertOlFeatureToScenarioFeature(olFeature: Feature): GeometryLayerItem {
-  if (isCircle(olFeature)) {
-    const circle = olFeature.getGeometry() as Circle;
-    const { properties = {} } = olFeature.getProperties();
-    const center = circle.getCenter();
-    const r = addCoordinate([...center], [0, circle.getRadius()]);
-
-    return {
-      kind: "geometry",
-      id: String(olFeature.getId() || nanoid()),
-      geometry: point(toLonLat(circle.getCenter())).geometry,
-      geometryMeta: {
-        geometryKind: "Circle",
-        radius: getLength(new LineString([center, r])),
-      },
-      userData: properties,
-      style: {},
-    };
-  }
-
-  const gj = new GeoJSON({ featureProjection: "EPSG:3857" }).writeFeatureObject(
-    olFeature,
-  );
-
-  const userData = { ...(gj.properties ?? {}) };
-  const isRectangle = userData.shape === "rectangle";
-  delete userData.shape;
-
-  return {
-    kind: "geometry",
-    id: String(gj.id ?? nanoid()),
-    geometry: gj.geometry,
-    userData,
-    style: {},
-    geometryMeta: {
-      geometryKind: gj.geometry.type,
-      ...(isRectangle ? { shape: "rectangle" } : {}),
-    },
   };
 }
 
@@ -114,26 +63,6 @@ export function addScenarioDrawFeature(
   return scenarioFeature;
 }
 
-export function addOlDrawFeature(
-  scenario: TScenario,
-  olFeature: Feature,
-  olLayer: VectorLayer<any>,
-  style: Partial<SimpleStyleSpec> = {},
-): GeometryLayerItem | undefined {
-  if (!olFeature.getId()) olFeature.setId(nanoid());
-  const scenarioFeature = convertOlFeatureToScenarioFeature(olFeature);
-  const addedFeature = addScenarioDrawFeature(
-    scenario,
-    scenarioFeature,
-    olLayer.get("id"),
-    style,
-  );
-  if (addedFeature) {
-    olFeature.set("_zIndex", addedFeature._zIndex);
-  }
-  return addedFeature;
-}
-
 export function updateScenarioFeatureGeometry(
   scenario: TScenario,
   featureId: FeatureId,
@@ -159,24 +88,5 @@ export function updateScenarioFeatureGeometry(
       geometry,
     },
     { noEmit: options.noEmit ?? true },
-  );
-}
-
-export function updateScenarioFeatureGeometryFromOlFeature(
-  scenario: TScenario,
-  olFeature: Feature,
-  updateState = false,
-) {
-  const converted = convertOlFeatureToScenarioFeature(olFeature);
-  const id = olFeature.getId();
-  if (!id) return;
-  updateScenarioFeatureGeometry(
-    scenario,
-    String(id),
-    converted.geometry,
-    converted.geometryMeta,
-    converted.userData,
-    updateState,
-    { noEmit: true },
   );
 }

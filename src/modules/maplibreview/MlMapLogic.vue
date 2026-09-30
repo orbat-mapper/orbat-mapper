@@ -79,9 +79,7 @@ const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
 
 // Hit-test tolerance (in pixels) used to buffer the click/hover point so thin
 // features such as lines are easier to select. Touch devices get a wider box
-// since fingertips are far less precise than a mouse cursor. The selection
-// values mirror the OpenLayers engine (which uses hitTolerance: 20 for picking,
-// ~3 for hover) so both map engines feel the same.
+// since fingertips are far less precise than a mouse cursor.
 const MOUSE_HIT_TOLERANCE_PX = 20;
 const TOUCH_HIT_TOLERANCE_PX = 26;
 const HOVER_HIT_TOLERANCE_PX = 6;
@@ -766,7 +764,7 @@ interface ControlMeasurePick {
  * Uses the library's synchronous `ownsInteractionAt` rather than its `onGraphicPick`
  * notification, because a short-circuit has to be answerable *inside* our own click
  * handler and must not depend on listener ordering between the two pipelines.
- * Returns `undefined` on OpenLayers, where `engine.draw` is undefined.
+ * Returns `undefined` until the tactical-draw surface is ready.
  */
 function pickControlMeasureAt(
   pixel: [number, number],

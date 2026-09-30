@@ -98,7 +98,7 @@ export const routeDetailsPanelKey = Symbol(
 /**
  * The control-measure render feed. Provided by the MapLibre scenario view, which owns
  * the tactical-draw surface. M2's session owner registers its settle handler here and
- * re-renders through it after folding a commit; on OpenLayers it is simply absent.
+ * re-renders through it after folding a commit.
  */
 export const tacticalGraphicRenderFeedKey = Symbol(
   "Tactical graphic render feed",

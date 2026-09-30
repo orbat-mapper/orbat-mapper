@@ -31,7 +31,7 @@ export type UnitSnapMap = {
   ): RenderedUnitFeature[];
 };
 
-/** Is `nativeMap` a MapLibre map? The OpenLayers map has none of this surface. */
+/** Does `nativeMap` expose the MapLibre surface needed for snapping? */
 export function isUnitSnapMap(nativeMap: unknown): nativeMap is UnitSnapMap {
   const candidate = nativeMap as UnitSnapMap | null | undefined;
   return (

@@ -31,7 +31,7 @@ describe("unwindCoordinates", () => {
 
   it("preserves ordinates beyond longitude and latitude", () => {
     // The unit path encodes the waypoint time as a third (M) ordinate; dropping
-    // it leaves the OpenLayers leg geometry without the times that path editing
+    // it leaves the leg geometry without the times that path editing
     // needs to find the state entry to update.
     expect(
       unwindCoordinates([

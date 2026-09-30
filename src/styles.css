@@ -167,10 +167,6 @@
   }
 }
 
-.map-ui-root .ol-scale-line {
-  bottom: calc(2.2rem + var(--map-toolbar-clearance-left));
-}
-
 .map-ui-root .maplibregl-ctrl-bottom-left {
   left: 0.5rem;
   bottom: calc(2.2rem + var(--map-toolbar-clearance-left));
