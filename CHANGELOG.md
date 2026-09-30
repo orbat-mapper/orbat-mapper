@@ -23,6 +23,10 @@ All notable changes to this project will be documented in this file.
 - Replaced the previous experimental MGRS overlay with the reusable reference-grid implementation and moved its controls into the main map toolbar.
 - Reference-grid rendering is now loaded on demand the first time a grid is shown, reducing the initial MapLibre editor download.
 
+### Removed
+
+- Removed the legacy OpenLayers map mode. MapLibre is now the only map view, and old links to the legacy map open the MapLibre view instead.
+
 ### Fixed
 
 - Fixed side duplication omitting units attached directly to a side, including sides without groups. Both duplicate actions now copy these units and their descendants, retaining unit state when requested.
