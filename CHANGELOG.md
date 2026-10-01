@@ -2,12 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## October 2026
+
+### Changed
+
+- Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
+
 ## September 2026
 
 ### Removed
 
 - Removed the legacy OpenLayers map mode. MapLibre is now the only map view, and old links to the legacy map open the MapLibre view instead.
-
 
 ### Added
 

@@ -21,7 +21,6 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibreWorkerUrl from "@/modules/maplibreview/maplibreWorkerUrl";
-import { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText";
 import { storeToRefs } from "pinia";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
 import type { MapProjection } from "@/stores/mapSettingsStore";
@@ -42,9 +41,6 @@ import { useMapTerrain } from "./useMapTerrain";
 import { terrainElevationMeters, TERRAIN_SOURCE_ID } from "./mapTerrain";
 
 setWorkerUrl(maplibreWorkerUrl);
-void initializeRtlText().catch((error) => {
-  console.error("Failed to initialize map RTL text support", error);
-});
 
 defineOptions({
   inheritAttrs: false,
