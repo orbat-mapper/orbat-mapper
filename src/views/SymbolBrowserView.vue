@@ -156,9 +156,7 @@ watchEffect(() => {
 function onSelect(value: unknown) {
   if (!value || typeof value !== "object" || !("sidc" in value)) return;
   const hit = value as
-    | MainIconSearchResult
-    | ModifierOneSearchResult
-    | ModifierTwoSearchResult;
+    MainIconSearchResult | ModifierOneSearchResult | ModifierTwoSearchResult;
   const newSidc = new Sidc(hit.sidc);
   symbolSetValue.value = newSidc.symbolSet;
   if (hit.category === "Main icon") {

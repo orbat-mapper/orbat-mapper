@@ -208,8 +208,7 @@ export class MapLibreMapAdapter implements MapAdapter {
     this.geoJsonOverlays.set(id, { geojson: normalizedGeoJson, options });
     this.ensureGeoJsonOverlay(id, options);
     const source = this.mlMap.getSource(this.getGeoJsonOverlaySourceId(id)) as
-      | GeoJSONSource
-      | undefined;
+      GeoJSONSource | undefined;
     source?.setData(
       normalizedGeoJson ?? {
         type: "FeatureCollection",
@@ -231,8 +230,7 @@ export class MapLibreMapAdapter implements MapAdapter {
     for (const [id, overlay] of this.geoJsonOverlays.entries()) {
       this.ensureGeoJsonOverlay(id, overlay.options);
       const source = this.mlMap.getSource(this.getGeoJsonOverlaySourceId(id)) as
-        | GeoJSONSource
-        | undefined;
+        GeoJSONSource | undefined;
       source?.setData(
         overlay.geojson ?? {
           type: "FeatureCollection",

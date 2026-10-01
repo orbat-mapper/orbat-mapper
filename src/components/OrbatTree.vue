@@ -68,12 +68,10 @@ const onTreeItemKeydown = (
   totalItems: number,
 ) => {
   const key = event.key;
-  if (
-    !(
-      (key === "ArrowDown" && itemIndex === totalItems - 1) ||
-      (key === "ArrowUp" && itemIndex === 0)
-    )
-  ) {
+  if (!(
+    (key === "ArrowDown" && itemIndex === totalItems - 1) ||
+    (key === "ArrowUp" && itemIndex === 0)
+  )) {
     return;
   }
 

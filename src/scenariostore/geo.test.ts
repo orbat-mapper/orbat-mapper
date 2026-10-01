@@ -139,7 +139,10 @@ describe("scenario geo item accessors", () => {
               kind: "tacticalGraphic",
               name: "Phase Line Alpha",
               graphicKind: "phase-line",
-              controlPoints: [[10, 60], [11, 61]],
+              controlPoints: [
+                [10, 60],
+                [11, 61],
+              ],
               amplifierPlacements: { T: { position: [10.5, 60.5] } },
             },
           ],
@@ -167,7 +170,10 @@ describe("scenario geo item accessors", () => {
     const duplicate = geo.getLayerItemById(duplicatedId).layerItem as any;
 
     expect(duplicate.name).toBe("Phase Line Alpha (2)");
-    expect(duplicate.controlPoints).toEqual([[10.24, 59.76], [11.24, 60.76]]);
+    expect(duplicate.controlPoints).toEqual([
+      [10.24, 59.76],
+      [11.24, 60.76],
+    ]);
     expect(duplicate.amplifierPlacements.T.position).toEqual([10.74, 60.26]);
   });
 

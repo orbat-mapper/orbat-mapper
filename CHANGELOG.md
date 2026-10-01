@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## September 2026
 
+### Removed
+
+- Removed the legacy OpenLayers map mode. MapLibre is now the only map view, and old links to the legacy map open the MapLibre view instead.
+
+
 ### Added
 
 - Added the option to replace existing feature and control-measure overlay layers during scenario import, matched by layer ID, or import them as separate copies. Replacement preserves layer order and previews added, changed, removed, and unchanged items. The whole import can be reverted with Undo.
@@ -22,10 +27,6 @@ All notable changes to this project will be documented in this file.
 
 - Replaced the previous experimental MGRS overlay with the reusable reference-grid implementation and moved its controls into the main map toolbar.
 - Reference-grid rendering is now loaded on demand the first time a grid is shown, reducing the initial MapLibre editor download.
-
-### Removed
-
-- Removed the legacy OpenLayers map mode. MapLibre is now the only map view, and old links to the legacy map open the MapLibre view instead.
 
 ### Fixed
 

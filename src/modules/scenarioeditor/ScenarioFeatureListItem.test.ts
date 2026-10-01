@@ -24,8 +24,10 @@ vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
 }));
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop/combine", () => ({
-  combine: (...cleanups: Array<() => void>) => () =>
-    cleanups.forEach((cleanup) => cleanup()),
+  combine:
+    (...cleanups: Array<() => void>) =>
+    () =>
+      cleanups.forEach((cleanup) => cleanup()),
 }));
 
 vi.mock("@/stores/selectedStore", () => ({

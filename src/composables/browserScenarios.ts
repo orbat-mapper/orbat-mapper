@@ -17,7 +17,6 @@ interface UseBrowserScenariosOptions {
   routeName?: string;
 }
 
-
 export function useBrowserScenarios(options: UseBrowserScenariosOptions = {}) {
   const router = useRouter();
   const { copy: copyToClipboard } = useClipboard();

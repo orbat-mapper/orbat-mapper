@@ -80,12 +80,10 @@ const convertedPropertyNames = computed(() => {
 });
 
 const computedColumns = computed((): ColumnDef<FlatItem, any>[] => {
-  const items = Array.from(propertyNames.value).map(
-    (key): ColumnDef<FlatItem, any> => ({
-      accessorFn: (f) => f.properties?.originalProperties[key] ?? "",
-      header: key,
-    }),
-  );
+  const items = Array.from(propertyNames.value).map((key): ColumnDef<FlatItem, any> => ({
+    accessorFn: (f) => f.properties?.originalProperties[key] ?? "",
+    header: key,
+  }));
 
   const convertedItems = Array.from(convertedPropertyNames.value).map(
     (key): ColumnDef<FlatItem, any> => ({

@@ -133,9 +133,7 @@ export function useSymbologySearch(
 
   function combineHits(
     hits: (
-      | MainIconSearchResult[]
-      | ModifierOneSearchResult[]
-      | ModifierTwoSearchResult[]
+      MainIconSearchResult[] | ModifierOneSearchResult[] | ModifierTwoSearchResult[]
     )[],
   ) {
     const combinedHits = hits.sort((a, b) => {

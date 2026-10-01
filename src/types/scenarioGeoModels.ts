@@ -131,10 +131,7 @@ export interface ScenarioTileJSONLayer extends ScenarioMapLayerBase {
 }
 
 export type ScenarioMapLayer =
-  | ScenarioImageLayer
-  | ScenarioTileJSONLayer
-  | ScenarioXYZLayer
-  | ScenarioKMLLayer;
+  ScenarioImageLayer | ScenarioTileJSONLayer | ScenarioXYZLayer | ScenarioKMLLayer;
 
 export type ScenarioMapLayerType = ScenarioMapLayer["type"];
 

@@ -262,16 +262,14 @@ export function useActionSearch() {
 
   return {
     searchActions,
-    actionItems: actionItems.map(
-      (a, i): ActionSearchResult => ({
-        ...a,
-        category: "Actions",
-        index: i,
-        id: i,
-        name: a.label,
-        highlight: "",
-        score: 0,
-      }),
-    ),
+    actionItems: actionItems.map((a, i): ActionSearchResult => ({
+      ...a,
+      category: "Actions",
+      index: i,
+      id: i,
+      name: a.label,
+      highlight: "",
+      score: 0,
+    })),
   };
 }
