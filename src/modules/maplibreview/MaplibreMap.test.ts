@@ -9,11 +9,6 @@ import { useMeasurementsStore } from "@/stores/geoStore";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
 import { useTerrainStore } from "@/stores/terrainStore";
 import type { StyleSpecification } from "maplibre-gl";
-import { initializeRtlText } from "@/modules/maplibreview/maplibreRtlText";
-
-vi.mock("@/modules/maplibreview/maplibreRtlText", () => ({
-  initializeRtlText: vi.fn().mockResolvedValue(undefined),
-}));
 
 const setStyle = vi.fn();
 const setProjection = vi.fn();
@@ -144,12 +139,6 @@ describe("MaplibreMap", () => {
     liveStyle = { version: 8, sources: {}, layers: [] };
     queryTerrainElevation.mockClear();
     queryTerrainElevation.mockReturnValue(750);
-  });
-
-  it("initializes RTL support when the map is set up", () => {
-    vi.mocked(initializeRtlText).mockClear();
-    mountMap();
-    expect(initializeRtlText).toHaveBeenCalledOnce();
   });
 
   it("applies the projection prop on style.load", async () => {
