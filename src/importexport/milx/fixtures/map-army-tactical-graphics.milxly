@@ -1,0 +1,2099 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<MilXDocument_Layer xmlns="http://gs-soft.com/MilX/V3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<MssLibraryVersionTag>2026.03.03</MssLibraryVersionTag>
+	<MilXLayer>
+		<Name>01 Tasks</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPB---------G"/&gt;</MssStringXML>
+				<Name>001 Block</Name>
+				<PointList>
+					<Point>
+						<X>-35.027635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.972364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>807a4c08-cb77-5aea-a4d4-0ee3976dd6c5</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPH---------G"/&gt;</MssStringXML>
+				<Name>002 Breach</Name>
+				<PointList>
+					<Point>
+						<X>-34.757635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.702364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>1d93d436-acb6-5719-b9f5-7aa7d9be8b1f</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPY---------G"/&gt;</MssStringXML>
+				<Name>003 Bypass</Name>
+				<PointList>
+					<Point>
+						<X>-34.487635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.432364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>083a1bee-c6ae-5d7b-9b72-e884bedcc32c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPC---------G"/&gt;</MssStringXML>
+				<Name>004 Canalize</Name>
+				<PointList>
+					<Point>
+						<X>-34.217635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.162364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>1a32c1d3-fe37-5ebf-b93c-bd7b7642c617</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPX---------G"/&gt;</MssStringXML>
+				<Name>005 Clear</Name>
+				<PointList>
+					<Point>
+						<X>-33.947635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-33.892364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-33.92</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>f4e333a5-d613-5585-be11-153ed28ebb91</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPP---------G"/&gt;</MssStringXML>
+				<Name>006 Penetrate</Name>
+				<PointList>
+					<Point>
+						<X>-33.677635213</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-33.622364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+					<Point>
+						<X>-33.65</X>
+						<Y>34.977362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>2ad7468a-6c45-5806-b75c-bae0bf836a58</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPT---------G"/&gt;</MssStringXML>
+				<Name>007 Disrupt</Name>
+				<PointList>
+					<Point>
+						<X>-33.407635213</X>
+						<Y>34.977362558</Y>
+					</Point>
+					<Point>
+						<X>-33.352364787</X>
+						<Y>34.977362558</Y>
+					</Point>
+					<Point>
+						<X>-33.352364787</X>
+						<Y>35.022637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c024f8ac-c680-545b-8d00-1f19565718fc</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPD---------G"/&gt;</MssStringXML>
+				<Name>008 Destroy</Name>
+				<PointList>
+					<Point>
+						<X>-33.11</X>
+						<Y>35</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>146d4969-df1f-5b17-9fe1-6dac4dd087ed</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPI---------G"/&gt;</MssStringXML>
+				<Name>009 Interdict</Name>
+				<PointList>
+					<Point>
+						<X>-32.84</X>
+						<Y>35</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>024565a7-6121-5cab-82eb-004a546df71a</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPN---------G"/&gt;</MssStringXML>
+				<Name>010 Neutralize</Name>
+				<PointList>
+					<Point>
+						<X>-32.57</X>
+						<Y>35</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>717d5dcf-3dab-5aa5-8c9e-178dbc6ef1e5</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPQ---------G"/&gt;</MssStringXML>
+				<Name>011 Retain</Name>
+				<PointList>
+					<Point>
+						<X>-35.027561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-34.972438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>08cb48e1-64b5-587b-b69f-6a3e55e751a8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPJ---------G"/&gt;</MssStringXML>
+				<Name>012 Contain</Name>
+				<PointList>
+					<Point>
+						<X>-34.757561315</X>
+						<Y>34.802637442</Y>
+					</Point>
+					<Point>
+						<X>-34.702438685</X>
+						<Y>34.802637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>34.757362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d8c59792-c619-5ff0-be20-0c2e4a10751b</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPK---------G"/&gt;</MssStringXML>
+				<Name>013 Counterattack (CATK)</Name>
+				<PointList>
+					<Point>
+						<X>-34.487561315</X>
+						<Y>34.791318721</Y>
+					</Point>
+					<Point>
+						<X>-34.432438685</X>
+						<Y>34.791318721</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>34.768681279</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>15b41a90-7e9e-5f2f-8d40-b1328112ceb5</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPKF--------G"/&gt;</MssStringXML>
+				<Name>014 Counterattack By Fire</Name>
+				<PointList>
+					<Point>
+						<X>-34.217561315</X>
+						<Y>34.791318721</Y>
+					</Point>
+					<Point>
+						<X>-34.162438685</X>
+						<Y>34.791318721</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>34.768681279</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>02182049-dc16-5180-8a83-4610110b6ba8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPF---------G"/&gt;</MssStringXML>
+				<Name>015 Fix</Name>
+				<PointList>
+					<Point>
+						<X>-33.947561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-33.892438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e0de7a96-ea5f-57eb-9505-cb0171becdba</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPA---------G"/&gt;</MssStringXML>
+				<Name>016 Follow And Assume</Name>
+				<PointList>
+					<Point>
+						<X>-33.677561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-33.622438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>16d15151-6d51-59d0-b065-4b402742b0e6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPAS--------G"/&gt;</MssStringXML>
+				<Name>017 Follow And Support</Name>
+				<PointList>
+					<Point>
+						<X>-33.407561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-33.352438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>9fead44f-4c44-5854-b51b-9350dcca036d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPE---------G"/&gt;</MssStringXML>
+				<Name>018 Isolate</Name>
+				<PointList>
+					<Point>
+						<X>-33.137561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-33.082438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>6713e1f3-3bfc-5f5c-b280-225d6cb3a8bd</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPO---------G"/&gt;</MssStringXML>
+				<Name>019 Occupy</Name>
+				<PointList>
+					<Point>
+						<X>-32.867561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-32.812438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>dd350101-964c-57a5-8908-6261626c7e74</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPS---------G"/&gt;</MssStringXML>
+				<Name>020 Secure</Name>
+				<PointList>
+					<Point>
+						<X>-32.597561315</X>
+						<Y>34.78</Y>
+					</Point>
+					<Point>
+						<X>-32.542438685</X>
+						<Y>34.78</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>0d8d4d92-477b-5d0a-a9fe-7cbf4d0052b3</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPUS--------G"/&gt;</MssStringXML>
+				<Name>021 Screen</Name>
+				<PointList>
+					<Point>
+						<X>-35.027488216</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-34.972511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-35.027488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>4bfb3515-12a6-5b39-acf1-af573543bc7c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPUG--------G"/&gt;</MssStringXML>
+				<Name>022 Guard</Name>
+				<PointList>
+					<Point>
+						<X>-34.757488216</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-34.702511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-34.757488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>0a2fc398-389c-5773-bc2a-9e5e2a2a252d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPUC--------G"/&gt;</MssStringXML>
+				<Name>023 Cover</Name>
+				<PointList>
+					<Point>
+						<X>-34.487488216</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-34.432511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-34.487488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>5dbc61e1-65e8-50ff-a465-4f3affeebe84</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPZ---------G"/&gt;</MssStringXML>
+				<Name>024 Seize</Name>
+				<PointList>
+					<Point>
+						<X>-34.217488216</X>
+						<Y>34.564716134</Y>
+					</Point>
+					<Point>
+						<X>-34.162511784</X>
+						<Y>34.564716134</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>34.555283866</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>fed73a30-8c74-5b90-8991-021b6d3b9d86</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPR---------G"/&gt;</MssStringXML>
+				<Name>025 Relief In Place (RIP)</Name>
+				<PointList>
+					<Point>
+						<X>-33.947488216</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-33.892511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+					<Point>
+						<X>-33.892511784</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.947488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>6e00b29c-8c2a-5b8d-8115-7bb4ddd8b7b4</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPL---------G"/&gt;</MssStringXML>
+				<Name>026 Delay</Name>
+				<PointList>
+					<Point>
+						<X>-33.677488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.622511784</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.622511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>17d04d46-a0c7-565a-86ba-2d8290dd9731</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPM---------G"/&gt;</MssStringXML>
+				<Name>027 Retirement</Name>
+				<PointList>
+					<Point>
+						<X>-33.407488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.352511784</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.352511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>49cd363d-b597-54ca-b5bf-eda39c3b13fc</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPW---------G"/&gt;</MssStringXML>
+				<Name>028 Withdraw</Name>
+				<PointList>
+					<Point>
+						<X>-33.137488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.082511784</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-33.082511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>f768e961-7bd0-5403-8963-cf7231aef86f</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFTPWP--------G"/&gt;</MssStringXML>
+				<Name>029 Withdraw Under Pressure</Name>
+				<PointList>
+					<Point>
+						<X>-32.867488216</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-32.812511784</X>
+						<Y>34.537362558</Y>
+					</Point>
+					<Point>
+						<X>-32.812511784</X>
+						<Y>34.582637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a335a5f7-88b2-5128-ba14-55b6c3306933</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>02 Commando Points</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPK-------"/&gt;</MssStringXML>
+				<Name>030 Check Point</Name>
+				<PointList>
+					<Point>
+						<X>-35</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>b70c25a6-03f4-56be-aeb1-2aee59941388</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPC-------"/&gt;</MssStringXML>
+				<Name>031 Contact Point</Name>
+				<PointList>
+					<Point>
+						<X>-34.73</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>5a2c3472-95fc-5a3a-91e5-b32e076f9625</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPO-------"/&gt;</MssStringXML>
+				<Name>032 Coordination Point</Name>
+				<PointList>
+					<Point>
+						<X>-34.46</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>61ae3b9b-bb02-5916-84ec-08a01101f451</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPD-------"/&gt;</MssStringXML>
+				<Name>033 Decision Point</Name>
+				<PointList>
+					<Point>
+						<X>-34.19</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>3289308b-45e9-56d4-98ac-2b9e3a070ea8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPW-------"/&gt;</MssStringXML>
+				<Name>034 Waypoint</Name>
+				<PointList>
+					<Point>
+						<X>-33.92</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>640dba34-6b7b-5288-b220-f3ce2013e4a9</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPP-------"/&gt;</MssStringXML>
+				<Name>035 Passage Point</Name>
+				<PointList>
+					<Point>
+						<X>-33.65</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>f9cd8849-533c-5133-ada1-ed4216d51a2d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPR-------"/&gt;</MssStringXML>
+				<Name>036 Rally Point</Name>
+				<PointList>
+					<Point>
+						<X>-33.38</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>37cf1bc6-72d6-5ce6-8f20-8dced9389a98</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPE-------"/&gt;</MssStringXML>
+				<Name>037 Release Point</Name>
+				<PointList>
+					<Point>
+						<X>-33.11</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>0f8087e0-3bdb-580b-9245-d56598fcbfdd</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPS-------"/&gt;</MssStringXML>
+				<Name>038 Start Point</Name>
+				<PointList>
+					<Point>
+						<X>-32.84</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a449b1a9-e2c1-5dec-b0a0-1bff2342ac9f</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGPPA-------"/&gt;</MssStringXML>
+				<Name>039 Amnesty Point</Name>
+				<PointList>
+					<Point>
+						<X>-32.57</X>
+						<Y>34.12</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>ed3fcd60-abb1-5334-8719-352078157302</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>03 Sector Boundaries</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----M---"/&gt;</MssStringXML>
+				<Name>040 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-35.027203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-34.972796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>772ac767-0995-5ef2-96a9-2b396c52f77d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----L---"/&gt;</MssStringXML>
+				<Name>041 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-34.757203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-34.702796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>eee9c036-5043-5280-abba-d50030c71512</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----K---"/&gt;</MssStringXML>
+				<Name>042 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-34.487203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-34.432796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>75dc4316-445a-52d2-a280-906a8bb31ceb</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----J---"/&gt;</MssStringXML>
+				<Name>043 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-34.217203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-34.162796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c06852be-836b-5598-9898-130bf9d5b1fc</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----I---"/&gt;</MssStringXML>
+				<Name>044 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-33.947203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-33.892796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>479d6249-dd5a-5502-8f7a-0f76cb935f04</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----H---"/&gt;</MssStringXML>
+				<Name>045 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-33.677203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-33.622796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>8cca82d4-7a2a-57e9-8207-52642b9c51b8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----G---"/&gt;</MssStringXML>
+				<Name>046 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-33.407203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-33.352796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>eabc1488-d27e-5a00-8c3f-7f1feab46829</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----F---"/&gt;</MssStringXML>
+				<Name>047 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-33.137203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-33.082796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>9b818a12-e202-5b37-9f30-10f595e3a46a</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----E---"/&gt;</MssStringXML>
+				<Name>048 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-32.867203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-32.812796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>1f4b1ff6-e86e-5bb9-a30b-bfe8d722b7f8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----D---"/&gt;</MssStringXML>
+				<Name>049 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-32.597203633</X>
+						<Y>33.68</Y>
+					</Point>
+					<Point>
+						<X>-32.542796367</X>
+						<Y>33.68</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>9470d47a-2fd2-5edc-aa2c-d29aef6231b7</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----C---"/&gt;</MssStringXML>
+				<Name>050 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-35.0271344</X>
+						<Y>33.46</Y>
+					</Point>
+					<Point>
+						<X>-34.9728656</X>
+						<Y>33.46</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d1172ff9-df37-5704-a24c-6f985e975b24</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----B---"/&gt;</MssStringXML>
+				<Name>051 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-34.7571344</X>
+						<Y>33.46</Y>
+					</Point>
+					<Point>
+						<X>-34.7028656</X>
+						<Y>33.46</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>db964dc0-efbe-57b8-9af1-35e574b30703</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLB----A---"/&gt;</MssStringXML>
+				<Name>052 Boundaries</Name>
+				<PointList>
+					<Point>
+						<X>-34.4871344</X>
+						<Y>33.46</Y>
+					</Point>
+					<Point>
+						<X>-34.4328656</X>
+						<Y>33.46</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e52a9c27-b77d-592c-8f47-020b333a5c66</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>04 Lines of Coordination</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLP--------"/&gt;</MssStringXML>
+				<Name>053 Phase Line</Name>
+				<PointList>
+					<Point>
+						<X>-35.026998176</X>
+						<Y>33.02</Y>
+					</Point>
+					<Point>
+						<X>-34.973001824</X>
+						<Y>33.02</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>ffc57dca-0951-5ca6-b1c5-650c6e0ef520</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOLT--------"/&gt;</MssStringXML>
+				<Name>054 Line of Departure</Name>
+				<PointList>
+					<Point>
+						<X>-34.756998176</X>
+						<Y>33.02</Y>
+					</Point>
+					<Point>
+						<X>-34.703001824</X>
+						<Y>33.02</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e5596e1d-afda-55cc-8522-cdece1686548</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGLF--------"/&gt;</MssStringXML>
+				<Name>055 Forward Line of Own Troops (FLOT)</Name>
+				<PointList>
+					<Point>
+						<X>-34.486998176</X>
+						<Y>33.02</Y>
+					</Point>
+					<Point>
+						<X>-34.433001824</X>
+						<Y>33.02</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e8fad163-6bc5-5a2e-a41e-a707e2f19620</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>05 Base Deployments</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOAP--------"/&gt;</MssStringXML>
+				<Name>056 Penetration Box</Name>
+				<PointList>
+					<Point>
+						<X>-35.02686489</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.97313511</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>32.557362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c34bb7f4-85be-52bb-aa33-573dca1649d6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOAK--------"/&gt;</MssStringXML>
+				<Name>057 Attack Position</Name>
+				<PointList>
+					<Point>
+						<X>-34.75686489</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.70313511</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>32.557362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>8f6a00ee-ec1e-52c3-a596-eef6a4afd1bb</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOAO--------"/&gt;</MssStringXML>
+				<Name>058 Objective</Name>
+				<PointList>
+					<Point>
+						<X>-34.48686489</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.43313511</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>32.557362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>2b4ecb1c-8676-5dde-9973-a00c02e6d1b6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPGAA--------"/&gt;</MssStringXML>
+				<Name>059 Assembly Area</Name>
+				<PointList>
+					<Point>
+						<X>-34.21686489</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.16313511</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>32.557362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>65229e9d-80b6-53fa-9031-04bb919b25a0</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOAA--------"/&gt;</MssStringXML>
+				<Name>060 Assault Position</Name>
+				<PointList>
+					<Point>
+						<X>-33.94686489</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-33.89313511</X>
+						<Y>32.602637442</Y>
+					</Point>
+					<Point>
+						<X>-33.92</X>
+						<Y>32.557362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>9fb11ac2-9aa0-51c5-af67-e7b7fd29cefa</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>06 Defensive Lines</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOWU--------"/&gt;</MssStringXML>
+				<Name>061 Wire Obstacle Unspecified</Name>
+				<PointList>
+					<Point>
+						<X>-35.026734481</X>
+						<Y>32.14</Y>
+					</Point>
+					<Point>
+						<X>-34.973265519</X>
+						<Y>32.14</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>172272b3-0f39-531e-bd21-ab641adad06c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPSP---------"/&gt;</MssStringXML>
+				<Name>062 Strong Point</Name>
+				<PointList>
+					<Point>
+						<X>-34.756734481</X>
+						<Y>32.162637442</Y>
+					</Point>
+					<Point>
+						<X>-34.703265519</X>
+						<Y>32.162637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>32.117362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>84efd071-6d19-514c-91de-116afca8615d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPSL---------"/&gt;</MssStringXML>
+				<Name>063 Fortified Line</Name>
+				<PointList>
+					<Point>
+						<X>-34.486734481</X>
+						<Y>32.14</Y>
+					</Point>
+					<Point>
+						<X>-34.433265519</X>
+						<Y>32.14</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>109ae14e-8b13-5423-8eda-e04acd45cbd6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOADC-------"/&gt;</MssStringXML>
+				<Name>064 Antitank Ditch Complete</Name>
+				<PointList>
+					<Point>
+						<X>-34.216734481</X>
+						<Y>32.14</Y>
+					</Point>
+					<Point>
+						<X>-34.163265519</X>
+						<Y>32.14</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c20a7b80-f62b-5bd1-a701-bc1c23d6122f</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>07 Offensive Lines</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOLAGM------"/&gt;</MssStringXML>
+				<Name>065 Main Attack</Name>
+				<PointList>
+					<Point>
+						<X>-35.026606895</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-34.973393105</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>31.688681279</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>ffc45231-cbd2-50d2-8812-fb876aac4537</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOLAGS------"/&gt;</MssStringXML>
+				<Name>066 Supporting Attack</Name>
+				<PointList>
+					<Point>
+						<X>-34.756606895</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-34.703393105</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>31.688681279</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>b0ef0dad-33ad-56a8-86b3-a36ba0e98d6b</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOLAV-------"/&gt;</MssStringXML>
+				<Name>067 Axis of Advance Aviation</Name>
+				<PointList>
+					<Point>
+						<X>-34.486606895</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-34.433393105</X>
+						<Y>31.711318721</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>31.688681279</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>861098df-fa72-52cd-be1e-76abd3cc7cf4</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPSLA--------"/&gt;</MssStringXML>
+				<Name>068 Special Line Ambush</Name>
+				<PointList>
+					<Point>
+						<X>-34.216606895</X>
+						<Y>31.681764283</Y>
+					</Point>
+					<Point>
+						<X>-34.163393105</X>
+						<Y>31.681764283</Y>
+					</Point>
+					<Point>
+						<X>-34.184826437</X>
+						<Y>31.718235717</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a30e43ca-3911-5cc4-a3b3-ff031eff2e1a</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPOAS--------"/&gt;</MssStringXML>
+				<Name>069 Support By Fire Position</Name>
+				<PointList>
+					<Point>
+						<X>-33.946606895</X>
+						<Y>31.677362558</Y>
+					</Point>
+					<Point>
+						<X>-33.893393105</X>
+						<Y>31.677362558</Y>
+					</Point>
+					<Point>
+						<X>-33.946606895</X>
+						<Y>31.722637442</Y>
+					</Point>
+					<Point>
+						<X>-33.893393105</X>
+						<Y>31.722637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c87b5405-102d-5bd2-aaaf-445f188ae712</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>08 Mines and Obstacles</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOMU--------"/&gt;</MssStringXML>
+				<Name>070 Unspecified Mine</Name>
+				<PointList>
+					<Point>
+						<X>-35</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>317ebe97-3116-5470-8c5e-32b87467e62d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOMT--------"/&gt;</MssStringXML>
+				<Name>071 Antitank Mine (AT)</Name>
+				<PointList>
+					<Point>
+						<X>-34.73</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>fabbdff9-297c-5803-8f08-c03f6fb85fb8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOMD--------"/&gt;</MssStringXML>
+				<Name>072 Antitank Mine With Antihandling Device</Name>
+				<PointList>
+					<Point>
+						<X>-34.46</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a7cbc9c6-9951-5080-8b6e-05092c48e807</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOME--------"/&gt;</MssStringXML>
+				<Name>073 Antitank Mine (Directional)</Name>
+				<PointList>
+					<Point>
+						<X>-34.19</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d28d2f5f-5525-5af5-9cde-c7a2a75269c2</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOMP--------"/&gt;</MssStringXML>
+				<Name>074 Antipersonnel (AP) Mines</Name>
+				<PointList>
+					<Point>
+						<X>-33.92</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>82fa82ec-ff37-58a7-85d5-48290a0d7dc6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOMW--------"/&gt;</MssStringXML>
+				<Name>075 Wide Area Mines</Name>
+				<PointList>
+					<Point>
+						<X>-33.65</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>dbdb6527-b6e6-5a4a-8c6e-affb0fb5d033</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOB---------"/&gt;</MssStringXML>
+				<Name>076 Booby Trap</Name>
+				<PointList>
+					<Point>
+						<X>-33.38</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>35d3791b-bb26-5d35-a884-72c552f0aee7</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOT---------"/&gt;</MssStringXML>
+				<Name>077 Trip Wire</Name>
+				<PointList>
+					<Point>
+						<X>-33.136482074</X>
+						<Y>31.248681279</Y>
+					</Point>
+					<Point>
+						<X>-33.083517926</X>
+						<Y>31.248681279</Y>
+					</Point>
+					<Point>
+						<X>-33.11</X>
+						<Y>31.271318721</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d40ce417-b2cb-5f17-850b-9969233c3849</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFS--------"/&gt;</MssStringXML>
+				<Name>078 Minefields Static Depiction</Name>
+				<PointList>
+					<Point>
+						<X>-32.84</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>6a262050-755d-5aa6-a960-18f88eb26485</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFST-------"/&gt;</MssStringXML>
+				<Name>079 Minefields Static Depiction Antitank Mine</Name>
+				<PointList>
+					<Point>
+						<X>-32.57</X>
+						<Y>31.26</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>5f2bc0e5-fcaa-501d-a713-5c24d66a6faf</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFSD-------"/&gt;</MssStringXML>
+				<Name>080 Minefields Static Depiction Antitank Mine with Antihandling Device</Name>
+				<PointList>
+					<Point>
+						<X>-35</X>
+						<Y>31.04</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a7d4cb04-40eb-52f6-afee-242cf14f103b</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFSE-------"/&gt;</MssStringXML>
+				<Name>081 Minefields Static Depiction Directional Antitank Mine</Name>
+				<PointList>
+					<Point>
+						<X>-34.73</X>
+						<Y>31.04</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>56c1778f-1507-5c4b-afd7-81610cc82c24</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFSP-------"/&gt;</MssStringXML>
+				<Name>082 Minefields Static Depiction Antipersonnel Mine</Name>
+				<PointList>
+					<Point>
+						<X>-34.46</X>
+						<Y>31.04</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>7e55c8de-b746-50e0-ae17-d65d31a365e1</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFSW-------"/&gt;</MssStringXML>
+				<Name>083 Minefields Static Depiction Wide Area Mine</Name>
+				<PointList>
+					<Point>
+						<X>-34.19</X>
+						<Y>31.04</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>c26bb330-4a64-5ee0-bad5-98f9bba5af90</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFD--------"/&gt;</MssStringXML>
+				<Name>084 Minefields Dynamic Depiction</Name>
+				<PointList>
+					<Point>
+						<X>-33.946420685</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.893579315</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.92</X>
+						<Y>31.017362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>61d9c95c-a1f5-5979-89cc-b882fce25d39</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOFA--------"&gt;&lt;Attribute ID="XE"&gt;9SCHTAMT-------&lt;/Attribute&gt;&lt;/Symbol&gt;</MssStringXML>
+				<Name>085 Minefields Mined Area</Name>
+				<PointList>
+					<Point>
+						<X>-33.676420685</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.623579315</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.65</X>
+						<Y>31.017362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d0e4cb25-d9ac-56f3-afdc-04dc9d26106c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOU---------"/&gt;</MssStringXML>
+				<Name>086 Unexploded Ordnance Area (UXO)</Name>
+				<PointList>
+					<Point>
+						<X>-33.406420685</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.353579315</X>
+						<Y>31.062637442</Y>
+					</Point>
+					<Point>
+						<X>-33.38</X>
+						<Y>31.017362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>540435c1-b8e3-587a-8932-cc861e1d9f80</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPORP--------"/&gt;</MssStringXML>
+				<Name>087 Roadblocks, Craters, And Blown Bridges Planned</Name>
+				<PointList>
+					<Point>
+						<X>-33.136420685</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-33.083579315</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-33.11</X>
+						<Y>31.042200862</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>81be320f-a2b1-5318-bce7-8ff0c50c3ce3</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPORS--------"/&gt;</MssStringXML>
+				<Name>088 Roadblocks, Craters, And Blown Bridges Explosives, State of Readiness 1 (SAFE)</Name>
+				<PointList>
+					<Point>
+						<X>-32.866420685</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-32.813579315</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-32.84</X>
+						<Y>31.042200862</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>ef492342-2dc7-5472-8afa-43434758359f</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPORA--------"/&gt;</MssStringXML>
+				<Name>089 Roadblocks, Craters, And Blown Bridges Explosives, State of Readiness 2 (Armed-But Passable)</Name>
+				<PointList>
+					<Point>
+						<X>-32.596420685</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-32.543579315</X>
+						<Y>31.037799138</Y>
+					</Point>
+					<Point>
+						<X>-32.57</X>
+						<Y>31.042200862</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>dfddea60-1f3d-5211-9b76-38cc0f84c626</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPORC--------"/&gt;</MssStringXML>
+				<Name>090 Roadblock Complete (Executed)</Name>
+				<PointList>
+					<Point>
+						<X>-35.026359967</X>
+						<Y>30.817799138</Y>
+					</Point>
+					<Point>
+						<X>-34.973640033</X>
+						<Y>30.817799138</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>30.822200862</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a6bb8849-ff73-5358-a10a-4e1a577d4b53</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOWS--------"/&gt;</MssStringXML>
+				<Name>091 Single Fence</Name>
+				<PointList>
+					<Point>
+						<X>-34.756359967</X>
+						<Y>30.82</Y>
+					</Point>
+					<Point>
+						<X>-34.703640033</X>
+						<Y>30.82</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>d0625013-b5fe-5fb9-a29b-0b321ccdd18c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOWCS-------"/&gt;</MssStringXML>
+				<Name>092 Wire Obstacle Concertina Single Concertina</Name>
+				<PointList>
+					<Point>
+						<X>-34.486359967</X>
+						<Y>30.82</Y>
+					</Point>
+					<Point>
+						<X>-34.433640033</X>
+						<Y>30.82</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>b3dad2e0-27d8-55ce-afbc-e4e802746810</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOGZ--------"/&gt;</MssStringXML>
+				<Name>093 Obstacles General Zone</Name>
+				<PointList>
+					<Point>
+						<X>-34.216359967</X>
+						<Y>30.842637442</Y>
+					</Point>
+					<Point>
+						<X>-34.163640033</X>
+						<Y>30.842637442</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>30.797362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>b0b0d762-3b68-5d22-824b-14654352e00b</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOGL--------"/&gt;</MssStringXML>
+				<Name>094 Obstacles General Line</Name>
+				<PointList>
+					<Point>
+						<X>-33.946359967</X>
+						<Y>30.82</Y>
+					</Point>
+					<Point>
+						<X>-33.893640033</X>
+						<Y>30.82</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>86fa3205-28e5-5163-b681-bbb55a8d6335</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOADC-------"/&gt;</MssStringXML>
+				<Name>095 Antitank Ditch Complete</Name>
+				<PointList>
+					<Point>
+						<X>-33.676359967</X>
+						<Y>30.82</Y>
+					</Point>
+					<Point>
+						<X>-33.623640033</X>
+						<Y>30.82</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>29dc2776-d7f4-5c53-80f9-a33455da652d</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPOADU-------"/&gt;</MssStringXML>
+				<Name>096 Antitank Ditch Under Construction</Name>
+				<PointList>
+					<Point>
+						<X>-33.406359967</X>
+						<Y>30.82</Y>
+					</Point>
+					<Point>
+						<X>-33.353640033</X>
+						<Y>30.82</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>022fe601-9c13-5849-97fd-becc4a4086dd</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>09 Tactical Graphics with Volume (3D)</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPACAC-------"/&gt;</MssStringXML>
+				<Name>097 Airspace Coordination Area (ACA), Circular</Name>
+				<PointList>
+					<Point>
+						<X>-35</X>
+						<Y>30.38</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Radius</AttrType>
+						<Value>2520.00010013581</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>fb190e06-bee9-5397-b0cb-46a9443e28f8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPACAI-------"/&gt;</MssStringXML>
+				<Name>098 Airspace Coordination Area (ACA), Irregular</Name>
+				<PointList>
+					<Point>
+						<X>-34.756240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.703759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e8dc335b-47d4-52c8-b7ef-cf522023871c</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAF--------"/&gt;</MssStringXML>
+				<Name>099 Short-Range Air Defense Engagement Zone (Shoradez)</Name>
+				<PointList>
+					<Point>
+						<X>-34.486240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.433759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>0e7b9737-0c0c-5eed-a3d7-a94654516eba</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAH--------"/&gt;</MssStringXML>
+				<Name>100 High Density Airspace Control Zone (HIDACZ)</Name>
+				<PointList>
+					<Point>
+						<X>-34.216240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.163759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>28994460-3d4f-5e55-b9e9-f2b88908f405</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAM--------"/&gt;</MssStringXML>
+				<Name>101 Missile Engagement Zone (MEZ)</Name>
+				<PointList>
+					<Point>
+						<X>-33.946240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.893759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.92</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>96021b06-66f1-59ed-bcaf-5d54f96ae490</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAML-------"/&gt;</MssStringXML>
+				<Name>102 Low Altitude MEZ</Name>
+				<PointList>
+					<Point>
+						<X>-33.676240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.623759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.65</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e74a6f50-984a-5de2-8fa3-49af19ba80c5</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAMH-------"/&gt;</MssStringXML>
+				<Name>103 High Altitude MEZ</Name>
+				<PointList>
+					<Point>
+						<X>-33.406240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.353759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.38</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>04da1d44-759a-5e67-9593-edcac553929a</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPAAR--------"/&gt;</MssStringXML>
+				<Name>104 Restricted Operations Zone (ROZ)</Name>
+				<PointList>
+					<Point>
+						<X>-33.136240521</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.083759479</X>
+						<Y>30.402637442</Y>
+					</Point>
+					<Point>
+						<X>-33.11</X>
+						<Y>30.357362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>ea028f5c-ed15-5254-aff7-9b13eea676e8</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPALC--------"/&gt;</MssStringXML>
+				<Name>105 Air Corridor</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-32.866240521</X>
+						<Y>30.38</Y>
+					</Point>
+					<Point>
+						<X>-32.813759479</X>
+						<Y>30.38</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>681aacd4-7b14-5e64-8e34-6746452be9c6</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPACAR-------"/&gt;</MssStringXML>
+				<Name>106 Airspace Coordination Area (ACA), Rectangular</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-32.596240521</X>
+						<Y>30.38</Y>
+					</Point>
+					<Point>
+						<X>-32.543759479</X>
+						<Y>30.38</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>de60717a-0fce-5c82-b841-0e300e8c897b</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPALM--------"/&gt;</MssStringXML>
+				<Name>107 Minimum Risk Route (MRR)</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-35.02618178</X>
+						<Y>30.16</Y>
+					</Point>
+					<Point>
+						<X>-34.97381822</X>
+						<Y>30.16</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>ab01f30c-0c8b-57e3-b48f-b5e943848426</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPALS--------"/&gt;</MssStringXML>
+				<Name>108 Standard-Use Army Aircraft Flight Route (SAAFR)</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-34.75618178</X>
+						<Y>30.16</Y>
+					</Point>
+					<Point>
+						<X>-34.70381822</X>
+						<Y>30.16</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>17922ba3-84ea-59ae-a182-d9c5fe4ab2ec</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPALU--------"/&gt;</MssStringXML>
+				<Name>109 Unmanned Aircraft (UA) Route</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-34.48618178</X>
+						<Y>30.16</Y>
+					</Point>
+					<Point>
+						<X>-34.43381822</X>
+						<Y>30.16</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>54908c88-c4e9-59e9-a6c1-84852ac67fd4</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFGPALL--------"/&gt;</MssStringXML>
+				<Name>110 Low Level Transit Route (LLTR)</Name>
+				<IsMIPCorridorPointList>1</IsMIPCorridorPointList>
+				<PointList>
+					<Point>
+						<X>-34.21618178</X>
+						<Y>30.16</Y>
+					</Point>
+					<Point>
+						<X>-34.16381822</X>
+						<Y>30.16</Y>
+					</Point>
+				</PointList>
+				<LocationAttributeList>
+					<LocationAttribute>
+						<AttrType>Width</AttrType>
+						<Value>5040.00020027161</Value>
+					</LocationAttribute>
+				</LocationAttributeList>
+				<MilXRepoUnitID>3d043ca8-2640-570b-aecf-7c432909a9f8</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>10 Passages</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPBCE--------"/&gt;</MssStringXML>
+				<Name>111 Ford Easy</Name>
+				<PointList>
+					<Point>
+						<X>-35.026066233</X>
+						<Y>29.708681279</Y>
+					</Point>
+					<Point>
+						<X>-34.973933767</X>
+						<Y>29.708681279</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>29.731318721</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>cf692c61-9dc7-56a2-a8e6-20af9c3db0c0</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPBCB--------"/&gt;</MssStringXML>
+				<Name>112 Bridge or Gap</Name>
+				<PointList>
+					<Point>
+						<X>-34.756066233</X>
+						<Y>29.742637442</Y>
+					</Point>
+					<Point>
+						<X>-34.703933767</X>
+						<Y>29.742637442</Y>
+					</Point>
+					<Point>
+						<X>-34.756066233</X>
+						<Y>29.697362558</Y>
+					</Point>
+					<Point>
+						<X>-34.703933767</X>
+						<Y>29.697362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>14bbd8b3-488c-5741-9d39-064195d0b582</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPBCF--------"/&gt;</MssStringXML>
+				<Name>113 Ferry</Name>
+				<PointList>
+					<Point>
+						<X>-34.486066233</X>
+						<Y>29.72</Y>
+					</Point>
+					<Point>
+						<X>-34.433933767</X>
+						<Y>29.72</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e186db01-8f97-527a-b575-304ab9336b65</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPBCL--------"/&gt;</MssStringXML>
+				<Name>114 Lane</Name>
+				<PointList>
+					<Point>
+						<X>-34.216066233</X>
+						<Y>29.72</Y>
+					</Point>
+					<Point>
+						<X>-34.163933767</X>
+						<Y>29.72</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a0592b5a-2629-5c2b-940d-ffef9b48f9c0</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>11 Areal Symbols</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPNR---------"/&gt;</MssStringXML>
+				<Name>115 Radioactive Area</Name>
+				<PointList>
+					<Point>
+						<X>-35.025953224</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.974046776</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-35</X>
+						<Y>29.257362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>da94a94d-dcf6-5c4b-92b2-d95232dc246a</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPNB---------"/&gt;</MssStringXML>
+				<Name>116 Biologically Contaminated Area</Name>
+				<PointList>
+					<Point>
+						<X>-34.755953224</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.704046776</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.73</X>
+						<Y>29.257362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>1257bdfb-dc3c-560e-b139-ec994982c253</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFMPNC---------"/&gt;</MssStringXML>
+				<Name>117 Chemically Contaminated Area</Name>
+				<PointList>
+					<Point>
+						<X>-34.485953224</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.434046776</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.46</X>
+						<Y>29.257362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>9ce80675-a6aa-5b18-9608-1616749a94f4</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPATS--------"/&gt;</MssStringXML>
+				<Name>118 Smoke</Name>
+				<PointList>
+					<Point>
+						<X>-34.215953224</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.164046776</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-34.19</X>
+						<Y>29.257362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>3cb75b2b-1e1e-5c4a-8ee8-7274611bf055</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPATB--------"/&gt;</MssStringXML>
+				<Name>119 Bomb Area</Name>
+				<PointList>
+					<Point>
+						<X>-33.945953224</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-33.894046776</X>
+						<Y>29.302637442</Y>
+					</Point>
+					<Point>
+						<X>-33.92</X>
+						<Y>29.257362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>a652e96f-0b35-566b-a868-c4a8fda9fc9f</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+	<MilXLayer>
+		<Name>12 Capabilities, Range</Name>
+		<LayerType>Normal</LayerType>
+		<GraphicList>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GF9PAM---------"&gt;&lt;Attribute ID="XM"&gt;&lt;Line Width="20"/&gt;&lt;Fill Transparency="75"/&gt;&lt;/Attribute&gt;&lt;/Symbol&gt;</MssStringXML>
+				<Name>120 Polysector Area</Name>
+				<PointList>
+					<Point>
+						<X>-35.025842709</X>
+						<Y>28.817362558</Y>
+					</Point>
+					<Point>
+						<X>-34.974157291</X>
+						<Y>28.817362558</Y>
+					</Point>
+					<Point>
+						<X>-35.025842709</X>
+						<Y>28.862637442</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>e6a2bf95-ec85-5b00-b710-16bfd84dcd17</MilXRepoUnitID>
+			</MilXGraphic>
+			<MilXGraphic>
+				<MssStringXML>&lt;Symbol ID="GFFPAXS--------"/&gt;</MssStringXML>
+				<Name>121 Weapons / Radar Range Fans, Sector</Name>
+				<PointList>
+					<Point>
+						<X>-34.755842709</X>
+						<Y>28.862637442</Y>
+					</Point>
+					<Point>
+						<X>-34.704157291</X>
+						<Y>28.862637442</Y>
+					</Point>
+					<Point>
+						<X>-34.755842709</X>
+						<Y>28.817362558</Y>
+					</Point>
+				</PointList>
+				<MilXRepoUnitID>b827f9c5-1646-5929-b812-9803ef1d198c</MilXRepoUnitID>
+			</MilXGraphic>
+		</GraphicList>
+		<CoordSystemType>WGS84</CoordSystemType>
+		<ViewScale>0.1</ViewScale>
+		<SymbolSize>1</SymbolSize>
+	</MilXLayer>
+</MilXDocument_Layer>

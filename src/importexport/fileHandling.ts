@@ -70,7 +70,9 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     }
 
     // is it a milx file?
-    const f = Object.entries(unzipped).find(([filename]) => filename.endsWith(".milxly"));
+    const f = Object.entries(unzipped).find(([filename]) =>
+      filename.toLowerCase().endsWith(".milxly"),
+    );
     if (f) {
       guess.format = "milx";
       guess.dataAsString = arrayBufferToString(f[1]);
@@ -110,6 +112,12 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     guess.isInvalid = true;
     guess.errors.push("Could not read file as text");
     console.error(e);
+    return guess;
+  }
+
+  if (isMilXFileType(file)) {
+    guess.format = "milx";
+    guess.dataAsString = text;
     return guess;
   }
 
@@ -251,7 +259,11 @@ function hasZippedFileType(file: File): boolean {
   if (zippedTypes.includes(file.type)) return true;
   if (file.name.endsWith(".kmz")) return true;
   if (file.name.endsWith(".odin")) return true;
-  return file.name.endsWith(".milxlyz");
+  return file.name.toLowerCase().endsWith(".milxlyz");
+}
+
+function isMilXFileType(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".milxly");
 }
 
 function isKMFileType(file: File): boolean {

@@ -83,6 +83,17 @@ describe("guessImportFormat", () => {
     expect(result.dataAsString).toBe(gpxContent);
   });
 
+  it("detects tab-indented MilX layer files by extension", async () => {
+    const milxContent =
+      "<MilXDocument_Layer>\n\t<MilXLayer>\t<Name>A</Name>\t</MilXLayer>\n</MilXDocument_Layer>";
+    const file = createMockFile(milxContent, "layers.milxly");
+
+    const result = await guessImportFormat(file);
+
+    expect(result.format).toBe("milx");
+    expect(result.dataAsString).toBe(milxContent);
+  });
+
   it("detects GPX files by common MIME type", async () => {
     const gpxContent = '<gpx version="1.1"><wpt lat="59.91" lon="10.75" /></gpx>';
     const file = createMockFile(gpxContent, "track", {

@@ -18,7 +18,7 @@ import { guessImportFormat, type ImportedFileInfo } from "@/importexport/fileHan
 import { convertGpxToGeoJSON } from "@/importexport/gpx";
 import { useDragStore } from "@/stores/dragStore";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
-import { isUrl } from "@/utils";
+import { getErrorMessage, isUrl } from "@/utils";
 import type { FeatureCollection } from "geojson";
 import ImportLoadStepBrowser from "@/modules/scenarioeditor/ImportLoadStepBrowser.vue";
 import { type Scenario } from "@/types/scenarioModels";
@@ -125,20 +125,26 @@ async function onBrowserLoad(data: Scenario) {
 }
 
 async function onLoad() {
-  const { format } = form.value;
-
   NProgress.start();
+  try {
+    await loadFormat(form.value.format);
+  } catch (e) {
+    isError.value = true;
+    errorMessage.value = getErrorMessage(e);
+  } finally {
+    NProgress.done();
+  }
+}
 
+async function loadFormat(format: ImportFormat) {
   if (format === "milx" && stringSource.value) {
     const data = await importMilxString(stringSource.value);
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "milx", data, fileInfo.value!);
   }
 
   if (format === "kml" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     const kmls = fileInfos.value.filter((f) => f.format === "kml");
     emit("lod", {
       format: "kml",
@@ -149,28 +155,24 @@ async function onLoad() {
 
   if (format === "image" && objectUrl.value) {
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "image", objectUrl.value, fileInfo.value!);
   }
 
   if (format === "geojson" && stringSource.value) {
     const data = importJsonString<FeatureCollection>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "geojson", data, fileInfo.value);
   }
 
   if (format === "gpx" && stringSource.value) {
     const data = convertGpxToGeoJSON(stringSource.value);
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "geojson", data, fileInfo.value);
   }
 
   if (format === "unitgenerator" && stringSource.value) {
     const data = importJsonString<SpatialIllusionsOrbat>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     console.log(data);
     emit("loaded", "unitgenerator", data, fileInfo.value);
   }
@@ -178,19 +180,16 @@ async function onLoad() {
   if (format === "orbatgenerator" && stringSource.value) {
     const data = importJsonString<OrbatGeneratorOrbat>(stringSource.value);
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "orbatgenerator", data, fileInfo.value!);
   }
 
   if (format === "orbatmapper" && stringSource.value) {
     const data = importJsonString<LoadableScenario>(stringSource.value);
-    NProgress.done();
     emit("loaded", "orbatmapper", data, fileInfo.value);
   }
 
   if (format === "orbatmapper-encrypted" && stringSource.value) {
     const data = importJsonString<any>(stringSource.value);
-    NProgress.done();
     emit("loaded", "orbatmapper-encrypted", data, fileInfo.value);
   }
 
@@ -202,17 +201,13 @@ async function onLoad() {
 
   if (format === "csv" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "csv", stringSource.value, fileInfo.value);
   }
 
   if (format === "tsv" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
-    NProgress.done();
     emit("loaded", "tsv", stringSource.value, fileInfo.value);
   }
-
-  NProgress.done();
 }
 
 function onDrop(files: File[] | null) {
@@ -343,7 +338,7 @@ onMounted(() => {
         />
         <div class="prose prose-sm dark:prose-invert">
           <p v-if="isMilx">
-            Basic support for importing MilX layers from
+            Import units and control measures from MilX layers, e.g. from
             <a href="https://www.map.army/">map.army</a>
           </p>
           <p v-else-if="isGeojson">Import units and features.</p>

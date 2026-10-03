@@ -1,30 +1,15 @@
-import { nanoid, toDom } from "@/utils";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureCollection } from "geojson";
-import type { ImportGeoJsonFeature } from "@/importexport/jsonish/types";
-
-export interface MilxImportedLayer {
-  id: string;
-  name?: string;
-  features: ImportGeoJsonFeature[];
-}
+import type { MilXImportPlan } from "@/importexport/milx/convert";
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
 }
 
 export function useScenarioImport() {
-  async function importMilxString(source: string): Promise<MilxImportedLayer[]> {
-    const { getMilXLayers, convertMilXLayer } = await import("@/importexport/milx");
-    const dom = await toDom(source);
-    const milxLayers = getMilXLayers(dom);
-    return milxLayers
-      .map((mlayer) => ({
-        id: nanoid(),
-        name: mlayer.name || "no name",
-        features: convertMilXLayer(mlayer).features,
-      }))
-      .filter((l) => l.features.length > 0);
+  async function importMilxString(source: string): Promise<MilXImportPlan> {
+    const { parseMilX, convertMilX } = await import("@/importexport/milx");
+    return convertMilX(parseMilX(source));
   }
 
   function importGeojsonString(source: string): FeatureCollection {

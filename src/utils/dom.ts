@@ -6,12 +6,6 @@ export function sanitizeHTML(str: string) {
   return temp.innerHTML;
 }
 
-export async function toDom(xmlString: string) {
-  // https://github.com/placemark/togeojson#protips
-  const xmldom = await import("@xmldom/xmldom");
-  return new xmldom.DOMParser().parseFromString(xmlString, "text/xml");
-}
-
 export function getErrorMessage(e: unknown) {
   if (e instanceof Error) {
     return e.message;
