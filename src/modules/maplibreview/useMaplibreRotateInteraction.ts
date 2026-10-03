@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 import {
   normalizeRotation,
   ROTATION_EPSILON,
@@ -14,8 +15,6 @@ import {
 type RotateTarget = { id: string; initialRotation: number; rotation: number };
 
 export interface MaplibreRotateInteractionOptions {
-  /** Layer id of the unit symbol layer. Defaults to `"unitLayer"`. */
-  unitLayerId?: string;
   /** Called on every drag frame with the current rotation overrides. */
   onPreview: (rotationOverrides: ReadonlyMap<string, number>) => void;
   /** Called when the drag ends (commit, cancel, or no movement). */
@@ -45,7 +44,6 @@ export function useMaplibreRotateInteraction(
   activeScenario: TScenario,
   options: MaplibreRotateInteractionOptions,
 ): MaplibreRotateInteraction {
-  const unitLayerId = options.unitLayerId ?? "unitLayer";
   const { unitActions } = activeScenario;
   const getUnitById = activeScenario.helpers?.getUnitById ?? (() => undefined);
   const { selectedUnitIds } = useSelectedItems();
@@ -107,7 +105,7 @@ export function useMaplibreRotateInteraction(
 
   function queryUnitIdAtPoint(point: PointLike): string | undefined {
     const hits = mlMap.queryRenderedFeatures(point);
-    const topHit = hits.find((f) => f.layer.id === unitLayerId);
+    const topHit = hits.find((f) => isUnitLayerId(f.layer.id));
     const id = topHit?.properties?.id;
     return typeof id === "string" ? id : undefined;
   }

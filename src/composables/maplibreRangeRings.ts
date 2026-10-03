@@ -7,7 +7,6 @@ import type {
 import circle from "@turf/circle";
 import union from "@turf/union";
 import { featureCollection } from "@turf/helpers";
-import { clusterEach } from "@turf/clusters";
 import type { Feature, MultiPolygon, Polygon } from "geojson";
 import { toRgbaColor } from "@/utils/cssColor";
 import type { TScenario } from "@/scenariostore";
@@ -16,6 +15,7 @@ import { convertToMetric } from "@/utils/convert";
 import {
   ALWAYS_VISIBLE_UNIT_GROUP_ID,
   getUnitVisibilityGroup,
+  getZoomVisibilityGroup,
   type UnitVisibilityGroup,
 } from "@/geo/engines/maplibre/unitLayer";
 
@@ -38,9 +38,10 @@ type RingIdProperties = {
   id: string;
   isGroup: boolean;
   visibilityGroup: string;
-  // Grouped rings are merged per range ring group and per zoom range.
-  mergeKey: string;
 };
+
+const MIN_ZOOM = 0;
+const MAX_ZOOM = 24;
 
 function getRingLayerIds(visibilityGroupId: string) {
   const suffix =
@@ -67,12 +68,84 @@ function createRangeRings(
           id: r.group ? r.group : `${unit.id}-${i}`,
           isGroup: !!r.group,
           visibilityGroup: visibilityGroup.id,
-          mergeKey: `${r.group}|${visibilityGroup.id}`,
         },
       },
     ) as Feature<Polygon, RingIdProperties>;
     out.push(ring);
   });
+  return out;
+}
+
+/**
+ * Merges the rings of one range ring group. Members can have different zoom ranges,
+ * so the zoom axis is split where members appear or disappear, and each interval
+ * gets the union of the members visible over it. That way overlapping members never
+ * render as separate polygons at the same zoom.
+ */
+function mergeRingGroup(
+  rings: Feature<Polygon, RingIdProperties>[],
+  visibilityGroups: Map<string, UnitVisibilityGroup>,
+): {
+  feature: Feature<Polygon | MultiPolygon, RingIdProperties>;
+  group: UnitVisibilityGroup;
+}[] {
+  // Union the members of each unit zoom range once. Each zoom interval then only
+  // combines the few already merged bucket shapes that cover it.
+  type Bucket = { minzoom: number; maxzoom: number; rings: typeof rings };
+  const buckets = new Map<string, Bucket>();
+  for (const ring of rings) {
+    const groupId = ring.properties.visibilityGroup;
+    let bucket = buckets.get(groupId);
+    if (!bucket) {
+      const group = visibilityGroups.get(groupId);
+      bucket = {
+        minzoom: Math.max(group?.minzoom ?? MIN_ZOOM, MIN_ZOOM),
+        maxzoom: Math.min(group?.maxzoom ?? MAX_ZOOM, MAX_ZOOM),
+        rings: [],
+      };
+      buckets.set(groupId, bucket);
+    }
+    bucket.rings.push(ring);
+  }
+
+  const mergeFeatures = (
+    features: Feature<Polygon | MultiPolygon, RingIdProperties>[],
+    properties: RingIdProperties,
+  ) =>
+    features.length > 1
+      ? union(featureCollection(features), { properties })
+      : { ...features[0], properties };
+
+  const bucketShapes = [...buckets.values()].flatMap((bucket) => {
+    const shape = mergeFeatures(bucket.rings, bucket.rings[0].properties);
+    return shape ? [{ ...bucket, shape }] : [];
+  });
+  const breakpoints = [
+    ...new Set([
+      MIN_ZOOM,
+      MAX_ZOOM,
+      ...bucketShapes.flatMap((b) => [b.minzoom, b.maxzoom]),
+    ]),
+  ].sort((a, b) => a - b);
+
+  const out: ReturnType<typeof mergeRingGroup> = [];
+  for (let i = 0; i < breakpoints.length - 1; i++) {
+    const minzoom = breakpoints[i];
+    const maxzoom = breakpoints[i + 1];
+    const visible = bucketShapes
+      .filter((b) => b.minzoom <= minzoom && b.maxzoom >= maxzoom)
+      .map((b) => b.shape);
+    if (!visible.length) continue;
+    const group =
+      minzoom === MIN_ZOOM && maxzoom === MAX_ZOOM
+        ? { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }
+        : getZoomVisibilityGroup(minzoom, maxzoom);
+    const feature = mergeFeatures(visible, {
+      ...visible[0].properties,
+      visibilityGroup: group.id,
+    });
+    if (feature) out.push({ feature, group });
+  }
   return out;
 }
 
@@ -188,29 +261,37 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
         visibilityGroups.set(visibilityGroup.id, visibilityGroup);
         return createRangeRings(unit, visibilityGroup);
       });
-    syncRingLayers(visibilityGroups.values());
 
-    const fc = featureCollection(rings);
-    const ungrouped = featureCollection(
-      fc.features.filter((r) => !r.properties!.isGroup),
-    );
-    const grouped = featureCollection(fc.features.filter((r) => r.properties!.isGroup));
+    const layerGroups = new Map<string, UnitVisibilityGroup>();
+    const ungrouped: Feature<Polygon, RingIdProperties>[] = [];
+    const ringGroups = new Map<string, Feature<Polygon, RingIdProperties>[]>();
+    for (const ring of rings) {
+      if (ring.properties.isGroup) {
+        const members = ringGroups.get(ring.properties.id) ?? [];
+        members.push(ring);
+        ringGroups.set(ring.properties.id, members);
+      } else {
+        ungrouped.push(ring);
+        const group = visibilityGroups.get(ring.properties.visibilityGroup)!;
+        layerGroups.set(group.id, group);
+      }
+    }
 
-    const merged: Feature<Polygon | MultiPolygon>[] = [];
-    clusterEach(grouped, "mergeKey", (cluster) => {
-      const m =
-        cluster.features.length > 1
-          ? union(cluster as any, { properties: cluster.features[0].properties })
-          : cluster.features[0];
-      if (m) merged.push(m as Feature<Polygon | MultiPolygon>);
-    });
+    const merged: Feature<Polygon | MultiPolygon, RingIdProperties>[] = [];
+    for (const members of ringGroups.values()) {
+      for (const { feature, group } of mergeRingGroup(members, visibilityGroups)) {
+        merged.push(feature);
+        layerGroups.set(group.id, group);
+      }
+    }
+    syncRingLayers(layerGroups.values());
 
     const features: Feature<Polygon | MultiPolygon, RingFeatureProperties>[] = [
       ...merged,
-      ...ungrouped.features,
+      ...ungrouped,
     ].map((f) => ({
       ...f,
-      properties: resolveRingStyle(f.properties as RingIdProperties),
+      properties: resolveRingStyle(f.properties),
     }));
 
     const data = JSON.stringify(features);

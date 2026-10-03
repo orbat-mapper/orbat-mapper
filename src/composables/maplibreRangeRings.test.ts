@@ -101,6 +101,59 @@ describe("drawRangeRings with limited unit visibility", () => {
   });
 });
 
+describe("drawRangeRings with grouped rings", () => {
+  const groupedRingUnit = (
+    id: string,
+    location: [number, number],
+    style?: Partial<NUnit["style"]>,
+  ): Partial<NUnit> => ({
+    id,
+    rangeRings: [{ name: "r", range: 10, uom: "km", group: "g1" }],
+    _state: { location } as unknown as NUnit["_state"],
+    style: style as NUnit["style"],
+  });
+
+  it("merges overlapping members wherever their zoom ranges overlap", () => {
+    const { drawRangeRings, source, units, layers } = fixture();
+    units.value = [
+      groupedRingUnit("a", [10, 60]),
+      groupedRingUnit("b", [10.05, 60], {
+        limitVisibility: true,
+        minZoom: 8,
+        maxZoom: 12,
+      }),
+    ];
+    drawRangeRings();
+
+    const { features } = source().setData.mock.lastCall![0];
+    const zoomRanges = features.map((f: any) => {
+      const layer = [...layers.values()].find(
+        (l) => l.type === "fill" && l.filter?.[2] === f.properties.visibilityGroup,
+      );
+      return [layer.minzoom ?? 0, layer.maxzoom ?? 24];
+    });
+    expect([...zoomRanges].sort((a: number[], b: number[]) => a[0] - b[0])).toEqual([
+      [0, 8],
+      [8, 12],
+      [12, 24],
+    ]);
+    // At zoom 10 both rings render as one merged area.
+    expect(
+      zoomRanges.filter(([min, max]: number[]) => min <= 10 && max > 10),
+    ).toHaveLength(1);
+  });
+
+  it("keeps one always-visible feature when all members share a zoom range", () => {
+    const { drawRangeRings, source, units } = fixture();
+    units.value = [groupedRingUnit("a", [10, 60]), groupedRingUnit("b", [10.05, 60])];
+    drawRangeRings();
+
+    const { features } = source().setData.mock.lastCall![0];
+    expect(features).toHaveLength(1);
+    expect(features[0].properties.visibilityGroup).toBe("always");
+  });
+});
+
 describe("drawRangeRings during playback", () => {
   function createScenario() {
     const store = useNewScenarioStore({

@@ -38,13 +38,16 @@ export function getUnitVisibilityGroup(unit: NUnit): UnitVisibilityGroup {
     return { id: ALWAYS_VISIBLE_UNIT_GROUP_ID };
   }
 
+  return getZoomVisibilityGroup(style.minZoom ?? 0, style.maxZoom ?? 24);
+}
+
+export function getZoomVisibilityGroup(
+  minzoom: number,
+  maxzoom: number,
+): UnitVisibilityGroup {
   return {
-    id: hashObject({
-      type: "unit-visibility",
-      minZoom: style.minZoom ?? 0,
-      maxZoom: style.maxZoom ?? 24,
-    }),
-    minzoom: style.minZoom ?? 0,
-    maxzoom: style.maxZoom ?? 24,
+    id: hashObject({ type: "unit-visibility", minZoom: minzoom, maxZoom: maxzoom }),
+    minzoom,
+    maxzoom,
   };
 }
