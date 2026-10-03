@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Added a unique designation (Field T) label to generic lines, polygons, rectangles, circles, sectors, and Classic Arrows.
 - Added a Bézier smoothing style to generic lines, polygons, and Classic Arrows, where the control points shape the curve instead of lying on it.
 - Added an arrowhead handle to Classic Arrows for adjusting the head length and width while editing. Alt+click the handle to restore the default size.
+- MilX imports now bring in tactical graphics as control measures, with each MilX layer becoming a control-measure layer. Identity and planned status are kept, map.army free-format shapes are imported as generic graphics with their colours and text, and graphics without an equivalent are reported. Imported units also keep their direction and all text amplifiers.
+- Added a choice of where imported MilX units get their positions: as the initial location, at the current scenario time, or at a scenario event.
 
 ### Changed
 
@@ -17,10 +19,18 @@ All notable changes to this project will be documented in this file.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
 - Adding many control measures at once, such as when opening a large scenario, is much faster.
 - Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
+- Playback and timeline scrubbing are much smoother in large scenarios. Only units and features that change are redrawn, and moving units are updated separately from stationary ones.
+- Dragging units on the map is smoother, since only the dragged units are redrawn while dragging.
+- Range rings now follow the zoom visibility range of their unit, and grouped range rings with different zoom ranges still merge into one shape.
+- Units on the map are now clicked and hovered on their symbol only, instead of anywhere within their text amplifiers. When units overlap, the closest one is picked.
 
 ### Fixed
 
 - Fixed changing a unit's symbol not updating the map, ORBAT, or details panel when the unit had no recorded state changes, which affected units imported or merged from other scenario files.
+- Fixed clicking an empty spot on the map in move mode not clearing the selection.
+- Fixed a dropped unit, or one that stops moving during playback, briefly disappearing from the map.
+- Fixed the map context menu and rotate tool not recognising units that are moving during playback.
+- Fixed plain `.milxly` files being detected as TSV instead of MilX, and restored the "keep dialog open" toggle in the import dialog.
 
 ## September 2026
 
