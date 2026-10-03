@@ -301,7 +301,8 @@ function styleFromInputs(inputs: ProjectionInputs): ControlMeasureStyle {
   };
 }
 
-function buildControlMeasure(item: TacticalGraphicLayerItem): ControlMeasure {
+/** The uncached projection behind `toControlMeasure`, for one-off renders. */
+export function buildControlMeasure(item: TacticalGraphicLayerItem): ControlMeasure {
   const inputs = resolveProjectionInputs(item);
   const kind = inputs.graphicKind;
   const measure: ControlMeasure = {

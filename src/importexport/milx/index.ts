@@ -1,2 +1,3 @@
-export { convertMilXLayer, getMilXLayers } from "./readMilX";
+export { parseMilX } from "./model";
+export { convertMilX } from "./convert";
 export { toMilx } from "./writeMilX";

@@ -10,24 +10,7 @@ import { SID, UNIT_SYMBOLSET_VALUE } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 import { cn } from "@/lib/utils";
-
-const ECHELON_CODE_BY_VALUE: Record<string, string> = {
-  none: "00",
-  team: "11",
-  squad: "12",
-  section: "13",
-  platoon: "14",
-  company: "15",
-  battalion: "16",
-  regiment: "17",
-  brigade: "18",
-  division: "21",
-  corps: "22",
-  army: "23",
-  "army-group": "24",
-  region: "25",
-  command: "26",
-};
+import { ECHELON_CODE_BY_VALUE } from "@/symbology/controlMeasureEchelon";
 
 const props = defineProps<{
   graphicKind?: ControlMeasureId;

@@ -89,8 +89,11 @@ export function getControlMeasureLayerGroups(
  * `graphicKind` — which is all an unsupported kind has to offer.
  */
 export function getControlMeasureLabel(item: NTacticalGraphicLayerItem): string {
-  if (item.name) return item.name;
-  const kind = item.graphicKind;
+  return item.name || getControlMeasureKindName(item.graphicKind);
+}
+
+/** The library's doctrinal name for a kind, or the raw kind when it has none. */
+export function getControlMeasureKindName(kind: string | undefined): string {
   if (isSupportedGraphicKind(kind)) {
     return CONTROL_MEASURE_METADATA[kind as ControlMeasureId]?.name || String(kind);
   }

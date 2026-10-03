@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { convertMilXLayer, getMilXLayers } from "@/importexport/milx/readMilX";
+import { convertMilX, type MilXUnitEntry } from "@/importexport/milx/convert";
+import { parseMilX } from "@/importexport/milx/model";
 import { toMilx } from "@/importexport/milx/writeMilX";
-import { toDom } from "@/utils";
 
 const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <MilXDocument_Layer xmlns="http://gs-soft.com/MilX/V3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -108,11 +108,10 @@ const TEST_DOCUMENT = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </MilXDocument_Layer>
 `;
 
-describe("Convert from MilX", async function () {
-  const dom = await toDom(TEST_DOCUMENT);
-  const layers = getMilXLayers(dom);
-  const feature1 = layers[0].featureCollection.features[0];
-  const feature2 = layers[0].featureCollection.features[1];
+describe("Convert from MilX", () => {
+  const { layers } = parseMilX(TEST_DOCUMENT);
+  const graphic1 = layers[0].graphics[0];
+  const graphic2 = layers[0].graphics[1];
 
   it("parses layer name", () => {
     expect(layers.length).toBe(2);
@@ -121,38 +120,34 @@ describe("Convert from MilX", async function () {
   });
 
   it("parses coordinate system", () => {
-    expect(layers.length).toBe(2);
-    expect(layers[0].coordSystemType).toBe("WGS84");
+    expect(layers[0].coordinateSystem).toBe("WGS84");
   });
 
-  it("creates geojson", () => {
-    const layer = layers[0];
-    expect(layer.featureCollection.type).toBe("FeatureCollection");
-    expect(layer.featureCollection.features.length).toBe(6);
+  it("parses graphics", () => {
+    expect(layers[0].graphics.length).toBe(6);
+    expect(graphic1.points).toEqual([[-59.0238516414698, -51.5929697062433]]);
   });
 
   it("parses symbol code", () => {
-    expect(feature1.properties.ID).toBe("SFGPUCIA---F--G");
+    expect(graphic1.sidc).toBe("SFGPUCIA---F--G");
   });
 
   it("parses attributes", () => {
-    expect(feature2.properties.ID).toBe("SFGPUCIA---D--G");
-    expect(feature2.properties.M).toBe("3");
+    expect(graphic2.sidc).toBe("SFGPUCIA---D--G");
+    expect(graphic2.attributes.M).toBe("3");
   });
 
   it("converts symbol properties", () => {
-    const a = convertMilXLayer(layers[0]);
-    const convertedFeature = a.features[0];
-    const convertedFeature2 = a.features[1];
-    expect(convertedFeature.properties.convertedProperties.sidc).toBe(
-      "10031000161211000001",
-    );
-    expect(convertedFeature2.properties.convertedProperties.higherFormation).toBe("3");
-    expect(convertedFeature2.properties.convertedProperties.fillColor).toBe("#FF8000");
+    const { entries } = convertMilX({ layers: [layers[0]] });
+    const [unit1, unit2] = entries as MilXUnitEntry[];
+    expect(unit1.type).toBe("unit");
+    expect(unit1.sidc).toBe("10031000161211000001");
+    expect(unit2.textAmplifiers.higherFormation).toBe("3");
+    expect(unit2.fillColor).toBe("#ff8000");
   });
 });
 
-describe("Convert to MilX", async function () {
+describe("Convert to MilX", () => {
   const milx = toMilx([
     {
       name: "Friend",
@@ -183,10 +178,8 @@ describe("Convert to MilX", async function () {
       },
     },
   ]);
-  const dom = await toDom(milx);
-  const layers = getMilXLayers(dom);
-  const feature1 = layers[0].featureCollection.features[0];
-  const feature2 = layers[0].featureCollection.features[1];
+  const { layers } = parseMilX(milx);
+  const graphic1 = layers[0].graphics[0];
 
   it("writes layer name", () => {
     expect(layers.length).toBe(2);
@@ -195,18 +188,14 @@ describe("Convert to MilX", async function () {
   });
 
   it("writes coordinate system", () => {
-    expect(layers.length).toBe(2);
-    expect(layers[0].coordSystemType).toBe("WGS84");
+    expect(layers[0].coordinateSystem).toBe("WGS84");
   });
 
   it("writes symbol code", () => {
-    expect(feature1.properties.ID).toBe("SFGPUCIA---F---");
+    expect(graphic1.sidc).toBe("SFGPUCIA---F---");
   });
 
   it("writes coordinates", () => {
-    const { geometry } = feature1;
-    expect(geometry.coordinates.length).toBe(2);
-    expect(geometry.coordinates[0]).toBe(1);
-    expect(geometry.coordinates[1]).toBe(2);
+    expect(graphic1.points).toEqual([[1, 2]]);
   });
 });
