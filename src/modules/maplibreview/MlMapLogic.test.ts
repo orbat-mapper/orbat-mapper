@@ -992,6 +992,65 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("skips MapLibre unit setData when a time change leaves the units unchanged", async () => {
+    const mockMap = createMockMap();
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static-playback",
+        sidc: "SFGPUCI----K",
+        shortName: "A1",
+        name: "Alpha 1",
+        _state: {
+          location: [10, 20],
+        },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-static-playback",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+    expect(initialCallCount).toBeGreaterThan(0);
+
+    currentTime.value += 1000;
+    await nextTick();
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBe(initialCallCount);
+
+    visibleUnits.value[0]._state.location = [11, 21];
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBe(initialCallCount + 1);
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].geometry.coordinates).toEqual([11, 21]);
+  });
+
   it("refreshes MapLibre units when undo/redo flips unitStateCounter", async () => {
     // Undo/redo of addUnitPosition reverts unitStateCounter (the bump is part of
     // the patch), which drives the redraw via the unitStateCounter watcher.
