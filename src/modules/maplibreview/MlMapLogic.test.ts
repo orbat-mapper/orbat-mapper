@@ -158,6 +158,7 @@ function createMockMap() {
       },
     ),
     getSource: vi.fn((id: string) => sources.get(id)),
+    isSourceLoaded: vi.fn(() => true),
     addSource: vi.fn((id: string) => {
       sources.set(id, { setData: vi.fn() });
     }),
@@ -229,6 +230,11 @@ function mockLoadedImage(width = 20, height = 10) {
   return () => {
     vi.stubGlobal("Image", previousImage);
   };
+}
+
+/** MapLibre reports that the static unit source has loaded its new data. */
+function emitUnitSourceLoaded(mockMap: ReturnType<typeof createMockMap>) {
+  mockMap.emit("sourcedata", { sourceId: "unitSource", sourceDataType: "content" });
 }
 
 function getAddedLayerSpec(mockMap: ReturnType<typeof createMockMap>, id: string) {
@@ -1259,6 +1265,9 @@ describe("MlMapLogic", () => {
     await nextTick();
 
     expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    // The moving source keeps drawing the unit until the static source has it.
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
     expect(lastIds(movingSource)).toEqual([]);
 
     // Pausing moves units that are still moving back into the shared layer.
@@ -1271,6 +1280,7 @@ describe("MlMapLogic", () => {
     await nextTick();
 
     expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
     expect(lastIds(movingSource)).toEqual([]);
   });
 
@@ -1348,6 +1358,7 @@ describe("MlMapLogic", () => {
     await nextTick();
 
     expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
     expect(lastIds(movingSource)).toEqual([]);
     expect(mockMap.map.removeLayer).toHaveBeenCalledWith(layer.id);
   });
@@ -2716,6 +2727,114 @@ describe("MlMapLogic", () => {
 
     expect(addUnitPosition).toHaveBeenCalledWith("unit-1", [12, 23]);
     expect(mockMap.canvas.style.cursor).toBe("");
+  });
+
+  it("previews a unit drag in the moving source once per frame", async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    const runFrame = () => frames.splice(0).forEach((callback) => callback(0));
+    const mockMap = createMockMap();
+    const unitStateCounter = ref(0);
+    const units = [
+      {
+        id: "unit-1",
+        sidc: "SFGPUCI----K",
+        name: "Alpha 1",
+        _state: { location: [10, 20] },
+      },
+      {
+        id: "unit-2",
+        sidc: "SFGPUCI----K",
+        name: "Alpha 2",
+        _state: { location: [30, 40] },
+      },
+    ];
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+    const activeScenario = {
+      store: {
+        getMutationCount: () => unitStateCounter.value,
+        state: {
+          id: "scenario-drag-preview",
+          currentTime: 0,
+          featureStateCounter: 0,
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+        },
+        groupUpdate: (fn: () => void) => fn(),
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => units),
+        addUnitPosition: vi.fn((id: string, location: number[]) => {
+          units.find((unit) => unit.id === id)!._state = { location };
+          unitStateCounter.value++;
+        }),
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => units.find((unit) => unit.id === id)),
+      },
+      time: { setCurrentTime: vi.fn() },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastFeatures = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => ({
+        id: f.properties.id,
+        coordinates: f.geometry.coordinates,
+      }));
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      { layer: { id: "unitLayer" }, properties: { id: "unit-1" } },
+    ]);
+
+    mockMap.emit("mousedown", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+    });
+    mockMap.emit("mousemove", { point: { x: 2, y: 3 }, lngLat: { lng: 11, lat: 21 } });
+    mockMap.emit("mousemove", { point: { x: 3, y: 4 }, lngLat: { lng: 12, lat: 22 } });
+    expect(frames).toHaveLength(1);
+    runFrame();
+
+    // Only the latest pointer position of the frame is drawn.
+    expect(lastFeatures(staticSource)).toEqual([{ id: "unit-2", coordinates: [30, 40] }]);
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [12, 22] }]);
+    const staticCallCount = staticSource?.setData.mock.calls.length;
+
+    mockMap.emit("mousemove", { point: { x: 4, y: 5 }, lngLat: { lng: 13, lat: 23 } });
+    runFrame();
+
+    // Later previews leave the static source alone.
+    expect(staticSource?.setData.mock.calls.length).toBe(staticCallCount);
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [13, 23] }]);
+
+    mockMap.emit("mouseup", { lngLat: { lng: 13, lat: 23 } });
+    await nextTick();
+
+    expect(lastFeatures(staticSource)).toEqual([
+      { id: "unit-1", coordinates: [13, 23] },
+      { id: "unit-2", coordinates: [30, 40] },
+    ]);
+    // The dropped unit stays in the moving source until the static source has it.
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [13, 23] }]);
+    emitUnitSourceLoaded(mockMap);
+    expect(lastFeatures(movingSource)).toEqual([]);
+    vi.unstubAllGlobals();
   });
 
   it("moves a unit on touch drag and restores map gestures afterwards", () => {

@@ -4,6 +4,7 @@ import {
   type GeoJSONSource,
   type MapGeoJSONFeature,
   type MapMouseEvent,
+  type MapSourceDataEvent,
   type MapTouchEvent,
   type Map as MlMap,
   type PointLike,
@@ -150,6 +151,15 @@ type CachedUnitFeature = {
 // side or group symbol options) or other `addUnits` call starts over.
 const unitFeatureCache = new Map<string, CachedUnitFeature>();
 let unitFeatureCacheGeneration: string | undefined;
+// The static source re-tiles much slower than the small moving source. A unit that
+// leaves the moving source for the static one (a dropped drag, a unit that stops
+// moving during playback) keeps its old moving feature until the static source has
+// loaded the new data, or it would blink out in between.
+let movingUnitFeatures: Feature[] = [];
+let handoffFeatures: Feature[] = [];
+let handoffWait: "content" | "loaded" | undefined;
+let handoffTimeout: ReturnType<typeof setTimeout> | undefined;
+const HANDOFF_TIMEOUT_MS = 2000;
 let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
@@ -196,6 +206,10 @@ let unitDragState: {
     touchZoomRotateEnabled: boolean;
   };
   moved: boolean;
+  // Pointer moves can arrive several times per frame, so the preview only follows
+  // the latest one once per animation frame.
+  pendingPointer?: Position;
+  previewFrame?: number;
 } | null = null;
 let suppressNextNativeClick = false;
 let suppressNextNativeClickTimer: number | undefined;
@@ -988,7 +1002,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   }
   if (unitDragState) {
     clearHoveredFeatures();
-    previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+    scheduleDragPreview([e.lngLat.lng, e.lngLat.lat]);
     mlMap.getCanvas().style.cursor = "grabbing";
     return;
   }
@@ -1049,7 +1063,7 @@ function onMapMouseLeave() {
 function onMapTouchMove(e: MapTouchEvent) {
   if (rotateInteraction.isRotating.value) return;
   if (!unitDragState) return;
-  previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+  scheduleDragPreview([e.lngLat.lng, e.lngLat.lat]);
 }
 
 function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
@@ -1084,6 +1098,19 @@ function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   mlMap.getCanvas().style.cursor = "grabbing";
 }
 
+function scheduleDragPreview(pointer: Position) {
+  if (!unitDragState) return;
+  unitDragState.pendingPointer = pointer;
+  if (unitDragState.previewFrame !== undefined) return;
+  unitDragState.previewFrame = requestAnimationFrame(() => {
+    if (!unitDragState?.pendingPointer) return;
+    const latest = unitDragState.pendingPointer;
+    unitDragState.previewFrame = undefined;
+    unitDragState.pendingPointer = undefined;
+    previewDraggedUnits(latest);
+  });
+}
+
 function previewDraggedUnits(pointer: Position) {
   if (!unitDragState) return;
   const dx = pointer[0] - unitDragState.startPointer[0];
@@ -1100,6 +1127,9 @@ function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
   if (!unitDragState) return;
   const dragState = unitDragState;
   unitDragState = null;
+  if (dragState.previewFrame !== undefined) cancelAnimationFrame(dragState.previewFrame);
+  // A pointer move still waiting for its frame counts as a move.
+  if (dragState.pendingPointer) dragState.moved = true;
   restoreMapDragInteractions(dragState.interactions);
   mlMap.getCanvas().style.cursor = "";
 
@@ -1145,6 +1175,7 @@ mlMap.on("touchmove", onMapTouchMove);
 mlMap.on("mouseup", onUnitDragEnd);
 mlMap.on("touchend", onUnitDragEnd);
 mlMap.on("touchcancel", onUnitDragEnd);
+mlMap.on("sourcedata", onUnitSourceData);
 
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
@@ -1246,24 +1277,30 @@ function addUnits({
   const activeImageIds = new Set<string>();
 
   const generation = `${activeScenario.store.getMutationCount()}:${activeScenario.store.state.hierarchyProjectionBucket}`;
-  // Overrides only come with `reuseFeatures` off, so they always start over.
-  if (!reuseFeatures || generation !== unitFeatureCacheGeneration) {
+  // A drag or rotate preview only changes the units it overrides, so every other unit
+  // keeps its cached feature and the static source does not change between previews.
+  const hasOverrides = Boolean(positionOverrides?.size || rotationOverrides?.size);
+  if (!(reuseFeatures || hasOverrides) || generation !== unitFeatureCacheGeneration) {
     unitFeatureCache.clear();
     unitFeatureCacheGeneration = generation;
   }
   for (const unit of visibleUnits) {
     const state = toRaw(unit._state);
-    let cached = unitFeatureCache.get(unit.id);
+    const isOverridden =
+      positionOverrides?.has(unit.id) || rotationOverrides?.has(unit.id) || false;
+    let cached = isOverridden ? undefined : unitFeatureCache.get(unit.id);
     if (!cached || cached.state !== state) {
       cached = {
         state,
         ...buildUnitFeature(unit, positionOverrides, rotationOverrides),
       };
-      unitFeatureCache.set(unit.id, cached);
+      // Previewed features are short-lived and must not outlast the preview.
+      if (!isOverridden) unitFeatureCache.set(unit.id, cached);
     }
     const { feature, imageId, visibilityGroup } = cached;
+    // Previewed units get the moving source too, so each preview only re-tiles them.
     const bucket =
-      playback.timeAnimating && unit._state?.type === "interpolated"
+      isOverridden || (playback.timeAnimating && unit._state?.type === "interpolated")
         ? movingUnits
         : staticUnits;
     bucket.features.push(feature);
@@ -1286,9 +1323,59 @@ function addUnits({
       mlMap.setCenter(center.geometry.coordinates as [number, number]);
     }
   }
-  setUnitSourceData(UNIT_SOURCE_ID, source, staticUnits.features);
-  setUnitSourceData(MOVING_UNIT_SOURCE_ID, movingSource, movingUnits.features);
+  const staticChanged = setUnitSourceData(UNIT_SOURCE_ID, source, staticUnits.features);
+  setMovingUnitData(movingSource, movingUnits.features, staticChanged);
   pruneSymbolImages(activeImageIds);
+}
+
+function setMovingUnitData(
+  movingSource: GeoJSONSource,
+  features: Feature[],
+  staticChanged: boolean,
+) {
+  const movingIds = new Set(features.map((feature) => feature.properties?.id));
+  const shown = lastUnitData.get(MOVING_UNIT_SOURCE_ID)?.features ?? [];
+  if (staticChanged) {
+    const leaving = shown.filter((feature) => !movingIds.has(feature.properties?.id));
+    if (leaving.length) {
+      handoffFeatures = leaving;
+      handoffWait = "content";
+      clearTimeout(handoffTimeout);
+      handoffTimeout = setTimeout(finishMovingUnitHandoff, HANDOFF_TIMEOUT_MS);
+    }
+  }
+  movingUnitFeatures = features;
+  const kept = handoffFeatures.filter(
+    (feature) => !movingIds.has(feature.properties?.id),
+  );
+  setUnitSourceData(
+    MOVING_UNIT_SOURCE_ID,
+    movingSource,
+    kept.length ? [...features, ...kept] : features,
+  );
+}
+
+function finishMovingUnitHandoff() {
+  clearTimeout(handoffTimeout);
+  handoffTimeout = undefined;
+  handoffWait = undefined;
+  if (!handoffFeatures.length) return;
+  handoffFeatures = [];
+  const movingSource = mlMap.getSource(MOVING_UNIT_SOURCE_ID) as
+    GeoJSONSource | undefined;
+  if (movingSource) {
+    setUnitSourceData(MOVING_UNIT_SOURCE_ID, movingSource, movingUnitFeatures);
+  }
+}
+
+function onUnitSourceData(e: MapSourceDataEvent) {
+  if (!handoffWait || e.sourceId !== UNIT_SOURCE_ID) return;
+  // The tile manager starts reloading the tiles before this event reaches the map, so
+  // from here on `isSourceLoaded` reflects the new data.
+  if (e.sourceDataType === "content") handoffWait = "loaded";
+  if (handoffWait === "loaded" && mlMap.isSourceLoaded(UNIT_SOURCE_ID)) {
+    finishMovingUnitHandoff();
+  }
 }
 
 function buildUnitFeature(
@@ -1373,19 +1460,25 @@ function buildUnitFeature(
   return { feature, imageId, visibilityGroup };
 }
 
-function setUnitSourceData(sourceId: string, source: GeoJSONSource, features: Feature[]) {
+/** Returns whether the source got new data. */
+function setUnitSourceData(
+  sourceId: string,
+  source: GeoJSONSource,
+  features: Feature[],
+): boolean {
   const last = lastUnitData.get(sourceId);
   // A basemap swap replaces the source, which must be filled again.
   const sameSource = last?.source === source;
   // Cached features are never mutated, so the same objects mean the same data.
-  if (sameSource && haveSameItems(last.features, features)) return;
+  if (sameSource && haveSameItems(last.features, features)) return false;
   const data = JSON.stringify(features);
   if (sameSource && last.data === data) {
     last.features = features;
-    return;
+    return false;
   }
   lastUnitData.set(sourceId, { source, features, data });
   source.setData(featureCollection(features));
+  return true;
 }
 
 // Skip the scan when stale entries can't have grown past this many — keeps
@@ -1410,6 +1503,11 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
 
 onUnmounted(() => {
   if (!mlMap) return;
+  if (unitDragState?.previewFrame !== undefined) {
+    cancelAnimationFrame(unitDragState.previewFrame);
+  }
+  clearTimeout(handoffTimeout);
+  mlMap.off("sourcedata", onUnitSourceData);
   clearSuppressNextNativeClick();
   boxSelect.cleanup();
   disposeUnitHistory();
