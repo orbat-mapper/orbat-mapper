@@ -14,6 +14,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { TAB_TOOLS } from "@/types/constants";
 import {
@@ -1049,6 +1050,178 @@ describe("MlMapLogic", () => {
     const setDataCalls = source?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     expect(unitData.features[0].geometry.coordinates).toEqual([11, 21]);
+  });
+
+  it("keeps moving units in their own source only while playback runs", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const playback = usePlaybackStore(pinia);
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static",
+        sidc: "SFGPUCI----K",
+        shortName: "S1",
+        name: "Static 1",
+        _state: { location: [10, 20], type: "initial" },
+      },
+      {
+        id: "unit-moving",
+        sidc: "SFGPUCI----K",
+        shortName: "M1",
+        name: "Moving 1",
+        _state: { location: [11, 21], type: "interpolated" },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-moving-source",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastIds = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => f.properties.id);
+    // Paused: every unit shares one layer, which keeps the regular draw order.
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    expect(lastIds(movingSource)).toEqual([]);
+
+    playback.playbackRunning = true;
+    await nextTick();
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static"]);
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    expect(getAddedLayerSpec(mockMap, "unitLayer-moving")).toMatchObject({
+      source: "movingUnitSource",
+    });
+    const staticCallCount = staticSource?.setData.mock.calls.length ?? 0;
+    const movingCallCount = movingSource?.setData.mock.calls.length ?? 0;
+
+    visibleUnits.value[1]._state = { location: [12, 22], type: "interpolated" };
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(staticSource?.setData.mock.calls.length).toBe(staticCallCount);
+    expect(movingSource?.setData.mock.calls.length).toBe(movingCallCount + 1);
+
+    // A unit that stops moving moves back to the static source.
+    visibleUnits.value[1]._state = { location: [13, 23], type: "initial" };
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    expect(lastIds(movingSource)).toEqual([]);
+
+    // Pausing moves units that are still moving back into the shared layer.
+    visibleUnits.value[1]._state = { location: [14, 24], type: "interpolated" };
+    currentTime.value += 1000;
+    await nextTick();
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+
+    playback.playbackRunning = false;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    expect(lastIds(movingSource)).toEqual([]);
+  });
+
+  it("keeps moving units in their own source while the timeline is scrubbed", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const playback = usePlaybackStore(pinia);
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static",
+        sidc: "SFGPUCI----K",
+        name: "Static 1",
+        _state: { location: [10, 20], type: "initial" },
+      },
+      {
+        id: "unit-moving",
+        sidc: "SFGPUCI----K",
+        name: "Moving 1",
+        style: { limitVisibility: true, minZoom: 5, maxZoom: 24 },
+        _state: { location: [11, 21], type: "interpolated" },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-scrubbing",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastIds = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => f.properties.id);
+    const movingVisibilityLayer = () =>
+      mockMap.map.addLayer.mock.calls
+        .map(([layer]: [{ id: string; source?: string; minzoom?: number }]) => layer)
+        .find(
+          (layer: { id: string; source?: string }) =>
+            layer.source === "movingUnitSource" && layer.id !== "unitLayer-moving",
+        );
+    expect(lastIds(movingSource)).toEqual([]);
+    expect(movingVisibilityLayer()).toBeUndefined();
+
+    playback.timeScrubbing = true;
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static"]);
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    // The zoom limits of a moving unit apply to its layer in the moving source.
+    const layer = movingVisibilityLayer();
+    expect(layer).toMatchObject({ minzoom: 5 });
+
+    playback.timeScrubbing = false;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    expect(lastIds(movingSource)).toEqual([]);
+    expect(mockMap.map.removeLayer).toHaveBeenCalledWith(layer.id);
   });
 
   it("refreshes MapLibre units when undo/redo flips unitStateCounter", async () => {

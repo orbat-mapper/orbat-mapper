@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useToggle } from "@vueuse/core";
 
 export const usePlaybackStore = defineStore("playbackStore", () => {
@@ -10,6 +10,10 @@ export const usePlaybackStore = defineStore("playbackStore", () => {
 
   const [playbackRunning, togglePlayback] = useToggle(false);
   const [playbackLooping, toggleLooping] = useToggle(false);
+  // True while the user drags the timeline.
+  const timeScrubbing = ref(false);
+  // True while the time changes continuously, by playback or by scrubbing.
+  const timeAnimating = computed(() => playbackRunning.value || timeScrubbing.value);
 
   function increaseSpeed() {
     playbackSpeed.value *= 2;
@@ -42,6 +46,8 @@ export const usePlaybackStore = defineStore("playbackStore", () => {
     playbackSpeed,
     playbackRunning,
     togglePlayback,
+    timeScrubbing,
+    timeAnimating,
     increaseSpeed,
     decreaseSpeed,
     startMarker,

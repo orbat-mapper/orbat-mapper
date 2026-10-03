@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconTriangleDown } from "@iconify-prerendered/vue-mdi";
-import { computed, ref, unref, watch } from "vue";
+import { computed, onUnmounted, ref, unref, watch } from "vue";
 import { useElementSize, useThrottleFn } from "@vueuse/core";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { type NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { usePlaybackStore } from "@/stores/playbackStore";
 import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { MS_PER_DAY, MS_PER_HOUR } from "@/utils/time";
@@ -58,6 +59,13 @@ const fmt = useTimeFormatStore();
 const el = ref<HTMLDivElement | null>(null);
 const isPointerInteraction = ref(false);
 const isDragging = ref(false);
+const playback = usePlaybackStore();
+watch(isDragging, (dragging) => {
+  playback.timeScrubbing = dragging;
+});
+onUnmounted(() => {
+  playback.timeScrubbing = false;
+});
 const redrawCounter = ref(0);
 const { width } = useElementSize(el);
 
@@ -245,6 +253,18 @@ function onPointerUp(evt: PointerEvent) {
   }
 }
 
+function onPointerCancel() {
+  animate.value = false;
+  draggedDiff.value = 0;
+  const wasDragging = isDragging.value;
+  isPointerInteraction.value = false;
+  isDragging.value = false;
+  accumulatedDrag = 0;
+  if (wasDragging) {
+    recomputeTimelineLayout(store.state.currentTime);
+  }
+}
+
 function onPointerMove(evt: PointerEvent) {
   if (isPointerInteraction.value) {
     const diff = evt.clientX - startX;
@@ -394,6 +414,7 @@ function onContextMenuAction(action: TimelineAction) {
       class="bg-sidebar border-border relative mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
+      @pointercancel="onPointerCancel"
       @pointermove="onPointerMove"
       @wheel="onWheel"
       @mousemove="onHover"
