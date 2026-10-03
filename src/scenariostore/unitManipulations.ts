@@ -432,8 +432,14 @@ export function useUnitManipulations(store: NewScenarioStore) {
       invalidateUnitStyle(unit._ikey);
       unit._ikey = undefined;
     }
+    // Bumped inside the recorded update so undo/redo also change it and the map
+    // redraws the restored symbol.
     const shouldUpdateUnitStateCounter =
-      data.style !== undefined || data.textAmplifiers !== undefined;
+      data.style !== undefined ||
+      data.textAmplifiers !== undefined ||
+      data.sidc !== undefined ||
+      data.symbolOptions !== undefined ||
+      data.reinforcedStatus !== undefined;
 
     if (noUndo) {
       if (!unit) return;

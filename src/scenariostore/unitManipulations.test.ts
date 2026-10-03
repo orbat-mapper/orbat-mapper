@@ -300,11 +300,16 @@ describe("unitManipulations settings redraw signaling", () => {
     );
     expect(unit()._state?.sidc).toBe("10031000001100000000");
 
+    // The map redraws units when unitStateCounter changes, so undo/redo must bump it.
+    const counterAfterEdit = store.state.unitStateCounter;
     store.undo();
     expect(unit()._state?.sidc).toBe("10031000000000000000");
+    const counterAfterUndo = store.state.unitStateCounter;
+    expect(counterAfterUndo).not.toBe(counterAfterEdit);
 
     store.redo();
     expect(unit()._state?.sidc).toBe("10031000001100000000");
+    expect(store.state.unitStateCounter).not.toBe(counterAfterUndo);
   });
 
   it("increments unitStateCounter for unit style updates and restores it on undo/redo", () => {
