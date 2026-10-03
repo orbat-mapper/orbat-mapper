@@ -13,6 +13,7 @@ import {
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useRecordingStore } from "@/stores/recordingStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -3363,6 +3364,26 @@ describe("MlMapLogic", () => {
 
     expect(selectedUnitIds.value.size).toBe(0);
     expect(selectedFeatureIds.value.size).toBe(0);
+  });
+
+  it("clears the selection when clicking empty map area in move mode", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+    useRecordingStore(pinia).isRecordingLocation = true;
+    const { selectedUnitIds } = useSelectedItems();
+    selectedUnitIds.value.clear();
+    selectedUnitIds.value.add("unit-existing");
+
+    mountMlMapLogic({ mockMap, activeScenario: createHoverScenario(() => ({})), pinia });
+    mockMap.map.queryRenderedFeatures.mockReturnValue([]);
+
+    mockMap.emit("click", { point: { x: 1, y: 2 }, originalEvent: { shiftKey: true } });
+    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
+
+    mockMap.emit("click", { point: { x: 1, y: 2 }, originalEvent: { shiftKey: false } });
+    expect(selectedUnitIds.value.size).toBe(0);
   });
 
   it("preserves the selection when shift+clicking empty map area", () => {

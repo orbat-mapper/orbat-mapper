@@ -981,13 +981,12 @@ function onMapClick(e: MapMouseEvent) {
     return;
   }
 
-  // Keep move mode's unit/empty-map behavior after resolving control measures.
-  if (moveUnitEnabled.value) return;
-
   if (!topHit) {
     if (!additive && selectionEnabled) clearSelectedItems();
     return;
   }
+  // Move mode leaves reference and plain features alone.
+  if (moveUnitEnabled.value) return;
   if (isMapLibreKmlRenderedLayerId(topHit.layer.id)) {
     activeReferenceFeature.value = toReferenceFeatureSelection(topHit);
     return;
