@@ -4,8 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## October 2026
 
+### Added
+
+- Added new control measures: Bomb Area, Smoke, Series or Group of Targets, Lane, Ferry, Raft Site, Ford Easy, Ford Difficult, Unexploded Explosive Ordnance (UXO) Area, and the Interdict mission task.
+- Added a unique designation (Field T) label to generic lines, polygons, rectangles, circles, sectors, and Classic Arrows.
+- Added a Bézier smoothing style to generic lines, polygons, and Classic Arrows, where the control points shape the curve instead of lying on it.
+- Added an arrowhead handle to Classic Arrows for adjusting the head length and width while editing. Alt+click the handle to restore the default size.
+
 ### Changed
 
+- Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
+- Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
+- Adding many control measures at once, such as when opening a large scenario, is much faster.
 - Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
 
 ### Fixed

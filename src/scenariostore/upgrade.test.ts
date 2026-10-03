@@ -356,3 +356,101 @@ describe("upgradeScenarioIfNecessary", () => {
     expect(feature.userData).toEqual({ foo: "bar" });
   });
 });
+
+describe("Classic Arrow upgrade", () => {
+  function createArrowScenario(item: Record<string, unknown>, version = "3.4.0") {
+    return createScenario({
+      version,
+      layers: undefined,
+      mapLayers: undefined,
+      layerStack: [
+        {
+          id: "layer-1",
+          kind: "overlay",
+          name: "Control measures",
+          specialization: "controlMeasure",
+          items: [{ id: "arrow-1", kind: "tacticalGraphic", ...item }],
+        },
+      ],
+    });
+  }
+
+  function firstItem(scenario: { layerStack: any[] }) {
+    return getOverlayLayers(scenario)[0].items[0] as any;
+  }
+
+  it("reverses Classic Arrow control points, including timed state", () => {
+    const upgraded = upgradeScenarioIfNecessary(
+      createArrowScenario({
+        graphicKind: "classic-arrow",
+        controlPoints: [
+          [0, 0],
+          [1, 1],
+          [2, 2],
+        ],
+        state: [
+          {
+            id: "s1",
+            t: 1,
+            patch: {
+              controlPoints: [
+                [3, 3],
+                [4, 4],
+              ],
+            },
+          },
+          { id: "s2", t: 2, patch: { name: "No points" } },
+        ],
+      }) as any,
+    );
+
+    const item = firstItem(upgraded);
+    expect(upgraded.version).toBe("3.5.0");
+    expect(item.controlPoints).toEqual([
+      [2, 2],
+      [1, 1],
+      [0, 0],
+    ]);
+    expect(item.state[0].patch.controlPoints).toEqual([
+      [4, 4],
+      [3, 3],
+    ]);
+    expect(item.state[1].patch).toEqual({ name: "No points" });
+  });
+
+  it("does not reverse twice when a scenario is upgraded again", () => {
+    const once = upgradeScenarioIfNecessary(
+      createArrowScenario({
+        graphicKind: "classic-arrow",
+        controlPoints: [
+          [0, 0],
+          [1, 1],
+        ],
+      }) as any,
+    );
+    const twice = upgradeScenarioIfNecessary(once);
+    expect(firstItem(twice).controlPoints).toEqual([
+      [1, 1],
+      [0, 0],
+    ]);
+  });
+
+  it("leaves other graphics and current-version scenarios untouched", () => {
+    const points = [
+      [0, 0],
+      [1, 1],
+    ];
+    const otherKind = upgradeScenarioIfNecessary(
+      createArrowScenario({ graphicKind: "phase-line", controlPoints: points }) as any,
+    );
+    expect(firstItem(otherKind).controlPoints).toEqual(points);
+
+    const current = upgradeScenarioIfNecessary(
+      createArrowScenario(
+        { graphicKind: "classic-arrow", controlPoints: points },
+        "3.5.0",
+      ) as any,
+    );
+    expect(firstItem(current).controlPoints).toEqual(points);
+  });
+});

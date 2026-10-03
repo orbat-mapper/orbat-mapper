@@ -43,17 +43,20 @@ describe("ControlMeasureExtendedStyleSettings", () => {
       .findAll("button")
       .find((button) => button.text().includes("Advanced"));
 
+    expect(wrapper.text()).toContain("Arrowhead length");
     expect(wrapper.text()).toContain("Arrowhead style");
     expect(advanced).toBeDefined();
-    expect(wrapper.text()).not.toContain("Arrowhead length");
+    expect(wrapper.text()).not.toContain("Arrowhead width");
     await advanced!.trigger("click");
     const expandedText = wrapper.text();
-    expect(expandedText).toContain("Arrowhead length");
     expect(expandedText).toContain("Arrowhead width");
+    expect(expandedText.indexOf("Arrowhead length")).toBeLessThan(
+      expandedText.indexOf("Arrowhead style"),
+    );
     expect(expandedText.indexOf("Arrowhead style")).toBeLessThan(
       expandedText.indexOf("Advanced"),
     );
-    expect(expandedText.indexOf("Arrowhead length")).toBeLessThan(
+    expect(expandedText.indexOf("Advanced")).toBeLessThan(
       expandedText.indexOf("Arrowhead width"),
     );
     expect(expandedText).not.toContain("Smooth");

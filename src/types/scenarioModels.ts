@@ -267,6 +267,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525d" | "2525e" | "app6d";
 export type ScenarioVersion =
+  | "3.5.0"
   | "3.4.0"
   | "3.3.0"
   | "3.2.0"

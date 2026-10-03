@@ -538,6 +538,42 @@ function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
   return upgradedScenario;
 }
 
+function upgradeClassicArrow(item: TacticalGraphicLayerItem): TacticalGraphicLayerItem {
+  return {
+    ...item,
+    // Classic Arrow control points are now tip-first.
+    controlPoints: [...item.controlPoints].reverse(),
+    state: item.state?.map((entry) =>
+      entry.patch.controlPoints
+        ? {
+            ...entry,
+            patch: {
+              ...entry.patch,
+              controlPoints: [...entry.patch.controlPoints].reverse(),
+            },
+          }
+        : entry,
+    ),
+  };
+}
+
+function upgradeClassicArrows(scenario: Scenario): Scenario {
+  return {
+    ...scenario,
+    layerStack: scenario.layerStack.map((layer) => {
+      if (layer.kind !== "overlay") return layer;
+      return {
+        ...layer,
+        items: layer.items.map((item) =>
+          item.kind === "tacticalGraphic" && item.graphicKind === "classic-arrow"
+            ? upgradeClassicArrow(item)
+            : item,
+        ),
+      };
+    }),
+  };
+}
+
 export function upgradeScenarioIfNecessary(
   scenario: LoadableScenario | Scenario,
 ): Scenario {
@@ -552,6 +588,11 @@ export function upgradeScenarioIfNecessary(
   }
   if (compareVersions(canonicalScenario.version, "3.3.0", "<")) {
     canonicalScenario = upgradeSymbologyStandardNames(canonicalScenario);
+  }
+  if (compareVersions(canonicalScenario.version, "3.5.0", "<")) {
+    // Reversing is not idempotent and some load paths upgrade twice, so stamp the
+    // version to keep a second pass from flipping the arrows back.
+    canonicalScenario = { ...upgradeClassicArrows(canonicalScenario), version: "3.5.0" };
   }
   return canonicalScenario;
 }
