@@ -128,6 +128,10 @@ type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
+// Playback calls `addUnits` on every tick. Pushing unchanged data still makes
+// MapLibre re-tile the source and redo symbol placement for every unit.
+let lastUnitSource: GeoJSONSource | undefined;
+let lastUnitData: string | undefined;
 let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
@@ -1313,7 +1317,13 @@ function addUnits(
       mlMap.setCenter(center.geometry.coordinates as [number, number]);
     }
   }
-  source.setData(features);
+  const data = JSON.stringify(features);
+  // A basemap swap replaces the source, which must be filled again.
+  if (source !== lastUnitSource || data !== lastUnitData) {
+    lastUnitSource = source;
+    lastUnitData = data;
+    source.setData(features);
+  }
   pruneSymbolImages(activeImageIds);
 }
 
