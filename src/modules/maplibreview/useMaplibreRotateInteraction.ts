@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
-import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import { queryUnitHitsAt } from "@/geo/engines/maplibre/unitHitBox";
 import {
   normalizeRotation,
   ROTATION_EPSILON,
@@ -104,9 +104,7 @@ export function useMaplibreRotateInteraction(
   }
 
   function queryUnitIdAtPoint(point: PointLike): string | undefined {
-    const hits = mlMap.queryRenderedFeatures(point);
-    const topHit = hits.find((f) => isUnitLayerId(f.layer.id));
-    const id = topHit?.properties?.id;
+    const id = queryUnitHitsAt(mlMap, point)[0]?.properties?.id;
     return typeof id === "string" ? id : undefined;
   }
 

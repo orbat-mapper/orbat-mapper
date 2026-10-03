@@ -29,6 +29,7 @@ import type { Position } from "geojson";
 import type { Map as MlMap } from "maplibre-gl";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import { rankUnitHits } from "@/geo/engines/maplibre/unitHitBox";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
 import {
@@ -417,18 +418,23 @@ function onContextMenu(event: MouseEvent) {
   const seenUnitIds = new Set<string>();
   const seenFeatureIds = new Set<string>();
 
-  for (const renderedFeature of mapRef.queryRenderedFeatures(point)) {
-    if (isUnitLayerId(renderedFeature.layer.id)) {
-      const unitId = renderedFeature.properties?.id
-        ? String(renderedFeature.properties.id)
-        : undefined;
-      if (!unitId || seenUnitIds.has(unitId)) continue;
-      seenUnitIds.add(unitId);
-      const unit = getUnitById(unitId);
-      unit && clickedUnits.value.push(unit);
-      continue;
-    }
+  const renderedFeatures = mapRef.queryRenderedFeatures(point);
+  const unitHits = rankUnitHits(
+    mapRef,
+    renderedFeatures.filter((feature) => isUnitLayerId(feature.layer.id)),
+    point,
+  );
+  for (const renderedFeature of unitHits) {
+    const unitId = renderedFeature.properties?.id
+      ? String(renderedFeature.properties.id)
+      : undefined;
+    if (!unitId || seenUnitIds.has(unitId)) continue;
+    seenUnitIds.add(unitId);
+    const unit = getUnitById(unitId);
+    unit && clickedUnits.value.push(unit);
+  }
 
+  for (const renderedFeature of renderedFeatures) {
     if (!isManagedScenarioFeatureLayerId(renderedFeature.layer.id)) continue;
 
     const featureId = getFeatureIdFromRenderedFeature(renderedFeature);

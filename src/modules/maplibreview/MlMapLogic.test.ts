@@ -24,6 +24,7 @@ import {
 } from "@/geo/dayNightTerminator";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { getSymbolImageSource } from "@/modules/maplibreview/symbolImageRegistry";
+import { setUnitHitBox } from "@/geo/engines/maplibre/unitHitBox";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -286,11 +287,13 @@ function mountMlMapLogic({
   activeScenario,
   pinia = createPinia(),
   refreshScenarioFeatureLayers = vi.fn(),
+  searchActions = createSearchActions(),
 }: {
   mockMap: ReturnType<typeof createMockMap>;
   activeScenario: any;
   pinia?: ReturnType<typeof createPinia>;
   refreshScenarioFeatureLayers?: ReturnType<typeof vi.fn>;
+  searchActions?: ReturnType<typeof createSearchActions>;
 }) {
   setActivePinia(pinia);
   return mount(MlMapLogic, {
@@ -305,7 +308,7 @@ function mountMlMapLogic({
           map: {},
           layers: { refreshScenarioFeatureLayers },
         } as any),
-        [searchActionsKey as symbol]: createSearchActions(),
+        [searchActionsKey as symbol]: searchActions,
       },
     },
   });
@@ -3101,6 +3104,55 @@ describe("MlMapLogic", () => {
       unitId: "unit-1",
       options: { noZoom: true, revealInOrbat: false },
     });
+  });
+
+  it("selects a unit only on its symbol, and deselects on its text amplifiers", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({})),
+      searchActions,
+    });
+
+    // The unit sits at (100, 100) with a 40 x 30 px symbol and amplifier text far
+    // to its right. MapLibre reports a hit anywhere on the symbol image.
+    Object.assign(mockMap.map, {
+      project: vi.fn(() => ({ x: 100, y: 100 })),
+      getBearing: vi.fn(() => 0),
+      getLayoutProperty: vi.fn(() => "viewport"),
+    });
+    setUnitHitBox(mockMap.map, "symbol-1", [-20, -15, 20, 15]);
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+        properties: { id: "unit-1", symbolKey: "symbol-1", symbolRotation: 0 },
+      },
+    ]);
+    const click = (x: number, y: number) =>
+      mockMap.emit("click", { point: { x, y }, originalEvent: { shiftKey: false } });
+
+    const { selectedUnitIds } = useSelectedItems();
+    selectedUnitIds.value.clear();
+    selectedUnitIds.value.add("unit-1");
+
+    // A click on the amplifier text is a click on the empty map, which deselects.
+    click(220, 100);
+    expect(unitSelectSpy).not.toHaveBeenCalled();
+    expect(selectedUnitIds.value.size).toBe(0);
+
+    // Still within the click tolerance of the symbol.
+    click(135, 100);
+    expect(unitSelectSpy).toHaveBeenCalledTimes(1);
+
+    click(105, 95);
+    expect(unitSelectSpy).toHaveBeenCalledTimes(2);
+    expect(unitSelectSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ unitId: "unit-1" }),
+    );
   });
 
   it("toggles unit selection on shift+click instead of replacing it", async () => {

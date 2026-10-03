@@ -18,7 +18,7 @@ import type {
   MapEventType,
   ViewConstraints,
 } from "@/geo/contracts/mapAdapter";
-import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import { queryUnitHitsAt } from "@/geo/engines/maplibre/unitHitBox";
 
 const ML_EVENT_MAP: Record<MapEventType, string> = {
   moveend: "moveend",
@@ -31,11 +31,7 @@ const ML_EVENT_MAP: Record<MapEventType, string> = {
 function toMapEventPayload(mlMap: MlMap, e: MapMouseEvent, includeUnitHit: boolean) {
   const originalEvent = e.originalEvent as Event | undefined;
   const unitFeature =
-    includeUnitHit && e.point
-      ? mlMap
-          .queryRenderedFeatures(e.point)
-          .find((feature) => isUnitLayerId(feature.layer.id))
-      : undefined;
+    includeUnitHit && e.point ? queryUnitHitsAt(mlMap, e.point)[0] : undefined;
   const rawUnitId = unitFeature?.properties?.id;
   const unitId =
     rawUnitId === undefined || rawUnitId === null ? undefined : String(rawUnitId);

@@ -34,6 +34,7 @@ function createMockMap() {
     getCanvas: vi.fn(() => document.createElement("canvas")),
     unproject: vi.fn(() => ({ lng: 10, lat: 20 })),
     queryRenderedFeatures: vi.fn(() => [] as any[]),
+    getLayersOrder: vi.fn(() => ["unitLayer", "unitLayer-visible-group"]),
     setMaxBounds: vi.fn(),
     setMinZoom: vi.fn(),
     setMaxZoom: vi.fn(),

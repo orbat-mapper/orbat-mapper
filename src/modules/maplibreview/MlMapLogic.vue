@@ -44,6 +44,14 @@ import {
   UNIT_LAYER_PREFIX,
   type UnitVisibilityGroup,
 } from "@/geo/engines/maplibre/unitLayer";
+import {
+  clearUnitHitBoxes,
+  deleteUnitHitBox,
+  getMilSymbolHitBox,
+  pointToXY,
+  rankUnitHits,
+  setUnitHitBox,
+} from "@/geo/engines/maplibre/unitHitBox";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
@@ -493,11 +501,7 @@ function setupMapLayers() {
 
 // Rasterize a milsymbol icon to ImageData at the given pixel ratio. Pure build
 // step shared by the live map and the export.
-function buildMilSymbolImageData(
-  imageId: string,
-  cachedSymbol: SymbolCacheEntry | undefined,
-  pixelRatio: number,
-): ImageData | null {
+function getMilSymbolArgs(imageId: string, cachedSymbol: SymbolCacheEntry | undefined) {
   const isSelected = imageId.startsWith("sel-");
   const {
     sidc = "xxxxxxx",
@@ -506,15 +510,22 @@ function buildMilSymbolImageData(
     uniqueDesignation = "",
   } = cachedSymbol?.kind === "milsymbol" ? cachedSymbol : {};
 
-  const options = isSelected
+  const outline = isSelected
     ? { outlineWidth: 20, outlineColor: "yellow" }
     : { outlineWidth: 7, outlineColor: "white" };
-  const symb = symbolGenerator(sidc, {
-    uniqueDesignation,
-    ...options,
-    ...textAmplifiers,
-    ...symbolOptions,
-  });
+  return {
+    sidc,
+    options: { uniqueDesignation, ...outline, ...textAmplifiers, ...symbolOptions },
+  };
+}
+
+function buildMilSymbolImageData(
+  imageId: string,
+  cachedSymbol: SymbolCacheEntry | undefined,
+  pixelRatio: number,
+): ImageData | null {
+  const { sidc, options } = getMilSymbolArgs(imageId, cachedSymbol);
+  const symb = symbolGenerator(sidc, options);
   const { width, height } = symb.getSize();
   const anchor = symb.getAnchor();
   const sourceCanvas = symb.asCanvas(pixelRatio);
@@ -569,11 +580,15 @@ function resolveMissingStyleImage(id: string) {
   if (data) {
     mlMap.addImage(id, data, { pixelRatio });
     usedImageIds.add(id);
+    // Only the symbol itself is clickable, not its text amplifiers.
+    const { sidc, options } = getMilSymbolArgs(id, cachedSymbol);
+    setUnitHitBox(mlMap, id, getMilSymbolHitBox(sidc, options));
   }
 }
 
 function onStyleLoad() {
   usedImageIds.clear();
+  clearUnitHitBoxes(mlMap);
   setupMapLayers();
   addUnits({ initial: shouldCenterOnNextStyleLoad });
   drawRangeRings();
@@ -604,10 +619,6 @@ registerSymbolImageSource(mlMap, {
   },
 });
 onUnmounted(() => unregisterSymbolImageSource(mlMap));
-
-function pointToXY(point: PointLike): [number, number] {
-  return Array.isArray(point) ? point : [point.x, point.y];
-}
 
 // A touch device, or an explicit touch-driven event, gets the wider tolerance.
 // `originalEvent` is absent on the native MouseEvent passed by shift-click.
@@ -642,8 +653,17 @@ function interactiveLayerIds(): string[] {
 }
 
 function collectInteractiveFeatures(
-  geometry: PointLike | [PointLike, PointLike],
+  point: PointLike,
+  tolerance = 0,
 ): MapGeoJSONFeature[] {
+  const [x, y] = pointToXY(point);
+  const geometry: PointLike | [PointLike, PointLike] =
+    tolerance > 0
+      ? [
+          [x - tolerance, y - tolerance],
+          [x + tolerance, y + tolerance],
+        ]
+      : point;
   const unitHits: MapGeoJSONFeature[] = [];
   const otherHits: MapGeoJSONFeature[] = [];
   // Scoped to the layers whose hits are kept. Unscoped, MapLibre evaluates every layer
@@ -663,7 +683,7 @@ function collectInteractiveFeatures(
   }
   // Units must take precedence over reference layers (KML) even when those
   // layers happen to render above the unit symbols.
-  return unitHits.length ? unitHits.concat(otherHits) : otherHits;
+  return rankUnitHits(mlMap, unitHits, point, tolerance).concat(otherHits);
 }
 
 function queryInteractiveFeatures(
@@ -678,12 +698,7 @@ function queryInteractiveFeatures(
   // which is what makes thin features easier to grab.
   const exactHits = collectInteractiveFeatures(point);
   if (exactHits.length || tolerance <= 0) return exactHits;
-
-  const [x, y] = pointToXY(point);
-  return collectInteractiveFeatures([
-    [x - tolerance, y - tolerance],
-    [x + tolerance, y + tolerance],
-  ]);
+  return collectInteractiveFeatures(point, tolerance);
 }
 
 function updateHoveredScenarioFeatures(
@@ -1491,6 +1506,7 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
     if (activeImageIds.has(imageId)) continue;
     if (mlMap.hasImage(imageId)) mlMap.removeImage(imageId);
     usedImageIds.delete(imageId);
+    deleteUnitHitBox(mlMap, imageId);
   }
   const activeSymbolKeys = new Set<string>();
   for (const imageId of activeImageIds) {
