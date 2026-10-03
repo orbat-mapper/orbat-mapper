@@ -74,14 +74,15 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         getUnitById(uunit._pid) ??
         getSideGroupById(uunit._pid) ??
         getSideById(uunit._pid);
-      if (!parent) return { name: uunit.name, items: [] };
+      if (!parent) return { name: uunit.name, itemCount: 0 };
       return {
         name: uunit.shortName || uunit.name,
         sidc: uunit.sidc || "",
         location: Boolean(uunit._state?.location),
         id: uunit.id,
         symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
-        items: [
+        itemCount: parent.subUnits.length + ("groups" in parent ? side.groups.length : 0),
+        getItems: () => [
           ...parent.subUnits.map(getUnitById).map((subUnit) => ({
             ...subUnit,
             symbolOptions: unitActions.getCombinedSymbolOptions(subUnit),
@@ -94,7 +95,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
       };
     });
 
-    const sideGroups = [
+    const getSideGroups = () => [
       ...side.subUnits.map((unitId) => ({
         ...getUnitById(unitId),
         symbolOptions: unitActions.getCombinedSymbolOptions(getUnitById(unitId)),
@@ -104,14 +105,16 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
     const res = [
       {
         name: isMobile.value ? side.name.slice(0, 2) : side.name,
-        items: sides.value,
+        itemCount: sides.value.length,
+        getItems: () => sides.value,
         id: side.id,
         sidc: "",
       },
       sideGroup
         ? {
             name: isMobile.value ? sideGroup.name.slice(0, 2) : sideGroup.name,
-            items: sideGroups,
+            itemCount: side.subUnits.length + side.groups.length,
+            getItems: getSideGroups,
             id: sideGroup.id,
             sidc: "",
           }
@@ -123,14 +126,16 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         sidc: "",
         id: activeUnitId.value!,
         name: "...",
-        items: activeParent.value?.subUnits?.map((unitId) => {
-          const unit = getUnitById(unitId);
-          return {
-            ...getUnitById(unit.id),
-            symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
-            location: Boolean(unit._state?.location),
-          };
-        }),
+        itemCount: activeParent.value.subUnits.length,
+        getItems: () =>
+          activeParent.value!.subUnits.map((unitId) => {
+            const unit = getUnitById(unitId);
+            return {
+              ...getUnitById(unit.id),
+              symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
+              location: Boolean(unit._state?.location),
+            };
+          }),
       });
     }
     return res as BreadcrumbItemType[];
@@ -192,14 +197,14 @@ onUnmounted(() => {
         <BreadcrumbList>
           <template v-for="(item, index) in breadcrumbItems">
             <BreadcrumbItem class="text-primary">
-              <DropdownMenu v-if="(item.items?.length ?? 0) >= 1">
+              <DropdownMenu v-if="item.itemCount >= 1">
                 <DropdownMenuTrigger class="flex items-center gap-1">
                   <UnitBreadcrumbItem :item="item" :key="item.id" />
                   <ChevronDown class="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem
-                    v-for="subItem in item.items"
+                    v-for="subItem in item.getItems?.() ?? []"
                     :key="subItem.id"
                     @select="onItemClick(subItem.id)"
                   >
