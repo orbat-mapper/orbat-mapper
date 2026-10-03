@@ -11,7 +11,7 @@ import {
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
-import { computed, inject, onUnmounted, provide, watch, watchEffect } from "vue";
+import { computed, inject, onUnmounted, provide, toRaw, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -25,7 +25,7 @@ import {
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
-import { hashObject, injectStrict } from "@/utils";
+import { hashObject, haveSameItems, injectStrict } from "@/utils";
 import {
   getFeatureIdFromRenderedFeature,
   getLayerIdFromRenderedFeature,
@@ -138,7 +138,22 @@ const MOVING_UNIT_SOURCE_ID = "movingUnitSource";
 const MOVING_UNIT_LAYER_ID = `${UNIT_LAYER_PREFIX}moving`;
 // Playback calls `addUnits` on every tick. Pushing unchanged data still makes
 // MapLibre re-tile the source and redo symbol placement for every unit.
-const lastUnitData = new Map<string, { source: GeoJSONSource; data: string }>();
+const lastUnitData = new Map<
+  string,
+  { source: GeoJSONSource; features: Feature[]; data: string }
+>();
+type CachedUnitFeature = {
+  state: unknown;
+  feature: Feature;
+  imageId: string;
+  visibilityGroup: UnitVisibilityGroup;
+};
+// Unit features keyed by unit id. While only the scenario time changes, a unit whose
+// `_state` object is unchanged gets the same feature, so playback only rebuilds the
+// features of units that move. Any edit, timed hierarchy change (which can change the
+// side or group symbol options) or other `addUnits` call starts over.
+const unitFeatureCache = new Map<string, CachedUnitFeature>();
+let unitFeatureCacheGeneration: string | undefined;
 let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
@@ -162,7 +177,7 @@ const routingStore = useRoutingStore();
 const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const { setHoveredFeatures, clearHoveredFeatures } = provideMapHoverContext();
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
-  onPreview: (overrides) => addUnits(false, undefined, overrides),
+  onPreview: (overrides) => addUnits({ rotationOverrides: overrides }),
   onPreviewEnd: () => addUnits(),
 });
 const boxSelect = useMaplibreBoxSelect(mlMap, {
@@ -292,15 +307,19 @@ function createUnitLayerSpec(
 }
 
 function syncUnitLayers(
-  groupsBySource: ReadonlyMap<string, Iterable<UnitVisibilityGroup>> = new Map(),
+  staticGroups: Iterable<UnitVisibilityGroup> = [],
+  movingGroups: Iterable<UnitVisibilityGroup> = [],
 ) {
   const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
   const desiredLayerIds = new Set<string>();
-  for (const sourceId of [UNIT_SOURCE_ID, MOVING_UNIT_SOURCE_ID]) {
+  for (const [sourceId, groups] of [
+    [UNIT_SOURCE_ID, staticGroups],
+    [MOVING_UNIT_SOURCE_ID, movingGroups],
+  ] as const) {
     const desiredGroups = new Map<string, UnitVisibilityGroup>([
       [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
     ]);
-    for (const group of groupsBySource.get(sourceId) ?? []) {
+    for (const group of groups) {
       desiredGroups.set(group.id, group);
     }
 
@@ -472,13 +491,7 @@ function buildCustomSymbolImageData(
 function setupMapLayers() {
   for (const sourceId of [UNIT_SOURCE_ID, MOVING_UNIT_SOURCE_ID]) {
     !mlMap.getSource(sourceId) &&
-      mlMap.addSource(sourceId, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [],
-        },
-      });
+      mlMap.addSource(sourceId, { type: "geojson", data: featureCollection([]) });
   }
 
   syncUnitLayers();
@@ -571,7 +584,7 @@ function resolveMissingStyleImage(id: string) {
 function onStyleLoad() {
   usedImageIds.clear();
   setupMapLayers();
-  addUnits(shouldCenterOnNextStyleLoad);
+  addUnits({ initial: shouldCenterOnNextStyleLoad });
   drawRangeRings();
   drawHistory();
   engineRef.value?.layers.refreshScenarioFeatureLayers({
@@ -1103,7 +1116,7 @@ function previewDraggedUnits(pointer: Position) {
     positionOverrides.set(unitId, [position[0] + dx, position[1] + dy]);
   });
   unitDragState.moved = true;
-  addUnits(false, positionOverrides);
+  addUnits({ positionOverrides });
 }
 
 function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
@@ -1166,8 +1179,12 @@ watch(
     () => activeScenario.store.state.unitStateCounter,
     () => activeScenario.geo.everyVisibleUnit.value.length,
   ],
-  () => {
-    addUnits();
+  ([, unitStateCounter, visibleCount], previous) => {
+    const onlyTimeChanged =
+      previous !== undefined &&
+      unitStateCounter === previous[1] &&
+      visibleCount === previous[2];
+    addUnits({ reuseFeatures: onlyTimeChanged });
     drawRangeRings();
   },
   { immediate: true },
@@ -1225,112 +1242,58 @@ onScenarioActionHook.on(async ({ action }) => {
   uiStore.requestExportTool = true;
 });
 
-function addUnits(
+function addUnits({
   initial = false,
-  positionOverrides?: ReadonlyMap<string, Position>,
-  rotationOverrides?: ReadonlyMap<string, number>,
-) {
+  positionOverrides,
+  rotationOverrides,
+  reuseFeatures = false,
+}: {
+  initial?: boolean;
+  positionOverrides?: ReadonlyMap<string, Position>;
+  rotationOverrides?: ReadonlyMap<string, number>;
+  reuseFeatures?: boolean;
+} = {}) {
   const source = mlMap.getSource(UNIT_SOURCE_ID) as GeoJSONSource;
   const movingSource = mlMap.getSource(MOVING_UNIT_SOURCE_ID) as GeoJSONSource;
   if (!source || !movingSource) return;
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
-  const visibilityGroups = new Map<string, Map<string, UnitVisibilityGroup>>([
-    [UNIT_SOURCE_ID, new Map()],
-    [MOVING_UNIT_SOURCE_ID, new Map()],
-  ]);
-  const movingUnitIds = new Set<string>();
+  const staticUnits = {
+    features: [] as Feature[],
+    groups: new Map<string, UnitVisibilityGroup>(),
+  };
+  const movingUnits = {
+    features: [] as Feature[],
+    groups: new Map<string, UnitVisibilityGroup>(),
+  };
   const activeImageIds = new Set<string>();
 
-  const features = featureCollection(
-    visibleUnits.map((unit) => {
-      const isMoving = playback.timeAnimating && unit._state?.type === "interpolated";
-      if (isMoving) movingUnitIds.add(unit.id);
-      const visibilityGroup = getUnitVisibilityGroup(unit);
-      visibilityGroups
-        .get(isMoving ? MOVING_UNIT_SOURCE_ID : UNIT_SOURCE_ID)!
-        .set(visibilityGroup.id, visibilityGroup);
-      const rawTextAmplifiers = unit.textAmplifiers || {};
-      const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
-        rawTextAmplifiers,
-        "uniqueDesignation",
-      );
-      const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
-      const resolvedUniqueDesignation =
-        uniqueDesignation ?? unit.shortName ?? unit.name ?? "";
-      const symbolUniqueDesignation =
-        mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
-          ? ""
-          : resolvedUniqueDesignation;
-      const { size: _symbolOptionSize, ...combinedSymbolOptions } =
-        unitActions.getCombinedSymbolOptions(unit);
-      // Use the symbol projected for the current scenario time, so symbol changes
-      // in unit states/events are reflected on the map.
-      const sidc = unit._state?.sidc ?? unit.sidc;
-      const customSymbolId = getCustomSymbolId(sidc);
-      const customSymbol = customSymbolId
-        ? activeScenario.store.state.customSymbolMap[customSymbolId]
-        : undefined;
-      const baseSymbolSize = getUnitMapSymbolSize(unit);
-      const renderedSymbolSize =
-        customSymbol && customSymbolId
-          ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
-          : baseSymbolSize;
-      const symbolData: SymbolCacheEntry =
-        customSymbol && customSymbolId
-          ? {
-              kind: "custom",
-              customSymbol,
-              size: renderedSymbolSize,
-              color: combinedSymbolOptions.fillColor,
-            }
-          : {
-              kind: "milsymbol",
-              sidc,
-              symbolOptions: {
-                size: renderedSymbolSize,
-                ...combinedSymbolOptions,
-              },
-              textAmplifiers,
-              uniqueDesignation: symbolUniqueDesignation,
-            };
-      const symbolKey = hashObject(symbolData);
-      if (!symbolCache.has(symbolKey)) {
-        symbolCache.set(symbolKey, symbolData);
-      }
-      const isSelected = selectedUnitIds.value.has(unit.id);
-      const imageId = isSelected ? `sel-${symbolKey}` : symbolKey;
-      activeImageIds.add(imageId);
-      const rotationOverride = rotationOverrides?.get(unit.id);
-      const symbolRotation =
-        rotationOverride !== undefined
-          ? rotationOverride
-          : (unit._state?.symbolRotation ?? 0);
-      return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: positionOverrides?.get(unit.id) ?? unit._state?.location,
-        },
-        properties: {
-          id: unit.id,
-          visibilityGroup: visibilityGroup.id,
-          symbolKey: imageId,
-          sidc,
-          label: mapSettings.mapUnitLabelBelow
-            ? unit.shortName || unit.name || "Unnamed Unit"
-            : "",
-          textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
-          symbolRotation,
-        },
-      } as Feature;
-    }),
-  );
-  syncUnitLayers(
-    new Map(
-      [...visibilityGroups].map(([sourceId, groups]) => [sourceId, groups.values()]),
-    ),
-  );
+  const generation = `${activeScenario.store.getMutationCount()}:${activeScenario.store.state.hierarchyProjectionBucket}`;
+  // Overrides only come with `reuseFeatures` off, so they always start over.
+  if (!reuseFeatures || generation !== unitFeatureCacheGeneration) {
+    unitFeatureCache.clear();
+    unitFeatureCacheGeneration = generation;
+  }
+  for (const unit of visibleUnits) {
+    const state = toRaw(unit._state);
+    let cached = unitFeatureCache.get(unit.id);
+    if (!cached || cached.state !== state) {
+      cached = {
+        state,
+        ...buildUnitFeature(unit, positionOverrides, rotationOverrides),
+      };
+      unitFeatureCache.set(unit.id, cached);
+    }
+    const { feature, imageId, visibilityGroup } = cached;
+    const bucket =
+      playback.timeAnimating && unit._state?.type === "interpolated"
+        ? movingUnits
+        : staticUnits;
+    bucket.features.push(feature);
+    bucket.groups.set(visibilityGroup.id, visibilityGroup);
+    activeImageIds.add(imageId);
+  }
+  syncUnitLayers(staticUnits.groups.values(), movingUnits.groups.values());
   if (initial) {
     const bbox = activeScenario.store.state.boundingBox;
     if (bbox && bbox.length === 4) {
@@ -1339,31 +1302,112 @@ function addUnits(
         duration: 0,
         maxZoom: 16,
       });
-    } else if (features.features.length > 0) {
-      const center = centerOfMass(features);
+    } else if (visibleUnits.length > 0) {
+      const center = centerOfMass(
+        featureCollection([...staticUnits.features, ...movingUnits.features]),
+      );
       mlMap.setCenter(center.geometry.coordinates as [number, number]);
     }
   }
-  const isMovingFeature = (feature: Feature) => movingUnitIds.has(feature.properties!.id);
-  setUnitSourceData(
-    UNIT_SOURCE_ID,
-    source,
-    features.features.filter((f) => !isMovingFeature(f)),
-  );
-  setUnitSourceData(
-    MOVING_UNIT_SOURCE_ID,
-    movingSource,
-    features.features.filter(isMovingFeature),
-  );
+  setUnitSourceData(UNIT_SOURCE_ID, source, staticUnits.features);
+  setUnitSourceData(MOVING_UNIT_SOURCE_ID, movingSource, movingUnits.features);
   pruneSymbolImages(activeImageIds);
 }
 
+function buildUnitFeature(
+  unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number],
+  positionOverrides?: ReadonlyMap<string, Position>,
+  rotationOverrides?: ReadonlyMap<string, number>,
+): Omit<CachedUnitFeature, "state"> {
+  const visibilityGroup = getUnitVisibilityGroup(unit);
+  const rawTextAmplifiers = unit.textAmplifiers || {};
+  const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
+    rawTextAmplifiers,
+    "uniqueDesignation",
+  );
+  const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
+  const resolvedUniqueDesignation =
+    uniqueDesignation ?? unit.shortName ?? unit.name ?? "";
+  const symbolUniqueDesignation =
+    mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
+      ? ""
+      : resolvedUniqueDesignation;
+  const { size: _symbolOptionSize, ...combinedSymbolOptions } =
+    unitActions.getCombinedSymbolOptions(unit);
+  // Use the symbol projected for the current scenario time, so symbol changes
+  // in unit states/events are reflected on the map.
+  const sidc = unit._state?.sidc ?? unit.sidc;
+  const customSymbolId = getCustomSymbolId(sidc);
+  const customSymbol = customSymbolId
+    ? activeScenario.store.state.customSymbolMap[customSymbolId]
+    : undefined;
+  const baseSymbolSize = getUnitMapSymbolSize(unit);
+  const renderedSymbolSize =
+    customSymbol && customSymbolId
+      ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
+      : baseSymbolSize;
+  const symbolData: SymbolCacheEntry =
+    customSymbol && customSymbolId
+      ? {
+          kind: "custom",
+          customSymbol,
+          size: renderedSymbolSize,
+          color: combinedSymbolOptions.fillColor,
+        }
+      : {
+          kind: "milsymbol",
+          sidc,
+          symbolOptions: {
+            size: renderedSymbolSize,
+            ...combinedSymbolOptions,
+          },
+          textAmplifiers,
+          uniqueDesignation: symbolUniqueDesignation,
+        };
+  const symbolKey = hashObject(symbolData);
+  if (!symbolCache.has(symbolKey)) {
+    symbolCache.set(symbolKey, symbolData);
+  }
+  const isSelected = selectedUnitIds.value.has(unit.id);
+  const imageId = isSelected ? `sel-${symbolKey}` : symbolKey;
+  const rotationOverride = rotationOverrides?.get(unit.id);
+  const symbolRotation =
+    rotationOverride !== undefined
+      ? rotationOverride
+      : (unit._state?.symbolRotation ?? 0);
+  const feature = {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: positionOverrides?.get(unit.id) ?? unit._state?.location,
+    },
+    properties: {
+      id: unit.id,
+      visibilityGroup: visibilityGroup.id,
+      symbolKey: imageId,
+      sidc,
+      label: mapSettings.mapUnitLabelBelow
+        ? unit.shortName || unit.name || "Unnamed Unit"
+        : "",
+      textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
+      symbolRotation,
+    },
+  } as Feature;
+  return { feature, imageId, visibilityGroup };
+}
+
 function setUnitSourceData(sourceId: string, source: GeoJSONSource, features: Feature[]) {
-  const data = JSON.stringify(features);
   const last = lastUnitData.get(sourceId);
   // A basemap swap replaces the source, which must be filled again.
-  if (last?.source === source && last.data === data) return;
-  lastUnitData.set(sourceId, { source, data });
+  const sameSource = last?.source === source;
+  // Cached features are never mutated, so the same objects mean the same data.
+  if (sameSource && haveSameItems(last.features, features)) return;
+  const data = JSON.stringify(features);
+  if (sameSource && last.data === data) {
+    last.features = features;
+    return;
+  }
+  lastUnitData.set(sourceId, { source, features, data });
   source.setData(featureCollection(features));
 }
 

@@ -74,7 +74,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         getUnitById(uunit._pid) ??
         getSideGroupById(uunit._pid) ??
         getSideById(uunit._pid);
-      if (!parent) return { name: uunit.name, itemCount: 0 };
+      if (!parent) return { name: uunit.name, itemCount: 0, getItems: () => [] };
       return {
         name: uunit.shortName || uunit.name,
         sidc: uunit.sidc || "",
@@ -204,7 +204,7 @@ onUnmounted(() => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem
-                    v-for="subItem in item.getItems?.() ?? []"
+                    v-for="subItem in item.getItems()"
                     :key="subItem.id"
                     @select="onItemClick(subItem.id)"
                   >

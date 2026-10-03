@@ -49,7 +49,7 @@ export type BreadcrumbItemType = {
   itemCount: number;
   // Built only when the dropdown opens. Building the items reads every sibling's
   // `_state`, so doing it eagerly re-ran the breadcrumbs on every playback tick.
-  getItems?: () => ((NSide | NSideGroup | NUnit) & {
+  getItems: () => ((NSide | NSideGroup | NUnit) & {
     symbolOptions: Record<string, any>;
     sidc: string;
     location?: boolean;

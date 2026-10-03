@@ -173,3 +173,33 @@ describe("hide/show unit actions", () => {
     expect(visibleIds(geo)).toEqual(["child", "other"]);
   });
 });
+
+describe("everyVisibleUnit", () => {
+  it("keeps the same array while the same units stay visible", () => {
+    const store = useNewScenarioStore(createScenario());
+    const geo = useGeo(store);
+    const actions = useUnitManipulations(store);
+    const visible = geo.everyVisibleUnit.value;
+
+    store.state.unitMap["other"]._state = {
+      ...store.state.unitMap["other"]._state!,
+      location: [13, 63],
+    };
+    expect(geo.everyVisibleUnit.value).toBe(visible);
+
+    actions.setUnitsHidden(["other"], true);
+    expect(visibleIds(geo)).toEqual(["child", "parent"]);
+  });
+
+  it("includes a unit once it gets its first position", () => {
+    const scenario = createScenario();
+    delete scenario.sides[0].groups[0].subUnits[1].location;
+    const store = useNewScenarioStore(scenario);
+    const geo = useGeo(store);
+    expect(visibleIds(geo)).toEqual(["child", "parent"]);
+
+    geo.addUnitPosition("other", [12, 62]);
+
+    expect(visibleIds(geo)).toEqual(["child", "other", "parent"]);
+  });
+});

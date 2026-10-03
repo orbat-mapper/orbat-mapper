@@ -292,7 +292,7 @@ export function getHierarchyProjectionBucket(
 export function syncTimedHierarchyProjection(
   state: ScenarioState,
   timestamp: number,
-  { force = false }: { force?: boolean } = {},
+  { force = false, units }: { force?: boolean; units?: Iterable<NUnit> } = {},
 ) {
   const nextBucket = getHierarchyProjectionBucket(
     state.hierarchyChangeTimestamps,
@@ -303,10 +303,10 @@ export function syncTimedHierarchyProjection(
     state.hierarchyProjectionVersion === state.hierarchyStateVersion &&
     state.hierarchyProjectionBucket === nextBucket
   ) {
-    Object.values(state.unitMap).forEach((unit) => {
+    for (const unit of units ?? Object.values(state.unitMap)) {
       const side = state.sideMap[unit._sid];
       if (side) syncProjectedUnitSidc(unit, side);
-    });
+    }
     return false;
   }
 

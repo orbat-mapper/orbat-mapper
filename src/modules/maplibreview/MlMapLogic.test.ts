@@ -2,7 +2,7 @@
 import { createEventHook } from "@vueuse/core";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { computed, nextTick, ref, shallowRef } from "vue";
+import { computed, nextTick, reactive, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
 import {
@@ -251,6 +251,7 @@ function createHoverScenario(
 ) {
   return {
     store: {
+      getMutationCount: () => 0,
       state: {
         id: "scenario-hover",
         currentTime: 0,
@@ -329,6 +330,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-1",
           currentTime: 0,
@@ -398,6 +400,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapIconSize = 44;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-size",
           currentTime: 0,
@@ -448,6 +451,7 @@ describe("MlMapLogic", () => {
     setActivePinia(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-state-sidc",
           currentTime: 0,
@@ -496,6 +500,7 @@ describe("MlMapLogic", () => {
     setActivePinia(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-source",
           currentTime: 0,
@@ -550,6 +555,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapIconSize = 44;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-size-override",
           currentTime: 0,
@@ -601,6 +607,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapUnitLabelBelow = true;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-label-offset-size-override",
           currentTime: 0,
@@ -649,6 +656,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapUnitLabelBelow = true;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-hostile-label-offset",
           currentTime: 0,
@@ -695,6 +703,7 @@ describe("MlMapLogic", () => {
     const mockMap = createMockMap();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-symbol",
           currentTime: 0,
@@ -757,6 +766,7 @@ describe("MlMapLogic", () => {
     useSelectedItems().selectedUnitIds.value.add("unit-custom-selected");
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-selected-custom-symbol",
           currentTime: 0,
@@ -819,6 +829,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapCustomIconScale = 2;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-symbol-scale",
           currentTime: 0,
@@ -889,6 +900,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapCustomIconScale = 2;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-label-offset",
           currentTime: 0,
@@ -951,6 +963,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-live-maplibre-symbol-size-override",
           currentTime: 0,
@@ -1009,6 +1022,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-static-playback",
           get currentTime() {
@@ -1042,7 +1056,7 @@ describe("MlMapLogic", () => {
 
     expect(source?.setData.mock.calls.length).toBe(initialCallCount);
 
-    visibleUnits.value[0]._state.location = [11, 21];
+    visibleUnits.value[0]._state = { location: [11, 21] };
     currentTime.value += 1000;
     await nextTick();
 
@@ -1050,6 +1064,118 @@ describe("MlMapLogic", () => {
     const setDataCalls = source?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     expect(unitData.features[0].geometry.coordinates).toEqual([11, 21]);
+  });
+
+  it("rebuilds only units with a new _state when the time changes without edits", async () => {
+    const mockMap = createMockMap();
+    const currentTime = ref(0);
+    let mutationCount = 0;
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-a",
+        sidc: "SFGPUCI----K",
+        name: "Alpha",
+        _state: { location: [10, 20] },
+      },
+      {
+        id: "unit-b",
+        sidc: "SFGPUCI----K",
+        name: "Bravo",
+        _state: { location: [11, 21] },
+      },
+    ]);
+    const getCombinedSymbolOptions = vi.fn(() => ({}));
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-feature-cache",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+        getMutationCount: () => mutationCount,
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions,
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+    const source = mockMap.getSource("unitSource");
+    const lastFeatures = () => source?.setData.mock.calls.at(-1)?.[0].features;
+    getCombinedSymbolOptions.mockClear();
+
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).not.toHaveBeenCalled();
+
+    visibleUnits.value[1]._state = { location: [12, 22] };
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(1);
+    expect(lastFeatures()[1].geometry.coordinates).toEqual([12, 22]);
+
+    // An edit keeps `_state` but must still reach the map.
+    getCombinedSymbolOptions.mockClear();
+    visibleUnits.value[0].sidc = "SHGPUCI----K";
+    mutationCount++;
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(2);
+    expect(lastFeatures()[0].properties.sidc).toBe("SHGPUCI----K");
+  });
+
+  it("rebuilds unit features when a timed hierarchy change applies", async () => {
+    const mockMap = createMockMap();
+    const scenarioState = reactive({
+      id: "scenario-maplibre-feature-cache-hierarchy",
+      currentTime: 0,
+      featureStateCounter: 0,
+      hierarchyProjectionBucket: 0,
+    });
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-a",
+        sidc: "SFGPUCI----K",
+        name: "Alpha",
+        _state: { location: [10, 20] },
+      },
+    ]);
+    const getCombinedSymbolOptions = vi.fn(() => ({}));
+    const activeScenario = {
+      store: { state: scenarioState, getMutationCount: () => 0 },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions,
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+    getCombinedSymbolOptions.mockClear();
+
+    scenarioState.currentTime += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).not.toHaveBeenCalled();
+
+    // The unit moved to a group with other symbol options, keeping its `_state`.
+    scenarioState.hierarchyProjectionBucket = 1;
+    scenarioState.currentTime += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(1);
   });
 
   it("keeps moving units in their own source only while playback runs", async () => {
@@ -1076,6 +1202,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-moving-source",
           get currentTime() {
@@ -1170,6 +1297,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-scrubbing",
           get currentTime() {
@@ -1242,6 +1370,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-undo-redraw",
           currentTime: 0,
@@ -1296,6 +1425,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-live-maplibre-text-amplifier",
           currentTime: 0,
@@ -1347,6 +1477,7 @@ describe("MlMapLogic", () => {
     const mapSettings = useMapSettingsStore(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-rotation-mode",
           currentTime: 0,
@@ -1410,6 +1541,7 @@ describe("MlMapLogic", () => {
     const mapSettings = useMapSettingsStore(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-rotation-mode-groups",
           currentTime: 0,
@@ -1499,6 +1631,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapLibreUnitRotationMode = "map";
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-style-reload-rotation-mode",
           currentTime: 0,
@@ -1562,6 +1695,7 @@ describe("MlMapLogic", () => {
     const currentTime = ref(Date.parse("2025-01-01T00:00:00Z"));
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-day-night-overlay",
           get currentTime() {
@@ -1659,6 +1793,7 @@ describe("MlMapLogic", () => {
     const visibleUnits = ref<any[]>([]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-late-visible-units",
           currentTime: 0,
@@ -1724,6 +1859,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-visibility-groups",
           currentTime: 0,
@@ -1831,6 +1967,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-2",
           currentTime: 0,
@@ -2142,6 +2279,7 @@ describe("MlMapLogic", () => {
           layerItem: id === "feature-1" ? { name: "Bridge Alpha" } : undefined,
         })),
         store: {
+          getMutationCount: () => 0,
           state: {
             id: "scenario-hover-clear",
             currentTime: 0,
@@ -2250,6 +2388,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-3",
           currentTime: 0,
@@ -2318,6 +2457,7 @@ describe("MlMapLogic", () => {
     const pinia = createPinia();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-suppressed-hover-cursor",
           currentTime: 0,
@@ -2375,6 +2515,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-layer-prefix-hit",
           currentTime: 0,
@@ -2435,6 +2576,7 @@ describe("MlMapLogic", () => {
     const pinia = createPinia();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-placement-cursor",
           currentTime: 0,
@@ -2506,6 +2648,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-unit",
           currentTime: 0,
@@ -2595,6 +2738,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-touch-unit",
           currentTime: 0,
@@ -2687,6 +2831,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-hover",
           currentTime: 0,
@@ -2771,6 +2916,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-select",
           currentTime: 0,
@@ -2845,6 +2991,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-shift",
           currentTime: 0,
@@ -2994,6 +3141,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-empty-click",
           currentTime: 0,
@@ -3052,6 +3200,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-empty-shift-click",
           currentTime: 0,
@@ -3109,6 +3258,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-cross-type",
           currentTime: 0,
@@ -3173,6 +3323,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-shift-feature",
           currentTime: 0,
@@ -3334,6 +3485,7 @@ describe("MlMapLogic", () => {
     uiStore.requestExportTool = false;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-export",
           currentTime: 0,
@@ -3387,6 +3539,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-missing-history-layer",
           currentTime: 0,
@@ -3478,6 +3631,7 @@ describe("MlMapLogic", () => {
       );
       const activeScenario = {
         store: {
+          getMutationCount: () => 0,
           state: {
             id: "scenario-control-measure-pick",
             currentTime: 0,

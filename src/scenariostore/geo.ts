@@ -16,6 +16,7 @@ import type {
   ScenarioMapLayerUpdate,
   NGeometryLayerItem,
   GeometryLayerItemUpdate,
+  NUnit,
 } from "@/types/internalModels";
 import type {
   CurrentGeometryLayerItemState,
@@ -44,7 +45,7 @@ import {
 } from "@/types/scenarioStackLayers";
 import { klona } from "klona";
 import * as fileHandling from "@/importexport/fileHandling";
-import { moveItemMutable, nanoid, removeElement } from "@/utils";
+import { haveSameItems, moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
 import type { Geometry } from "geojson";
@@ -280,10 +281,21 @@ export function useGeo(store: NewScenarioStore) {
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
   const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
 
-  const everyVisibleUnit = computed(() => {
-    return Object.values(state.unitMap).filter(
-      (unit) => !isUnitHiddenInState(state, unit) && unit._state?.location,
-    );
+  // Units that can have a location: not hidden by themselves, their side or their side
+  // group, and with a base location or state entries. Kept apart from the `_state`
+  // check below, so that units moving on the map don't redo these checks for every unit.
+  const locatableUnits = computed(() =>
+    Object.values(state.unitMap).filter(
+      (unit) =>
+        (unit.location || unit.state?.length) && !isUnitHiddenInState(state, unit),
+    ),
+  );
+
+  const everyVisibleUnit = computed((previous?: NUnit[]) => {
+    const units = locatableUnits.value.filter((unit) => unit._state?.location);
+    // While the same units stay visible, keep the previous array so that dependents
+    // don't rerun on every playback tick.
+    return previous && haveSameItems(previous, units) ? previous : units;
   });
 
   function addUnitPosition(
