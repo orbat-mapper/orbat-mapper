@@ -3,8 +3,10 @@ import "@/dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive, ref } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 import ScenarioTimeline from "./ScenarioTimeline.vue";
 import { activeScenarioKey } from "@/components/injects";
+import { usePlaybackStore } from "@/stores/playbackStore";
 
 const { formatterSpy } = vi.hoisted(() => ({
   formatterSpy: vi.fn((value: number) => `fmt:${value}`),
@@ -124,6 +126,7 @@ function mountTimeline() {
 }
 
 beforeEach(() => {
+  setActivePinia(createPinia());
   formatterSpy.mockClear();
   Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
     configurable: true,
@@ -328,4 +331,32 @@ describe("ScenarioTimeline", () => {
 
     expect(setCurrentTime).not.toHaveBeenCalled();
   });
+
+  it.each(["pointerup", "pointercancel"])(
+    "flags time scrubbing while the timeline is dragged until %s",
+    async (endEvent) => {
+      const { wrapper } = mountTimeline();
+      const playback = usePlaybackStore();
+      await nextTick();
+
+      const host = wrapper.get("[data-testid='scenario-timeline']").element;
+      const pointer = (type: string, clientX: number) =>
+        host.dispatchEvent(
+          new PointerEvent(type, { bubbles: true, pointerId: 1, button: 0, clientX }),
+        );
+      pointer("pointerdown", 500);
+      pointer("pointermove", 502);
+      await nextTick();
+      expect(playback.timeScrubbing).toBe(false);
+
+      pointer("pointermove", 540);
+      await nextTick();
+      expect(playback.timeScrubbing).toBe(true);
+      expect(playback.timeAnimating).toBe(true);
+
+      pointer(endEvent, 540);
+      await nextTick();
+      expect(playback.timeScrubbing).toBe(false);
+    },
+  );
 });

@@ -128,10 +128,17 @@ type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
+// During playback and timeline scrubbing, units that are moving at the current time
+// get their own source. Every `setData` makes MapLibre rebuild the icon atlas of each
+// affected tile, so keeping the moving units apart lets the static units' tiles stay
+// put. The split draws moving units above static ones, so it only applies while the
+// time changes continuously and every unit shares one layer otherwise.
+const UNIT_SOURCE_ID = "unitSource";
+const MOVING_UNIT_SOURCE_ID = "movingUnitSource";
+const MOVING_UNIT_LAYER_ID = `${UNIT_LAYER_PREFIX}moving`;
 // Playback calls `addUnits` on every tick. Pushing unchanged data still makes
 // MapLibre re-tile the source and redo symbol placement for every unit.
-let lastUnitSource: GeoJSONSource | undefined;
-let lastUnitData: string | undefined;
+const lastUnitData = new Map<string, { source: GeoJSONSource; data: string }>();
 let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
@@ -238,21 +245,22 @@ function getUnitVisibilityGroup(
   } satisfies UnitVisibilityGroup;
 }
 
-function getUnitLayerId(groupId: string) {
-  return groupId === ALWAYS_VISIBLE_UNIT_GROUP_ID
-    ? UNIT_LAYER_ID
-    : `${UNIT_LAYER_PREFIX}${groupId}`;
+function getUnitLayerId(groupId: string, sourceId: string) {
+  const baseId =
+    sourceId === MOVING_UNIT_SOURCE_ID ? MOVING_UNIT_LAYER_ID : UNIT_LAYER_ID;
+  return groupId === ALWAYS_VISIBLE_UNIT_GROUP_ID ? baseId : `${baseId}-${groupId}`;
 }
 
 function createUnitLayerSpec(
   layerId: string,
+  sourceId: string,
   group: UnitVisibilityGroup,
   alignment: ReturnType<typeof getUnitRotationAlignment>,
 ): AddLayerObject {
   return {
     id: layerId,
     type: "symbol" as const,
-    source: "unitSource",
+    source: sourceId,
     filter: ["==", ["get", "visibilityGroup"], group.id] as any,
     layout: {
       "icon-image": ["get", "symbolKey"],
@@ -283,23 +291,27 @@ function createUnitLayerSpec(
   };
 }
 
-function syncUnitLayers(groups: Iterable<UnitVisibilityGroup>) {
+function syncUnitLayers(
+  groupsBySource: ReadonlyMap<string, Iterable<UnitVisibilityGroup>> = new Map(),
+) {
   const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
-  const desiredGroups = new Map<string, UnitVisibilityGroup>([
-    [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
-  ]);
-  for (const group of groups) {
-    desiredGroups.set(group.id, group);
-  }
-
   const desiredLayerIds = new Set<string>();
-  for (const group of desiredGroups.values()) {
-    const layerId = getUnitLayerId(group.id);
-    desiredLayerIds.add(layerId);
-    if (!mlMap.getLayer(layerId)) {
-      mlMap.addLayer(createUnitLayerSpec(layerId, group, alignment));
+  for (const sourceId of [UNIT_SOURCE_ID, MOVING_UNIT_SOURCE_ID]) {
+    const desiredGroups = new Map<string, UnitVisibilityGroup>([
+      [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
+    ]);
+    for (const group of groupsBySource.get(sourceId) ?? []) {
+      desiredGroups.set(group.id, group);
     }
-    unitLayerIds.add(layerId);
+
+    for (const group of desiredGroups.values()) {
+      const layerId = getUnitLayerId(group.id, sourceId);
+      desiredLayerIds.add(layerId);
+      if (!mlMap.getLayer(layerId)) {
+        mlMap.addLayer(createUnitLayerSpec(layerId, sourceId, group, alignment));
+      }
+      unitLayerIds.add(layerId);
+    }
   }
 
   for (const layerId of [...unitLayerIds]) {
@@ -458,16 +470,18 @@ function buildCustomSymbolImageData(
 }
 
 function setupMapLayers() {
-  !mlMap.getSource("unitSource") &&
-    mlMap.addSource("unitSource", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    });
+  for (const sourceId of [UNIT_SOURCE_ID, MOVING_UNIT_SOURCE_ID]) {
+    !mlMap.getSource(sourceId) &&
+      mlMap.addSource(sourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+  }
 
-  syncUnitLayers([]);
+  syncUnitLayers();
 
   setupRangeRingLayers(UNIT_LAYER_ID);
   setupUnitHistoryLayers(UNIT_LAYER_ID);
@@ -1216,17 +1230,26 @@ function addUnits(
   positionOverrides?: ReadonlyMap<string, Position>,
   rotationOverrides?: ReadonlyMap<string, number>,
 ) {
-  const source = mlMap.getSource("unitSource") as GeoJSONSource;
-  if (!source) return;
+  const source = mlMap.getSource(UNIT_SOURCE_ID) as GeoJSONSource;
+  const movingSource = mlMap.getSource(MOVING_UNIT_SOURCE_ID) as GeoJSONSource;
+  if (!source || !movingSource) return;
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
-  const visibilityGroups = new Map<string, UnitVisibilityGroup>();
+  const visibilityGroups = new Map<string, Map<string, UnitVisibilityGroup>>([
+    [UNIT_SOURCE_ID, new Map()],
+    [MOVING_UNIT_SOURCE_ID, new Map()],
+  ]);
+  const movingUnitIds = new Set<string>();
   const activeImageIds = new Set<string>();
 
   const features = featureCollection(
     visibleUnits.map((unit) => {
+      const isMoving = playback.timeAnimating && unit._state?.type === "interpolated";
+      if (isMoving) movingUnitIds.add(unit.id);
       const visibilityGroup = getUnitVisibilityGroup(unit);
-      visibilityGroups.set(visibilityGroup.id, visibilityGroup);
+      visibilityGroups
+        .get(isMoving ? MOVING_UNIT_SOURCE_ID : UNIT_SOURCE_ID)!
+        .set(visibilityGroup.id, visibilityGroup);
       const rawTextAmplifiers = unit.textAmplifiers || {};
       const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
         rawTextAmplifiers,
@@ -1303,7 +1326,11 @@ function addUnits(
       } as Feature;
     }),
   );
-  syncUnitLayers(visibilityGroups.values());
+  syncUnitLayers(
+    new Map(
+      [...visibilityGroups].map(([sourceId, groups]) => [sourceId, groups.values()]),
+    ),
+  );
   if (initial) {
     const bbox = activeScenario.store.state.boundingBox;
     if (bbox && bbox.length === 4) {
@@ -1317,14 +1344,27 @@ function addUnits(
       mlMap.setCenter(center.geometry.coordinates as [number, number]);
     }
   }
-  const data = JSON.stringify(features);
-  // A basemap swap replaces the source, which must be filled again.
-  if (source !== lastUnitSource || data !== lastUnitData) {
-    lastUnitSource = source;
-    lastUnitData = data;
-    source.setData(features);
-  }
+  const isMovingFeature = (feature: Feature) => movingUnitIds.has(feature.properties!.id);
+  setUnitSourceData(
+    UNIT_SOURCE_ID,
+    source,
+    features.features.filter((f) => !isMovingFeature(f)),
+  );
+  setUnitSourceData(
+    MOVING_UNIT_SOURCE_ID,
+    movingSource,
+    features.features.filter(isMovingFeature),
+  );
   pruneSymbolImages(activeImageIds);
+}
+
+function setUnitSourceData(sourceId: string, source: GeoJSONSource, features: Feature[]) {
+  const data = JSON.stringify(features);
+  const last = lastUnitData.get(sourceId);
+  // A basemap swap replaces the source, which must be filled again.
+  if (last?.source === source && last.data === data) return;
+  lastUnitData.set(sourceId, { source, data });
+  source.setData(featureCollection(features));
 }
 
 // Skip the scan when stale entries can't have grown past this many — keeps
@@ -1400,6 +1440,14 @@ watch(
     }
   },
   { immediate: true },
+);
+
+watch(
+  () => playback.timeAnimating,
+  (animating) => {
+    // Moves the moving units back into the shared unit layer.
+    if (!animating) addUnits();
+  },
 );
 
 watch(hoverEnabled, (enabled) => {
