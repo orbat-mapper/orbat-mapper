@@ -286,6 +286,27 @@ describe("unitManipulations settings redraw signaling", () => {
     expect(store.state.unitMap["unit-1"]._state?.symbolRotation).toBe(45);
   });
 
+  it("refreshes the effective symbol of a unit without state entries, including undo/redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const unit = () => store.state.unitMap["unit-1"];
+    expect(unit().state ?? []).toHaveLength(0);
+    expect(unit()._state?.sidc).toBe("10031000000000000000");
+
+    actions.updateUnit(
+      "unit-1",
+      { sidc: "10031000001100000000" },
+      { doUpdateUnitState: true },
+    );
+    expect(unit()._state?.sidc).toBe("10031000001100000000");
+
+    store.undo();
+    expect(unit()._state?.sidc).toBe("10031000000000000000");
+
+    store.redo();
+    expect(unit()._state?.sidc).toBe("10031000001100000000");
+  });
+
   it("increments unitStateCounter for unit style updates and restores it on undo/redo", () => {
     const store = useNewScenarioStore(createScenario());
     const actions = useUnitManipulations(store);

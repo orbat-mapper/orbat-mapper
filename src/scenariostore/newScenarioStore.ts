@@ -546,8 +546,9 @@ export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   scenarioTime.setCurrentTime(store.state.currentTime);
   // Unit/feature runtime state (_state) is derived from timeline entries.
   // Recompute after undo/redo so map rendering matches restored history state.
+  // Forced, because restored units may carry a `_state` captured before an edit.
   store.onUndoRedo(() => {
-    scenarioTime.setCurrentTime(store.state.currentTime);
+    scenarioTime.setCurrentTime(store.state.currentTime, { force: true });
   });
   return store;
 }

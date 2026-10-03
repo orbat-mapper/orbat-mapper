@@ -723,11 +723,15 @@ async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
       reinforcedStatus: unit.reinforcedStatus,
     });
     if (newSidcValue !== undefined) {
-      updateUnit(unit.id, {
-        sidc: newSidcValue.sidc,
-        symbolOptions: newSidcValue.symbolOptions,
-        reinforcedStatus: newSidcValue.reinforcedStatus,
-      });
+      updateUnit(
+        unit.id,
+        {
+          sidc: newSidcValue.sidc,
+          symbolOptions: newSidcValue.symbolOptions,
+          reinforcedStatus: newSidcValue.reinforcedStatus,
+        },
+        { doUpdateUnitState: true },
+      );
     }
   }
 }

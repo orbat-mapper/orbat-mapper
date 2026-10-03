@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
 
+### Fixed
+
+- Fixed changing a unit's symbol not updating the map, ORBAT, or details panel when the unit had no recorded state changes, which affected units imported or merged from other scenario files.
+
 ## September 2026
 
 ### Removed

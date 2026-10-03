@@ -82,3 +82,19 @@ describe("time rotation state", () => {
     expect(unit._state?.reinforcedStatus).toBe("None");
   });
 });
+
+describe("time base symbol state", () => {
+  it("rebuilds _state for units without state entries only when forced", () => {
+    const unit = createUnit({ location: [10, 60], state: [] });
+    updateCurrentUnitState(unit, 0);
+    const initialState = unit._state;
+    expect(initialState?.sidc).toBe("10031000000000000000");
+
+    unit.sidc = "10031000001211000000";
+    updateCurrentUnitState(unit, 1000);
+    expect(unit._state).toBe(initialState);
+
+    updateCurrentUnitState(unit, 1000, { force: true });
+    expect(unit._state?.sidc).toBe("10031000001211000000");
+  });
+});

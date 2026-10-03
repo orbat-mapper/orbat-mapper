@@ -64,16 +64,14 @@ export function createInitialState(unit: NUnit): CurrentState | null {
 export function updateCurrentUnitState(
   unit: NUnit,
   timestamp: number,
-  options: { markMapStylesDirty?: () => void } = {},
+  options: { markMapStylesDirty?: () => void; force?: boolean } = {},
 ) {
-  if (!unit.state || !unit.state.length) {
-    if (!unit._state) {
-      unit._state = createInitialState(unit);
-    }
-    return;
-  }
+  // Without state entries `_state` only depends on the base unit, so skip the rebuild
+  // on time changes. Callers that edit the base unit pass `force` so that changes such
+  // as a new base symbol reach `_state`.
+  if (!unit.state?.length && unit._state && !options.force) return;
   let currentState = createInitialState(unit);
-  for (const s of unit.state) {
+  for (const s of unit.state ?? []) {
     if (s.t <= timestamp) {
       const { diff, update, ...rest } = s;
       if (update || diff) {
@@ -132,9 +130,10 @@ export function useScenarioTime(store: NewScenarioStore) {
 
   const goToScenarioEventHook = createEventHook<GoToScenarioEventEvent>();
 
-  function setCurrentTime(timestamp: number) {
+  function setCurrentTime(timestamp: number, { force = false } = {}) {
     Object.values(state.unitMap).forEach((unit) =>
       updateCurrentUnitState(unit, timestamp, {
+        force,
         markMapStylesDirty: () => {
           state.isMapStylesDirty = true;
         },
