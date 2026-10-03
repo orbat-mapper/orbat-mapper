@@ -28,6 +28,7 @@ import {
 import type { Position } from "geojson";
 import type { Map as MlMap } from "maplibre-gl";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 import { computed, ref } from "vue";
 import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core";
 import {
@@ -417,7 +418,7 @@ function onContextMenu(event: MouseEvent) {
   const seenFeatureIds = new Set<string>();
 
   for (const renderedFeature of mapRef.queryRenderedFeatures(point)) {
-    if (renderedFeature.layer.id === "unitLayer") {
+    if (isUnitLayerId(renderedFeature.layer.id)) {
       const unitId = renderedFeature.properties?.id
         ? String(renderedFeature.properties.id)
         : undefined;
