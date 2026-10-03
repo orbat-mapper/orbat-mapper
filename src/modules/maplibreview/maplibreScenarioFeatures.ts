@@ -1133,6 +1133,19 @@ function ensureImage(
   mlMap.addImage(imageId, imageData, { pixelRatio: getSpritePixelRatio() });
 }
 
+function getPlanSources(plan: ScenarioLayerRenderPlan) {
+  return [
+    [plan.sourceId, plan.featureData],
+    [plan.labelSourceId, plan.labelData],
+    [plan.arrowSourceId, plan.arrowData],
+  ] as const;
+}
+
+// Serialized source data of each plan, in `getPlanSources` order. Taken as soon as the
+// plan is built: its GeoJSON shares geometry with the scenario store, which edits can
+// change in place, so serializing it later could already see the next state.
+const planDataKeys = new WeakMap<ScenarioLayerRenderPlan, readonly string[]>();
+
 export class MapLibreScenarioFeatureManager {
   private plans = new Map<string, ScenarioLayerRenderPlan>();
   private imageDefinitions = new Map<string, ImageDefinition>();
@@ -1229,6 +1242,8 @@ export class MapLibreScenarioFeatureManager {
 
     for (const [layerId, nextPlan] of desiredPlans.entries()) {
       const currentPlan = this.plans.get(layerId);
+      const nextKeys = getPlanSources(nextPlan).map(([, data]) => JSON.stringify(data));
+      planDataKeys.set(nextPlan, nextKeys);
       if (
         currentPlan &&
         currentPlan.structureKey === nextPlan.structureKey &&
@@ -1236,15 +1251,13 @@ export class MapLibreScenarioFeatureManager {
         this.getSourceSafe(nextPlan.labelSourceId) &&
         this.getSourceSafe(nextPlan.arrowSourceId)
       ) {
-        (this.getSourceSafe(nextPlan.sourceId) as GeoJSONSource).setData(
-          nextPlan.featureData,
-        );
-        (this.getSourceSafe(nextPlan.labelSourceId) as GeoJSONSource).setData(
-          nextPlan.labelData,
-        );
-        (this.getSourceSafe(nextPlan.arrowSourceId) as GeoJSONSource).setData(
-          nextPlan.arrowData,
-        );
+        // Every `setData` makes MapLibre re-tile the source, so only the sources whose
+        // data changed get it. A refresh redoes every layer when any one changes.
+        const currentKeys = planDataKeys.get(currentPlan);
+        getPlanSources(nextPlan).forEach(([sourceId, data], i) => {
+          if (currentKeys?.[i] === nextKeys[i]) return;
+          (this.getSourceSafe(sourceId) as GeoJSONSource).setData(data);
+        });
         this.plans.set(layerId, nextPlan);
         continue;
       }

@@ -220,7 +220,30 @@ describe("setCurrentTime", () => {
         },
       ],
       events: [],
-      layers: [{ id: "layer-1", name: "Features", features: [] }],
+      layers: [
+        {
+          id: "layer-1",
+          name: "Features",
+          items: [
+            {
+              type: "Feature",
+              kind: "geometry",
+              id: "timed-feature",
+              geometry: { type: "Point", coordinates: [10, 60] },
+              properties: {},
+              meta: { type: "Point", name: "Timed" },
+              style: {},
+              state: [
+                {
+                  id: "f1",
+                  t: 500,
+                  patch: { geometry: { type: "Point", coordinates: [11, 61] } },
+                },
+              ],
+            },
+          ],
+        },
+      ],
       mapLayers: [],
       settings: {
         rangeRingGroups: [],
@@ -231,6 +254,27 @@ describe("setCurrentTime", () => {
       },
     } as any);
   }
+
+  it("keeps a timed layer item's _state while the time stays within one state step", () => {
+    const store = createStore();
+    const time = useScenarioTime(store);
+    time.setCurrentTime(200);
+    const before = store.state.layerItemMap["timed-feature"]._state;
+    const counter = store.state.featureStateCounter;
+
+    time.setCurrentTime(300);
+    time.setCurrentTime(400);
+
+    expect(store.state.layerItemMap["timed-feature"]._state).toBe(before);
+    expect(store.state.featureStateCounter).toBe(counter);
+
+    time.setCurrentTime(600);
+
+    const after = store.state.layerItemMap["timed-feature"]._state as any;
+    expect(after).not.toBe(before);
+    expect(after.geometry.coordinates).toEqual([11, 61]);
+    expect(store.state.featureStateCounter).toBeGreaterThan(counter);
+  });
 
   it("only rebuilds _state of units whose state changes with the time", () => {
     const store = createStore();

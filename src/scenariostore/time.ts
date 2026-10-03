@@ -15,7 +15,7 @@ import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import { nanoid } from "@/utils";
+import { isShallowEqual, nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
@@ -261,9 +261,16 @@ export function useScenarioTime(store: NewScenarioStore) {
         // `visibleUntilT` through `_state`, so computing it against the pre-scrub
         // projection would ignore any timed patch of them.
         if (feature.state?.length) {
-          (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
-            projectScenarioLayerItemStateAt(feature, timestamp);
-          state.featureStateCounter++;
+          // Timed state is step-wise, so most time changes fold the same entries.
+          // Keeping the current `_state` then spares every renderer keyed on it, and
+          // `featureStateCounter` only moves when the projection does.
+          const rawFeature = toRaw(feature);
+          const projected = projectScenarioLayerItemStateAt(rawFeature, timestamp);
+          if (!isShallowEqual(projected, rawFeature._state)) {
+            (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
+              projected;
+            state.featureStateCounter++;
+          }
         }
         const oldHidden = feature._hidden;
         feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);
