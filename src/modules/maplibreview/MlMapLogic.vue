@@ -36,9 +36,12 @@ import {
   toReferenceFeatureSelection,
 } from "@/geo/kml/maplibre";
 import {
+  ALWAYS_VISIBLE_UNIT_GROUP_ID,
+  getUnitVisibilityGroup,
   isUnitLayerId,
   UNIT_LAYER_ID,
   UNIT_LAYER_PREFIX,
+  type UnitVisibilityGroup,
 } from "@/geo/engines/maplibre/unitLayer";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
@@ -73,7 +76,6 @@ import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 import { SID_INDEX } from "@/symbology/sidc";
 import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
-const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
 const NATIVE_CAPTURE_OPTIONS = { capture: true };
 const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
 
@@ -88,12 +90,6 @@ const coarsePointerQuery =
   typeof window !== "undefined" && typeof window.matchMedia === "function"
     ? window.matchMedia("(pointer: coarse)")
     : null;
-
-type UnitVisibilityGroup = {
-  id: string;
-  minzoom?: number;
-  maxzoom?: number;
-};
 
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
@@ -239,25 +235,6 @@ function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
     default:
       return { icon: "viewport", text: "viewport" };
   }
-}
-
-function getUnitVisibilityGroup(
-  unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number],
-) {
-  const style = unit.style ?? {};
-  if (!style.limitVisibility) {
-    return { id: ALWAYS_VISIBLE_UNIT_GROUP_ID } satisfies UnitVisibilityGroup;
-  }
-
-  return {
-    id: hashObject({
-      type: "unit-visibility",
-      minZoom: style.minZoom ?? 0,
-      maxZoom: style.maxZoom ?? 24,
-    }),
-    minzoom: style.minZoom ?? 0,
-    maxzoom: style.maxZoom ?? 24,
-  } satisfies UnitVisibilityGroup;
 }
 
 function getUnitLayerId(groupId: string, sourceId: string) {

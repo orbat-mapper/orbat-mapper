@@ -12,10 +12,13 @@ import { useStateHelpers } from "@/scenariostore/helpers";
 function fixture() {
   const units = ref<Partial<NUnit>[]>([]);
   let source = { setData: vi.fn() };
+  const layers = new Map<string, any>();
   const map = {
     getSource: () => source,
     addSource: vi.fn(),
-    getLayer: () => ({}),
+    getLayer: (id: string) => layers.get(id),
+    addLayer: (spec: any) => layers.set(spec.id, spec),
+    removeLayer: (id: string) => layers.delete(id),
   } as unknown as MlMap;
   const scenario = {
     geo: { everyVisibleUnit: units },
@@ -29,6 +32,7 @@ function fixture() {
   return {
     ...useMaplibreRangeRings(map, scenario),
     units,
+    layers,
     source: () => source,
     replaceSource,
   };
@@ -64,6 +68,36 @@ describe("drawRangeRings", () => {
     const next = replaceSource();
     drawRangeRings();
     expect(next.setData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("drawRangeRings with limited unit visibility", () => {
+  it("shows a unit's rings only over the zoom range of the unit", () => {
+    const { drawRangeRings, source, units, layers } = fixture();
+    units.value = [
+      {
+        ...ringUnit([10, 60]),
+        style: { limitVisibility: true, minZoom: 8, maxZoom: 12 } as NUnit["style"],
+      },
+    ];
+    drawRangeRings();
+
+    const { features } = source().setData.mock.lastCall![0];
+    const groupId = features[0].properties.visibilityGroup;
+    const groupLayers = [...layers.values()].filter(
+      (layer) => layer.filter?.[2] === groupId,
+    );
+    expect(groupLayers.map((layer) => layer.type).sort()).toEqual(["fill", "line"]);
+    for (const layer of groupLayers) {
+      expect(layer).toMatchObject({ minzoom: 8, maxzoom: 12 });
+    }
+
+    units.value = [ringUnit([10, 60])];
+    drawRangeRings();
+
+    expect([...layers.values()].some((layer) => layer.filter?.[2] === groupId)).toBe(
+      false,
+    );
   });
 });
 
@@ -123,7 +157,7 @@ describe("drawRangeRings during playback", () => {
   it("moves the rings of a moving unit on every time change", () => {
     const scenario = createScenario();
     const source = { setData: vi.fn() };
-    const map = { getSource: () => source } as unknown as MlMap;
+    const map = { getSource: () => source, getLayer: () => ({}) } as unknown as MlMap;
     const { drawRangeRings } = useMaplibreRangeRings(map, scenario);
     const ringCenterLongitude = () => {
       const { features } = source.setData.mock.lastCall![0];
