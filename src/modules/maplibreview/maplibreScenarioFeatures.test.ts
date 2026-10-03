@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
-import { buildScenarioFeatureRenderPlan } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildScenarioFeatureRenderPlan,
+  MapLibreScenarioFeatureManager,
+} from "@/modules/maplibreview/maplibreScenarioFeatures";
 
 describe("buildScenarioFeatureRenderPlan", () => {
   it("converts circles into polygon render features", () => {
@@ -494,5 +497,66 @@ describe("buildScenarioFeatureRenderPlan", () => {
       "icon-anchor": "right",
       "icon-offset": ["literal", [((48 - 42) / 48) * 28, 0]],
     });
+  });
+});
+
+describe("MapLibreScenarioFeatureManager", () => {
+  function createMockMap() {
+    const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
+    const layers = new Set<string>();
+    return {
+      sources,
+      getSource: (id: string) => sources.get(id),
+      addSource: (id: string) => sources.set(id, { setData: vi.fn() }),
+      removeSource: (id: string) => sources.delete(id),
+      getLayer: (id: string) => (layers.has(id) ? { id } : undefined),
+      addLayer: (spec: { id: string }) => layers.add(spec.id),
+      removeLayer: (id: string) => layers.delete(id),
+      hasImage: () => true,
+      addImage: vi.fn(),
+      setMissingStyleImageResolver: vi.fn(),
+    };
+  }
+
+  function createLayer(id: string, coordinates: number[]) {
+    return {
+      id,
+      kind: "overlay",
+      name: id,
+      items: [
+        {
+          id: `${id}-point`,
+          kind: "geometry",
+          _pid: id,
+          geometry: { type: "Point", coordinates },
+          geometryMeta: { geometryKind: "Point" },
+          style: {},
+        },
+      ],
+    } as any;
+  }
+
+  it("only calls setData on the sources whose data changed", () => {
+    const mockMap = createMockMap();
+    const manager = new MapLibreScenarioFeatureManager(mockMap as any, () => new Set());
+    const layerA = createLayer("layer-a", [10, 20]);
+    const layerB = createLayer("layer-b", [30, 40]);
+    manager.refresh([layerA, layerB]);
+
+    manager.refresh([layerA, layerB]);
+    for (const source of mockMap.sources.values()) {
+      expect(source.setData).not.toHaveBeenCalled();
+    }
+
+    const movedLayerB = createLayer("layer-b", [31, 41]);
+    manager.refresh([layerA, movedLayerB]);
+    const changedSourceIds = [...mockMap.sources]
+      .filter(([, source]) => source.setData.mock.calls.length > 0)
+      .map(([sourceId]) => sourceId);
+    const { sourceId } = buildScenarioFeatureRenderPlan(movedLayerB, {
+      filterVisible: true,
+      selectedFeatureIds: new Set(),
+    });
+    expect(changedSourceIds).toEqual([sourceId]);
   });
 });

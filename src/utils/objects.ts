@@ -26,6 +26,22 @@ export function getChangedValues<T extends Record<string, any>>(
   return diff;
 }
 
+/** True when both objects have the same own keys holding identical values. */
+export function isShallowEqual(
+  a: object | null | undefined,
+  b: object | null | undefined,
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every(
+    (key) =>
+      Object.hasOwn(b, key) &&
+      (a as Record<string, unknown>)[key] === (b as Record<string, unknown>)[key],
+  );
+}
+
 export function removeUndefined<T extends Record<string, any>>(obj: T): T {
   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined)) as T;
 }
