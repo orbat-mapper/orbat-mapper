@@ -164,6 +164,16 @@ export interface RangeRing {
 export interface RangeRingGroup {
   name: string;
   style?: Partial<RangeRingStyle>;
+  /** Hides every ring in the group, whatever the ring's own `hidden` flag. */
+  hidden?: boolean;
+}
+
+/** Scenario-wide range ring visibility, on top of the group and per-ring flags. */
+export interface RangeRingVisibility {
+  /** Hides all range rings. */
+  hidden?: boolean;
+  /** Hides the rings that do not belong to a group. */
+  ungroupedHidden?: boolean;
 }
 
 export interface RangeRingStyle extends StrokeStyleSpec, FillStyleSpec {}

@@ -1,10 +1,10 @@
 {
   "id": "demo-falklands82",
   "type": "ORBAT-mapper",
-  "version": "3.3.0",
+  "version": "3.6.0",
   "meta": {
     "createdDate": "2024-02-04T14:33:50.335Z",
-    "lastModifiedDate": "2026-06-06T14:15:09.743Z"
+    "lastModifiedDate": "2026-10-04T17:48:11.202Z"
   },
   "name": "The Falklands War",
   "startTime": "1982-03-11T10:00:00-04:00",
@@ -51,16 +51,16 @@
                   ],
                   "rangeRings": [
                     {
+                      "group": "Sea Harrier",
                       "name": "FRS1 combat",
                       "range": 400,
-                      "uom": "nmi",
-                      "hidden": true
+                      "uom": "nmi"
                     },
                     {
+                      "group": "Sea Harrier",
                       "name": "FRS1 ground attack",
                       "range": 250,
-                      "uom": "nmi",
-                      "hidden": true
+                      "uom": "nmi"
                     }
                   ],
                   "properties": {
@@ -119,16 +119,16 @@
                   "subUnits": [],
                   "rangeRings": [
                     {
+                      "group": "Sea Harrier",
                       "name": "FRS1 combat",
                       "range": 400,
-                      "uom": "nmi",
-                      "hidden": true
+                      "uom": "nmi"
                     },
                     {
+                      "group": "Sea Harrier",
                       "name": "FRS1 ground attack",
                       "range": 250,
-                      "uom": "nmi",
-                      "hidden": true
+                      "uom": "nmi"
                     }
                   ],
                   "properties": {
@@ -190,6 +190,14 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "MM38 Exocet (UK)",
+                      "name": "MM38 Exocet",
+                      "range": 22,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "49C07H9l5S",
@@ -220,6 +228,20 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "Sea Slug",
+                      "name": "Sea Slug",
+                      "range": 17.3,
+                      "uom": "nmi"
+                    },
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "WiKLa9JeC6",
@@ -250,6 +272,14 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "Sea Dart (UK)",
+                      "name": "Sea Dart",
+                      "range": 40,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": []
                 },
                 {
@@ -274,6 +304,14 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "Sea Dart (UK)",
+                      "name": "Sea Dart",
+                      "range": 40,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": []
                 },
                 {
@@ -298,6 +336,14 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "Sea Dart (UK)",
+                      "name": "Sea Dart",
+                      "range": 40,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "2WrRiki7Ev",
@@ -348,6 +394,14 @@
                       "uom": "knots"
                     }
                   },
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "3LHzyH3dcS",
@@ -378,6 +432,14 @@
                   },
                   "description": "",
                   "externalUrl": "https://en.wikipedia.org/wiki/HMS_Intrepid_(L11)",
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "4z2546k7H0",
@@ -459,6 +521,14 @@
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Broadsword,_1982_(IWM).jpg"
                     }
                   ],
+                  "rangeRings": [
+                    {
+                      "group": "Sea Wolf",
+                      "name": "Sea Wolf",
+                      "range": 5,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "I0yUbnBmsv",
@@ -492,6 +562,14 @@
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Brilliant_(F90)_enters_a_port_in_September_1985_(6421615).jpg"
                     }
                   ],
+                  "rangeRings": [
+                    {
+                      "group": "Sea Wolf",
+                      "name": "Sea Wolf",
+                      "range": 5,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "O1Gx4QnGeH",
@@ -517,6 +595,14 @@
                   "sidc": "10033000001202040000",
                   "subUnits": [],
                   "shortName": "PLY",
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "cqan0tar7o",
@@ -543,6 +629,14 @@
                       "caption": "",
                       "credits": "Don S. Montgomery, USN, Public domain, via Wikimedia Commons",
                       "creditsUrl": "https://commons.wikimedia.org/wiki/File:HMS_Argonaut_(F56)_underway_on_the_Potomac_River_on_26_August_1985_(6409918).jpg"
+                    }
+                  ],
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
                     }
                   ],
                   "state": [
@@ -575,6 +669,14 @@
                   "sidc": "10033000001202030000",
                   "subUnits": [],
                   "shortName": "COV",
+                  "rangeRings": [
+                    {
+                      "group": "Sea Dart (UK)",
+                      "name": "Sea Dart",
+                      "range": 40,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "UMiAuf447W",
@@ -594,6 +696,14 @@
                   "sidc": "10033000001202040000",
                   "subUnits": [],
                   "shortName": "YAR",
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "f7f9hnDwBi",
@@ -627,6 +737,14 @@
                   "sidc": "10033000001202040000",
                   "subUnits": [],
                   "shortName": "ARD",
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "sTN5b3NyMj",
@@ -641,6 +759,14 @@
                   "sidc": "10033000001202040000",
                   "subUnits": [],
                   "shortName": "ALO",
+                  "rangeRings": [
+                    {
+                      "group": "Seacat",
+                      "name": "Seacat",
+                      "range": 2.7,
+                      "uom": "nmi"
+                    }
+                  ],
                   "state": [
                     {
                       "id": "KQJzMUOPCG",
@@ -1687,6 +1813,14 @@
                           "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
                         }
                       ],
+                      "rangeRings": [
+                        {
+                          "group": "5-inch guns",
+                          "name": "5-inch guns",
+                          "range": 9.7,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -1711,6 +1845,14 @@
                       "subUnits": [],
                       "shortName": "CSG",
                       "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                      "rangeRings": [
+                        {
+                          "group": "5-inch guns",
+                          "name": "5-inch guns",
+                          "range": 9.7,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -1733,6 +1875,14 @@
                       "sidc": "10033000001202051900",
                       "subUnits": [],
                       "shortName": "GUE",
+                      "rangeRings": [
+                        {
+                          "group": "MM38 Exocet (Argentina)",
+                          "name": "MM38 Exocet",
+                          "range": 22,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-27T12:27:16-04:00",
@@ -1764,6 +1914,14 @@
                       "subUnits": [],
                       "shortName": "HBO",
                       "externalUrl": "https://en.wikipedia.org/wiki/USS_Perkins_(DD-877)",
+                      "rangeRings": [
+                        {
+                          "group": "5-inch guns",
+                          "name": "5-inch guns",
+                          "range": 9.7,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -1825,6 +1983,14 @@
                       "subUnits": [],
                       "shortName": "PBU",
                       "externalUrl": "https://en.wikipedia.org/wiki/USS_Collett#Argentine_service",
+                      "rangeRings": [
+                        {
+                          "group": "5-inch guns",
+                          "name": "5-inch guns",
+                          "range": 9.7,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -1915,6 +2081,20 @@
                       "sidc": "10033000001202030000",
                       "subUnits": [],
                       "shortName": "STR",
+                      "rangeRings": [
+                        {
+                          "group": "Sea Dart (Argentina)",
+                          "name": "Sea Dart",
+                          "range": 40,
+                          "uom": "nmi"
+                        },
+                        {
+                          "group": "MM38 Exocet (Argentina)",
+                          "name": "MM38 Exocet",
+                          "range": 22,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -1946,6 +2126,20 @@
                           "id": "YX7GN0VxZG"
                         },
                         {
+                          "t": "1982-04-06T12:00:00-04:00",
+                          "location": [-57.857437, -51.725912],
+                          "id": "Tr6AprDep1"
+                        },
+                        {
+                          "t": "1982-04-12T12:00:00-04:00",
+                          "location": [-62.01364445954402, -38.97565390108864],
+                          "id": "Tr12AprBel1",
+                          "via": [
+                            [-57.81173424125008, -51.725774963753054],
+                            [-57.66063960509223, -51.66634856172781]
+                          ]
+                        },
+                        {
                           "t": "1982-04-15T12:00:00-04:00",
                           "hierarchy": {
                             "targetId": "e1EYDEZijC",
@@ -1968,6 +2162,20 @@
                       "shortName": "HERC",
                       "description": "",
                       "externalUrl": "https://en.wikipedia.org/wiki/ARA_H%C3%A9rcules_(B-52)",
+                      "rangeRings": [
+                        {
+                          "group": "Sea Dart (Argentina)",
+                          "name": "Sea Dart",
+                          "range": 40,
+                          "uom": "nmi"
+                        },
+                        {
+                          "group": "MM38 Exocet (Argentina)",
+                          "name": "MM38 Exocet",
+                          "range": 22,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-27T12:27:16-04:00",
@@ -2002,6 +2210,20 @@
                           "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_Veinticinco_de_Mayo.jpg"
                         }
                       ],
+                      "rangeRings": [
+                        {
+                          "group": "AM39 Exocet",
+                          "name": "AM39 Exocet",
+                          "range": 38,
+                          "uom": "nmi"
+                        },
+                        {
+                          "group": "A-4Q Skyhawk",
+                          "name": "A-4Q Skyhawk",
+                          "range": 310,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -2032,6 +2254,14 @@
                       "sidc": "10033000001202050000",
                       "subUnits": [],
                       "shortName": "DRU",
+                      "rangeRings": [
+                        {
+                          "group": "MM38 Exocet (Argentina)",
+                          "name": "MM38 Exocet",
+                          "range": 22,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -2062,6 +2292,14 @@
                       "sidc": "10033000001202050000",
                       "subUnits": [],
                       "shortName": "GRV",
+                      "rangeRings": [
+                        {
+                          "group": "MM38 Exocet (Argentina)",
+                          "name": "MM38 Exocet",
+                          "range": 22,
+                          "uom": "nmi"
+                        }
+                      ],
                       "state": [
                         {
                           "t": "1982-03-11T10:00:00-04:00",
@@ -2099,6 +2337,14 @@
                           "caption": "",
                           "credits": "Public domain, via Wikimedia Commons",
                           "creditsUrl": "https://commons.wikimedia.org/wiki/File:ARA_General_Belgrano_underway.jpg"
+                        }
+                      ],
+                      "rangeRings": [
+                        {
+                          "group": "6-inch guns",
+                          "name": "6-inch guns",
+                          "range": 11.4,
+                          "uom": "nmi"
                         }
                       ],
                       "state": [
@@ -4383,10 +4629,130 @@
   "settings": {
     "rangeRingGroups": [
       {
-        "name": "GR1"
+        "name": "Sea Dart (UK)",
+        "style": {
+          "stroke": "#2563eb",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid",
+          "fill": "#2563eb",
+          "fill-opacity": 0.08
+        },
+        "hidden": true
       },
       {
-        "name": "GR2"
+        "name": "Sea Dart (Argentina)",
+        "style": {
+          "stroke": "#0ea5e9",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid",
+          "fill": "#0ea5e9",
+          "fill-opacity": 0.08
+        },
+        "hidden": true
+      },
+      {
+        "name": "Sea Wolf",
+        "style": {
+          "stroke": "#0d9488",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid",
+          "fill": "#0d9488",
+          "fill-opacity": 0.08
+        },
+        "hidden": true
+      },
+      {
+        "name": "MM38 Exocet (UK)",
+        "style": {
+          "stroke": "#dc2626",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "dashed"
+        },
+        "hidden": true
+      },
+      {
+        "name": "MM38 Exocet (Argentina)",
+        "style": {
+          "stroke": "#f43f5e",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "dashed"
+        },
+        "hidden": true
+      },
+      {
+        "name": "AM39 Exocet",
+        "style": {
+          "stroke": "#9333ea",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "dashed"
+        },
+        "hidden": true
+      },
+      {
+        "name": "A-4Q Skyhawk",
+        "style": {
+          "stroke": "#ea580c",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "dotted"
+        },
+        "hidden": true
+      },
+      {
+        "name": "6-inch guns",
+        "style": {
+          "stroke": "#ca8a04",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid"
+        },
+        "hidden": true
+      },
+      {
+        "name": "Sea Harrier",
+        "hidden": true,
+        "style": {
+          "stroke": "#16a34a",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "dotted"
+        }
+      },
+      {
+        "name": "Sea Slug",
+        "style": {
+          "stroke": "#0891b2",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid"
+        },
+        "hidden": true
+      },
+      {
+        "name": "Seacat",
+        "style": {
+          "stroke": "#65a30d",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid"
+        },
+        "hidden": true
+      },
+      {
+        "name": "5-inch guns",
+        "style": {
+          "stroke": "#a16207",
+          "stroke-opacity": 1,
+          "stroke-width": 2,
+          "stroke-style": "solid"
+        },
+        "hidden": true
       }
     ],
     "statuses": [],

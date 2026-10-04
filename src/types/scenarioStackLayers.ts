@@ -7,7 +7,7 @@ import type {
 import type { ScenarioTime } from "@/types/base";
 
 export type ScenarioStackLayerId = string;
-export type ScenarioStackLayerKind = "overlay" | "reference" | "data";
+export type ScenarioStackLayerKind = "overlay" | "reference" | "data" | "rangeRings";
 
 export interface ScenarioStackLayerBase {
   id: ScenarioStackLayerId;
@@ -49,8 +49,24 @@ export interface ScenarioDataLayer extends ScenarioStackLayerBase {
   };
 }
 
+/**
+ * Where the range rings sit in the layer stack. There is at most one, and it holds no
+ * rings itself. Range rings cannot go between control-measure layers, which draw as
+ * one block, so `aboveControlMeasures` puts them over the whole control-measure stack
+ * instead of at their place in the stack.
+ */
+export interface ScenarioRangeRingsLayer extends ScenarioStackLayerBase {
+  kind: "rangeRings";
+  aboveControlMeasures?: boolean;
+}
+
+export const RANGE_RINGS_STACK_LAYER_ID = "rangeRings";
+
 export type ScenarioStackLayer =
-  ScenarioOverlayLayer | ScenarioReferenceLayer | ScenarioDataLayer;
+  | ScenarioOverlayLayer
+  | ScenarioReferenceLayer
+  | ScenarioDataLayer
+  | ScenarioRangeRingsLayer;
 
 export interface NScenarioOverlayLayer extends Omit<ScenarioOverlayLayer, "items"> {
   items: LayerItemId[];
@@ -60,8 +76,13 @@ export interface NScenarioReferenceLayer extends ScenarioReferenceLayer {}
 
 export interface NScenarioDataLayer extends ScenarioDataLayer {}
 
+export interface NScenarioRangeRingsLayer extends ScenarioRangeRingsLayer {}
+
 export type NScenarioStackLayer =
-  NScenarioOverlayLayer | NScenarioReferenceLayer | NScenarioDataLayer;
+  | NScenarioOverlayLayer
+  | NScenarioReferenceLayer
+  | NScenarioDataLayer
+  | NScenarioRangeRingsLayer;
 
 export function isScenarioOverlayLayer(
   layer: ScenarioStackLayer | NScenarioStackLayer | undefined | null,
@@ -79,4 +100,10 @@ export function isScenarioDataLayer(
   layer: ScenarioStackLayer | NScenarioStackLayer | undefined | null,
 ): layer is ScenarioDataLayer | NScenarioDataLayer {
   return !!layer && layer.kind === "data";
+}
+
+export function isScenarioRangeRingsLayer(
+  layer: ScenarioStackLayer | NScenarioStackLayer | undefined | null,
+): layer is ScenarioRangeRingsLayer | NScenarioRangeRingsLayer {
+  return !!layer && layer.kind === "rangeRings";
 }

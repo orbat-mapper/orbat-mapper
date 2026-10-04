@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
 import {
-  defaultFillColor,
-  defaultFillOpacity,
   defaultStrokeColor,
   defaultStrokeWidth,
   strokeStyleDashed,
   strokeStyleDotted,
 } from "@/geo/simplestyle";
 import { type RangeRingStyle } from "@/types/scenarioGeoModels";
+import { resolveRingColors } from "@/composables/maplibreRangeRings";
 
 interface Props {
   styling: RangeRingStyle;
@@ -85,13 +84,7 @@ function drawRing(el: HTMLCanvasElement) {
   }
   if (opts["stroke-opacity"] === 0) strokeColor = undefined;
 
-  let fillColor: string | undefined = toRgba(ctx, defaultFillColor, defaultFillOpacity);
-  if (opts.fill || opts["fill-opacity"] !== undefined) {
-    fillColor = toRgba(ctx, opts.fill || defaultFillColor, opts["fill-opacity"] ?? 0.5);
-  } else if (opts.fill === null) {
-    fillColor = undefined;
-  }
-  if (opts["fill-opacity"] === 0) fillColor = undefined;
+  const fillColor = opts.fill ? resolveRingColors(opts).fillColor : undefined;
 
   ctx.save();
   ctx.scale(pixelRatio, pixelRatio);

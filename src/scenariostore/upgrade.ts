@@ -370,7 +370,7 @@ function canonicalizeScenarioLayerStack(scenario: LoadableScenario): Scenario {
         layer &&
         typeof layer === "object" &&
         "kind" in layer &&
-        layer.kind === "data"
+        (layer.kind === "data" || layer.kind === "rangeRings")
       ) {
         canonicalLayerStack.push({ ...layer, id: String(layer.id) });
         return;

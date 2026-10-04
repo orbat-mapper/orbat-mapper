@@ -47,9 +47,10 @@ import { createMapLibreKmlLayerRenderer } from "@/geo/kml/maplibre";
 import { findFirstUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
 import {
   isScenarioOverlayLayer,
+  isScenarioRangeRingsLayer,
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
-import { RANGE_RING_FILL_LAYER_ID } from "@/composables/maplibreRangeRings";
+import { isRangeRingLayerId } from "@/composables/maplibreRangeRings";
 
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
@@ -630,6 +631,10 @@ export function createMapLibreScenarioLayerController(
       (layer: { id?: FeatureId }) => layer.id === layerId,
     );
     if (!stackLayer) return [];
+    if (isScenarioRangeRingsLayer(stackLayer)) {
+      // Above the control measures, they are placed on their own after the stack.
+      return stackLayer.aboveControlMeasures ? [] : getRangeRingLayerIds();
+    }
     if (isScenarioOverlayLayer(stackLayer)) {
       return featureManager?.getLayerIds(String(layerId)) ?? [];
     }
@@ -655,10 +660,22 @@ export function createMapLibreScenarioLayerController(
     if (controlMeasureAnchor && safeGetLayer(controlMeasureAnchor)) {
       return controlMeasureAnchor;
     }
-    if (safeGetLayer(RANGE_RING_FILL_LAYER_ID)) return RANGE_RING_FILL_LAYER_ID;
     return findFirstUnitLayerId(mlMap);
   }
 
+  function getRangeRingLayerIds(): string[] {
+    try {
+      return mlMap.getLayersOrder().filter(isRangeRingLayerId);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * The Layers panel lists layers bottom-up, and the map follows the same order: the
+   * feature/reference stack (range rings included), then the control-measure stack,
+   * then range rings when they are above the control measures, with units on top.
+   */
   function reorderScenarioStackLayers() {
     const scenario = activeScenario;
     if (!scenario) return;
@@ -672,6 +689,12 @@ export function createMapLibreScenarioLayerController(
       for (const layerId of [...block].reverse()) {
         moveLayerBefore(layerId, beforeId);
         beforeId = layerId;
+      }
+    }
+    if (scenario.geo.rangeRingsLayer?.value?.aboveControlMeasures) {
+      const unitLayerId = findFirstUnitLayerId(mlMap);
+      for (const layerId of getRangeRingLayerIds()) {
+        moveLayerBefore(layerId, unitLayerId);
       }
     }
   }

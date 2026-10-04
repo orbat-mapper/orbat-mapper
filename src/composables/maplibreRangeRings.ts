@@ -10,8 +10,14 @@ import { featureCollection } from "@turf/helpers";
 import type { Feature, MultiPolygon, Polygon } from "geojson";
 import { toRgbaColor } from "@/utils/cssColor";
 import type { TScenario } from "@/scenariostore";
-import type { NUnit } from "@/types/internalModels";
+import type { NRangeRingGroup, NUnit } from "@/types/internalModels";
+import type {
+  RangeRing,
+  RangeRingStyle,
+  RangeRingVisibility,
+} from "@/types/scenarioGeoModels";
 import { convertToMetric } from "@/utils/convert";
+import { isShallowEqual } from "@/utils/objects";
 import {
   ALWAYS_VISIBLE_UNIT_GROUP_ID,
   getUnitVisibilityGroup,
@@ -23,7 +29,7 @@ const RANGE_RING_SOURCE_ID = "rangeRingSource";
 export const RANGE_RING_FILL_LAYER_ID = "rangeRingFillLayer";
 export const RANGE_RING_LINE_LAYER_ID = "rangeRingLineLayer";
 
-const DEFAULT_STROKE = "#f43f5e";
+export const DEFAULT_RANGE_RING_STROKE = "#f43f5e";
 
 type RingFeatureProperties = {
   id: string;
@@ -40,8 +46,39 @@ type RingIdProperties = {
   visibilityGroup: string;
 };
 
+type RingStyledFeature = Feature<
+  Polygon | MultiPolygon,
+  // A stable feature id, so playback can send MapLibre a diff instead of all rings.
+  RingFeatureProperties & { key: string }
+>;
+type CachedGroup = {
+  signature: string;
+  parts: ReturnType<typeof mergeRingGroup>;
+};
+
 const MIN_ZOOM = 0;
 const MAX_ZOOM = 24;
+
+/** Map colors for a ring style. A ring is only filled when it has a fill color. */
+export function resolveRingColors(style: Partial<RangeRingStyle>) {
+  const strokeColor = toRgbaColor(
+    style.stroke,
+    style["stroke-opacity"] ?? 1,
+    DEFAULT_RANGE_RING_STROKE,
+  );
+  const strokeWidth = style["stroke-width"] ?? 2;
+  const fillColor = style.fill
+    ? toRgbaColor(style.fill, style["fill-opacity"] ?? 0.5, DEFAULT_RANGE_RING_STROKE)
+    : "rgba(0, 0, 0, 0)";
+  return { strokeColor, strokeWidth, fillColor };
+}
+
+export function isRangeRingLayerId(layerId: string) {
+  return (
+    layerId.startsWith(RANGE_RING_FILL_LAYER_ID) ||
+    layerId.startsWith(RANGE_RING_LINE_LAYER_ID)
+  );
+}
 
 function getRingLayerIds(visibilityGroupId: string) {
   const suffix =
@@ -52,26 +89,46 @@ function getRingLayerIds(visibilityGroupId: string) {
   };
 }
 
+/**
+ * A ring is drawn only when it, its group (or the ungrouped rings) and range rings as
+ * a whole are all shown.
+ */
+export function isRangeRingHidden(
+  ring: RangeRing,
+  groupMap: Record<string, NRangeRingGroup>,
+  visibility: RangeRingVisibility | undefined,
+) {
+  if (ring.hidden || visibility?.hidden) return true;
+  return ring.group ? !!groupMap[ring.group]?.hidden : !!visibility?.ungroupedHidden;
+}
+
+type RingFeature = Feature<Polygon, RingIdProperties>;
+type CachedRing = { key: string; signature: string; feature: RingFeature };
+
 function createRangeRings(
   unit: NUnit,
   visibilityGroup: UnitVisibilityGroup,
-): Feature<Polygon, RingIdProperties>[] {
-  if (!unit.rangeRings?.length || !unit._state?.location) return [];
-  const out: Feature<Polygon, RingIdProperties>[] = [];
+  isHidden: (ring: RangeRing) => boolean,
+  previous: Map<string, CachedRing>,
+): CachedRing[] {
+  const location = unit._state?.location;
+  if (!unit.rangeRings?.length || !location) return [];
+  const out: CachedRing[] = [];
   unit.rangeRings.forEach((r, i) => {
-    if (r.hidden) return;
-    const ring = circle(
-      unit._state!.location!,
-      convertToMetric(r.range, r.uom || "km") / 1000,
-      {
-        properties: {
-          id: r.group ? r.group : `${unit.id}-${i}`,
-          isGroup: !!r.group,
-          visibilityGroup: visibilityGroup.id,
-        },
-      },
-    ) as Feature<Polygon, RingIdProperties>;
-    out.push(ring);
+    if (isHidden(r)) return;
+    const key = `${unit.id}-${i}`;
+    const radius = convertToMetric(r.range, r.uom || "km") / 1000;
+    const id = r.group ? r.group : key;
+    const signature = `${location[0]},${location[1]},${radius},${id},${visibilityGroup.id}`;
+    // Most units stand still during playback, so their rings are reused as is.
+    let cached = previous.get(key);
+    if (cached?.signature !== signature) {
+      const feature = circle(location, radius, {
+        properties: { id, isGroup: !!r.group, visibilityGroup: visibilityGroup.id },
+      }) as RingFeature;
+      cached = { key, signature, feature };
+    }
+    out.push(cached);
   });
   return out;
 }
@@ -83,7 +140,7 @@ function createRangeRings(
  * render as separate polygons at the same zoom.
  */
 function mergeRingGroup(
-  rings: Feature<Polygon, RingIdProperties>[],
+  rings: RingFeature[],
   visibilityGroups: Map<string, UnitVisibilityGroup>,
 ): {
   feature: Feature<Polygon | MultiPolygon, RingIdProperties>;
@@ -150,10 +207,14 @@ function mergeRingGroup(
 }
 
 export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
-  // Playback redraws on every tick. Pushing unchanged data still reloads the source's
-  // tiles, and with terrain enabled that re-renders every draped texture it covers.
+  // Playback redraws on every tick. setData reloads every tile of the source, and with
+  // terrain enabled each reloaded tile re-renders the draped texture it covers. Only
+  // the rings that changed are sent with updateData, so MapLibre reloads only the
+  // tiles they touch.
   let lastSource: GeoJSONSource | undefined;
-  let lastData: string | undefined;
+  let pushedFeatures = new Map<string, RingStyledFeature>();
+  let ringCache = new Map<string, CachedRing>();
+  let groupCache = new Map<string, CachedGroup>();
 
   let ringLayersBeforeId: string | undefined;
   const ringLayerIds = new Set<string>();
@@ -191,6 +252,21 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
     ];
   }
 
+  /**
+   * Where a new ring layer goes: just above the topmost ring layer already in the
+   * style, so the rings stay together wherever the scenario layer controller has
+   * moved them. Before any exist, below `ringLayersBeforeId`.
+   */
+  function getNewRingLayerBeforeId() {
+    const layerOrder = mlMap.getLayersOrder();
+    let lastRingIndex = -1;
+    layerOrder.forEach((id, index) => {
+      if (ringLayerIds.has(id)) lastRingIndex = index;
+    });
+    if (lastRingIndex === -1) return ringLayersBeforeId;
+    return layerOrder[lastRingIndex + 1];
+  }
+
   function syncRingLayers(groups: Iterable<UnitVisibilityGroup> = []) {
     const desiredGroups = new Map<string, UnitVisibilityGroup>([
       [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
@@ -201,8 +277,8 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
     for (const group of desiredGroups.values()) {
       for (const spec of createRingLayerSpecs(group)) {
         desiredLayerIds.add(spec.id);
+        if (!mlMap.getLayer(spec.id)) mlMap.addLayer(spec, getNewRingLayerBeforeId());
         ringLayerIds.add(spec.id);
-        if (!mlMap.getLayer(spec.id)) mlMap.addLayer(spec, ringLayersBeforeId);
       }
     }
     for (const layerId of ringLayerIds) {
@@ -218,6 +294,7 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
       mlMap.addSource(RANGE_RING_SOURCE_ID, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
+        promoteId: "key",
       });
     }
     syncRingLayers();
@@ -228,7 +305,7 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
     isGroup,
     visibilityGroup,
   }: RingIdProperties): RingFeatureProperties {
-    let style: Record<string, any> = {};
+    let style: Partial<RangeRingStyle> = {};
     if (isGroup) {
       style = activeScenario.store.state.rangeRingGroupMap[id]?.style ?? {};
     } else {
@@ -238,68 +315,95 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
       const unit = activeScenario.helpers.getUnitById(unitId);
       style = unit?.rangeRings?.[index]?.style ?? {};
     }
-    const strokeOpacity = style["stroke-opacity"] ?? 1;
-    const strokeWidth = style["stroke-width"] ?? 2;
-    const strokeColor = toRgbaColor(style.stroke, strokeOpacity, DEFAULT_STROKE);
-    const hasFill = style.fill != null && style.fill !== "";
-    const fillOpacity = hasFill ? (style["fill-opacity"] ?? 0.5) : 0;
-    const fillColor = hasFill
-      ? toRgbaColor(style.fill, fillOpacity, DEFAULT_STROKE)
-      : "rgba(0, 0, 0, 0)";
-    return { id, isGroup, visibilityGroup, strokeColor, strokeWidth, fillColor };
+    return { id, isGroup, visibilityGroup, ...resolveRingColors(style) };
+  }
+
+  function toStyledFeature(
+    key: string,
+    feature: Feature<Polygon | MultiPolygon, RingIdProperties>,
+  ): RingStyledFeature {
+    const properties = { key, ...resolveRingStyle(feature.properties) };
+    const previous = pushedFeatures.get(key);
+    if (
+      previous?.geometry === feature.geometry &&
+      isShallowEqual(previous.properties, properties)
+    ) {
+      return previous;
+    }
+    return { type: "Feature", geometry: feature.geometry, properties };
   }
 
   function drawRangeRings() {
     const source = mlMap.getSource(RANGE_RING_SOURCE_ID) as GeoJSONSource | undefined;
     if (!source) return;
 
+    const { rangeRingGroupMap, rangeRingVisibility } = activeScenario.store.state;
+    const isHidden = (ring: RangeRing) =>
+      isRangeRingHidden(ring, rangeRingGroupMap, rangeRingVisibility);
     const visibilityGroups = new Map<string, UnitVisibilityGroup>();
     const rings = activeScenario.geo.everyVisibleUnit.value
       .filter((u) => u.rangeRings?.length)
       .flatMap((unit) => {
         const visibilityGroup = getUnitVisibilityGroup(unit);
         visibilityGroups.set(visibilityGroup.id, visibilityGroup);
-        return createRangeRings(unit, visibilityGroup);
+        return createRangeRings(unit, visibilityGroup, isHidden, ringCache);
       });
+    ringCache = new Map(rings.map((r) => [r.key, r]));
 
     const layerGroups = new Map<string, UnitVisibilityGroup>();
-    const ungrouped: Feature<Polygon, RingIdProperties>[] = [];
-    const ringGroups = new Map<string, Feature<Polygon, RingIdProperties>[]>();
-    for (const ring of rings) {
-      if (ring.properties.isGroup) {
-        const members = ringGroups.get(ring.properties.id) ?? [];
-        members.push(ring);
-        ringGroups.set(ring.properties.id, members);
+    const features: RingStyledFeature[] = [];
+    const ungrouped: [string, RingFeature][] = [];
+    const ringGroups = new Map<string, CachedRing[]>();
+    for (const cached of rings) {
+      const { properties } = cached.feature;
+      if (properties.isGroup) {
+        const members = ringGroups.get(properties.id) ?? [];
+        members.push(cached);
+        ringGroups.set(properties.id, members);
       } else {
-        ungrouped.push(ring);
-        const group = visibilityGroups.get(ring.properties.visibilityGroup)!;
+        ungrouped.push([`ring:${cached.key}`, cached.feature]);
+        const group = visibilityGroups.get(properties.visibilityGroup)!;
         layerGroups.set(group.id, group);
       }
     }
 
-    const merged: Feature<Polygon | MultiPolygon, RingIdProperties>[] = [];
-    for (const members of ringGroups.values()) {
-      for (const { feature, group } of mergeRingGroup(members, visibilityGroups)) {
-        merged.push(feature);
+    const nextGroupCache = new Map<string, CachedGroup>();
+    for (const [groupId, members] of ringGroups) {
+      // Unions are costly, so a group is merged again only when a member changed.
+      const signature = members.map((m) => m.signature).join(";");
+      let cached = groupCache.get(groupId);
+      if (cached?.signature !== signature) {
+        cached = {
+          signature,
+          parts: mergeRingGroup(
+            members.map((m) => m.feature),
+            visibilityGroups,
+          ),
+        };
+      }
+      nextGroupCache.set(groupId, cached);
+      for (const { feature, group } of cached.parts) {
+        features.push(toStyledFeature(`group:${groupId}@${group.id}`, feature));
         layerGroups.set(group.id, group);
       }
+    }
+    groupCache = nextGroupCache;
+    for (const [key, feature] of ungrouped) {
+      features.push(toStyledFeature(key, feature));
     }
     syncRingLayers(layerGroups.values());
 
-    const features: Feature<Polygon | MultiPolygon, RingFeatureProperties>[] = [
-      ...merged,
-      ...ungrouped,
-    ].map((f) => ({
-      ...f,
-      properties: resolveRingStyle(f.properties),
-    }));
-
-    const data = JSON.stringify(features);
-    // A basemap swap replaces the source, which must be filled again.
-    if (source === lastSource && data === lastData) return;
+    const nextPushed = new Map(features.map((f) => [f.properties.key, f]));
+    if (source !== lastSource) {
+      // A basemap swap replaces the source, which must be filled again.
+      source.setData({ type: "FeatureCollection", features });
+    } else {
+      const add = features.filter((f) => pushedFeatures.get(f.properties.key) !== f);
+      const remove = [...pushedFeatures.keys()].filter((key) => !nextPushed.has(key));
+      if (add.length || remove.length) source.updateData({ add, remove });
+    }
     lastSource = source;
-    lastData = data;
-    source.setData({ type: "FeatureCollection", features });
+    pushedFeatures = nextPushed;
   }
 
   return { setupRangeRingLayers, drawRangeRings };

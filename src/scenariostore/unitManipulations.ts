@@ -153,6 +153,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateRangeRing,
     updateRangeRingByName,
     updateRangeRingGroup,
+    updateRangeRingVisibility,
     addRangeRingGroup,
     deleteRangeRingGroup,
   } = useRangeRingManipulations(store);
@@ -1307,6 +1308,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateRangeRing,
     updateRangeRingByName,
     updateRangeRingGroup,
+    updateRangeRingVisibility,
     addRangeRingGroup,
     deleteRangeRingGroup,
     updateEquipment,

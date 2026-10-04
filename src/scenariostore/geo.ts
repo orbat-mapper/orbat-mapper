@@ -43,6 +43,7 @@ import type {
 } from "@/types/scenarioStackLayers";
 import {
   isScenarioOverlayLayer,
+  isScenarioRangeRingsLayer,
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
 import { klona } from "klona";
@@ -473,6 +474,38 @@ export function useGeo(store: NewScenarioStore) {
       { label: "moveLayer", value: layerId },
     );
     featureLayerEvent.trigger({ type: "moveLayer", id: layerId }).then();
+  }
+
+  const rangeRingsLayer = computed(() =>
+    Object.values(state.layerStackMap).find(isScenarioRangeRingsLayer),
+  );
+
+  /**
+   * Move the range rings in the layer stack. `toIndex` places them in the stack, and
+   * `aboveControlMeasures` lifts them over the whole control-measure stack.
+   */
+  function moveRangeRings(options: { toIndex?: number; aboveControlMeasures: boolean }) {
+    const layer = rangeRingsLayer.value;
+    if (!layer) return;
+    const fromIndex = state.layerStack.indexOf(layer.id);
+    const toIndex = options.toIndex ?? fromIndex;
+    if (
+      toIndex === fromIndex &&
+      !!layer.aboveControlMeasures === options.aboveControlMeasures
+    ) {
+      return;
+    }
+    update(
+      (s) => {
+        moveItemMutable(s.layerStack, fromIndex, toIndex);
+        const draft = s.layerStackMap[layer.id];
+        if (!isScenarioRangeRingsLayer(draft)) return;
+        if (options.aboveControlMeasures) draft.aboveControlMeasures = true;
+        else delete draft.aboveControlMeasures;
+      },
+      { label: "moveLayer", value: layer.id },
+    );
+    featureLayerEvent.trigger({ type: "moveLayer", id: layer.id }).then();
   }
 
   function moveMapLayer(layerId: FeatureId, options: MoveLayerOptions) {
@@ -1146,6 +1179,8 @@ export function useGeo(store: NewScenarioStore) {
     overlayLayers,
     layersItems,
     stackLayers,
+    rangeRingsLayer,
+    moveRangeRings,
     referenceLayers,
     mapLayers,
     addMapLayer,

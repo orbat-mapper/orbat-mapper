@@ -25,7 +25,11 @@ import { isLoading } from "@/scenariostore/index";
 import { INTERNAL_NAMES, TIMESTAMP_NAMES } from "@/types/internalModels";
 import dayjs from "dayjs";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
-import type { RangeRingGroup, ScenarioMapLayer } from "@/types/scenarioGeoModels";
+import type {
+  RangeRingGroup,
+  RangeRingVisibility,
+  ScenarioMapLayer,
+} from "@/types/scenarioGeoModels";
 import type {
   ScenarioLayerItem,
   ScenarioLayerItemsLayer,
@@ -50,6 +54,7 @@ import type {
 } from "@/types/scenarioStackLayers";
 import {
   isScenarioDataLayer,
+  isScenarioRangeRingsLayer,
   isScenarioOverlayLayer,
   isScenarioReferenceLayer,
 } from "@/types/scenarioStackLayers";
@@ -205,6 +210,11 @@ function getLayerStack(state: ScenarioState): ScenarioStackLayer[] {
       if (isScenarioOverlayLayer(layer)) return overlayLayers.get(String(id));
       if (isScenarioReferenceLayer(layer)) return referenceLayers.get(String(id));
       if (isScenarioDataLayer(layer)) return layer;
+      if (isScenarioRangeRingsLayer(layer)) {
+        // Left out at its default place, so scenarios that never moved it save unchanged.
+        const isDefault = state.layerStack[0] === id && !layer.aboveControlMeasures;
+        return isDefault ? undefined : layer;
+      }
       return undefined;
     })
     .filter(Boolean) as ScenarioStackLayer[];
@@ -239,6 +249,13 @@ function getSupplyCategories(state: ScenarioState): SupplyCategory[] {
 
 function getRangeRingGroups(state: ScenarioState): RangeRingGroup[] {
   return Object.values(state.rangeRingGroupMap).map(({ id, ...rest }) => rest);
+}
+
+/** Only the flags that are on, so scenarios that never hide rings stay unchanged. */
+function getRangeRingVisibility(state: ScenarioState): RangeRingVisibility | undefined {
+  const { hidden, ungroupedHidden } = state.rangeRingVisibility ?? {};
+  if (!hidden && !ungroupedHidden) return undefined;
+  return { hidden: hidden || undefined, ungroupedHidden: ungroupedHidden || undefined };
 }
 
 function getUnitStatuses(state: ScenarioState): UnitStatus[] {
@@ -344,6 +361,7 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
       supplyCategories: getSupplyCategories(state),
       settings: {
         rangeRingGroups: getRangeRingGroups(state),
+        rangeRingVisibility: getRangeRingVisibility(state),
         statuses: getUnitStatuses(state),
         supplyClasses: getSupplyClasses(state),
         supplyUoMs: getSupplyUoMs(state),
