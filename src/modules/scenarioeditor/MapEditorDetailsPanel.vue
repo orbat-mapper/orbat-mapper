@@ -5,6 +5,7 @@ import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import { Button } from "@/components/ui/button";
 import { PanelRightIcon, PinIcon, PinOffIcon } from "@lucide/vue";
 import OverlayPanelIcon from "@/components/OverlayPanelIcon.vue";
+import { DETAILS_OVERLAY_MAX_WIDTH } from "@/modules/scenarioeditor/detailsPanelLayout";
 
 withDefaults(defineProps<{ mode: DetailsPanelMode; bottomInset?: number }>(), {
   bottomInset: 0,
@@ -33,7 +34,7 @@ const overlayClasses =
     :style="{
       width: widthStore.detailsWidth + 'px',
       minWidth: '250px',
-      maxWidth: '50vw',
+      maxWidth: mode === 'overlay' ? DETAILS_OVERLAY_MAX_WIDTH : '50vw',
       maxHeight: mode === 'overlay' ? `calc(100% - 1rem - ${bottomInset}px)` : undefined,
     }"
   >
