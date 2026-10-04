@@ -22,6 +22,7 @@ import {
 import { useTacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useBasemapArchives } from "@/composables/basemapArchives";
+import { useElevationArchive } from "@/composables/elevationArchive";
 import { useGeoStore } from "@/stores/geoStore";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
@@ -148,6 +149,7 @@ useMapLibreRoutingPreview(() => mlMap.value);
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
 const { restoreRememberedBasemapArchive } = useBasemapArchives();
+const { restoreRememberedElevationArchive } = useElevationArchive();
 const mapSettingsStore = useMapSettingsStore();
 const maplibreBaseMapId = computed({
   get: () =>
@@ -224,10 +226,13 @@ watch(
 );
 
 onMounted(async () => {
+  // Elevation data depends on neither the layer list nor the basemap, so it need not wait.
+  const elevation = restoreRememberedElevationArchive();
   await maplibreLayersStore.initialize();
   // The layer list must be resolved first, so a remembered key that a config-declared archive
   // already provides is not treated as pending.
   await restoreRememberedBasemapArchive();
+  await elevation;
 });
 
 function disposeMaplibreBinding() {

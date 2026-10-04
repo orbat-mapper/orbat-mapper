@@ -35,11 +35,12 @@ const STANDALONE_MODULES: Record<string, string> = {
 export function createAppHistory() {
   return createWebHashHistory();
 }`,
-  // No place search (it is a service on the internet), and no persisted file handles (an opaque
-  // origin has no IndexedDB and no working file picker).
+  // No place search and no online elevation data (both are services on the internet), and no
+  // persisted file handles (an opaque origin has no IndexedDB and no working file picker).
   "src/utils/runtimeEnvironment.ts": `export const isGeoSearchAvailable = false;
 export const canPersistFileHandles = false;
-export const canReadHostedConfig = false;`,
+export const canReadHostedConfig = false;
+export const isOnlineElevationAvailable = false;`,
 };
 
 function replaceStandaloneModules(): Plugin {

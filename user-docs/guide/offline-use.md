@@ -300,6 +300,72 @@ a built-in online basemap do not have one.
 You can also do a right click on the map, then select _Map base layer_. If the active base layer is a basemap archive,
 the menu shows a remove item for it.
 
+## Terrain and hillshading without an internet connection
+
+3D terrain and hillshading need **elevation data**. By default, ORBAT Mapper reads this data from
+[Mapterhorn](https://mapterhorn.com/) on the internet. Without an internet connection, the terrain button on the map turns
+amber, and the map stays flat. To use terrain offline, open an **elevation archive**: a PMTiles archive that holds
+elevation tiles instead of map images.
+
+### Get an elevation archive
+
+Mapterhorn supplies its elevation data as PMTiles archives. Extract the area that you need with the
+[`pmtiles` command line tool](https://docs.protomaps.com/guide/getting-started). The archive of the full planet has zoom
+levels 0 to 12:
+
+```sh
+pmtiles extract https://download.mapterhorn.com/planet.pmtiles \
+  japan-terrain.pmtiles --bbox=115.5,5,153,60 --maxzoom=10
+```
+
+Elevation archives are large, and each zoom level makes the archive approximately three times larger. For the area in
+the example, zoom level 9 gives approximately 400 MB, zoom level 10 gives 1.2 GB and zoom level 12 gives 13 GB. Try
+`--dry-run` first: the tool then shows the size of the archive and writes nothing.
+
+The tiles of Mapterhorn are 512 pixels wide. Therefore an elevation archive to zoom level 10 has approximately the same
+detail as a basemap to zoom level 11. For a large area, an archive to a lower zoom level than the basemap is usually
+sufficient.
+
+Mapterhorn keeps zoom levels 13 and higher in regional archives, for the areas that have more precise elevation data.
+Each regional archive covers one tile of zoom level 6, and its name gives that tile, for example `6-32-21.pmtiles`.
+Refer to [Mapterhorn data access](https://mapterhorn.com/data-access/). For a small area with high detail, extract the
+low zoom levels from the planet and the high zoom levels from the regional archive. Then merge the two archives:
+
+```sh
+pmtiles extract https://download.mapterhorn.com/planet.pmtiles \
+  low.pmtiles --bbox=0.97,49.62,1.52,49.87 --maxzoom=12
+pmtiles extract https://download.mapterhorn.com/6-32-21.pmtiles \
+  high.pmtiles --bbox=0.97,49.62,1.52,49.87 --minzoom=13 --maxzoom=15
+pmtiles merge low.pmtiles high.pmtiles normandy-terrain.pmtiles
+```
+
+### Open an elevation archive
+
+An elevation archive has the same file format as a raster basemap archive. ORBAT Mapper cannot see the difference,
+therefore you must tell it that the file holds elevation data:
+
+- Do a right click on the map. Select _Terrain_, then _Open elevation archive…_.
+- In the standalone file, select the terrain button on the map. Refer to [Level 3](#level-3-standalone-file).
+
+ORBAT Mapper then uses the archive for 3D terrain and for hillshading, instead of Mapterhorn. Outside the area of the
+archive, the map is flat. Only one elevation archive is in use at a time. To open a different archive, select _Open
+elevation archive…_ again.
+
+ORBAT Mapper keeps a reference to the file as it does for a basemap archive. Refer to
+[Limits of a local map file](#limits-of-a-local-map-file). If ORBAT Mapper cannot open the archive again by itself, the
+_Terrain_ menu shows _Restore_ or _Select_ with the name of the file. ORBAT Mapper opens the archive again without a
+question only if terrain or hillshading was on.
+
+To stop using the archive, select _Terrain_ > _Remove elevation archive_. ORBAT Mapper then uses Mapterhorn again. In
+the standalone file, ORBAT Mapper uses Mapterhorn again only if you selected _Use Mapterhorn online_. The file on your
+disk does not change.
+
+### An elevation archive on a server
+
+At Level 1 you can put the elevation archive on your web server. Select **Add map server…**, type the address of the
+archive, and select **Elevation archive**. The checkbox shows only for an address that ends with `.pmtiles`. ORBAT Mapper
+keeps the address in the browser and opens the archive again after a reload.
+
 ## Level 3 — Standalone file
 
 At Level 3 there is no web server. The application is one HTML file on your disk. You open it with your browser, and you
@@ -339,6 +405,8 @@ by email without compression.
 - Load and save of scenario files.
 - Import and export.
 - Basemap archives, as at Level 2.
+- 3D terrain and hillshading from an elevation archive. Refer to
+  [Terrain and hillshading without an internet connection](#terrain-and-hillshading-without-an-internet-connection).
 
 ### Limitations
 
@@ -350,6 +418,11 @@ internet connection.
   the start page.
 - **There is no place name search.** The search needs an online service. The build removes the search from the map and
   from the command palette.
+- **Online elevation data is off until you select it.** The standalone file does not read elevation data from
+  Mapterhorn by itself. The first time that you select the terrain button on the map, it shows a menu. Select _Use
+  Mapterhorn online_ if the computer can connect to the internet, or _Open elevation archive…_ to use a file. The
+  button then turns on terrain and hillshading. ORBAT Mapper keeps your choice. To change it later, do a right click on
+  the map and select _Terrain_.
 - **You cannot use `maplibreConfig.json`.** That file is on the web server, therefore the standalone file cannot read
   it. The map shows the built-in online basemaps, which operate if the computer can reach them. For your own map server,
   refer to [Add a map server without the configuration file](#add-a-map-server-without-the-configuration-file).

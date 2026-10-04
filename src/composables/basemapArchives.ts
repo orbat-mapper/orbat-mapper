@@ -17,6 +17,7 @@ import {
   isBasemapArchiveFile,
   type BasemapArchiveKind,
 } from "@/geo/basemapArchive";
+import { ELEVATION_ARCHIVE_KEY } from "@/geo/elevationArchive";
 import {
   deleteBasemapArchiveHandle,
   deleteOrphanBasemapArchiveHandles,
@@ -106,7 +107,7 @@ function rememberedArchiveKey(remembered: RememberedBasemapArchive): string {
   return remembered.key ?? archiveKeyFromFileName(remembered.fileName);
 }
 
-function pickFilesFromDisk(accept: string, multiple = false): Promise<File[]> {
+export function pickFilesFromDisk(accept: string, multiple = false): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
@@ -302,16 +303,12 @@ export function useBasemapArchives() {
     // nothing but `layers` and `initialize`.
     const remembered = mapSettings.basemapArchives;
     pendingHandles.value.clear();
-    if (remembered.length === 0) {
-      // Nothing is remembered, so every stored handle is an orphan.
-      await deleteOrphanBasemapArchiveHandles([]);
-      return "none";
-    }
-
     const keys = remembered.map(rememberedArchiveKey);
     // Handles outlive the list they belong to: an archive removed in another tab, or a list cleared
-    // by hand, leaves a handle nothing can reach. Drop those before probing the rest.
-    await deleteOrphanBasemapArchiveHandles(keys);
+    // by hand, leaves a handle nothing can reach. Drop those before probing the rest. The elevation
+    // archive keeps its handle in the same store and sweeps it itself.
+    await deleteOrphanBasemapArchiveHandles([...keys, ELEVATION_ARCHIVE_KEY]);
+    if (remembered.length === 0) return "none";
 
     if (!isFileHandleSupported()) return "none";
 

@@ -109,6 +109,7 @@ export type BasemapArchivePickOutcome =
 export async function pickBasemapArchiveHandles(
   extensions: readonly string[],
   multiple = false,
+  description = "Basemap archive",
 ): Promise<BasemapArchivePickOutcome> {
   if (!isFileHandleSupported()) return { status: "unavailable" };
   const showPicker = (globalThis as { showOpenFilePicker?: ShowOpenFilePicker })
@@ -119,7 +120,7 @@ export async function pickBasemapArchiveHandles(
       multiple,
       types: [
         {
-          description: "Basemap archive",
+          description,
           accept: { "application/octet-stream": [...extensions] },
         },
       ],

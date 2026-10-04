@@ -9,11 +9,16 @@ export const TERRAIN_EXAGGERATION_MIN = 1;
 export const TERRAIN_EXAGGERATION_MAX = 5;
 export const TERRAIN_EXAGGERATION_STEP = 0.25;
 
-const TERRAIN_SOURCE: RasterDEMSourceSpecification = {
+/** Online elevation data, the default source of a build that may use the internet. */
+export const MAPTERHORN_ELEVATION_SOURCE: Readonly<RasterDEMSourceSpecification> = {
   type: "raster-dem",
   url: "https://tiles.mapterhorn.com/tilejson.json",
   encoding: "terrarium",
   tileSize: 512,
+  // Mapterhorn is global only to z12; deeper tiles 404 outside high-resolution regions, which
+  // MapLibre renders as flat ground with cliffs at the tile edges. Capping at z12 avoids that
+  // but loses the extra detail where it exists.
+  // maxzoom: 12,
   attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>',
 };
 
@@ -47,19 +52,38 @@ export function terrainElevationMeters(
     : null;
 }
 
+/**
+ * The source spec each map's DEM sources were added from. A source is replaced, not updated, when
+ * the elevation source changes, because MapLibre cannot change a source's url or encoding in place.
+ */
+const appliedSources = new WeakMap<Map, Record<string, RasterDEMSourceSpecification>>();
+
+function sourceIsCurrent(
+  map: Map,
+  id: string,
+  source: RasterDEMSourceSpecification,
+): boolean {
+  return !!map.getSource(id) && appliedSources.get(map)?.[id] === source;
+}
+
+function addDemSource(map: Map, id: string, source: RasterDEMSourceSpecification) {
+  map.addSource(id, source);
+  appliedSources.set(map, { ...appliedSources.get(map), [id]: source });
+}
+
 function syncTerrainLayer(
   map: Map,
   enabled: boolean,
   exaggeration: number,
   source: RasterDEMSourceSpecification | null,
 ): void {
-  if (!enabled || !source) {
+  if (!enabled || !source || !sourceIsCurrent(map, TERRAIN_SOURCE_ID, source)) {
     // Terrain releases the source before it can be removed.
     if (map.getTerrain()?.source === TERRAIN_SOURCE_ID) map.setTerrain(null);
     if (map.getSource(TERRAIN_SOURCE_ID)) map.removeSource(TERRAIN_SOURCE_ID);
-    return;
+    if (!enabled || !source) return;
+    addDemSource(map, TERRAIN_SOURCE_ID, source);
   }
-  if (!map.getSource(TERRAIN_SOURCE_ID)) map.addSource(TERRAIN_SOURCE_ID, source);
   const terrain = map.getTerrain();
   if (terrain?.source !== TERRAIN_SOURCE_ID || terrain.exaggeration !== exaggeration) {
     map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration });
@@ -73,12 +97,12 @@ function syncHillshadeLayer(
   settings: HillshadeSettings,
   beforeId?: string,
 ): void {
-  if (!enabled || !source) {
+  if (!enabled || !source || !sourceIsCurrent(map, HILLSHADE_SOURCE_ID, source)) {
     if (map.getLayer(HILLSHADE_LAYER_ID)) map.removeLayer(HILLSHADE_LAYER_ID);
     if (map.getSource(HILLSHADE_SOURCE_ID)) map.removeSource(HILLSHADE_SOURCE_ID);
-    return;
+    if (!enabled || !source) return;
+    addDemSource(map, HILLSHADE_SOURCE_ID, source);
   }
-  if (!map.getSource(HILLSHADE_SOURCE_ID)) map.addSource(HILLSHADE_SOURCE_ID, source);
   const paint = hillshadePaint(settings);
   if (!map.getLayer(HILLSHADE_LAYER_ID)) {
     map.addLayer(
@@ -103,6 +127,8 @@ function syncHillshadeLayer(
  *  two toggles are independent, so the next knob extends this instead of the
  *  call signature. */
 export interface TerrainDisplay {
+  /** Where elevation tiles come from. Null when the build has none and no archive is open. */
+  source: Readonly<RasterDEMSourceSpecification> | null;
   enabled: boolean;
   exaggeration: number;
   hillshadeEnabled: boolean;
@@ -110,6 +136,7 @@ export interface TerrainDisplay {
 }
 
 export const DEFAULT_TERRAIN_DISPLAY: Readonly<TerrainDisplay> = {
+  source: MAPTERHORN_ELEVATION_SOURCE,
   enabled: false,
   exaggeration: TERRAIN_EXAGGERATION_DEFAULT,
   hillshadeEnabled: false,
@@ -122,7 +149,7 @@ export function syncMapTerrain(
   display: TerrainDisplay,
   beforeId?: string,
 ): void {
-  const source = TERRAIN_SOURCE;
+  const source = display.source as RasterDEMSourceSpecification | null;
   // Separate sources are required: terrain and hillshade use different DEM tile scales.
   syncTerrainLayer(map, display.enabled, display.exaggeration, source);
   syncHillshadeLayer(
