@@ -37,3 +37,12 @@ export const canPersistFileHandles = true;
  * fetch from an opaque origin.
  */
 export const canReadHostedConfig = true;
+
+/**
+ * True when the build offers online elevation data (Mapterhorn) for terrain and hillshading.
+ *
+ * The standalone build starts with no elevation source, because a file made for an offline computer
+ * would offer a feature that can never load. The terrain controls then invite the user to open an
+ * elevation archive instead.
+ */
+export const isOnlineElevationAvailable = true;

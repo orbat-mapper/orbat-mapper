@@ -11,6 +11,7 @@ import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type { MlPmtilesLayerConfig } from "@/geo/maplibreLayerConfigTypes";
 import type { BasemapArchiveFileHandle } from "@/geo/basemapArchiveHandles";
+import { ELEVATION_ARCHIVE_KEY } from "@/geo/elevationArchive";
 
 /** The picker outcome, loosely typed so a test can hand back either shape. */
 type PickOutcome = { status: "picked"; handles: unknown[] } | { status: "unavailable" };
@@ -789,8 +790,12 @@ describe("several remembered archives", () => {
 
     await useBasemapArchives().restoreRememberedBasemapArchive();
 
-    // The orphan sweep is told exactly which keys survive; anything else in IndexedDB goes.
-    expect(handles.deleteOrphanBasemapArchiveHandles).toHaveBeenCalledWith(["alpha"]);
+    // The orphan sweep is told exactly which keys survive; anything else in IndexedDB goes. The
+    // elevation archive's handle is swept by its own owner.
+    expect(handles.deleteOrphanBasemapArchiveHandles).toHaveBeenCalledWith([
+      "alpha",
+      ELEVATION_ARCHIVE_KEY,
+    ]);
   });
 
   it("deletes every stored handle when nothing is remembered", async () => {
@@ -798,6 +803,8 @@ describe("several remembered archives", () => {
 
     await useBasemapArchives().restoreRememberedBasemapArchive();
 
-    expect(handles.deleteOrphanBasemapArchiveHandles).toHaveBeenCalledWith([]);
+    expect(handles.deleteOrphanBasemapArchiveHandles).toHaveBeenCalledWith([
+      ELEVATION_ARCHIVE_KEY,
+    ]);
   });
 });

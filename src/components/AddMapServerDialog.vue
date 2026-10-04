@@ -1,24 +1,38 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import InputCheckbox from "@/components/InputCheckbox.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCustomBasemaps } from "@/composables/customBasemaps";
+import { useElevationArchive } from "@/composables/elevationArchive";
+import { customBasemapSourceType } from "@/geo/customBasemap";
 
 // One dialog for both entry points — the Layers panel button and the map context menu — so the
 // wording, the examples and what counts as a valid address are defined once.
 const open = defineModel<boolean>({ default: false });
 
 const { addCustomBasemap } = useCustomBasemaps();
+const { addElevationArchiveUrl } = useElevationArchive();
 const url = ref("");
+// An elevation archive looks like imagery, thus the user has to say what the archive holds.
+const isElevation = ref(false);
+const isArchiveAddress = computed(() => customBasemapSourceType(url.value) === "pmtiles");
 
 watch(open, (isOpen) => {
-  if (isOpen) url.value = "";
+  if (isOpen) {
+    url.value = "";
+    isElevation.value = false;
+  }
 });
 
 async function onSubmit() {
-  // The composable reports a bad address itself, and leaves the dialog open with the text in it.
-  if (await addCustomBasemap(url.value)) open.value = false;
+  // The composables report a bad address themselves, and leave the dialog open with the text in it.
+  const added =
+    isArchiveAddress.value && isElevation.value
+      ? await addElevationArchiveUrl(url.value)
+      : await addCustomBasemap(url.value);
+  if (added) open.value = false;
 }
 </script>
 
@@ -51,6 +65,13 @@ async function onSubmit() {
           <dd class="truncate">https://tiles.example.lan/denmark.pmtiles</dd>
         </div>
       </dl>
+      <InputCheckbox
+        v-if="isArchiveAddress"
+        v-model="isElevation"
+        label="Elevation archive"
+        description="Use the archive for 3D terrain and hillshading, not as a base layer."
+        data-test="map-server-elevation"
+      />
       <div class="flex justify-end gap-2">
         <Button type="button" variant="ghost" @click="open = false">Cancel</Button>
         <Button type="submit" data-test="add-map-server-submit">Add</Button>

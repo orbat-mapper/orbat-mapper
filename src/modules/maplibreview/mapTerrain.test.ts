@@ -6,6 +6,7 @@ import {
   TERRAIN_SOURCE_ID,
   HILLSHADE_LAYER_ID,
   HILLSHADE_SOURCE_ID,
+  MAPTERHORN_ELEVATION_SOURCE,
   syncHillshadeOrder,
   terrainElevationMeters,
 } from "./mapTerrain";
@@ -149,5 +150,38 @@ describe("map terrain", () => {
     expect(terrainElevationMeters(map, [10, 60])).toBe(-30);
     vi.mocked(map.queryTerrainElevation).mockReturnValue(null);
     expect(terrainElevationMeters(map, [10, 60])).toBeNull();
+  });
+
+  it("replaces both DEM sources when the elevation source changes", () => {
+    const { map, style } = fixture();
+    const display = { ...DEFAULT_TERRAIN_DISPLAY, enabled: true, hillshadeEnabled: true };
+    syncMapTerrain(map, display, "editor");
+    expect(style.sources[TERRAIN_SOURCE_ID]).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+
+    const archive = {
+      type: "raster-dem" as const,
+      url: "pmtiles://archive:elevation:archive",
+      encoding: "terrarium" as const,
+      tileSize: 512,
+    };
+    syncMapTerrain(map, { ...display, source: archive }, "editor");
+    expect(style.sources[TERRAIN_SOURCE_ID]).toBe(archive);
+    expect(style.sources[HILLSHADE_SOURCE_ID]).toBe(archive);
+    expect(style.terrain?.source).toBe(TERRAIN_SOURCE_ID);
+    expect(style.layers.map((l) => l.id)).toEqual([
+      "basemap",
+      HILLSHADE_LAYER_ID,
+      "editor",
+    ]);
+  });
+
+  it("shows nothing while there is no elevation source", () => {
+    const { map, style } = fixture();
+    const display = { ...DEFAULT_TERRAIN_DISPLAY, enabled: true, hillshadeEnabled: true };
+    syncMapTerrain(map, display);
+    syncMapTerrain(map, { ...display, source: null });
+    expect(style.terrain).toBeUndefined();
+    expect(style.sources).toEqual({});
+    expect(map.getLayer(HILLSHADE_LAYER_ID)).toBeUndefined();
   });
 });

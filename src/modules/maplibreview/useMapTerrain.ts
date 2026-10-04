@@ -21,6 +21,7 @@ export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
       let ready = false;
       let frame: number | undefined;
       let basemapIds = new Set<string>();
+      let lastSource = settings.elevationSource;
       const uninstallRttFilter = installTerrainRttFilter(map);
       const uninstallQueryCache = installTerrainQueryCache(map);
 
@@ -41,6 +42,12 @@ export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
         // is replaced (style load) or explicitly retried by toggling it off/on.
         if (!settings.terrainEnabled) settings.terrainError = false;
         if (!settings.hillshadeEnabled) settings.hillshadeError = false;
+        // Failures belong to the source that produced them.
+        if (settings.elevationSource !== lastSource) {
+          lastSource = settings.elevationSource;
+          settings.terrainError = false;
+          settings.hillshadeError = false;
+        }
         if (ready) syncMapTerrain(map!, settings.display, beforeId());
       }
       function onStyleLoad() {

@@ -102,6 +102,8 @@ vi.mock("maplibre-gl", () => {
     NavigationControl: MockNavigationControl,
     ScaleControl: MockScaleControl,
     setWorkerUrl: vi.fn(),
+    addProtocol: vi.fn(),
+    removeProtocol: vi.fn(),
   };
 });
 

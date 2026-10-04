@@ -65,7 +65,8 @@ export function archiveKeyFromFileName(fileName: string): string {
   );
 }
 
-function readAttribution(metadata: unknown): string | undefined {
+/** The archive's own attribution, or undefined. Never invented. */
+export function readAttribution(metadata: unknown): string | undefined {
   if (!metadata || typeof metadata !== "object") return undefined;
   const value = (metadata as Record<string, unknown>).attribution;
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -108,7 +109,8 @@ function pmtilesArchiveKind(tileType: TileType, label = "archive"): "raster" | "
   );
 }
 
-async function readArchive(
+/** Reads the header and the optional metadata, and refuses a file that is not a PMTiles archive. */
+export async function readArchive(
   archive: PMTiles,
   label: string,
 ): Promise<{ header: Header; metadata: unknown }> {
