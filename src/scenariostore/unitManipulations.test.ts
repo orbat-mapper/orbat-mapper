@@ -335,6 +335,40 @@ describe("unitManipulations settings redraw signaling", () => {
     expect(store.state.unitMap["unit-1"].style?.mapSymbolSize).toBe(48);
   });
 
+  it("increments unitStateCounter for batch style updates and restores it on undo/redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.batchUpdateUnitStyle(["unit-1"], { limitVisibility: true, minZoom: 5 });
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].style?.limitVisibility).toBe(true);
+
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+    expect(store.state.unitMap["unit-1"].style?.limitVisibility).toBeUndefined();
+
+    store.redo();
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"].style?.limitVisibility).toBe(true);
+  });
+
+  it("increments unitStateCounter for batch symbol updates, but not for other fields", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.batchUpdateUnit(["unit-1"], { name: "Renamed" });
+    expect(store.state.unitStateCounter).toBe(before);
+
+    actions.batchUpdateUnit(["unit-1"], { sidc: "10031000001100000000" });
+    expect(store.state.unitStateCounter).toBe(before + 1);
+
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+  });
+
   it("increments unitStateCounter for text amplifier updates and restores it on undo/redo", () => {
     const store = useNewScenarioStore(createScenario());
     const actions = useUnitManipulations(store);
