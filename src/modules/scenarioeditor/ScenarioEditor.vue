@@ -464,10 +464,11 @@ if (firstOverlayLayerId) {
           <Button
             variant="ghost"
             type="button"
-            class="hidden truncate font-medium sm:inline-flex"
+            class="hidden min-w-0 shrink font-medium sm:inline-flex"
+            :title="activeScenario.store.state.info.name"
             @click="showInfo()"
           >
-            {{ activeScenario.store.state.info.name }}
+            <span class="truncate">{{ activeScenario.store.state.info.name }}</span>
           </Button>
           <Button
             v-if="io.savedDirty.value"
@@ -482,7 +483,7 @@ if (firstOverlayLayerId) {
         </div>
       </div>
       <div class="flex shrink-0 items-center gap-0.5 overflow-clip sm:gap-2">
-        <Button variant="ghost" class="hidden lg:inline-flex" asChild
+        <Button variant="ghost" class="hidden xl:inline-flex" asChild
           ><a
             :href="
               route.meta.helpUrl ||

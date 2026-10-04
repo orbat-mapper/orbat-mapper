@@ -44,7 +44,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
 
 <template>
   <aside
-    class="bg-sidebar border-sidebar-border relative flex h-full shrink-0 flex-col overflow-hidden border-r shadow-sm"
+    class="bg-sidebar border-sidebar-border relative flex h-full flex-col overflow-hidden border-r shadow-sm"
     :style="{ width: orbatPanelWidth + 'px', minWidth: '250px', maxWidth: '50vw' }"
   >
     <ScrollTabs

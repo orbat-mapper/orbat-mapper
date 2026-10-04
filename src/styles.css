@@ -167,6 +167,13 @@
   }
 }
 
+/* On desktop the floating toolbar spans narrow maps edge to edge, so lift bottom-left controls at any narrow width. */
+@container (max-width: 60rem) {
+  .map-floating-toolbar .map-ui-root {
+    --map-toolbar-clearance-left: 4.5rem;
+  }
+}
+
 .map-ui-root .maplibregl-ctrl-bottom-left {
   left: 0.5rem;
   bottom: calc(2.2rem + var(--map-toolbar-clearance-left));

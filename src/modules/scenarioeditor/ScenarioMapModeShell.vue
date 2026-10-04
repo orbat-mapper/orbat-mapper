@@ -64,16 +64,17 @@ const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
       <template v-if="!isMobile">
         <MapEditorDesktopPanel v-if="showLeftPanel" @close="emit('closeLeftPanel')" />
       </template>
-      <div class="relative flex min-w-0 flex-auto flex-col">
+      <div class="relative flex min-w-64 flex-auto flex-col">
         <slot name="map" />
         <main
           v-if="mapReady"
           class="pointer-events-none absolute inset-0 flex flex-col justify-between"
         >
           <header :class="headerClass">
-            <div class="ml-10 flex items-center sm:ml-8">
+            <div class="@container ml-10 flex min-w-0 flex-1 items-center sm:ml-8">
               <MapTimeController
                 class="pointer-events-auto ml-1"
+                time-class="hidden text-sm @[12rem]:block @[14rem]:text-base @xs:text-lg @sm:text-2xl"
                 :show-controls="false"
                 @open-time-modal="emit('openTimeModal')"
                 @show-settings="emit('showSettings')"

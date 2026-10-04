@@ -18,8 +18,9 @@ const props = withDefaults(
   defineProps<{
     showControls?: boolean;
     hideTime?: boolean;
+    timeClass?: string;
   }>(),
-  { showControls: true, hideTime: false },
+  { showControls: true, hideTime: false, timeClass: "text-base sm:text-2xl" },
 );
 
 const fmt = useTimeFormatStore();
@@ -41,7 +42,8 @@ const {
   <div class="flex flex-col items-center">
     <p
       v-if="!hideTime"
-      class="pointer-events-none font-mono text-base font-bold text-gray-100 [text-shadow:black_0_0_2px] sm:text-2xl"
+      class="pointer-events-none font-mono font-bold whitespace-nowrap text-gray-100 [text-shadow:black_0_0_2px]"
+      :class="timeClass"
     >
       {{ fmt.scenarioFormatter.format(state.currentTime) }}
     </p>

@@ -15,7 +15,8 @@ const el = ref<HTMLDivElement>();
 
 function onPointerDown(evt: PointerEvent) {
   const e = unref(el)!;
-  initialWidth = props.width;
+  // Start from the rendered width: the stored width may exceed what min/max-width allow.
+  initialWidth = e.parentElement?.getBoundingClientRect().width ?? props.width;
   startX = evt.clientX;
   e.setPointerCapture(evt.pointerId);
   isDragging.value = true;

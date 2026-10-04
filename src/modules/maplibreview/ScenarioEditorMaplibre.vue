@@ -61,6 +61,7 @@ import {
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
+import { detailsOverlayClearance } from "@/modules/scenarioeditor/detailsPanelLayout";
 
 const props = defineProps<{
   initialMapView?: ScenarioMapViewSnapshot;
@@ -262,7 +263,7 @@ onBeforeUnmount(() => {
 const mapReady = computed(() => Boolean(mlMap.value));
 const headerControlsStyle = computed(() =>
   !isMobile.value && showDetailsPanel.value && ui.detailsPanelMode === "overlay"
-    ? { marginRight: `${detailsWidth.value + 16}px` }
+    ? { marginRight: detailsOverlayClearance(detailsWidth.value) }
     : undefined,
 );
 
@@ -297,7 +298,10 @@ function onCloseActiveDetailsPanel() {
     @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
-      <div class="@container relative flex flex-auto">
+      <div
+        class="@container relative flex flex-auto"
+        :class="{ 'map-floating-toolbar': !isMobile && ui.showToolbar }"
+      >
         <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
           <MaplibreMap
             @ready="onMapReady"
