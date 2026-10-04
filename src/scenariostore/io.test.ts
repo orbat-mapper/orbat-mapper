@@ -4,6 +4,7 @@ import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
 import { shallowRef } from "vue";
 import { useNewScenarioStore } from "./newScenarioStore";
 import { updateCurrentUnitState } from "./time";
+import { useGeo } from "./geo";
 import "@/dayjs";
 
 // Mock the stores that might be used
@@ -69,7 +70,7 @@ describe("Scenario IO", () => {
   it("creates empty scenarios with items[] layers", () => {
     const scenario = createEmptyScenario();
 
-    expect(scenario.version).toBe("3.5.0");
+    expect(scenario.version).toBe("3.6.0");
     expect(getOverlayLayers(scenario)[0]).toHaveProperty("items");
     expect(getOverlayLayers(scenario)[0]).not.toHaveProperty("features");
     expect((getOverlayLayers(scenario)[0] as any).items).toEqual([]);
@@ -253,7 +254,7 @@ describe("Scenario IO", () => {
     const { serializeToObject } = useScenarioIO(storeRef);
     const serialized = serializeToObject();
 
-    expect(serialized.version).toBe("3.5.0");
+    expect(serialized.version).toBe("3.6.0");
     expect(getOverlayLayers(serialized)[0]).not.toHaveProperty("features");
     expect(getOverlayLayers(serialized)[0].items).toEqual([
       {
@@ -613,5 +614,73 @@ describe("Scenario IO", () => {
       targetId: "group-1",
       placement: "on",
     });
+  });
+
+  it("round-trips range ring group and scenario-wide ring visibility", () => {
+    const scenario = createEmptyScenario();
+    const input = scenario.settings!;
+    input.rangeRingGroups = [
+      { name: "Artillery", hidden: true },
+      { name: "Air defence" },
+    ];
+    input.rangeRingVisibility = { ungroupedHidden: true };
+
+    const store = useNewScenarioStore(scenario);
+    const { toObject } = useScenarioIO(shallowRef(store));
+    const { settings } = toObject();
+
+    expect(settings?.rangeRingGroups).toEqual([
+      { name: "Artillery", hidden: true },
+      { name: "Air defence" },
+    ]);
+    expect(settings?.rangeRingVisibility).toEqual({ ungroupedHidden: true });
+  });
+
+  it("leaves out range ring visibility when every ring is shown", () => {
+    const state = createMinimalState({
+      rangeRingVisibility: { hidden: false, ungroupedHidden: false },
+    });
+    const { toObject } = useScenarioIO(shallowRef({ state } as NewScenarioStore));
+
+    expect(toObject().settings?.rangeRingVisibility).toBeUndefined();
+  });
+  it("puts range rings at the bottom of the stack and saves that unchanged", () => {
+    const scenario = createEmptyScenario();
+    const store = useNewScenarioStore(scenario);
+    const { toObject } = useScenarioIO(shallowRef(store));
+
+    expect(store.state.layerStack[0]).toBe("rangeRings");
+    expect(toObject().layerStack.map(({ id }) => id)).toEqual([
+      scenario.layerStack[0].id,
+    ]);
+  });
+
+  it("round-trips range rings moved in the stack", () => {
+    const scenario = createEmptyScenario();
+    const featureLayerId = scenario.layerStack[0].id;
+    const store = useNewScenarioStore(scenario);
+    const geo = useGeo(store);
+
+    geo.moveRangeRings({ toIndex: 1, aboveControlMeasures: false });
+    expect(store.state.layerStack).toEqual([featureLayerId, "rangeRings"]);
+    geo.moveRangeRings({ aboveControlMeasures: true });
+
+    const saved = useScenarioIO(shallowRef(store)).toObject();
+    expect(saved.layerStack.map(({ id, kind }) => [id, kind])).toEqual([
+      [featureLayerId, "overlay"],
+      ["rangeRings", "rangeRings"],
+    ]);
+    expect(saved.layerStack[1]).toMatchObject({ aboveControlMeasures: true });
+
+    const reloaded = useNewScenarioStore(saved);
+    expect(reloaded.state.layerStack).toEqual([featureLayerId, "rangeRings"]);
+    expect(reloaded.state.layerStackMap.rangeRings).toMatchObject({
+      aboveControlMeasures: true,
+    });
+
+    store.undo();
+    expect(store.state.layerStackMap.rangeRings).not.toHaveProperty(
+      "aboveControlMeasures",
+    );
   });
 });

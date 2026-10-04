@@ -165,6 +165,7 @@ function createMockMap() {
       sources.set(id, { setData: vi.fn() });
     }),
     getLayer: vi.fn((id: string) => layers.get(id)),
+    getStyle: vi.fn(() => ({ layers: [...layers.values()] })),
     addLayer: vi.fn((layer: { id: string }) => {
       layers.set(layer.id, layer);
     }),

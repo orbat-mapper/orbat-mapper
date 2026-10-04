@@ -34,6 +34,7 @@ import {
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
   isScenarioMapLayerDragItem,
+  isScenarioRangeRingsDragItem,
   type ItemState,
 } from "@/types/draggables";
 import { useTimeoutFn } from "@vueuse/core";
@@ -146,7 +147,10 @@ onMounted(() => {
             ) && source.data.layer.id !== props.layer.id
           );
         }
-        return isScenarioMapLayerDragItem(source.data);
+        return (
+          isScenarioMapLayerDragItem(source.data) ||
+          isScenarioRangeRingsDragItem(source.data)
+        );
       },
       onDragEnter: ({ self }) => {
         isDragOver.value = true;
@@ -178,7 +182,8 @@ onMounted(() => {
         const data = getScenarioFeatureLayerDragItem({ layer: props.layer });
         if (
           isScenarioFeatureLayerDragItem(source.data) ||
-          isScenarioMapLayerDragItem(source.data)
+          isScenarioMapLayerDragItem(source.data) ||
+          isScenarioRangeRingsDragItem(source.data)
         ) {
           return attachClosestEdge(data, {
             input,

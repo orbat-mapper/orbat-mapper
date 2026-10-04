@@ -30,6 +30,7 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import {
   attachClosestEdge,
+  type Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import {
@@ -37,6 +38,7 @@ import {
   idle,
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
+  isScenarioRangeRingsDragItem,
   type ItemState,
 } from "@/types/draggables";
 import DropIndicator from "@/components/DropIndicator.vue";
@@ -59,6 +61,8 @@ const props = defineProps<{
   items: NTacticalGraphicLayerItem[];
   layerMenuItems: MenuItemData<ScenarioLayerAction>[];
   itemMenuItems: MenuItemData<ScenarioFeatureActions>[];
+  /** The edges range rings can be dropped on: the outer edges of the stack. */
+  rangeRingEdges?: Edge[];
 }>();
 
 const emit = defineEmits<{
@@ -145,6 +149,9 @@ onMounted(() => {
             source.data.feature._pid !== props.layer.id
           );
         }
+        if (isScenarioRangeRingsDragItem(source.data)) {
+          return !!props.rangeRingEdges?.length;
+        }
         return (
           isScenarioFeatureLayerDragItem(source.data) &&
           source.data.layer.id !== props.layer.id &&
@@ -155,6 +162,13 @@ onMounted(() => {
         const data = getScenarioFeatureLayerDragItem({
           layer: props.layer as unknown as NScenarioLayer,
         });
+        if (isScenarioRangeRingsDragItem(source.data)) {
+          return attachClosestEdge(data, {
+            input,
+            element,
+            allowedEdges: props.rangeRingEdges ?? [],
+          });
+        }
         return isScenarioFeatureLayerDragItem(source.data)
           ? attachClosestEdge(data, {
               input,

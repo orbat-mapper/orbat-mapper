@@ -33,6 +33,7 @@ import { addMapLayer } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import SplitButton from "@/components/SplitButton.vue";
 import ScenarioFeatureLayer from "@/modules/scenarioeditor/ScenarioFeatureLayer.vue";
 import ControlMeasureLayer from "@/modules/scenarioeditor/ControlMeasureLayer.vue";
+import RangeRingLayer from "@/modules/scenarioeditor/RangeRingLayer.vue";
 import {
   createControlMeasureLayer,
   getControlMeasureLayerGroups,
@@ -48,6 +49,7 @@ import {
   isScenarioFeatureDragItem,
   isScenarioFeatureLayerDragItem,
   isScenarioMapLayerDragItem,
+  isScenarioRangeRingsDragItem,
 } from "@/types/draggables";
 import { useNotifications } from "@/composables/notifications";
 import {
@@ -58,6 +60,7 @@ import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
 import {
   isScenarioOverlayLayer,
+  isScenarioRangeRingsLayer,
   isScenarioReferenceLayer,
   type NScenarioOverlayLayer,
   type NScenarioReferenceLayer,
@@ -74,8 +77,11 @@ const uiStore = useUiStore();
 const { send: notify } = useNotifications();
 const {
   geo,
-  store: { groupUpdate },
+  store: { groupUpdate, state },
 } = injectStrict(activeScenarioKey);
+const hasRangeRings = computed(() =>
+  Object.values(state.unitMap).some((unit) => unit.rangeRings?.length),
+);
 uiStore.layersPanelActive = true;
 onUnmounted(() => (uiStore.layersPanelActive = false));
 
@@ -151,6 +157,14 @@ function isReferenceStackEntry(layer: unknown): layer is NScenarioReferenceLayer
   return isScenarioReferenceLayer(layer as NScenarioStackLayer);
 }
 
+function isRangeRingsStackEntry(layer: unknown) {
+  return isScenarioRangeRingsLayer(layer as NScenarioStackLayer);
+}
+
+const rangeRingsAboveControlMeasures = computed(
+  () => !!geo.rangeRingsLayer?.value?.aboveControlMeasures,
+);
+
 function getReferenceLayerSource(layer: NScenarioReferenceLayer) {
   return layer.source;
 }
@@ -186,6 +200,61 @@ const controlMeasureGroups = computed(() =>
 const controlMeasureOnlyLayerIds = computed(
   () => new Set(controlMeasureGroups.value.map(({ layer }) => layer.id)),
 );
+
+/**
+ * Range rings can be dropped on the outer edges of the control-measure stack: on top
+ * to sit just below it, on the bottom to draw over it.
+ */
+function getRangeRingEdges(index: number): Edge[] {
+  const edges: Edge[] = [];
+  if (index === 0) edges.push("top");
+  if (index === controlMeasureGroups.value.length - 1) edges.push("bottom");
+  return edges;
+}
+
+/** Where a stack layer lands when dropped on an edge of another stack layer. */
+function getDropIndex(sourceId: FeatureId, destinationId: FeatureId, edge: Edge | null) {
+  const fromIndex = geo.getLayerIndex(sourceId);
+  let toIndex = geo.getLayerIndex(destinationId);
+  if (edge === "bottom") toIndex++;
+  if (fromIndex < toIndex) toIndex--;
+  return toIndex;
+}
+
+/**
+ * Move the range rings next to a dropped-on layer. On a control-measure layer, the
+ * bottom edge lifts the rings over the control-measure stack and the top edge puts
+ * them at the top of the feature/reference stack, just below the control measures.
+ */
+function onRangeRingsDrop(
+  destinationId: FeatureId,
+  edge: Edge | null,
+  toControlMeasure: boolean,
+) {
+  const ringsId = geo.rangeRingsLayer.value?.id;
+  if (ringsId === undefined) return;
+  if (toControlMeasure) {
+    if (edge === "bottom") {
+      geo.moveRangeRings({ aboveControlMeasures: true });
+      return;
+    }
+    let lastStackIndex = -1;
+    geo.stackLayers.value.forEach((layer, index) => {
+      if (layer.id === ringsId) return;
+      if (isScenarioOverlayLayer(layer) && isControlMeasureLayer(layer)) return;
+      lastStackIndex = index;
+    });
+    const fromIndex = geo.getLayerIndex(ringsId);
+    let toIndex = lastStackIndex + 1;
+    if (fromIndex < toIndex) toIndex--;
+    geo.moveRangeRings({ toIndex, aboveControlMeasures: false });
+    return;
+  }
+  geo.moveRangeRings({
+    toIndex: getDropIndex(ringsId, destinationId, edge),
+    aboveControlMeasures: false,
+  });
+}
 
 const availableItemMenuItems = computed<MenuItemData<ScenarioFeatureActions>[]>(() =>
   featureMenuItems.map((item) => ({
@@ -555,7 +624,8 @@ onMounted(() => {
     canMonitor: ({ source }) =>
       isScenarioFeatureDragItem(source.data) ||
       isScenarioFeatureLayerDragItem(source.data) ||
-      isScenarioMapLayerDragItem(source.data),
+      isScenarioMapLayerDragItem(source.data) ||
+      isScenarioRangeRingsDragItem(source.data),
     onDrop: ({ source, location }) => {
       const destination = location.current.dropTargets[0];
       if (!destination) {
@@ -563,6 +633,25 @@ onMounted(() => {
         return;
       }
       const closestEdgeOfTarget: Edge | null = extractClosestEdge(destination.data);
+
+      if (isScenarioRangeRingsDragItem(source.data)) {
+        if (isScenarioFeatureLayerDragItem(destination.data)) {
+          const layer = destination.data.layer;
+          onRangeRingsDrop(
+            layer.id,
+            closestEdgeOfTarget,
+            isControlMeasureLayer(layer as unknown as NScenarioOverlayLayer),
+          );
+        } else if (isScenarioMapLayerDragItem(destination.data)) {
+          onRangeRingsDrop(destination.data.mapLayer.id, closestEdgeOfTarget, false);
+        }
+        const ringsId = geo.rangeRingsLayer.value?.id;
+        nextTick(() => {
+          const el = document.querySelector(`[data-layer-id="${ringsId}"]`);
+          if (el) triggerPostMoveFlash(el);
+        });
+        return;
+      }
 
       if (
         isScenarioFeatureDragItem(source.data) &&
@@ -598,15 +687,23 @@ onMounted(() => {
         (isScenarioFeatureLayerDragItem(source.data) ||
           isScenarioMapLayerDragItem(source.data)) &&
         (isScenarioFeatureLayerDragItem(destination.data) ||
-          isScenarioMapLayerDragItem(destination.data))
+          isScenarioMapLayerDragItem(destination.data) ||
+          isScenarioRangeRingsDragItem(destination.data))
       ) {
         const sourceId = isScenarioFeatureLayerDragItem(source.data)
           ? source.data.layer.id
           : source.data.mapLayer.id;
         const destinationId = isScenarioFeatureLayerDragItem(destination.data)
           ? destination.data.layer.id
-          : destination.data.mapLayer.id;
-        if (isScenarioFeatureLayerDragItem(source.data)) {
+          : isScenarioMapLayerDragItem(destination.data)
+            ? destination.data.mapLayer.id
+            : geo.rangeRingsLayer.value?.id;
+        if (destinationId === undefined) return;
+        // Feature layers move among feature layers of their own kind, or around the rings.
+        if (
+          isScenarioFeatureLayerDragItem(source.data) &&
+          !isScenarioRangeRingsDragItem(destination.data)
+        ) {
           const sourceIsControlMeasure = isControlMeasureLayer(
             source.data.layer as unknown as NScenarioOverlayLayer,
           );
@@ -621,10 +718,7 @@ onMounted(() => {
           }
         }
         if (sourceId !== destinationId) {
-          const fromIndex = geo.getLayerIndex(sourceId);
-          let toIndex = geo.getLayerIndex(destinationId);
-          if (closestEdgeOfTarget === "bottom") toIndex++;
-          if (fromIndex < toIndex) toIndex--;
+          const toIndex = getDropIndex(sourceId, destinationId, closestEdgeOfTarget);
           if (isScenarioMapLayerDragItem(source.data)) {
             geo.moveMapLayer(sourceId, { toIndex });
           } else {
@@ -654,10 +748,20 @@ onUnmounted(() => {
     <div class="group flex items-center justify-end">
       <DotsMenu :items="mapLayersMenuItems" />
     </div>
+    <!-- The panel lists layers bottom-up, in the order they draw on the map. -->
     <div>
       <template v-for="layer in stackLayers" :key="layer.id">
+        <RangeRingLayer
+          v-if="
+            isRangeRingsStackEntry(layer) &&
+            hasRangeRings &&
+            !rangeRingsAboveControlMeasures
+          "
+        />
         <ScenarioFeatureLayer
-          v-if="isOverlayStackEntry(layer) && !controlMeasureOnlyLayerIds.has(layer.id)"
+          v-else-if="
+            isOverlayStackEntry(layer) && !controlMeasureOnlyLayerIds.has(layer.id)
+          "
           :features="getOverlayFeatures(layer as NScenarioOverlayLayer)"
           :layer="layer as unknown as NScenarioLayer"
           :layer-menu-items="layerMenuItems"
@@ -690,10 +794,11 @@ onUnmounted(() => {
     -->
     <div v-if="controlMeasureGroups.length">
       <ControlMeasureLayer
-        v-for="group in controlMeasureGroups"
+        v-for="(group, index) in controlMeasureGroups"
         :key="group.layer.id"
         :layer="group.layer"
         :items="group.items"
+        :range-ring-edges="getRangeRingEdges(index)"
         :layer-menu-items="layerMenuItems"
         :item-menu-items="availableItemMenuItems"
         v-model:activeLayerId="activeLayerId"
@@ -704,6 +809,7 @@ onUnmounted(() => {
         @layer-action="onControlMeasureLayerAction"
       />
     </div>
+    <RangeRingLayer v-if="hasRangeRings && rangeRingsAboveControlMeasures" />
 
     <footer class="my-8 text-right">
       <SplitButton :items="mapLayerButtonItems" />

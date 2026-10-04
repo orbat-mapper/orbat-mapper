@@ -1,22 +1,36 @@
 <script setup lang="ts">
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { type RangeRingStyle } from "@/types/scenarioGeoModels";
 import DrawRangeRingMarker from "@/components/DrawRangeRingMarker.vue";
-import { computed } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { type SimpleStyleSpec } from "@/geo/simplestyle";
 import { useUiStore } from "@/stores/uiStore";
 import { PopoverClose } from "reka-ui";
 import CloseButton from "@/components/CloseButton.vue";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   ringStyle: Partial<RangeRingStyle>;
   disabled?: boolean;
+  /**
+   * Opens the popover at this element instead of at its own trigger, so one instance
+   * can be shared by many rows.
+   */
+  anchor?: HTMLElement | null;
+  /** Shows a name field for the group being styled. */
+  name?: string;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update"]);
+const emit = defineEmits(["update", "rename"]);
+const open = defineModel<boolean>("open", { default: false });
 const rStyle = computed((): RangeRingStyle => {
   return {
     fill: props.ringStyle.fill ?? null,
@@ -27,6 +41,19 @@ const rStyle = computed((): RangeRingStyle => {
     "stroke-style": props.ringStyle["stroke-style"] ?? "solid",
   };
 });
+
+const draftName = ref(props.name ?? "");
+watch(
+  () => props.name,
+  (name) => (draftName.value = name ?? ""),
+);
+
+function commitName() {
+  const name = draftName.value.trim();
+  if (name !== props.name) emit("rename", name);
+  // Show the stored name again when the rename was rejected
+  nextTick(() => (draftName.value = props.name ?? ""));
+}
 
 const uiStore = useUiStore();
 
@@ -54,6 +81,7 @@ function updateValue(name: keyof SimpleStyleSpec, value: string | number) {
 }
 
 function onOpen(isOpen: boolean) {
+  open.value = isOpen;
   if (isOpen) {
     uiStore.popperCounter++;
   } else {
@@ -62,8 +90,10 @@ function onOpen(isOpen: boolean) {
 }
 </script>
 <template>
-  <Popover @update:open="onOpen">
+  <Popover :open="open" @update:open="onOpen">
+    <PopoverAnchor v-if="anchor" :reference="anchor" />
     <PopoverTrigger
+      v-else
       title="Change style"
       class="hover:bg-muted disabled:opacity-50"
       :disabled="disabled"
@@ -75,6 +105,13 @@ function onOpen(isOpen: boolean) {
         <h3>Set range ring style</h3>
         <div />
       </div>
+      <section
+        v-if="name !== undefined"
+        class="text-foreground mt-4 grid w-full grid-cols-[max-content_1fr] items-center gap-4 text-sm"
+      >
+        <label for="group-name">Name</label>
+        <Input id="group-name" v-model="draftName" @change="commitName" />
+      </section>
       <section
         class="text-foreground mt-4 grid w-full grid-cols-[max-content_1fr] gap-4 pb-1 text-sm"
       >

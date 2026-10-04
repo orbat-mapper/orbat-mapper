@@ -1,4 +1,9 @@
-import type { Position, RangeRing, RangeRingGroup } from "./scenarioGeoModels";
+import type {
+  Position,
+  RangeRing,
+  RangeRingGroup,
+  RangeRingVisibility,
+} from "./scenarioGeoModels";
 import type { DropTarget, EntityId, ScenarioTime } from "./base";
 import type { SidValue } from "@/symbology/values";
 import { type SymbolOptions } from "milsymbol";
@@ -267,6 +272,7 @@ export interface ScenarioInfo {
 
 export type SymbologyStandard = "2525d" | "2525e" | "app6d";
 export type ScenarioVersion =
+  | "3.6.0"
   | "3.5.0"
   | "3.4.0"
   | "3.3.0"
@@ -349,6 +355,7 @@ export interface UnitStatus {
 
 export interface ScenarioSettings {
   rangeRingGroups: RangeRingGroup[];
+  rangeRingVisibility?: RangeRingVisibility;
   statuses: UnitStatus[];
   supplyClasses: SupplyClass[];
   supplyUoMs: UnitOfMeasure[];

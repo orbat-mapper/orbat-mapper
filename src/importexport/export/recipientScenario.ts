@@ -25,6 +25,9 @@ export function buildRecipientScenario(
     layerStack:
       settings.layerIds === undefined
         ? scenario.layerStack
-        : scenario.layerStack.filter((layer) => settings.layerIds!.includes(layer.id)),
+        : scenario.layerStack.filter(
+            (layer) =>
+              layer.kind === "rangeRings" || settings.layerIds!.includes(layer.id),
+          ),
   };
 }

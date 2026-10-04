@@ -45,6 +45,7 @@ import type {
   FeatureId,
   RangeRing,
   RangeRingGroup,
+  RangeRingVisibility,
   VisibilityInfo,
 } from "@/types/scenarioGeoModels";
 import { DEFAULT_BASEMAP_ID } from "@/config/constants";
@@ -65,7 +66,9 @@ import type {
 } from "@/types/scenarioStackLayers";
 import {
   isScenarioOverlayLayer,
+  isScenarioRangeRingsLayer,
   isScenarioReferenceLayer,
+  RANGE_RINGS_STACK_LAYER_ID,
 } from "@/types/scenarioStackLayers";
 
 export interface ScenarioState {
@@ -86,6 +89,7 @@ export interface ScenarioState {
   supplyCategoryMap: Record<string, NSupplyCategory>;
   currentTime: number;
   rangeRingGroupMap: Record<string, NRangeRingGroup>;
+  rangeRingVisibility: RangeRingVisibility;
   unitStatusMap: Record<string, NUnitStatus>;
   supplyClassMap: Record<string, NSupplyClass>;
   supplyUomMap: Record<string, NSupplyUoM>;
@@ -420,7 +424,12 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     return r;
   }
 
+  let rangeRingsLayerId: string | undefined;
   scenario.layerStack.forEach((layer) => {
+    if (isScenarioRangeRingsLayer(layer)) {
+      if (rangeRingsLayerId !== undefined) return;
+      rangeRingsLayerId = layer.id;
+    }
     layerStack.push(layer.id);
     if (isScenarioOverlayLayer(layer)) {
       const itemIds = layer.items.map((item) => item.id);
@@ -465,6 +474,16 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
       ...mapVisibility(layer),
     };
   });
+  // Range rings always have a place in the stack. Scenarios that never moved them
+  // leave it out, and get it at the bottom.
+  if (rangeRingsLayerId === undefined) {
+    layerStack.unshift(RANGE_RINGS_STACK_LAYER_ID);
+    layerStackMap[RANGE_RINGS_STACK_LAYER_ID] = {
+      id: RANGE_RINGS_STACK_LAYER_ID,
+      kind: "rangeRings",
+      name: "Range rings",
+    };
+  }
 
   const events = Object.values(eventMap).map((e) => e.id);
 
@@ -504,6 +523,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     hierarchyProjectionBucket,
     isMapStylesDirty,
     rangeRingGroupMap,
+    rangeRingVisibility: { ...scenario.settings?.rangeRingVisibility },
     unitStateCounter,
     featureStateCounter,
     settingsStateCounter,

@@ -22,6 +22,7 @@ import {
   idle,
   isScenarioFeatureLayerDragItem,
   isScenarioMapLayerDragItem,
+  isScenarioRangeRingsDragItem,
   type ItemState,
 } from "@/types/draggables";
 
@@ -60,7 +61,8 @@ onMounted(() => {
       canDrop: ({ source }) =>
         (isScenarioMapLayerDragItem(source.data) &&
           source.data.mapLayer.id !== props.mapLayer.id) ||
-        isScenarioFeatureLayerDragItem(source.data),
+        isScenarioFeatureLayerDragItem(source.data) ||
+        isScenarioRangeRingsDragItem(source.data),
       getData: ({ input, element }) =>
         attachClosestEdge(getScenarioMapLayerDragItem({ mapLayer: props.mapLayer }), {
           input,
