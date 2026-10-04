@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, type VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
@@ -22,6 +22,8 @@ const off = vi.fn();
 const getCenter = vi.fn(() => ({ lng: 10, lat: 20 }));
 const getZoom = vi.fn(() => 4);
 const getBearing = vi.fn(() => 0);
+const getPitch = vi.fn(() => 0);
+const easeTo = vi.fn();
 let liveStyle: StyleSpecification;
 const queryTerrainElevation = vi.fn(() => 750);
 
@@ -47,6 +49,15 @@ vi.mock("maplibre-gl", () => {
     removeSource = (id: string) => {
       delete liveStyle.sources[id];
     };
+    addLayer = (layer: StyleSpecification["layers"][number]) => {
+      liveStyle.layers.push(layer);
+    };
+    removeLayer = (id: string) => {
+      liveStyle.layers = liveStyle.layers.filter((l) => l.id !== id);
+    };
+    moveLayer = vi.fn();
+    getPaintProperty = vi.fn();
+    setPaintProperty = vi.fn();
     queryTerrainElevation = queryTerrainElevation;
     addControl = addControl;
     removeControl = removeControl;
@@ -54,6 +65,8 @@ vi.mock("maplibre-gl", () => {
     getCenter = getCenter;
     getZoom = getZoom;
     getBearing = getBearing;
+    getPitch = getPitch;
+    easeTo = easeTo;
 
     on(event: string, handler: (event?: unknown) => void) {
       const handlers = listeners.get(event) ?? [];
@@ -108,22 +121,33 @@ const defaultProps: {
   initialView: undefined,
 };
 
+// Persisted terrain refs stay in sync across stores, so a map left mounted by
+// one test would react to the next test's terrain changes.
+const mountedMaps = new Set<VueWrapper>();
+
 function mountMap(props = defaultProps) {
   const pinia = createPinia();
   setActivePinia(pinia);
-  return {
-    pinia,
-    wrapper: mount(MaplibreMap, {
-      props,
-      global: { plugins: [pinia] },
-    }),
-  };
+  const wrapper = mount(MaplibreMap, {
+    props,
+    global: { plugins: [pinia] },
+  });
+  mountedMaps.add(wrapper);
+  return { pinia, wrapper };
 }
 
 describe("MaplibreMap", () => {
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    for (const wrapper of mountedMaps) {
+      if (wrapper.vm.$.isMounted && !wrapper.vm.$.isUnmounted) wrapper.unmount();
+    }
+    mountedMaps.clear();
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
+    // Terrain preferences persist, so each test starts from the defaults.
+    localStorage.clear();
     setStyle.mockClear();
     setProjection.mockClear();
     addControl.mockClear();
@@ -133,6 +157,9 @@ describe("MaplibreMap", () => {
     scaleControlSetUnit.mockClear();
     off.mockClear();
     getCenter.mockClear();
+    getPitch.mockReset();
+    getPitch.mockReturnValue(0);
+    easeTo.mockClear();
     getZoom.mockClear();
     getBearing.mockClear();
     listeners.clear();
@@ -427,6 +454,45 @@ describe("MaplibreMap", () => {
     expect(queryTerrainElevation).toHaveBeenLastCalledWith([14, 60]);
     await vi.advanceTimersByTimeAsync(500);
     expect(queryTerrainElevation).toHaveBeenCalledTimes(2);
+    wrapper.unmount();
+  });
+
+  it("toggles terrain and hillshade together from the map control and tilts the camera", async () => {
+    const { wrapper } = mountMap();
+    const control = addControl.mock.calls.find(
+      ([candidate]) => typeof candidate?.onAdd === "function",
+    )?.[0];
+    expect(addControl).toHaveBeenCalledWith(control, "top-left");
+    const container: HTMLElement = control.onAdd();
+    document.body.append(container);
+    await nextTick();
+    const toggle = container.querySelector("button")!;
+    expect(toggle.getAttribute("aria-label")).toBe("Enable terrain and hillshade");
+
+    toggle.click();
+    await nextTick();
+    const terrain = useTerrainStore();
+    expect(terrain.terrainEnabled).toBe(true);
+    expect(terrain.hillshadeEnabled).toBe(true);
+    expect(easeTo).toHaveBeenLastCalledWith({ pitch: 50, duration: 800 });
+    expect(toggle.getAttribute("aria-label")).toBe("Disable terrain and hillshade");
+
+    getPitch.mockReturnValue(50);
+    toggle.click();
+    await nextTick();
+    expect(terrain.terrainEnabled).toBe(false);
+    expect(terrain.hillshadeEnabled).toBe(false);
+    expect(easeTo).toHaveBeenLastCalledWith({ pitch: 0, duration: 800 });
+
+    toggle.click();
+    terrain.terrainError = true;
+    await nextTick();
+    expect(toggle.hasAttribute("data-unavailable")).toBe(true);
+    expect(toggle.getAttribute("aria-label")).toContain("Elevation data is unavailable");
+
+    control.onRemove();
+    await nextTick();
+    expect(container.isConnected).toBe(false);
     wrapper.unmount();
   });
 

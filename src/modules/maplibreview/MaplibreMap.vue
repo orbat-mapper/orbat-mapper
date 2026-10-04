@@ -12,6 +12,7 @@ import {
 import { useThrottleFn } from "@vueuse/core";
 import {
   GlobeControl,
+  type IControl,
   Map as MlMap,
   NavigationControl,
   type MapProjectionEvent,
@@ -39,6 +40,7 @@ import {
 import { useTerrainStore } from "@/stores/terrainStore";
 import { useMapTerrain } from "./useMapTerrain";
 import { terrainElevationMeters, TERRAIN_SOURCE_ID } from "./mapTerrain";
+import TerrainMapToggle from "./TerrainMapToggle.vue";
 
 setWorkerUrl(maplibreWorkerUrl);
 
@@ -114,6 +116,39 @@ function updateElevation() {
 function handleTerrainData(event: { sourceId?: string }) {
   if (event.sourceId === TERRAIN_SOURCE_ID) updateElevation();
 }
+/** Terrain reads as flat when viewed straight down, so turning it on from the
+ *  map button tilts a top-down camera (an already tilted view is left alone),
+ *  and turning it off levels the camera again. */
+const TERRAIN_TILT_PITCH = 50;
+
+function tiltForTerrain(enabled: boolean) {
+  if (!mlMap) return;
+  if (!enabled) {
+    if (mlMap.getPitch() > 0) mlMap.easeTo({ pitch: 0, duration: 800 });
+    return;
+  }
+  if (mlMap.getPitch() >= 10) return;
+  mlMap.easeTo({ pitch: TERRAIN_TILT_PITCH, duration: 800 });
+}
+
+/** MapLibre-style control that keeps the terrain and hillshade store settings
+ *  together, unlike MapLibre's built-in TerrainControl which edits map state
+ *  directly. The toggle is teleported in so it shares this app's stores. */
+const terrainControlElement = shallowRef<HTMLElement>();
+class TerrainHillshadeControl implements IControl {
+  onAdd() {
+    const container = document.createElement("div");
+    container.className = "maplibregl-ctrl maplibregl-ctrl-group";
+    terrainControlElement.value = container;
+    return container;
+  }
+
+  onRemove() {
+    terrainControlElement.value?.remove();
+    terrainControlElement.value = undefined;
+  }
+}
+
 let replayingContextMenu = false;
 let scaleControl: ScaleControl | null = null;
 let scaleControlAttached = false;
@@ -246,6 +281,7 @@ onMounted(async () => {
     }),
     "top-left",
   );
+  mlMap.addControl(new TerrainHillshadeControl(), "top-left");
   syncScaleControl();
 
   mlMap.on("style.load", handleStyleLoad);
@@ -351,6 +387,9 @@ onUnmounted(() => {
         · {{ formattedElevation }}
       </span>
     </div>
+    <Teleport v-if="terrainControlElement" :to="terrainControlElement">
+      <TerrainMapToggle @toggle="tiltForTerrain" />
+    </Teleport>
   </div>
 </template>
 
@@ -467,4 +506,34 @@ onUnmounted(() => {
 }
 
 /* Scale control sits in bottom-left; keep its tighter look. */
+
+/* --- Terrain and hillshade toggle ---------------------------------------- */
+/* A Lucide icon rather than MapLibre's background-image glyphs, so center it
+   and follow the foreground directly. On mirrors the globe control's blue. */
+.map-ui-root .maplibregl-ctrl-group button.terrain-map-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-foreground);
+}
+
+.map-ui-root .terrain-map-toggle-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  opacity: 0.85;
+  transition: opacity 140ms ease;
+}
+
+.map-ui-root .terrain-map-toggle:hover .terrain-map-toggle-icon,
+.map-ui-root .terrain-map-toggle[aria-pressed="true"] .terrain-map-toggle-icon {
+  opacity: 1;
+}
+
+.map-ui-root .maplibregl-ctrl-group button.terrain-map-toggle[aria-pressed="true"] {
+  color: #33b5e5;
+}
+
+.map-ui-root .maplibregl-ctrl-group button.terrain-map-toggle[data-unavailable] {
+  color: var(--color-amber-500, #f59e0b);
+}
 </style>
