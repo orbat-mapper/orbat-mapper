@@ -141,3 +141,19 @@ export function isScenarioMapLayerDragItem(
 ): data is ScenarioMapLayerDragItem {
   return Boolean(data[_scnMapLayerKey]);
 }
+
+const _scnRangeRingsKey = Symbol("scenarioRangeRings");
+
+export type ScenarioRangeRingsDragItem = {
+  [_scnRangeRingsKey]: boolean;
+};
+
+export function getScenarioRangeRingsDragItem(): ScenarioRangeRingsDragItem {
+  return { [_scnRangeRingsKey]: true };
+}
+
+export function isScenarioRangeRingsDragItem(
+  data: Record<string | symbol, unknown>,
+): data is ScenarioRangeRingsDragItem {
+  return Boolean(data[_scnRangeRingsKey]);
+}

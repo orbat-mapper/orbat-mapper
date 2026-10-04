@@ -164,6 +164,7 @@ function createMockMap() {
     getStyle: vi.fn(() => ({
       layers: [...layers.values()],
     })),
+    getLayersOrder: vi.fn(() => [...layers.keys()]),
     addLayer: vi.fn((layer: { id: string }, beforeId?: string) => {
       if (beforeId !== undefined && layers.has(beforeId)) {
         const entries = [...layers.entries()];
@@ -246,9 +247,16 @@ function createScenario() {
   const mapLayers = {
     value: [] as any[],
   };
+  // Like the store, rings sit at the bottom unless a test moves them.
+  const rangeRingsLayer = {
+    value: undefined as
+      | { id: string; kind: "rangeRings"; name: string; aboveControlMeasures?: boolean }
+      | undefined,
+  };
   const stackLayers = {
     get value() {
       return [
+        ...(rangeRingsLayer.value ? [rangeRingsLayer.value] : []),
         ...layerItemsLayers.value,
         ...mapLayers.value.map((layer) => ({
           id: layer.id,
@@ -319,6 +327,7 @@ function createScenario() {
         ),
         mapLayers,
         stackLayers,
+        rangeRingsLayer,
         updateMapLayer: vi.fn(),
       },
       store: {
@@ -328,6 +337,7 @@ function createScenario() {
     layerItemsLayers,
     mapLayers,
     stackLayers,
+    rangeRingsLayer,
     mapLayerHook,
     featureLayerHook,
     undoRedoHook,
@@ -595,12 +605,14 @@ describe("createMapLibreScenarioLayerController", () => {
     );
   });
 
-  it("keeps scenario stack layers below range ring layers", () => {
+  it("draws range rings at their place in the scenario stack", () => {
     const mockMap = createMockMap();
     mockMap.map.addLayer({ id: RANGE_RING_FILL_LAYER_ID } as any);
     mockMap.map.addLayer({ id: RANGE_RING_LINE_LAYER_ID } as any);
+    mockMap.map.addLayer({ id: `${RANGE_RING_FILL_LAYER_ID}-z8-12` } as any);
     mockMap.map.addLayer({ id: "unitLayer" } as any);
-    const { scenario } = createScenario();
+    const { scenario, rangeRingsLayer } = createScenario();
+    rangeRingsLayer.value = { id: "rangeRings", kind: "rangeRings", name: "Range rings" };
     const controller = createMapLibreScenarioLayerController({
       getNativeMap: () => mockMap.map,
       fitGeometry: vi.fn(),
@@ -617,11 +629,48 @@ describe("createMapLibreScenarioLayerController", () => {
       mapLibreFeatureSourceId("layer-1"),
     );
     expect(featureIndex).toBeGreaterThanOrEqual(0);
-    expect(featureIndex).toBeLessThan(orderedLayerIds.indexOf(RANGE_RING_FILL_LAYER_ID));
-    expect(featureIndex).toBeLessThan(orderedLayerIds.indexOf(RANGE_RING_LINE_LAYER_ID));
-    expect(orderedLayerIds.indexOf(RANGE_RING_LINE_LAYER_ID)).toBeLessThan(
-      orderedLayerIds.indexOf("unitLayer"),
+    expect(orderedLayerIds.slice(0, 3)).toEqual([
+      RANGE_RING_FILL_LAYER_ID,
+      RANGE_RING_LINE_LAYER_ID,
+      `${RANGE_RING_FILL_LAYER_ID}-z8-12`,
+    ]);
+    expect(featureIndex).toBeGreaterThan(2);
+    expect(featureIndex).toBeLessThan(orderedLayerIds.indexOf("unitLayer"));
+  });
+
+  it("draws range rings above control measures when moved there", () => {
+    const mockMap = createMockMap();
+    mockMap.map.addLayer({ id: RANGE_RING_FILL_LAYER_ID } as any);
+    mockMap.map.addLayer({ id: RANGE_RING_LINE_LAYER_ID } as any);
+    mockMap.map.addLayer({ id: "tactical-graphics-fill" } as any);
+    mockMap.map.addLayer({ id: "unitLayer" } as any);
+    const { scenario, rangeRingsLayer } = createScenario();
+    rangeRingsLayer.value = { id: "rangeRings", kind: "rangeRings", name: "Range rings" };
+    const controller = createMapLibreScenarioLayerController(
+      {
+        getNativeMap: () => mockMap.map,
+        fitGeometry: vi.fn(),
+        fitExtent: vi.fn(),
+        animateView: vi.fn(),
+      } as any,
+      { getControlMeasureAnchorLayerId: () => "tactical-graphics-fill" },
     );
+
+    controller.bindScenario(scenario);
+    let orderedLayerIds = [...mockMap.layers.keys()];
+    expect(orderedLayerIds.indexOf(RANGE_RING_LINE_LAYER_ID)).toBeLessThan(
+      orderedLayerIds.indexOf("tactical-graphics-fill"),
+    );
+
+    rangeRingsLayer.value.aboveControlMeasures = true;
+    controller.refreshScenarioFeatureLayers();
+    orderedLayerIds = [...mockMap.layers.keys()];
+    expect(orderedLayerIds.slice(-4)).toEqual([
+      "tactical-graphics-fill",
+      RANGE_RING_FILL_LAYER_ID,
+      RANGE_RING_LINE_LAYER_ID,
+      "unitLayer",
+    ]);
   });
 
   it("updates ImageLayer visibility and opacity without rebuilding the source", async () => {

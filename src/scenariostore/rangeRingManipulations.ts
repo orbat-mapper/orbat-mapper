@@ -1,5 +1,9 @@
 import type { EntityId } from "@/types/base";
-import type { RangeRing, RangeRingGroup } from "@/types/scenarioGeoModels";
+import type {
+  RangeRing,
+  RangeRingGroup,
+  RangeRingVisibility,
+} from "@/types/scenarioGeoModels";
 import { nanoid } from "@/utils";
 import { klona } from "klona";
 import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
@@ -93,7 +97,14 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
     });
   }
 
-  function addRangeRingGroup(data: Partial<RangeRingGroup>) {
+  function updateRangeRingVisibility(data: RangeRingVisibility) {
+    update((s) => {
+      Object.assign(s.rangeRingVisibility, data);
+      s.rangeRingStateCounter++;
+    });
+  }
+
+  function addRangeRingGroup(data: Partial<RangeRingGroup>): string {
     const newGroup = { id: nanoid(), name: "Group", ...klona(data) };
     if (newGroup.id === undefined) {
       newGroup.id = nanoid();
@@ -103,6 +114,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
       s.rangeRingGroupMap[newId] = newGroup;
       s.rangeRingStateCounter++;
     });
+    return newId;
   }
 
   function deleteRangeRingGroup(id: string): boolean {
@@ -128,6 +140,7 @@ export function useRangeRingManipulations(store: NewScenarioStore) {
     updateRangeRing,
     updateRangeRingByName,
     updateRangeRingGroup,
+    updateRangeRingVisibility,
     addRangeRingGroup,
     deleteRangeRingGroup,
   };

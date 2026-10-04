@@ -123,6 +123,7 @@ describe("ScenarioLayersTabPanel", () => {
             },
             store: {
               groupUpdate: vi.fn((fn: () => void) => fn()),
+              state: { unitMap: {} },
             },
           },
         },
@@ -254,7 +255,10 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
               deleteFeature: vi.fn(),
               deleteLayer: vi.fn(),
             },
-            store: { groupUpdate: vi.fn((fn: () => void) => fn()) },
+            store: {
+              groupUpdate: vi.fn((fn: () => void) => fn()),
+              state: { unitMap: {} },
+            },
           },
           ...(renderFeed ? { [tacticalGraphicRenderFeedKey as symbol]: renderFeed } : {}),
           ...(editedControlMeasureId || drawingDestinationLayerId

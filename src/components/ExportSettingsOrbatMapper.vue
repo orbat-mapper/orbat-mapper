@@ -31,8 +31,11 @@ const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
 });
 
+// Range rings' place in the stack is kept on export, so it is not offered here.
 const layers = computed(() => {
-  return state.layerStack.map((id) => state.layerStackMap[id]).filter(Boolean);
+  return state.layerStack
+    .map((id) => state.layerStackMap[id])
+    .filter((layer) => layer && layer.kind !== "rangeRings");
 });
 
 const automaticScenarioName = ref(
@@ -42,7 +45,12 @@ const automaticFileName = ref(
   !form.value.fileName || form.value.fileName === "scenario.json",
 );
 const suggestedNames = computed(() =>
-  suggestExportNames(state.info.name, sides.value, state.layerStack, form.value),
+  suggestExportNames(
+    state.info.name,
+    sides.value,
+    layers.value.map((layer) => layer.id),
+    form.value,
+  ),
 );
 watch(
   suggestedNames,

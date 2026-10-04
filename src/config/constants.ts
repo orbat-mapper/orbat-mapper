@@ -5,7 +5,9 @@ import type { ScenarioVersion } from "@/types/scenarioModels";
 // (see applyScenarioObject in scenariostore/io.ts) rather than silently mishandle it.
 // Deliberately no `compareVersions(..., "3.4.0", "<")` branch in upgrade.ts.
 // 3.5.0 reverses Classic Arrow control points to tip-first (control-measures 0.32).
-export const SCENARIO_FILE_VERSION: ScenarioVersion = "3.5.0";
+// 3.6.0 is a signal like 3.4.0: range ring groups and settings.rangeRingVisibility
+// can hide rings, which an older build would show.
+export const SCENARIO_FILE_VERSION: ScenarioVersion = "3.6.0";
 export const LOCALSTORAGE_KEY = "orbat-scenario4";
 export const SHARE_HISTORY_LOCALSTORAGE_KEY = "orbat-share-history";
 

@@ -141,7 +141,7 @@ describe("importScenarioOverlayLayers", () => {
     expect(
       importScenarioOverlayLayers(source, targetStore.state, useGeo(targetStore), []),
     ).toEqual({ importedLayerIds: [], importedItemIds: [] });
-    expect(targetStore.state.layerStack).toEqual([]);
+    expect(targetStore.state.layerStack).toEqual(["rangeRings"]);
   });
 
   it("preserves legacy control measures in an unspecialized layer", () => {
@@ -203,7 +203,7 @@ describe("overlay replacement", () => {
           replaceLayerIds: ["plan"],
         }),
       );
-      expect(target.state.layerStack).toEqual(["before", "plan", "after"]);
+      expect(target.state.layerStack).toEqual(["rangeRings", "before", "plan", "after"]);
       expect(Object.keys(target.state.layerItemMap).sort()).toEqual([
         "added",
         "changed",
@@ -293,6 +293,6 @@ describe("overlay replacement", () => {
     importScenarioOverlayLayers(source, target.state, useGeo(target), ["other"], {
       replaceLayerIds: ["other"],
     });
-    expect(target.state.layerStack).toEqual(["plan", "other"]);
+    expect(target.state.layerStack).toEqual(["rangeRings", "plan", "other"]);
   });
 });
