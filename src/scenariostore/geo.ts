@@ -9,6 +9,7 @@ import type {
 } from "@/types/scenarioGeoModels";
 import type { EntityId } from "@/types/base";
 import { updateCurrentUnitState } from "@/scenariostore/time";
+import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import type {
   NScenarioLayerItem,
   NScenarioLayer,
@@ -338,7 +339,11 @@ export function useGeo(store: NewScenarioStore) {
     // interpolation target or the last applied location. Undo/redo re-project on
     // their own, so this only needs to run here.
     const unit = state.unitMap[unitId];
-    if (unit) updateCurrentUnitState(unit, state.currentTime, { force: true });
+    if (!unit) return;
+    updateCurrentUnitState(unit, state.currentTime, { force: true });
+    // The rebuild starts from the base symbol, so restore the identity of the side
+    // the unit belongs to at this time.
+    syncTimedHierarchyProjection(state, state.currentTime, { units: [unit] });
   }
 
   function addFeatureStateGeometry(
