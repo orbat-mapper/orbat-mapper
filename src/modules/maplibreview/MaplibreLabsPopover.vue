@@ -11,10 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
 
-import TerrainSettings from "./TerrainSettings.vue";
-import { useTerrainStore } from "@/stores/terrainStore";
-
-const terrainSettings = useTerrainStore();
 const props = defineProps<{ mlMap?: MlMap | null }>();
 
 const mapRef = shallowRef<MlMap | undefined>(props.mlMap ?? undefined);
@@ -104,12 +100,7 @@ const hexSizeLabel = computed(() => {
   return `~${parts.join(" · ")}`;
 });
 
-const activeCount = computed(
-  () =>
-    Number(showHexGrid.value) +
-    Number(terrainSettings.terrainEnabled) +
-    Number(terrainSettings.hillshadeEnabled),
-);
+const activeCount = computed(() => Number(showHexGrid.value));
 </script>
 
 <template>
@@ -152,7 +143,6 @@ const activeCount = computed(
       </header>
 
       <div class="flex max-h-[70vh] min-h-0 flex-col gap-3 overflow-y-auto p-3">
-        <TerrainSettings />
         <section class="rounded-md border">
           <div class="flex items-center justify-between gap-2 px-3 py-2">
             <div class="flex items-center gap-2">

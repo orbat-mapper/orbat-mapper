@@ -296,6 +296,7 @@ describe("MaplibreContextMenu", () => {
           ContextMenuRadioItem: ContextMenuRadioItemStub,
           MilitarySymbol: true,
           UnitSymbol: true,
+          TerrainMenu: true,
         },
       },
     });

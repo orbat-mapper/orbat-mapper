@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import { useUiStore } from "@/stores/uiStore";
-import { LANDING_PAGE_ROUTE } from "@/router/names";
+import { LANDING_PAGE_ROUTE, MAP_EDIT_MODE_ROUTE } from "@/router/names";
 
 import type { ScenarioActions, UiAction } from "@/types/constants";
 import { useRoute } from "vue-router";
@@ -29,6 +29,7 @@ import { useOwnedUndoRedo } from "@/modules/scenarioeditor/useOwnedUndoRedo";
 import { useShareHistory } from "@/composables/scenarioShare";
 import { LockIcon, MoonStarIcon, SunIcon } from "@lucide/vue";
 import { UseDark } from "@vueuse/components";
+import TerrainMenu from "@/modules/maplibreview/TerrainMenu.vue";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -254,6 +255,8 @@ const { history: shareHistory, clearHistory: clearShareHistory } = useShareHisto
           >
             Wrap long unit labels
           </DropdownMenuCheckboxItem>
+          <!-- Only the MapLibre map in map edit mode renders terrain. -->
+          <TerrainMenu kind="dropdown" v-if="route.name === MAP_EDIT_MODE_ROUTE" />
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger inset

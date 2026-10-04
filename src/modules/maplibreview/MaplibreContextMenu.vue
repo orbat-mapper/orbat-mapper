@@ -77,6 +77,7 @@ import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
 import AddMapServerDialog from "@/components/AddMapServerDialog.vue";
 import { queryTrackPointAt, type TrackPointHit } from "@/composables/maplibreUnitHistory";
+import TerrainMenu from "@/modules/maplibreview/TerrainMenu.vue";
 
 const maplibreLayersStore = useMaplibreLayersStore();
 const {
@@ -622,6 +623,7 @@ function onContextMenu(event: MouseEvent) {
           </ContextMenuRadioGroup>
         </ContextMenuSubContent>
       </ContextMenuSub>
+      <TerrainMenu kind="context" />
       <ContextMenuSub>
         <ContextMenuSubTrigger inset><span>Map settings</span></ContextMenuSubTrigger>
         <ContextMenuSubContent>

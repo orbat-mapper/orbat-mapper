@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added an arrowhead handle to Classic Arrows for adjusting the head length and width while editing. Alt+click the handle to restore the default size.
 - MilX imports now bring in tactical graphics as control measures, with each MilX layer becoming a control-measure layer. Identity and planned status are kept, map.army free-format shapes are imported as generic graphics with their colours and text, and graphics without an equivalent are reported. Imported units also keep their direction and all text amplifiers.
 - Added a choice of where imported MilX units get their positions: as the initial location, at the current scenario time, or at a scenario event.
+- Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together. Turning it on tilts a top-down map so the relief is visible, and turning it off levels the map again. The button turns amber when elevation data is unavailable.
 
 ### Changed
 
@@ -23,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Dragging units on the map is smoother, since only the dragged units are redrawn while dragging.
 - Range rings now follow the zoom visibility range of their unit, and grouped range rings with different zoom ranges still merge into one shape.
 - Units on the map are now clicked and hovered on their symbol only, instead of anywhere within their text amplifiers. When units overlap, the closest one is picked.
+- 3D terrain and hillshading are no longer experimental. Their settings have moved from the Labs menu to a Terrain submenu in the map context menu and in the main menu under View, and they are now remembered between visits.
 
 ### Fixed
 
