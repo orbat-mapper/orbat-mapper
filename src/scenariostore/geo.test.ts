@@ -196,6 +196,25 @@ describe("scenario geo item accessors", () => {
     expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
   });
 
+  it("re-projects the current state when a position is added at another time", () => {
+    const store = useNewScenarioStore(createUnitScenario());
+    const geo = useGeo(store);
+    const unit = () => store.state.unitMap["unit-1"];
+    expect(unit()._state?.type).toBe("initial");
+
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    geo.addUnitPosition("unit-1", [0, 50], store.state.currentTime + threeDays);
+
+    expect(unit()._state?.type).toBe("interpolated");
+    const projected = unit()._state;
+
+    store.undo();
+    expect(unit()._state?.type).toBe("initial");
+
+    store.redo();
+    expect(unit()._state).toEqual(projected);
+  });
+
   it("exposes layer-item accessors backed by the current feature store", () => {
     const store = useNewScenarioStore({
       id: "scenario-1",

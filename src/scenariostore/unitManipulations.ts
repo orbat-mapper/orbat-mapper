@@ -108,6 +108,17 @@ export function isUnitHiddenInState(state: ScenarioState, unit: NUnit): boolean 
   );
 }
 
+// Changes to these fields need a map redraw of the unit.
+function changesUnitSymbol(data: UnitUpdate) {
+  return (
+    data.style !== undefined ||
+    data.textAmplifiers !== undefined ||
+    data.sidc !== undefined ||
+    data.symbolOptions !== undefined ||
+    data.reinforcedStatus !== undefined
+  );
+}
+
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
@@ -434,12 +445,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     // Bumped inside the recorded update so undo/redo also change it and the map
     // redraws the restored symbol.
-    const shouldUpdateUnitStateCounter =
-      data.style !== undefined ||
-      data.textAmplifiers !== undefined ||
-      data.sidc !== undefined ||
-      data.symbolOptions !== undefined ||
-      data.reinforcedStatus !== undefined;
+    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
 
     if (noUndo) {
       if (!unit) return;
@@ -466,6 +472,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const filteredUnitIds = ignoreLocked
       ? unitIds
       : unitIds.filter((id) => !isUnitLocked(id));
+    // Bumped inside the recorded update, as in updateUnit, so undo/redo also redraw.
+    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
     update((s) => {
       filteredUnitIds.forEach((unitId) => {
         const unit = s.unitMap[unitId];
@@ -474,6 +482,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         s.unitMap[unitId] = klona(unit);
         invalidateUnitStyle(unitId);
       });
+      if (shouldUpdateUnitStateCounter && filteredUnitIds.length) s.unitStateCounter++;
     });
     if (doUpdateUnitState) {
       unitIds.forEach((id) => updateUnitState(id));
@@ -498,6 +507,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
         // s.unitMap[unitId] = klona(unit);
         invalidateUnitStyle(unitId);
       });
+      // Bumped inside the recorded update, as in updateUnit, so undo/redo also redraw.
+      if (filteredUnitIds.length) s.unitStateCounter++;
     });
     if (doUpdateUnitState) {
       unitIds.forEach((id) => updateUnitState(id));

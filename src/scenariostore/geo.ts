@@ -8,6 +8,7 @@ import type {
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
 import type { EntityId } from "@/types/base";
+import { updateCurrentUnitState } from "@/scenariostore/time";
 import type {
   NScenarioLayerItem,
   NScenarioLayer,
@@ -304,12 +305,11 @@ export function useGeo(store: NewScenarioStore) {
     atTime?: number,
     options: AddUnitPositionOptions = {},
   ) {
-    let newState: CurrentState | null = null;
     update(
       (s) => {
         const u = s.unitMap[unitId];
         const t = atTime ?? s.currentTime;
-        newState = {
+        const newState: CurrentState = {
           t,
           location: coordinates,
           ...(options.via?.length ? { via: options.via } : {}),
@@ -320,7 +320,6 @@ export function useGeo(store: NewScenarioStore) {
         // Bump before the loop so every code path (insert/replace/append) records
         // the change and keeps the bump inside the patch for undo/redo.
         s.unitStateCounter++;
-        if (t === s.currentTime) u._state = newState;
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t < u.state[i].t) {
@@ -335,6 +334,11 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addUnitPosition", value: unitId },
     );
+    // An entry at another time can still change the current position, as the next
+    // interpolation target or the last applied location. Undo/redo re-project on
+    // their own, so this only needs to run here.
+    const unit = state.unitMap[unitId];
+    if (unit) updateCurrentUnitState(unit, state.currentTime, { force: true });
   }
 
   function addFeatureStateGeometry(
