@@ -23,6 +23,30 @@ import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
 import type { EntityId } from "@/types/base";
 
+const HIDE_ACTIONS: Partial<
+  Record<UnitAction, { hidden: boolean; withSubordinates: boolean }>
+> = {
+  [UnitActions.Hide]: { hidden: true, withSubordinates: false },
+  [UnitActions.Show]: { hidden: false, withSubordinates: false },
+  [UnitActions.HideWithSubordinates]: { hidden: true, withSubordinates: true },
+  [UnitActions.ShowWithSubordinates]: { hidden: false, withSubordinates: true },
+};
+
+/** Menu entries for hiding or showing a unit's whole branch, for units with subordinates. */
+export function hideBranchMenuItems(unit: { subUnits?: unknown[] }) {
+  if (!unit.subUnits?.length) return [];
+  return [
+    {
+      label: "Hide on map (with subordinates)",
+      action: UnitActions.HideWithSubordinates,
+    },
+    {
+      label: "Show on map (with subordinates)",
+      action: UnitActions.ShowWithSubordinates,
+    },
+  ];
+}
+
 export function useUnitActions(
   options: Partial<{
     activeScenario: TScenario;
@@ -151,12 +175,35 @@ export function useUnitActions(
     }
   };
 
+  function setUnitsHidden(
+    units: NUnit[],
+    { hidden, withSubordinates }: { hidden: boolean; withSubordinates: boolean },
+  ) {
+    const ids = new Set<EntityId>();
+    units.forEach((unit) => {
+      if (withSubordinates) {
+        unitActions.walkSubUnits(unit.id, (u) => ids.add(u.id), { includeParent: true });
+      } else {
+        ids.add(unit.id);
+      }
+    });
+    unitActions.setUnitsHidden(ids, hidden);
+  }
+
   function onUnitAction(
     unitOrUnits: NUnit | NUnit[] | null,
     action: UnitAction,
     waypointIds?: EntityId[],
   ) {
     if (!unitOrUnits) return;
+    const hideAction = HIDE_ACTIONS[action];
+    if (hideAction) {
+      setUnitsHidden(
+        Array.isArray(unitOrUnits) ? unitOrUnits : [unitOrUnits],
+        hideAction,
+      );
+      return;
+    }
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
         if (action === UnitActions.Zoom || action === UnitActions.Pan) {
@@ -262,6 +309,10 @@ export function useUnitMenu(
         action: UnitActions.MoveUpInHierarchy,
         disabled: isLocked.value || !canMoveUpInHierarchy.value,
       },
+      unit.isHidden
+        ? { label: "Show on map", action: UnitActions.Show }
+        : { label: "Hide on map", action: UnitActions.Hide },
+      ...hideBranchMenuItems(unit),
       unit.locked
         ? {
             label: "Unlock",

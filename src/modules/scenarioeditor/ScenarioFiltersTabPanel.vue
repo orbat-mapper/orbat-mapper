@@ -16,7 +16,14 @@ import { useSymbologyData } from "@/composables/symbolData";
 import FilterTree, {
   type NestedUnitStatItem,
 } from "@/modules/scenarioeditor/FilterTree.vue";
-import { IconCollapseAll, IconExpandAll } from "@iconify-prerendered/vue-mdi";
+import {
+  IconClose,
+  IconCollapseAll,
+  IconExpandAll,
+  IconEye,
+  IconEyeOff,
+  IconSelectInverse,
+} from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
@@ -27,10 +34,14 @@ const VISIBILITY_INITIAL_LOCATION_KEY = "visibility-initial-location";
 const VISIBILITY_CURRENT_LOCATION_KEY = "visibility-current-location";
 const VISIBILITY_HAS_LOCATIONS_KEY = "visibility-has-locations";
 const VISIBILITY_NO_LOCATIONS_KEY = "visibility-no-locations";
+const VISIBILITY_HIDDEN_KEY = "visibility-hidden";
+const VISIBILITY_VISIBLE_KEY = "visibility-visible";
 const GENERIC_FILTER_SIDC = "10031000100000000000";
 
 const {
   store: { state },
+  unitActions,
+  geo,
 } = injectStrict(activeScenarioKey);
 
 const { symbology, resolveIconLabel, resolveModifierLabel, loadData } =
@@ -61,6 +72,47 @@ const panelsOpen = ref({
   status: false,
   modifiers: false,
 });
+
+type FilterSectionId = keyof typeof panelsOpen.value;
+
+const filterSections = computed<
+  { id: FilterSectionId; label: string; tree: NestedUnitStatItem[] }[]
+>(() => [
+  { id: "commandLevel", label: "Command level", tree: emtTree.value },
+  { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
+  { id: "side", label: "Side", tree: sideTree.value },
+  { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
+  { id: "identity", label: "Standard identity", tree: sidTree.value },
+  { id: "status", label: "Status", tree: statusTree.value },
+  { id: "modifiers", label: "Symbol modifiers", tree: modifierTree.value },
+]);
+
+// Units the map draws right now: located at the current time and not hidden by
+// the unit, its side or its side group.
+const visibleOnMapIds = computed(
+  () => new Set(geo.everyVisibleUnit.value.map((unit) => unit.id)),
+);
+
+const selectedHiddenCount = computed(
+  () => [...selectedUnitIds.value].filter((id) => state.unitMap[id]?.isHidden).length,
+);
+const selectedVisibleCount = computed(
+  () => selectedUnitIds.value.size - selectedHiddenCount.value,
+);
+
+function setSelectedHidden(hidden: boolean) {
+  unitActions.setUnitsHidden(selectedUnitIds.value, hidden);
+}
+
+const hiddenUnitIds = computed(() =>
+  Object.values(state.unitMap)
+    .filter((unit) => unit.isHidden)
+    .map((unit) => unit.id),
+);
+
+function showAllHidden() {
+  unitActions.setUnitsHidden(hiddenUnitIds.value, false);
+}
 
 const isAnyPanelOpen = computed(() => Object.values(panelsOpen.value).some((v) => v));
 
@@ -105,8 +157,6 @@ watchEffect(() => {
 
     const iconSidc = new Sidc(getFullUnitSidc(unit.sidc));
     const originalEmt = iconSidc.emt;
-    const originalMod1 = iconSidc.modifierOne;
-    const originalMod2 = iconSidc.modifierTwo;
     iconSidc.emt = "00";
     iconSidc.hqtfd = "0";
     iconSidc.standardIdentity = "3";
@@ -116,10 +166,6 @@ watchEffect(() => {
     const sidc = iconSidc.toString();
     iconSidc.mainIcon = "000000";
     const sidcSymbolSet = iconSidc.toString();
-    iconSidc.modifierOne = originalMod1;
-    iconSidc.modifierTwo = originalMod2;
-    iconSidc.modifierOne = "00";
-    iconSidc.modifierTwo = "00";
     iconSidc.emt = originalEmt;
     const sidcEmt = iconSidc.toString();
     if (stats[sideKey] === 1) {
@@ -283,11 +329,18 @@ watchEffect(() => {
       label: "Has initial location",
       sidc: GENERIC_FILTER_SIDC,
     },
+    {
+      key: VISIBILITY_VISIBLE_KEY,
+      label: "Visible on map",
+      sidc: GENERIC_FILTER_SIDC,
+    },
+    {
+      key: VISIBILITY_HIDDEN_KEY,
+      label: "Hidden on map",
+      sidc: GENERIC_FILTER_SIDC,
+    },
   ];
-  stats[VISIBILITY_INITIAL_LOCATION_KEY] = stats[VISIBILITY_INITIAL_LOCATION_KEY] || 0;
-  stats[VISIBILITY_CURRENT_LOCATION_KEY] = stats[VISIBILITY_CURRENT_LOCATION_KEY] || 0;
-  stats[VISIBILITY_HAS_LOCATIONS_KEY] = stats[VISIBILITY_HAS_LOCATIONS_KEY] || 0;
-  stats[VISIBILITY_NO_LOCATIONS_KEY] = stats[VISIBILITY_NO_LOCATIONS_KEY] || 0;
+  visibilityTree.value.forEach(({ key }) => (stats[key] ||= 0));
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
   iconTree.value = sortBy(iconStatItems, "label");
@@ -307,10 +360,25 @@ const selectedStats = computed(() => {
   return stats;
 });
 
-function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, number>) {
+// Per category: the units a click would add, skipping excluded categories.
+const addableStats = computed(() => {
+  if (!excludedKeys.value.size) return flatStats.value;
+  const stats: Record<string, number> = {};
+  Object.values(state.unitMap).forEach((unit) => {
+    const keys = createKeys(unit);
+    if (!isExcluded(keyList(keys))) updateUnitStats(unit, stats, keys);
+  });
+  return stats;
+});
+
+function updateUnitStats(
+  unitOrUnitId: string | NUnit,
+  stats: Record<string, number>,
+  precomputedKeys?: ReturnType<typeof createKeys>,
+) {
   const unit =
     typeof unitOrUnitId === "string" ? state.unitMap[unitOrUnitId] : unitOrUnitId;
-  const keys = createKeys(unit);
+  const keys = precomputedKeys ?? createKeys(unit);
   const {
     symbolSetKey,
     entityKey,
@@ -328,6 +396,8 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
     currentLocationKey,
     hasLocationsKey,
     noLocationsKey,
+    hiddenKey,
+    visibleKey,
   } = keys;
   stats[symbolSetKey] = (stats[symbolSetKey] || 0) + 1;
   stats[entityKey] = (stats[entityKey] || 0) + 1;
@@ -338,12 +408,16 @@ function updateUnitStats(unitOrUnitId: string | NUnit, stats: Record<string, num
   stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
   stats[statusKey] = (stats[statusKey] || 0) + 1;
   stats[sidKey] = (stats[sidKey] || 0) + 1;
-  if (initialLocationKey)
-    stats[initialLocationKey] = (stats[initialLocationKey] || 0) + 1;
-  if (currentLocationKey)
-    stats[currentLocationKey] = (stats[currentLocationKey] || 0) + 1;
-  if (hasLocationsKey) stats[hasLocationsKey] = (stats[hasLocationsKey] || 0) + 1;
-  if (noLocationsKey) stats[noLocationsKey] = (stats[noLocationsKey] || 0) + 1;
+  for (const key of [
+    initialLocationKey,
+    currentLocationKey,
+    hasLocationsKey,
+    noLocationsKey,
+    hiddenKey,
+    visibleKey,
+  ]) {
+    if (key) stats[key] = (stats[key] || 0) + 1;
+  }
   if (!hqtfdKey.endsWith("0")) stats[hqtfdKey] = (stats[hqtfdKey] || 0) + 1;
   if (!mod1Key.endsWith("00")) stats[mod1Key] = (stats[mod1Key] || 0) + 1;
   if (!mod2Key.endsWith("00")) stats[mod2Key] = (stats[mod2Key] || 0) + 1;
@@ -377,6 +451,10 @@ function createKeys(unit: NUnit) {
     : undefined;
   const hasLocationsKey = hasLocations ? VISIBILITY_HAS_LOCATIONS_KEY : undefined;
   const noLocationsKey = hasNoLocations ? VISIBILITY_NO_LOCATIONS_KEY : undefined;
+  const hiddenKey = unit.isHidden ? VISIBILITY_HIDDEN_KEY : undefined;
+  const visibleKey = visibleOnMapIds.value.has(unit.id)
+    ? VISIBILITY_VISIBLE_KEY
+    : undefined;
   return {
     sidKey,
     symbolSetKey,
@@ -394,140 +472,44 @@ function createKeys(unit: NUnit) {
     currentLocationKey,
     hasLocationsKey,
     noLocationsKey,
+    hiddenKey,
+    visibleKey,
   };
+}
+
+// Every category key the unit belongs to.
+function unitKeys(unit: NUnit): string[] {
+  return keyList(createKeys(unit));
+}
+
+function keyList(keys: ReturnType<typeof createKeys>): string[] {
+  return Object.values(keys).filter((key): key is string => !!key);
+}
+
+function isExcluded(keys: string[]) {
+  return keys.some((key) => excludedKeys.value.has(key));
+}
+
+// Selects every unit that is not currently selected, skipping excluded categories.
+function invertSelection() {
+  const inverted = Object.values(state.unitMap)
+    .filter((unit) => !selectedUnitIds.value.has(unit.id) && !isExcluded(unitKeys(unit)))
+    .map((unit) => unit.id);
+  selectedUnitIds.value.clear();
+  inverted.forEach((id) => selectedUnitIds.value.add(id));
 }
 
 function selectByKey(key: string) {
   Object.values(state.unitMap).forEach((unit) => {
-    const {
-      symbolSetKey,
-      entityKey,
-      entityTypeKey,
-      emtKey,
-      sideKey,
-      sideGroupKey,
-      modSymbolSetKey,
-      mod1Key,
-      mod2Key,
-      statusKey,
-      hqtfdKey,
-      sidKey,
-      initialLocationKey,
-      currentLocationKey,
-      hasLocationsKey,
-      noLocationsKey,
-    } = createKeys(unit);
-
-    if (
-      excludedKeys.value.has(symbolSetKey) ||
-      excludedKeys.value.has(entityKey) ||
-      excludedKeys.value.has(entityTypeKey) ||
-      excludedKeys.value.has(emtKey) ||
-      excludedKeys.value.has(sideKey) ||
-      excludedKeys.value.has(sideGroupKey) ||
-      excludedKeys.value.has(modSymbolSetKey) ||
-      excludedKeys.value.has(mod1Key) ||
-      excludedKeys.value.has(mod2Key) ||
-      excludedKeys.value.has(statusKey) ||
-      excludedKeys.value.has(hqtfdKey) ||
-      excludedKeys.value.has(sidKey) ||
-      (!!initialLocationKey && excludedKeys.value.has(initialLocationKey)) ||
-      (!!currentLocationKey && excludedKeys.value.has(currentLocationKey)) ||
-      (!!hasLocationsKey && excludedKeys.value.has(hasLocationsKey)) ||
-      (!!noLocationsKey && excludedKeys.value.has(noLocationsKey))
-    ) {
-      return;
-    }
-    if (key === symbolSetKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === entityKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === entityTypeKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === emtKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sideKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sideGroupKey && !excludedKeys.value.has(sideGroupKey)) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === modSymbolSetKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === mod1Key) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === mod2Key) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === statusKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === hqtfdKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === sidKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === initialLocationKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === currentLocationKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === hasLocationsKey) {
-      selectedUnitIds.value.add(unit.id);
-    } else if (key === noLocationsKey) {
-      selectedUnitIds.value.add(unit.id);
-    }
+    const keys = unitKeys(unit);
+    if (keys.includes(key) && !isExcluded(keys)) selectedUnitIds.value.add(unit.id);
   });
 }
 
 function clearByKey(key: string) {
   selectedUnitIds.value.forEach((unitId) => {
     const unit = state.unitMap[unitId];
-    const {
-      symbolSetKey,
-      entityKey,
-      entityTypeKey,
-      emtKey,
-      sideKey,
-      sideGroupKey,
-      mod2Key,
-      mod1Key,
-      modSymbolSetKey,
-      statusKey,
-      hqtfdKey,
-      sidKey,
-      initialLocationKey,
-      currentLocationKey,
-      hasLocationsKey,
-      noLocationsKey,
-    } = createKeys(unit);
-    if (key === symbolSetKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === entityKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === entityTypeKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === emtKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sideKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sideGroupKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === mod1Key) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === mod2Key) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === modSymbolSetKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === statusKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === hqtfdKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === sidKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === initialLocationKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === currentLocationKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === hasLocationsKey) {
-      selectedUnitIds.value.delete(unit.id);
-    } else if (key === noLocationsKey) {
-      selectedUnitIds.value.delete(unit.id);
-    }
+    if (unit && unitKeys(unit).includes(key)) selectedUnitIds.value.delete(unitId);
   });
 }
 
@@ -569,31 +551,35 @@ function onSelect(event: CustomEvent<{ value: { key: string } }>) {
   }
 }
 
+function parentKeys(items: NestedUnitStatItem[]): string[] {
+  return items.flatMap((item) =>
+    item.children?.length ? [item.key, ...parentKeys(item.children)] : [],
+  );
+}
+
+// Toggles every expandable main icon node, leaving the other trees as they are.
 function expandAllIcons() {
-  const keys = Object.keys(flatStats.value).filter((key) => !key.startsWith("side-"));
-  const expandedSideKeys = keys.filter((key) => key.startsWith("side-"));
-  if (expandedKeys.value.length - expandedSideKeys.length === keys.length) {
-    expandedKeys.value = [];
-  } else {
-    expandedKeys.value = keys;
-  }
+  const iconKeys = new Set(parentKeys(iconTree.value));
+  const otherKeys = expandedKeys.value.filter((key) => !iconKeys.has(key));
+  const allExpanded = [...iconKeys].every((key) => expandedKeys.value.includes(key));
+  expandedKeys.value = allExpanded ? otherKeys : [...otherKeys, ...iconKeys];
 }
 </script>
 <template>
-  <div class="px-4">
+  <div class="flex min-h-full flex-col px-4">
     <header
       class="bg-sidebar sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
     >
-      <PanelHeading>Select units</PanelHeading>
+      <PanelHeading>Select by category</PanelHeading>
       <div class="flex items-center space-x-1">
         <IconButton
           v-if="isAnyPanelOpen"
-          title="Collapse all filter sections"
+          title="Collapse all sections"
           @click="collapseAll()"
         >
           <IconCollapseAll class="h-5 w-5" />
         </IconButton>
-        <IconButton v-else title="Expand all filter sections" @click="expandAll()">
+        <IconButton v-else title="Expand all sections" @click="expandAll()">
           <IconExpandAll class="h-5 w-5" />
         </IconButton>
         <Button
@@ -604,110 +590,88 @@ function expandAllIcons() {
           >Clear excluded
           <Badge variant="secondary">{{ excludedKeys.size }}</Badge></Button
         >
-        <Button
-          v-if="selectedUnitIds.size"
-          variant="outline"
-          size="sm"
-          @click="selectedUnitIds.clear()"
-          >Clear selected
-          <Badge variant="secondary">{{ selectedUnitIds.size }}</Badge></Button
-        >
       </div>
     </header>
-    <NewAccordionPanel label="Command level" v-model="panelsOpen.commandLevel">
-      <FilterTree
-        :tree="emtTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Main unit icon" v-model="panelsOpen.mainIcon">
-      <template #header
+    <p class="text-muted-foreground pb-2 text-sm">
+      Click a category to add its units to the selection. Click it again to remove them.
+    </p>
+    <div class="flex flex-wrap items-center gap-1 pb-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="mr-auto"
+        title="Select all units that are not selected, skipping excluded categories"
+        @click="invertSelection()"
+        ><IconSelectInverse class="size-4" />Invert selection</Button
+      >
+      <Button
+        v-if="hiddenUnitIds.length"
+        variant="outline"
+        size="sm"
+        title="Show every hidden unit on the map"
+        @click="showAllHidden()"
+        ><IconEye class="size-4" />Show all hidden
+        <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
+      >
+    </div>
+    <NewAccordionPanel
+      v-for="section in filterSections"
+      :key="section.id"
+      :label="section.label"
+      v-model="panelsOpen[section.id]"
+    >
+      <template v-if="section.id === 'mainIcon'" #header
         ><IconButton title="Expand all icons" @click.stop="expandAllIcons()"
           ><IconExpandAll /></IconButton
       ></template>
       <FilterTree
-        :tree="iconTree"
+        :tree="section.tree"
         v-model:expandedKeys="expandedKeys"
         :stats="flatStats"
         :selectedStats="selectedStats"
+        :addableStats="addableStats"
         :excludedKeys="excludedKeys"
         @select="onSelect"
-        @clear="clearByKey"
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
       />
     </NewAccordionPanel>
-    <NewAccordionPanel label="Side" v-model="panelsOpen.side">
-      <FilterTree
-        :tree="sideTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Map visibility" v-model="panelsOpen.visibility">
-      <FilterTree
-        :tree="visibilityTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Standard identity" v-model="panelsOpen.identity">
-      <FilterTree
-        :tree="sidTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Status" v-model="panelsOpen.status">
-      <FilterTree
-        :tree="statusTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
-    <NewAccordionPanel label="Symbol modifiers" v-model="panelsOpen.modifiers">
-      <FilterTree
-        :tree="modifierTree"
-        v-model:expandedKeys="expandedKeys"
-        :stats="flatStats"
-        :selectedStats="selectedStats"
-        :excludedKeys="excludedKeys"
-        @select="onSelect"
-        @clear="clearByKey"
-        @exclude="excludedKeys.add($event)"
-        @clearExclude="excludedKeys.delete($event)"
-      />
-    </NewAccordionPanel>
+    <footer
+      v-if="selectedUnitIds.size"
+      class="border-border bg-sidebar sticky bottom-0 z-10 -mx-4 mt-auto flex min-h-12 items-center gap-2 border-t px-4 py-2"
+    >
+      <div class="flex flex-col text-sm leading-tight whitespace-nowrap">
+        <span class="font-medium">{{ selectedUnitIds.size }} selected</span>
+        <span v-if="selectedHiddenCount" class="text-muted-foreground text-xs"
+          >{{ selectedHiddenCount }} hidden</span
+        >
+      </div>
+      <div class="ml-auto flex flex-wrap items-center justify-end gap-1">
+        <Button
+          v-if="selectedVisibleCount"
+          variant="outline"
+          size="sm"
+          title="Hide the selected units on the map"
+          @click="setSelectedHidden(true)"
+          ><IconEyeOff class="size-4" />Hide</Button
+        >
+        <Button
+          v-if="selectedHiddenCount"
+          variant="outline"
+          size="sm"
+          title="Show the selected units on the map"
+          @click="setSelectedHidden(false)"
+          ><IconEye class="size-4" />Show</Button
+        >
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          title="Clear the selection"
+          aria-label="Clear the selection"
+          @click="selectedUnitIds.clear()"
+          ><IconClose class="size-4"
+        /></Button>
+      </div>
+    </footer>
   </div>
 </template>

@@ -1,0 +1,14 @@
+export const REFERENCE_GRID_LABEL_METRICS = {
+  edgeOffsetPx: 4,
+  zoneInsetPx: 4,
+} as const;
+
+const REFERENCE_GRID_LABEL_HALO_COLOR = "rgba(255, 255, 255, 0.92)";
+
+export const REFERENCE_GRID_LABEL_TEXT_SHADOW = [
+  `-1px -1px 0 ${REFERENCE_GRID_LABEL_HALO_COLOR}`,
+  `1px -1px 0 ${REFERENCE_GRID_LABEL_HALO_COLOR}`,
+  `-1px 1px 0 ${REFERENCE_GRID_LABEL_HALO_COLOR}`,
+  `1px 1px 0 ${REFERENCE_GRID_LABEL_HALO_COLOR}`,
+  `0 0 2px ${REFERENCE_GRID_LABEL_HALO_COLOR}`,
+].join(", ");

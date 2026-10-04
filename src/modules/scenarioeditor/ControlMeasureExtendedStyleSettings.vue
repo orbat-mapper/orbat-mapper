@@ -9,10 +9,9 @@ import {
 import {
   CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS,
   effectiveControlMeasureOptions,
-  getLabelSizeParam,
   metadataFor,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
-import { DEFAULT_LABEL_SIZE_PIXELS } from "@orbat-mapper/tactical-draw";
+import ControlMeasureSizeSettings from "@/modules/scenarioeditor/ControlMeasureSizeSettings.vue";
 import { ChevronRight } from "@lucide/vue";
 import {
   Collapsible,
@@ -37,6 +36,7 @@ import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 const props = defineProps<{
   graphicKind: ControlMeasureKind;
   options?: TacticalGraphicOptions;
+  getResolution?: () => number | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -50,38 +50,15 @@ function fieldId(key: string): string {
 
 const metadata = computed(() => metadataFor(props.graphicKind));
 
-/** Shared label sizing is declared by the per-kind `capturesLabelSize` flag. */
-const labelSizeParameter = computed<ParamDescriptor | undefined>(() =>
-  getLabelSizeParam(props.graphicKind, props.options),
+const effectiveOptions = computed(() =>
+  effectiveControlMeasureOptions(props.graphicKind, props.options),
 );
-
-const effectiveOptions = computed<Record<string, unknown>>(() => ({
-  ...effectiveControlMeasureOptions(props.graphicKind, props.options),
-  ...(labelSizeParameter.value?.key === "labelSizePixels" &&
-  props.options?.labelSizePixels === undefined
-    ? { labelSizePixels: DEFAULT_LABEL_SIZE_PIXELS }
-    : undefined),
-}));
-
-/**
- * A screen/ground size pair is represented by two adjacent number descriptors with
- * the same stem (`radiusPixels` / `radius`). Only one is live: the authored pixel
- * key selects screen sizing, otherwise the ground-sized half is used. This mirrors
- * the package adapter contract and avoids presenting two identically labelled knobs.
- */
-function inactiveSizePairKeys(parameters: readonly ParamDescriptor[]): Set<string> {
-  const keys = new Set(parameters.map(({ key }) => key));
-  const inactive = new Set<string>();
-  for (const parameter of parameters) {
-    if (!parameter.key.endsWith("Pixels")) continue;
-    const groundKey = parameter.key.slice(0, -"Pixels".length);
-    if (!keys.has(groundKey)) continue;
-    inactive.add(
-      props.options?.[parameter.key] === undefined ? parameter.key : groundKey,
-    );
-  }
-  return inactive;
-}
+const sizePairKeys = computed(
+  () =>
+    new Set(
+      (metadata.value?.sizePairs ?? []).flatMap((pair) => [pair.pixels, pair.meters]),
+    ),
+);
 
 /**
  * Some static graphics persist box rotation/scale in their option bag. Probe the
@@ -94,18 +71,11 @@ function isTransformBoxParameter(parameter: ParamDescriptor): boolean {
   const kind = props.graphicKind as ControlMeasureId;
 
   const probeOptions = { ...effectiveOptions.value };
-  if (parameter.key.endsWith("Pixels")) {
-    delete probeOptions[parameter.key.slice(0, -"Pixels".length)];
-  } else {
-    delete probeOptions[`${parameter.key}Pixels`];
-  }
-  // Static point graphics use `sizeMeters` / `sizePixels` rather than the usual
-  // shared-stem pair. Make the descriptor under test the live size denomination.
-  if (parameter.key.startsWith("size")) {
-    for (const key of Object.keys(probeOptions)) {
-      if (key.startsWith("size") && key !== parameter.key) delete probeOptions[key];
-    }
-  }
+  const pair = metadata.value?.sizePairs?.find(
+    (pair) => pair.pixels === parameter.key || pair.meters === parameter.key,
+  );
+  if (pair)
+    delete probeOptions[parameter.key === pair.pixels ? pair.meters : pair.pixels];
   if (probeOptions[parameter.key] === undefined) {
     probeOptions[parameter.key] = parameter.min ?? parameter.step ?? 1;
   }
@@ -119,7 +89,6 @@ function isTransformBoxParameter(parameter: ParamDescriptor): boolean {
 
 const appearanceParameters = computed(() => {
   const parameters = metadata.value?.params ?? [];
-  const inactiveSizeKeys = inactiveSizePairKeys(parameters);
   // Whether the transform box folds any option at all is a static per-kind fact, so
   // the expensive per-parameter probe is skipped entirely for kinds without it.
   const foldsTransform = foldsBoxTransformOptions(props.graphicKind as ControlMeasureId);
@@ -128,11 +97,10 @@ const appearanceParameters = computed(() => {
       resolveParameterSemanticRole(parameter) === "appearance" &&
       // Smoothing, including its advanced resolution, already lives in Style.
       !CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS.includes(parameter.key) &&
-      !inactiveSizeKeys.has(parameter.key) &&
+      !sizePairKeys.value.has(parameter.key) &&
       (parameter.visibleWhen?.(effectiveOptions.value) ?? true) &&
       !(foldsTransform && isTransformBoxParameter(parameter)),
   );
-  if (labelSizeParameter.value) visible.push(labelSizeParameter.value);
   return visible;
 });
 
@@ -164,6 +132,11 @@ function updateOption(key: string, value: unknown) {
 
 <template>
   <div class="flex flex-col gap-5 pt-4">
+    <ControlMeasureSizeSettings
+      :targets="[{ id: 'single', graphicKind, options }]"
+      :get-resolution="getResolution"
+      @update="emit('update', $event[0]!.options)"
+    />
     <FieldGroup v-if="standardParameters.length">
       <ControlMeasureParameterField
         v-for="parameter in standardParameters"
@@ -208,7 +181,11 @@ function updateOption(key: string, value: unknown) {
     </Collapsible>
 
     <p
-      v-if="!standardParameters.length && !advancedParameters.length"
+      v-if="
+        !standardParameters.length &&
+        !advancedParameters.length &&
+        !metadata?.sizePairs?.length
+      "
       class="text-muted-foreground text-sm"
     >
       This control measure has no extended styling settings.

@@ -110,3 +110,19 @@ describe("applyScenarioControlMeasureEdit", () => {
     expect(addTacticalGraphicStateControlPoints).toHaveBeenCalledTimes(1);
   });
 });
+
+it("detaches per-vertex widths from the engine's committed options", () => {
+  const widths = [0.2, 0.4];
+  const measure = {
+    id: "arrow",
+    kind: "main-attack",
+    controlPoints: [
+      [0, 0],
+      [1, 1],
+    ],
+    options: { vertexLeftWidthRatios: widths },
+  } as ControlMeasure;
+  const update = toControlMeasureEditUpdate(measure);
+  widths[0] = 0.9;
+  expect(update.options?.vertexLeftWidthRatios).toEqual([0.2, 0.4]);
+});

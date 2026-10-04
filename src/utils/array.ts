@@ -72,3 +72,8 @@ export function mergeArray<T>(a: T[], b: T[], key: keyof T): T[] {
   }
   return Array.from(map.values());
 }
+
+// True when both arrays hold the same items, compared by identity, in the same order.
+export function haveSameItems<T>(a: readonly T[], b: readonly T[]) {
+  return a.length === b.length && a.every((item, i) => item === b[i]);
+}

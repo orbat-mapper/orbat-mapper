@@ -641,12 +641,10 @@ function onCopy(c: ClipboardEvent) {
   // Use document.activeElement instead of c.target because Chrome will not
   // emit copy/paste events for programmatically focused div elements.
   const target = document.activeElement as HTMLDivElement;
-  if (
-    !(
-      target?.classList.contains("editable-cell") ||
-      target?.parentElement?.classList.contains("editable-cell")
-    )
-  )
+  if (!(
+    target?.classList.contains("editable-cell") ||
+    target?.parentElement?.classList.contains("editable-cell")
+  ))
     return;
   const text = target.textContent || "";
   c.clipboardData?.setData("text/plain", text.trim());
@@ -656,12 +654,10 @@ function onCopy(c: ClipboardEvent) {
 function onPaste(e: ClipboardEvent) {
   if (!inputEventFilter(e)) return;
   const target = document.activeElement as HTMLDivElement;
-  if (
-    !(
-      target?.classList.contains("editable-cell") ||
-      target?.parentElement?.classList.contains("editable-cell")
-    )
-  )
+  if (!(
+    target?.classList.contains("editable-cell") ||
+    target?.parentElement?.classList.contains("editable-cell")
+  ))
     return;
   e.preventDefault();
   const txt = e.clipboardData?.getData("text/plain").trim();
@@ -727,11 +723,15 @@ async function onUnitEdit(unit: NUnit, b: ColumnField, c: string) {
       reinforcedStatus: unit.reinforcedStatus,
     });
     if (newSidcValue !== undefined) {
-      updateUnit(unit.id, {
-        sidc: newSidcValue.sidc,
-        symbolOptions: newSidcValue.symbolOptions,
-        reinforcedStatus: newSidcValue.reinforcedStatus,
-      });
+      updateUnit(
+        unit.id,
+        {
+          sidc: newSidcValue.sidc,
+          symbolOptions: newSidcValue.symbolOptions,
+          reinforcedStatus: newSidcValue.reinforcedStatus,
+        },
+        { doUpdateUnitState: true },
+      );
     }
   }
 }

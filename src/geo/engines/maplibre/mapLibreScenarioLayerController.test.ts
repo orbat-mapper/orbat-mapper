@@ -501,6 +501,10 @@ describe("createMapLibreScenarioLayerController", () => {
     const source = Array.from(mockMap.sources.values())[0];
     source?.setData.mockClear();
 
+    layerItemsLayers.value[0].items[0].geometry.coordinates = [
+      [10, 20],
+      [16, 26],
+    ];
     await featureLayerHook.trigger({ type: "updateFeature", id: "feature-1" });
 
     expect(mockMap.map.addSource).not.toHaveBeenCalled();

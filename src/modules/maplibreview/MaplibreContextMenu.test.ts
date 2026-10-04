@@ -463,7 +463,7 @@ describe("MaplibreContextMenu", () => {
       getLayer: () => undefined,
       queryRenderedFeatures: () => [
         {
-          layer: { id: "unitLayer" },
+          layer: { id: "unitLayer-moving" },
           properties: { id: "unit-1" },
         },
         {

@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
-import { importScenarioOverlayLayers } from "@/importexport/importScenarioLayers";
+import { klona } from "klona";
+import {
+  importScenarioOverlayLayers,
+  previewScenarioOverlayReplacement,
+} from "@/importexport/importScenarioLayers";
 import type { Scenario } from "@/types/scenarioModels";
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -112,7 +116,7 @@ describe("importScenarioOverlayLayers", () => {
       targetStore.state,
       useGeo(targetStore),
       ["control-measures"],
-      () => ids.shift()!,
+      { generateId: () => ids.shift()! },
     );
 
     expect(result).toEqual({
@@ -157,5 +161,138 @@ describe("importScenarioOverlayLayers", () => {
       kind: "tacticalGraphic",
       _pid: "control-measures",
     });
+  });
+});
+
+describe("overlay replacement", () => {
+  const feature = (id: string, x = 1) => ({
+    id,
+    kind: "geometry" as const,
+    type: "Feature" as const,
+    geometry: { type: "Point" as const, coordinates: [x, 2] },
+    properties: {},
+    geometryMeta: { geometryKind: "Point" as const },
+    style: {},
+  });
+  const layer = (
+    id: string,
+    items = [feature("old"), feature("same"), feature("changed")],
+  ) => ({ id, kind: "overlay" as const, name: id, items });
+
+  it("previews without mutation and replaces properties, removals and geometry in place repeatedly", () => {
+    const target = useNewScenarioStore(
+      scenario("target", [
+        layer("before", []),
+        { ...layer("plan"), description: "obsolete", locked: true },
+        layer("after", []),
+      ]),
+    );
+    const source = useNewScenarioStore(
+      scenario("source", [
+        layer("plan", [feature("same"), feature("changed", 9), feature("added")]),
+      ]),
+    ).state;
+    const before = klona(target.state);
+    expect(previewScenarioOverlayReplacement(source, target.state, "plan")).toMatchObject(
+      { added: ["added"], removed: ["old"], changed: ["changed"], unchanged: ["same"] },
+    );
+    expect(target.state).toEqual(before);
+    for (let i = 0; i < 3; i++) {
+      target.groupUpdate(() =>
+        importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+          replaceLayerIds: ["plan"],
+        }),
+      );
+      expect(target.state.layerStack).toEqual(["before", "plan", "after"]);
+      expect(Object.keys(target.state.layerItemMap).sort()).toEqual([
+        "added",
+        "changed",
+        "same",
+      ]);
+      expect(target.state.layerStackMap.plan).not.toHaveProperty("description");
+      expect(
+        (target.state.layerItemMap.changed as { geometry: unknown }).geometry,
+      ).toEqual({ type: "Point", coordinates: [9, 2] });
+    }
+    expect(previewScenarioOverlayReplacement(source, target.state, "plan")).toMatchObject(
+      { changed: [], added: [], removed: [], unchanged: ["same", "changed", "added"] },
+    );
+  });
+
+  it("replaces with an empty layer and reverts the whole replacement in one undo", () => {
+    const target = useNewScenarioStore(scenario("target", [layer("plan")]));
+    const source = useNewScenarioStore(scenario("source", [layer("plan", [])])).state;
+    const before = klona(target.state);
+    target.groupUpdate(() =>
+      importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+        replaceLayerIds: ["plan"],
+      }),
+    );
+    expect(target.state.layerItemMap).toEqual({});
+    expect(target.state.layerStackMap.plan).toMatchObject({ items: [] });
+    target.undo();
+    expect(target.state.layerStack).toEqual(before.layerStack);
+    expect(target.state.layerStackMap).toEqual(before.layerStackMap);
+    expect(target.state.layerItemMap).toEqual(before.layerItemMap);
+  });
+
+  it("preserves unrelated items on collision and does not accumulate remapped items", () => {
+    const target = useNewScenarioStore(
+      scenario("target", [layer("plan", []), layer("unrelated", [feature("collision")])]),
+    );
+    const source = useNewScenarioStore(
+      scenario("source", [layer("plan", [feature("collision", 9)])]),
+    ).state;
+    const unrelated = klona(target.state.layerItemMap.collision);
+    for (let i = 0; i < 3; i++) {
+      importScenarioOverlayLayers(source, target.state, useGeo(target), ["plan"], {
+        generateId: () => "remapped",
+        replaceLayerIds: ["plan"],
+      });
+      expect(target.state.layerItemMap.collision).toEqual(unrelated);
+      expect(Object.keys(target.state.layerItemMap).sort()).toEqual([
+        "collision",
+        "remapped",
+      ]);
+    }
+  });
+
+  it("replaces locked control measures with incoming specialization and history and supports undo", () => {
+    const target = useNewScenarioStore(
+      scenario("target", [{ ...controlMeasureLayer(), description: "old" }]),
+    );
+    const incoming = controlMeasureLayer();
+    incoming.items[0].textAmplifiers.T = "RED";
+    const source = useNewScenarioStore(scenario("source", [incoming])).state;
+    const before = klona(target.state);
+    target.groupUpdate(() =>
+      importScenarioOverlayLayers(source, target.state, useGeo(target), [incoming.id], {
+        replaceLayerIds: [incoming.id],
+      }),
+    );
+    expect(target.state.layerStackMap[incoming.id]).toMatchObject({
+      locked: true,
+      specialization: "controlMeasure",
+      items: ["phase-line"],
+    });
+    expect(target.state.layerItemMap["phase-line"]).toMatchObject({
+      textAmplifiers: { T: "RED" },
+      state: incoming.items[0].state,
+    });
+    target.undo();
+    expect(target.state.layerStack).toEqual(before.layerStack);
+    expect(target.state.layerStackMap).toEqual(before.layerStackMap);
+    expect(target.state.layerItemMap).toEqual(before.layerItemMap);
+  });
+
+  it("adds nonmatching IDs normally even with identical layer names", () => {
+    const target = useNewScenarioStore(scenario("target", [layer("plan", [])]));
+    const source = useNewScenarioStore(
+      scenario("source", [{ ...layer("other", []), name: "plan" }]),
+    ).state;
+    importScenarioOverlayLayers(source, target.state, useGeo(target), ["other"], {
+      replaceLayerIds: ["other"],
+    });
+    expect(target.state.layerStack).toEqual(["plan", "other"]);
   });
 });

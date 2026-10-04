@@ -1,8 +1,5 @@
 /**
  * Types for MapLibre basemap configuration loaded from /config/maplibreConfig.json.
- *
- * Kept separate from layerConfigTypes.ts (which is OpenLayers-typed) so MapLibre-native
- * source options don't have to coexist with OL source option types.
  */
 import type { StyleSpecification } from "maplibre-gl";
 

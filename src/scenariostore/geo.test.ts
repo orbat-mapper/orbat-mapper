@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
+import { useScenarioTime } from "@/scenariostore/time";
 import * as fileHandling from "@/importexport/fileHandling";
 
 afterEach(() => {
@@ -139,7 +140,10 @@ describe("scenario geo item accessors", () => {
               kind: "tacticalGraphic",
               name: "Phase Line Alpha",
               graphicKind: "phase-line",
-              controlPoints: [[10, 60], [11, 61]],
+              controlPoints: [
+                [10, 60],
+                [11, 61],
+              ],
               amplifierPlacements: { T: { position: [10.5, 60.5] } },
             },
           ],
@@ -167,7 +171,10 @@ describe("scenario geo item accessors", () => {
     const duplicate = geo.getLayerItemById(duplicatedId).layerItem as any;
 
     expect(duplicate.name).toBe("Phase Line Alpha (2)");
-    expect(duplicate.controlPoints).toEqual([[10.24, 59.76], [11.24, 60.76]]);
+    expect(duplicate.controlPoints).toEqual([
+      [10.24, 59.76],
+      [11.24, 60.76],
+    ]);
     expect(duplicate.amplifierPlacements.T.position).toEqual([10.74, 60.26]);
   });
 
@@ -188,6 +195,75 @@ describe("scenario geo item accessors", () => {
     store.redo();
     expect(store.state.unitStateCounter).toBe(before + 1);
     expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
+  });
+
+  it("re-projects the current state when a position is added at another time", () => {
+    const store = useNewScenarioStore(createUnitScenario());
+    const geo = useGeo(store);
+    const unit = () => store.state.unitMap["unit-1"];
+    expect(unit()._state?.type).toBe("initial");
+
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    geo.addUnitPosition("unit-1", [0, 50], store.state.currentTime + threeDays);
+
+    expect(unit()._state?.type).toBe("interpolated");
+    const projected = unit()._state;
+
+    store.undo();
+    expect(unit()._state?.type).toBe("initial");
+
+    store.redo();
+    expect(unit()._state).toEqual(projected);
+  });
+
+  it("keeps the projected side identity when adding a position after a transfer", () => {
+    const store = useNewScenarioStore({
+      ...createUnitScenario(),
+      startTime: 0,
+      sides: [
+        {
+          id: "side-1",
+          name: "Blue",
+          standardIdentity: "3",
+          groups: [
+            {
+              id: "group-1",
+              name: "Blue Group",
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "1st Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  subUnits: [],
+                  state: [
+                    {
+                      id: "move-1",
+                      t: 100,
+                      hierarchy: { targetId: "group-2", placement: "on" },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: "side-2",
+          name: "Red",
+          standardIdentity: "6",
+          groups: [{ id: "group-2", name: "Red Group", subUnits: [] }],
+        },
+      ],
+    });
+    const geo = useGeo(store);
+    useScenarioTime(store).setCurrentTime(150);
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10061000000000000000");
+
+    geo.addUnitPosition("unit-1", [12, 62], 200);
+
+    expect(store.state.unitMap["unit-1"]._sid).toBe("side-2");
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10061000000000000000");
   });
 
   it("exposes layer-item accessors backed by the current feature store", () => {

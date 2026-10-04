@@ -33,11 +33,7 @@ export interface RoutingResult {
 }
 
 export type RoutingErrorCode =
-  | "no-route"
-  | "blocked-endpoint"
-  | "invalid-obstacles"
-  | "worker-error"
-  | "cancelled";
+  "no-route" | "blocked-endpoint" | "invalid-obstacles" | "worker-error" | "cancelled";
 
 export class RoutingError extends Error {
   constructor(

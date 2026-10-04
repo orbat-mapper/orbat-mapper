@@ -31,12 +31,7 @@ export interface ObstacleSelection {
 }
 
 type RoutableGeometry =
-  | Polygon
-  | MultiPolygon
-  | LineString
-  | MultiLineString
-  | Point
-  | MultiPoint;
+  Polygon | MultiPolygon | LineString | MultiLineString | Point | MultiPoint;
 
 function flattenRoutableGeometries(geometry: Geometry): RoutableGeometry[] {
   switch (geometry.type) {

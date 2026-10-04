@@ -5,7 +5,6 @@ import { createPinia, setActivePinia } from "pinia";
 import { defineComponent, ref } from "vue";
 import MainViewSlideOver from "@/components/MainViewSlideOver.vue";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
-import MapContextMenu from "@/components/MapContextMenu.vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
 import {
@@ -196,10 +195,6 @@ vi.mock("@/composables/mainToolbarData", () => ({
 
 vi.mock("@/modules/scenarioeditor/featureLayerUtils", () => ({
   getGeometryIcon: vi.fn(),
-}));
-
-vi.mock("@/stores/baseLayersStore", () => ({
-  useBaseLayersStore: () => ({}),
 }));
 
 vi.mock("@/stores/selectedStore", () => ({

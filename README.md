@@ -71,9 +71,3 @@ You do not have to make a build. Each release supplies `orbat-mapper-<version>.z
 
 For the full instructions, the configuration of the basemap layers and the limits of each option, see
 [Offline use](https://docs.orbat-mapper.app/guide/offline-use) in the documentation.
-
-## The legacy OpenLayers map (deprecated)
-
-The OpenLayers map is deprecated. Do not use it for new work. It stays available at `/scenario/<scenarioId>/legacy`, and
-it reads a different file: [`public/config/mapConfig.json`](public/config/mapConfig.json). The layer types for that file
-are in [`layerConfigTypes.ts`](src/geo/layerConfigTypes.ts).

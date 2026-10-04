@@ -19,14 +19,7 @@ export interface FillStyleSpec {
 }
 
 export type MarkerSymbol =
-  | "square"
-  | "triangle"
-  | "star"
-  | "cross"
-  | "x"
-  | "circle"
-  | "hexagon"
-  | "pentagon";
+  "square" | "triangle" | "star" | "cross" | "x" | "circle" | "hexagon" | "pentagon";
 
 export type MarkerSize = "small" | "medium" | "large";
 

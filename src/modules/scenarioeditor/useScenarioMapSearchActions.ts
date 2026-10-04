@@ -138,8 +138,7 @@ export function useScenarioMapSearchActions({
 
   onPlaceSelect((item) => {
     const extent = fixExtent(item.properties.extent) as
-      | [number, number, number, number]
-      | undefined;
+      [number, number, number, number] | undefined;
 
     if (extent) {
       engineRef.value?.map.fitExtent(extent, { maxZoom: 15 });

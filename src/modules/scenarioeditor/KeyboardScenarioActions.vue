@@ -48,7 +48,7 @@ const playback = usePlaybackStore();
 const recordingStore = useRecordingStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 // Resolve map-dependent utils (zoom/pan) lazily so that engine-agnostic actions
-// like delete work regardless of the active map engine (OpenLayers or MapLibre).
+// like delete work through the active map engine.
 const featureActions = useScenarioFeatureActions({ activeScenario });
 
 const selectedUnits = computed(() =>

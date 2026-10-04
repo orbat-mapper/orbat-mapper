@@ -7,7 +7,7 @@ import type {
   ScenarioEventUpdate,
 } from "@/types/internalModels";
 import dayjs, { type ManipulateType } from "dayjs";
-import { computed } from "vue";
+import { computed, toRaw } from "vue";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
@@ -15,7 +15,7 @@ import type { EntityId } from "@/types/base";
 import { klona } from "klona";
 import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
-import { nanoid } from "@/utils";
+import { isShallowEqual, nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
@@ -61,20 +61,76 @@ export function createInitialState(unit: NUnit): CurrentState | null {
   return null;
 }
 
+type UnitStateWindow = {
+  epoch: string;
+  stateEntries: NUnit["state"];
+  from: number;
+  until: number;
+};
+
+type UpdateUnitStateOptions = {
+  markMapStylesDirty?: () => void;
+  force?: boolean;
+  epoch?: string;
+};
+
+// The time span over which a unit's `_state` stays the same, so time changes within it
+// can keep the current `_state`. Kept outside reactivity, keyed by the raw unit.
+const unitStateWindows = new WeakMap<NUnit, UnitStateWindow>();
+
+function canKeepCurrentState(
+  rawUnit: NUnit,
+  timestamp: number,
+  { force, epoch }: { force?: boolean; epoch?: string },
+) {
+  if (force) return false;
+  // Without state entries `_state` only depends on the base unit, so skip the rebuild
+  // on time changes. Callers that edit the base unit pass `force` so that changes such
+  // as a new base symbol reach `_state`.
+  if (!rawUnit.state?.length && rawUnit._state) return true;
+  // A window is only recorded after a rebuild, so a matching one also covers units
+  // whose `_state` is null because they have no location yet.
+  const window = unitStateWindows.get(rawUnit);
+  return (
+    epoch !== undefined &&
+    window?.epoch === epoch &&
+    window.stateEntries === rawUnit.state &&
+    window.from <= timestamp &&
+    timestamp < window.until
+  );
+}
+
+/**
+ * Updates `unit._state` for `timestamp`. Returns whether `_state` was rebuilt.
+ *
+ * `epoch` identifies the scenario edits seen so far. When it is given and matches the
+ * epoch of an earlier rebuild, a timestamp within the same unchanged span keeps the
+ * current `_state`.
+ */
 export function updateCurrentUnitState(
   unit: NUnit,
   timestamp: number,
-  options: { markMapStylesDirty?: () => void } = {},
+  options: UpdateUnitStateOptions = {},
+): boolean {
+  if (canKeepCurrentState(toRaw(unit), timestamp, options)) return false;
+  rebuildCurrentUnitState(unit, timestamp, options);
+  return true;
+}
+
+function rebuildCurrentUnitState(
+  unit: NUnit,
+  timestamp: number,
+  options: UpdateUnitStateOptions,
 ) {
-  if (!unit.state || !unit.state.length) {
-    if (!unit._state) {
-      unit._state = createInitialState(unit);
-    }
-    return;
-  }
-  let currentState = createInitialState(unit);
-  for (const s of unit.state) {
+  // Reads go to the raw unit, which is much faster for a reactive unit. Writes go
+  // through `unit`, so that they still trigger.
+  const rawUnit = toRaw(unit);
+  let from = Number.NEGATIVE_INFINITY;
+  let until = Number.POSITIVE_INFINITY;
+  let currentState = createInitialState(rawUnit);
+  for (const s of rawUnit.state ?? []) {
     if (s.t <= timestamp) {
+      from = s.t;
       const { diff, update, ...rest } = s;
       if (update || diff) {
         for (const kind of RESOURCE_KINDS) {
@@ -108,23 +164,40 @@ export function updateCurrentUnitState(
           location: p.geometry.coordinates,
           type: "interpolated",
         };
+        // Interpolated states change with every timestamp.
+        until = from;
+      } else {
+        until =
+          s.viaStartTime !== undefined && s.viaStartTime > timestamp
+            ? Math.min(s.t, s.viaStartTime)
+            : s.t;
       }
       break;
     }
   }
   if (
-    currentState?.sidc !== unit._state?.sidc ||
-    currentState?.symbolRotation !== unit._state?.symbolRotation ||
-    currentState?.reinforcedStatus !== unit._state?.reinforcedStatus
+    currentState?.sidc !== rawUnit._state?.sidc ||
+    currentState?.symbolRotation !== rawUnit._state?.symbolRotation ||
+    currentState?.reinforcedStatus !== rawUnit._state?.reinforcedStatus
   ) {
-    if (unit._ikey) {
-      invalidateUnitStyle(unit._ikey);
+    if (rawUnit._ikey) {
+      invalidateUnitStyle(rawUnit._ikey);
     }
     unit._ikey = undefined;
     invalidateUnitStyle(unit.id);
     options.markMapStylesDirty?.();
   }
   unit._state = currentState;
+  if (options.epoch !== undefined && from < until) {
+    unitStateWindows.set(rawUnit, {
+      epoch: options.epoch,
+      stateEntries: rawUnit.state,
+      from,
+      until,
+    });
+  } else {
+    unitStateWindows.delete(rawUnit);
+  }
 }
 
 export function useScenarioTime(store: NewScenarioStore) {
@@ -132,15 +205,40 @@ export function useScenarioTime(store: NewScenarioStore) {
 
   const goToScenarioEventHook = createEventHook<GoToScenarioEventEvent>();
 
-  function setCurrentTime(timestamp: number) {
-    Object.values(state.unitMap).forEach((unit) =>
-      updateCurrentUnitState(unit, timestamp, {
-        markMapStylesDirty: () => {
-          state.isMapStylesDirty = true;
-        },
-      }),
-    );
-    syncTimedHierarchyProjection(state, timestamp);
+  let lastSyncedEpoch: string | undefined;
+
+  // Identifies the scenario edits seen so far, so that `setCurrentTime` can tell
+  // whether a unit's `_state` may have gone stale for reasons other than the time.
+  function getEditEpoch() {
+    const { unitStateCounter, settingsStateCounter } = toRaw(state);
+    return `${store.getMutationCount()}:${unitStateCounter}:${settingsStateCounter}`;
+  }
+
+  function setCurrentTime(timestamp: number, { force = false } = {}) {
+    const epoch = getEditEpoch();
+    const options = {
+      force,
+      epoch,
+      markMapStylesDirty: () => {
+        state.isMapStylesDirty = true;
+      },
+    };
+    const rebuiltUnits: NUnit[] = [];
+    // Check the raw units first: going through the reactive proxy of every unit costs
+    // more than the few rebuilds a playback tick needs.
+    const rawUnitMap = toRaw(state.unitMap);
+    for (const unitId in rawUnitMap) {
+      if (canKeepCurrentState(rawUnitMap[unitId], timestamp, options)) continue;
+      const unit = state.unitMap[unitId];
+      rebuildCurrentUnitState(unit, timestamp, options);
+      rebuiltUnits.push(unit);
+    }
+    // Without edits since the last call, only the rebuilt units can need their symbol
+    // synced with their side.
+    syncTimedHierarchyProjection(state, timestamp, {
+      units: !force && epoch === lastSyncedEpoch ? rebuiltUnits : undefined,
+    });
+    lastSyncedEpoch = epoch;
     (
       Object.values(state.layerStackMap).filter(
         isScenarioOverlayLayer,
@@ -163,9 +261,16 @@ export function useScenarioTime(store: NewScenarioStore) {
         // `visibleUntilT` through `_state`, so computing it against the pre-scrub
         // projection would ignore any timed patch of them.
         if (feature.state?.length) {
-          (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
-            projectScenarioLayerItemStateAt(feature, timestamp);
-          state.featureStateCounter++;
+          // Timed state is step-wise, so most time changes fold the same entries.
+          // Keeping the current `_state` then spares every renderer keyed on it, and
+          // `featureStateCounter` only moves when the projection does.
+          const rawFeature = toRaw(feature);
+          const projected = projectScenarioLayerItemStateAt(rawFeature, timestamp);
+          if (!isShallowEqual(projected, rawFeature._state)) {
+            (feature as { _state?: CurrentScenarioLayerItemState | null })._state =
+              projected;
+            state.featureStateCounter++;
+          }
         }
         const oldHidden = feature._hidden;
         feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);

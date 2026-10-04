@@ -2,7 +2,7 @@
 import { createEventHook } from "@vueuse/core";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { computed, nextTick, ref, shallowRef } from "vue";
+import { computed, nextTick, reactive, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MlMapLogic from "@/modules/maplibreview/MlMapLogic.vue";
 import {
@@ -13,7 +13,9 @@ import {
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useRecordingStore } from "@/stores/recordingStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { TAB_TOOLS } from "@/types/constants";
 import {
@@ -23,6 +25,7 @@ import {
 } from "@/geo/dayNightTerminator";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 import { getSymbolImageSource } from "@/modules/maplibreview/symbolImageRegistry";
+import { setUnitHitBox } from "@/geo/engines/maplibre/unitHitBox";
 
 const { saveMapLibreMapAsPng } = vi.hoisted(() => ({
   saveMapLibreMapAsPng: vi.fn(),
@@ -157,6 +160,7 @@ function createMockMap() {
       },
     ),
     getSource: vi.fn((id: string) => sources.get(id)),
+    isSourceLoaded: vi.fn(() => true),
     addSource: vi.fn((id: string) => {
       sources.set(id, { setData: vi.fn() });
     }),
@@ -230,6 +234,11 @@ function mockLoadedImage(width = 20, height = 10) {
   };
 }
 
+/** MapLibre reports that the static unit source has loaded its new data. */
+function emitUnitSourceLoaded(mockMap: ReturnType<typeof createMockMap>) {
+  mockMap.emit("sourcedata", { sourceId: "unitSource", sourceDataType: "content" });
+}
+
 function getAddedLayerSpec(mockMap: ReturnType<typeof createMockMap>, id: string) {
   return mockMap.map.addLayer.mock.calls
     .map(([layer]: [{ id: string }]) => layer)
@@ -250,6 +259,7 @@ function createHoverScenario(
 ) {
   return {
     store: {
+      getMutationCount: () => 0,
       state: {
         id: "scenario-hover",
         currentTime: 0,
@@ -257,6 +267,7 @@ function createHoverScenario(
       },
     },
     unitActions: {
+      isUnitHidden: vi.fn(() => false),
       getCombinedSymbolOptions: vi.fn(() => ({})),
     },
     geo: {
@@ -277,11 +288,13 @@ function mountMlMapLogic({
   activeScenario,
   pinia = createPinia(),
   refreshScenarioFeatureLayers = vi.fn(),
+  searchActions = createSearchActions(),
 }: {
   mockMap: ReturnType<typeof createMockMap>;
   activeScenario: any;
   pinia?: ReturnType<typeof createPinia>;
   refreshScenarioFeatureLayers?: ReturnType<typeof vi.fn>;
+  searchActions?: ReturnType<typeof createSearchActions>;
 }) {
   setActivePinia(pinia);
   return mount(MlMapLogic, {
@@ -296,7 +309,7 @@ function mountMlMapLogic({
           map: {},
           layers: { refreshScenarioFeatureLayers },
         } as any),
-        [searchActionsKey as symbol]: createSearchActions(),
+        [searchActionsKey as symbol]: searchActions,
       },
     },
   });
@@ -327,6 +340,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-1",
           currentTime: 0,
@@ -334,6 +348,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -395,6 +410,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapIconSize = 44;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-size",
           currentTime: 0,
@@ -402,6 +418,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({ size: 12, fillColor: "#112233" })),
       },
       geo: {
@@ -444,6 +461,7 @@ describe("MlMapLogic", () => {
     setActivePinia(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-state-sidc",
           currentTime: 0,
@@ -451,6 +469,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -491,6 +510,7 @@ describe("MlMapLogic", () => {
     setActivePinia(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-source",
           currentTime: 0,
@@ -498,6 +518,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -544,6 +565,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapIconSize = 44;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-symbol-size-override",
           currentTime: 0,
@@ -551,6 +573,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -594,6 +617,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapUnitLabelBelow = true;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-label-offset-size-override",
           currentTime: 0,
@@ -601,6 +625,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -641,6 +666,7 @@ describe("MlMapLogic", () => {
     useMapSettingsStore(pinia).mapUnitLabelBelow = true;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-hostile-label-offset",
           currentTime: 0,
@@ -648,6 +674,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -686,6 +713,7 @@ describe("MlMapLogic", () => {
     const mockMap = createMockMap();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-symbol",
           currentTime: 0,
@@ -702,6 +730,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({ fillColor: "#112233" })),
       },
       geo: {
@@ -747,6 +776,7 @@ describe("MlMapLogic", () => {
     useSelectedItems().selectedUnitIds.value.add("unit-custom-selected");
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-selected-custom-symbol",
           currentTime: 0,
@@ -762,6 +792,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -808,6 +839,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapCustomIconScale = 2;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-symbol-scale",
           currentTime: 0,
@@ -823,6 +855,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -877,6 +910,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapCustomIconScale = 2;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-custom-label-offset",
           currentTime: 0,
@@ -892,6 +926,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -938,6 +973,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-live-maplibre-symbol-size-override",
           currentTime: 0,
@@ -948,6 +984,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -979,6 +1016,357 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("skips MapLibre unit setData when a time change leaves the units unchanged", async () => {
+    const mockMap = createMockMap();
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static-playback",
+        sidc: "SFGPUCI----K",
+        shortName: "A1",
+        name: "Alpha 1",
+        _state: {
+          location: [10, 20],
+        },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        getMutationCount: () => 0,
+        state: {
+          id: "scenario-maplibre-static-playback",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+
+    const source = mockMap.getSource("unitSource");
+    const initialCallCount = source?.setData.mock.calls.length ?? 0;
+    expect(initialCallCount).toBeGreaterThan(0);
+
+    currentTime.value += 1000;
+    await nextTick();
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBe(initialCallCount);
+
+    visibleUnits.value[0]._state = { location: [11, 21] };
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(source?.setData.mock.calls.length).toBe(initialCallCount + 1);
+    const setDataCalls = source?.setData.mock.calls ?? [];
+    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
+    expect(unitData.features[0].geometry.coordinates).toEqual([11, 21]);
+  });
+
+  it("rebuilds only units with a new _state when the time changes without edits", async () => {
+    const mockMap = createMockMap();
+    const currentTime = ref(0);
+    let mutationCount = 0;
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-a",
+        sidc: "SFGPUCI----K",
+        name: "Alpha",
+        _state: { location: [10, 20] },
+      },
+      {
+        id: "unit-b",
+        sidc: "SFGPUCI----K",
+        name: "Bravo",
+        _state: { location: [11, 21] },
+      },
+    ]);
+    const getCombinedSymbolOptions = vi.fn(() => ({}));
+    const activeScenario = {
+      store: {
+        state: {
+          id: "scenario-maplibre-feature-cache",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+        getMutationCount: () => mutationCount,
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions,
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+    const source = mockMap.getSource("unitSource");
+    const lastFeatures = () => source?.setData.mock.calls.at(-1)?.[0].features;
+    getCombinedSymbolOptions.mockClear();
+
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).not.toHaveBeenCalled();
+
+    visibleUnits.value[1]._state = { location: [12, 22] };
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(1);
+    expect(lastFeatures()[1].geometry.coordinates).toEqual([12, 22]);
+
+    // An edit keeps `_state` but must still reach the map.
+    getCombinedSymbolOptions.mockClear();
+    visibleUnits.value[0].sidc = "SHGPUCI----K";
+    mutationCount++;
+    currentTime.value += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(2);
+    expect(lastFeatures()[0].properties.sidc).toBe("SHGPUCI----K");
+  });
+
+  it("rebuilds unit features when a timed hierarchy change applies", async () => {
+    const mockMap = createMockMap();
+    const scenarioState = reactive({
+      id: "scenario-maplibre-feature-cache-hierarchy",
+      currentTime: 0,
+      featureStateCounter: 0,
+      hierarchyProjectionBucket: 0,
+    });
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-a",
+        sidc: "SFGPUCI----K",
+        name: "Alpha",
+        _state: { location: [10, 20] },
+      },
+    ]);
+    const getCombinedSymbolOptions = vi.fn(() => ({}));
+    const activeScenario = {
+      store: { state: scenarioState, getMutationCount: () => 0 },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions,
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario });
+    getCombinedSymbolOptions.mockClear();
+
+    scenarioState.currentTime += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).not.toHaveBeenCalled();
+
+    // The unit moved to a group with other symbol options, keeping its `_state`.
+    scenarioState.hierarchyProjectionBucket = 1;
+    scenarioState.currentTime += 1000;
+    await nextTick();
+    expect(getCombinedSymbolOptions).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps moving units in their own source only while playback runs", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const playback = usePlaybackStore(pinia);
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static",
+        sidc: "SFGPUCI----K",
+        shortName: "S1",
+        name: "Static 1",
+        _state: { location: [10, 20], type: "initial" },
+      },
+      {
+        id: "unit-moving",
+        sidc: "SFGPUCI----K",
+        shortName: "M1",
+        name: "Moving 1",
+        _state: { location: [11, 21], type: "interpolated" },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        getMutationCount: () => 0,
+        state: {
+          id: "scenario-maplibre-moving-source",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastIds = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => f.properties.id);
+    // Paused: every unit shares one layer, which keeps the regular draw order.
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    expect(lastIds(movingSource)).toEqual([]);
+
+    playback.playbackRunning = true;
+    await nextTick();
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static"]);
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    expect(getAddedLayerSpec(mockMap, "unitLayer-moving")).toMatchObject({
+      source: "movingUnitSource",
+    });
+    const staticCallCount = staticSource?.setData.mock.calls.length ?? 0;
+    const movingCallCount = movingSource?.setData.mock.calls.length ?? 0;
+
+    visibleUnits.value[1]._state = { location: [12, 22], type: "interpolated" };
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(staticSource?.setData.mock.calls.length).toBe(staticCallCount);
+    expect(movingSource?.setData.mock.calls.length).toBe(movingCallCount + 1);
+
+    // A unit that stops moving moves back to the static source.
+    visibleUnits.value[1]._state = { location: [13, 23], type: "initial" };
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    // The moving source keeps drawing the unit until the static source has it.
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
+    expect(lastIds(movingSource)).toEqual([]);
+
+    // Pausing moves units that are still moving back into the shared layer.
+    visibleUnits.value[1]._state = { location: [14, 24], type: "interpolated" };
+    currentTime.value += 1000;
+    await nextTick();
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+
+    playback.playbackRunning = false;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
+    expect(lastIds(movingSource)).toEqual([]);
+  });
+
+  it("keeps moving units in their own source while the timeline is scrubbed", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const playback = usePlaybackStore(pinia);
+    const currentTime = ref(0);
+    const visibleUnits = ref<any[]>([
+      {
+        id: "unit-static",
+        sidc: "SFGPUCI----K",
+        name: "Static 1",
+        _state: { location: [10, 20], type: "initial" },
+      },
+      {
+        id: "unit-moving",
+        sidc: "SFGPUCI----K",
+        name: "Moving 1",
+        style: { limitVisibility: true, minZoom: 5, maxZoom: 24 },
+        _state: { location: [11, 21], type: "interpolated" },
+      },
+    ]);
+    const activeScenario = {
+      store: {
+        getMutationCount: () => 0,
+        state: {
+          id: "scenario-maplibre-scrubbing",
+          get currentTime() {
+            return currentTime.value;
+          },
+          featureStateCounter: 0,
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => visibleUnits.value),
+      },
+      time: {
+        setCurrentTime: vi.fn(),
+      },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastIds = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => f.properties.id);
+    const movingVisibilityLayer = () =>
+      mockMap.map.addLayer.mock.calls
+        .map(([layer]: [{ id: string; source?: string; minzoom?: number }]) => layer)
+        .find(
+          (layer: { id: string; source?: string }) =>
+            layer.source === "movingUnitSource" && layer.id !== "unitLayer-moving",
+        );
+    expect(lastIds(movingSource)).toEqual([]);
+    expect(movingVisibilityLayer()).toBeUndefined();
+
+    playback.timeScrubbing = true;
+    currentTime.value += 1000;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static"]);
+    expect(lastIds(movingSource)).toEqual(["unit-moving"]);
+    // The zoom limits of a moving unit apply to its layer in the moving source.
+    const layer = movingVisibilityLayer();
+    expect(layer).toMatchObject({ minzoom: 5 });
+
+    playback.timeScrubbing = false;
+    await nextTick();
+
+    expect(lastIds(staticSource)).toEqual(["unit-static", "unit-moving"]);
+    emitUnitSourceLoaded(mockMap);
+    expect(lastIds(movingSource)).toEqual([]);
+    expect(mockMap.map.removeLayer).toHaveBeenCalledWith(layer.id);
+  });
+
   it("refreshes MapLibre units when undo/redo flips unitStateCounter", async () => {
     // Undo/redo of addUnitPosition reverts unitStateCounter (the bump is part of
     // the patch), which drives the redraw via the unitStateCounter watcher.
@@ -997,6 +1385,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-maplibre-undo-redraw",
           currentTime: 0,
@@ -1007,6 +1396,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1050,6 +1440,7 @@ describe("MlMapLogic", () => {
     ]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-live-maplibre-text-amplifier",
           currentTime: 0,
@@ -1060,6 +1451,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1100,6 +1492,7 @@ describe("MlMapLogic", () => {
     const mapSettings = useMapSettingsStore(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-rotation-mode",
           currentTime: 0,
@@ -1107,6 +1500,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1162,6 +1556,7 @@ describe("MlMapLogic", () => {
     const mapSettings = useMapSettingsStore(pinia);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-rotation-mode-groups",
           currentTime: 0,
@@ -1169,6 +1564,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1250,6 +1646,7 @@ describe("MlMapLogic", () => {
     mapSettings.mapLibreUnitRotationMode = "map";
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-style-reload-rotation-mode",
           currentTime: 0,
@@ -1257,6 +1654,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1312,6 +1710,7 @@ describe("MlMapLogic", () => {
     const currentTime = ref(Date.parse("2025-01-01T00:00:00Z"));
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-day-night-overlay",
           get currentTime() {
@@ -1324,6 +1723,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1408,6 +1808,7 @@ describe("MlMapLogic", () => {
     const visibleUnits = ref<any[]>([]);
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-late-visible-units",
           currentTime: 0,
@@ -1416,6 +1817,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1472,6 +1874,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-visibility-groups",
           currentTime: 0,
@@ -1479,6 +1882,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1578,6 +1982,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-2",
           currentTime: 0,
@@ -1585,6 +1990,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -1888,6 +2294,7 @@ describe("MlMapLogic", () => {
           layerItem: id === "feature-1" ? { name: "Bridge Alpha" } : undefined,
         })),
         store: {
+          getMutationCount: () => 0,
           state: {
             id: "scenario-hover-clear",
             currentTime: 0,
@@ -1896,6 +2303,7 @@ describe("MlMapLogic", () => {
           groupUpdate: (fn: () => void) => fn(),
         },
         unitActions: {
+          isUnitHidden: vi.fn(() => false),
           getCombinedSymbolOptions: vi.fn(() => ({})),
           isUnitLocked: vi.fn(() => false),
         },
@@ -1995,6 +2403,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-3",
           currentTime: 0,
@@ -2002,6 +2411,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2062,6 +2472,7 @@ describe("MlMapLogic", () => {
     const pinia = createPinia();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-suppressed-hover-cursor",
           currentTime: 0,
@@ -2069,6 +2480,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2118,6 +2530,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-unit-layer-prefix-hit",
           currentTime: 0,
@@ -2125,6 +2538,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2177,6 +2591,7 @@ describe("MlMapLogic", () => {
     const pinia = createPinia();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-placement-cursor",
           currentTime: 0,
@@ -2184,6 +2599,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2247,6 +2663,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-unit",
           currentTime: 0,
@@ -2255,6 +2672,7 @@ describe("MlMapLogic", () => {
         groupUpdate: (fn: () => void) => fn(),
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2315,6 +2733,114 @@ describe("MlMapLogic", () => {
     expect(mockMap.canvas.style.cursor).toBe("");
   });
 
+  it("previews a unit drag in the moving source once per frame", async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    const runFrame = () => frames.splice(0).forEach((callback) => callback(0));
+    const mockMap = createMockMap();
+    const unitStateCounter = ref(0);
+    const units = [
+      {
+        id: "unit-1",
+        sidc: "SFGPUCI----K",
+        name: "Alpha 1",
+        _state: { location: [10, 20] },
+      },
+      {
+        id: "unit-2",
+        sidc: "SFGPUCI----K",
+        name: "Alpha 2",
+        _state: { location: [30, 40] },
+      },
+    ];
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+    const activeScenario = {
+      store: {
+        getMutationCount: () => unitStateCounter.value,
+        state: {
+          id: "scenario-drag-preview",
+          currentTime: 0,
+          featureStateCounter: 0,
+          get unitStateCounter() {
+            return unitStateCounter.value;
+          },
+        },
+        groupUpdate: (fn: () => void) => fn(),
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+        isUnitLocked: vi.fn(() => false),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => units),
+        addUnitPosition: vi.fn((id: string, location: number[]) => {
+          units.find((unit) => unit.id === id)!._state = { location };
+          unitStateCounter.value++;
+        }),
+      },
+      helpers: {
+        getUnitById: vi.fn((id: string) => units.find((unit) => unit.id === id)),
+      },
+      time: { setCurrentTime: vi.fn() },
+    } as any;
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+
+    const staticSource = mockMap.getSource("unitSource");
+    const movingSource = mockMap.getSource("movingUnitSource");
+    const lastFeatures = (source: typeof staticSource) =>
+      source?.setData.mock.lastCall?.[0].features.map((f: any) => ({
+        id: f.properties.id,
+        coordinates: f.geometry.coordinates,
+      }));
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      { layer: { id: "unitLayer" }, properties: { id: "unit-1" } },
+    ]);
+
+    mockMap.emit("mousedown", {
+      point: { x: 1, y: 2 },
+      lngLat: { lng: 10, lat: 20 },
+      preventDefault: vi.fn(),
+      originalEvent: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+    });
+    mockMap.emit("mousemove", { point: { x: 2, y: 3 }, lngLat: { lng: 11, lat: 21 } });
+    mockMap.emit("mousemove", { point: { x: 3, y: 4 }, lngLat: { lng: 12, lat: 22 } });
+    expect(frames).toHaveLength(1);
+    runFrame();
+
+    // Only the latest pointer position of the frame is drawn.
+    expect(lastFeatures(staticSource)).toEqual([{ id: "unit-2", coordinates: [30, 40] }]);
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [12, 22] }]);
+    const staticCallCount = staticSource?.setData.mock.calls.length;
+
+    mockMap.emit("mousemove", { point: { x: 4, y: 5 }, lngLat: { lng: 13, lat: 23 } });
+    runFrame();
+
+    // Later previews leave the static source alone.
+    expect(staticSource?.setData.mock.calls.length).toBe(staticCallCount);
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [13, 23] }]);
+
+    mockMap.emit("mouseup", { lngLat: { lng: 13, lat: 23 } });
+    await nextTick();
+
+    expect(lastFeatures(staticSource)).toEqual([
+      { id: "unit-1", coordinates: [13, 23] },
+      { id: "unit-2", coordinates: [30, 40] },
+    ]);
+    // The dropped unit stays in the moving source until the static source has it.
+    expect(lastFeatures(movingSource)).toEqual([{ id: "unit-1", coordinates: [13, 23] }]);
+    emitUnitSourceLoaded(mockMap);
+    expect(lastFeatures(movingSource)).toEqual([]);
+    vi.unstubAllGlobals();
+  });
+
   it("moves a unit on touch drag and restores map gestures afterwards", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
@@ -2335,6 +2861,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-touch-unit",
           currentTime: 0,
@@ -2343,6 +2870,7 @@ describe("MlMapLogic", () => {
         groupUpdate: (fn: () => void) => fn(),
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2426,6 +2954,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-hover",
           currentTime: 0,
@@ -2433,6 +2962,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2509,6 +3039,7 @@ describe("MlMapLogic", () => {
 
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-move-select",
           currentTime: 0,
@@ -2516,6 +3047,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
         isUnitLocked: vi.fn(() => false),
       },
@@ -2575,6 +3107,55 @@ describe("MlMapLogic", () => {
     });
   });
 
+  it("selects a unit only on its symbol, and deselects on its text amplifiers", () => {
+    const mockMap = createMockMap();
+    const searchActions = createSearchActions();
+    const unitSelectSpy = vi.spyOn(searchActions.onUnitSelectHook, "trigger");
+
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createHoverScenario(() => ({})),
+      searchActions,
+    });
+
+    // The unit sits at (100, 100) with a 40 x 30 px symbol and amplifier text far
+    // to its right. MapLibre reports a hit anywhere on the symbol image.
+    Object.assign(mockMap.map, {
+      project: vi.fn(() => ({ x: 100, y: 100 })),
+      getBearing: vi.fn(() => 0),
+      getLayoutProperty: vi.fn(() => "viewport"),
+    });
+    setUnitHitBox(mockMap.map, "symbol-1", [-20, -15, 20, 15]);
+    mockMap.map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "unitLayer" },
+        geometry: { type: "Point", coordinates: [10, 20] },
+        properties: { id: "unit-1", symbolKey: "symbol-1", symbolRotation: 0 },
+      },
+    ]);
+    const click = (x: number, y: number) =>
+      mockMap.emit("click", { point: { x, y }, originalEvent: { shiftKey: false } });
+
+    const { selectedUnitIds } = useSelectedItems();
+    selectedUnitIds.value.clear();
+    selectedUnitIds.value.add("unit-1");
+
+    // A click on the amplifier text is a click on the empty map, which deselects.
+    click(220, 100);
+    expect(unitSelectSpy).not.toHaveBeenCalled();
+    expect(selectedUnitIds.value.size).toBe(0);
+
+    // Still within the click tolerance of the symbol.
+    click(135, 100);
+    expect(unitSelectSpy).toHaveBeenCalledTimes(1);
+
+    click(105, 95);
+    expect(unitSelectSpy).toHaveBeenCalledTimes(2);
+    expect(unitSelectSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ unitId: "unit-1" }),
+    );
+  });
+
   it("toggles unit selection on shift+click instead of replacing it", async () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
@@ -2582,6 +3163,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-shift",
           currentTime: 0,
@@ -2589,6 +3171,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2730,6 +3313,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-empty-click",
           currentTime: 0,
@@ -2737,6 +3321,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2781,12 +3366,33 @@ describe("MlMapLogic", () => {
     expect(selectedFeatureIds.value.size).toBe(0);
   });
 
+  it("clears the selection when clicking empty map area in move mode", () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    useUnitSettingsStore(pinia).moveUnitEnabled = true;
+    useRecordingStore(pinia).isRecordingLocation = true;
+    const { selectedUnitIds } = useSelectedItems();
+    selectedUnitIds.value.clear();
+    selectedUnitIds.value.add("unit-existing");
+
+    mountMlMapLogic({ mockMap, activeScenario: createHoverScenario(() => ({})), pinia });
+    mockMap.map.queryRenderedFeatures.mockReturnValue([]);
+
+    mockMap.emit("click", { point: { x: 1, y: 2 }, originalEvent: { shiftKey: true } });
+    expect(selectedUnitIds.value.has("unit-existing")).toBe(true);
+
+    mockMap.emit("click", { point: { x: 1, y: 2 }, originalEvent: { shiftKey: false } });
+    expect(selectedUnitIds.value.size).toBe(0);
+  });
+
   it("preserves the selection when shift+clicking empty map area", () => {
     const mockMap = createMockMap();
     const searchActions = createSearchActions();
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-empty-shift-click",
           currentTime: 0,
@@ -2794,6 +3400,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2843,6 +3450,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-cross-type",
           currentTime: 0,
@@ -2850,6 +3458,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -2906,6 +3515,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-shift-feature",
           currentTime: 0,
@@ -2913,6 +3523,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3066,6 +3677,7 @@ describe("MlMapLogic", () => {
     uiStore.requestExportTool = false;
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-export",
           currentTime: 0,
@@ -3073,6 +3685,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3118,6 +3731,7 @@ describe("MlMapLogic", () => {
     const refreshScenarioFeatureLayers = vi.fn();
     const activeScenario = {
       store: {
+        getMutationCount: () => 0,
         state: {
           id: "scenario-missing-history-layer",
           currentTime: 0,
@@ -3125,6 +3739,7 @@ describe("MlMapLogic", () => {
         },
       },
       unitActions: {
+        isUnitHidden: vi.fn(() => false),
         getCombinedSymbolOptions: vi.fn(() => ({})),
       },
       geo: {
@@ -3208,13 +3823,17 @@ describe("MlMapLogic", () => {
       );
       const activeScenario = {
         store: {
+          getMutationCount: () => 0,
           state: {
             id: "scenario-control-measure-pick",
             currentTime: 0,
             featureStateCounter: 0,
           },
         },
-        unitActions: { getCombinedSymbolOptions: vi.fn(() => ({})) },
+        unitActions: {
+          isUnitHidden: vi.fn(() => false),
+          getCombinedSymbolOptions: vi.fn(() => ({})),
+        },
         geo: {
           everyVisibleUnit: computed(() => []),
           getLayerItemById: vi.fn((id: string) => ({
@@ -3246,45 +3865,53 @@ describe("MlMapLogic", () => {
       return { mockMap, featureSelectSpy, unitSelectSpy, ownsInteractionAt };
     }
 
-    it("selects the control measure instead of the plain shape under it", () => {
-      const h = createControlMeasureHarness(true);
+    it.each([false, true])(
+      "selects the control measure instead of the plain shape under it (move mode: %s)",
+      (moveMode) => {
+        const h = createControlMeasureHarness(true);
+        useUnitSettingsStore().moveUnitEnabled = moveMode;
 
-      h.mockMap.emit("click", {
-        point: { x: 1, y: 2 },
-        originalEvent: { shiftKey: false },
-      });
+        h.mockMap.emit("click", {
+          point: { x: 1, y: 2 },
+          originalEvent: { shiftKey: false },
+        });
 
-      expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
-        originalEvent: { shiftKey: false },
-      });
-      expect(h.featureSelectSpy).toHaveBeenCalledWith({
-        featureId: "cm-1",
-        layerId: "layer-1",
-        options: { noZoom: true },
-      });
-      // Topmost wins: the plain shape underneath is unreachable until stage two
-      // unifies the renderers (ADR-0006). This is the accepted, documented cost.
-      expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
-        expect.objectContaining({ featureId: "feature-1" }),
-      );
-    });
+        expect(h.ownsInteractionAt).toHaveBeenCalledWith([1, 2], {
+          originalEvent: { shiftKey: false },
+        });
+        expect(h.featureSelectSpy).toHaveBeenCalledWith({
+          featureId: "cm-1",
+          layerId: "layer-1",
+          options: { noZoom: true },
+        });
+        // Topmost wins: the plain shape underneath is unreachable until stage two
+        // unifies the renderers (ADR-0006). This is the accepted, documented cost.
+        expect(h.featureSelectSpy).not.toHaveBeenCalledWith(
+          expect.objectContaining({ featureId: "feature-1" }),
+        );
+      },
+    );
 
-    it("enters edit mode when clicking the selected control measure again", () => {
-      const startControlMeasureEdit = vi.fn();
-      const { selectedFeatureIds } = useSelectedItems();
-      selectedFeatureIds.value = new Set(["cm-1"]);
-      const h = createControlMeasureHarness(true, [], {
-        startControlMeasureEdit,
-      });
+    it.each([false, true])(
+      "enters edit mode when clicking the selected control measure again (move mode: %s)",
+      (moveMode) => {
+        const startControlMeasureEdit = vi.fn();
+        const { selectedFeatureIds } = useSelectedItems();
+        selectedFeatureIds.value = new Set(["cm-1"]);
+        const h = createControlMeasureHarness(true, [], {
+          startControlMeasureEdit,
+        });
+        useUnitSettingsStore().moveUnitEnabled = moveMode;
 
-      h.mockMap.emit("click", {
-        point: { x: 1, y: 2 },
-        originalEvent: { shiftKey: false },
-      });
+        h.mockMap.emit("click", {
+          point: { x: 1, y: 2 },
+          originalEvent: { shiftKey: false },
+        });
 
-      expect(startControlMeasureEdit).toHaveBeenCalledWith("cm-1");
-      expect(h.featureSelectSpy).not.toHaveBeenCalled();
-    });
+        expect(startControlMeasureEdit).toHaveBeenCalledWith("cm-1");
+        expect(h.featureSelectSpy).not.toHaveBeenCalled();
+      },
+    );
 
     it("shows the pointer cursor when hovering a control measure", () => {
       const h = createControlMeasureHarness(true, []);

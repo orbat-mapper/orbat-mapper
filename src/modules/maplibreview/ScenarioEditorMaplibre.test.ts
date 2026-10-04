@@ -192,23 +192,22 @@ vi.mock("@/modules/maplibreview/h3grid", () => ({
   }),
 }));
 
-vi.mock("@/modules/maplibreview/mgrsgrid", () => ({
-  useMgrsGrid: () => ({
-    showMgrsGrid: { value: false },
-    showLabels: { value: false },
-    lineColor: { value: "#000000" },
-    lineOpacity: { value: 0.5 },
-    lineWidth: { value: 1 },
-    currentAccuracy: { value: 0 },
+vi.mock("@/modules/maplibreview/useReferenceGridLayers", () => ({
+  useReferenceGridLayers: () => ({
+    labels: { value: [] },
+    refresh: vi.fn(),
+    dispose: vi.fn(),
   }),
 }));
 
 const ScenarioMapModeShellStub = defineComponent({
   name: "ScenarioMapModeShell",
+  props: { showBottomToolbar: Boolean, isMobile: Boolean },
   template: `
     <div>
       <div data-test="map-slot"><slot name="map" /></div>
       <div data-test="footer-overlays-slot"><slot name="footer-overlays" /></div>
+      <div data-test="bottom-toolbar-slot"><slot v-if="showBottomToolbar && !isMobile" name="bottom-toolbar" /></div>
       <div data-test="mobile-toolbar-slot"><slot name="mobile-toolbar" /></div>
       <div data-test="after-keyboard-slot"><slot name="after-keyboard" /></div>
     </div>
@@ -528,7 +527,7 @@ describe("ScenarioEditorMaplibre", () => {
     expect(toolbarStore.currentToolbar).toBe("measurements");
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='measurement-toolbar']")
         .exists(),
     ).toBe(true);
@@ -587,7 +586,7 @@ describe("ScenarioEditorMaplibre", () => {
     );
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='map-toolbar']")
         .exists(),
     ).toBe(false);
@@ -651,7 +650,7 @@ describe("ScenarioEditorMaplibre", () => {
 
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='draw-toolbar']")
         .exists(),
     ).toBe(true);
@@ -662,13 +661,13 @@ describe("ScenarioEditorMaplibre", () => {
 
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='draw-toolbar']")
         .exists(),
     ).toBe(false);
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='draw-session-bar']")
         .exists(),
     ).toBe(true);
@@ -683,7 +682,7 @@ describe("ScenarioEditorMaplibre", () => {
     );
     expect(
       wrapper
-        .get("[data-test='footer-overlays-slot']")
+        .get("[data-test='bottom-toolbar-slot']")
         .find("[data-test='draw-session-bar']")
         .exists(),
     ).toBe(true);

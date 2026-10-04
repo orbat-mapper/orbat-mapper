@@ -36,11 +36,7 @@ export interface GeoJsonOverlayOptions {
 }
 
 export type MapEventType =
-  | "moveend"
-  | "click"
-  | "pointermove"
-  | "singleclick"
-  | "dblclick";
+  "moveend" | "click" | "pointermove" | "singleclick" | "dblclick";
 
 export interface MapEvent {
   coordinate?: Position;

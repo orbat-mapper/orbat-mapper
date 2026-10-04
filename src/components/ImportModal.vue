@@ -4,7 +4,7 @@ import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { defineAsyncComponent, ref, shallowRef } from "vue";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
 import type { FeatureCollection } from "geojson";
-import type { MilxImportedLayer } from "@/composables/scenarioImport";
+import type { MilXImportPlan } from "@/importexport/milx/convert";
 import ImportImageStep from "@/components/ImportImageStep.vue";
 import * as fileHandling from "@/importexport/fileHandling";
 import type { ImportedFileInfo } from "@/importexport/fileHandling";
@@ -144,7 +144,7 @@ function onCancel() {
         <ImportMilxStep
           v-else-if="importState === 'milx'"
           @cancel="onCancel"
-          :data="loadedData as MilxImportedLayer[]"
+          :data="loadedData as MilXImportPlan"
           @loaded="onImport"
         />
         <ImportGeojsonStep

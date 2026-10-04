@@ -9,8 +9,8 @@
  * edit and then undoing whatever came before it instead of driving `SessionHistory`.
  *
  * So every entry point resolves through here. The owner is reached through the holder
- * `ScenarioEditor` provides (see `scenarioKeyboardOwnerKey`), which is `null` on
- * OpenLayers and before the map view mounts — in which case this is plain scenario
+ * `ScenarioEditor` provides (see `scenarioKeyboardOwnerKey`), which is `null`
+ * before the map view mounts — in which case this is plain scenario
  * undo/redo.
  */
 import { computed, inject } from "vue";

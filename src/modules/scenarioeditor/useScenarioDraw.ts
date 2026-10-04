@@ -1,6 +1,3 @@
-import type Select from "ol/interaction/Select";
-import type OLMap from "ol/Map";
-import type VectorLayer from "ol/layer/Vector";
 import {
   computed,
   inject,
@@ -23,12 +20,8 @@ import {
   scenarioKeyboardOwnerKey,
   tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
-import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
-} from "@/modules/scenarioeditor/olInjects";
 import { injectStrict } from "@/utils";
-import { useEditingInteraction, type DrawType } from "@/composables/geoEditing";
+import type { DrawType } from "@/geo/drawTypes";
 import { DRAW_TYPE_POINT_LIMITS } from "@/geo/drawTypes";
 import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
@@ -36,13 +29,11 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { useFeatureLayerUtils } from "@/modules/scenarioeditor/featureLayerUtilsOl";
 import {
-  addOlDrawFeature,
   addScenarioDrawFeature,
   updateScenarioFeatureGeometry,
-  updateScenarioFeatureGeometryFromOlFeature,
 } from "@/modules/scenarioeditor/scenarioDrawHelpers";
+import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import { newControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
@@ -128,15 +119,12 @@ export interface UseScenarioDrawOptions {
    * they `provide` themselves; everything else injects.
    */
   engine?: ShallowRef<ScenarioMapEngine | undefined>;
-  nativeOpenLayersMap?: ShallowRef<OLMap | null | undefined>;
-  featureSelectInteraction?: ShallowRef<Select | null | undefined>;
-  /** The settle-first render feed. Absent on OpenLayers, which has no tactical-draw. */
+  /** The settle-first render feed for tactical drawing. */
   renderFeed?: TacticalGraphicRenderFeed | null;
 }
 
 /**
- * The subset of a draw interaction the armed-tool owner drives. Both engines satisfy
- * it; `finishPathDrawing`/`destroy` are MapLibre-only.
+ * The subset of a draw interaction the armed-tool owner drives.
  */
 interface ScenarioDrawInteraction {
   startDrawing(drawType: DrawType): void;
@@ -169,10 +157,6 @@ export type DrawSessionProgress =
       canCommit: boolean;
     };
 
-function isOpenLayersMap(nativeMap: unknown): nativeMap is OLMap {
-  return Boolean(nativeMap && typeof (nativeMap as OLMap).addInteraction === "function");
-}
-
 /**
  * The armed-tool owner for the scenario map.
  *
@@ -186,16 +170,6 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   const activeScenario = injectStrict(activeScenarioKey);
   const engineRef = options.engine ?? injectStrict(activeScenarioMapEngineKey);
   const activeLayerIdRef = injectStrict(activeLayerKey);
-  const nativeOpenLayersMapRef =
-    options.nativeOpenLayersMap ??
-    (inject(activeNativeMapKey, shallowRef()) as ShallowRef<OLMap | null | undefined>);
-  const featureSelectInteractionRef =
-    options.featureSelectInteraction ??
-    (inject(activeFeatureSelectInteractionKey, shallowRef()) as ShallowRef<
-      Select | null | undefined
-    >);
-  // `null` is a meaningful value here (OpenLayers has no tactical-draw), so it must
-  // not fall through to the inject.
   const renderFeed =
     options.renderFeed !== undefined
       ? options.renderFeed
@@ -213,18 +187,12 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   const snap = ref(true);
   const translate = ref(false);
   const freehand = ref(false);
-  const layer = shallowRef<VectorLayer<any>>();
   const mapAdapter = computed(() => engineRef.value?.map);
   const nativeMap = computed(() => mapAdapter.value?.getNativeMap());
-  const openLayersInteraction = shallowRef<ReturnType<
-    typeof useEditingInteraction
-  > | null>(null);
   const mapLibreInteraction = shallowRef<ReturnType<
     typeof useMapLibreDrawInteraction
   > | null>(null);
-  const interaction = computed<ScenarioDrawInteraction | null>(
-    () => openLayersInteraction.value ?? mapLibreInteraction.value,
-  );
+  const interaction: Readonly<Ref<ScenarioDrawInteraction | null>> = mapLibreInteraction;
 
   const armed = shallowRef<ArmedTool>({ kind: "none" });
   const lastUsedFeatureLayerId = ref<FeatureId | null>(null);
@@ -307,8 +275,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   // die with the draw toolbar, so writing `true` on disarm was harmless; hoisted, it
   // outlives the measurement toolbar and routing, both of which suppress the same two
   // flags. The refcounted token covers the MapLibre click path, which gates on
-  // `selectionSuppressed`; the flags cover the OpenLayers interactions, which are bound
-  // directly to them.
+  // `selectionSuppressed`; the flags preserve the selection state of other tools.
   let previousSelectState: { unit: boolean; feature: boolean } | null = null;
   let releaseSelectionSuppression: (() => void) | null = null;
 
@@ -331,20 +298,6 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     releaseSelectionSuppression?.();
     releaseSelectionSuppression = null;
   }
-
-  watch(
-    [nativeOpenLayersMapRef, activeLayerIdRef],
-    ([olMap, layerId]) => {
-      if (!olMap) return;
-      const { getOlLayerById } = useFeatureLayerUtils(olMap, { activeScenario });
-      if (layerId) {
-        layer.value = getOlLayerById(layerId);
-      } else if (activeScenario.geo.layerItemsLayers.value?.length > 0) {
-        layer.value = getOlLayerById(activeScenario.geo.layerItemsLayers.value[0].id);
-      }
-    },
-    { immediate: true },
-  );
 
   const selectedGeometryFeatures = () =>
     [...selectedFeatureIds.value]
@@ -403,54 +356,15 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     );
   };
 
-  // These watchers create the engine-specific interaction once the corresponding map is
+  // This watcher creates the draw interaction once the map is
   // ready, and rebuild it when the map itself is replaced. The rebuild is new with the
   // hoist: this composable now outlives `onMapReady`, which reconstructs the adapter on
   // every map creation, so a slot filled once would stay bound to a destroyed map.
-  let boundOpenLayersMap: OLMap | null = null;
   let boundMapAdapter: MapAdapter | null = null;
 
   watch(
-    [nativeMap, layer],
-    ([native, activeLayer]) => {
-      if (!isOpenLayersMap(native) || !activeLayer) return;
-      if (openLayersInteraction.value && native === boundOpenLayersMap) return;
-      // `useEditingInteraction` has no disposer; the interactions it added went down
-      // with the map they were added to.
-      openLayersInteraction.value = useEditingInteraction(native, activeLayer, {
-        addMultiple,
-        select: featureSelectInteractionRef.value ?? undefined,
-        addHandler: (olFeature, olLayer) => {
-          const newFeature = addOlDrawFeature(
-            activeScenario,
-            olFeature,
-            olLayer,
-            currentDrawStyle.value ?? {},
-          );
-          if (newFeature) activeFeatureId.value = newFeature.id;
-        },
-        modifyHandler: (olFeatures) => {
-          olFeatures.forEach((feature) =>
-            updateScenarioFeatureGeometryFromOlFeature(
-              activeScenario,
-              feature,
-              isRecordingGeometry.value,
-            ),
-          );
-        },
-        snap,
-        translate,
-        freehand,
-      });
-      boundOpenLayersMap = native;
-    },
-    { immediate: true },
-  );
-
-  watch(
     [mapAdapter, nativeMap],
-    ([adapter, native]) => {
-      if (isOpenLayersMap(native)) return;
+    ([adapter]) => {
       if (adapter === boundMapAdapter) return;
       mapLibreInteraction.value?.destroy();
       mapLibreInteraction.value = null;
@@ -470,10 +384,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   );
 
   /**
-   * Is authoring control measures possible at all? Derived from the engine having a
-   * tactical-draw surface rather than from an engine name, so OpenLayers degrades by
-   * rendering the control-measure affordances disabled instead of hiding them — a
-   * missing button is indistinguishable from a missing feature.
+   * Enable control-measure authoring once the tactical-draw surface is available.
    */
   const canControlMeasures = computed(() => Boolean(engineRef.value?.draw));
 
@@ -657,7 +568,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
           activeInteraction.startDrawing(tool.drawType);
           break;
         case "plainModify":
-          // `startModify` is a toggle on both engines; only call it to turn it on.
+          // `startModify` is a toggle; only call it to turn it on.
           if (!activeInteraction.isModifying.value) activeInteraction.startModify();
           break;
         default:
@@ -877,6 +788,21 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     activeScenario.geo.updateTacticalGraphic(featureId, update);
   }
 
+  /** Settle once before the group so an open shape edit cannot overwrite sizes. */
+  function updateControlMeasureSizes(updates: ControlMeasureSizeUpdate[]) {
+    if (!updates.length) return;
+    if (updates.some(({ id }) => id === controlMeasureEdit.featureId.value)) {
+      renderFeed?.settle("render");
+    }
+    activeScenario.store.groupUpdate(
+      () => {
+        for (const { id, options } of updates)
+          activeScenario.geo.updateTacticalGraphic(id, { options });
+      },
+      { label: "batchLayer", value: "controlMeasureSizes" },
+    );
+  }
+
   /**
    * The Edit toolbar button is shared by the two editing mechanisms. When the current
    * selection consists only of control measures, edit the first one — the same primary
@@ -1064,6 +990,11 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureEditCanRedo: controlMeasureEdit.canRedo,
     /** Label-drag mode — additive to reshape, and sticky across edit sessions. */
     controlMeasureLabelDrag: controlMeasureEdit.labelDrag,
+    controlMeasureWidthGrips: controlMeasureEdit.widthGrips,
+    controlMeasureSupportsWidthGrips: controlMeasureEdit.supportsWidthGrips,
+    controlMeasureCanResetVertexWidths: controlMeasureEdit.canResetVertexWidths,
+    setControlMeasureWidthGrips: controlMeasureEdit.setWidthGrips,
+    resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
     setControlMeasureLabelDrag: (enabled: boolean) =>
       controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
@@ -1071,6 +1002,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     /** `engine.draw` is defined — control measures can be authored on this engine. */
     canControlMeasures,
     updateControlMeasure,
+    updateControlMeasureSizes,
     duplicateSelected,
     deleteSelected,
     handleEscape,

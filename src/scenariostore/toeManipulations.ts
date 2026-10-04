@@ -18,9 +18,7 @@ export function useToeManipulations(store: NewScenarioStore) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     const timestamp = state.currentTime;
-    // TODO: this is a bit of a hack to force the state to update for units that have no state entries
-    unit._state = undefined;
-    updateCurrentUnitState(unit, timestamp);
+    updateCurrentUnitState(unit, timestamp, { force: true });
     state.unitStateCounter++;
   }
 

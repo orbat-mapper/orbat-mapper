@@ -36,6 +36,13 @@ export function useImmerStore<T extends object, M>(baseState: T) {
   const future = shallowReactive<UndoEntry<M>[]>([]);
   const revision = shallowReactive({ value: 0 });
   let nextRevision = 1;
+  // Unlike `revision`, which undo moves back, this only grows with every change.
+  let mutationCount = 0;
+
+  function notifyMutation() {
+    mutationCount++;
+    mutationHook.trigger();
+  }
 
   const canUndo = computed(() => past.length > 0);
   const canRedo = computed(() => future.length > 0);
@@ -60,7 +67,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     revision.value = afterRevision;
     past.push({ patches, inversePatches, meta, beforeRevision, afterRevision });
     future.splice(0);
-    mutationHook.trigger();
+    notifyMutation();
   };
 
   function groupUpdate(updates: () => void, meta?: MetaEntry<M>) {
@@ -95,7 +102,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     revision.value = beforeRevision;
     future.unshift({ patches, inversePatches, meta, beforeRevision, afterRevision });
     undoRedoHook.trigger({ patch: inversePatches, meta, action: "undo" });
-    mutationHook.trigger();
+    notifyMutation();
     return true;
   };
 
@@ -107,7 +114,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     revision.value = afterRevision;
     past.push({ patches, inversePatches, meta, beforeRevision, afterRevision });
     undoRedoHook.trigger({ patch: patches, meta, action: "redo" });
-    mutationHook.trigger();
+    notifyMutation();
     return true;
   };
 
@@ -132,6 +139,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     revision,
     setRevision,
     groupUpdate,
+    getMutationCount: () => mutationCount,
     onUndoRedo: undoRedoHook.on,
     onMutation: mutationHook.on,
   };

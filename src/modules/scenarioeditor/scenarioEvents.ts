@@ -1,9 +1,7 @@
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { useGeoStore } from "@/stores/geoStore";
 
-const SCENARIO_EVENT_UNIT_PADDING: [number, number, number, number] = [
-  50, 50, 50, 50,
-];
+const SCENARIO_EVENT_UNIT_PADDING: [number, number, number, number] = [50, 50, 50, 50];
 
 export function useScenarioEvents() {
   const {

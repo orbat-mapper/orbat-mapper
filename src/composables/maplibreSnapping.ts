@@ -37,7 +37,7 @@ export function getMapLibreSnapPosition(
 ): Position | null {
   const projectedPointer = toXY(pointLike);
   // Query a tolerance-sized box around the pointer so features rendered near
-  // (but not under) the cursor are still considered, matching OpenLayers' Snap.
+  // (but not under) the cursor are still considered.
   const queryBox: [PointLike, PointLike] = [
     [
       projectedPointer.x - DEFAULT_SNAP_TOLERANCE_PX,

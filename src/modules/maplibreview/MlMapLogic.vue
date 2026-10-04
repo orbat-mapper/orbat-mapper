@@ -4,6 +4,7 @@ import {
   type GeoJSONSource,
   type MapGeoJSONFeature,
   type MapMouseEvent,
+  type MapSourceDataEvent,
   type MapTouchEvent,
   type Map as MlMap,
   type PointLike,
@@ -11,7 +12,7 @@ import {
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { CustomSymbol, TextAmplifiers } from "@/types/scenarioModels";
-import { computed, inject, onUnmounted, provide, watch, watchEffect } from "vue";
+import { computed, inject, onUnmounted, provide, toRaw, watch, watchEffect } from "vue";
 import type { Feature, Position } from "geojson";
 import { symbolGenerator } from "@/symbology/milsymbwrapper.ts";
 import { featureCollection } from "@turf/helpers";
@@ -25,7 +26,7 @@ import {
 import { usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
-import { hashObject, injectStrict } from "@/utils";
+import { hashObject, haveSameItems, injectStrict } from "@/utils";
 import {
   getFeatureIdFromRenderedFeature,
   getLayerIdFromRenderedFeature,
@@ -36,10 +37,21 @@ import {
   toReferenceFeatureSelection,
 } from "@/geo/kml/maplibre";
 import {
+  ALWAYS_VISIBLE_UNIT_GROUP_ID,
+  getUnitVisibilityGroup,
   isUnitLayerId,
   UNIT_LAYER_ID,
   UNIT_LAYER_PREFIX,
+  type UnitVisibilityGroup,
 } from "@/geo/engines/maplibre/unitLayer";
+import {
+  clearUnitHitBoxes,
+  deleteUnitHitBox,
+  getMilSymbolHitBox,
+  pointToXY,
+  rankUnitHits,
+  setUnitHitBox,
+} from "@/geo/engines/maplibre/unitHitBox";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectionActions } from "@/composables/selectionActions";
 import { useUiStore } from "@/stores/uiStore";
@@ -73,15 +85,12 @@ import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
 import { SID_INDEX } from "@/symbology/sidc";
 import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
-const ALWAYS_VISIBLE_UNIT_GROUP_ID = "always";
 const NATIVE_CAPTURE_OPTIONS = { capture: true };
 const NATIVE_CAPTURE_ONCE_OPTIONS = { capture: true, once: true };
 
 // Hit-test tolerance (in pixels) used to buffer the click/hover point so thin
 // features such as lines are easier to select. Touch devices get a wider box
-// since fingertips are far less precise than a mouse cursor. The selection
-// values mirror the OpenLayers engine (which uses hitTolerance: 20 for picking,
-// ~3 for hover) so both map engines feel the same.
+// since fingertips are far less precise than a mouse cursor.
 const MOUSE_HIT_TOLERANCE_PX = 20;
 const TOUCH_HIT_TOLERANCE_PX = 26;
 const HOVER_HIT_TOLERANCE_PX = 6;
@@ -90,12 +99,6 @@ const coarsePointerQuery =
   typeof window !== "undefined" && typeof window.matchMedia === "function"
     ? window.matchMedia("(pointer: coarse)")
     : null;
-
-type UnitVisibilityGroup = {
-  id: string;
-  minzoom?: number;
-  maxzoom?: number;
-};
 
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
@@ -130,6 +133,41 @@ type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
+// During playback and timeline scrubbing, units that are moving at the current time
+// get their own source. Every `setData` makes MapLibre rebuild the icon atlas of each
+// affected tile, so keeping the moving units apart lets the static units' tiles stay
+// put. The split draws moving units above static ones, so it only applies while the
+// time changes continuously and every unit shares one layer otherwise.
+const UNIT_SOURCE_ID = "unitSource";
+const MOVING_UNIT_SOURCE_ID = "movingUnitSource";
+const MOVING_UNIT_LAYER_ID = `${UNIT_LAYER_PREFIX}moving`;
+// Playback calls `addUnits` on every tick. Pushing unchanged data still makes
+// MapLibre re-tile the source and redo symbol placement for every unit.
+const lastUnitData = new Map<
+  string,
+  { source: GeoJSONSource; features: Feature[]; data: string }
+>();
+type CachedUnitFeature = {
+  state: unknown;
+  feature: Feature;
+  imageId: string;
+  visibilityGroup: UnitVisibilityGroup;
+};
+// Unit features keyed by unit id. While only the scenario time changes, a unit whose
+// `_state` object is unchanged gets the same feature, so playback only rebuilds the
+// features of units that move. Any edit, timed hierarchy change (which can change the
+// side or group symbol options) or other `addUnits` call starts over.
+const unitFeatureCache = new Map<string, CachedUnitFeature>();
+let unitFeatureCacheGeneration: string | undefined;
+// The static source re-tiles much slower than the small moving source. A unit that
+// leaves the moving source for the static one (a dropped drag, a unit that stops
+// moving during playback) keeps its old moving feature until the static source has
+// loaded the new data, or it would blink out in between.
+let movingUnitFeatures: Feature[] = [];
+let handoffFeatures: Feature[] = [];
+let handoffWait: "content" | "loaded" | undefined;
+let handoffTimeout: ReturnType<typeof setTimeout> | undefined;
+const HANDOFF_TIMEOUT_MS = 2000;
 let shouldCenterOnNextStyleLoad = !initialMapView;
 
 const playback = usePlaybackStore();
@@ -153,7 +191,7 @@ const routingStore = useRoutingStore();
 const { mapLibreUnitRotationMode } = storeToRefs(mapSettings);
 const { setHoveredFeatures, clearHoveredFeatures } = provideMapHoverContext();
 const rotateInteraction = useMaplibreRotateInteraction(mlMap, activeScenario, {
-  onPreview: (overrides) => addUnits(false, undefined, overrides),
+  onPreview: (overrides) => addUnits({ rotationOverrides: overrides }),
   onPreviewEnd: () => addUnits(),
 });
 const boxSelect = useMaplibreBoxSelect(mlMap, {
@@ -176,6 +214,10 @@ let unitDragState: {
     touchZoomRotateEnabled: boolean;
   };
   moved: boolean;
+  // Pointer moves can arrive several times per frame, so the preview only follows
+  // the latest one once per animation frame.
+  pendingPointer?: Position;
+  previewFrame?: number;
 } | null = null;
 let suppressNextNativeClick = false;
 let suppressNextNativeClickTimer: number | undefined;
@@ -217,40 +259,22 @@ function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
   }
 }
 
-function getUnitVisibilityGroup(
-  unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number],
-) {
-  const style = unit.style ?? {};
-  if (!style.limitVisibility) {
-    return { id: ALWAYS_VISIBLE_UNIT_GROUP_ID } satisfies UnitVisibilityGroup;
-  }
-
-  return {
-    id: hashObject({
-      type: "unit-visibility",
-      minZoom: style.minZoom ?? 0,
-      maxZoom: style.maxZoom ?? 24,
-    }),
-    minzoom: style.minZoom ?? 0,
-    maxzoom: style.maxZoom ?? 24,
-  } satisfies UnitVisibilityGroup;
-}
-
-function getUnitLayerId(groupId: string) {
-  return groupId === ALWAYS_VISIBLE_UNIT_GROUP_ID
-    ? UNIT_LAYER_ID
-    : `${UNIT_LAYER_PREFIX}${groupId}`;
+function getUnitLayerId(groupId: string, sourceId: string) {
+  const baseId =
+    sourceId === MOVING_UNIT_SOURCE_ID ? MOVING_UNIT_LAYER_ID : UNIT_LAYER_ID;
+  return groupId === ALWAYS_VISIBLE_UNIT_GROUP_ID ? baseId : `${baseId}-${groupId}`;
 }
 
 function createUnitLayerSpec(
   layerId: string,
+  sourceId: string,
   group: UnitVisibilityGroup,
   alignment: ReturnType<typeof getUnitRotationAlignment>,
 ): AddLayerObject {
   return {
     id: layerId,
     type: "symbol" as const,
-    source: "unitSource",
+    source: sourceId,
     filter: ["==", ["get", "visibilityGroup"], group.id] as any,
     layout: {
       "icon-image": ["get", "symbolKey"],
@@ -281,23 +305,31 @@ function createUnitLayerSpec(
   };
 }
 
-function syncUnitLayers(groups: Iterable<UnitVisibilityGroup>) {
+function syncUnitLayers(
+  staticGroups: Iterable<UnitVisibilityGroup> = [],
+  movingGroups: Iterable<UnitVisibilityGroup> = [],
+) {
   const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
-  const desiredGroups = new Map<string, UnitVisibilityGroup>([
-    [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
-  ]);
-  for (const group of groups) {
-    desiredGroups.set(group.id, group);
-  }
-
   const desiredLayerIds = new Set<string>();
-  for (const group of desiredGroups.values()) {
-    const layerId = getUnitLayerId(group.id);
-    desiredLayerIds.add(layerId);
-    if (!mlMap.getLayer(layerId)) {
-      mlMap.addLayer(createUnitLayerSpec(layerId, group, alignment));
+  for (const [sourceId, groups] of [
+    [UNIT_SOURCE_ID, staticGroups],
+    [MOVING_UNIT_SOURCE_ID, movingGroups],
+  ] as const) {
+    const desiredGroups = new Map<string, UnitVisibilityGroup>([
+      [ALWAYS_VISIBLE_UNIT_GROUP_ID, { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }],
+    ]);
+    for (const group of groups) {
+      desiredGroups.set(group.id, group);
     }
-    unitLayerIds.add(layerId);
+
+    for (const group of desiredGroups.values()) {
+      const layerId = getUnitLayerId(group.id, sourceId);
+      desiredLayerIds.add(layerId);
+      if (!mlMap.getLayer(layerId)) {
+        mlMap.addLayer(createUnitLayerSpec(layerId, sourceId, group, alignment));
+      }
+      unitLayerIds.add(layerId);
+    }
   }
 
   for (const layerId of [...unitLayerIds]) {
@@ -456,16 +488,12 @@ function buildCustomSymbolImageData(
 }
 
 function setupMapLayers() {
-  !mlMap.getSource("unitSource") &&
-    mlMap.addSource("unitSource", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: [],
-      },
-    });
+  for (const sourceId of [UNIT_SOURCE_ID, MOVING_UNIT_SOURCE_ID]) {
+    !mlMap.getSource(sourceId) &&
+      mlMap.addSource(sourceId, { type: "geojson", data: featureCollection([]) });
+  }
 
-  syncUnitLayers([]);
+  syncUnitLayers();
 
   setupRangeRingLayers(UNIT_LAYER_ID);
   setupUnitHistoryLayers(UNIT_LAYER_ID);
@@ -473,11 +501,7 @@ function setupMapLayers() {
 
 // Rasterize a milsymbol icon to ImageData at the given pixel ratio. Pure build
 // step shared by the live map and the export.
-function buildMilSymbolImageData(
-  imageId: string,
-  cachedSymbol: SymbolCacheEntry | undefined,
-  pixelRatio: number,
-): ImageData | null {
+function getMilSymbolArgs(imageId: string, cachedSymbol: SymbolCacheEntry | undefined) {
   const isSelected = imageId.startsWith("sel-");
   const {
     sidc = "xxxxxxx",
@@ -486,15 +510,22 @@ function buildMilSymbolImageData(
     uniqueDesignation = "",
   } = cachedSymbol?.kind === "milsymbol" ? cachedSymbol : {};
 
-  const options = isSelected
+  const outline = isSelected
     ? { outlineWidth: 20, outlineColor: "yellow" }
     : { outlineWidth: 7, outlineColor: "white" };
-  const symb = symbolGenerator(sidc, {
-    uniqueDesignation,
-    ...options,
-    ...textAmplifiers,
-    ...symbolOptions,
-  });
+  return {
+    sidc,
+    options: { uniqueDesignation, ...outline, ...textAmplifiers, ...symbolOptions },
+  };
+}
+
+function buildMilSymbolImageData(
+  imageId: string,
+  cachedSymbol: SymbolCacheEntry | undefined,
+  pixelRatio: number,
+): ImageData | null {
+  const { sidc, options } = getMilSymbolArgs(imageId, cachedSymbol);
+  const symb = symbolGenerator(sidc, options);
   const { width, height } = symb.getSize();
   const anchor = symb.getAnchor();
   const sourceCanvas = symb.asCanvas(pixelRatio);
@@ -549,13 +580,17 @@ function resolveMissingStyleImage(id: string) {
   if (data) {
     mlMap.addImage(id, data, { pixelRatio });
     usedImageIds.add(id);
+    // Only the symbol itself is clickable, not its text amplifiers.
+    const { sidc, options } = getMilSymbolArgs(id, cachedSymbol);
+    setUnitHitBox(mlMap, id, getMilSymbolHitBox(sidc, options));
   }
 }
 
 function onStyleLoad() {
   usedImageIds.clear();
+  clearUnitHitBoxes(mlMap);
   setupMapLayers();
-  addUnits(shouldCenterOnNextStyleLoad);
+  addUnits({ initial: shouldCenterOnNextStyleLoad });
   drawRangeRings();
   drawHistory();
   engineRef.value?.layers.refreshScenarioFeatureLayers({
@@ -584,10 +619,6 @@ registerSymbolImageSource(mlMap, {
   },
 });
 onUnmounted(() => unregisterSymbolImageSource(mlMap));
-
-function pointToXY(point: PointLike): [number, number] {
-  return Array.isArray(point) ? point : [point.x, point.y];
-}
 
 // A touch device, or an explicit touch-driven event, gets the wider tolerance.
 // `originalEvent` is absent on the native MouseEvent passed by shift-click.
@@ -622,8 +653,17 @@ function interactiveLayerIds(): string[] {
 }
 
 function collectInteractiveFeatures(
-  geometry: PointLike | [PointLike, PointLike],
+  point: PointLike,
+  tolerance = 0,
 ): MapGeoJSONFeature[] {
+  const [x, y] = pointToXY(point);
+  const geometry: PointLike | [PointLike, PointLike] =
+    tolerance > 0
+      ? [
+          [x - tolerance, y - tolerance],
+          [x + tolerance, y + tolerance],
+        ]
+      : point;
   const unitHits: MapGeoJSONFeature[] = [];
   const otherHits: MapGeoJSONFeature[] = [];
   // Scoped to the layers whose hits are kept. Unscoped, MapLibre evaluates every layer
@@ -643,7 +683,7 @@ function collectInteractiveFeatures(
   }
   // Units must take precedence over reference layers (KML) even when those
   // layers happen to render above the unit symbols.
-  return unitHits.length ? unitHits.concat(otherHits) : otherHits;
+  return rankUnitHits(mlMap, unitHits, point, tolerance).concat(otherHits);
 }
 
 function queryInteractiveFeatures(
@@ -658,12 +698,7 @@ function queryInteractiveFeatures(
   // which is what makes thin features easier to grab.
   const exactHits = collectInteractiveFeatures(point);
   if (exactHits.length || tolerance <= 0) return exactHits;
-
-  const [x, y] = pointToXY(point);
-  return collectInteractiveFeatures([
-    [x - tolerance, y - tolerance],
-    [x + tolerance, y + tolerance],
-  ]);
+  return collectInteractiveFeatures(point, tolerance);
 }
 
 function updateHoveredScenarioFeatures(
@@ -766,7 +801,7 @@ interface ControlMeasurePick {
  * Uses the library's synchronous `ownsInteractionAt` rather than its `onGraphicPick`
  * notification, because a short-circuit has to be answerable *inside* our own click
  * handler and must not depend on listener ordering between the two pipelines.
- * Returns `undefined` on OpenLayers, where `engine.draw` is undefined.
+ * Returns `undefined` until the tactical-draw surface is ready.
  */
 function pickControlMeasureAt(
   pixel: [number, number],
@@ -897,8 +932,7 @@ function onMapClick(e: MapMouseEvent) {
   // select underneath it.
   if (selectionSuppressed.value) return;
   if (routingStore.active) return;
-  if (moveUnitEnabled.value) return;
-  if (handleHistoryMapClick(e)) return;
+  if (!moveUnitEnabled.value && handleHistoryMapClick(e)) return;
   const additive = e.originalEvent.shiftKey;
 
   const topHit = queryInteractiveFeatures(e.point, getHitTolerance(e))[0];
@@ -910,7 +944,8 @@ function onMapClick(e: MapMouseEvent) {
   // short-circuit to the *plain-feature* query; an area graphic covering a formation
   // must not make its units unselectable.
   if (topHit && isUnitLayerId(topHit.layer.id)) {
-    if (!unitSelectEnabled.value) return;
+    // Move mode handles unit clicks on drag end.
+    if (moveUnitEnabled.value || !unitSelectEnabled.value) return;
     const unitId = topHit.properties?.id;
     if (!unitId) return;
     if (additive) return;
@@ -950,6 +985,8 @@ function onMapClick(e: MapMouseEvent) {
     if (!additive && selectionEnabled) clearSelectedItems();
     return;
   }
+  // Move mode leaves reference and plain features alone.
+  if (moveUnitEnabled.value) return;
   if (isMapLibreKmlRenderedLayerId(topHit.layer.id)) {
     activeReferenceFeature.value = toReferenceFeatureSelection(topHit);
     return;
@@ -979,7 +1016,7 @@ function onMapMouseMove(e: MapMouseEvent) {
   }
   if (unitDragState) {
     clearHoveredFeatures();
-    previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+    scheduleDragPreview([e.lngLat.lng, e.lngLat.lat]);
     mlMap.getCanvas().style.cursor = "grabbing";
     return;
   }
@@ -1040,7 +1077,7 @@ function onMapMouseLeave() {
 function onMapTouchMove(e: MapTouchEvent) {
   if (rotateInteraction.isRotating.value) return;
   if (!unitDragState) return;
-  previewDraggedUnits([e.lngLat.lng, e.lngLat.lat]);
+  scheduleDragPreview([e.lngLat.lng, e.lngLat.lat]);
 }
 
 function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
@@ -1075,6 +1112,19 @@ function onUnitDragStart(e: MapMouseEvent | MapTouchEvent) {
   mlMap.getCanvas().style.cursor = "grabbing";
 }
 
+function scheduleDragPreview(pointer: Position) {
+  if (!unitDragState) return;
+  unitDragState.pendingPointer = pointer;
+  if (unitDragState.previewFrame !== undefined) return;
+  unitDragState.previewFrame = requestAnimationFrame(() => {
+    if (!unitDragState?.pendingPointer) return;
+    const latest = unitDragState.pendingPointer;
+    unitDragState.previewFrame = undefined;
+    unitDragState.pendingPointer = undefined;
+    previewDraggedUnits(latest);
+  });
+}
+
 function previewDraggedUnits(pointer: Position) {
   if (!unitDragState) return;
   const dx = pointer[0] - unitDragState.startPointer[0];
@@ -1084,13 +1134,16 @@ function previewDraggedUnits(pointer: Position) {
     positionOverrides.set(unitId, [position[0] + dx, position[1] + dy]);
   });
   unitDragState.moved = true;
-  addUnits(false, positionOverrides);
+  addUnits({ positionOverrides });
 }
 
 function onUnitDragEnd(e: MapMouseEvent | MapTouchEvent) {
   if (!unitDragState) return;
   const dragState = unitDragState;
   unitDragState = null;
+  if (dragState.previewFrame !== undefined) cancelAnimationFrame(dragState.previewFrame);
+  // A pointer move still waiting for its frame counts as a move.
+  if (dragState.pendingPointer) dragState.moved = true;
   restoreMapDragInteractions(dragState.interactions);
   mlMap.getCanvas().style.cursor = "";
 
@@ -1136,6 +1189,7 @@ mlMap.on("touchmove", onMapTouchMove);
 mlMap.on("mouseup", onUnitDragEnd);
 mlMap.on("touchend", onUnitDragEnd);
 mlMap.on("touchcancel", onUnitDragEnd);
+mlMap.on("sourcedata", onUnitSourceData);
 
 if (activeScenario.store.state.id === "demo-falklands82") {
   // activeScenario.time.setCurrentTime(+new Date("1982-05-21T12:00:00-04:00"));
@@ -1147,8 +1201,12 @@ watch(
     () => activeScenario.store.state.unitStateCounter,
     () => activeScenario.geo.everyVisibleUnit.value.length,
   ],
-  () => {
-    addUnits();
+  ([, unitStateCounter, visibleCount], previous) => {
+    const onlyTimeChanged =
+      previous !== undefined &&
+      unitStateCounter === previous[1] &&
+      visibleCount === previous[2];
+    addUnits({ reuseFeatures: onlyTimeChanged });
     drawRangeRings();
   },
   { immediate: true },
@@ -1206,99 +1264,64 @@ onScenarioActionHook.on(async ({ action }) => {
   uiStore.requestExportTool = true;
 });
 
-function addUnits(
+function addUnits({
   initial = false,
-  positionOverrides?: ReadonlyMap<string, Position>,
-  rotationOverrides?: ReadonlyMap<string, number>,
-) {
-  const source = mlMap.getSource("unitSource") as GeoJSONSource;
-  if (!source) return;
+  positionOverrides,
+  rotationOverrides,
+  reuseFeatures = false,
+}: {
+  initial?: boolean;
+  positionOverrides?: ReadonlyMap<string, Position>;
+  rotationOverrides?: ReadonlyMap<string, number>;
+  reuseFeatures?: boolean;
+} = {}) {
+  const source = mlMap.getSource(UNIT_SOURCE_ID) as GeoJSONSource;
+  const movingSource = mlMap.getSource(MOVING_UNIT_SOURCE_ID) as GeoJSONSource;
+  if (!source || !movingSource) return;
 
   const visibleUnits = activeScenario.geo.everyVisibleUnit.value;
-  const visibilityGroups = new Map<string, UnitVisibilityGroup>();
+  const staticUnits = {
+    features: [] as Feature[],
+    groups: new Map<string, UnitVisibilityGroup>(),
+  };
+  const movingUnits = {
+    features: [] as Feature[],
+    groups: new Map<string, UnitVisibilityGroup>(),
+  };
   const activeImageIds = new Set<string>();
 
-  const features = featureCollection(
-    visibleUnits.map((unit) => {
-      const visibilityGroup = getUnitVisibilityGroup(unit);
-      visibilityGroups.set(visibilityGroup.id, visibilityGroup);
-      const rawTextAmplifiers = unit.textAmplifiers || {};
-      const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
-        rawTextAmplifiers,
-        "uniqueDesignation",
-      );
-      const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
-      const resolvedUniqueDesignation =
-        uniqueDesignation ?? unit.shortName ?? unit.name ?? "";
-      const symbolUniqueDesignation =
-        mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
-          ? ""
-          : resolvedUniqueDesignation;
-      const { size: _symbolOptionSize, ...combinedSymbolOptions } =
-        unitActions.getCombinedSymbolOptions(unit);
-      // Use the symbol projected for the current scenario time, so symbol changes
-      // in unit states/events are reflected on the map.
-      const sidc = unit._state?.sidc ?? unit.sidc;
-      const customSymbolId = getCustomSymbolId(sidc);
-      const customSymbol = customSymbolId
-        ? activeScenario.store.state.customSymbolMap[customSymbolId]
-        : undefined;
-      const baseSymbolSize = getUnitMapSymbolSize(unit);
-      const renderedSymbolSize =
-        customSymbol && customSymbolId
-          ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
-          : baseSymbolSize;
-      const symbolData: SymbolCacheEntry =
-        customSymbol && customSymbolId
-          ? {
-              kind: "custom",
-              customSymbol,
-              size: renderedSymbolSize,
-              color: combinedSymbolOptions.fillColor,
-            }
-          : {
-              kind: "milsymbol",
-              sidc,
-              symbolOptions: {
-                size: renderedSymbolSize,
-                ...combinedSymbolOptions,
-              },
-              textAmplifiers,
-              uniqueDesignation: symbolUniqueDesignation,
-            };
-      const symbolKey = hashObject(symbolData);
-      if (!symbolCache.has(symbolKey)) {
-        symbolCache.set(symbolKey, symbolData);
-      }
-      const isSelected = selectedUnitIds.value.has(unit.id);
-      const imageId = isSelected ? `sel-${symbolKey}` : symbolKey;
-      activeImageIds.add(imageId);
-      const rotationOverride = rotationOverrides?.get(unit.id);
-      const symbolRotation =
-        rotationOverride !== undefined
-          ? rotationOverride
-          : (unit._state?.symbolRotation ?? 0);
-      return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: positionOverrides?.get(unit.id) ?? unit._state?.location,
-        },
-        properties: {
-          id: unit.id,
-          visibilityGroup: visibilityGroup.id,
-          symbolKey: imageId,
-          sidc,
-          label: mapSettings.mapUnitLabelBelow
-            ? unit.shortName || unit.name || "Unnamed Unit"
-            : "",
-          textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
-          symbolRotation,
-        },
-      } as Feature;
-    }),
-  );
-  syncUnitLayers(visibilityGroups.values());
+  const generation = `${activeScenario.store.getMutationCount()}:${activeScenario.store.state.hierarchyProjectionBucket}`;
+  // A drag or rotate preview only changes the units it overrides, so every other unit
+  // keeps its cached feature and the static source does not change between previews.
+  const hasOverrides = Boolean(positionOverrides?.size || rotationOverrides?.size);
+  if (!(reuseFeatures || hasOverrides) || generation !== unitFeatureCacheGeneration) {
+    unitFeatureCache.clear();
+    unitFeatureCacheGeneration = generation;
+  }
+  for (const unit of visibleUnits) {
+    const state = toRaw(unit._state);
+    const isOverridden =
+      positionOverrides?.has(unit.id) || rotationOverrides?.has(unit.id) || false;
+    let cached = isOverridden ? undefined : unitFeatureCache.get(unit.id);
+    if (!cached || cached.state !== state) {
+      cached = {
+        state,
+        ...buildUnitFeature(unit, positionOverrides, rotationOverrides),
+      };
+      // Previewed features are short-lived and must not outlast the preview.
+      if (!isOverridden) unitFeatureCache.set(unit.id, cached);
+    }
+    const { feature, imageId, visibilityGroup } = cached;
+    // Previewed units get the moving source too, so each preview only re-tiles them.
+    const bucket =
+      isOverridden || (playback.timeAnimating && unit._state?.type === "interpolated")
+        ? movingUnits
+        : staticUnits;
+    bucket.features.push(feature);
+    bucket.groups.set(visibilityGroup.id, visibilityGroup);
+    activeImageIds.add(imageId);
+  }
+  syncUnitLayers(staticUnits.groups.values(), movingUnits.groups.values());
   if (initial) {
     const bbox = activeScenario.store.state.boundingBox;
     if (bbox && bbox.length === 4) {
@@ -1307,13 +1330,169 @@ function addUnits(
         duration: 0,
         maxZoom: 16,
       });
-    } else if (features.features.length > 0) {
-      const center = centerOfMass(features);
+    } else if (visibleUnits.length > 0) {
+      const center = centerOfMass(
+        featureCollection([...staticUnits.features, ...movingUnits.features]),
+      );
       mlMap.setCenter(center.geometry.coordinates as [number, number]);
     }
   }
-  source.setData(features);
+  const staticChanged = setUnitSourceData(UNIT_SOURCE_ID, source, staticUnits.features);
+  setMovingUnitData(movingSource, movingUnits.features, staticChanged);
   pruneSymbolImages(activeImageIds);
+}
+
+function setMovingUnitData(
+  movingSource: GeoJSONSource,
+  features: Feature[],
+  staticChanged: boolean,
+) {
+  const movingIds = new Set(features.map((feature) => feature.properties?.id));
+  const shown = lastUnitData.get(MOVING_UNIT_SOURCE_ID)?.features ?? [];
+  if (staticChanged) {
+    const leaving = shown.filter((feature) => !movingIds.has(feature.properties?.id));
+    if (leaving.length) {
+      handoffFeatures = leaving;
+      handoffWait = "content";
+      clearTimeout(handoffTimeout);
+      handoffTimeout = setTimeout(finishMovingUnitHandoff, HANDOFF_TIMEOUT_MS);
+    }
+  }
+  movingUnitFeatures = features;
+  const kept = handoffFeatures.filter(
+    (feature) => !movingIds.has(feature.properties?.id),
+  );
+  setUnitSourceData(
+    MOVING_UNIT_SOURCE_ID,
+    movingSource,
+    kept.length ? [...features, ...kept] : features,
+  );
+}
+
+function finishMovingUnitHandoff() {
+  clearTimeout(handoffTimeout);
+  handoffTimeout = undefined;
+  handoffWait = undefined;
+  if (!handoffFeatures.length) return;
+  handoffFeatures = [];
+  const movingSource = mlMap.getSource(MOVING_UNIT_SOURCE_ID) as
+    GeoJSONSource | undefined;
+  if (movingSource) {
+    setUnitSourceData(MOVING_UNIT_SOURCE_ID, movingSource, movingUnitFeatures);
+  }
+}
+
+function onUnitSourceData(e: MapSourceDataEvent) {
+  if (!handoffWait || e.sourceId !== UNIT_SOURCE_ID) return;
+  // The tile manager starts reloading the tiles before this event reaches the map, so
+  // from here on `isSourceLoaded` reflects the new data.
+  if (e.sourceDataType === "content") handoffWait = "loaded";
+  if (handoffWait === "loaded" && mlMap.isSourceLoaded(UNIT_SOURCE_ID)) {
+    finishMovingUnitHandoff();
+  }
+}
+
+function buildUnitFeature(
+  unit: (typeof activeScenario.geo.everyVisibleUnit.value)[number],
+  positionOverrides?: ReadonlyMap<string, Position>,
+  rotationOverrides?: ReadonlyMap<string, number>,
+): Omit<CachedUnitFeature, "state"> {
+  const visibilityGroup = getUnitVisibilityGroup(unit);
+  const rawTextAmplifiers = unit.textAmplifiers || {};
+  const hasOverriddenUniqueDesignation = Object.prototype.hasOwnProperty.call(
+    rawTextAmplifiers,
+    "uniqueDesignation",
+  );
+  const { uniqueDesignation, ...textAmplifiers } = rawTextAmplifiers;
+  const resolvedUniqueDesignation =
+    uniqueDesignation ?? unit.shortName ?? unit.name ?? "";
+  const symbolUniqueDesignation =
+    mapSettings.mapUnitLabelBelow && !hasOverriddenUniqueDesignation
+      ? ""
+      : resolvedUniqueDesignation;
+  const { size: _symbolOptionSize, ...combinedSymbolOptions } =
+    unitActions.getCombinedSymbolOptions(unit);
+  // Use the symbol projected for the current scenario time, so symbol changes
+  // in unit states/events are reflected on the map.
+  const sidc = unit._state?.sidc ?? unit.sidc;
+  const customSymbolId = getCustomSymbolId(sidc);
+  const customSymbol = customSymbolId
+    ? activeScenario.store.state.customSymbolMap[customSymbolId]
+    : undefined;
+  const baseSymbolSize = getUnitMapSymbolSize(unit);
+  const renderedSymbolSize =
+    customSymbol && customSymbolId
+      ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
+      : baseSymbolSize;
+  const symbolData: SymbolCacheEntry =
+    customSymbol && customSymbolId
+      ? {
+          kind: "custom",
+          customSymbol,
+          size: renderedSymbolSize,
+          color: combinedSymbolOptions.fillColor,
+        }
+      : {
+          kind: "milsymbol",
+          sidc,
+          symbolOptions: {
+            size: renderedSymbolSize,
+            ...combinedSymbolOptions,
+          },
+          textAmplifiers,
+          uniqueDesignation: symbolUniqueDesignation,
+        };
+  const symbolKey = hashObject(symbolData);
+  if (!symbolCache.has(symbolKey)) {
+    symbolCache.set(symbolKey, symbolData);
+  }
+  const isSelected = selectedUnitIds.value.has(unit.id);
+  const imageId = isSelected ? `sel-${symbolKey}` : symbolKey;
+  const rotationOverride = rotationOverrides?.get(unit.id);
+  const symbolRotation =
+    rotationOverride !== undefined
+      ? rotationOverride
+      : (unit._state?.symbolRotation ?? 0);
+  const feature = {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: positionOverrides?.get(unit.id) ?? unit._state?.location,
+    },
+    properties: {
+      id: unit.id,
+      visibilityGroup: visibilityGroup.id,
+      symbolKey: imageId,
+      sidc,
+      label: mapSettings.mapUnitLabelBelow
+        ? unit.shortName || unit.name || "Unnamed Unit"
+        : "",
+      textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
+      symbolRotation,
+    },
+  } as Feature;
+  return { feature, imageId, visibilityGroup };
+}
+
+/** Returns whether the source got new data. */
+function setUnitSourceData(
+  sourceId: string,
+  source: GeoJSONSource,
+  features: Feature[],
+): boolean {
+  const last = lastUnitData.get(sourceId);
+  // A basemap swap replaces the source, which must be filled again.
+  const sameSource = last?.source === source;
+  // Cached features are never mutated, so the same objects mean the same data.
+  if (sameSource && haveSameItems(last.features, features)) return false;
+  const data = JSON.stringify(features);
+  if (sameSource && last.data === data) {
+    last.features = features;
+    return false;
+  }
+  lastUnitData.set(sourceId, { source, features, data });
+  source.setData(featureCollection(features));
+  return true;
 }
 
 // Skip the scan when stale entries can't have grown past this many — keeps
@@ -1326,6 +1505,7 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
     if (activeImageIds.has(imageId)) continue;
     if (mlMap.hasImage(imageId)) mlMap.removeImage(imageId);
     usedImageIds.delete(imageId);
+    deleteUnitHitBox(mlMap, imageId);
   }
   const activeSymbolKeys = new Set<string>();
   for (const imageId of activeImageIds) {
@@ -1338,6 +1518,11 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
 
 onUnmounted(() => {
   if (!mlMap) return;
+  if (unitDragState?.previewFrame !== undefined) {
+    cancelAnimationFrame(unitDragState.previewFrame);
+  }
+  clearTimeout(handoffTimeout);
+  mlMap.off("sourcedata", onUnitSourceData);
   clearSuppressNextNativeClick();
   boxSelect.cleanup();
   disposeUnitHistory();
@@ -1389,6 +1574,14 @@ watch(
     }
   },
   { immediate: true },
+);
+
+watch(
+  () => playback.timeAnimating,
+  (animating) => {
+    // Moves the moving units back into the shared unit layer.
+    if (!animating) addUnits();
+  },
 );
 
 watch(hoverEnabled, (enabled) => {

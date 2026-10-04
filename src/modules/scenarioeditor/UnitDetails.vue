@@ -9,6 +9,8 @@ import {
 } from "vue";
 import {
   IconCrosshairsGps,
+  IconEye,
+  IconEyeOff,
   IconFileTreeOutline as TreeLocateIcon,
   IconImage as ImageIcon,
   IconLockOutline,
@@ -22,7 +24,7 @@ import DescriptionItem from "@/components/DescriptionItem.vue";
 import { unrefElement, useToggle } from "@vueuse/core";
 import { renderMarkdown } from "@/composables/formatting";
 import UnitPanelState from "./UnitPanelState.vue";
-import { useUnitActions } from "@/composables/scenarioActions";
+import { hideBranchMenuItems, useUnitActions } from "@/composables/scenarioActions";
 import { type UnitAction, UnitActions } from "@/types/constants";
 import SplitButton from "@/components/SplitButton.vue";
 import { type EntityId } from "@/types/base";
@@ -143,6 +145,10 @@ const unitMenuItems = computed((): MenuItemData[] => [
     disabled: isLocked.value,
   },
   { label: "Remove unit image", action: () => removeMedia(), disabled: isLocked.value },
+  ...hideBranchMenuItems(unit.value).map(({ label, action }) => ({
+    label,
+    action: () => actionWrapper(action),
+  })),
   unit.value.locked
     ? {
         label: "Unlock unit",
@@ -227,6 +233,13 @@ const { selectedUnitIds, clear: clearSelection } = useSelectedItems();
 const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
 const selectedUnits = computed(() =>
   [...selectedUnitIds.value].map((id) => getUnitById(id)),
+);
+
+// In multi mode the toggle shows units only when every selected unit is hidden.
+const isHiddenOnMap = computed(() =>
+  isMultiMode.value
+    ? selectedUnits.value.every((u) => u?.isHidden)
+    : !!unit.value.isHidden,
 );
 
 const visibleSelectedUnits = computed(() => {
@@ -441,6 +454,14 @@ function locateInOrbat() {
         />
       </template>
       <template #trailing>
+        <IconButton
+          :title="isHiddenOnMap ? 'Hidden on map. Click to show' : 'Hide on map'"
+          :aria-pressed="isHiddenOnMap"
+          @click="actionWrapper(isHiddenOnMap ? UnitActions.Show : UnitActions.Hide)"
+        >
+          <IconEyeOff v-if="isHiddenOnMap" class="size-5" aria-hidden="true" />
+          <IconEye v-else class="size-5" aria-hidden="true" />
+        </IconButton>
         <IconLockOutline v-if="isLocked" class="text-muted-foreground size-5" />
         <Badge v-if="unitStatus">{{ unitStatus }}</Badge>
         <Button

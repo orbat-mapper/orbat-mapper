@@ -57,6 +57,9 @@ import type {
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
+import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
+import ControlMeasureSizeSettings from "@/modules/scenarioeditor/ControlMeasureSizeSettings.vue";
+import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
@@ -64,6 +67,7 @@ import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { TabsContent } from "@/components/ui/tabs";
 import ScrollTabs from "@/components/ScrollTabs.vue";
@@ -115,6 +119,29 @@ const item = computed<NTacticalGraphicLayerItem | null>(() => {
 });
 
 const isMultiMode = computed(() => props.selectedIds.size > 1);
+const sizeTargets = computed(() =>
+  [...props.selectedIds].flatMap((id) => {
+    const { layerItem } = geo.getLayerItemById(id);
+    return layerItem && isNTacticalGraphicLayerItem(layerItem)
+      ? [
+          {
+            id,
+            graphicKind: layerItem.graphicKind,
+            options: resolveControlMeasureOptions(layerItem),
+          },
+        ]
+      : [];
+  }),
+);
+
+function constructionResolution() {
+  return engineRef.value?.draw?.adapter?.getResolution?.();
+}
+
+function updateSizes(updates: ControlMeasureSizeUpdate[]) {
+  scenarioDraw.updateControlMeasureSizes(updates);
+}
+
 const supported = computed(() =>
   item.value ? isSupportedGraphicKind(item.value.graphicKind) : false,
 );
@@ -231,8 +258,7 @@ function doMetaUpdate(data: {
   isEditMode.value = false;
 }
 
-// Editing needs a tactical-draw surface; OpenLayers has none. Step 18 owns the full
-// capability gating, this is the panel's own honest affordance.
+// Shape editing requires a ready tactical-draw surface and a supported graphic.
 const canEditShape = computed(() => Boolean(engineRef.value?.draw) && supported.value);
 const isEditingShape = computed(
   () => !!item.value && scenarioDraw.controlMeasureEditFeatureId.value === item.value.id,
@@ -257,6 +283,11 @@ function toggleEditShape() {
 const labelDragModel = computed({
   get: () => scenarioDraw.controlMeasureLabelDrag.value,
   set: (value: boolean) => scenarioDraw.setControlMeasureLabelDrag(value),
+});
+
+const widthGripsModel = computed({
+  get: () => scenarioDraw.controlMeasureWidthGrips.value,
+  set: (value: boolean) => scenarioDraw.setControlMeasureWidthGrips(value),
 });
 
 function doZoom() {
@@ -352,7 +383,7 @@ function doDelete() {
 
     <div
       v-if="isEditingShape"
-      class="border-border bg-muted/50 mb-4 space-y-2 rounded-md border p-2 text-sm"
+      class="border-border bg-muted/50 mb-4 flex flex-col gap-2 rounded-md border p-2 text-sm"
     >
       <div class="flex items-center justify-between gap-2">
         <p class="text-muted-foreground">
@@ -380,6 +411,29 @@ function doDelete() {
           @click="resetLabelPositions()"
         >
           Reset positions
+        </Button>
+      </div>
+      <div
+        v-if="scenarioDraw.controlMeasureSupportsWidthGrips.value"
+        class="flex flex-wrap items-center justify-between gap-2"
+      >
+        <Toggle
+          v-model="widthGripsModel"
+          variant="outline"
+          size="sm"
+          aria-label="Toggle width grips"
+          title="Alt+click a width grip to reset it"
+        >
+          Width grips
+        </Toggle>
+        <Button
+          v-if="scenarioDraw.controlMeasureCanResetVertexWidths.value"
+          type="button"
+          variant="outline"
+          size="sm"
+          @click="scenarioDraw.resetControlMeasureVertexWidths()"
+        >
+          Reset arrow widths
         </Button>
       </div>
     </div>
@@ -417,6 +471,13 @@ function doDelete() {
               Reset size
             </Button>
           </PanelDataGrid>
+          <ControlMeasureExtendedStyleSettings
+            v-if="supported"
+            :graphic-kind="item.graphicKind"
+            :options="resolvedOptions"
+            :get-resolution="constructionResolution"
+            @update="doControlMeasureOptionsUpdate"
+          />
         </TabsContent>
         <TabsContent value="2" class="mx-4">
           <ControlMeasureAmplifiers
@@ -475,7 +536,12 @@ function doDelete() {
       </ScrollTabs>
     </div>
 
-    <div v-else-if="isMultiMode" class="mt-4">
+    <div v-else-if="isMultiMode" class="mt-4 flex flex-col gap-4">
+      <ControlMeasureSizeSettings
+        :targets="sizeTargets"
+        :get-resolution="constructionResolution"
+        @update="updateSizes"
+      />
       <Button type="button" variant="outline" size="sm" @click="doDelete()">
         Delete selected
       </Button>

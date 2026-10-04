@@ -299,3 +299,30 @@ describe("the smoothing toggle", () => {
     ]);
   });
 });
+
+describe("smoothing styles", () => {
+  it.each([
+    ["main-attack", "Rounded corners"],
+    ["block-arrow", "Curve"],
+  ] as const)(
+    "shows the effective default for %s and toggles smoothing off",
+    async (graphicKind, label) => {
+      const wrapper = mountSettings({ graphicKind, options: { smooth: true } });
+      const active = wrapper.get(`[aria-label="Smooth: ${label}"]`);
+      expect(active.attributes("data-state")).toBe("on");
+      await active.trigger("click");
+      expect(wrapper.emitted("update")?.at(-1)).toEqual([{ options: { smooth: false } }]);
+    },
+  );
+
+  it("enables curved smoothing while preserving other options", async () => {
+    const wrapper = mountSettings({
+      graphicKind: "main-attack",
+      options: { smooth: false, shaftWidthRatio: 0.4 },
+    });
+    await wrapper.get('[aria-label="Smooth: Curve"]').trigger("click");
+    expect(wrapper.emitted("update")?.at(-1)).toEqual([
+      { options: { smooth: true, smoothMode: "curve", shaftWidthRatio: 0.4 } },
+    ]);
+  });
+});

@@ -99,6 +99,26 @@ function getBaseSubUnits(parent: NSide | NSideGroup | NUnit) {
   return parent._baseSubUnits ?? parent.subUnits;
 }
 
+/** A unit is hidden on the map by its own flag or by a hidden side or side group. */
+export function isUnitHiddenInState(state: ScenarioState, unit: NUnit): boolean {
+  return !!(
+    unit.isHidden ||
+    state.sideMap[unit._sid]?.isHidden ||
+    (unit._gid && state.sideGroupMap[unit._gid]?.isHidden)
+  );
+}
+
+// Changes to these fields need a map redraw of the unit.
+function changesUnitSymbol(data: UnitUpdate) {
+  return (
+    data.style !== undefined ||
+    data.textAmplifiers !== undefined ||
+    data.sidc !== undefined ||
+    data.symbolOptions !== undefined ||
+    data.reinforcedStatus !== undefined
+  );
+}
+
 export function useUnitManipulations(store: NewScenarioStore) {
   const { state, update, groupUpdate } = store;
 
@@ -423,8 +443,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
       invalidateUnitStyle(unit._ikey);
       unit._ikey = undefined;
     }
-    const shouldUpdateUnitStateCounter =
-      data.style !== undefined || data.textAmplifiers !== undefined;
+    // Bumped inside the recorded update so undo/redo also change it and the map
+    // redraws the restored symbol.
+    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
 
     if (noUndo) {
       if (!unit) return;
@@ -451,6 +472,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const filteredUnitIds = ignoreLocked
       ? unitIds
       : unitIds.filter((id) => !isUnitLocked(id));
+    // Bumped inside the recorded update, as in updateUnit, so undo/redo also redraw.
+    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
     update((s) => {
       filteredUnitIds.forEach((unitId) => {
         const unit = s.unitMap[unitId];
@@ -459,6 +482,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         s.unitMap[unitId] = klona(unit);
         invalidateUnitStyle(unitId);
       });
+      if (shouldUpdateUnitStateCounter && filteredUnitIds.length) s.unitStateCounter++;
     });
     if (doUpdateUnitState) {
       unitIds.forEach((id) => updateUnitState(id));
@@ -483,6 +507,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
         // s.unitMap[unitId] = klona(unit);
         invalidateUnitStyle(unitId);
       });
+      // Bumped inside the recorded update, as in updateUnit, so undo/redo also redraw.
+      if (filteredUnitIds.length) s.unitStateCounter++;
     });
     if (doUpdateUnitState) {
       unitIds.forEach((id) => updateUnitState(id));
@@ -493,6 +519,24 @@ export function useUnitManipulations(store: NewScenarioStore) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
     unit.locked = locked;
+  }
+
+  function setUnitsHidden(unitIds: Iterable<EntityId>, hidden: boolean) {
+    const ids = [...unitIds].filter(
+      (id) => state.unitMap[id] && !!state.unitMap[id].isHidden !== hidden,
+    );
+    if (!ids.length) return;
+    update(
+      (s) => {
+        ids.forEach((id) => {
+          const unit = s.unitMap[id]!;
+          if (hidden) unit.isHidden = true;
+          else delete unit.isHidden;
+        });
+        s.unitStateCounter++;
+      },
+      { label: hidden ? "hideUnits" : "showUnits", value: ids.join(",") },
+    );
   }
 
   function updateUnitProperties(
@@ -1020,6 +1064,15 @@ export function useUnitManipulations(store: NewScenarioStore) {
     let newSideId: EntityId | undefined;
     groupUpdate(() => {
       newSideId = addSide(newSide, { markAsNew: false, addDefaultGroup: false });
+      [...getBaseSubUnits(side)].forEach((unitId) => {
+        const newUnitId = cloneUnit(unitId, {
+          target: "end",
+          includeSubordinates: true,
+          includeState,
+          modifyName: false,
+        });
+        newUnitId && newSideId && changeUnitParent(newUnitId, newSideId);
+      });
       side.groups.forEach((groupId) => {
         const newGroupId = cloneSideGroup(groupId, { includeState, modifyName: false });
         newGroupId && newSideId && changeSideGroupParent(newGroupId, newSideId, "on");
@@ -1179,12 +1232,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
 
   function isUnitHidden(unitId: EntityId): boolean {
     const unit = state.unitMap[unitId];
-    if (!unit) return false;
-
-    return !!(
-      state.sideMap[unit._sid]?.isHidden ||
-      (unit._gid && state.sideGroupMap[unit._gid]?.isHidden)
-    );
+    return !!unit && isUnitHiddenInState(state, unit);
   }
 
   function convertStateEntryToInitialLocation(unitId: EntityId, index: number) {
@@ -1286,6 +1334,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     updateUnitProperties,
     isUnitLocked,
     isUnitHidden,
+    setUnitsHidden,
     updateUnitState,
     batchUpdateUnit,
     batchUpdateUnitStyle,

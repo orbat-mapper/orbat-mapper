@@ -211,8 +211,7 @@ function triggerUnitDrop(
 ) {
   extractInstructionSpy.mockReturnValueOnce(instruction);
   const monitorArgs = (monitorForElementsSpy as any).mock.calls[0]?.[0] as
-    | { onDrop: (args: unknown) => void }
-    | undefined;
+    { onDrop: (args: unknown) => void } | undefined;
   expect(monitorArgs?.onDrop).toBeTypeOf("function");
   if (!monitorArgs) throw new Error("monitorForElements was not registered");
   monitorArgs.onDrop({
@@ -237,8 +236,7 @@ function triggerDragStart(
   input: { ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean } = {},
 ) {
   const monitorArgs = (monitorForElementsSpy as any).mock.calls[0]?.[0] as
-    | { onDragStart: (args: unknown) => void }
-    | undefined;
+    { onDragStart: (args: unknown) => void } | undefined;
   expect(monitorArgs?.onDragStart).toBeTypeOf("function");
   if (!monitorArgs) throw new Error("monitorForElements was not registered");
   monitorArgs.onDragStart({
@@ -257,15 +255,13 @@ function triggerDragStart(
 
 function triggerExternalDrop(
   destinationData:
-    | ReturnType<typeof getUnitDragItem>
-    | ReturnType<typeof getSideDragItem>,
+    ReturnType<typeof getUnitDragItem> | ReturnType<typeof getSideDragItem>,
   instruction: { type: "reorder-above" | "reorder-below" | "make-child" },
   applicationOrbat: string,
 ) {
   extractInstructionSpy.mockReturnValueOnce(instruction);
   const monitorArgs = (monitorForExternalSpy as any).mock.calls[0]?.[0] as
-    | { onDrop: (args: unknown) => void }
-    | undefined;
+    { onDrop: (args: unknown) => void } | undefined;
   expect(monitorArgs?.onDrop).toBeTypeOf("function");
   if (!monitorArgs) throw new Error("monitorForExternal was not registered");
   monitorArgs.onDrop({

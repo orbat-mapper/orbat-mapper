@@ -157,9 +157,7 @@ export type ScenarioMapLayerUpdate =
   | ScenarioXYZLayerUpdate
   | ScenarioKMLLayerUpdate;
 export type ScenarioStackLayerUpdate =
-  | ScenarioLayerUpdate
-  | ScenarioMapLayerUpdate
-  | Record<string, unknown>;
+  ScenarioLayerUpdate | ScenarioMapLayerUpdate | Record<string, unknown>;
 
 export interface SideGroupUpdate extends Partial<Omit<NSideGroup, "id" | "subUnits">> {}
 export interface UnitUpdate extends Partial<Omit<NUnit, "id">> {}

@@ -50,9 +50,7 @@ export interface ScenarioDataLayer extends ScenarioStackLayerBase {
 }
 
 export type ScenarioStackLayer =
-  | ScenarioOverlayLayer
-  | ScenarioReferenceLayer
-  | ScenarioDataLayer;
+  ScenarioOverlayLayer | ScenarioReferenceLayer | ScenarioDataLayer;
 
 export interface NScenarioOverlayLayer extends Omit<ScenarioOverlayLayer, "items"> {
   items: LayerItemId[];
@@ -63,9 +61,7 @@ export interface NScenarioReferenceLayer extends ScenarioReferenceLayer {}
 export interface NScenarioDataLayer extends ScenarioDataLayer {}
 
 export type NScenarioStackLayer =
-  | NScenarioOverlayLayer
-  | NScenarioReferenceLayer
-  | NScenarioDataLayer;
+  NScenarioOverlayLayer | NScenarioReferenceLayer | NScenarioDataLayer;
 
 export function isScenarioOverlayLayer(
   layer: ScenarioStackLayer | NScenarioStackLayer | undefined | null,

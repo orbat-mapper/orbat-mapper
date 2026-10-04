@@ -75,5 +75,4 @@ export const usePersonnelEditStore = defineStore("personnelStore", () => {
 });
 
 export type ToeEditStore =
-  | ReturnType<typeof useEquipmentEditStore>
-  | ReturnType<typeof usePersonnelEditStore>;
+  ReturnType<typeof useEquipmentEditStore> | ReturnType<typeof usePersonnelEditStore>;

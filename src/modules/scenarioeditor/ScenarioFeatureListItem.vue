@@ -78,7 +78,9 @@ onMounted(() => {
       canDrop: ({ source }) => {
         const data = source.data;
         if (!isScenarioFeatureDragItem(data)) return false;
-        return data.feature !== props.feature && !isNTacticalGraphicLayerItem(data.feature);
+        return (
+          data.feature !== props.feature && !isNTacticalGraphicLayerItem(data.feature)
+        );
       },
       getData: ({ input, element }) => {
         const data = getScenarioFeatureDragItem({ feature: props.feature });

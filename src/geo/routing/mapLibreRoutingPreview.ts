@@ -105,8 +105,7 @@ export function useMapLibreRoutingPreview(
     ensureLayers();
 
     const source = mlMap.getSource(ROUTING_PREVIEW_SOURCE_ID) as
-      | { setData(data: FeatureCollection): void }
-      | undefined;
+      { setData(data: FeatureCollection): void } | undefined;
     if (!source) return;
 
     if (!routingStore.active) {

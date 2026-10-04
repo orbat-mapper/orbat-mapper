@@ -10,7 +10,7 @@ import type {
   LineString as GeoJsonLineString,
 } from "geojson";
 import { storeToRefs } from "pinia";
-import { watch } from "vue";
+import { computed, watch } from "vue";
 import { distanceMeters } from "@/geo/distance";
 import type { TScenario } from "@/scenariostore";
 import type { LegSegmentMeta, LegVertexMeta } from "@/geo/history";
@@ -146,6 +146,12 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   const getUnitById = (id: string) => activeScenario.helpers?.getUnitById(id);
 
   const { selectedUnitIds } = useSelectedItems();
+  // Selected units hidden on the map, by their own flag or by their side or group.
+  // Their tracks are not drawn and ctrl+click does not add waypoints to them.
+  const hiddenSelectedUnitIds = computed(
+    () =>
+      new Set([...selectedUnitIds.value].filter((id) => unitActions.isUnitHidden(id))),
+  );
   const { selectedWaypointIds } = useSelectedWaypoints();
   selectedWaypointIds.value.clear();
   const unitSettings = useUnitSettingsStore();
@@ -372,8 +378,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const arcSource = mlMap.getSource(ARC_SOURCE_ID) as GeoJSONSource | undefined;
     const legSource = mlMap.getSource(LEG_SOURCE_ID) as GeoJSONSource | undefined;
     const waypointSource = mlMap.getSource(WAYPOINT_SOURCE_ID) as
-      | GeoJSONSource
-      | undefined;
+      GeoJSONSource | undefined;
     const viaSource = mlMap.getSource(VIA_SOURCE_ID) as GeoJSONSource | undefined;
     if (!arcSource || !legSource || !waypointSource || !viaSource) return;
 
@@ -396,7 +401,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const allVia: any[] = [];
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);
-      if (!unit?._state?.location) return;
+      if (!unit?._state?.location || hiddenSelectedUnitIds.value.has(unitId)) return;
       const path = createUnitPathGeoJson(unit);
       allArcs.push(...path.arcs);
       if (editHistory.value) allLegs.push(...path.legs);
@@ -477,7 +482,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat];
     selectedUnitIds.value.forEach((unitId) => {
       const unit = getUnitById(unitId);
-      if (!unit) return;
+      if (!unit || hiddenSelectedUnitIds.value.has(unitId)) return;
       const lastLocationEntry = unit.state?.filter((s) => s.location).pop();
       let newTime: number | undefined;
       if (lastLocationEntry) {
@@ -628,7 +633,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   /**
    * Grabbing the middle of a leg segment inserts a new via point there and
-   * starts dragging it, like the OpenLayers Modify interaction does.
+   * starts dragging it.
    */
   function onLegMouseDown(e: MapLayerMouseEvent) {
     if (!editHistory.value || dragState || !isPrimaryButton(e)) return;
@@ -823,6 +828,10 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   );
   watch(
     () => state.unitStateCounter,
+    () => drawHistory(),
+  );
+  watch(
+    () => [...hiddenSelectedUnitIds.value].join(),
     () => drawHistory(),
   );
   watch(

@@ -74,6 +74,8 @@ export interface GeoJsonSettings extends BaseExportSettings {
 
 export interface OrbatMapperExportSettings extends BaseExportSettings {
   sideGroups: EntityId[];
+  /** Explicitly selected sides that have no groups. */
+  emptySideIds?: EntityId[];
   /** Undefined preserves the legacy behavior of exporting every layer. */
   layerIds?: FeatureId[];
   scenarioName?: string;

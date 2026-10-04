@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { queryUnitHitsAt } from "@/geo/engines/maplibre/unitHitBox";
 import {
   normalizeRotation,
   ROTATION_EPSILON,
@@ -14,8 +15,6 @@ import {
 type RotateTarget = { id: string; initialRotation: number; rotation: number };
 
 export interface MaplibreRotateInteractionOptions {
-  /** Layer id of the unit symbol layer. Defaults to `"unitLayer"`. */
-  unitLayerId?: string;
   /** Called on every drag frame with the current rotation overrides. */
   onPreview: (rotationOverrides: ReadonlyMap<string, number>) => void;
   /** Called when the drag ends (commit, cancel, or no movement). */
@@ -35,8 +34,7 @@ export interface MaplibreRotateInteraction {
 
 /**
  * Drag-to-rotate interaction for unit symbols on a MapLibre map. Activates when
- * `rotateUnitEnabled` is true in the unit settings store and mirrors the
- * OpenLayers `useRotateInteraction` composable (`src/composables/geoUnitLayers.ts`).
+ * `rotateUnitEnabled` is true in the unit settings store.
  *
  * The host is responsible for re-rendering unit features in response to the
  * `onPreview` / `onPreviewEnd` callbacks.
@@ -46,7 +44,6 @@ export function useMaplibreRotateInteraction(
   activeScenario: TScenario,
   options: MaplibreRotateInteractionOptions,
 ): MaplibreRotateInteraction {
-  const unitLayerId = options.unitLayerId ?? "unitLayer";
   const { unitActions } = activeScenario;
   const getUnitById = activeScenario.helpers?.getUnitById ?? (() => undefined);
   const { selectedUnitIds } = useSelectedItems();
@@ -107,9 +104,7 @@ export function useMaplibreRotateInteraction(
   }
 
   function queryUnitIdAtPoint(point: PointLike): string | undefined {
-    const hits = mlMap.queryRenderedFeatures(point);
-    const topHit = hits.find((f) => f.layer.id === unitLayerId);
-    const id = topHit?.properties?.id;
+    const id = queryUnitHitsAt(mlMap, point)[0]?.properties?.id;
     return typeof id === "string" ? id : undefined;
   }
 

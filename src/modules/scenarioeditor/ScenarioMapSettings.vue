@@ -6,18 +6,17 @@ import { type SelectItem } from "@/components/types";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-import { useBaseLayersStore } from "@/stores/baseLayersStore";
+import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
+import {
+  getSupportedMaplibreBasemaps,
+  resolveMaplibreBasemap,
+} from "@/modules/maplibreview/maplibreBasemaps";
 import { useGeoStore } from "@/stores/geoStore";
 import { useMapViewStore } from "@/stores/mapViewStore";
 import { Button } from "@/components/ui/button";
 import { useBoxDraw } from "@/composables/geoBoxDraw";
-import OLMap from "ol/Map";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { drawGeoJsonLayer } from "@/composables/openlayersHelpers";
 import type { GeoJSONSource, Map as MlMap } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
-import type { ViewConstraints } from "@/geo/contracts/mapAdapter";
 import {
   MAX_EXTENT_FILL_LAYER_ID as EXTENT_FILL_LAYER_ID,
   MAX_EXTENT_LINE_LAYER_ID as EXTENT_LINE_LAYER_ID,
@@ -27,7 +26,7 @@ import {
 const scn = injectStrict(activeScenarioKey);
 const { store } = scn;
 const mapSettings = useMapSettingsStore();
-const baseLayersStore = useBaseLayersStore();
+const maplibreLayersStore = useMaplibreLayersStore();
 const geoStore = useGeoStore();
 const mapViewStore = useMapViewStore();
 
@@ -44,19 +43,23 @@ onDrawEnd((bbox) => {
   });
 });
 
-const baseMapItems = computed((): SelectItem[] => {
-  const layers = baseLayersStore.layers.map((l) => ({ label: l.title, value: l.name }));
-  return [...layers, { label: "No base map", value: "None" }];
-});
+const baseMapItems = computed((): SelectItem[] =>
+  getSupportedMaplibreBasemaps(maplibreLayersStore.layers).map((option) => ({
+    label: option.title,
+    value: option.id,
+  })),
+);
 
 const baseMap = computed({
-  get: () => store.state.mapSettings.baseMapId,
+  // Scenarios may still hold legacy OpenLayers ids (e.g. "osm"), so resolve to a MapLibre basemap
+  get: () =>
+    resolveMaplibreBasemap(store.state.mapSettings.baseMapId, maplibreLayersStore.layers)
+      .id,
   set: (value: string) => {
     store.update((s) => {
       s.mapSettings.baseMapId = value;
-      mapSettings.baseLayerName = value;
+      mapSettings.maplibreBaseLayerName = value;
     });
-    baseLayersStore.selectLayer(value);
   },
 });
 
@@ -147,49 +150,8 @@ function applyCurrentConstraints() {
 
 // --- Bbox visualization helpers ---
 
-function getNativeMap(): OLMap | MlMap | undefined {
-  return geoStore.mapAdapter?.getNativeMap() as OLMap | MlMap | undefined;
-}
-
-function isOLMap(map: unknown): map is OLMap {
-  return map instanceof OLMap;
-}
-
-const isOL = computed(() => isOLMap(getNativeMap()));
-
-// --- OpenLayers bbox layer ---
-let olBboxLayer: VectorLayer | null = null;
-
-function setupOLLayer(olMap: OLMap) {
-  olBboxLayer = new VectorLayer({
-    source: new VectorSource({}),
-    style: {
-      "stroke-color": "#3b82f6",
-      "stroke-width": 2,
-      "stroke-line-dash": [8, 8],
-      "fill-color": "rgba(59, 130, 246, 0.1)",
-    },
-  });
-  olMap.addLayer(olBboxLayer);
-}
-
-function drawOLBbox() {
-  if (!olBboxLayer) return;
-  const ext = maxExtent.value;
-  if (ext && ext.length === 4) {
-    drawGeoJsonLayer(olBboxLayer, bboxPolygon(ext));
-  } else {
-    olBboxLayer.getSource()?.clear();
-  }
-}
-
-function cleanupOLLayer() {
-  const map = getNativeMap();
-  if (olBboxLayer && map && isOLMap(map)) {
-    olBboxLayer.getSource()?.clear();
-    map.removeLayer(olBboxLayer);
-  }
-  olBboxLayer = null;
+function getNativeMap(): MlMap | undefined {
+  return geoStore.mapAdapter?.getNativeMap() as MlMap | undefined;
 }
 
 // --- MapLibre bbox layer ---
@@ -246,11 +208,7 @@ function cleanupMLLayers() {
 }
 
 function drawBboxOnMap() {
-  if (isOL.value) {
-    drawOLBbox();
-  } else {
-    drawMLBbox();
-  }
+  drawMLBbox();
 }
 
 watch(maxExtent, () => drawBboxOnMap());
@@ -259,18 +217,12 @@ onMounted(() => {
   disableViewConstraints();
   const map = getNativeMap();
   if (!map) return;
-  if (isOLMap(map)) {
-    setupOLLayer(map);
-    drawOLBbox();
-  } else {
-    setupMLLayers(map as MlMap);
-    drawMLBbox();
-  }
+  setupMLLayers(map as MlMap);
+  drawMLBbox();
 });
 
 onUnmounted(() => {
   stopDrawing();
-  cleanupOLLayer();
   cleanupMLLayers();
   applyCurrentConstraints();
 });

@@ -5,7 +5,7 @@ import type { EntityId } from "@/types/base";
 const BOX_SELECT_SOURCE = "__boxSelectSource";
 const BOX_SELECT_FILL = "__boxSelectFill";
 const BOX_SELECT_LINE = "__boxSelectLine";
-// Match OpenLayers DragBox's default minArea threshold for interaction parity.
+// Minimum box area before a drag counts as a selection.
 const DRAG_THRESHOLD_PX = 3;
 const CAPTURE_OPTIONS = { capture: true };
 
@@ -23,9 +23,7 @@ export interface MaplibreBoxSelect {
 }
 
 /**
- * Ctrl/Cmd + drag box-select for units on a MapLibre map. Mirrors the
- * OpenLayers `DragBox({ condition: platformModifierKeyOnly })` behavior used by
- * `useUnitSelectInteraction` in `src/composables/geoUnitLayers.ts`.
+ * Ctrl/Cmd + drag box-select for units on a MapLibre map.
  */
 export function useMaplibreBoxSelect<S>(
   mlMap: MlMap,

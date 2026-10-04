@@ -176,7 +176,7 @@ describe("ControlMeasureAmplifiers", () => {
 
   it("explains when a measure has no amplifier fields", () => {
     const wrapper = mount(ControlMeasureAmplifiers, {
-      props: { graphicKind: "main-attack" },
+      props: { graphicKind: "ambush" },
       global: { stubs: { ControlMeasurePreview: PreviewStub } },
     });
 

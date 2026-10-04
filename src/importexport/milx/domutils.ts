@@ -18,11 +18,6 @@ export function getOneElement(
   return elements.length ? elements[0] : null;
 }
 
-export function nodeValue(node: Element | null) {
-  node?.normalize();
-  return (node && node.textContent) || "";
-}
-
 export const BR = u("text", "\n");
 export const TAB = u("text", "  ");
 export const BRTAB = u("text", "\n  ");

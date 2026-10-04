@@ -3,7 +3,7 @@
  * `ControlMeasure` into a stored `tacticalGraphic` layer item.
  *
  * Kept out of `scenarioDrawHelpers.ts` deliberately — that module is the plain-shape
- * path and pulls in OpenLayers, while nothing here touches a map at all. Everything is
+ * path, while this module handles tactical graphics. Everything is
  * a pure function over the scenario store, so the fold is testable without a session.
  *
  * ADR-0006: exactly **one** store write per settled session. `addScenarioControlMeasure`
@@ -12,6 +12,7 @@
  */
 import {
   CONTROL_MEASURE_METADATA,
+  cloneControlMeasure,
   getDefaultOptions,
 } from "@orbat-mapper/control-measures";
 import type {
@@ -19,7 +20,6 @@ import type {
   ControlMeasureId,
   ControlMeasureStyle,
 } from "@orbat-mapper/control-measures";
-import type { Position } from "geojson";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type {
@@ -140,16 +140,13 @@ export function toTacticalGraphicLayerItem(
   defaults: NewControlMeasureDefaults = {},
 ): TacticalGraphicLayerItem {
   const item = newItemShell(measure.kind, defaults);
-  item.id = measure.id;
-  item.controlPoints = measure.controlPoints.map((position) => [...position] as Position);
-  if (measure.options !== undefined) {
-    item.options = { ...(measure.options as TacticalGraphicOptions) };
-  }
-  if (measure.textAmplifiers !== undefined) {
-    item.textAmplifiers = { ...measure.textAmplifiers };
-  }
-  if (measure.amplifierPlacements !== undefined) {
-    item.amplifierPlacements = { ...measure.amplifierPlacements };
+  const copy = cloneControlMeasure(measure);
+  item.id = copy.id;
+  item.controlPoints = copy.controlPoints;
+  if (copy.options !== undefined) item.options = copy.options as TacticalGraphicOptions;
+  if (copy.textAmplifiers !== undefined) item.textAmplifiers = copy.textAmplifiers;
+  if (copy.amplifierPlacements !== undefined) {
+    item.amplifierPlacements = copy.amplifierPlacements;
   }
   return item;
 }

@@ -26,10 +26,6 @@ import {
   activeScenarioKey,
   activeScenarioMapEngineKey,
 } from "@/components/injects";
-import {
-  activeFeatureSelectInteractionKey,
-  activeNativeMapKey,
-} from "@/modules/scenarioeditor/olInjects";
 import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDrawSurfaceFake";
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
 import { useTacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
@@ -54,8 +50,6 @@ vi.mock("@/composables/maplibreDrawInteraction", () => ({
     destroy: vi.fn(),
   })),
 }));
-
-vi.mock("@/composables/geoEditing", () => ({ useEditingInteraction: vi.fn() }));
 
 const EDITED_POINTS = [
   [20, 70],
@@ -143,8 +137,6 @@ function setup(
           [activeScenarioKey as symbol]: scenario,
           [activeScenarioMapEngineKey as symbol]: engineRef,
           [activeLayerKey as symbol]: activeLayerId,
-          [activeNativeMapKey as symbol]: shallowRef(null),
-          [activeFeatureSelectInteractionKey as symbol]: shallowRef(null),
         },
       },
     },

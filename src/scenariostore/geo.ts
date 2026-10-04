@@ -8,6 +8,8 @@ import type {
   ScenarioMapLayer,
 } from "@/types/scenarioGeoModels";
 import type { EntityId } from "@/types/base";
+import { updateCurrentUnitState } from "@/scenariostore/time";
+import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import type {
   NScenarioLayerItem,
   NScenarioLayer,
@@ -16,6 +18,7 @@ import type {
   ScenarioMapLayerUpdate,
   NGeometryLayerItem,
   GeometryLayerItemUpdate,
+  NUnit,
 } from "@/types/internalModels";
 import type {
   CurrentGeometryLayerItemState,
@@ -44,13 +47,14 @@ import {
 } from "@/types/scenarioStackLayers";
 import { klona } from "klona";
 import * as fileHandling from "@/importexport/fileHandling";
-import { moveItemMutable, nanoid, removeElement } from "@/utils";
+import { haveSameItems, moveItemMutable, nanoid, removeElement } from "@/utils";
 import { createEventHook } from "@vueuse/core";
 import type { DropTarget } from "@/components/types";
 import type { Geometry } from "geojson";
 import { coordEach } from "@turf/meta";
 import type { AmplifierPlacements } from "@orbat-mapper/control-measures";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
+import { isUnitHiddenInState } from "@/scenariostore/unitManipulations";
 
 const DUPLICATE_SCREEN_OFFSET_PX = 24;
 const DUPLICATE_FALLBACK_DELTA: readonly [number, number] = [0.0001, -0.0001];
@@ -279,29 +283,21 @@ export function useGeo(store: NewScenarioStore) {
   const mapLayerEvent = createEventHook<ScenarioMapLayerEvent>();
   const featureLayerEvent = createEventHook<ScenarioFeatureLayerEvent>();
 
-  const hiddenGroups = computed(() => {
-    return new Set(
-      Object.values(state.sideGroupMap)
-        .filter((group) => !!(group.isHidden || state.sideMap[group._pid]?.isHidden))
-        .map((group) => group.id),
-    );
-  });
-
-  const hiddenSides = computed(() => {
-    return new Set(
-      Object.values(state.sideMap)
-        .filter((side) => !!side.isHidden)
-        .map((side) => side.id),
-    );
-  });
-
-  const everyVisibleUnit = computed(() => {
-    return Object.values(state.unitMap).filter(
+  // Units that can have a location: not hidden by themselves, their side or their side
+  // group, and with a base location or state entries. Kept apart from the `_state`
+  // check below, so that units moving on the map don't redo these checks for every unit.
+  const locatableUnits = computed(() =>
+    Object.values(state.unitMap).filter(
       (unit) =>
-        !(unit._gid
-          ? hiddenGroups.value.has(unit._gid)
-          : hiddenSides.value.has(unit._sid)) && unit._state?.location,
-    );
+        (unit.location || unit.state?.length) && !isUnitHiddenInState(state, unit),
+    ),
+  );
+
+  const everyVisibleUnit = computed((previous?: NUnit[]) => {
+    const units = locatableUnits.value.filter((unit) => unit._state?.location);
+    // While the same units stay visible, keep the previous array so that dependents
+    // don't rerun on every playback tick.
+    return previous && haveSameItems(previous, units) ? previous : units;
   });
 
   function addUnitPosition(
@@ -310,12 +306,11 @@ export function useGeo(store: NewScenarioStore) {
     atTime?: number,
     options: AddUnitPositionOptions = {},
   ) {
-    let newState: CurrentState | null = null;
     update(
       (s) => {
         const u = s.unitMap[unitId];
         const t = atTime ?? s.currentTime;
-        newState = {
+        const newState: CurrentState = {
           t,
           location: coordinates,
           ...(options.via?.length ? { via: options.via } : {}),
@@ -326,7 +321,6 @@ export function useGeo(store: NewScenarioStore) {
         // Bump before the loop so every code path (insert/replace/append) records
         // the change and keeps the bump inside the patch for undo/redo.
         s.unitStateCounter++;
-        if (t === s.currentTime) u._state = newState;
         if (!u.state) u.state = [];
         for (let i = 0, len = u.state.length; i < len; i++) {
           if (t < u.state[i].t) {
@@ -341,6 +335,15 @@ export function useGeo(store: NewScenarioStore) {
       },
       { label: "addUnitPosition", value: unitId },
     );
+    // An entry at another time can still change the current position, as the next
+    // interpolation target or the last applied location. Undo/redo re-project on
+    // their own, so this only needs to run here.
+    const unit = state.unitMap[unitId];
+    if (!unit) return;
+    updateCurrentUnitState(unit, state.currentTime, { force: true });
+    // The rebuild starts from the base symbol, so restore the identity of the side
+    // the unit belongs to at this time.
+    syncTimedHierarchyProjection(state, state.currentTime, { units: [unit] });
   }
 
   function addFeatureStateGeometry(

@@ -27,6 +27,10 @@ export const UnitActions = {
   ClearStateOrDelete: "ClearStateOrDelete",
   Lock: "Lock",
   Unlock: "Unlock",
+  Hide: "Hide",
+  Show: "Show",
+  HideWithSubordinates: "HideWithSubordinates",
+  ShowWithSubordinates: "ShowWithSubordinates",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];
@@ -123,11 +127,7 @@ export const RangeRingActions = {
 
 export type RangeRingAction = (typeof RangeRingActions)[keyof typeof RangeRingActions];
 export type StoredScenarioAction =
-  | "delete"
-  | "duplicate"
-  | "download"
-  | "open"
-  | "copyToClipboard";
+  "delete" | "duplicate" | "download" | "open" | "copyToClipboard";
 export type StoredScenarioBulkAction = "delete";
 
 export interface SymbolValue {
