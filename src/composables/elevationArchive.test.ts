@@ -151,6 +151,7 @@ describe("useElevationArchive", () => {
     );
     expect(elevation.openElevationArchiveUrl).toHaveBeenCalledWith(
       "https://tiles.example.lan/dem.pmtiles",
+      expect.any(AbortSignal),
     );
     expect(useTerrainStore().elevationSource).toEqual(SOURCE);
   });
@@ -191,5 +192,62 @@ describe("useElevationArchive", () => {
     expect(terrain.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
     expect(handles.deleteBasemapArchiveHandle).toHaveBeenCalledWith(KEY);
     expect(elevation.closeElevationArchive).toHaveBeenCalled();
+  });
+
+  it("abandons a slow restore when the archive is removed meanwhile", async () => {
+    const terrain = useTerrainStore();
+    terrain.elevationArchive = {
+      kind: "url",
+      url: "https://tiles.example.lan/dem.pmtiles",
+    };
+    let resolveOpen!: (source: typeof SOURCE) => void;
+    elevation.openElevationArchiveUrl.mockReturnValue(
+      new Promise((resolve) => (resolveOpen = resolve)),
+    );
+    const api = useElevationArchive();
+
+    const restoring = api.restoreRememberedElevationArchive();
+    await api.removeElevationArchive();
+    resolveOpen(SOURCE);
+
+    expect(await restoring).toBe("none");
+    expect(terrain.elevationArchive).toBeNull();
+    expect(terrain.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+    expect(elevation.openElevationArchiveUrl.mock.calls[0]?.[1]?.aborted).toBe(true);
+  });
+
+  it("abandons a slow restore when another archive is chosen meanwhile", async () => {
+    const terrain = useTerrainStore();
+    terrain.elevationArchive = { kind: "url", url: "https://a.example.lan/dem.pmtiles" };
+    let resolveOpen!: (source: typeof SOURCE) => void;
+    elevation.openElevationArchiveUrl.mockReturnValueOnce(
+      new Promise((resolve) => (resolveOpen = resolve)),
+    );
+    const api = useElevationArchive();
+
+    const restoring = api.restoreRememberedElevationArchive();
+    await api.addElevationArchiveUrl("https://b.example.lan/dem.pmtiles");
+    resolveOpen({ ...SOURCE });
+
+    expect(await restoring).toBe("none");
+    expect(terrain.elevationArchive).toEqual({
+      kind: "url",
+      url: "https://b.example.lan/dem.pmtiles",
+    });
+  });
+
+  it("offers the archive another tab chose instead of labelling the open one with it", async () => {
+    const api = useElevationArchive();
+    await api.addElevationArchiveUrl("https://a.example.lan/dem.pmtiles");
+    const terrain = useTerrainStore();
+
+    // What a storage event from another tab does.
+    terrain.elevationArchive = { kind: "url", url: "https://b.example.lan/dem.pmtiles" };
+
+    expect(terrain.elevationSource).toBeNull();
+    expect(terrain.elevationArchivePending).toBe(true);
+    expect(api.pendingElevationArchive.value?.menuText).toBe(
+      "Retry https://b.example.lan/dem.pmtiles",
+    );
   });
 });

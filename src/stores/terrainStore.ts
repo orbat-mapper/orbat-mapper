@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, markRaw, ref, shallowRef } from "vue";
+import { computed, markRaw, ref, shallowRef, watch } from "vue";
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
 import {
@@ -32,6 +32,14 @@ export const ELEVATION_ARCHIVE_UNAVAILABLE_MESSAGE =
  */
 export type RememberedElevationArchive =
   { kind: "file"; fileName: string } | { kind: "url"; url: string };
+
+export function isSameElevationArchive(
+  a: RememberedElevationArchive | null,
+  b: RememberedElevationArchive | null,
+): boolean {
+  if (!a || !b) return a === b;
+  return a.kind === b.kind && elevationArchiveLabel(a) === elevationArchiveLabel(b);
+}
 
 /** File name or address. */
 export function elevationArchiveLabel(archive: RememberedElevationArchive): string {
@@ -71,8 +79,34 @@ export const useTerrainStore = defineStore("terrain", () => {
    * standalone file). Remembered, so the choice is made once.
    */
   const onlineElevationChosen = useLocalStorage("onlineElevationChosen", false);
-  /** The source of the archive opened in this session. A file must be opened again after a reload. */
-  const archiveSource = shallowRef<RasterDEMSourceSpecification | null>(null);
+  /**
+   * The archive opened in this session, with the descriptor it was opened for. A file must be
+   * opened again after a reload.
+   */
+  const openedArchive = shallowRef<{
+    archive: RememberedElevationArchive;
+    source: RasterDEMSourceSpecification;
+  } | null>(null);
+  /**
+   * The opened source, while it still belongs to the remembered archive. Another tab may choose a
+   * different archive; this tab then has none open until it opens that one too.
+   */
+  const archiveSource = computed(() =>
+    openedArchive.value &&
+    isSameElevationArchive(openedArchive.value.archive, elevationArchive.value)
+      ? openedArchive.value.source
+      : null,
+  );
+  /** Aborted whenever the archive choice changes, here or in another tab. */
+  let selection = new AbortController();
+  watch(
+    elevationArchive,
+    () => {
+      selection.abort();
+      selection = new AbortController();
+    },
+    { flush: "sync" },
+  );
   const terrainError = ref(false);
   const hillshadeError = ref(false);
 
@@ -89,12 +123,22 @@ export const useTerrainStore = defineStore("terrain", () => {
     source: RasterDEMSourceSpecification,
   ) {
     elevationArchive.value = remembered;
-    archiveSource.value = markRaw(source);
+    openedArchive.value = { archive: remembered, source: markRaw(source) };
   }
 
   function clearArchive() {
     elevationArchive.value = null;
-    archiveSource.value = null;
+    openedArchive.value = null;
+  }
+
+  /**
+   * Starts opening an archive. Any earlier opening is abandoned, and the returned signal aborts
+   * when the archive choice changes before this one commits.
+   */
+  function beginArchiveSelection(): AbortSignal {
+    selection.abort();
+    selection = new AbortController();
+    return selection.signal;
   }
 
   /**
@@ -154,6 +198,7 @@ export const useTerrainStore = defineStore("terrain", () => {
     display,
     setArchiveSource,
     clearArchive,
+    beginArchiveSelection,
     setExaggeration,
     resetHillshade,
   };
