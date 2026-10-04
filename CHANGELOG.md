@@ -14,10 +14,11 @@ All notable changes to this project will be documented in this file.
 - Added a choice of where imported MilX units get their positions: as the initial location, at the current scenario time, or at a scenario event.
 - Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together. Turning it on tilts a top-down map so the relief is visible, and turning it off levels the map again. The button turns amber when elevation data is unavailable.
 - Added offline 3D terrain and hillshading from an elevation archive: a PMTiles archive of elevation tiles, such as an extract of Mapterhorn. Open it from the Terrain submenu, or by address from "Add map server" with the new "Elevation archive" checkbox. The archive replaces Mapterhorn while it is in use, and Chromium browsers can reopen it in the next session.
-- Added range rings to the Layers panel. Range rings as a whole, each range ring group and the ungrouped rings can be shown or hidden there, and each group and the ungrouped rings open into a list of their rings, each with its own visibility toggle. Hiding all rings, a group or the ungrouped rings is saved with the scenario and does not change each ring's own visibility setting. Range rings draw in their place in the layer order and can be dragged among the feature and reference layers, or above the control measures.
+- Added range rings to the Layers panel. Range rings as a whole, each range ring group and the ungrouped rings can be shown or hidden there, and each group and the ungrouped rings open into a list of their rings, each with its own visibility toggle. Range ring groups can also be added and renamed there. Hiding all rings, a group or the ungrouped rings is saved with the scenario and does not change each ring's own visibility setting. Range rings draw in their place in the layer order and can be dragged among the feature and reference layers, or above the control measures.
 
 ### Changed
 
+- The Falklands example scenario now has range ring groups for its surface combatants.
 - Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
 - Adding many control measures at once, such as when opening a large scenario, is much faster.
