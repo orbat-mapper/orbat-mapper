@@ -1,8 +1,9 @@
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, type PropType } from "vue";
 import { CheckCircleIcon } from "@heroicons/vue/24/outline";
 import { XMarkIcon as XIcon } from "@heroicons/vue/24/solid";
 import { useTimer } from "../composables/timing";
+import type { UiNotificationAction } from "../composables/notifications";
 
 export default defineComponent({
   name: "NotificationItem",
@@ -15,6 +16,7 @@ export default defineComponent({
     message: { type: String, default: "Message" },
     duration: { type: Number, default: 4000 },
     type: { type: String, default: undefined },
+    action: { type: Object as PropType<UiNotificationAction>, default: undefined },
   },
   emits: ["close"],
   setup(props, { emit }) {
@@ -27,9 +29,15 @@ export default defineComponent({
       setTimeout(() => emit("close"), 150);
     }
 
+    function runAction() {
+      props.action?.onClick();
+      close();
+    }
+
     return {
       show,
       close,
+      runAction,
     };
   },
 });
@@ -58,6 +66,14 @@ export default defineComponent({
               {{ message }}
             </p>
           </div>
+          <button
+            v-if="action"
+            type="button"
+            @click="runAction()"
+            class="text-primary hover:text-primary/80 focus:ring-ring ml-3 shrink-0 rounded-md text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
+          >
+            {{ action.label }}
+          </button>
 
           <div class="ml-4 flex shrink-0">
             <button

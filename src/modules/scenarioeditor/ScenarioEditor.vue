@@ -704,9 +704,16 @@ if (firstOverlayLayerId) {
       v-if="isOverDropZone"
       class="bg-background/80 fixed inset-0 z-50 flex items-center justify-center"
     >
-      <p class="text-foreground bg-background/40 rounded border p-4">
-        Drop file to import data
-      </p>
+      <div
+        class="text-foreground bg-background/40 flex max-w-sm flex-col gap-1 rounded border p-4"
+      >
+        <p class="font-medium">Drop files to import data or add a map</p>
+        <!-- A drag carries no file names, so name everything the drop takes. -->
+        <p class="text-muted-foreground text-sm">
+          Scenarios, GeoJSON, GPX, KML/KMZ, MilX, XLSX, images, and PMTiles basemap or
+          elevation archives
+        </p>
+      </div>
     </div>
     <DebugInfo v-if="uiStore.debugMode" />
   </div>

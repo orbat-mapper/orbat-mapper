@@ -346,6 +346,8 @@ therefore you must tell it that the file holds elevation data:
 
 - Do a right click on the map. Select _Terrain_, then _Open elevation archive…_.
 - In the standalone file, select the terrain button on the map. Refer to [Level 3](#level-3-standalone-file).
+- Drag the file and drop it on the map. ORBAT Mapper opens it as a basemap. Then select _Use for terrain_ in the
+  message that shows. The message stays for 10 seconds.
 
 ORBAT Mapper then uses the archive for 3D terrain and for hillshading, instead of Mapterhorn. Outside the area of the
 archive, the map is flat. Only one elevation archive is in use at a time. To open a different archive, select _Open

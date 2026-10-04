@@ -79,6 +79,12 @@ const RASTER_TILE_TYPES = new Set<TileType>([
   TileType.Avif,
 ]);
 
+/** The tile types an elevation archive can hold. */
+export const ELEVATION_TILE_TYPES: ReadonlySet<TileType> = new Set([
+  TileType.Png,
+  TileType.Webp,
+]);
+
 /**
  * Reduces a PMTiles header and metadata blob to the facts a basemap config needs.
  *
@@ -98,6 +104,7 @@ export function describePmtilesArchive(
     maxZoom: header.maxZoom,
     bounds: [header.minLon, header.minLat, header.maxLon, header.maxLat],
     attribution: readAttribution(metadata),
+    mayHoldElevation: ELEVATION_TILE_TYPES.has(header.tileType),
   };
 }
 

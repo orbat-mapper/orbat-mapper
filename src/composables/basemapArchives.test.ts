@@ -33,6 +33,14 @@ const handles = vi.hoisted(() => ({
 
 vi.mock("@/geo/basemapArchiveHandles", () => handles);
 
+const elevation = vi.hoisted(() => ({
+  loadElevationArchiveFile: vi.fn(async () => true),
+}));
+
+vi.mock("@/composables/elevationArchive", () => ({
+  useElevationArchive: () => elevation,
+}));
+
 function resetHandleMocks() {
   handles.isFileHandleSupported.mockReset().mockReturnValue(false);
   handles.pickBasemapArchiveHandles
@@ -56,16 +64,17 @@ function file(name: string) {
   return new File(["x"], name);
 }
 
-function pmtilesLayer(name: string): MlPmtilesLayerConfig {
+function pmtilesLayer(name: string, mayHoldElevation = false): MlPmtilesLayerConfig {
   return {
     sourceType: "pmtiles",
     name,
     title: name,
     archive: {
-      kind: "vector",
+      kind: mayHoldElevation ? "raster" : "vector",
       minZoom: 0,
       maxZoom: 14,
       bounds: [-180, -85, 180, 85],
+      mayHoldElevation,
     },
   };
 }
@@ -174,6 +183,89 @@ describe("useBasemapArchives drop routing", () => {
       type: "error",
     });
     expect(useMapSettingsStore().basemapArchives).toEqual([]);
+  });
+});
+
+describe("useBasemapArchives elevation offer", () => {
+  let addBasemapArchive: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    window.localStorage?.clear();
+    setActivePinia(createPinia());
+    resetBasemapArchiveSessionState();
+    resetHandleMocks();
+    useNotifications().clear();
+    elevation.loadElevationArchiveFile.mockReset().mockResolvedValue(true);
+    const layersStore = useMaplibreLayersStore();
+    addBasemapArchive = vi.fn(async (f: File, options?: { name?: string }) => {
+      const layer = pmtilesLayer(options?.name ?? f.name, f.name.startsWith("dem"));
+      layersStore.addLayer(layer);
+      return layer;
+    });
+    layersStore.addBasemapArchive = addBasemapArchive as never;
+  });
+
+  it("offers a dropped PNG or WebP archive for terrain", async () => {
+    const { handleDroppedFiles } = useBasemapArchives();
+
+    await handleDroppedFiles([file("dem.pmtiles")], vi.fn());
+
+    expect(lastNotification()).toMatchObject({
+      message: "Added dem.pmtiles as basemap",
+      type: "success",
+      duration: 10_000,
+      action: { label: "Use for terrain" },
+    });
+  });
+
+  it("does not offer a vector archive for terrain", async () => {
+    const { handleDroppedFiles } = useBasemapArchives();
+
+    await handleDroppedFiles([file("world.pmtiles")], vi.fn());
+
+    expect(lastNotification()?.action).toBeUndefined();
+  });
+
+  it("does not offer an archive opened from the picker", async () => {
+    const { loadBasemapArchive } = useBasemapArchives();
+
+    await loadBasemapArchive(file("dem.pmtiles"));
+
+    expect(lastNotification()?.action).toBeUndefined();
+  });
+
+  it("moves the archive to terrain and puts back the previous basemap", async () => {
+    const mapSettings = useMapSettingsStore();
+    useMaplibreLayersStore().addLayer(pmtilesLayer("world"));
+    mapSettings.maplibreBaseLayerName = "world";
+    const { handleDroppedFiles } = useBasemapArchives();
+    await handleDroppedFiles([file("dem.pmtiles")], vi.fn());
+    expect(mapSettings.maplibreBaseLayerName).toBe("dem");
+
+    lastNotification()!.action!.onClick();
+    await vi.waitFor(() =>
+      expect(useMaplibreLayersStore().getLayer("dem")).toBeUndefined(),
+    );
+
+    expect(elevation.loadElevationArchiveFile).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "dem.pmtiles" }),
+    );
+    expect(mapSettings.basemapArchives).toEqual([]);
+    expect(mapSettings.maplibreBaseLayerName).toBe("world");
+    expect(lastNotification()?.message).not.toMatch(/^Removed/);
+  });
+
+  it("keeps the basemap when the archive cannot be used for terrain", async () => {
+    elevation.loadElevationArchiveFile.mockResolvedValue(false);
+    const { handleDroppedFiles } = useBasemapArchives();
+    await handleDroppedFiles([file("dem.pmtiles")], vi.fn());
+
+    lastNotification()!.action!.onClick();
+    await vi.waitFor(() => expect(elevation.loadElevationArchiveFile).toHaveBeenCalled());
+    await Promise.resolve();
+
+    expect(useMaplibreLayersStore().getLayer("dem")).toBeDefined();
+    expect(useMapSettingsStore().maplibreBaseLayerName).toBe("dem");
   });
 });
 

@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added a choice of where imported MilX units get their positions: as the initial location, at the current scenario time, or at a scenario event.
 - Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together. Turning it on tilts a top-down map so the relief is visible, and turning it off levels the map again. The button turns amber when elevation data is unavailable.
 - Added offline 3D terrain and hillshading from an elevation archive: a PMTiles archive of elevation tiles, such as an extract of Mapterhorn. Open it from the Terrain submenu, or by address from "Add map server" with the new "Elevation archive" checkbox. The archive replaces Mapterhorn while it is in use, and Chromium browsers can reopen it in the next session.
+- A PMTiles archive of PNG or WebP tiles dropped on the map opens as a basemap and offers "Use for terrain", which moves it to elevation data and puts back the previous basemap. The drop message now lists every kind of file that the map accepts.
 
 ### Changed
 

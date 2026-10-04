@@ -1,12 +1,19 @@
 import { ref } from "vue";
 import { nanoid } from "nanoid";
 
+export interface UiNotificationAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface UiNotification {
   id: string;
   title?: string;
   message?: string;
   duration?: number;
   type?: string;
+  /** A button next to the message. Clicking it runs the action and closes the notification. */
+  action?: UiNotificationAction;
 }
 
 const notifications = ref<UiNotification[]>([]);

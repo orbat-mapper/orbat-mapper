@@ -13,6 +13,7 @@
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
 import { TileType, type Header, type PMTiles } from "pmtiles";
 import {
+  ELEVATION_TILE_TYPES,
   readArchive,
   readAttribution,
   UnsupportedArchiveError,
@@ -36,8 +37,6 @@ export type ElevationEncoding = "terrarium" | "mapbox";
 
 /** Mapterhorn's tile size, and MapLibre's default for a `raster-dem` source. */
 const DEFAULT_DEM_TILE_SIZE = 512;
-
-const DEM_TILE_TYPES = new Set<TileType>([TileType.Png, TileType.Webp]);
 
 export interface ElevationArchiveInfo {
   encoding: ElevationEncoding;
@@ -64,7 +63,7 @@ export function describeElevationArchive(
   metadata: unknown,
   label = "archive",
 ): ElevationArchiveInfo {
-  if (!DEM_TILE_TYPES.has(header.tileType)) {
+  if (!ELEVATION_TILE_TYPES.has(header.tileType)) {
     const type = TileType[header.tileType] ?? header.tileType;
     throw new UnsupportedArchiveError(
       `"${label}" holds ${type} tiles, not elevation data. An elevation archive holds PNG or WebP tiles.`,

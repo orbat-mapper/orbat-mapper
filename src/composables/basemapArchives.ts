@@ -34,6 +34,7 @@ import {
   getSupportedMaplibreBasemaps,
   NO_BASEMAP_ID,
 } from "@/modules/maplibreview/maplibreBasemaps";
+import { useElevationArchive } from "@/composables/elevationArchive";
 import { useNotifications } from "@/composables/notifications";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import {
@@ -97,7 +98,15 @@ export interface LoadBasemapArchiveOptions {
   handle?: BasemapArchiveFileHandle;
   /** Overrides the success toast. Used by the automatic reopen. */
   successMessage?: string;
+  /**
+   * Offers an archive of PNG or WebP tiles for terrain from the success toast. Elevation data looks
+   * the same as imagery, so a dropped archive opens as a basemap and the user moves it in one click.
+   */
+  offerElevation?: boolean;
 }
+
+/** Long enough to read the offer and act on it. */
+const ELEVATION_OFFER_DURATION = 10_000;
 
 /**
  * The key an archive was remembered under. Entries written before the `key` field existed fall back
@@ -134,6 +143,7 @@ export function useBasemapArchives() {
   const layersStore = useMaplibreLayersStore();
   const mapSettings = useMapSettingsStore();
   const { send } = useNotifications();
+  const { loadElevationArchiveFile } = useElevationArchive();
 
   /**
    * Adds an archive to the remembered list, or updates the entry that is already there.
@@ -187,6 +197,7 @@ export function useBasemapArchives() {
     file: File,
     options: LoadBasemapArchiveOptions = {},
   ): Promise<boolean> {
+    const previousBasemap = mapSettings.maplibreBaseLayerName;
     try {
       const layer = await layersStore.addBasemapArchive(file, {
         name: archiveKeyForFile(file.name),
@@ -202,10 +213,20 @@ export function useBasemapArchives() {
       }
       // The archive is open, so there is nothing pending for it any more.
       pendingHandles.value.delete(layer.name);
-      send({
-        message: options.successMessage ?? `Added ${file.name} as basemap`,
-        type: "success",
-      });
+      const message = options.successMessage ?? `Added ${file.name} as basemap`;
+      if (options.offerElevation && layer.archive?.mayHoldElevation) {
+        send({
+          message,
+          type: "success",
+          duration: ELEVATION_OFFER_DURATION,
+          action: {
+            label: "Use for terrain",
+            onClick: () => void useForTerrain(file, layer.name, previousBasemap),
+          },
+        });
+      } else {
+        send({ message, type: "success" });
+      }
       return true;
     } catch (e) {
       send({
@@ -217,12 +238,39 @@ export function useBasemapArchives() {
   }
 
   /** Opens several archives in order. The last one that loads becomes the active basemap. */
-  async function loadBasemapArchives(files: File[]): Promise<number> {
+  async function loadBasemapArchives(
+    files: File[],
+    options: Pick<LoadBasemapArchiveOptions, "offerElevation"> = {},
+  ): Promise<number> {
     let loaded = 0;
     for (const file of files) {
-      if (await loadBasemapArchive(file)) loaded += 1;
+      if (await loadBasemapArchive(file, options)) loaded += 1;
     }
     return loaded;
+  }
+
+  /**
+   * Moves an archive opened as a basemap over to elevation data, and puts back the basemap it
+   * replaced when that one is still there.
+   */
+  async function useForTerrain(
+    file: File,
+    key: string,
+    previousBasemap: string,
+  ): Promise<boolean> {
+    if (!(await loadElevationArchiveFile(file))) return false;
+    const wasActive = mapSettings.maplibreBaseLayerName === key;
+    // The elevation toast says what happened, so the removal is silent.
+    await removeBasemapArchive(key, { quiet: true });
+    const options = getSupportedMaplibreBasemaps(layersStore.layers);
+    if (
+      wasActive &&
+      previousBasemap !== key &&
+      options.some((o) => o.id === previousBasemap)
+    ) {
+      layersStore.setActiveBasemap(previousBasemap);
+    }
+    return true;
   }
 
   /**
@@ -266,7 +314,7 @@ export function useBasemapArchives() {
     const { archives, others } = splitBasemapArchiveFiles(files);
     if (others.length > 0) onOtherFiles(others);
     if (archives.length === 0) return false;
-    await loadBasemapArchives(archives);
+    await loadBasemapArchives(archives, { offerElevation: true });
     return true;
   }
 
@@ -395,7 +443,10 @@ export function useBasemapArchives() {
    * Removes a basemap archive the user opened from disk. The file on disk is not touched, so there
    * is no confirmation step.
    */
-  async function removeBasemapArchive(key: string): Promise<void> {
+  async function removeBasemapArchive(
+    key: string,
+    { quiet = false }: { quiet?: boolean } = {},
+  ): Promise<void> {
     const layer = layersStore.getLayer(key);
     const remembered = mapSettings.basemapArchives.find(
       (entry) => rememberedArchiveKey(entry) === key,
@@ -429,7 +480,7 @@ export function useBasemapArchives() {
       layersStore.setActiveBasemap(next.id);
     }
 
-    send({ message: `Removed ${label}`, type: "success" });
+    if (!quiet) send({ message: `Removed ${label}`, type: "success" });
   }
 
   /** Stops remembering one archive, so no pending row for it comes back on the next load. */

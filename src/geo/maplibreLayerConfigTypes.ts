@@ -62,6 +62,11 @@ export interface PmtilesArchiveInfo {
   bounds: [number, number, number, number];
   /** Read from the archive's own metadata. Absent when the archive carries none — never invented. */
   attribution?: string;
+  /**
+   * PNG or WebP tiles, which elevation data looks exactly like. Only the user can say which it is,
+   * so a dropped archive like this is offered for terrain as well.
+   */
+  mayHoldElevation?: boolean;
 }
 
 /**

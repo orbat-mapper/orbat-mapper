@@ -60,6 +60,16 @@ describe("describePmtilesArchive", () => {
     expect(asRaster.kind).toBe("raster");
   });
 
+  it.each([
+    [TileType.Png, true],
+    [TileType.Webp, true],
+    [TileType.Jpeg, false],
+    [TileType.Avif, false],
+    [TileType.Mvt, false],
+  ])("says whether tile type %i may hold elevation data", (tileType, expected) => {
+    expect(describePmtilesArchive(header(tileType), {}).mayHoldElevation).toBe(expected);
+  });
+
   it("rejects a tile type it cannot render", () => {
     expect(() =>
       describePmtilesArchive(header(TileType.Unknown), {}, "odd.pmtiles"),
