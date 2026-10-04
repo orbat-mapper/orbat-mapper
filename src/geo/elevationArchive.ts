@@ -120,27 +120,39 @@ export function elevationSourceSpec(
 async function openElevationArchive(
   archive: PMTiles,
   label: string,
+  signal?: AbortSignal,
 ): Promise<RasterDEMSourceSpecification> {
   // Validate before publishing, so a wrong file leaves the archive in use untouched.
   const { header, metadata } = await readArchive(archive, label);
   const info = describeElevationArchive(header, metadata, label);
   const tileSize = await readTileSize(archive, header);
+  // The user may have chosen something else while the archive was read.
+  signal?.throwIfAborted();
   publishArchive(ELEVATION_ARCHIVE_KEY, archive);
   return elevationSourceSpec(info, tileSize);
 }
 
-/** Opens an elevation archive the user picked from disk. */
+/**
+ * Opens an elevation archive the user picked from disk. An aborted `signal` rejects before the
+ * archive is published, leaving the one in use untouched.
+ */
 export function openElevationArchiveFile(
   file: File,
+  signal?: AbortSignal,
 ): Promise<RasterDEMSourceSpecification> {
-  return openElevationArchive(createFileArchive(ELEVATION_ARCHIVE_KEY, file), file.name);
+  return openElevationArchive(
+    createFileArchive(ELEVATION_ARCHIVE_KEY, file),
+    file.name,
+    signal,
+  );
 }
 
 /** Opens an elevation archive on a web server, read with HTTP range requests. */
 export function openElevationArchiveUrl(
   url: string,
+  signal?: AbortSignal,
 ): Promise<RasterDEMSourceSpecification> {
-  return openElevationArchive(createUrlArchive(ELEVATION_ARCHIVE_KEY, url), url);
+  return openElevationArchive(createUrlArchive(ELEVATION_ARCHIVE_KEY, url), url, signal);
 }
 
 export function closeElevationArchive(): void {

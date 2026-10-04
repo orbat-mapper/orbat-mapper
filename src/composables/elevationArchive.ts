@@ -72,9 +72,10 @@ export function useElevationArchive() {
   }
 
   async function forgetArchive() {
-    await dropHandle();
+    // Cleared first, so an archive still being opened cannot commit in the meantime.
     terrain.clearArchive();
     closeElevationArchive();
+    await dropHandle();
   }
 
   /** Turns on whatever the user switched off, so opening elevation data shows it. */
@@ -86,10 +87,18 @@ export function useElevationArchive() {
 
   async function loadElevationArchiveFile(
     file: File,
-    options: { handle?: BasemapArchiveFileHandle; successMessage?: string } = {},
+    options: {
+      handle?: BasemapArchiveFileHandle;
+      successMessage?: string;
+      /** The opening this file belongs to; a new one by default. */
+      signal?: AbortSignal;
+    } = {},
   ): Promise<boolean> {
+    const signal = options.signal ?? terrain.beginArchiveSelection();
+    if (signal.aborted) return false;
     try {
-      const source = await openElevationArchiveFile(file);
+      const source = await openElevationArchiveFile(file, signal);
+      if (signal.aborted) return false;
       terrain.setArchiveSource({ kind: "file", fileName: file.name }, source);
       // A different file, or one that was dropped, must not leave the previous file's handle behind.
       if (options.handle) {
@@ -105,6 +114,7 @@ export function useElevationArchive() {
       });
       return true;
     } catch (e) {
+      if (signal.aborted) return false;
       send({ message: errorMessage(e, `Could not open ${file.name}`), type: "error" });
       return false;
     }
@@ -142,8 +152,10 @@ export function useElevationArchive() {
       return false;
     }
     const address = parsed.basemap.url;
+    const signal = terrain.beginArchiveSelection();
     try {
-      const source = await openElevationArchiveUrl(address);
+      const source = await openElevationArchiveUrl(address, signal);
+      if (signal.aborted) return false;
       terrain.setArchiveSource({ kind: "url", url: address }, source);
       await dropHandle();
       showTerrain();
@@ -153,6 +165,7 @@ export function useElevationArchive() {
       });
       return true;
     } catch (e) {
+      if (signal.aborted) return false;
       send({ message: errorMessage(e, `Could not open ${address}`), type: "error" });
       return false;
     }
@@ -184,6 +197,8 @@ export function useElevationArchive() {
   > {
     const remembered = terrain.elevationArchive;
     pendingHandle.value = null;
+    // Removing or replacing the archive while it is read abandons the restore.
+    const signal = terrain.beginArchiveSelection();
     if (!remembered || !terrain.elevationArchivePending) {
       // A handle with nothing remembered is an orphan holding a read grant.
       if (!remembered) await deleteBasemapArchiveHandle(ELEVATION_ARCHIVE_KEY);
@@ -192,20 +207,22 @@ export function useElevationArchive() {
 
     if (remembered.kind === "url") {
       try {
-        terrain.setArchiveSource(
-          remembered,
-          await openElevationArchiveUrl(remembered.url),
-        );
+        const source = await openElevationArchiveUrl(remembered.url, signal);
+        if (signal.aborted) return "none";
+        terrain.setArchiveSource(remembered, source);
         return "reopened";
       } catch {
+        if (signal.aborted) return "none";
         // The server may be down now and up later. The source stays missing, and the menu says so.
         return "pending";
       }
     }
 
     const record = await loadBasemapArchiveHandle(ELEVATION_ARCHIVE_KEY);
+    if (signal.aborted) return "none";
     if (!record) return "pending";
     const permission = await queryBasemapArchivePermission(record.handle);
+    if (signal.aborted) return "none";
     if (permission !== "granted" && permission !== "prompt") return "pending";
     pendingHandle.value = record.handle;
 
@@ -213,6 +230,7 @@ export function useElevationArchive() {
     if (permission !== "granted" || !inUse) return "pending";
 
     const file = await fileFromHandle(record.handle);
+    if (signal.aborted) return "none";
     if (!file) {
       await dropHandle();
       return "pending";
@@ -220,6 +238,7 @@ export function useElevationArchive() {
     const reopened = await loadElevationArchiveFile(file, {
       handle: record.handle,
       successMessage: `Reopened ${file.name} for elevation data`,
+      signal,
     });
     return reopened ? "reopened" : "pending";
   }
