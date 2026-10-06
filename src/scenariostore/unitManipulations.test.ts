@@ -1046,3 +1046,43 @@ describe("cloneSide without groups", () => {
     },
   );
 });
+
+describe("updateUnitStateEntry", () => {
+  function createScenarioWithLeg() {
+    const scenario = createScenario();
+    scenario.sides[0].groups[0].subUnits[0].state = [
+      { id: "s1", t: "2025-01-01T01:00:00Z", location: [11, 60] },
+      { id: "s2", t: "2025-01-01T03:00:00Z", location: [12, 60] },
+    ];
+    return scenario;
+  }
+  const T2 = Date.parse("2025-01-01T02:00:00Z");
+
+  it("sets a field that a loaded state doesn't have, and undoes it", () => {
+    const store = useNewScenarioStore(createScenarioWithLeg());
+    const actions = useUnitManipulations(store);
+    const state = () => store.state.unitMap["unit-1"].state![1];
+
+    actions.updateUnitStateEntry("unit-1", 1, { viaStartTime: T2 });
+    expect(state().viaStartTime).toBe(T2);
+
+    store.undo();
+    expect(state().viaStartTime).toBeUndefined();
+    store.redo();
+    expect(state().viaStartTime).toBe(T2);
+  });
+
+  it("clears a field set to undefined", () => {
+    const store = useNewScenarioStore(createScenarioWithLeg());
+    const actions = useUnitManipulations(store);
+    const state = () => store.state.unitMap["unit-1"].state![1];
+    actions.updateUnitStateEntry("unit-1", 1, { viaStartTime: T2 });
+
+    actions.updateUnitStateEntry("unit-1", 1, { viaStartTime: undefined });
+    expect(state().viaStartTime).toBeUndefined();
+
+    // Setting it again still works.
+    actions.updateUnitStateEntry("unit-1", 1, { viaStartTime: T2 });
+    expect(state().viaStartTime).toBe(T2);
+  });
+});

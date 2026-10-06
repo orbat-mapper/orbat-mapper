@@ -17,6 +17,7 @@ import { createEventHook } from "@vueuse/core";
 import { invalidateUnitStyle } from "@/geo/unitStyles";
 import { isShallowEqual, nanoid } from "@/utils";
 import { resolveTimeZone } from "@/utils/militaryTimeZones";
+import { toHistogramBinT } from "@/utils/time";
 import { syncTimedHierarchyProjection } from "@/scenariostore/hierarchy";
 import {
   applyResourceDiff,
@@ -340,8 +341,7 @@ export function useScenarioTime(store: NewScenarioStore) {
 
     Object.values(state.unitMap).forEach((unit) => {
       (unit?.state || []).forEach((s) => {
-        // round to nearest hour
-        const t = Math.round(s.t / 3600000) * 3600000;
+        const t = toHistogramBinT(s.t);
         histogram[t] = (histogram[t] || 0) + 1;
         max = Math.max(max, histogram[t]);
       });
@@ -350,8 +350,7 @@ export function useScenarioTime(store: NewScenarioStore) {
     // Every layer-item kind carries timed state, so every kind contributes here.
     Object.values(state.layerItemMap).forEach((feature) => {
       ((feature?.state ?? []) as { t: number }[]).forEach((s) => {
-        // round to nearest hour
-        const t = Math.round(s.t / 3600000) * 3600000;
+        const t = toHistogramBinT(s.t);
         histogram[t] = (histogram[t] || 0) + 1;
         max = Math.max(max, histogram[t]);
       });

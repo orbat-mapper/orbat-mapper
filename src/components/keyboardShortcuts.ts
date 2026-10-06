@@ -64,6 +64,7 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
       { shortcut: [["alt", "p"], ["k"]], description: "Play/pause" },
       { description: "Increase playback speed", shortcut: [[">"]] },
       { description: "Decrease playback speed", shortcut: [["<"]] },
+      { shortcut: [["h"]], description: "Show/hide changes around the current time" },
     ],
   },
 ];

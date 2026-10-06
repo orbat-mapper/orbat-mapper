@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { IconTriangleDown } from "@iconify-prerendered/vue-mdi";
+import { ListIcon } from "@lucide/vue";
 import { computed, onUnmounted, ref, unref, watch } from "vue";
 import { useElementSize, useThrottleFn } from "@vueuse/core";
 import { utcDay, utcHour } from "d3-time";
 import { utcFormat } from "d3-time-format";
 import { interpolateOranges } from "d3-scale-chromatic";
 import { scaleSequential } from "d3-scale";
-import dayjs from "dayjs";
 import { useActiveScenario } from "@/composables/scenarioUtils";
+import { getTimeZoneOffset } from "@/geo/utils";
 import { type NScenarioEvent } from "@/types/internalModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import TimelineContextMenu from "@/components/TimelineContextMenu.vue";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useTimelineChangesStore } from "@/stores/timelineChangesStore";
 import { MS_PER_DAY, MS_PER_HOUR } from "@/utils/time";
 import {
   buildDayTicksWithStep,
@@ -30,6 +32,7 @@ import {
   type TimelineAction,
   type TimelineRenderInputs,
 } from "./scenarioTimelineMath";
+import TimelineChangesPanel from "./TimelineChangesPanel.vue";
 
 const HOURS_PER_DAY = MS_PER_DAY / MS_PER_HOUR;
 const MAJOR_WIDTH_DEFAULT = 100;
@@ -50,9 +53,7 @@ const {
 } = useActiveScenario();
 
 function getTzOffset(timestamp: number) {
-  return dayjs(timestamp)
-    .tz(timeZone.value || "UTC")
-    .utcOffset();
+  return getTimeZoneOffset(timestamp, timeZone.value || "UTC");
 }
 const fmt = useTimeFormatStore();
 
@@ -63,8 +64,12 @@ const playback = usePlaybackStore();
 watch(isDragging, (dragging) => {
   playback.timeScrubbing = dragging;
 });
+const changesStore = useTimelineChangesStore();
+/** Whether the changes panel is open on the current time rather than a picked bin. */
+const followsNow = computed(() => changesStore.isOpen && changesStore.centerT === null);
 onUnmounted(() => {
   playback.timeScrubbing = false;
+  changesStore.close();
 });
 const redrawCounter = ref(0);
 const { width } = useElementSize(el);
@@ -239,6 +244,8 @@ function onPointerUp(evt: PointerEvent) {
     animate.value = true;
     draggedDiff.value = -diff;
     setCurrentTime(roundToNearestQuarterHour(date).valueOf());
+    // Picking a time takes the changes panel off a clicked bin and back to now.
+    changesStore.followNow();
   } else {
     animate.value = false;
     draggedDiff.value = 0;
@@ -381,6 +388,10 @@ watch(
   { immediate: true },
 );
 
+function binLabel(count: number) {
+  return `${count} ${count === 1 ? "change" : "changes"}. Click to see what changed.`;
+}
+
 function onEventClick(event: NScenarioEvent) {
   goToScenarioEvent(event);
 }
@@ -403,105 +414,135 @@ function onContextMenuAction(action: TimelineAction) {
 }
 </script>
 <template>
-  <TimelineContextMenu
-    @action="onContextMenuAction"
-    v-slot="{ onContextMenu }"
-    :formattedHoveredDate="formattedHoveredDate"
-  >
-    <div
-      ref="el"
-      data-testid="scenario-timeline"
-      class="bg-sidebar border-border relative mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
-      @pointerdown="onPointerDown"
-      @pointerup="onPointerUp"
-      @pointercancel="onPointerCancel"
-      @pointermove="onPointerMove"
-      @wheel="onWheel"
-      @mousemove="onHover"
-      @mouseenter="showHoverMarker = true"
-      @mouseleave="showHoverMarker = false"
-      @contextmenu="onContextMenuOpen($event, onContextMenu)"
+  <div class="relative">
+    <TimelineChangesPanel v-if="changesStore.isOpen" />
+    <TimelineContextMenu
+      @action="onContextMenuAction"
+      v-slot="{ onContextMenu }"
+      :formattedHoveredDate="formattedHoveredDate"
     >
-      <div class="bg-sidebar flex h-3.5 items-center justify-center overflow-clip">
-        <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
-      </div>
       <div
-        class="touch-none text-sm select-none"
-        :class="animate ? 'transition-all' : 'transition-none'"
-        :style="`transform:translate(${totalXOffset}px)`"
+        ref="el"
+        data-testid="scenario-timeline"
+        class="bg-sidebar border-border relative mb-2 w-full transform overflow-x-hidden border-t text-sm transition-all select-none"
+        @pointerdown="onPointerDown"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerCancel"
+        @pointermove="onPointerMove"
+        @wheel="onWheel"
+        @mousemove="onHover"
+        @mouseenter="showHoverMarker = true"
+        @mouseleave="showHoverMarker = false"
+        @contextmenu="onContextMenuOpen($event, onContextMenu)"
       >
-        <div class="flex justify-center">
-          <div
-            class="relative h-4 flex-none text-center"
-            :style="`width: ${timelineWidth}px`"
-          >
+        <button
+          type="button"
+          data-testid="timeline-changes-toggle"
+          class="border-border absolute top-0.5 left-1 z-10 flex items-center gap-1 rounded border px-1.5 py-px text-xs font-medium shadow-xs"
+          :class="
+            followsNow
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-background text-foreground hover:bg-accent'
+          "
+          :aria-pressed="followsNow"
+          title="Changes around the current time (h)"
+          @pointerdown.stop
+          @pointerup.stop
+          @click.stop="changesStore.toggle(null)"
+        >
+          <ListIcon class="size-3.5" /> Changes
+        </button>
+        <div class="bg-sidebar flex h-3.5 items-center justify-center overflow-clip">
+          <IconTriangleDown class="h-4 w-4 scale-x-150 transform text-red-900" />
+        </div>
+        <div
+          class="touch-none text-sm select-none"
+          :class="animate ? 'transition-all' : 'transition-none'"
+          :style="`transform:translate(${totalXOffset}px)`"
+        >
+          <div class="flex justify-center">
             <div
-              v-for="{ x, count } in binsWithX"
-              :key="x"
-              class="absolute top-1 h-2 w-4 rounded border border-gray-500"
-              :style="`left: ${x}px; width: ${Math.max(
-                majorWidth / 24,
-                8,
-              )}px;background-color: ${countColor(count)}`"
-              @mousemove.stop
-              :title="`${count} unit events`"
+              class="relative h-4 flex-none text-center"
+              :style="`width: ${timelineWidth}px`"
+            >
+              <button
+                v-for="bin in binsWithX"
+                type="button"
+                :key="bin.x"
+                data-testid="timeline-bin"
+                class="absolute top-1 h-2 w-4 cursor-pointer rounded border border-gray-500 transition-transform before:absolute before:inset-x-0 before:-top-2 before:-bottom-1 before:content-[''] hover:scale-y-150"
+                :class="{
+                  'ring-primary scale-y-150 ring-2 ring-offset-1':
+                    changesStore.isOpen && bin.t === changesStore.centerT,
+                }"
+                :style="`left: ${bin.x}px; width: ${Math.max(
+                  majorWidth / 24,
+                  8,
+                )}px;background-color: ${countColor(bin.count)}`"
+                :title="binLabel(bin.count)"
+                :aria-label="binLabel(bin.count)"
+                @pointerdown.stop
+                @pointerup.stop
+                @mousemove.stop
+                @click.stop="changesStore.toggle(bin.t)"
+              ></button>
+              <button
+                v-for="{ x, event } in eventsWithX"
+                type="button"
+                :key="event.id"
+                data-testid="scenario-event-marker"
+                class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
+                :style="`left: ${x}px;`"
+                @pointerdown.stop
+                @pointerup.stop
+                @mousemove.stop
+                :title="event.title"
+                @click.stop="onEventClick(event)"
+              />
+            </div>
+          </div>
+          <div class="flex justify-center">
+            <div
+              class="relative flex-none text-center"
+              :style="`width: ${timelineWidth}px`"
             ></div>
-            <button
-              v-for="{ x, event } in eventsWithX"
-              type="button"
-              :key="event.id"
-              data-testid="scenario-event-marker"
-              class="absolute h-4 w-4 -translate-x-1/2 rounded-full border border-gray-500 bg-amber-500 hover:bg-red-900"
-              :style="`left: ${x}px;`"
-              @pointerdown.stop
-              @pointerup.stop
-              @mousemove.stop
-              :title="event.title"
-              @click.stop="onEventClick(event)"
-            />
+          </div>
+          <div class="border-muted-foreground flex h-6 justify-center">
+            <div
+              v-for="tick in majorTicks"
+              :key="tick.timestamp"
+              data-testid="major-tick"
+              class="border-muted-foreground h-6 flex-none overflow-hidden border-r border-b pl-0.5 leading-6 whitespace-nowrap"
+              :style="`width: ${tick.width}px`"
+            >
+              {{ tick.showLabel ? tick.label : "" }}
+            </div>
+          </div>
+          <div class="flex h-4 justify-center text-xs">
+            <div
+              v-for="tick in minorTicks"
+              :key="tick.timestamp"
+              data-testid="minor-tick"
+              class="text-muted-foreground border-muted-foreground h-4 min-h-0 flex-none overflow-hidden border-r pl-0.5 leading-4 whitespace-nowrap"
+              :style="`width: ${tick.width}px`"
+            >
+              {{ tick.showLabel ? tick.label : "" }}
+            </div>
           </div>
         </div>
-        <div class="flex justify-center">
-          <div
-            class="relative flex-none text-center"
-            :style="`width: ${timelineWidth}px`"
-          ></div>
-        </div>
-        <div class="border-muted-foreground flex h-6 justify-center">
-          <div
-            v-for="tick in majorTicks"
-            :key="tick.timestamp"
-            data-testid="major-tick"
-            class="border-muted-foreground h-6 flex-none overflow-hidden border-r border-b pl-0.5 leading-6 whitespace-nowrap"
-            :style="`width: ${tick.width}px`"
-          >
-            {{ tick.showLabel ? tick.label : "" }}
-          </div>
-        </div>
-        <div class="flex h-4 justify-center text-xs">
-          <div
-            v-for="tick in minorTicks"
-            :key="tick.timestamp"
-            data-testid="minor-tick"
-            class="text-muted-foreground border-muted-foreground h-4 min-h-0 flex-none overflow-hidden border-r pl-0.5 leading-4 whitespace-nowrap"
-            :style="`width: ${tick.width}px`"
-          >
-            {{ tick.showLabel ? tick.label : "" }}
-          </div>
-        </div>
-      </div>
 
-      <p
-        v-if="showHoverMarker && !isDragging"
-        class="absolute top-0 right-1 hidden p-0 text-xs text-red-900 select-none sm:block dark:text-red-600"
-      >
-        {{ formattedHoveredDate }}
-      </p>
-      <div
-        v-if="showHoverMarker"
-        class="hover-hover:flex absolute top-0 bottom-0 w-0.5 bg-red-900/50 dark:bg-red-600/50"
-        :style="`left: ${hoveredX}px`"
-      />
-    </div>
-  </TimelineContextMenu>
+        <p
+          v-if="showHoverMarker && !isDragging"
+          class="pointer-events-none absolute top-0 right-1 hidden p-0 text-xs text-red-900 select-none sm:block dark:text-red-600"
+        >
+          {{ formattedHoveredDate }}
+        </p>
+        <div
+          v-if="showHoverMarker"
+          class="hover-hover:flex pointer-events-none absolute top-0 bottom-0 w-0.5 bg-red-900/50 dark:bg-red-600/50"
+          :style="`left: ${hoveredX}px`"
+        />
+      </div>
+    </TimelineContextMenu>
+  </div>
 </template>

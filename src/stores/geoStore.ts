@@ -19,17 +19,22 @@ export interface ZoomOptions {
 export const useGeoStore = defineStore("geo", () => {
   const mapAdapter = shallowRef<MapAdapter | null>(null);
   const mapViewStore = useMapViewStore();
-  let stopZoomTracking: (() => void) | null = null;
+  let stopViewTracking: (() => void) | null = null;
 
   function setMapAdapter(adapter: MapAdapter | null) {
-    stopZoomTracking?.();
-    stopZoomTracking = null;
+    stopViewTracking?.();
+    stopViewTracking = null;
     mapAdapter.value = adapter;
-    if (!adapter) return;
-    mapViewStore.zoomLevel = adapter.getZoom() ?? 0;
-    stopZoomTracking = adapter.on("moveend", () => {
+    if (!adapter) {
+      mapViewStore.viewBbox = null;
+      return;
+    }
+    const syncView = () => {
       mapViewStore.zoomLevel = adapter.getZoom() ?? 0;
-    });
+      mapViewStore.viewBbox = adapter.getViewBbox() ?? null;
+    };
+    syncView();
+    stopViewTracking = adapter.on("moveend", syncView);
   }
 
   function zoomToUnit(unit?: Unit | NUnit | null, duration = 900) {

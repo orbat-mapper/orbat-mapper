@@ -47,6 +47,11 @@ export function formatDateString(value?: number, timeZone?: string, template?: s
   return dayjs.utc(value).format(template);
 }
 
+/** A time zone's UTC offset in minutes at a time. Military zone letters are resolved. */
+export function getTimeZoneOffset(value: number, timeZone: string) {
+  return dayjs(value).tz(resolveTimeZone(timeZone)).utcOffset();
+}
+
 export function formatDTG(value: number, timeZone: string) {
   if (value === undefined || value === null) return "";
   const date = dayjs(value).tz(resolveTimeZone(timeZone));

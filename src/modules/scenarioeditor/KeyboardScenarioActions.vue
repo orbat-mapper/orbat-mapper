@@ -19,6 +19,7 @@ import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { useTimelineChangesStore } from "@/stores/timelineChangesStore";
 
 const activeScenario = injectStrict(activeScenarioKey);
 const {
@@ -46,6 +47,7 @@ const shortcutsEnabled = computed(() => !uiStore.modalOpen);
 const unitSettings = useUnitSettingsStore();
 const playback = usePlaybackStore();
 const recordingStore = useRecordingStore();
+const changesStore = useTimelineChangesStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
 // Resolve map-dependent utils (zoom/pan) lazily so that engine-agnostic actions
 // like delete work through the active map engine.
@@ -184,6 +186,7 @@ function handleSpecialKeys(e: KeyboardEvent) {
     @keydown.m.exact="handleMoveShortcut"
     @keydown.delete.exact="handleDelete"
     @keydown.l.exact="handleLocate"
+    @keydown.h.exact="changesStore.toggle(null)"
     @keydown="handleSpecialKeys"
   />
 </template>

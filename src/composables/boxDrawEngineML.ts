@@ -1,7 +1,8 @@
 import type { GeoJSONSource, Map as MlMap, MapMouseEvent } from "maplibre-gl";
 import bboxPolygon from "@turf/bbox-polygon";
+import type { Bbox } from "@/geo/contracts/mapAdapter";
 
-export type Bbox = [number, number, number, number];
+export type { Bbox };
 
 export interface BoxDrawEngine {
   start(onEnd: (bbox: Bbox) => void): void;
