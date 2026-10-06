@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added a Unit changes panel to the scenario timeline. Clicking a timeline bin lists the unit and map item changes behind it, and the Changes button (or `h`) lists the changes around the current time. The list view shows the changes in time order with a divider at the current time and links to the previous and next change. The lanes view shows one lane per unit or map item on a time axis in the scenario's time zone, with optional trips, and changes can be dragged to a new time. Changes can be filtered by kind, by name and to the current map view, over a window from ±1 hour to ±7 days. The panel floats over the map or docks below it, and its view, columns and sorting are remembered.
 - Added new control measures: Bomb Area, Smoke, Series or Group of Targets, Lane, Ferry, Raft Site, Ford Easy, Ford Difficult, Unexploded Explosive Ordnance (UXO) Area, and the Interdict mission task.
 - Added a unique designation (Field T) label to generic lines, polygons, rectangles, circles, sectors, and Classic Arrows.
 - Added a Bézier smoothing style to generic lines, polygons, and Classic Arrows, where the control points shape the curve instead of lying on it.

@@ -10,10 +10,22 @@ import { applyPatch } from "rfc6902";
 enablePatches();
 setAutoFreeze(false);
 function applyPatchWrapper<T>(state: T, patches: Patch[]) {
-  const convertedPatches = patches.map(({ value, path, op }) => {
-    return { value, op, path: `/${path.join("/")}` };
-  });
-  applyPatch(state, convertedPatches);
+  for (const { value, path, op } of patches) {
+    applyPatch(state, [
+      { value, op: toRfc6902Op(toRaw(state), op, path), path: `/${path.join("/")}` },
+    ]);
+  }
+}
+
+// rfc6902 refuses to "replace" an object key whose value is undefined, which would
+// silently drop the update. "add" sets an object key the same way.
+function toRfc6902Op(state: unknown, op: Patch["op"], path: Patch["path"]) {
+  if (op !== "replace" || path.length === 0) return op;
+  let parent = state;
+  for (const key of path.slice(0, -1)) {
+    parent = (parent as Record<string | number, unknown> | undefined)?.[key];
+  }
+  return Array.isArray(parent) ? op : "add";
 }
 
 export interface MetaEntry<T = string> {

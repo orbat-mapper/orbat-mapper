@@ -29,6 +29,7 @@ import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { convertSpeedToMetric } from "@/utils/convert";
+import { formatDuration } from "@/utils/time";
 import type { NUnit } from "@/types/internalModels";
 import type { SpeedUnitOfMeasure, UnitProperty } from "@/types/scenarioModels";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
@@ -165,15 +166,6 @@ function formatSpeed(metersPerSecond: number) {
     return `${(metersPerSecond / 0.514444).toFixed(1)} knots`;
   }
   return `${(metersPerSecond * 3.6).toFixed(1)} km/h`;
-}
-
-function formatDuration(milliseconds: number) {
-  const totalMinutes = Math.max(0, Math.round(milliseconds / 60_000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  if (hours <= 0) return `${minutes} min`;
-  if (minutes === 0) return `${hours} h`;
-  return `${hours} h ${minutes} min`;
 }
 
 const timingDetails = computed(() => {

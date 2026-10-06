@@ -10,6 +10,7 @@ export interface EventWithX {
 
 export interface BinWithX {
   x: number;
+  t: number;
   count: number;
 }
 
@@ -109,6 +110,7 @@ export function mapHistogramToX({
     .filter((bin) => bin.t >= minTimestamp && bin.t <= maxTimestamp)
     .map((bin) => ({
       x: (bin.t - minTimestamp + offsetMs) * pxPerMs,
+      t: bin.t,
       count: bin.count,
     }));
 }

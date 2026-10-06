@@ -7,6 +7,7 @@ import { createPinia, setActivePinia } from "pinia";
 import ScenarioTimeline from "./ScenarioTimeline.vue";
 import { activeScenarioKey } from "@/components/injects";
 import { usePlaybackStore } from "@/stores/playbackStore";
+import { useTimelineChangesStore } from "@/stores/timelineChangesStore";
 
 const { formatterSpy } = vi.hoisted(() => ({
   formatterSpy: vi.fn((value: number) => `fmt:${value}`),
@@ -51,7 +52,7 @@ const TimelineContextMenuStub = defineComponent({
   `,
 });
 
-function makeScenarioFixture() {
+function makeScenarioFixture(histogram: { t: number; count: number }[] = []) {
   const state = reactive({
     currentTime: Date.UTC(2024, 0, 1, 10, 7),
     events: [] as string[],
@@ -81,7 +82,7 @@ function makeScenarioFixture() {
       }),
       timeZone: ref("UTC"),
       setCurrentTime,
-      computeTimeHistogram: vi.fn(() => ({ histogram: [], max: 1 })),
+      computeTimeHistogram: vi.fn(() => ({ histogram, max: 1 })),
       goToScenarioEvent: vi.fn(),
       addScenarioEvent,
     },
@@ -107,8 +108,8 @@ function nonEmptyTexts(wrapper: VueWrapper, selector: string) {
 
 const wrappers: VueWrapper[] = [];
 
-function mountTimeline() {
-  const fixture = makeScenarioFixture();
+function mountTimeline(histogram: { t: number; count: number }[] = []) {
+  const fixture = makeScenarioFixture(histogram);
   const wrapper = mount(ScenarioTimeline, {
     attachTo: document.body,
     global: {
@@ -117,6 +118,7 @@ function mountTimeline() {
       },
       stubs: {
         TimelineContextMenu: TimelineContextMenuStub,
+        TimelineChangesPanel: { template: "<div data-test='changes-panel' />" },
       },
     },
   });
@@ -359,4 +361,84 @@ describe("ScenarioTimeline", () => {
       expect(playback.timeScrubbing).toBe(false);
     },
   );
+
+  describe("unit change bins", () => {
+    const binT = Date.UTC(2024, 0, 1, 10);
+
+    it("shows the changes around a clicked bin, and closes on a second click", async () => {
+      const { wrapper, setCurrentTime } = mountTimeline([{ t: binT, count: 3 }]);
+      await nextTick();
+      const store = useTimelineChangesStore();
+
+      const bin = wrapper.get("[data-testid='timeline-bin']");
+      expect(bin.attributes("aria-label")).toBe("3 changes. Click to see what changed.");
+
+      await bin.trigger("click");
+      expect(store.isOpen).toBe(true);
+      expect(store.centerT).toBe(binT);
+      expect(wrapper.find("[data-test='changes-panel']").exists()).toBe(true);
+      expect(wrapper.get("[data-testid='timeline-bin']").classes()).toContain("ring-2");
+
+      await wrapper.get("[data-testid='timeline-bin']").trigger("click");
+      expect(store.isOpen).toBe(false);
+      expect(wrapper.find("[data-test='changes-panel']").exists()).toBe(false);
+      expect(setCurrentTime).not.toHaveBeenCalled();
+    });
+
+    it("follows now again when a time is clicked on the timeline", async () => {
+      const { wrapper } = mountTimeline([{ t: binT, count: 1 }]);
+      await nextTick();
+      const store = useTimelineChangesStore();
+      await wrapper.get("[data-testid='timeline-bin']").trigger("click");
+      expect(store.centerT).toBe(binT);
+
+      wrapper
+        .get("[data-testid='scenario-timeline']")
+        .element.dispatchEvent(
+          new MouseEvent("pointerup", { bubbles: true, button: 0, clientX: 500 }),
+        );
+      await nextTick();
+
+      expect(store.isOpen).toBe(true);
+      expect(store.centerT).toBeNull();
+    });
+
+    it("does not move the scenario time when a bin is pressed", async () => {
+      const { wrapper, setCurrentTime } = mountTimeline([{ t: binT, count: 1 }]);
+      await nextTick();
+
+      const bin = wrapper.get("[data-testid='timeline-bin']").element;
+      for (const type of ["pointerdown", "pointerup"]) {
+        bin.dispatchEvent(
+          new PointerEvent(type, { bubbles: true, pointerId: 1, clientX: 500 }),
+        );
+      }
+      await nextTick();
+
+      expect(setCurrentTime).not.toHaveBeenCalled();
+    });
+
+    it("toggles the changes around the current time", async () => {
+      const { wrapper } = mountTimeline();
+      await nextTick();
+      const store = useTimelineChangesStore();
+
+      await wrapper.get("[data-testid='timeline-changes-toggle']").trigger("click");
+      expect(store.isOpen).toBe(true);
+
+      await wrapper.get("[data-testid='timeline-changes-toggle']").trigger("click");
+      expect(store.isOpen).toBe(false);
+    });
+
+    it("closes the changes panel when the timeline unmounts", async () => {
+      const { wrapper } = mountTimeline([{ t: binT, count: 1 }]);
+      await nextTick();
+      const store = useTimelineChangesStore();
+      await wrapper.get("[data-testid='timeline-bin']").trigger("click");
+
+      wrapper.unmount();
+      wrappers.splice(wrappers.indexOf(wrapper), 1);
+      expect(store.isOpen).toBe(false);
+    });
+  });
 });

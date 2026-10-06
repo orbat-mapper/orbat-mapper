@@ -570,7 +570,11 @@ function resolveMissingStyleImage(id: string) {
 
   const symbolCode = id.startsWith("sel-") ? id.slice(4) : id;
   const cachedSymbol = symbolCache.get(symbolCode);
-  if (cachedSymbol?.kind === "custom") {
+  // A request from a layout that started before its symbol was pruned. Adding a
+  // placeholder would stick to the key once the symbol is in use again, so leave the
+  // image out. MapLibre asks again when a later layout uses it.
+  if (!cachedSymbol) return;
+  if (cachedSymbol.kind === "custom") {
     createCustomSymbolImage(id, cachedSymbol);
     return;
   }

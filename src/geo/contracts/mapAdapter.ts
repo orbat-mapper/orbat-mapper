@@ -1,6 +1,9 @@
 import type { AllGeoJSON } from "@turf/helpers";
 import type { GeoJSON, Position } from "geojson";
 
+/** [west, south, east, north] in degrees. */
+export type Bbox = [number, number, number, number];
+
 export interface FitOptions {
   maxZoom?: number;
   duration?: number;
@@ -51,9 +54,9 @@ export type MapEventHandler = (event: MapEvent) => void;
 export interface MapAdapter {
   // View operations
   animateView(options: AnimateOptions): void;
-  fitExtent(bbox: [number, number, number, number], options?: FitOptions): void;
+  fitExtent(bbox: Bbox, options?: FitOptions): void;
   fitGeometry(geojson: AllGeoJSON, options?: FitOptions): void;
-  getViewBbox(): [number, number, number, number] | undefined;
+  getViewBbox(): Bbox | undefined;
   getZoom(): number | undefined;
   getCenter(): Position | undefined;
   getResolution(): number | undefined;

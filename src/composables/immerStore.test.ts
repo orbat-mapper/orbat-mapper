@@ -26,3 +26,30 @@ describe("useImmerStore groupUpdate", () => {
     expect(store.revision.value).toBe(2);
   });
 });
+
+describe("useImmerStore update", () => {
+  it("sets a key whose value is undefined, and undoes it", () => {
+    const store = useImmerStore<{ entry: { value?: number } }, string>({
+      entry: { value: undefined },
+    });
+
+    store.update((draft) => {
+      draft.entry.value = 1;
+    });
+    expect(store.state.entry.value).toBe(1);
+
+    store.undo();
+    expect(store.state.entry.value).toBeUndefined();
+    store.redo();
+    expect(store.state.entry.value).toBe(1);
+  });
+
+  it("still replaces array elements in place", () => {
+    const store = useImmerStore<{ items: string[] }, string>({ items: ["a", "b"] });
+
+    store.update((draft) => {
+      draft.items[0] = "c";
+    });
+    expect(store.state.items).toEqual(["c", "b"]);
+  });
+});
