@@ -20,6 +20,14 @@ const DEMO_SCENARIOS = [
     imageUrl:
       "/scenarios/images/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg",
   },
+  {
+    name: "Northern Storm 1985",
+    id: "northernstorm85",
+    summary:
+      "A fictional NATO–Warsaw Pact war in June 1985, inspired by Red Storm Rising. Land, air, sea and subsurface forces from the inner German border to Iceland and the North Atlantic. Made to test and showcase features.",
+    imageUrl: "/scenarios/images/northern-storm-85.svg",
+    aiGenerated: true,
+  },
 ];
 
 // One `<li>` for each demo, thus the list items stay in the grid of the parent `<ul>`.
@@ -49,6 +57,12 @@ const getScenarioTo = (scenarioId: string) => ({
       <h3 class="text-heading mt-6 text-sm font-medium">
         {{ scenario.name }}
       </h3>
+      <p v-if="scenario.aiGenerated" class="mt-2">
+        <span
+          class="rounded-full border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400"
+          >AI-generated</span
+        >
+      </p>
       <dl class="mt-1 flex grow flex-col justify-between p-4">
         <dt class="sr-only">Summary</dt>
         <dd class="text-muted-foreground text-sm">

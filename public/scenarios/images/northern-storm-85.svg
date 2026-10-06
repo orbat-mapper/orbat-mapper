@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 416" width="576" height="416">
+  <!-- Sized to the landing-page card (288x208). Narrow cards keep everything; wide (one-column)
+       cards crop the bottom, thus nothing important sits below the submarine. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070a12"/>
+      <stop offset="0.55" stop-color="#1a1420"/>
+      <stop offset="0.6" stop-color="#4a1410"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="1" r="0.6">
+      <stop offset="0" stop-color="#ff6a2a" stop-opacity="0.75"/>
+      <stop offset="0.5" stop-color="#b3201a" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#b3201a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#140b0e"/>
+      <stop offset="1" stop-color="#03050a"/>
+    </linearGradient>
+    <!-- Swept-wing bomber, seen from below, nose pointing right -->
+    <path id="bomber" d="M32 0 L24 -2.5 L-26 -3 L-30 -1 L-30 1 L-26 3 L24 2.5 Z
+      M8 -2.5 L-12 -24 L-17 -24 L-6 -2.5 Z M8 2.5 L-12 24 L-17 24 L-6 2.5 Z
+      M-19 -3 L-28 -12 L-31 -12 L-26 -3 Z M-19 3 L-28 12 L-31 12 L-26 3 Z"/>
+  </defs>
+
+  <rect width="576" height="416" fill="url(#sky)"/>
+  <!-- Red star, faded into the night sky -->
+  <polygon points="460.0,40.0 480.1,102.4 545.6,102.2 492.5,140.5 512.9,202.8 460.0,164.2 407.1,202.8 427.5,140.5 374.4,102.2 439.9,102.4"
+           fill="#c8231b" opacity="0.4"/>
+  <ellipse cx="288" cy="250" rx="400" ry="120" fill="url(#glow)"/>
+
+  <!-- Bombers and contrails -->
+  <g stroke="#e8e2d6" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round">
+    <path d="M150 196 L-10 236"/>
+    <path d="M232 160 L60 203"/>
+    <path d="M196 226 L40 265"/>
+  </g>
+  <g fill="#020306">
+    <use href="#bomber" transform="translate(180 188) rotate(-14) scale(0.9)"/>
+    <use href="#bomber" transform="translate(262 152) rotate(-14)"/>
+    <use href="#bomber" transform="translate(224 218) rotate(-14) scale(0.8)"/>
+  </g>
+
+  <!-- Sea -->
+  <rect y="250" width="576" height="166" fill="url(#sea)"/>
+  <g stroke="#ff6a2a" stroke-opacity="0.25" stroke-width="1.5">
+    <path d="M130 262 H290 M210 274 H400 M300 290 H430 M80 300 H190"/>
+  </g>
+
+  <!-- Carrier and escort on the horizon -->
+  <g fill="#020306">
+    <path d="M30 251 L48 241 L238 240 L252 246 L242 251 Z"/>
+    <path d="M38 238 L252 236 L252 241 L38 243 Z"/>
+    <path d="M172 238 L172 224 L178 224 L178 212 L182 212 L182 224 L190 224 L190 238 Z"/>
+    <path d="M310 251 L316 245 L372 245 L378 251 Z"/>
+    <path d="M332 246 L332 238 L342 238 L342 232 L345 232 L345 238 L354 238 L354 246 Z"/>
+  </g>
+
+  <!-- Submarine breaking the surface -->
+  <g fill="#010204">
+    <path d="M340 318 Q440 300 576 312 L576 324 L340 324 Z"/>
+    <path d="M432 310 L438 270 L472 268 L480 308 Z"/>
+    <path d="M428 286 L446 285 L446 290 L428 291 Z"/>
+    <path d="M452 270 L452 252 L456 252 L456 270 Z"/>
+  </g>
+  <g stroke="#e8e2d6" stroke-opacity="0.45" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M336 320 Q360 312 386 314"/>
+    <path d="M320 328 Q370 322 410 326"/>
+  </g>
+
+  <!-- HUD corner brackets -->
+  <g stroke="#e8e2d6" stroke-opacity="0.5" stroke-width="2" fill="none">
+    <path d="M16 40 V16 H40 M536 16 H560 V40 M16 376 V400 H40 M536 400 H560 V376"/>
+  </g>
+
+  <!-- Title -->
+  <text x="36" y="72" fill="#f2efe6" font-family="Impact, 'Arial Black', 'Helvetica Neue', sans-serif"
+        font-size="44" font-weight="900" letter-spacing="3">NORTHERN STORM</text>
+  <text x="38" y="106" fill="#e0372a" font-family="Impact, 'Arial Black', 'Helvetica Neue', sans-serif"
+        font-size="28" font-weight="900" letter-spacing="10">1985</text>
+  <text x="38" y="132" fill="#e8e2d6" fill-opacity="0.75" font-family="'Courier New', monospace"
+        font-size="15" font-weight="700" letter-spacing="1">NORTH ATLANTIC // 06 JUN 1985</text>
+</svg>

@@ -16,3 +16,8 @@ These files are bundled with the repo for the landing-page demo scenario cards.
 - Original media URL: https://upload.wikimedia.org/wikipedia/commons/5/5f/Norwegian_Army_Colt_heavy_machine_gun_at_the_Narvik_front.jpg
 - License: Public domain (PD-Norway)
 - Attribution: Wikimedia Commons
+
+## `northern-storm-85.svg`
+
+- Source: Drawn for this repo in a techno-thriller cover style (bombers, a carrier and a submarine at dawn)
+- License: Same as the repository

@@ -690,11 +690,14 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     return draft;
   }
 
-  async function loadDemoScenario(id: string | "falkland82" | "narvik40") {
+  async function loadDemoScenario(
+    id: string | "falkland82" | "narvik40" | "northernstorm85",
+  ) {
     isLoading.value = true;
     const idUrlMap: Record<string, string> = {
       falkland82: "/scenarios/falkland82.json",
       narvik40: "/scenarios/narvik40.json",
+      northernstorm85: "/scenarios/northern-storm-85.json",
     };
     const url = idUrlMap[id];
     if (!url) {
