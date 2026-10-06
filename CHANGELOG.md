@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - A PMTiles archive of PNG or WebP tiles dropped on the map opens as a basemap and offers "Use for terrain", which moves it to elevation data and puts back the previous basemap. The drop message now lists every kind of file that the map accepts.
 - Added range rings to the Layers panel. Range rings as a whole, each range ring group and the ungrouped rings can be shown or hidden there, and each group and the ungrouped rings open into a list of their rings, each with its own visibility toggle. Range ring groups can also be added and renamed there. Hiding all rings, a group or the ungrouped rings is saved with the scenario and does not change each ring's own visibility setting. Range rings draw in their place in the layer order and can be dragged among the feature and reference layers, or above the control measures.
 
+- Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
+
 ### Changed
 
 - The Falklands example scenario now has range ring groups for its surface combatants.
