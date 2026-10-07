@@ -413,22 +413,31 @@ function legSpan({ leg }: TimelineChange, delta = 0): [number, number] {
 }
 
 // A drag on the lanes' empty track draws a box that selects the marks in it, adding to
-// the selection with Shift or Cmd/Ctrl held. A click there clears the selection.
+// the selection with Shift or Cmd/Ctrl held. A click there clears the selection. The
+// box is kept in the lanes' coordinates, so it grows when the lanes scroll under it,
+// by the wheel or by holding the pointer near the top or bottom edge.
 interface Box {
   startX: number;
   startY: number;
   x: number;
   y: number;
+  /** Where the pointer last was, in the viewport. */
+  clientX: number;
+  clientY: number;
   moved: boolean;
   additive: boolean;
   base: Set<string>;
 }
+const headerEl = ref<HTMLElement | null>(null);
 const bodyEl = ref<HTMLElement | null>(null);
 const box = ref<Box | null>(null);
 
-function bodyPoint(event: PointerEvent) {
+const AUTO_SCROLL_EDGE_PX = 24;
+const AUTO_SCROLL_MAX_PX = 20;
+
+function bodyPoint({ clientX, clientY }: { clientX: number; clientY: number }) {
   const rect = bodyEl.value!.getBoundingClientRect();
-  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  return { x: clientX - rect.left, y: clientY - rect.top };
 }
 function onBodyPointerDown(event: PointerEvent) {
   if (event.button !== 0) return;
@@ -441,6 +450,8 @@ function onBodyPointerDown(event: PointerEvent) {
     startY: y,
     x,
     y,
+    clientX: event.clientX,
+    clientY: event.clientY,
     moved: false,
     additive: event.shiftKey || event.ctrlKey || event.metaKey,
     base: new Set(selectedIds.value),
@@ -450,11 +461,24 @@ function onBodyPointerDown(event: PointerEvent) {
 function onBodyPointerMove(event: PointerEvent) {
   const b = box.value;
   if (!b) return;
-  ({ x: b.x, y: b.y } = bodyPoint(event));
+  b.clientX = event.clientX;
+  b.clientY = event.clientY;
+  ({ x: b.x, y: b.y } = bodyPoint(b));
   if (!b.moved) {
     if (Math.hypot(b.x - b.startX, b.y - b.startY) < DRAG_THRESHOLD_PX) return;
     b.moved = true;
   }
+  selectInBox(b);
+  if (!autoScrollFrame) autoScroll();
+}
+/** Keeps the box's corner under the pointer as the lanes scroll. */
+function onScroll() {
+  const b = box.value;
+  if (!b?.moved) return;
+  ({ x: b.x, y: b.y } = bodyPoint(b));
+  selectInBox(b);
+}
+function selectInBox(b: Box) {
   const inBox = changesInBox(lanes.value, boxRect(b), {
     laneHeight: LANE_HEIGHT,
     trackLeft: labelWidth.value,
@@ -463,8 +487,35 @@ function onBodyPointerMove(event: PointerEvent) {
   });
   const ids = new Set(b.additive ? b.base : []);
   for (const c of inBox) ids.add(c.id);
-  selectedIds.value = ids;
+  // The box often grows without taking in a mark, such as while the lanes scroll.
+  const current = selectedIds.value;
+  if (ids.size !== current.size || [...ids].some((id) => !current.has(id))) {
+    selectedIds.value = ids;
+  }
 }
+
+/** Scrolls the lanes while the box is drawn with the pointer near the top or bottom
+ * edge, faster the further past it the pointer is. Stops by itself once the box is
+ * done. */
+let autoScrollFrame = 0;
+function autoScroll() {
+  autoScrollFrame = 0;
+  const b = box.value;
+  const el = scrollEl.value;
+  if (!b?.moved || !el) return;
+  const rect = el.getBoundingClientRect();
+  const top = rect.top + (headerEl.value?.offsetHeight ?? 0) + AUTO_SCROLL_EDGE_PX;
+  const bottom = rect.bottom - AUTO_SCROLL_EDGE_PX;
+  const past = b.clientY < top ? b.clientY - top : Math.max(b.clientY - bottom, 0);
+  if (!past) return;
+  const step =
+    Math.sign(past) * Math.min(Math.ceil(Math.abs(past) / 3), AUTO_SCROLL_MAX_PX);
+  const before = el.scrollTop;
+  el.scrollTop += step;
+  // Stops at the end of the lanes, until the pointer moves again.
+  if (el.scrollTop !== before) autoScrollFrame = requestAnimationFrame(autoScroll);
+}
+
 function onBodyPointerUp() {
   const b = box.value;
   box.value = null;
@@ -515,8 +566,12 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
     tabindex="-1"
     class="relative min-h-0 flex-1 overflow-y-auto text-xs outline-none"
     @keydown="onKeyDown"
+    @scroll="onScroll"
   >
-    <div class="bg-muted text-muted-foreground sticky top-0 z-10 flex border-b">
+    <div
+      ref="headerEl"
+      class="bg-muted text-muted-foreground sticky top-0 z-10 flex border-b"
+    >
       <div
         v-for="column in columns"
         :key="column.key"
@@ -561,7 +616,7 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
     </div>
     <div
       ref="bodyEl"
-      class="relative select-none"
+      class="relative isolate select-none"
       :style="{ height: `${totalHeight}px` }"
       @pointerdown="onBodyPointerDown"
       @pointermove="onBodyPointerMove"
