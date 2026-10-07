@@ -13,11 +13,12 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePlaybackStore } from "@/stores/playbackStore";
+import { formatPlaybackSpeed, usePlaybackStore } from "@/stores/playbackStore";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
@@ -55,6 +56,13 @@ const playback = usePlaybackStore();
           <span>{{ playback.playbackRunning ? "Pause" : "Play" }}</span>
           <DropdownMenuShortcut>k, alt+p</DropdownMenuShortcut>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel class="flex justify-between gap-4 font-normal">
+          <span class="text-muted-foreground">Speed</span>
+          <span class="tabular-nums">{{
+            formatPlaybackSpeed(playback.playbackSpeed)
+          }}</span>
+        </DropdownMenuLabel>
         <DropdownMenuItem @select.prevent="playback.increaseSpeed()">
           <IconSpeedometer class="mr-2 h-4 w-4" />
           <span>Speed up</span>
