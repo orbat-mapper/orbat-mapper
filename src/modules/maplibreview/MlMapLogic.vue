@@ -23,7 +23,7 @@ import {
   scenarioDrawKey,
   searchActionsKey,
 } from "@/components/injects.ts";
-import { usePlaybackStore } from "@/stores/playbackStore.ts";
+import { getPlaybackStep, usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject, haveSameItems, injectStrict } from "@/utils";
@@ -1556,7 +1556,7 @@ onUnmounted(() => {
 });
 
 const { pause, resume } = useRafFn(
-  () => {
+  ({ delta }) => {
     if (
       playback.playbackLooping &&
       playback.endMarker !== undefined &&
@@ -1568,7 +1568,10 @@ const { pause, resume } = useRafFn(
       }
     }
 
-    const newTime = activeScenario.store.state.currentTime + playback.playbackSpeed;
+    // Advance by elapsed real time, so playback keeps its speed when frames drop.
+    const newTime =
+      activeScenario.store.state.currentTime +
+      getPlaybackStep(playback.playbackSpeed, delta);
     activeScenario.time.setCurrentTime(newTime);
   },
   { immediate: false, fpsLimit: 60 },
