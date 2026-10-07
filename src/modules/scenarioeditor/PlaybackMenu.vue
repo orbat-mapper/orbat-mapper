@@ -37,7 +37,7 @@ const playback = usePlaybackStore();
       variant="ghost"
       size="icon-sm"
       class="sm:size-9"
-      title="Undo action (ctrl+z)"
+      :title="playback.playbackRunning ? 'Pause (k)' : 'Play (k)'"
       @click="playback.togglePlayback()"
     >
       <IconPause v-if="playback.playbackRunning" class="size-5 sm:size-6" />
