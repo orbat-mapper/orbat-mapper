@@ -456,6 +456,42 @@ describe("MlMapLogic", () => {
     );
   });
 
+  it("offsets cropped unit icons so the symbol anchor sits on the unit", () => {
+    vi.mocked(symbolGenerator).mockImplementation(
+      () =>
+        ({
+          getSize: () => ({ width: 100, height: 40 }),
+          getAnchor: () => ({ x: 20, y: 30 }),
+        }) as unknown as ReturnType<typeof symbolGenerator>,
+    );
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const activeScenario = {
+      store: {
+        getMutationCount: () => 0,
+        state: { id: "scenario-maplibre-icon-offset", currentTime: 0 },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          { id: "unit-offset", sidc: "SFGPUCI----K", _state: { location: [10, 20] } },
+        ]),
+      },
+      time: { setCurrentTime: vi.fn() },
+    };
+
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+    vi.mocked(symbolGenerator).mockRestore();
+
+    const unitData = mockMap.getSource("unitSource")?.setData.mock.lastCall?.[0];
+    // The image center lies 30 px right of and 10 px above the anchor.
+    expect(unitData.features[0].properties.iconOffset).toEqual([30, -10]);
+  });
+
   it("renders the symbol projected for the current scenario time", () => {
     const mockMap = createMockMap();
     const pinia = createPinia();

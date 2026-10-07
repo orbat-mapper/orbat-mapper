@@ -131,6 +131,9 @@ type CustomSymbolCacheEntry = {
 type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
+// MapLibre centers an icon on its point. Milsymbol images are cropped to the symbol,
+// so each is shifted by this offset (CSS px) to put the symbol anchor on the point.
+const iconOffsets = new Map<string, [number, number]>();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
 // During playback and timeline scrubbing, units that are moving at the current time
@@ -278,6 +281,7 @@ function createUnitLayerSpec(
     filter: ["==", ["get", "visibilityGroup"], group.id] as any,
     layout: {
       "icon-image": ["get", "symbolKey"],
+      "icon-offset": ["get", "iconOffset"],
       "icon-rotate": ["get", "symbolRotation"],
       "icon-rotation-alignment": alignment.icon,
       "text-rotate": ["get", "symbolRotation"],
@@ -525,29 +529,27 @@ function buildMilSymbolImageData(
   pixelRatio: number,
 ): ImageData | null {
   const { sidc, options } = getMilSymbolArgs(imageId, cachedSymbol);
-  const symb = symbolGenerator(sidc, options);
-  const { width, height } = symb.getSize();
-  const anchor = symb.getAnchor();
-  const sourceCanvas = symb.asCanvas(pixelRatio);
-  if (!sourceCanvas) return null;
+  // Cropped to the symbol rather than padded to center its anchor: every map tile
+  // copies the images of its units into an icon atlas, and playback rebuilds the
+  // atlases of moving units on every tick. `getUnitIconOffset` places the anchor.
+  const canvas = symbolGenerator(sidc, options).asCanvas(pixelRatio);
+  const ctx = canvas?.getContext("2d");
+  if (!canvas || !ctx) return null;
+  return ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
 
-  // milsymbol canvases are not centered on the symbol anchor — pad the image
-  // so the anchor sits at the canvas center, which is what MapLibre uses as
-  // the icon's origin.
-  const halfW = Math.max(anchor.x, width - anchor.x);
-  const halfH = Math.max(anchor.y, height - anchor.y);
-  const paddedWidth = Math.ceil(2 * halfW * pixelRatio);
-  const paddedHeight = Math.ceil(2 * halfH * pixelRatio);
-  const drawX = Math.round((halfW - anchor.x) * pixelRatio);
-  const drawY = Math.round((halfH - anchor.y) * pixelRatio);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = paddedWidth;
-  canvas.height = paddedHeight;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-  ctx.drawImage(sourceCanvas, drawX, drawY);
-  return ctx.getImageData(0, 0, paddedWidth, paddedHeight);
+function getUnitIconOffset(imageId: string, cachedSymbol: SymbolCacheEntry) {
+  if (cachedSymbol.kind === "custom") return [0, 0];
+  let offset = iconOffsets.get(imageId);
+  if (!offset) {
+    const { sidc, options } = getMilSymbolArgs(imageId, cachedSymbol);
+    const symbol = symbolGenerator(sidc, options);
+    const { width, height } = symbol.getSize();
+    const anchor = symbol.getAnchor();
+    offset = [width / 2 - anchor.x, height / 2 - anchor.y];
+    iconOffsets.set(imageId, offset);
+  }
+  return offset;
 }
 
 // Re-rasterize any programmatic symbol (milsymbol or custom) at an arbitrary
@@ -1467,6 +1469,7 @@ function buildUnitFeature(
       id: unit.id,
       visibilityGroup: visibilityGroup.id,
       symbolKey: imageId,
+      iconOffset: getUnitIconOffset(imageId, symbolData),
       sidc,
       label: mapSettings.mapUnitLabelBelow
         ? unit.shortName || unit.name || "Unnamed Unit"
@@ -1517,6 +1520,9 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
   }
   for (const key of symbolCache.keys()) {
     if (!activeSymbolKeys.has(key)) symbolCache.delete(key);
+  }
+  for (const imageId of iconOffsets.keys()) {
+    if (!activeImageIds.has(imageId)) iconOffsets.delete(imageId);
   }
 }
 
