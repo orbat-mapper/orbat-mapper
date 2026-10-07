@@ -4,10 +4,10 @@ import type {
   GeoJSONSource,
   Map as MlMap,
 } from "maplibre-gl";
+import bbox from "@turf/bbox";
 import circle from "@turf/circle";
-import union from "@turf/union";
-import { featureCollection } from "@turf/helpers";
-import type { Feature, MultiPolygon, Polygon } from "geojson";
+import { union, type MultiPolygon as ClipMultiPolygon } from "polygon-clipping";
+import type { BBox, Feature, MultiPolygon, Polygon } from "geojson";
 import { toRgbaColor } from "@/utils/cssColor";
 import type { TScenario } from "@/scenariostore";
 import type { NRangeRingGroup, NUnit } from "@/types/internalModels";
@@ -165,18 +165,10 @@ function mergeRingGroup(
     bucket.rings.push(ring);
   }
 
-  const mergeFeatures = (
-    features: Feature<Polygon | MultiPolygon, RingIdProperties>[],
-    properties: RingIdProperties,
-  ) =>
-    features.length > 1
-      ? union(featureCollection(features), { properties })
-      : { ...features[0], properties };
-
-  const bucketShapes = [...buckets.values()].flatMap((bucket) => {
-    const shape = mergeFeatures(bucket.rings, bucket.rings[0].properties);
-    return shape ? [{ ...bucket, shape }] : [];
-  });
+  const bucketShapes = [...buckets.values()].map((bucket) => ({
+    ...bucket,
+    shape: mergeShapes(bucket.rings, bucket.rings[0].properties),
+  }));
   const breakpoints = [
     ...new Set([
       MIN_ZOOM,
@@ -197,13 +189,64 @@ function mergeRingGroup(
       minzoom === MIN_ZOOM && maxzoom === MAX_ZOOM
         ? { id: ALWAYS_VISIBLE_UNIT_GROUP_ID }
         : getZoomVisibilityGroup(minzoom, maxzoom);
-    const feature = mergeFeatures(visible, {
+    const feature = mergeShapes(visible, {
       ...visible[0].properties,
       visibilityGroup: group.id,
     });
-    if (feature) out.push({ feature, group });
+    out.push({ feature, group });
   }
   return out;
+}
+
+type RingShape = Feature<Polygon | MultiPolygon, RingIdProperties>;
+
+function bboxesOverlap(a: BBox, b: BBox) {
+  return a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
+}
+
+/**
+ * Merges shapes into one feature. A union is costly and playback runs it on every tick
+ * a member moves, so only shapes whose bounding boxes touch are unioned. The others
+ * cannot overlap and stay separate polygons of the result.
+ */
+function mergeShapes(shapes: RingShape[], properties: RingIdProperties): RingShape {
+  if (shapes.length === 1) return { ...shapes[0], properties };
+  const clusters: { box: BBox; polygons: ClipMultiPolygon }[] = [];
+  for (const shape of shapes) {
+    let box = bbox(shape);
+    const { geometry } = shape;
+    let polygons = (
+      geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates
+    ) as ClipMultiPolygon;
+    let overlapping = 0;
+    // Merging clusters grows the box, which can then touch clusters already passed.
+    do {
+      overlapping = 0;
+      for (let i = clusters.length - 1; i >= 0; i--) {
+        const cluster = clusters[i];
+        if (!bboxesOverlap(box, cluster.box)) continue;
+        box = [
+          Math.min(box[0], cluster.box[0]),
+          Math.min(box[1], cluster.box[1]),
+          Math.max(box[2], cluster.box[2]),
+          Math.max(box[3], cluster.box[3]),
+        ];
+        polygons = union(polygons, cluster.polygons);
+        clusters.splice(i, 1);
+        overlapping++;
+      }
+    } while (overlapping);
+    clusters.push({ box, polygons });
+  }
+  const polygons = clusters.flatMap((cluster) => cluster.polygons);
+  return {
+    type: "Feature",
+    geometry:
+      polygons.length === 1
+        ? { type: "Polygon", coordinates: polygons[0] }
+        : { type: "MultiPolygon", coordinates: polygons },
+    properties,
+  };
 }
 
 export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
