@@ -103,6 +103,7 @@ export function isRangeRingHidden(
 }
 
 type RingFeature = Feature<Polygon, RingIdProperties>;
+type RingShape = Feature<Polygon | MultiPolygon, RingIdProperties>;
 type CachedRing = { key: string; signature: string; feature: RingFeature };
 
 function createRangeRings(
@@ -143,7 +144,7 @@ function mergeRingGroup(
   rings: RingFeature[],
   visibilityGroups: Map<string, UnitVisibilityGroup>,
 ): {
-  feature: Feature<Polygon | MultiPolygon, RingIdProperties>;
+  feature: RingShape;
   group: UnitVisibilityGroup;
 }[] {
   // Union the members of each unit zoom range once. Each zoom interval then only
@@ -198,10 +199,17 @@ function mergeRingGroup(
   return out;
 }
 
-type RingShape = Feature<Polygon | MultiPolygon, RingIdProperties>;
-
 function bboxesOverlap(a: BBox, b: BBox) {
   return a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
+}
+
+function mergeBoxes(a: BBox, b: BBox): BBox {
+  return [
+    Math.min(a[0], b[0]),
+    Math.min(a[1], b[1]),
+    Math.max(a[2], b[2]),
+    Math.max(a[3], b[3]),
+  ];
 }
 
 /**
@@ -211,34 +219,26 @@ function bboxesOverlap(a: BBox, b: BBox) {
  */
 function mergeShapes(shapes: RingShape[], properties: RingIdProperties): RingShape {
   if (shapes.length === 1) return { ...shapes[0], properties };
-  const clusters: { box: BBox; polygons: ClipMultiPolygon }[] = [];
+  const clusters: { box: BBox; parts: ClipMultiPolygon[] }[] = [];
   for (const shape of shapes) {
-    let box = bbox(shape);
     const { geometry } = shape;
-    let polygons = (
-      geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates
-    ) as ClipMultiPolygon;
-    let overlapping = 0;
-    // Merging clusters grows the box, which can then touch clusters already passed.
-    do {
-      overlapping = 0;
-      for (let i = clusters.length - 1; i >= 0; i--) {
-        const cluster = clusters[i];
-        if (!bboxesOverlap(box, cluster.box)) continue;
-        box = [
-          Math.min(box[0], cluster.box[0]),
-          Math.min(box[1], cluster.box[1]),
-          Math.max(box[2], cluster.box[2]),
-          Math.max(box[3], cluster.box[3]),
-        ];
-        polygons = union(polygons, cluster.polygons);
-        clusters.splice(i, 1);
-        overlapping++;
-      }
-    } while (overlapping);
-    clusters.push({ box, polygons });
+    const coordinates =
+      geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+    const cluster = { box: bbox(shape), parts: [coordinates as ClipMultiPolygon] };
+    // Merging grows the box, which can then touch a cluster it missed before.
+    let i: number;
+    while ((i = clusters.findIndex((c) => bboxesOverlap(cluster.box, c.box))) !== -1) {
+      const [other] = clusters.splice(i, 1);
+      cluster.box = mergeBoxes(cluster.box, other.box);
+      cluster.parts.push(...other.parts);
+    }
+    clusters.push(cluster);
   }
-  const polygons = clusters.flatMap((cluster) => cluster.polygons);
+  // polygon-clipping rather than turf's union: turf runs on polyclip-ts, whose
+  // bignumber.js arithmetic is several times slower.
+  const polygons = clusters.flatMap(({ parts: [first, ...rest] }) =>
+    rest.length ? union(first, ...rest) : first,
+  );
   return {
     type: "Feature",
     geometry:
@@ -361,10 +361,7 @@ export function useMaplibreRangeRings(mlMap: MlMap, activeScenario: TScenario) {
     return { id, isGroup, visibilityGroup, ...resolveRingColors(style) };
   }
 
-  function toStyledFeature(
-    key: string,
-    feature: Feature<Polygon | MultiPolygon, RingIdProperties>,
-  ): RingStyledFeature {
+  function toStyledFeature(key: string, feature: RingShape): RingStyledFeature {
     const properties = { key, ...resolveRingStyle(feature.properties) };
     const previous = pushedFeatures.get(key);
     if (
