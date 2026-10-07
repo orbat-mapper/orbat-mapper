@@ -15,7 +15,7 @@ export function getPlaybackStep(speed: number, frameMs: number) {
 }
 
 // Unit size, the speed from which it is used, and its label. Days start at two, so
-// the default speed reads "30 h/s" rather than "1.25 d/s".
+// 30 h/s, one step up from the default, does not read "1.25 d/s".
 const SPEED_UNITS: [number, number, string][] = [
   [MS_PER_DAY, 2 * MS_PER_DAY, "d"],
   [MS_PER_HOUR, MS_PER_HOUR, "h"],
@@ -31,7 +31,7 @@ export function formatPlaybackSpeed(speed: number) {
 
 export const usePlaybackStore = defineStore("playbackStore", () => {
   // Scenario milliseconds per real second.
-  const playbackSpeed = ref(30 * MS_PER_HOUR);
+  const playbackSpeed = ref(15 * MS_PER_HOUR);
 
   const startMarker = ref<number>();
   const endMarker = ref<number>();
