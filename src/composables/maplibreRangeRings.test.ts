@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
-import type { Feature, Polygon } from "geojson";
+import type { Feature, MultiPolygon, Polygon } from "geojson";
 import type { Map as MlMap } from "maplibre-gl";
 import type { TScenario } from "@/scenariostore";
 import type { NRangeRingGroup, NUnit } from "@/types/internalModels";
@@ -249,6 +249,32 @@ describe("drawRangeRings with grouped rings", () => {
     const { features } = { features: source().features() };
     expect(features).toHaveLength(1);
     expect(features[0].properties.visibilityGroup).toBe("always");
+  });
+
+  it("merges overlapping members into one polygon", () => {
+    const { drawRangeRings, source, units } = fixture();
+    units.value = [groupedRingUnit("a", [10, 60]), groupedRingUnit("b", [10.05, 60])];
+    drawRangeRings();
+
+    const [feature] = source().features() as Feature<Polygon | MultiPolygon>[];
+    expect(feature.geometry.type).toBe("Polygon");
+    expect(feature.geometry.coordinates).toHaveLength(1);
+  });
+
+  it("keeps members that are far apart as separate polygons of one feature", () => {
+    const { drawRangeRings, source, units } = fixture();
+    units.value = [
+      groupedRingUnit("a", [10, 60]),
+      groupedRingUnit("b", [10.05, 60]),
+      groupedRingUnit("c", [20, 60]),
+    ];
+    drawRangeRings();
+
+    const features = source().features() as Feature<Polygon | MultiPolygon>[];
+    expect(features).toHaveLength(1);
+    expect(features[0].geometry.type).toBe("MultiPolygon");
+    // The two overlapping members merge, the distant one stays apart.
+    expect(features[0].geometry.coordinates).toHaveLength(2);
   });
 });
 
