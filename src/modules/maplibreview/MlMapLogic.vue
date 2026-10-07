@@ -205,7 +205,7 @@ const boxSelect = useMaplibreBoxSelect(mlMap, {
   suspend: suspendMapDragInteractions,
   restore: restoreMapDragInteractions,
 });
-const doNotFilterLayers = computed(() => uiStore.layersPanelActive);
+const doNotFilterLayers = computed(() => uiStore.forceLayersVisible);
 const recordingStore = useRecordingStore();
 let unitDragState: {
   clickedUnitId: string;

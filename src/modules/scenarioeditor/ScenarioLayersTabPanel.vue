@@ -20,6 +20,7 @@ import type {
 } from "@/types/scenarioGeoModels";
 import ScenarioReferenceLayerRow from "@/modules/scenarioeditor/ScenarioReferenceLayerRow.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
+import ToggleField from "@/components/ToggleField.vue";
 import { useUiStore } from "@/stores/uiStore";
 import type { ButtonGroupItem, DropTarget, MenuItemData } from "@/components/types";
 import type {
@@ -131,6 +132,15 @@ const mapLayerButtonItems: ButtonGroupItem[] = [
 ];
 
 const scenarioLayers = computed(() => geo.layerItemsLayers.value);
+// Whether "Show time-hidden items" would reveal anything at the current time. Manually
+// hidden layers and items stay hidden either way, so they don't count.
+const hasTimeHiddenItems = computed(() =>
+  scenarioLayers.value.some(
+    (layer) =>
+      !layer.isHidden &&
+      (layer._hidden || layer.items.some((item) => item?._hidden && !item.isHidden)),
+  ),
+);
 const stackLayers = computed(() => {
   // Compatibility fallback for tests and older injected geo mocks that still
   // expose split overlay/reference collections instead of canonical stackLayers.
@@ -745,8 +755,11 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <div class="group flex items-center justify-end">
-      <DotsMenu :items="mapLayersMenuItems" />
+    <div class="group flex items-center justify-between">
+      <ToggleField v-if="hasTimeHiddenItems" v-model="uiStore.showAllLayers"
+        >Show time-hidden items</ToggleField
+      >
+      <DotsMenu class="ml-auto" :items="mapLayersMenuItems" />
     </div>
     <!-- The panel lists layers bottom-up, in the order they draw on the map. -->
     <div>

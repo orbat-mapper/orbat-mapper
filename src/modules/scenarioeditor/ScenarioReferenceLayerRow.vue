@@ -3,10 +3,12 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { IconDrag, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
 import { Button } from "@/components/ui/button";
 import DotsMenu from "@/components/DotsMenu.vue";
+import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
 import DropIndicator from "@/components/DropIndicator.vue";
 import type { MenuItemData } from "@/components/types";
 import type { ScenarioMapLayer, FeatureId } from "@/types/scenarioGeoModels";
 import type { ScenarioMapLayerAction } from "@/types/constants";
+import { useMapLayerInfo } from "@/composables/geoMapLayers";
 import { getMapLayerIcon } from "@/modules/scenarioeditor/scenarioMapLayerUtils";
 import {
   draggable,
@@ -33,6 +35,8 @@ const props = defineProps<{
   selected: boolean;
   menuItems: MenuItemData<ScenarioMapLayerAction>[];
 }>();
+
+const { layerTypeLabel } = useMapLayerInfo(props.mapLayer);
 
 const emit = defineEmits<{
   (e: "click", event: MouseEvent): void;
@@ -93,7 +97,14 @@ onUnmounted(() => dndCleanup());
     :class="isDragging ? 'opacity-20' : ''"
     :data-map-layer-id="mapLayer.id"
   >
-    <h3 class="group -my-3 -ml-2 flex w-full items-center justify-between py-3">
+    <h3
+      class="group -my-3 -ml-2 flex w-full items-center justify-between border-l py-3"
+      :class="
+        selected
+          ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
+          : 'border-transparent'
+      "
+    >
       <span ref="handleRef" class="cursor-move">
         <IconDrag
           class="text-muted-foreground h-6 w-6 group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
@@ -110,16 +121,16 @@ onUnmounted(() => dndCleanup());
           class="text-muted-foreground size-5 flex-none"
         />
         <span
-          class="ml-2 min-w-0 flex-auto truncate text-left font-bold"
+          class="ml-2 min-w-0 truncate text-left font-bold"
           :class="[
             mapLayer.isHidden ? 'opacity-50' : '',
-            activeMapLayerId === mapLayer.id
-              ? 'dark:text-army2 text-red-800'
-              : 'text-foreground',
-            selected ? 'underline underline-offset-4' : '',
+            activeMapLayerId === mapLayer.id ? 'dark:text-army2 text-red-800' : '',
           ]"
         >
           {{ label }}
+        </span>
+        <span class="text-muted-foreground ml-2 shrink-0 text-xs font-normal">
+          {{ layerTypeLabel }}
         </span>
         <span
           v-if="mapLayer._isTemporary"
@@ -129,23 +140,22 @@ onUnmounted(() => dndCleanup());
         >
       </button>
       <span class="relative ml-6 flex shrink-0 items-center">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          @click="emit('toggle-visibility')"
-          @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-          title="Toggle layer visibility"
+        <LayerHeaderActions
+          :class="selected ? 'bg-yellow-100 dark:bg-yellow-900' : undefined"
         >
-          <IconEyeOff v-if="mapLayer.isHidden" class="size-5" />
-          <IconEye v-else class="size-5" />
-        </Button>
-        <DotsMenu
-          :items="menuItems"
-          @action="emit('action', $event)"
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-        />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            @click="emit('toggle-visibility')"
+            @keydown.stop
+            title="Toggle layer visibility"
+          >
+            <IconEyeOff v-if="mapLayer.isHidden" class="size-5" />
+            <IconEye v-else class="size-5" />
+          </Button>
+          <DotsMenu :items="menuItems" @action="emit('action', $event)" />
+        </LayerHeaderActions>
       </span>
     </h3>
     <DropIndicator

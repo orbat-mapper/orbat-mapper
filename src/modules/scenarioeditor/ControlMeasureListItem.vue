@@ -3,11 +3,11 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import {
   IconAlertOutline,
   IconClockOutline,
-  IconEye,
-  IconEyeOff,
+  IconLockOutline,
   IconDrag,
 } from "@iconify-prerendered/vue-mdi";
-import DotsMenu from "@/components/DotsMenu.vue";
+import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
+import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import { getControlMeasureLabel } from "@/modules/scenarioeditor/controlMeasureLayers";
 import { resolveControlMeasureStyle } from "@/geo/controlMeasures";
@@ -51,7 +51,9 @@ const emit = defineEmits<{
   (e: "toggle-visibility"): void;
 }>();
 
-const hidden = computed(() => props.layer.isHidden || props.item._hidden);
+const hidden = computed(
+  () => props.layer.isHidden || props.item.isHidden || props.item._hidden,
+);
 const supported = computed(() => isSupportedGraphicKind(props.item.graphicKind));
 const label = computed(() => getControlMeasureLabel(props.item));
 const elRef = ref<HTMLElement | null>(null);
@@ -135,24 +137,33 @@ const strokeColor = computed(() => {
         ? 'opacity-20'
         : selected
           ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
-          : 'border-transparent'
+          : 'focus-within:bg-accent border-transparent'
     "
   >
     <span ref="handleRef">
       <IconDrag
         class="text-muted-foreground h-6 w-6 cursor-move group-focus-within:opacity-100 group-hover:opacity-100 sm:opacity-0"
+        :class="{ invisible: layer.locked || item.locked }"
       />
     </span>
     <button
       @click="emit('item-click', $event)"
       @dblclick="emit('item-double-click', $event)"
-      class="flex flex-auto items-center py-2.5 sm:py-2"
+      class="flex min-w-0 flex-auto items-center py-1.5"
     >
-      <component
-        :is="getGeometryIcon(item)"
+      <ControlMeasurePreview
+        v-if="supported"
+        :kind="item.graphicKind"
         class="size-5 shrink-0"
-        :style="supported ? { color: strokeColor } : undefined"
-        :class="supported ? '' : 'text-muted-foreground'"
+        :style="{ color: strokeColor }"
+        :stroke-width="1.5"
+        :pad="4"
+        non-scaling-stroke
+      />
+      <component
+        v-else
+        :is="getGeometryIcon(item)"
+        class="text-muted-foreground size-5 shrink-0"
       />
       <span
         class="group-hover:text-accent-foreground text-foreground ml-2 truncate text-left text-sm"
@@ -162,6 +173,16 @@ const strokeColor = computed(() => {
       </span>
       <!-- `title` on the wrapper, not the svg: SVG needs a <title> child to show one. -->
       <span
+        v-if="item.visibleFromT || item.visibleUntilT"
+        class="ml-1.5 flex shrink-0 items-center"
+        title="Visible only part of the time"
+      >
+        <IconClockOutline class="text-muted-foreground size-3.5 opacity-60" />
+      </span>
+      <span v-if="item.locked" class="ml-1.5 flex shrink-0 items-center" title="Locked">
+        <IconLockOutline class="text-muted-foreground size-3.5 opacity-60" />
+      </span>
+      <span
         v-if="!supported"
         class="ml-1 flex shrink-0 items-center"
         :title="`Unsupported control measure kind '${item.graphicKind}' — kept in the scenario, but not drawn`"
@@ -170,28 +191,13 @@ const strokeColor = computed(() => {
         <span class="sr-only">Unsupported</span>
       </span>
     </button>
-    <div class="relative flex items-center">
-      <button
-        type="button"
-        @click.stop="emit('toggle-visibility')"
-        :disabled="layer.locked || item.locked"
-        class="text-muted-foreground hover:text-foreground mr-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-        title="Toggle visibility"
-      >
-        <IconEyeOff v-if="item.isHidden" class="size-5" />
-        <IconEye v-else class="size-5" />
-      </button>
-
-      <IconClockOutline
-        v-if="item.visibleFromT || item.visibleUntilT"
-        class="text-muted-foreground h-5 w-5"
-      />
-      <DotsMenu
-        :items="menuItems"
-        @action="emit('item-action', $event)"
-        class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-      />
-    </div>
+    <LayerItemActions
+      :hidden="item.isHidden"
+      :toggle-disabled="layer.locked || item.locked"
+      :menu-items="menuItems"
+      @toggle-visibility="emit('toggle-visibility')"
+      @action="emit('item-action', $event)"
+    />
     <DropIndicator
       v-if="itemState.type === 'drag-over' && itemState.closestEdge"
       :edge="itemState.closestEdge"

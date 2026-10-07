@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { IconEye, IconEyeOff, IconPalette } from "@iconify-prerendered/vue-mdi";
+import { IconPalette } from "@iconify-prerendered/vue-mdi";
 import { ChevronRight } from "@lucide/vue";
-import { Button } from "@/components/ui/button";
+import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
 import RangeRingSwatch from "@/modules/scenarioeditor/RangeRingSwatch.vue";
 import type { RangeRingStyle } from "@/types/scenarioGeoModels";
 
@@ -26,46 +26,39 @@ const emit = defineEmits<{
 
 <template>
   <li
-    class="group hover:bg-accent flex items-center justify-between border-l border-transparent pl-6 select-none"
+    class="group hover:bg-accent focus-within:bg-accent relative flex items-center justify-between border-l border-transparent select-none"
   >
     <button
       type="button"
-      class="flex min-w-0 flex-auto items-center py-2.5 text-left sm:py-2"
+      class="flex min-w-0 flex-auto items-center py-1.5 text-left"
       :class="{ 'opacity-50': dimmed }"
       :aria-expanded="open"
       @click="open = !open"
     >
       <ChevronRight
-        class="text-muted-foreground size-4 shrink-0 transition-transform"
+        class="text-muted-foreground mx-1 size-4 shrink-0 transition-transform"
         :class="{ 'rotate-90': open }"
       />
-      <RangeRingSwatch class="ml-1 size-4" :styling="styling" />
+      <RangeRingSwatch class="size-5 shrink-0" :styling="styling" />
       <span class="ml-2 truncate text-sm">{{ label }}</span>
       <span class="text-muted-foreground ml-2 text-xs whitespace-nowrap">
         {{ countLabel }}
       </span>
     </button>
-    <Button
-      v-if="editable"
-      type="button"
-      variant="ghost"
-      size="icon"
-      title="Change group style"
-      class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-      @click="emit('edit-style', $event.currentTarget as HTMLElement)"
+    <LayerItemActions
+      :hidden="hidden"
+      :toggle-title="toggleTitle"
+      @toggle-visibility="emit('toggle-visibility')"
     >
-      <IconPalette class="size-5" />
-    </Button>
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      @click="emit('toggle-visibility')"
-      class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-      :title="toggleTitle"
-    >
-      <IconEyeOff v-if="hidden" class="size-5" />
-      <IconEye v-else class="size-5" />
-    </Button>
+      <button
+        v-if="editable"
+        type="button"
+        title="Change group style"
+        class="text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-md"
+        @click="emit('edit-style', $event.currentTarget as HTMLElement)"
+      >
+        <IconPalette class="size-4" />
+      </button>
+    </LayerItemActions>
   </li>
 </template>

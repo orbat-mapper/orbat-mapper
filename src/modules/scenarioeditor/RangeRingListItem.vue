@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
-import { Button } from "@/components/ui/button";
+import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
 import RangeRingSwatch from "@/modules/scenarioeditor/RangeRingSwatch.vue";
 import type { RangeRingStyle } from "@/types/scenarioGeoModels";
 import type { RangeRingEntry } from "@/modules/scenarioeditor/rangeRingLayerEntries";
@@ -16,31 +15,25 @@ const emit = defineEmits<{ select: []; "toggle-visibility": [] }>();
 
 <template>
   <li
-    class="group hover:bg-accent flex items-center justify-between border-l border-transparent pl-12 select-none"
+    class="group hover:bg-accent focus-within:bg-accent relative flex items-center justify-between border-l border-transparent pl-13 select-none"
   >
     <button
       type="button"
-      class="flex min-w-0 flex-auto items-center py-2.5 text-left sm:py-2"
+      class="flex min-w-0 flex-auto items-center py-1.5 text-left"
       :class="{ 'opacity-50': dimmed || entry.ring.hidden }"
       title="Select unit"
       @click="emit('select')"
     >
-      <RangeRingSwatch class="size-4" :styling="styling" />
+      <RangeRingSwatch class="size-5 shrink-0" :styling="styling" />
       <span class="ml-2 truncate text-sm">{{ entry.unitName }}</span>
-      <span class="text-muted-foreground ml-2 truncate text-xs">
+      <span class="text-muted-foreground ml-2 shrink-[3] truncate text-xs">
         {{ entry.ring.name }} · {{ entry.ring.range }} {{ entry.ring.uom }}
       </span>
     </button>
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      title="Toggle ring visibility"
-      class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-      @click="emit('toggle-visibility')"
-    >
-      <IconEyeOff v-if="entry.ring.hidden" class="size-5" />
-      <IconEye v-else class="size-5" />
-    </Button>
+    <LayerItemActions
+      :hidden="entry.ring.hidden"
+      toggle-title="Toggle ring visibility"
+      @toggle-visibility="emit('toggle-visibility')"
+    />
   </li>
 </template>

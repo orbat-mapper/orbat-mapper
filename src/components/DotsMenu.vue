@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from "vue";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,9 +9,14 @@ import {
 import { EllipsisVertical } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { type MenuItemData } from "@/components/types";
+import { cn } from "@/lib/utils";
 
 const props = withDefaults(
-  defineProps<{ items: MenuItemData[]; sideOffset?: number }>(),
+  defineProps<{
+    items: MenuItemData[];
+    sideOffset?: number;
+    buttonClass?: HTMLAttributes["class"];
+  }>(),
   {
     sideOffset: 10,
   },
@@ -27,7 +33,11 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
   <div>
     <DropdownMenu>
       <DropdownMenuTrigger as="child" class="mr-2" @click.stop>
-        <Button variant="ghost" size="icon" class="text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          :class="cn('text-muted-foreground', buttonClass)"
+        >
           <EllipsisVertical class="size-4" />
         </Button>
       </DropdownMenuTrigger>

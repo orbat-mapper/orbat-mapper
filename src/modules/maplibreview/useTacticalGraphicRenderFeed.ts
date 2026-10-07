@@ -100,9 +100,9 @@ export function useTacticalGraphicRenderFeed(
   const settleHandlers = new Set<SettleHandler>();
   let lastPlan: TacticalGraphicRenderPlan | null = null;
 
-  // Mirrors the plain-feature feed: with the Layers panel open, time-hidden items
-  // stay visible so they can be edited.
-  const filterVisible = () => !uiStore.layersPanelActive;
+  // Mirrors the plain-feature feed: with "Show time-hidden items" on in the Layers panel,
+  // time-hidden items stay visible so they can be edited.
+  const filterVisible = () => !uiStore.forceLayersVisible;
 
   function settle(reason: SettleReason) {
     // Copied because a handler may unregister itself while settling.
@@ -140,7 +140,7 @@ export function useTacticalGraphicRenderFeed(
     [
       () => scenario.store.state.currentTime,
       () => scenario.store.state.featureStateCounter,
-      () => uiStore.layersPanelActive,
+      () => uiStore.forceLayersVisible,
       options.surface,
     ],
     () => render(),

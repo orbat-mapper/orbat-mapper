@@ -19,6 +19,8 @@ export const useUiStore = defineStore("ui", {
     mobilePanelOpen: false,
     mobilePanelHeight: useLocalStorage("mobilePanelHeight", 360),
     layersPanelActive: false,
+    // Layers panel toggle: show time-hidden layers and items so they can be edited.
+    showAllLayers: false,
     activeTabIndex: TAB_ORBAT,
     // Set when an external trigger (e.g. the context menu) should open the
     // image export form in the Tools tab; the Tools panel consumes and resets it.
@@ -47,6 +49,7 @@ export const useUiStore = defineStore("ui", {
   }),
   getters: {
     shortcutsEnabled: (state) => !state.modalOpen,
+    forceLayersVisible: (state) => state.layersPanelActive && state.showAllLayers,
     escEnabled: (state) =>
       !(
         state.modalOpen ||

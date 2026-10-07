@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import {
-  IconClockOutline,
-  IconDrag,
-  IconEye,
-  IconEyeOff,
-} from "@iconify-prerendered/vue-mdi";
-import DotsMenu from "@/components/DotsMenu.vue";
+import { IconClockOutline, IconDrag } from "@iconify-prerendered/vue-mdi";
+import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
 import {
   featureMenuItems,
   getGeometryIcon,
@@ -54,7 +49,9 @@ const emit = defineEmits<{
 const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
 const itemState = ref<ItemState>(idle);
-const hidden = computed(() => props.layer.isHidden || props.feature._hidden);
+const hidden = computed(
+  () => props.layer.isHidden || props.feature.isHidden || props.feature._hidden,
+);
 
 let dndCleanup: CleanupFn = () => {};
 
@@ -116,7 +113,7 @@ onUnmounted(() => {
         ? 'bg-muted'
         : selected
           ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900'
-          : 'border-transparent',
+          : 'focus-within:bg-accent border-transparent',
       itemState.type === 'dragging' ? 'opacity-20' : '',
     ]"
   >
@@ -128,37 +125,33 @@ onUnmounted(() => {
     <button
       @click="emit('feature-click', $event)"
       @dblclick="emit('feature-double-click', $event)"
-      class="flex flex-auto items-center py-2.5 sm:py-2"
+      class="flex min-w-0 flex-auto items-center py-1.5"
     >
-      <component :is="getGeometryIcon(feature)" class="text-muted-foreground size-5" />
+      <component
+        :is="getGeometryIcon(feature)"
+        class="text-muted-foreground size-5 shrink-0"
+      />
       <span
-        class="group-hover:text-accent-foreground text-foreground ml-2 text-left text-sm"
+        class="group-hover:text-accent-foreground text-foreground ml-2 truncate text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"
       >
         {{ feature.name || feature.geometryMeta.geometryKind || feature.geometry.type }}
       </span>
-    </button>
-    <div class="relative flex items-center">
-      <button
-        type="button"
-        @click.stop="emit('toggle-visibility')"
-        class="text-muted-foreground hover:text-foreground mr-1 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-        title="Toggle visibility"
-      >
-        <IconEyeOff v-if="feature.isHidden" class="size-5" />
-        <IconEye v-else class="size-5" />
-      </button>
-
-      <IconClockOutline
+      <!-- `title` on the wrapper, not the svg: SVG needs a <title> child to show one. -->
+      <span
         v-if="feature.visibleFromT || feature.visibleUntilT"
-        class="text-muted-foreground h-5 w-5"
-      />
-      <DotsMenu
-        :items="menuItems"
-        @action="emit('feature-action', $event)"
-        class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-      />
-    </div>
+        class="ml-1.5 flex shrink-0 items-center"
+        title="Visible only part of the time"
+      >
+        <IconClockOutline class="text-muted-foreground size-3.5 opacity-60" />
+      </span>
+    </button>
+    <LayerItemActions
+      :hidden="feature.isHidden"
+      :menu-items="menuItems"
+      @toggle-visibility="emit('toggle-visibility')"
+      @action="emit('feature-action', $event)"
+    />
     <DropIndicator
       v-if="itemState.type === 'drag-over' && itemState.closestEdge"
       :edge="itemState.closestEdge"

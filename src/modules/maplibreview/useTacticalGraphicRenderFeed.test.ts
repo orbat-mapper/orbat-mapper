@@ -82,7 +82,8 @@ describe("useTacticalGraphicRenderFeed", () => {
 
     // A layer-visibility toggle must settle too — that is why the guard is on the
     // feed rather than on the clock.
-    useUiStore().layersPanelActive = !useUiStore().layersPanelActive;
+    useUiStore().layersPanelActive = true;
+    useUiStore().showAllLayers = true;
     await nextTick();
     expect(h.render).toHaveBeenCalledTimes(4);
 

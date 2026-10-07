@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DotsMenu from "@/components/DotsMenu.vue";
+import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import {
   IconClockOutline,
@@ -225,6 +226,7 @@ onUnmounted(() => {
     ></template>
     <template #label
       ><div
+        class="flex min-w-0 items-center gap-2"
         ref="layerRef"
         @dblclick="activeLayerId = layer.id"
         :class="[
@@ -232,7 +234,17 @@ onUnmounted(() => {
           layer.id === activeLayerId ? 'dark:text-army2 text-red-800' : '',
         ]"
       >
-        {{ layer.name }}
+        <span class="truncate">{{ layer.name }}</span>
+        <span class="text-muted-foreground shrink-0 text-xs font-normal">
+          {{ features.length }}
+        </span>
+        <span
+          v-if="layer.visibleFromT || layer.visibleUntilT"
+          class="flex shrink-0 items-center"
+          title="Visible only part of the time"
+        >
+          <IconClockOutline class="text-muted-foreground size-3.5 opacity-60" />
+        </span>
       </div>
       <DropIndicator
         v-if="itemState.type === 'drag-over' && itemState.closestEdge"
@@ -247,14 +259,13 @@ onUnmounted(() => {
       />
     </template>
     <template #right>
-      <div class="-mr-2 flex items-center">
+      <LayerHeaderActions>
         <Button
           variant="ghost"
           size="icon"
           type="button"
           @click="activeLayerId = layer.id"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Set as active layer"
         >
           <IconStar v-if="activeLayerId === layer.id" class="size-5" />
@@ -266,23 +277,16 @@ onUnmounted(() => {
           size="icon"
           @click="toggleFeatureLayerVisibility(layer)"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle layer visibility"
         >
           <IconEyeOff v-if="layer.isHidden" class="size-5" />
           <IconEye class="size-5" v-else />
         </Button>
-
-        <IconClockOutline
-          v-if="layer.visibleFromT || layer.visibleUntilT"
-          class="text-muted-foreground size-5"
-        />
         <DotsMenu
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="layerMenuItems || defaultLayerMenuItems"
           @action="emit('layer-action', layer, $event)"
         />
-      </div>
+      </LayerHeaderActions>
     </template>
     <EditLayerInlineForm
       v-if="editedLayerId === layer.id"
@@ -291,7 +295,7 @@ onUnmounted(() => {
       @close="editedLayerId = null"
       @update="geo.updateLayer(layer.id, $event)"
     />
-    <ul class="-mt-6 -ml-5">
+    <ul class="-mt-6 -ml-1">
       <ScenarioFeatureListItem
         v-for="feature in features"
         :key="feature.id"

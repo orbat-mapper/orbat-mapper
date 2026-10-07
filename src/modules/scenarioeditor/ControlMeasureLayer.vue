@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
+import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
 import {
   IconClockOutline,
   IconEye,
@@ -220,13 +221,27 @@ function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
     </template>
     <template #label>
       <div
+        class="flex min-w-0 items-center gap-2"
         @dblclick="activeLayerId = layer.id"
         :class="[
           layer.isHidden ? 'opacity-50' : '',
           activeLayerId === layer.id ? 'dark:text-army2 text-red-800' : '',
         ]"
       >
-        {{ layer.name }}
+        <span class="truncate">{{ layer.name }}</span>
+        <span class="text-muted-foreground shrink-0 text-xs font-normal">
+          {{ items.length }}
+        </span>
+        <span
+          v-if="layer.visibleFromT || layer.visibleUntilT"
+          class="flex shrink-0 items-center"
+          title="Visible only part of the time"
+        >
+          <IconClockOutline class="text-muted-foreground size-3.5 opacity-60" />
+        </span>
+        <span v-if="layer.locked" class="flex shrink-0 items-center" title="Locked">
+          <IconLockOutline class="text-muted-foreground size-3.5 opacity-60" />
+        </span>
       </div>
       <DropIndicator
         v-if="itemState.type === 'drag-over' && itemState.closestEdge"
@@ -235,14 +250,13 @@ function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
       />
     </template>
     <template #right>
-      <div class="-mr-2 flex items-center">
+      <LayerHeaderActions>
         <Button
           type="button"
           variant="ghost"
           size="icon"
           @click="activeLayerId = layer.id"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Set as active layer"
         >
           <IconStar v-if="activeLayerId === layer.id" class="size-5" />
@@ -254,7 +268,6 @@ function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
           size="icon"
           @click="toggleLayerLocked()"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle layer lock"
         >
           <IconLockOutline v-if="layer.locked" class="size-5" />
@@ -266,23 +279,16 @@ function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
           size="icon"
           @click="toggleLayerVisibility()"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle layer visibility"
         >
           <IconEyeOff v-if="layer.isHidden" class="size-5" />
           <IconEye class="size-5" v-else />
         </Button>
-
-        <IconClockOutline
-          v-if="layer.visibleFromT || layer.visibleUntilT"
-          class="text-muted-foreground size-5"
-        />
         <DotsMenu
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           :items="availableLayerMenuItems"
           @action="emit('layer-action', layer, $event)"
         />
-      </div>
+      </LayerHeaderActions>
     </template>
     <EditLayerInlineForm
       v-if="editedLayerId === layer.id"
@@ -291,7 +297,7 @@ function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
       @close="editedLayerId = null"
       @update="geo.updateLayer(layer.id, $event)"
     />
-    <ul class="-mt-6 -ml-5">
+    <ul class="-mt-6 -ml-1">
       <ControlMeasureListItem
         v-for="item in items"
         :key="item.id"

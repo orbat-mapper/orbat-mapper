@@ -23,6 +23,7 @@ import {
 vi.mock("@/stores/uiStore", () => ({
   useUiStore: () => ({
     layersPanelActive: false,
+    showAllLayers: false,
     mapLayersPanelOpen: true,
   }),
 }));

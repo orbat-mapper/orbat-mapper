@@ -12,6 +12,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import DropIndicator from "@/components/DropIndicator.vue";
+import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNotifications } from "@/composables/notifications";
@@ -218,14 +219,13 @@ onUnmounted(() => dndCleanup());
       />
     </template>
     <template #right>
-      <div class="-mr-2 flex items-center">
+      <LayerHeaderActions>
         <Button
           type="button"
           variant="ghost"
           size="icon"
           @click="startAddGroup()"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Add range ring group"
         >
           <IconPlus class="size-5" />
@@ -236,15 +236,14 @@ onUnmounted(() => dndCleanup());
           size="icon"
           @click="toggleAll()"
           @keydown.stop
-          class="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           title="Toggle all range rings"
         >
           <IconEyeOff v-if="state.rangeRingVisibility.hidden" class="size-5" />
           <IconEye v-else class="size-5" />
         </Button>
-      </div>
+      </LayerHeaderActions>
     </template>
-    <ul class="-mt-6 -ml-5">
+    <ul class="-mt-6 -ml-1">
       <li v-if="isAddingGroup" class="py-2 pr-2 pl-6">
         <form class="flex items-center gap-2" @submit.prevent="addGroup()">
           <Input
@@ -284,7 +283,7 @@ onUnmounted(() => dndCleanup());
           />
           <li
             v-if="!rings.length"
-            class="text-muted-foreground py-2 pl-12 text-xs italic"
+            class="text-muted-foreground py-2 pl-13 text-xs italic"
           >
             No units use this group.
           </li>
