@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added a Unit changes panel to the scenario timeline. Clicking a timeline bin lists the unit and map item changes behind it, and the Changes button (or `h`) lists the changes around the current time. The list view shows the changes in time order with a divider at the current time and links to the previous and next change. The lanes view shows one lane per unit or map item on a time axis in the scenario's time zone, with optional trips, and changes can be dragged to a new time. Changes can be filtered by kind, by name and to the current map view, over a window from ±1 hour to ±7 days. The panel floats over the map or docks below it, and its view, columns and sorting are remembered.
+- Added a Unit changes panel to the scenario timeline. Clicking a timeline bin lists the unit and map item changes behind it, and the Changes button (or `h`) lists the changes around the current time. The list view shows the changes in time order with a divider at the current time and links to the previous and next change. The lanes view shows one lane per unit or map item on a time axis in the scenario's time zone, with optional trips, and changes can be dragged to a new time. Box selecting in the lanes scrolls them when the pointer is held near the top or bottom edge, so changes outside the view can be selected. Changes can be filtered by kind, by name and to the current map view, over a window from ±1 hour to ±7 days. The panel floats over the map or docks below it, and its view, columns and sorting are remembered.
 - Added new control measures: Bomb Area, Smoke, Series or Group of Targets, Lane, Ferry, Raft Site, Ford Easy, Ford Difficult, Unexploded Explosive Ordnance (UXO) Area, and the Interdict mission task.
 - Added a unique designation (Field T) label to generic lines, polygons, rectangles, circles, sectors, and Classic Arrows.
 - Added a Bézier smoothing style to generic lines, polygons, and Classic Arrows, where the control points shape the curve instead of lying on it.
@@ -27,7 +27,8 @@ All notable changes to this project will be documented in this file.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
 - Adding many control measures at once, such as when opening a large scenario, is much faster.
 - Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
-- Playback and timeline scrubbing are much smoother in large scenarios. Only units and features that change are redrawn, and moving units are updated separately from stationary ones.
+- Playback and timeline scrubbing are much smoother in large scenarios. Only units and features that change are redrawn, moving units are updated separately from stationary ones, and range ring groups only merge the rings that overlap.
+- Playback speed is now set as scenario time per real second, so playback runs at the same pace whatever the frame rate. The default is 15 hours per second, and the playback menu shows the current speed.
 - Dragging units on the map is smoother, since only the dragged units are redrawn while dragging.
 - Range rings now follow the zoom visibility range of their unit, and grouped range rings with different zoom ranges still merge into one shape.
 - Units on the map are now clicked and hovered on their symbol only, instead of anywhere within their text amplifiers. When units overlap, the closest one is picked.
@@ -40,6 +41,8 @@ All notable changes to this project will be documented in this file.
 - Fixed clicking an empty spot on the map in move mode not clearing the selection.
 - Fixed a dropped unit, or one that stops moving during playback, briefly disappearing from the map.
 - Fixed the map context menu and rotate tool not recognising units that are moving during playback.
+- Fixed unit labels blinking or barely showing on moving units during playback.
+- Fixed the play button tooltip, which described the undo action.
 - Fixed plain `.milxly` files being detected as TSV instead of MilX, and restored the "keep dialog open" toggle in the import dialog.
 
 ## September 2026
