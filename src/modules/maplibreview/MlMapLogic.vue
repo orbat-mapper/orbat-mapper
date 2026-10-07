@@ -1597,6 +1597,22 @@ watch(
   },
 );
 
+// Each `setData` on the moving source can give a moving unit's symbol a new identity
+// in MapLibre's cross-tile index (after crossing a tile edge or moving more than a
+// couple of pixels). Its label then starts hidden and only fades in after the next
+// placement, so moving labels blink. Without fading, MapLibre places symbols on every
+// frame and new labels show at once. `_fadeDuration` is private, but MapLibre reads it
+// on every frame, unlike the `fadeDuration` constructor option.
+const fadeMap = mlMap as unknown as { _fadeDuration: number };
+const defaultFadeDuration = fadeMap._fadeDuration;
+watch(
+  () => playback.timeAnimating,
+  (animating) => {
+    fadeMap._fadeDuration = animating ? 0 : defaultFadeDuration;
+  },
+  { immediate: true },
+);
+
 watch(hoverEnabled, (enabled) => {
   if (!enabled) clearHoveredFeatures();
 });
