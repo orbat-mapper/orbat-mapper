@@ -130,10 +130,19 @@ type CustomSymbolCacheEntry = {
 
 type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 
+const UNIT_LABEL_TEXT_SIZE = 12;
+// Space (CSS px) between the bottom of a unit symbol and its label.
+const UNIT_LABEL_GAP = 2;
+
 const symbolCache: Map<string, SymbolCacheEntry> = new Map();
 // MapLibre centers an icon on its point. Milsymbol images are cropped to the symbol,
-// so each is shifted by this offset (CSS px) to put the symbol anchor on the point.
-const iconOffsets = new Map<string, [number, number]>();
+// so each is shifted by `iconOffset` (CSS px) to put the symbol anchor on the point.
+// `bottom` is the distance (CSS px) from the anchor to the bottom edge, which includes
+// anything drawn below the frame such as a status bar or mobility indicator.
+const milSymbolMetrics = new Map<
+  string,
+  { iconOffset: [number, number]; bottom: number }
+>();
 const usedImageIds = new Set<string>();
 const unitLayerIds = new Set<string>([UNIT_LAYER_ID]);
 // During playback and timeline scrubbing, units that are moving at the current time
@@ -289,7 +298,7 @@ function createUnitLayerSpec(
       "text-font": ["Noto Sans Italic"],
       "text-offset": ["get", "textOffset"],
       "text-anchor": "top",
-      "text-size": 12,
+      "text-size": UNIT_LABEL_TEXT_SIZE,
       "icon-allow-overlap": true,
       "text-allow-overlap": false,
       "text-overlap": "never",
@@ -364,9 +373,20 @@ function isHostileSidc(sidc: string) {
   return sidc[SID_INDEX] === "6";
 }
 
-function getUnitLabelOffsetY(symbolSize: number, sidc: string) {
-  const frameMultiplier = isHostileSidc(sidc) ? 1.25 : 1;
-  return Math.max(1.5, (symbolSize / 20) * frameMultiplier);
+// Returns the label offset in ems. Below milsymbols it is measured from the symbol's
+// bottom edge, so the label clears a status bar or mobility indicator.
+function getUnitLabelOffsetY(
+  symbolKey: string,
+  cachedSymbol: SymbolCacheEntry,
+  sidc: string,
+) {
+  if (cachedSymbol.kind === "custom") {
+    const frameMultiplier = isHostileSidc(sidc) ? 1.25 : 1;
+    return Math.max(1.5, (cachedSymbol.size / 20) * frameMultiplier);
+  }
+  // Measured without the selection outline, so the label stays put on selection.
+  const { bottom } = getMilSymbolMetrics(symbolKey, cachedSymbol);
+  return (bottom + UNIT_LABEL_GAP) / UNIT_LABEL_TEXT_SIZE;
 }
 
 function getCustomSymbolId(sidc: string) {
@@ -538,18 +558,25 @@ function buildMilSymbolImageData(
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-function getUnitIconOffset(imageId: string, cachedSymbol: SymbolCacheEntry) {
-  if (cachedSymbol.kind === "custom") return [0, 0];
-  let offset = iconOffsets.get(imageId);
-  if (!offset) {
+function getMilSymbolMetrics(imageId: string, cachedSymbol: MilSymbolCacheEntry) {
+  let metrics = milSymbolMetrics.get(imageId);
+  if (!metrics) {
     const { sidc, options } = getMilSymbolArgs(imageId, cachedSymbol);
     const symbol = symbolGenerator(sidc, options);
     const { width, height } = symbol.getSize();
     const anchor = symbol.getAnchor();
-    offset = [width / 2 - anchor.x, height / 2 - anchor.y];
-    iconOffsets.set(imageId, offset);
+    metrics = {
+      iconOffset: [width / 2 - anchor.x, height / 2 - anchor.y],
+      bottom: height - anchor.y,
+    };
+    milSymbolMetrics.set(imageId, metrics);
   }
-  return offset;
+  return metrics;
+}
+
+function getUnitIconOffset(imageId: string, cachedSymbol: SymbolCacheEntry) {
+  if (cachedSymbol.kind === "custom") return [0, 0];
+  return getMilSymbolMetrics(imageId, cachedSymbol).iconOffset;
 }
 
 // Re-rasterize any programmatic symbol (milsymbol or custom) at an arbitrary
@@ -1474,7 +1501,7 @@ function buildUnitFeature(
       label: mapSettings.mapUnitLabelBelow
         ? unit.shortName || unit.name || "Unnamed Unit"
         : "",
-      textOffset: [0, getUnitLabelOffsetY(renderedSymbolSize, sidc)],
+      textOffset: [0, getUnitLabelOffsetY(symbolKey, symbolData, sidc)],
       symbolRotation,
     },
   } as Feature;
@@ -1521,8 +1548,11 @@ function pruneSymbolImages(activeImageIds: ReadonlySet<string>) {
   for (const key of symbolCache.keys()) {
     if (!activeSymbolKeys.has(key)) symbolCache.delete(key);
   }
-  for (const imageId of iconOffsets.keys()) {
-    if (!activeImageIds.has(imageId)) iconOffsets.delete(imageId);
+  for (const key of milSymbolMetrics.keys()) {
+    // Keep a selected unit's unselected metrics, which place its label.
+    if (!activeImageIds.has(key) && !activeSymbolKeys.has(key)) {
+      milSymbolMetrics.delete(key);
+    }
   }
 }
 

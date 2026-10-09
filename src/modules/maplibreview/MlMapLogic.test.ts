@@ -647,7 +647,15 @@ describe("MlMapLogic", () => {
     );
   });
 
-  it("scales MapLibre unit label offset with ordinary icon size overrides", () => {
+  it("places MapLibre unit labels below the bottom edge of the symbol", () => {
+    // A status bar or mobility indicator extends the symbol below its frame.
+    vi.mocked(symbolGenerator).mockImplementation(
+      () =>
+        ({
+          getSize: () => ({ width: 80, height: 60 }),
+          getAnchor: () => ({ x: 40, y: 26 }),
+        }) as unknown as ReturnType<typeof symbolGenerator>,
+    );
     const mockMap = createMockMap();
     const pinia = createPinia();
     setActivePinia(pinia);
@@ -687,61 +695,13 @@ describe("MlMapLogic", () => {
     } as any;
 
     mountMlMapLogic({ mockMap, activeScenario, pinia });
+    vi.mocked(symbolGenerator).mockRestore();
 
     const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
     const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
     expect(unitData.features[0].properties).toMatchObject({
       label: "A1",
       textOffset: [0, 3],
-    });
-  });
-
-  it("adds extra MapLibre unit label clearance for scaled hostile diamond icons", () => {
-    const mockMap = createMockMap();
-    const pinia = createPinia();
-    setActivePinia(pinia);
-    useMapSettingsStore(pinia).mapUnitLabelBelow = true;
-    const activeScenario = {
-      store: {
-        getMutationCount: () => 0,
-        state: {
-          id: "scenario-maplibre-hostile-label-offset",
-          currentTime: 0,
-          featureStateCounter: 0,
-        },
-      },
-      unitActions: {
-        isUnitHidden: vi.fn(() => false),
-        getCombinedSymbolOptions: vi.fn(() => ({})),
-      },
-      geo: {
-        everyVisibleUnit: computed(() => [
-          {
-            id: "unit-hostile-label-offset",
-            sidc: "10061000000000000000",
-            shortName: "H1",
-            name: "Hostile 1",
-            style: {
-              mapSymbolSize: 60,
-            },
-            _state: {
-              location: [10, 20],
-            },
-          },
-        ]),
-      },
-      time: {
-        setCurrentTime: vi.fn(),
-      },
-    } as any;
-
-    mountMlMapLogic({ mockMap, activeScenario, pinia });
-
-    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
-    const unitData = setDataCalls[setDataCalls.length - 1]?.[0];
-    expect(unitData.features[0].properties).toMatchObject({
-      label: "H1",
-      textOffset: [0, 3.75],
     });
   });
 
