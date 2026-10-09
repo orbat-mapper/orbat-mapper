@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { defineComponent, h, inject, ref, toRef } from "vue";
+import { defineComponent, h, inject, nextTick, ref, toRef } from "vue";
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import {
@@ -486,6 +486,28 @@ describe("MaplibreContextMenu", () => {
     expect(wrapper.text()).toContain("Feature 1");
     expect(wrapper.text()).toContain("Open in");
     expect(wrapper.text()).toContain("Map as image");
+  });
+
+  it("marks the right clicked spot with a target only when the menu opens", async () => {
+    const mapRef = createTrackMapRef({});
+    const { wrapper } = mountMenu({ mapRef });
+    const trigger = wrapper.get(".h-full.w-full");
+
+    // MapLibre cancels the native event, and drops it if the press becomes a drag.
+    const nativeEvent = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+      clientX: 10,
+      clientY: 20,
+    });
+    nativeEvent.preventDefault();
+    trigger.element.dispatchEvent(nativeEvent);
+    await nextTick();
+    expect(wrapper.find(".text-yellow-500").exists()).toBe(false);
+
+    await trigger.trigger("contextmenu", { button: 2, clientX: 10, clientY: 20 });
+    expect(wrapper.find(".text-yellow-500").exists()).toBe(true);
   });
 
   function createTrackMapRef(hits: Record<string, any[]>) {

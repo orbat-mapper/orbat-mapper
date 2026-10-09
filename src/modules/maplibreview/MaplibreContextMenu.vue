@@ -22,6 +22,7 @@ import {
   IconPlay,
   IconSpeedometer,
   IconSpeedometerSlow,
+  IconTarget,
   IconVectorPoint,
   IconVectorPointMinus,
 } from "@iconify-prerendered/vue-mdi";
@@ -198,6 +199,7 @@ const triggerRef = ref<HTMLDivElement | null>(null);
 const clickedUnits = ref<NUnit[]>([]);
 const clickedFeatures = ref<NGeometryLayerItem[]>([]);
 const dropPosition = ref<Position>([0, 0]);
+const pixelPosition = ref<[number, number] | null>(null);
 const mapZoomLevel = ref(0);
 const clickedTrackPoint = ref<TrackPointHit | null>(null);
 const LONG_PRESS_MS = 550;
@@ -402,15 +404,22 @@ function onConvertViaPointToWaypoint() {
   unitActions.convertViaPointToWaypoint(hit.unitId, hit.stateIndex, hit.viaIndex);
 }
 
+function onContextMenuUpdate(open: boolean) {
+  if (!open) pixelPosition.value = null;
+}
+
 function onContextMenu(event: MouseEvent) {
   const { mapRef } = props;
-  if (!mapRef) return;
+  // MapLibre cancels the native event and replays it once it knows the press was not
+  // a drag, which on macOS is at mouseup. Like the trigger, only act on the replay.
+  if (!mapRef || event.defaultPrevented) return;
 
   const rect = mapRef.getContainer().getBoundingClientRect();
   const point: [number, number] = [event.clientX - rect.left, event.clientY - rect.top];
   const lngLat = mapRef.unproject(point);
 
   dropPosition.value = [lngLat.lng, lngLat.lat];
+  pixelPosition.value = point;
   mapZoomLevel.value = mapRef.getZoom() ?? 0;
   clickedUnits.value = [];
   clickedFeatures.value = [];
@@ -448,11 +457,11 @@ function onContextMenu(event: MouseEvent) {
 </script>
 
 <template>
-  <ContextMenu>
+  <ContextMenu @update:open="onContextMenuUpdate">
     <ContextMenuTrigger as-child>
       <div
         ref="triggerRef"
-        class="h-full w-full"
+        class="relative h-full w-full"
         @contextmenu="onContextMenu"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
@@ -460,6 +469,11 @@ function onContextMenu(event: MouseEvent) {
         @pointercancel="onPointerEnd"
       >
         <slot />
+        <IconTarget
+          v-if="pixelPosition"
+          class="pointer-events-none absolute size-8 -translate-x-1/2 -translate-y-1/2 text-yellow-500"
+          :style="{ left: `${pixelPosition[0]}px`, top: `${pixelPosition[1]}px` }"
+        />
       </div>
     </ContextMenuTrigger>
     <ContextMenuContent>
