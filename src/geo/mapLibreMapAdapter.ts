@@ -19,6 +19,7 @@ import type {
   ViewConstraints,
 } from "@/geo/contracts/mapAdapter";
 import { queryUnitHitsAt } from "@/geo/engines/maplibre/unitHitBox";
+import { getMapOverlayPadding } from "@/geo/mapOverlayPadding";
 
 const ML_EVENT_MAP: Record<MapEventType, string> = {
   moveend: "moveend",
@@ -69,13 +70,17 @@ export class MapLibreMapAdapter implements MapAdapter {
   }
 
   fitExtent(bbox: [number, number, number, number], options: FitOptions = {}): void {
-    const { duration = 900, maxZoom = 15, padding } = options;
+    const { duration = 900, maxZoom = 15 } = options;
+    const padding = getMapOverlayPadding(this.mlMap.getContainer(), options.padding);
     this.mlMap.fitBounds(bbox, {
       maxZoom,
       duration,
-      padding: padding
-        ? { top: padding[0], right: padding[1], bottom: padding[2], left: padding[3] }
-        : undefined,
+      padding: {
+        top: padding[0],
+        right: padding[1],
+        bottom: padding[2],
+        left: padding[3],
+      },
     });
   }
 

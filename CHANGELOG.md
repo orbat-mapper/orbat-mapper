@@ -38,6 +38,8 @@ All notable changes to this project will be documented in this file.
 - 3D terrain and hillshading are no longer experimental. Their settings have moved from the Labs menu to a Terrain submenu in the map context menu and in the main menu under View, and they are now remembered between visits.
 - The standalone file no longer reads elevation data from Mapterhorn by itself. The terrain button offers a choice between Mapterhorn online and an elevation archive, and the choice is remembered.
 - Opening the Layers panel no longer reveals every time-hidden layer and item. A "Show time-hidden items" switch does that instead. Control measures are listed with a preview of their symbol, layer actions appear when hovering a row so names get the full width, and items hidden with the eye toggle are dimmed.
+- Hovering an item in the Layers panel now shows a zoom button next to the visibility toggle.
+- Zooming to items, layers, units and search results now leaves a margin around the target and keeps it clear of the map header, toolbars, the floating details panel and the map controls.
 
 ### Fixed
 

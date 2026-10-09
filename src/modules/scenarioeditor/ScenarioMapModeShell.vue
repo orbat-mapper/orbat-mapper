@@ -70,7 +70,7 @@ const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
           v-if="mapReady"
           class="pointer-events-none absolute inset-0 flex flex-col justify-between"
         >
-          <header :class="headerClass">
+          <header :class="headerClass" data-map-overlay>
             <div class="@container ml-10 flex min-w-0 flex-1 items-center sm:ml-8">
               <MapTimeController
                 class="pointer-events-auto ml-1"
@@ -111,6 +111,7 @@ const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
           <footer
             v-if="!isMobile && showBottomToolbar"
             ref="bottomToolbarRef"
+            data-map-overlay
             class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
           >
             <slot name="bottom-toolbar" />

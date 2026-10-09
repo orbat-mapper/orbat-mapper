@@ -4,10 +4,14 @@ import type { GeoJSON, Position } from "geojson";
 /** [west, south, east, north] in degrees. */
 export type Bbox = [number, number, number, number];
 
+/** [top, right, bottom, left] in pixels. */
+export type Padding = [number, number, number, number];
+
 export interface FitOptions {
   maxZoom?: number;
   duration?: number;
-  padding?: [number, number, number, number];
+  /** Margin around the target; UI floating over the map is kept clear on top of it. */
+  padding?: Padding;
 }
 
 export interface AnimateOptions {

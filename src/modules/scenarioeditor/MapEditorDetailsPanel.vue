@@ -31,6 +31,7 @@ const overlayClasses =
 <template>
   <aside
     :class="mode === 'overlay' ? overlayClasses : sidebarClasses"
+    data-map-overlay
     :style="{
       width: widthStore.detailsWidth + 'px',
       minWidth: '250px',
