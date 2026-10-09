@@ -3,20 +3,24 @@ import { computed } from "vue";
 import {
   IconCheck as DoneIcon,
   IconClose as CancelIcon,
+  IconLockOutline as LockIcon,
   IconMagnet as SnapIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useToggle } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import FloatingPanel from "@/components/FloatingPanel.vue";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
 import { scenarioDrawKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { getControlMeasureKindOption } from "@/modules/scenarioeditor/controlMeasurePicker";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 
 const { drawSessionProgress, finishDrawSession, cancel, snap } =
   injectStrict(scenarioDrawKey);
 const toggleSnap = useToggle(snap);
+const { addMultiple } = storeToRefs(useMainToolbarStore());
 
 const plainNames = {
   Point: "Point",
@@ -69,6 +73,16 @@ const doneDisabled = computed(() => {
       <span class="font-medium">{{ drawingName }}</span>
       <span class="text-muted-foreground"> · {{ progressText }}</span>
     </p>
+    <MainToolbarButton
+      v-if="addMultiple"
+      title="Lock is on: the tool stays active after each feature. Click to unlock."
+      aria-label="Unlock tool"
+      class="size-11"
+      active
+      @click="addMultiple = false"
+    >
+      <LockIcon class="size-5" />
+    </MainToolbarButton>
     <MainToolbarButton
       title="Snap to grid"
       aria-label="Snap to grid"

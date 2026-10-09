@@ -250,14 +250,33 @@ watchEffect(() => {
 <template>
   <FloatingPanel
     v-if="isGetLocationActive"
-    class="bg-popover/75! absolute bottom-14 overflow-visible p-2 px-4 text-sm sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
+    data-map-ui
+    class="bg-popover/75! pointer-events-auto absolute bottom-14 flex items-center gap-x-1 overflow-visible px-3 py-0.5 text-sm whitespace-nowrap sm:bottom-16 sm:left-1/2 sm:-translate-x-1/2"
   >
-    Click on map or ORBAT to place unit.
-    <Button type="button" variant="link" size="sm" @click="cancelGetLocation()">
+    <span>Click on map or ORBAT to place unit.</span>
+    <Button
+      v-if="addMultiple"
+      type="button"
+      variant="link"
+      size="sm"
+      class="px-1"
+      title="Lock is on: the tool stays active after each unit. Click to unlock."
+      @click="addMultiple = false"
+    >
+      <IconLockOutline class="size-4" /> Unlock
+    </Button>
+    <Button
+      type="button"
+      variant="link"
+      size="sm"
+      class="px-1"
+      @click="cancelGetLocation()"
+    >
       Cancel
     </Button>
   </FloatingPanel>
   <nav
+    data-map-ui
     class="no-scrollbar bg-sidebar border-border pointer-events-auto flex w-full max-w-full items-center justify-between gap-2 overflow-x-auto overscroll-x-contain border p-1 text-sm shadow-sm sm:rounded-xl sm:p-2 md:w-auto"
   >
     <section class="flex shrink-0 items-center justify-between">

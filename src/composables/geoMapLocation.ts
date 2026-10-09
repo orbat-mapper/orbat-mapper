@@ -61,6 +61,8 @@ export function useGetMapLocation(
     stopEscListener = onKeyStroke("Escape", () => cancel());
     if (eventSource === "dom" && targetEl) {
       const handleNativeClickEvent = (event: MouseEvent) => {
+        // Let overlay UI (e.g. the Cancel button) receive its own clicks
+        if ((event.target as Element | null)?.closest?.("[data-map-ui]")) return;
         event.preventDefault();
         event.stopPropagation();
         cleanUp();

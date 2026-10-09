@@ -1,19 +1,23 @@
 // @vitest-environment jsdom
 import { mount } from "@vue/test-utils";
 import { ref } from "vue";
+import { createPinia } from "pinia";
 import { describe, expect, it, vi } from "vitest";
 
 import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import { scenarioDrawKey } from "@/components/injects";
 import type { DrawSessionProgress } from "@/modules/scenarioeditor/useScenarioDraw";
+import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 
 function mountBar(progress: DrawSessionProgress) {
   const drawSessionProgress = ref<DrawSessionProgress | null>(progress);
   const finishDrawSession = vi.fn();
   const cancel = vi.fn();
   const snap = ref(true);
+  const pinia = createPinia();
   const wrapper = mount(DrawSessionActionBar, {
     global: {
+      plugins: [pinia],
       provide: {
         [scenarioDrawKey as symbol]: {
           drawSessionProgress,
@@ -28,6 +32,23 @@ function mountBar(progress: DrawSessionProgress) {
 }
 
 describe("DrawSessionActionBar", () => {
+  it("shows an unlock button only while lock mode is on", async () => {
+    const { wrapper } = mountBar({
+      family: "plain",
+      drawType: "Point",
+      pointCount: 0,
+      minPoints: 1,
+      canCommit: false,
+    });
+    expect(wrapper.find("[aria-label='Unlock tool']").exists()).toBe(false);
+
+    const store = useMainToolbarStore();
+    store.addMultiple = true;
+    await wrapper.vm.$nextTick();
+    await wrapper.get("[aria-label='Unlock tool']").trigger("click");
+    expect(store.addMultiple).toBe(false);
+  });
+
   it("shows accessible progress and disables Done for an incomplete draft", async () => {
     const { wrapper, finishDrawSession, cancel } = mountBar({
       family: "plain",
