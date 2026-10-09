@@ -12,6 +12,7 @@ import type {
   MeasurementInteractionOptions,
   MeasurementTypes,
 } from "@/geo/measurementTypes";
+import type { MapOrbit } from "@/modules/maplibreview/useMapOrbit";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import type {
   ScenarioDraw,
@@ -111,6 +112,12 @@ export const tacticalGraphicRenderFeedKey = Symbol(
  * from the details panel with the toolbar closed.
  */
 export const scenarioDrawKey = Symbol("Scenario draw") as InjectionKey<ScenarioDraw>;
+
+/**
+ * The map view's orbit mode. Provided by the MapLibre scenario view; the context menu
+ * starts it and the scenario editor's Escape chain stops it.
+ */
+export const mapOrbitKey = Symbol("Map orbit") as InjectionKey<MapOrbit>;
 
 /**
  * Registration holder for the keyboard owner (Escape / Enter / Ctrl+Z).

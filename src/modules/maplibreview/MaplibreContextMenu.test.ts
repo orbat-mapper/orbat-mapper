@@ -6,6 +6,7 @@ import { createPinia, setActivePinia } from "pinia";
 import {
   activeLayerKey,
   activeScenarioKey,
+  mapOrbitKey,
   searchActionsKey,
 } from "@/components/injects";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
@@ -280,6 +281,11 @@ describe("MaplibreContextMenu", () => {
           [activeScenarioKey as symbol]: scenario,
           [activeLayerKey as symbol]: ref("layer-1"),
           [searchActionsKey as symbol]: searchHooks,
+          [mapOrbitKey as symbol]: {
+            isOrbiting: ref(false),
+            startOrbit: vi.fn(),
+            stopOrbit: vi.fn(),
+          },
         },
         stubs: {
           ContextMenu: ContextMenuStub,

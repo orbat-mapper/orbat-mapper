@@ -6,6 +6,7 @@ import { inputEventFilter } from "@/components/helpers";
 import { injectStrict } from "@/utils";
 import {
   activeScenarioKey,
+  mapOrbitKey,
   routeDetailsPanelKey,
   scenarioKeyboardOwnerKey,
   searchActionsKey,
@@ -29,6 +30,8 @@ const {
 } = activeScenario;
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
 const routeDetailsPanel = inject(routeDetailsPanelKey, null);
+// Only the MapLibre view provides an orbit.
+const mapOrbit = inject(mapOrbitKey, null);
 // The armed-tool owner gets first refusal on Escape and Enter, the same shape the route
 // details panel already uses. Three separate non-propagation-stopping Escape listeners
 // collapsed onto it (ADR-0006); unarmed, it returns false and nothing changes.
@@ -85,6 +88,7 @@ function handleEscape(e: KeyboardEvent) {
   if (uiStore.escEnabled) {
     if (isRekaComponent(e)) return;
     if (scenarioKeyboardOwner?.value?.handleEscape(e)) return;
+    if (mapOrbit?.handleEscape()) return;
     if (routeDetailsPanel?.handleEscape()) return;
     clearSelected();
     activeUnitStore.clearActiveUnit();
