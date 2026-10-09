@@ -9631,6 +9631,58 @@
           }
         }
       ]
+    },
+    {
+      "id": "l-inner-german-border",
+      "kind": "overlay",
+      "name": "Inner German border",
+      "items": [
+        {
+          "id": "feature-inner-german-border",
+          "kind": "geometry",
+          "geometryMeta": {
+            "geometryKind": "LineString"
+          },
+          "name": "Inner German border",
+          "description": "Approximate border between West Germany (FRG) and East Germany (GDR), from the Baltic Sea to the Czechoslovak border. Simplified.",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [10.904, 53.957],
+              [10.773, 53.874],
+              [10.88, 53.702],
+              [10.618, 53.4],
+              [10.933, 53.34],
+              [11.267, 53.12],
+              [11.551, 53.051],
+              [11.112, 52.896],
+              [10.799, 52.714],
+              [10.949, 52.45],
+              [11.029, 52.211],
+              [10.6, 51.977],
+              [10.582, 51.8],
+              [10.371, 51.588],
+              [10.235, 51.471],
+              [10.078, 51.242],
+              [9.975, 50.906],
+              [10.198, 50.555],
+              [10.043, 50.52],
+              [10.336, 50.466],
+              [10.486, 50.363],
+              [10.713, 50.35],
+              [11.259, 50.4],
+              [11.89, 50.416],
+              [12.099, 50.32]
+            ]
+          },
+          "style": {
+            "stroke": "#b91c1c",
+            "stroke-width": 3,
+            "stroke-opacity": 0.9,
+            "stroke-style": "dashed"
+          }
+        }
+      ]
     }
   ],
   "events": [
