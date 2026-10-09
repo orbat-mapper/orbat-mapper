@@ -4,6 +4,7 @@ import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUnitEditTargets } from "@/composables/unitEditTargets";
 import { type EntityId } from "@/types/base";
 import { storeToRefs } from "pinia";
 import { useEquipmentEditStore, useSuppliesEditStore } from "@/stores/toeStore";
@@ -27,7 +28,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  store: { state, onUndoRedo, groupUpdate },
+  store: { state, onUndoRedo },
   unitActions: { walkSubUnits, updateUnitSupply, updateUnitState, addUnitStateEntry },
   time,
 } = injectStrict(activeScenarioKey);
@@ -56,7 +57,7 @@ const uiStore = useUiStore();
 const { selectedUnitIds } = useSelectedItems();
 const { toeIncludeSubordinates: includeSubordinates } = storeToRefs(uiStore);
 
-const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
+const { isMultiMode, forEachEditableUnit } = useUnitEditTargets(() => props.unit.id);
 
 const aggregatedSupplies = shallowRef<EUnitSupply[]>([]);
 
@@ -164,10 +165,8 @@ function updateSupplyCount(
   { id: supplyId, count }: { id: string; count: number } | any,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      updateUnitSupply(unitId, supplyId, { count });
-    });
+  forEachEditableUnit((unitId) => {
+    updateUnitSupply(unitId, supplyId, { count });
   });
 
   triggerRef(selectedUnitIds);
@@ -178,17 +177,15 @@ function updateSupplyOnHand(
   { id: supplyId, onHand }: { id: string; onHand?: number } | any,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      // skip units that don't have the supply
-      const unit = unitMap[unitId];
-      if (!unit.supplies?.find((e) => e.id === supplyId)) return;
-      const newState: StateAdd = {
-        t: +time.scenarioTime.value,
-        update: { supplies: [{ id: supplyId, onHand }] },
-      };
-      addUnitStateEntry(unitId, newState, true);
-    });
+  forEachEditableUnit((unitId) => {
+    // skip units that don't have the supply
+    const unit = unitMap[unitId];
+    if (!unit.supplies?.find((e) => e.id === supplyId)) return;
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      update: { supplies: [{ id: supplyId, onHand }] },
+    };
+    addUnitStateEntry(unitId, newState, true);
   });
 
   triggerRef(selectedUnitIds);
@@ -208,18 +205,16 @@ function diffSupplyOnHand(
   { id: supplyId, onHand }: { id: string; onHand?: number } | any,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      // skip units that don't have the supply
-      const unit = unitMap[unitId];
-      if (!unit.supplies?.find((e) => e.id === supplyId)) return;
+  forEachEditableUnit((unitId) => {
+    // skip units that don't have the supply
+    const unit = unitMap[unitId];
+    if (!unit.supplies?.find((e) => e.id === supplyId)) return;
 
-      const newState: StateAdd = {
-        t: +time.scenarioTime.value,
-        diff: { supplies: [{ id: supplyId, onHand }] },
-      };
-      addUnitStateEntry(unitId, newState, true);
-    });
+    const newState: StateAdd = {
+      t: +time.scenarioTime.value,
+      diff: { supplies: [{ id: supplyId, onHand }] },
+    };
+    addUnitStateEntry(unitId, newState, true);
   });
 
   triggerRef(selectedUnitIds);
@@ -240,21 +235,17 @@ function deleteSupply(unitId: string, supplyId: string) {
 
 function onAddSubmit(formData: NUnitSupply) {
   const { id, count, onHand } = formData;
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      addSupply(unitId, id, { count, onHand });
-    });
+  forEachEditableUnit((unitId) => {
+    addSupply(unitId, id, { count, onHand });
   });
 
   addFormData.value = { ...formData, id: "" };
 }
 
 function onDelete() {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      selectedSupplies.value.forEach((e) => {
-        deleteSupply(unitId, e.id);
-      });
+  forEachEditableUnit((unitId) => {
+    selectedSupplies.value.forEach((e) => {
+      deleteSupply(unitId, e.id);
     });
   });
   triggerRef(selectedUnitIds);

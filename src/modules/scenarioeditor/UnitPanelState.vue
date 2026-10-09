@@ -28,6 +28,8 @@ import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useLocalStorage } from "@vueuse/core";
 import { Input } from "@/components/ui/input";
 import type { EntityId } from "@/types/base";
+import { useUnitEditTargets } from "@/composables/unitEditTargets";
+import { setSid } from "@/symbology/helpers";
 
 interface Props {
   unit: NUnit;
@@ -46,6 +48,14 @@ const fmt = useTimeFormatStore();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
 const { selectedWaypointIds } = useSelectedWaypoints();
+const { isMultiMode, forEachEditableUnit } = useUnitEditTargets(() => props.unit.id);
+
+// State changes apply to every unlocked unit in the selection.
+function addStateEntryToTargets(getState: (unitId: EntityId) => StateAdd) {
+  forEachEditableUnit((unitId) =>
+    unitActions.addUnitStateEntry(unitId, getState(unitId), true),
+  );
+}
 
 const menuItems = computed((): MenuItemData<StateAction>[] => [
   { label: "Delete", action: "delete", disabled: props.isLocked },
@@ -264,31 +274,28 @@ async function handleChangeSymbol() {
     reinforcedStatus:
       props.unit._state?.reinforcedStatus ?? props.unit.reinforcedStatus ?? "None",
   });
-  if (newSidcValue !== undefined) {
-    const newState: StateAdd = {
-      sidc: newSidcValue.sidc,
-      t: store.state.currentTime,
-      symbolOptions: newSidcValue.symbolOptions,
-      reinforcedStatus: newSidcValue.reinforcedStatus,
-    };
-    unitActions.addUnitStateEntry(props.unit.id, newState, true);
-  }
+  if (newSidcValue === undefined) return;
+  const { sidc, symbolOptions, reinforcedStatus } = newSidcValue;
+  const t = store.state.currentTime;
+  addStateEntryToTargets((unitId) => ({
+    // Keep each unit's own standard identity when changing several units at once
+    sidc: isMultiMode.value
+      ? setSid(sidc, unitActions.getUnitHierarchy(unitId).side.standardIdentity)
+      : sidc,
+    t,
+    symbolOptions,
+    reinforcedStatus,
+  }));
 }
 
 function handleRemoveFromMap() {
-  const newState: StateAdd = {
-    location: null,
-    t: store.state.currentTime,
-  };
-  unitActions.addUnitStateEntry(props.unit.id, newState, true);
+  const t = store.state.currentTime;
+  addStateEntryToTargets(() => ({ location: null, t }));
 }
 
 function setUnitStatus(newStatus?: string | null) {
-  const newState: StateAdd = {
-    status: newStatus,
-    t: store.state.currentTime,
-  };
-  unitActions.addUnitStateEntry(props.unit.id, newState, true);
+  const t = store.state.currentTime;
+  addStateEntryToTargets(() => ({ status: newStatus, t }));
 }
 </script>
 
@@ -302,7 +309,11 @@ function setUnitStatus(newStatus?: string | null) {
     </div>
   </div>
 
-  <ul class="divide-border border-border mt-2 divide-y border-t border-b">
+  <p v-if="isMultiMode" class="text-muted-foreground mt-4 text-sm">
+    Changes are added at the current time to all selected units. Select a single unit to
+    edit its state history.
+  </p>
+  <ul v-else class="divide-border border-border mt-2 divide-y border-t border-b">
     <li v-if="unit.location" class="relative flex items-center py-4">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <span class="text-muted-foreground font-medium">Initial position</span>

@@ -5,6 +5,8 @@ import { activeScenarioKey } from "@/components/injects";
 import type { SpeedUnitOfMeasure, UnitProperty } from "@/types/scenarioModels";
 import PropertyInput from "@/components/PropertyInput.vue";
 import { computed, ref } from "vue";
+import { isEqual } from "es-toolkit";
+import { useUnitEditTargets } from "@/composables/unitEditTargets";
 
 interface Props {
   unit: NUnit;
@@ -15,20 +17,21 @@ const props = defineProps<Props>();
 const showMax = ref(false);
 const showAverage = ref(false);
 
-const activeScenario = injectStrict(activeScenarioKey);
-const { unitActions, store } = activeScenario;
+const { unitActions } = injectStrict(activeScenarioKey);
+const { units, forEachEditableUnit } = useUnitEditTargets(() => props.unit.id);
 
-const maxSpeed = computed(() => {
-  const v = props.unit.properties?.maxSpeed;
+type SpeedKey = "maxSpeed" | "averageSpeed";
+
+const maxSpeed = computed(() => formatProperty("maxSpeed"));
+const averageSpeed = computed(() => formatProperty("averageSpeed"));
+
+function formatProperty(key: SpeedKey) {
+  const values = units.value.map((unit) => unit.properties?.[key]);
+  const v = values[0];
+  if (values.some((other) => !isEqual(other, v))) return "Mixed";
   if (v === undefined) return "Not set";
   return formatSpeed(v);
-});
-
-const averageSpeed = computed(() => {
-  const v = props.unit.properties?.averageSpeed;
-  if (v === undefined) return "Not set";
-  return formatSpeed(v);
-});
+}
 
 function formatSpeed({ value, uom }: { value: number; uom: SpeedUnitOfMeasure }): string {
   switch (uom) {
@@ -45,35 +48,15 @@ function formatSpeed({ value, uom }: { value: number; uom: SpeedUnitOfMeasure })
   }
 }
 
-function updateMaxSpeed(data: UnitPropertyUpdate) {
-  showMax.value = false;
-  // @ts-ignore
-  if (isNaN(data.value)) return;
-  if (data.value === null || data.value === "" || data.value === undefined) {
-    unitActions.updateUnitProperties(props.unit.id, {
-      maxSpeed: undefined,
-    });
-    return;
-  }
-  unitActions.updateUnitProperties(props.unit.id, {
-    maxSpeed: data as UnitProperty,
-  });
-}
-
-function updateAverageSpeed(data: UnitPropertyUpdate) {
-  showAverage.value = false;
-  // @ts-ignore
-  if (isNaN(data.value)) return;
-  if (data.value === null || data.value === "" || data.value === undefined) {
-    unitActions.updateUnitProperties(props.unit.id, {
-      averageSpeed: undefined,
-    });
-    return;
-  } else {
-    unitActions.updateUnitProperties(props.unit.id, {
-      averageSpeed: data as UnitProperty,
-    });
-  }
+function updateSpeed(key: SpeedKey, data: UnitPropertyUpdate) {
+  if (key === "maxSpeed") showMax.value = false;
+  else showAverage.value = false;
+  if (isNaN(Number(data.value))) return;
+  const isEmpty = data.value === null || data.value === "" || data.value === undefined;
+  const value = isEmpty ? undefined : (data as UnitProperty);
+  forEachEditableUnit((unitId) =>
+    unitActions.updateUnitProperties(unitId, { [key]: value }),
+  );
 }
 </script>
 <template>
@@ -96,7 +79,7 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
               v-if="!isLocked && showAverage"
               class="w-32"
               :property="props.unit.properties?.averageSpeed"
-              @update-value="updateAverageSpeed"
+              @update-value="updateSpeed('averageSpeed', $event)"
             />
             <span v-else>{{ averageSpeed }}</span>
           </td>
@@ -110,7 +93,7 @@ function updateAverageSpeed(data: UnitPropertyUpdate) {
             <PropertyInput
               v-if="!isLocked && showMax"
               class="w-32"
-              @update-value="updateMaxSpeed"
+              @update-value="updateSpeed('maxSpeed', $event)"
             />
             <span v-else>{{ maxSpeed }}</span>
           </td>

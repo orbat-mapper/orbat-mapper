@@ -77,10 +77,12 @@ function makeScenario() {
       updateUnitSupply: () => {},
       updateUnitState: () => {},
       addUnitStateEntry: () => {},
+      isUnitLocked: () => false,
     },
     time: {
       scenarioTime: ref(0),
     },
+    helpers: { getUnitById: (id: string) => ({ id }) },
   };
 }
 

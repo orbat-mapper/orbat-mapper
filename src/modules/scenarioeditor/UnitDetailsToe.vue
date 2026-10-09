@@ -12,6 +12,7 @@ import { computed, ref, shallowRef, triggerRef, watch } from "vue";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useSelectedItems } from "@/stores/selectedStore";
+import { useUnitEditTargets } from "@/composables/unitEditTargets";
 import type { EntityId } from "@/types/base";
 import { useEquipmentEditStore, usePersonnelEditStore } from "@/stores/toeStore";
 import type { StateAdd } from "@/types/scenarioModels";
@@ -39,7 +40,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {
-  store: { state, onUndoRedo, groupUpdate },
+  store: { state, onUndoRedo },
   unitActions: {
     walkSubUnits,
     updateUnitEquipment,
@@ -69,7 +70,7 @@ const personnelEditStore = usePersonnelEditStore();
 const { isEditMode } = storeToRefs(equipmentEditStore);
 
 const { selectedUnitIds } = useSelectedItems();
-const isMultiMode = computed(() => selectedUnitIds.value.size > 1);
+const { isMultiMode, forEachEditableUnit } = useUnitEditTargets(() => props.unit.id);
 
 const addFormData = ref<NUnitEquipment | NUnitPersonnel>({ id: "", count: 1 });
 const aggregatedEquipment = shallowRef<EUnitEquipment[]>([]);
@@ -162,14 +163,12 @@ watch(
 
 function onAddSubmit(toeMode: ToeMode, formData: NUnitSupply) {
   const { id, count, onHand } = formData;
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      if (toeMode === "equipment") {
-        updateUnitEquipment(unitId, id, { count, onHand });
-      } else if (toeMode === "personnel") {
-        updateUnitPersonnel(unitId, id, { count, onHand });
-      }
-    });
+  forEachEditableUnit((unitId) => {
+    if (toeMode === "equipment") {
+      updateUnitEquipment(unitId, id, { count, onHand });
+    } else if (toeMode === "personnel") {
+      updateUnitPersonnel(unitId, id, { count, onHand });
+    }
   });
   triggerRef(selectedUnitIds);
 
@@ -181,14 +180,12 @@ function updateItemCount(
   { id: itemId, count }: NUnitEquipment | NUnitPersonnel,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      if (toeMode === "equipment") {
-        updateUnitEquipment(unitId, itemId, { count });
-      } else if (toeMode === "personnel") {
-        updateUnitPersonnel(unitId, itemId, { count });
-      }
-    });
+  forEachEditableUnit((unitId) => {
+    if (toeMode === "equipment") {
+      updateUnitEquipment(unitId, itemId, { count });
+    } else if (toeMode === "personnel") {
+      updateUnitPersonnel(unitId, itemId, { count });
+    }
   });
   triggerRef(selectedUnitIds);
   handleNextEditedId(toeMode, nextEditedId);
@@ -199,26 +196,24 @@ function updateItemOnHand(
   { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      if (toeMode === "equipment") {
-        const unit = unitMap[unitId];
-        if (!unit.equipment?.find((e) => e.id === itemId)) return;
-        const newState: StateAdd = {
-          t: +time.scenarioTime.value,
-          update: { equipment: [{ id: itemId, onHand }] },
-        };
-        addUnitStateEntry(unitId, newState, true);
-      } else if (toeMode === "personnel") {
-        const unit = unitMap[unitId];
-        if (!unit.personnel?.find((p) => p.id === itemId)) return;
-        const newState: StateAdd = {
-          t: +time.scenarioTime.value,
-          update: { personnel: [{ id: itemId, onHand }] },
-        };
-        addUnitStateEntry(unitId, newState, true);
-      }
-    });
+  forEachEditableUnit((unitId) => {
+    if (toeMode === "equipment") {
+      const unit = unitMap[unitId];
+      if (!unit.equipment?.find((e) => e.id === itemId)) return;
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        update: { equipment: [{ id: itemId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    } else if (toeMode === "personnel") {
+      const unit = unitMap[unitId];
+      if (!unit.personnel?.find((p) => p.id === itemId)) return;
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        update: { personnel: [{ id: itemId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    }
   });
   triggerRef(selectedUnitIds);
   handleNextEditedId(toeMode, nextEditedId);
@@ -229,47 +224,43 @@ function diffItemOnHand(
   { id: itemId, onHand }: NUnitEquipment | NUnitPersonnel,
   nextEditedId: string | null = null,
 ) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      if (toeMode === "equipment") {
-        const unit = unitMap[unitId];
-        if (!unit.equipment?.find((e) => e.id === itemId)) return;
-        const newState: StateAdd = {
-          t: +time.scenarioTime.value,
-          diff: { equipment: [{ id: itemId, onHand }] },
-        };
-        addUnitStateEntry(unitId, newState, true);
-      } else if (toeMode === "personnel") {
-        const unit = unitMap[unitId];
-        if (!unit.personnel?.find((p) => p.id === itemId)) return;
-        const newState: StateAdd = {
-          t: +time.scenarioTime.value,
-          diff: { personnel: [{ id: itemId, onHand }] },
-        };
-        addUnitStateEntry(unitId, newState, true);
-      }
-    });
+  forEachEditableUnit((unitId) => {
+    if (toeMode === "equipment") {
+      const unit = unitMap[unitId];
+      if (!unit.equipment?.find((e) => e.id === itemId)) return;
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        diff: { equipment: [{ id: itemId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    } else if (toeMode === "personnel") {
+      const unit = unitMap[unitId];
+      if (!unit.personnel?.find((p) => p.id === itemId)) return;
+      const newState: StateAdd = {
+        t: +time.scenarioTime.value,
+        diff: { personnel: [{ id: itemId, onHand }] },
+      };
+      addUnitStateEntry(unitId, newState, true);
+    }
   });
   triggerRef(selectedUnitIds);
   handleNextEditedId(toeMode, nextEditedId);
 }
 
 function onDeleteItems(toeMode: ToeMode) {
-  groupUpdate(() => {
-    selectedUnitIds.value.forEach((unitId) => {
-      if (toeMode === "equipment") {
-        selectedEquipment.value.forEach(({ id: itemId }) => {
-          updateUnitEquipment(unitId, itemId, { count: -1 });
-        });
-        selectedEquipment.value = [];
-      } else if (toeMode === "personnel") {
-        selectedPersonnel.value.forEach(({ id: itemId }) => {
-          updateUnitPersonnel(unitId, itemId, { count: -1 });
-        });
-        selectedPersonnel.value = [];
-      }
-    });
+  forEachEditableUnit((unitId) => {
+    if (toeMode === "equipment") {
+      selectedEquipment.value.forEach(({ id: itemId }) => {
+        updateUnitEquipment(unitId, itemId, { count: -1 });
+      });
+    } else if (toeMode === "personnel") {
+      selectedPersonnel.value.forEach(({ id: itemId }) => {
+        updateUnitPersonnel(unitId, itemId, { count: -1 });
+      });
+    }
   });
+  if (toeMode === "equipment") selectedEquipment.value = [];
+  else if (toeMode === "personnel") selectedPersonnel.value = [];
   triggerRef(selectedUnitIds);
 }
 

@@ -14,7 +14,7 @@ import DotsMenu from "@/components/DotsMenu.vue";
 import RingStylePopover from "@/modules/scenarioeditor/RingStylePopover.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { useToeActions } from "@/composables/scenarioActions";
-import { useSelectedItems } from "@/stores/selectedStore";
+import { useUnitEditTargets } from "@/composables/unitEditTargets";
 import PanelHeading from "@/components/PanelHeading.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import ZoomSelector from "@/components/ZoomSelector.vue";
@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 interface Props {
   unit: NUnit;
   isLocked?: boolean;
-  isMultiMode?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -37,7 +36,9 @@ const {
   helpers: { getUnitById },
 } = activeScenario;
 const toeActions = useToeActions();
-const { selectedUnitIds } = useSelectedItems();
+const { isMultiMode, units, editableIds, forEachEditableUnit } = useUnitEditTargets(
+  () => props.unit.id,
+);
 
 const editedRangeRing = ref<RangeRing>({
   name: "",
@@ -58,6 +59,17 @@ const marker = computed((): Partial<VisibilityStyleSpec> => {
   };
 });
 
+const hasMixedVisibility = computed(() => {
+  if (!isMultiMode.value) return false;
+  const values = new Set(
+    units.value.map((unit) => {
+      const { limitVisibility = false, minZoom = 0, maxZoom = 24 } = unit.style ?? {};
+      return limitVisibility ? `${minZoom}-${maxZoom}` : "off";
+    }),
+  );
+  return values.size > 1;
+});
+
 const range = computed({
   get: (): [number, number] => [marker.value.minZoom ?? 0, marker.value.maxZoom ?? 24],
   set: (v) => {
@@ -71,13 +83,11 @@ const limitVisibility = computed({
 });
 
 const rangeRings = computed(() => {
-  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+  if (isMultiMode.value) {
     const multiRangeRings: RangeRing[] = [];
     const usedNames = new Set<string>();
     const usedNameCounter = new Map<string, number>();
-    for (const unitId of selectedUnitIds.value) {
-      const unit = getUnitById(unitId);
-      if (!unit?.rangeRings) continue;
+    for (const unit of units.value) {
       for (const ring of unit.rangeRings ?? []) {
         usedNameCounter.set(ring.name, (usedNameCounter.get(ring.name) ?? 0) + 1);
         if (usedNames.has(ring.name)) {
@@ -117,12 +127,8 @@ function addRangeRing() {
     uom: "km",
     group: null,
   };
-  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
-    store.groupUpdate(() => {
-      selectedUnitIds.value.forEach((unitId) => {
-        unitActions.addRangeRing(unitId, { ...defaultRing });
-      });
-    });
+  if (isMultiMode.value) {
+    forEachEditableUnit((unitId) => unitActions.addRangeRing(unitId, { ...defaultRing }));
   } else {
     unitActions.addRangeRing(props.unit.id, { ...defaultRing });
   }
@@ -146,13 +152,9 @@ function getRingStyle(ring: RangeRing) {
 }
 
 function deleteRing(index: number) {
-  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
+  if (isMultiMode.value) {
     const name = rangeRings.value[index].name;
-    store.groupUpdate(() => {
-      selectedUnitIds.value.forEach((unitId) => {
-        unitActions.deleteRangeRingByName(unitId, name);
-      });
-    });
+    forEachEditableUnit((unitId) => unitActions.deleteRangeRingByName(unitId, name));
   } else {
     unitActions.deleteRangeRing(props.unit.id, index);
   }
@@ -186,12 +188,10 @@ function updateRangeRingOrRings(
   data: Partial<RangeRing>,
   { addIfNameDoesNotExists = false } = {},
 ) {
-  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
-    store.groupUpdate(() => {
-      selectedUnitIds.value.forEach((unitId) => {
-        unitActions.updateRangeRingByName(unitId, name, data, { addIfNameDoesNotExists });
-      });
-    });
+  if (isMultiMode.value) {
+    forEachEditableUnit((unitId) =>
+      unitActions.updateRangeRingByName(unitId, name, data, { addIfNameDoesNotExists }),
+    );
   } else {
     unitActions.updateRangeRing(props.unit.id, index, data);
   }
@@ -239,8 +239,8 @@ function onRangeRingAction(action: RangeRingAction, index: number) {
 }
 
 function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
-  if (props.isMultiMode && selectedUnitIds.value.size > 1) {
-    unitActions.batchUpdateUnitStyle([...selectedUnitIds.value], style);
+  if (isMultiMode.value) {
+    unitActions.batchUpdateUnitStyle(editableIds.value, style);
   } else {
     const unit = getUnitById(props.unit.id);
     if (!unit) return;
@@ -259,6 +259,9 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
       <div>Zoom levels</div>
       <ZoomSelector v-model="range" class="mt-4 flex-auto" />
     </template>
+    <div v-if="hasMixedVisibility" class="col-span-2 text-xs text-amber-700">
+      Mixed values in current selection.
+    </div>
   </PanelDataGrid>
   <div class="mt-4 flex items-center justify-between">
     <PanelHeading>Range rings</PanelHeading>
@@ -379,8 +382,11 @@ function updateVisibilityStyle(style: Partial<VisibilityStyleSpec>) {
         <template v-else>
           <td class="text-foreground py-2 pr-3 pl-4 text-sm whitespace-nowrap sm:pl-0">
             {{ ring.name }}
-            <span v-if="ring._counter" class="text-muted-foreground"
-              >({{ ring._counter }})</span
+            <span
+              v-if="ring._counter"
+              class="text-muted-foreground"
+              title="Selected units with this range ring"
+              >({{ ring._counter }} of {{ units.length }})</span
             >
           </td>
           <td class="text-foreground px-2 py-2 text-sm font-medium whitespace-nowrap">

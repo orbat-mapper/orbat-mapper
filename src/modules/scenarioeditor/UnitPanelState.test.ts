@@ -32,9 +32,94 @@ vi.mock("@/stores/timeFormatStore", () => ({
   useTimeFormatStore: () => ({}),
 }));
 
+const selectedUnitIds = { value: new Set<string>() };
+vi.mock("@/stores/selectedStore", () => ({
+  useSelectedItems: () => ({ selectedUnitIds }),
+}));
+
+function mountPanel({
+  addUnitStateEntry,
+  getModalSidc,
+  isMultiMode = false,
+  standardIdentities = {},
+}: {
+  addUnitStateEntry: ReturnType<typeof vi.fn>;
+  getModalSidc: ReturnType<typeof vi.fn>;
+  isMultiMode?: boolean;
+  standardIdentities?: Record<string, string>;
+}) {
+  return mount(UnitPanelState, {
+    props: {
+      isMultiMode,
+      unit: {
+        id: "unit-1",
+        name: "Unit",
+        sidc: "10031000001211000000",
+        reinforcedStatus: "Reinforced",
+        subUnits: [],
+        _pid: "group-1",
+        _sid: "side-1",
+        _state: {
+          t: 1000,
+          sidc: "10031000001211000000",
+          reinforcedStatus: "Reduced",
+        },
+        state: [],
+      },
+    },
+    global: {
+      provide: {
+        [activeScenarioKey as symbol]: {
+          store: {
+            state: {
+              currentTime: 1000,
+              info: { timeZone: "UTC" },
+              unitStatusMap: {},
+            },
+            groupUpdate: (fn: () => void) => fn(),
+          },
+          time: { setCurrentTime: vi.fn() },
+          helpers: { getUnitById: (id: string) => ({ id }) },
+          unitActions: {
+            addUnitStateEntry,
+            getCombinedSymbolOptions: vi.fn(() => ({ fillColor: "#FF0000" })),
+            getUnitHierarchy: (id: string) => ({
+              side: { standardIdentity: standardIdentities[id] ?? "3" },
+            }),
+            isUnitLocked: (id: string) => id === "locked-unit",
+            deleteUnitStateEntry: vi.fn(),
+            updateUnit: vi.fn(),
+            updateUnitStateEntry: vi.fn(),
+            convertStateEntryToInitialLocation: vi.fn(),
+          },
+        },
+        [sidcModalKey as symbol]: {
+          getModalSidc,
+        },
+        [timeModalKey as symbol]: {
+          getModalTimestamp: vi.fn(),
+        },
+      },
+      stubs: {
+        SplitButton: {
+          props: ["items"],
+          template:
+            '<button data-test="change-symbol" @click="items[0].onClick()">Change symbol</button>',
+        },
+        DotsMenu: true,
+        IconButton: true,
+        CoordinateInput: true,
+        UnitStatusPopover: true,
+        Input: true,
+      },
+    },
+  });
+}
+
 describe("UnitPanelState", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    selectedUnitIds.value = new Set();
   });
 
   it("adds reinforcedStatus to timed symbol state updates", async () => {
@@ -45,65 +130,7 @@ describe("UnitPanelState", () => {
       reinforcedStatus: "None",
     });
 
-    const wrapper = mount(UnitPanelState, {
-      props: {
-        unit: {
-          id: "unit-1",
-          name: "Unit",
-          sidc: "10031000001211000000",
-          reinforcedStatus: "Reinforced",
-          subUnits: [],
-          _pid: "group-1",
-          _sid: "side-1",
-          _state: {
-            t: 1000,
-            sidc: "10031000001211000000",
-            reinforcedStatus: "Reduced",
-          },
-          state: [],
-        },
-      },
-      global: {
-        provide: {
-          [activeScenarioKey as symbol]: {
-            store: {
-              state: {
-                currentTime: 1000,
-                info: { timeZone: "UTC" },
-                unitStatusMap: {},
-              },
-            },
-            time: { setCurrentTime: vi.fn() },
-            unitActions: {
-              addUnitStateEntry,
-              getCombinedSymbolOptions: vi.fn(() => ({ fillColor: "#FF0000" })),
-              deleteUnitStateEntry: vi.fn(),
-              updateUnit: vi.fn(),
-              updateUnitStateEntry: vi.fn(),
-              convertStateEntryToInitialLocation: vi.fn(),
-            },
-          },
-          [sidcModalKey as symbol]: {
-            getModalSidc,
-          },
-          [timeModalKey as symbol]: {
-            getModalTimestamp: vi.fn(),
-          },
-        },
-        stubs: {
-          SplitButton: {
-            props: ["items"],
-            template:
-              '<button data-test="change-symbol" @click="items[0].onClick()">Change symbol</button>',
-          },
-          DotsMenu: true,
-          IconButton: true,
-          CoordinateInput: true,
-          UnitStatusPopover: true,
-          Input: true,
-        },
-      },
-    });
+    const wrapper = mountPanel({ addUnitStateEntry, getModalSidc });
 
     await wrapper.get('[data-test="change-symbol"]').trigger("click");
     await flushPromises();
@@ -122,6 +149,38 @@ describe("UnitPanelState", () => {
         symbolOptions: { fillColor: "#0055FF" },
         reinforcedStatus: "None",
       },
+      true,
+    );
+  });
+
+  it("adds symbol changes to all unlocked selected units, keeping each side's identity", async () => {
+    const addUnitStateEntry = vi.fn();
+    const getModalSidc = vi.fn().mockResolvedValue({
+      sidc: "10031000001211000000",
+      symbolOptions: {},
+      reinforcedStatus: "None",
+    });
+    selectedUnitIds.value = new Set(["unit-1", "unit-2", "locked-unit"]);
+
+    const wrapper = mountPanel({
+      addUnitStateEntry,
+      getModalSidc,
+      isMultiMode: true,
+      standardIdentities: { "unit-2": "6" },
+    });
+
+    await wrapper.get('[data-test="change-symbol"]').trigger("click");
+    await flushPromises();
+
+    expect(addUnitStateEntry).toHaveBeenCalledTimes(2);
+    expect(addUnitStateEntry).toHaveBeenCalledWith(
+      "unit-1",
+      expect.objectContaining({ sidc: "10031000001211000000" }),
+      true,
+    );
+    expect(addUnitStateEntry).toHaveBeenCalledWith(
+      "unit-2",
+      expect.objectContaining({ sidc: "10061000001211000000" }),
       true,
     );
   });
