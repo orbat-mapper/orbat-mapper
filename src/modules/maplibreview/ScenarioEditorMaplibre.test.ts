@@ -1,27 +1,30 @@
 // @vitest-environment jsdom
-import { mount } from "@vue/test-utils";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
 import { computed, defineComponent, h, inject, nextTick, onMounted, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ScenarioEditorMaplibre from "@/modules/maplibreview/ScenarioEditorMaplibre.vue";
 import { activeLayerKey, activeScenarioKey, scenarioDrawKey } from "@/components/injects";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import type { ScenarioMapViewSnapshot } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import type { NScenarioEvent } from "@/types/internalModels";
 
-const { mapModeState, routingHandlers, closeDetailsPanelMock } = vi.hoisted(() => ({
-  mapModeState: { isMobile: false, hasRouteDetails: false },
-  routingHandlers: {
-    activeRoutingUnitName: "Unit 1",
-    addRouteLeg: vi.fn(),
-    clearCurrentLeg: vi.fn(),
-    finishRoute: vi.fn(),
-    closeRouting: vi.fn(),
-    endRouting: vi.fn(),
-    handleEscape: vi.fn(),
-  },
-  closeDetailsPanelMock: vi.fn(),
-}));
+const { mapModeState, routingHandlers, closeDetailsPanelMock, toggleOrbit } = vi.hoisted(
+  () => ({
+    mapModeState: { isMobile: false, hasRouteDetails: false, shortcutsEnabled: true },
+    routingHandlers: {
+      activeRoutingUnitName: "Unit 1",
+      addRouteLeg: vi.fn(),
+      clearCurrentLeg: vi.fn(),
+      finishRoute: vi.fn(),
+      closeRouting: vi.fn(),
+      endRouting: vi.fn(),
+      handleEscape: vi.fn(),
+    },
+    closeDetailsPanelMock: vi.fn(),
+    toggleOrbit: vi.fn(),
+  }),
+);
 
 const bindScenario = vi.fn();
 const destroyTacticalDrawSurface = vi.fn();
@@ -126,6 +129,9 @@ vi.mock("@/modules/scenarioeditor/useScenarioMapModeController", () => ({
       detailsPanelMode: "sidebar",
       showLeftPanel: false,
       showToolbar: true,
+      get shortcutsEnabled() {
+        return mapModeState.shortcutsEnabled;
+      },
     },
     isMobile: computed(() => mapModeState.isMobile),
     showLeftPanel: computed(() => false),
@@ -152,6 +158,10 @@ vi.mock("@/modules/scenarioeditor/useScenarioRouting", () => ({
     endRouting: routingHandlers.endRouting,
     handleEscape: routingHandlers.handleEscape,
   }),
+}));
+
+vi.mock("@/modules/maplibreview/useMapOrbit", () => ({
+  useMapOrbit: () => ({ toggleOrbit, handleEscape: vi.fn(() => false) }),
 }));
 
 vi.mock("@/modules/maplibreview/MaplibreMap.vue", () => ({
@@ -215,6 +225,8 @@ const ScenarioMapModeShellStub = defineComponent({
 });
 
 describe("ScenarioEditorMaplibre", () => {
+  enableAutoUnmount(afterEach);
+
   function createActiveScenario() {
     return {
       store: {
@@ -255,6 +267,7 @@ describe("ScenarioEditorMaplibre", () => {
     setActivePinia(createPinia());
     mapModeState.isMobile = false;
     mapModeState.hasRouteDetails = false;
+    mapModeState.shortcutsEnabled = true;
     bindScenario.mockReset();
     bindScenario.mockReturnValue(cleanupScenarioBinding);
     cleanupScenarioBinding.mockReset();
@@ -269,6 +282,40 @@ describe("ScenarioEditorMaplibre", () => {
     routingHandlers.finishRoute.mockReset();
     routingHandlers.closeRouting.mockReset();
     closeDetailsPanelMock.mockReset();
+    toggleOrbit.mockReset();
+  });
+
+  it("toggles orbit mode with the o key while shortcuts are enabled", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    mount(ScenarioEditorMaplibre, {
+      global: {
+        plugins: [pinia],
+        provide: {
+          [activeLayerKey as symbol]: ref("layer-1"),
+          [activeScenarioKey as symbol]: createActiveScenario(),
+        },
+        stubs: {
+          ScenarioMapModeShell: ScenarioMapModeShellStub,
+          MaplibreContextMenu: { template: "<div><slot /></div>" },
+          MaplibreSearchScenarioActions: true,
+          MlMapLogic: true,
+          MapEditorMainToolbar: true,
+          MapEditorUnitTrackToolbar: true,
+          MapEditorDrawToolbar: true,
+        },
+      },
+    });
+    const pressO = () =>
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "o", bubbles: true }));
+
+    pressO();
+    expect(toggleOrbit).toHaveBeenCalledTimes(1);
+
+    mapModeState.shortcutsEnabled = false;
+    await nextTick();
+    pressO();
+    expect(toggleOrbit).toHaveBeenCalledTimes(1);
   });
 
   it("zooms to a selected scenario event area in maplibre mode", async () => {

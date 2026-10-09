@@ -10,7 +10,9 @@ import {
 } from "vue";
 import type { ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
+import { GlobalEvents } from "vue-global-events";
 import { injectStrict } from "@/utils";
+import { inputEventFilter } from "@/components/helpers";
 import { MapLibreMapAdapter } from "@/geo/mapLibreMapAdapter";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import { createMapLibreScenarioLayerController } from "@/geo/engines/maplibre/mapLibreScenarioLayerController";
@@ -29,6 +31,7 @@ import {
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  mapOrbitKey,
   scenarioDrawKey,
   tacticalGraphicRenderFeedKey,
 } from "@/components/injects";
@@ -58,6 +61,7 @@ import {
   getScenarioMapViewSnapshot,
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
+import { useMapOrbit } from "@/modules/maplibreview/useMapOrbit";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
@@ -146,6 +150,8 @@ provide(routeDetailsPanelKey, {
   handleEscape,
 });
 useMapLibreRoutingPreview(() => mlMap.value);
+const mapOrbit = useMapOrbit(() => mlMap.value);
+provide(mapOrbitKey, mapOrbit);
 
 const geoStore = useGeoStore();
 const maplibreLayersStore = useMaplibreLayersStore();
@@ -325,6 +331,11 @@ function onCloseActiveDetailsPanel() {
     </template>
     <template #after-keyboard>
       <MaplibreSearchScenarioActions :ml-map="mlMap" />
+      <GlobalEvents
+        v-if="ui.shortcutsEnabled"
+        :filter="inputEventFilter"
+        @keydown.o.exact="mapOrbit.toggleOrbit()"
+      />
     </template>
     <template #footer-overlays>
       <div

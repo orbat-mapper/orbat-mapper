@@ -18,6 +18,7 @@ import {
   IconClockStart,
   IconContentCopy,
   IconMapMarker as PointIcon,
+  IconOrbitVariant,
   IconPause,
   IconPlay,
   IconSpeedometer,
@@ -65,6 +66,7 @@ import { injectStrict, nanoid } from "@/utils";
 import {
   activeLayerKey,
   activeScenarioKey,
+  mapOrbitKey,
   searchActionsKey,
 } from "@/components/injects";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
@@ -192,6 +194,13 @@ function onRemoveActiveArchive() {
   }
   void removeBasemapArchive(layer.name);
 }
+const { isOrbiting, startOrbit, stopOrbit } = injectStrict(mapOrbitKey);
+
+function onOrbitHere() {
+  const [lng, lat] = dropPosition.value;
+  startOrbit({ lng, lat });
+}
+
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
@@ -480,6 +489,15 @@ function onContextMenu(event: MouseEvent) {
       <ContextMenuItem @select.prevent="onCopy()">
         <IconContentCopy class="mr-2 h-4 w-4" />
         <span>{{ formattedPosition }}</span>
+      </ContextMenuItem>
+      <ContextMenuItem @select="onOrbitHere()">
+        <IconOrbitVariant class="mr-2 h-4 w-4" />
+        <span>Orbit here</span>
+        <ContextMenuShortcut>o</ContextMenuShortcut>
+      </ContextMenuItem>
+      <ContextMenuItem v-if="isOrbiting" inset @select="stopOrbit()">
+        Stop orbiting
+        <ContextMenuShortcut>Esc</ContextMenuShortcut>
       </ContextMenuItem>
       <ContextMenuSeparator />
       <template v-if="clickedTrackPoint">

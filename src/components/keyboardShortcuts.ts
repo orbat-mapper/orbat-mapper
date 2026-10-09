@@ -67,6 +67,10 @@ export const mapEditModeShortcuts: KeyboardCategory[] = [
       { shortcut: [["h"]], description: "Show/hide changes around the current time" },
     ],
   },
+  {
+    label: "Map view",
+    shortcuts: [{ shortcut: [["o"]], description: "Start/stop orbiting the map center" }],
+  },
 ];
 
 export const gridEditModeShortcuts: KeyboardCategory[] = [
