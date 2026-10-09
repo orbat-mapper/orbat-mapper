@@ -17,12 +17,14 @@ All notable changes to this project will be documented in this file.
 - Added offline 3D terrain and hillshading from an elevation archive: a PMTiles archive of elevation tiles, such as an extract of Mapterhorn. Open it from the Terrain submenu, or by address from "Add map server" with the new "Elevation archive" checkbox. The archive replaces Mapterhorn while it is in use, and Chromium browsers can reopen it in the next session.
 - A PMTiles archive of PNG or WebP tiles dropped on the map opens as a basemap and offers "Use for terrain", which moves it to elevation data and puts back the previous basemap. The drop message now lists every kind of file that the map accepts.
 - Added range rings to the Layers panel. Range rings as a whole, each range ring group and the ungrouped rings can be shown or hidden there, and each group and the ungrouped rings open into a list of their rings, each with its own visibility toggle. Range ring groups can also be added and renamed there. Hiding all rings, a group or the ungrouped rings is saved with the scenario and does not change each ring's own visibility setting. Range rings draw in their place in the layer order and can be dragged among the feature and reference layers, or above the control measures.
+- Added editing of many units at once in the unit details panel. With several units selected, setting the status, changing the symbol, removing from the map, editing text amplifiers and speeds, locking and removing TO&E items apply to every selected unit, skipping locked ones, and each change is a single undo step. Fields that differ between the units show "Mixed", and the header summarises the selection with a list for removing units from it.
+- The map context menu marks the clicked spot with a target.
 
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
 
-- The Falklands example scenario now has range ring groups for its surface combatants.
+- The Falklands example scenario now has range ring groups for its surface combatants, ship tracks that no longer cross land, and the sinking or damage of Ardent, Antelope, Coventry, Sir Galahad, Glamorgan and Santa Fe.
 - Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
 - Adding many control measures at once, such as when opening a large scenario, is much faster.
@@ -34,6 +36,7 @@ All notable changes to this project will be documented in this file.
 - Units on the map are now clicked and hovered on their symbol only, instead of anywhere within their text amplifiers. When units overlap, the closest one is picked.
 - 3D terrain and hillshading are no longer experimental. Their settings have moved from the Labs menu to a Terrain submenu in the map context menu and in the main menu under View, and they are now remembered between visits.
 - The standalone file no longer reads elevation data from Mapterhorn by itself. The terrain button offers a choice between Mapterhorn online and an elevation archive, and the choice is remembered.
+- Opening the Layers panel no longer reveals every time-hidden layer and item. A "Show time-hidden items" switch does that instead. Control measures are listed with a preview of their symbol, layer actions appear when hovering a row so names get the full width, and items hidden with the eye toggle are dimmed.
 
 ### Fixed
 
@@ -43,6 +46,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the map context menu and rotate tool not recognising units that are moving during playback.
 - Fixed unit labels blinking or barely showing on moving units during playback.
 - Fixed the play button tooltip, which described the undo action.
+- Fixed unit labels shown below the symbol covering the status bar or mobility indicator.
 - Fixed plain `.milxly` files being detected as TSV instead of MilX, and restored the "keep dialog open" toggle in the import dialog.
 
 ## September 2026
