@@ -76,7 +76,8 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     mapIconSize: useLocalStorage("mapIconSize", 25),
     mapCustomIconScale: useLocalStorage("mapCustomIconScale", 1.7),
     mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
-    mapWrapUnitLabels: useLocalStorage("mapWrapUnitLabels", false),
+    // Renamed key, so users who never saw wrapping on the map start with it on.
+    mapWrapUnitLabels: useLocalStorage("mapUnitLabelWrap", true),
     mapWrapLabelWidth: useLocalStorage("mapWrapLabelWidth", 15),
     mapLabelSize: useLocalStorage("mapLabelSize", 12),
     mapProjection: useLocalStorage<MapProjection>("mapProjection", "globe"),

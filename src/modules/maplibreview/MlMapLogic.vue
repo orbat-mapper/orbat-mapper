@@ -26,7 +26,7 @@ import {
 import { getPlaybackStep, usePlaybackStore } from "@/stores/playbackStore.ts";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
-import { hashObject, haveSameItems, injectStrict } from "@/utils";
+import { hashObject, haveSameItems, injectStrict, wordWrap } from "@/utils";
 import {
   getFeatureIdFromRenderedFeature,
   getLayerIdFromRenderedFeature,
@@ -78,6 +78,7 @@ import {
   type MapLibreUnitRotationMode,
 } from "@/stores/mapSettingsStore";
 import { useRoutingStore } from "@/stores/routingStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTerminator";
 import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
@@ -130,7 +131,10 @@ type CustomSymbolCacheEntry = {
 
 type SymbolCacheEntry = MilSymbolCacheEntry | CustomSymbolCacheEntry;
 
-const UNIT_LABEL_TEXT_SIZE = 12;
+// Wide enough that MapLibre never wraps unit labels itself; wrapping follows the
+// label wrap settings instead (see getUnitLabel).
+const UNIT_LABEL_MAX_WIDTH = 1000;
+const DEFAULT_UNIT_LABEL_TEXT_SIZE = 12;
 // Space (CSS px) between the bottom of a unit symbol and its label.
 const UNIT_LABEL_GAP = 2;
 
@@ -185,6 +189,7 @@ let shouldCenterOnNextStyleLoad = !initialMapView;
 const playback = usePlaybackStore();
 const uiStore = useUiStore();
 const mapSettings = useMapSettingsStore();
+const symbolSettings = useSymbolSettingsStore();
 const engineRef = injectStrict(activeScenarioMapEngineKey);
 const scenarioDraw = inject(scenarioDrawKey, null);
 const { onUnitSelectHook, onFeatureSelectHook, onScenarioActionHook } =
@@ -311,7 +316,8 @@ function createUnitLayerSpec(
       "text-font": ["Noto Sans Italic"],
       "text-offset": ["get", "textOffset"],
       "text-anchor": "top",
-      "text-size": UNIT_LABEL_TEXT_SIZE,
+      "text-size": getUnitLabelTextSize(),
+      "text-max-width": UNIT_LABEL_MAX_WIDTH,
       "icon-allow-overlap": true,
       "text-allow-overlap": false,
       "text-overlap": "never",
@@ -367,6 +373,25 @@ function syncUnitLayers(
   }
 }
 
+function getUnitLabelTextSize() {
+  const size = Number(mapSettings.mapLabelSize);
+  return size > 0 ? size : DEFAULT_UNIT_LABEL_TEXT_SIZE;
+}
+
+function applyUnitLabelSize() {
+  for (const layerId of unitLayerIds) {
+    if (!mlMap.getLayer(layerId)) continue;
+    mlMap.setLayoutProperty(layerId, "text-size", getUnitLabelTextSize());
+  }
+}
+
+function getUnitLabel(unit: { name?: string; shortName?: string }) {
+  if (!mapSettings.mapUnitLabelBelow) return "";
+  const label = unit.shortName || unit.name || "Unnamed Unit";
+  const width = mapSettings.mapWrapLabelWidth;
+  return mapSettings.mapWrapUnitLabels && width > 0 ? wordWrap(label, { width }) : label;
+}
+
 function applyUnitLayerRotationAlignment() {
   const alignment = getUnitRotationAlignment(mapLibreUnitRotationMode.value);
   for (const layerId of unitLayerIds) {
@@ -399,7 +424,7 @@ function getUnitLabelOffsetY(
   }
   // Measured without the selection outline, so the label stays put on selection.
   const { bottom } = getMilSymbolMetrics(symbolKey, cachedSymbol);
-  return (bottom + UNIT_LABEL_GAP) / UNIT_LABEL_TEXT_SIZE;
+  return (bottom + UNIT_LABEL_GAP) / getUnitLabelTextSize();
 }
 
 function getCustomSymbolId(sidc: string) {
@@ -1278,8 +1303,20 @@ watch(
     () => mapSettings.mapUnitLabelBelow,
     () => mapSettings.mapIconSize,
     () => mapSettings.mapCustomIconScale,
+    () => symbolSettings.symbolOptions,
+    () => mapSettings.mapWrapUnitLabels,
+    () => mapSettings.mapWrapLabelWidth,
   ],
   () => addUnits(),
+);
+
+// The label offset is in ems, so the features need rebuilding along with the layers.
+watch(
+  () => mapSettings.mapLabelSize,
+  () => {
+    applyUnitLabelSize();
+    addUnits();
+  },
 );
 
 watch(mapLibreUnitRotationMode, () => {
@@ -1490,6 +1527,7 @@ function buildUnitFeature(
           kind: "milsymbol",
           sidc,
           symbolOptions: {
+            ...symbolSettings.symbolOptions,
             size: renderedSymbolSize,
             ...combinedSymbolOptions,
           },
@@ -1519,9 +1557,7 @@ function buildUnitFeature(
       symbolKey: imageId,
       iconOffset: getUnitIconOffset(imageId, symbolData),
       sidc,
-      label: mapSettings.mapUnitLabelBelow
-        ? unit.shortName || unit.name || "Unnamed Unit"
-        : "",
+      label: getUnitLabel(unit),
       textOffset: [0, getUnitLabelOffsetY(symbolKey, symbolData, sidc)],
       symbolRotation,
     },
