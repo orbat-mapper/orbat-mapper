@@ -808,6 +808,57 @@ describe("MlMapLogic", () => {
     expect(offsetAfter).toBeCloseTo(offsetBefore / 2);
   });
 
+  it("keeps the custom symbol label spacing when the label size changes", async () => {
+    const restoreImage = mockLoadedImage();
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapUnitLabelBelow = true;
+    const activeScenario = {
+      store: {
+        getMutationCount: () => 0,
+        state: {
+          id: "scenario-custom-label-size",
+          currentTime: 0,
+          featureStateCounter: 0,
+          customSymbolMap: {
+            "custom-1": {
+              id: "custom-1",
+              name: "Custom",
+              src: "data:image/png;base64,custom",
+              sidc: "10031000000000000000",
+            },
+          },
+        },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-custom",
+            sidc: "custom1:10031000000000000000:custom-1",
+            name: "Custom 1",
+            _state: { location: [10, 20] },
+          },
+        ]),
+      },
+      time: { setCurrentTime: vi.fn() },
+    } as any;
+    mountMlMapLogic({ mockMap, activeScenario, pinia });
+    const [, offsetBefore] = getLastUnitFeature(mockMap).properties.textOffset;
+
+    mapSettings.mapLabelSize = mapSettings.mapLabelSize * 2;
+    await nextTick();
+
+    const [, offsetAfter] = getLastUnitFeature(mockMap).properties.textOffset;
+    expect(offsetAfter).toBeCloseTo(offsetBefore / 2);
+    restoreImage();
+  });
+
   it("registers custom MapLibre unit symbols without generating milsymbols", async () => {
     const restoreImage = mockLoadedImage();
     const mockMap = createMockMap();
