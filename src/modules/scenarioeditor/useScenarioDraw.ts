@@ -31,6 +31,7 @@ import { useControlMeasureToolStore } from "@/stores/controlMeasureToolStore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   addScenarioDrawFeature,
+  addScenarioDrawFeatureToNewLayer,
   updateScenarioFeatureGeometry,
 } from "@/modules/scenarioeditor/scenarioDrawHelpers";
 import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
@@ -51,10 +52,7 @@ import {
 } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { useNotifications } from "@/composables/notifications";
-import {
-  createControlMeasureLayer,
-  isControlMeasureLayer,
-} from "@/modules/scenarioeditor/controlMeasureLayers";
+import { isControlMeasureLayer } from "@/modules/scenarioeditor/controlMeasureLayers";
 
 /**
  * What the map is currently armed with — one union, one writer.
@@ -236,7 +234,10 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     { immediate: true },
   );
 
-  function selectAuthoringLayer(family: "feature" | "controlMeasure"): boolean {
+  function selectAuthoringLayer(
+    family: "feature" | "controlMeasure",
+    forDraw = true,
+  ): boolean {
     // Compatibility for lightweight injected test/host doubles that predate the
     // canonical overlay collection. The production store always exposes both.
     if (!activeScenario.geo.overlayLayers && !activeScenario.geo.addLayer) return true;
@@ -259,16 +260,38 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       activeLayerIdRef.value = topmostUnlocked.id;
       return true;
     }
-    if (family === "feature") return false;
     if (compatibleLayers.length > 0) {
-      notify({ message: "Unlock or add a control-measure layer to draw." });
+      notify({
+        message:
+          family === "controlMeasure"
+            ? "Unlock or add a control-measure layer to draw."
+            : "Unlock or add a feature layer to draw.",
+      });
       return false;
     }
-    const created = createControlMeasureLayer(activeScenario.geo);
-    if (!created) return false;
-    activeLayerIdRef.value = created.id;
-    lastUsedControlMeasureLayerId.value = created.id;
-    return true;
+    // No layer of this family yet: draw anyway and let the commit create one, in the
+    // same undo step as the drawn item, so an aborted first draw leaves no empty layer.
+    // Modify has nothing to work on without a layer.
+    return !(family === "feature" && !forDraw);
+  }
+
+  /** Where a draw of `family` commits; `null` lets the commit create a layer. */
+  function drawDestinationLayerId(family: "feature" | "controlMeasure") {
+    const layerId = activeLayerIdRef.value;
+    // Lightweight test/host doubles without overlay collections keep the active layer.
+    if (!activeScenario.geo.overlayLayers && !activeScenario.geo.addLayer) return layerId;
+    return isCompatibleUnlockedLayer(layerId, family) ? layerId : null;
+  }
+
+  /** Make a layer a first draw created the active destination for its family. */
+  function adoptCreatedLayer(
+    family: "feature" | "controlMeasure",
+    layerId: FeatureId | null | undefined,
+  ) {
+    if (layerId == null || layerId === activeLayerIdRef.value) return;
+    activeLayerIdRef.value = layerId;
+    if (family === "controlMeasure") lastUsedControlMeasureLayerId.value = layerId;
+    else lastUsedFeatureLayerId.value = layerId;
   }
 
   // Selection suppression snapshots rather than force-enables. This composable used to
@@ -322,13 +345,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   }
 
   const addFeature = (feature: GeometryLayerItem) => {
-    const addedFeature = addScenarioDrawFeature(
-      activeScenario,
-      feature,
-      activeLayerIdRef.value,
-      currentDrawStyle.value ?? {},
-    );
-    if (addedFeature) activeFeatureId.value = addedFeature.id;
+    const layerId = drawDestinationLayerId("feature");
+    const style = currentDrawStyle.value ?? {};
+    const addedFeature =
+      layerId == null
+        ? addScenarioDrawFeatureToNewLayer(activeScenario, feature, style)
+        : addScenarioDrawFeature(activeScenario, feature, layerId, style);
+    if (!addedFeature) return;
+    if (layerId == null) {
+      adoptCreatedLayer(
+        "feature",
+        activeScenario.geo.getLayerItemById(addedFeature.id).layerItem?._pid,
+      );
+    }
+    activeFeatureId.value = addedFeature.id;
   };
 
   const updateFeatures = (
@@ -447,13 +477,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     // creation and its façade on every basemap swap.
     surface: () => engineRef.value?.draw,
     renderFeed,
-    destinationLayerId: () => activeLayerIdRef.value,
+    destinationLayerId: () => drawDestinationLayerId("controlMeasure"),
     // Session-sticky UI state, read per session rather than captured: a default changed
     // between two draws applies to the second one. Narrowed per kind, because authored
     // colour is offered for the Generic Graphics kinds only.
     defaults: (graphicKind) =>
       newControlMeasureDefaults(controlMeasureToolStore.defaults, graphicKind),
     onSettled({ committed, graphicKind, featureId }) {
+      // A first draw created its own layer; make it the active destination.
+      if (featureId) {
+        adoptCreatedLayer(
+          "controlMeasure",
+          activeScenario.geo.getLayerItemById(featureId).layerItem?._pid,
+        );
+      }
       if (explicitFinishTool === armed.value) {
         explicitFinishTool = null;
         arm(featureId ? { kind: "cmEdit", featureId } : { kind: "none" });
@@ -596,7 +633,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       tool = { kind: "none" };
     } else if (
       (tool.kind === "plainDraw" || tool.kind === "plainModify") &&
-      !selectAuthoringLayer("feature")
+      !selectAuthoringLayer("feature", tool.kind === "plainDraw")
     ) {
       tool = { kind: "none" };
     }

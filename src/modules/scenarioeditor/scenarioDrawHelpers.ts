@@ -63,6 +63,36 @@ export function addScenarioDrawFeature(
   return scenarioFeature;
 }
 
+/** The name a lazily created feature layer is given. */
+export const FEATURE_LAYER_NAME = "Features";
+
+/**
+ * Add a drawn feature to a new feature layer. The layer and the feature are one undo
+ * step, so undoing the first drawn feature leaves no empty layer behind.
+ */
+export function addScenarioDrawFeatureToNewLayer(
+  scenario: TScenario,
+  feature: GeometryLayerItem,
+  style: Partial<SimpleStyleSpec> = {},
+): GeometryLayerItem | undefined {
+  const featureWithId = { ...feature, id: feature.id || nanoid() };
+  let added: GeometryLayerItem | undefined;
+  scenario.store.groupUpdate(
+    () => {
+      const layer = scenario.geo.addLayer({
+        id: nanoid(),
+        name: FEATURE_LAYER_NAME,
+        items: [],
+        _isNew: false,
+      });
+      if (!layer) return;
+      added = addScenarioDrawFeature(scenario, featureWithId, layer.id, style);
+    },
+    { label: "addFeature", value: featureWithId.id },
+  );
+  return added;
+}
+
 export function updateScenarioFeatureGeometry(
   scenario: TScenario,
   featureId: FeatureId,

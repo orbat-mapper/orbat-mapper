@@ -30,6 +30,8 @@ import { createTacticalDrawSurfaceFake } from "@/geo/engines/maplibre/tacticalDr
 import { createTacticalGraphicRenderFeedFake } from "@/modules/maplibreview/tacticalGraphicRenderFeedFake";
 import { useTacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
+import { useMapLibreDrawInteraction } from "@/composables/maplibreDrawInteraction";
 import "@/dayjs";
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -190,7 +192,7 @@ describe("drawing a control measure", () => {
     expect(storedItem(scenario, "cm-new")._pid).toBe("cm-active");
   });
 
-  it("creates and activates a specialized destination before the first draw", () => {
+  it("creates and activates a control-measure layer when the first draw commits", async () => {
     const scenario = createScenario([
       { id: "feature-layer", kind: "overlay", name: "Features", items: [] },
     ]);
@@ -198,15 +200,40 @@ describe("drawing a control measure", () => {
       scenario,
       activeLayerId: "feature-layer",
     });
+    const controlMeasureLayers = () =>
+      scenario.geo.overlayLayers.value.filter(
+        (layer) => layer.specialization === "controlMeasure",
+      );
 
     draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
-
-    const created = scenario.geo.overlayLayers.value.find(
-      (layer) => layer.specialization === "controlMeasure",
-    );
-    expect(created).toMatchObject({ name: "Control measures", items: [] });
-    expect(activeLayerId.value).toBe(created?.id);
     expect(fake.drawSession).not.toBeNull();
+    expect(controlMeasureLayers()).toHaveLength(0);
+
+    fake.drawSession!.commit();
+    await nextTick();
+    await nextTick();
+
+    const [created] = controlMeasureLayers();
+    expect(created).toMatchObject({ name: "Control measures" });
+    expect(storedItem(scenario, "cm-new")._pid).toBe(created?.id);
+    expect(activeLayerId.value).toBe(created?.id);
+    scenario.store.undo();
+    expect(controlMeasureLayers()).toHaveLength(0);
+  });
+
+  it("leaves no empty control-measure layer behind when the first draw aborts", async () => {
+    const scenario = createScenario([
+      { id: "feature-layer", kind: "overlay", name: "Features", items: [] },
+    ]);
+    const { draw, activeLayerId } = setup({ scenario, activeLayerId: "feature-layer" });
+
+    draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
+    draw.handleEscape();
+    await nextTick();
+    await nextTick();
+
+    expect(scenario.geo.overlayLayers.value).toHaveLength(1);
+    expect(activeLayerId.value).toBe("feature-layer");
   });
 
   it("does not create another layer when every control-measure layer is locked", () => {
@@ -387,6 +414,73 @@ describe("drawing a control measure", () => {
 
     expect(fake.calls.draw).toHaveLength(2);
     expect(draw.armed.value).toEqual({ kind: "none" });
+  });
+});
+
+describe("drawing an ordinary feature", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const LINE: GeometryLayerItem = {
+    id: "line-new",
+    kind: "geometry",
+    geometry: {
+      type: "LineString",
+      coordinates: [
+        [10, 60],
+        [11, 61],
+      ],
+    },
+    geometryMeta: { geometryKind: "LineString" },
+  } as GeometryLayerItem;
+
+  function commitPlainDraw(feature: GeometryLayerItem) {
+    const options = vi.mocked(useMapLibreDrawInteraction).mock.calls.at(-1)![1] as {
+      addFeature: (feature: GeometryLayerItem) => void;
+    };
+    options.addFeature(feature);
+  }
+
+  it("creates and activates a feature layer when the first draw commits", () => {
+    const scenario = createScenario([
+      {
+        id: "cm-layer",
+        kind: "overlay",
+        name: "Control measures",
+        specialization: "controlMeasure",
+        items: [],
+      },
+    ]);
+    const { draw, activeLayerId } = setup({ scenario, activeLayerId: "cm-layer" });
+    const featureLayers = () =>
+      scenario.geo.overlayLayers.value.filter(
+        (layer) => layer.specialization !== "controlMeasure",
+      );
+
+    draw.startDrawing("LineString");
+    expect(draw.armed.value).toEqual({ kind: "plainDraw", drawType: "LineString" });
+    expect(featureLayers()).toHaveLength(0);
+
+    commitPlainDraw(LINE);
+
+    const [created] = featureLayers();
+    expect(created).toMatchObject({ name: "Features" });
+    expect(storedItem(scenario, "line-new")._pid).toBe(created?.id);
+    expect(activeLayerId.value).toBe(created?.id);
+    scenario.store.undo();
+    expect(featureLayers()).toHaveLength(0);
+    expect(scenario.store.state.layerItemMap["line-new"]).toBeUndefined();
+  });
+
+  it("refuses to draw when every feature layer is locked", () => {
+    const scenario = createScenario([
+      { id: "locked", kind: "overlay", name: "Locked", locked: true, items: [] },
+    ]);
+    const { draw } = setup({ scenario, activeLayerId: "locked" });
+
+    draw.startDrawing("LineString");
+
+    expect(draw.armed.value).toEqual({ kind: "none" });
+    expect(scenario.geo.overlayLayers.value).toHaveLength(1);
   });
 });
 
