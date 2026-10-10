@@ -173,7 +173,7 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
     </div>
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Settings', 'Select', 'Tools', 'Details']"
+      :items="['ORBAT', 'Events', 'Layers', 'Select', 'Settings', 'Tools', 'Details']"
       class="min-h-0 flex-1"
       :class="{ hidden: !showBottomPanel }"
     >
@@ -190,11 +190,11 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
       <TabsContent value="2" class="mt-0 p-4 pb-10">
         <ScenarioLayersTabPanel />
       </TabsContent>
-      <TabsContent value="3" class="mt-0 p-4 pb-10">
-        <ScenarioSettingsPanel />
-      </TabsContent>
-      <TabsContent value="4" class="mt-0 h-full">
+      <TabsContent value="3" class="mt-0 h-full">
         <ScenarioFiltersTabPanel />
+      </TabsContent>
+      <TabsContent value="4" class="mt-0 p-4 pb-10">
+        <ScenarioSettingsPanel />
       </TabsContent>
       <TabsContent value="5" class="mt-0 p-4 pb-10">
         <ScenarioToolsTabPanel />
