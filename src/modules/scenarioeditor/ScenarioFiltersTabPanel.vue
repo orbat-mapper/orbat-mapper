@@ -202,15 +202,16 @@ watchEffect(() => {
       emtStatItems.push({ key: emtKey, label: getEchelonLabel(emtKey), sidc: sidcEmt });
     }
     if (stats[symbolSetKey] === 1) {
-      const symbolSetLabel = resolveIconLabel({ symbolSet: symbolSetKey });
       iconStatItems.push({
         key: symbolSetKey,
-        label: symbolSetLabel,
+        label: resolveIconLabel({ symbolSet: symbolSetKey }),
         sidc: sidcSymbolSet,
       });
+    }
+    if (modSymbolSetKey && stats[modSymbolSetKey] === 1) {
       modifierStatItems.push({
         key: modSymbolSetKey,
-        label: symbolSetLabel,
+        label: resolveIconLabel({ symbolSet: symbolSetKey }),
         sidc: sidcSymbolSet,
       });
     }
@@ -424,11 +425,11 @@ function updateUnitStats(
   stats[emtKey] = (stats[emtKey] || 0) + 1;
   stats[sideKey] = (stats[sideKey] || 0) + 1;
   stats[sideGroupKey] = (stats[sideGroupKey] || 0) + 1;
-  stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
   stats[statusKey] = (stats[statusKey] || 0) + 1;
   stats[unitStatusKey] = (stats[unitStatusKey] || 0) + 1;
   stats[sidKey] = (stats[sidKey] || 0) + 1;
   for (const key of [
+    modSymbolSetKey,
     initialLocationKey,
     currentLocationKey,
     hasLocationsKey,
@@ -459,7 +460,9 @@ function createKeys(unit: NUnit) {
   const emtKey = `emt-${sidc.emt}`;
   const sideKey = `side-${unit._sid}`;
   const sideGroupKey = `side-${unit._sid}-${unit._gid}`;
-  const modSymbolSetKey = `mod-${sidc.symbolSet}`;
+  // Only units with a modifier belong to the symbol set's row under Symbol modifiers.
+  const hasModifier = sidc.modifierOne !== "00" || sidc.modifierTwo !== "00";
+  const modSymbolSetKey = hasModifier ? `mod-${sidc.symbolSet}` : undefined;
   const mod1Key = `mod1-${symbolSetKey}-${sidc.modifierOne}`;
   const mod2Key = `mod2-${symbolSetKey}-${sidc.modifierTwo}`;
   const statusKey = `status-${sidc.status}`;
