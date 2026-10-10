@@ -12,8 +12,8 @@ import {
   IconEye,
   IconEyeOff,
   IconFileTreeOutline as TreeLocateIcon,
-  IconImage as ImageIcon,
   IconLockOutline,
+  IconLockOpenVariantOutline,
   IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
 } from "@iconify-prerendered/vue-mdi";
@@ -56,6 +56,8 @@ import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { getUnitDragItem } from "@/types/draggables.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRecordingStore } from "@/stores/recordingStore";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
@@ -211,17 +213,41 @@ const lockTargetIds = computed(() =>
   unitIds.value.filter((id) => !isUnitLocked(id, { excludeUnit: true })),
 );
 
-const lockMenuItem = computed((): MenuItemData => {
+const lockTargetsLocked = computed(() => {
   const targetIds = lockTargetIds.value;
-  const allLocked =
-    targetIds.length > 0 && targetIds.every((id) => getUnitById(id)?.locked);
+  return targetIds.length > 0 && targetIds.every((id) => getUnitById(id)?.locked);
+});
+
+const lockMenuItem = computed((): MenuItemData => {
   const noun = isMultiMode.value ? "units" : "unit";
   return {
-    label: allLocked ? `Unlock ${noun}` : `Lock ${noun}`,
-    action: () => setLocked(!allLocked),
-    disabled: targetIds.length === 0,
+    label: lockTargetsLocked.value ? `Unlock ${noun}` : `Lock ${noun}`,
+    action: () => setLocked(!lockTargetsLocked.value),
+    disabled: lockTargetIds.value.length === 0,
   };
 });
+
+// Locked units without a short name have nothing to show or edit there
+const showShortName = computed(() => !!unit.value?.shortName || !isLocked.value);
+
+const symbolTooltip = computed(() =>
+  isLocked.value ? "Unlock the unit to change its symbol" : "Change symbol",
+);
+
+const setLocationTooltip = computed(() => {
+  if (isLocked.value) return "Unlock the unit to set its location";
+  if (!recordingStore.isRecordingLocation)
+    return "Turn on Unit position in Rec to set location";
+  return "Set unit location";
+});
+
+const lockButtonTitle = computed(() =>
+  lockMenuItem.value.disabled
+    ? isMultiMode.value
+      ? "Locked with their sides or side groups"
+      : "Locked with its side or side group"
+    : lockMenuItem.value.label,
+);
 
 watchEffect((onCleanup) => {
   const el = unrefElement(elRef.value) as HTMLElement | null;
@@ -305,6 +331,7 @@ const selectionBreakdown = computed(() => {
     `${sideCount} ${sideCount === 1 ? "side" : "sides"}`,
     `${onMapCount} on map`,
   ];
+  if (unitStatus.value) parts.push(unitStatus.value);
   if (lockedCount.value) parts.push(`${lockedCount.value} locked`);
   if (hiddenCount) parts.push(`${hiddenCount} hidden`);
   return parts.join(" · ");
@@ -472,19 +499,27 @@ function locateInOrbat() {
   <div v-if="unit" class="@container" :key="unit.id">
     <DetailsPanelHeader :media="media" density="compact">
       <template v-if="!isMultiMode" #leading>
-        <button
-          type="button"
-          class="inline-flex w-16 justify-start"
-          @click="handleChangeSymbol()"
-          ref="elRef"
-        >
-          <UnitSymbol
-            class="w-16"
-            :sidc="unitSidc"
-            :size="34"
-            :options="combinedSymbolOptions"
-          />
-        </button>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button
+              type="button"
+              class="focus-visible:ring-ring/50 inline-flex w-16 justify-start rounded-md outline-none focus-visible:ring-[3px]"
+              :class="isLocked ? 'cursor-not-allowed' : 'hover:bg-accent'"
+              :aria-label="symbolTooltip"
+              :aria-disabled="isLocked"
+              @click="handleChangeSymbol()"
+              ref="elRef"
+            >
+              <UnitSymbol
+                class="w-16"
+                :sidc="unitSidc"
+                :size="34"
+                :options="combinedSymbolOptions"
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{{ symbolTooltip }}</TooltipContent>
+        </Tooltip>
       </template>
       <template v-if="!isMultiMode" #title>
         <EditableLabel
@@ -497,27 +532,39 @@ function locateInOrbat() {
       <template v-else #title>
         <PanelTitle> {{ selectedUnitIds.size }} units selected </PanelTitle>
       </template>
-      <template v-if="!isMultiMode" #subtitle>
-        <EditableLabel
-          v-model="shortName"
-          @update-value="updateUnit(unitId, { shortName: $event })"
-          text-class="text-sm text-muted-foreground"
-          :disabled="isLocked"
-        />
+      <!-- Locked units can't add a short name, so skip an empty row for them -->
+      <template v-if="!isMultiMode && (showShortName || unitStatus)" #subtitle>
+        <div class="flex min-w-0 items-center gap-2">
+          <div class="min-w-0 flex-1">
+            <EditableLabel
+              v-if="showShortName"
+              v-model="shortName"
+              @update-value="updateUnit(unitId, { shortName: $event })"
+              text-class="text-sm text-muted-foreground placeholder:text-muted-foreground/50 placeholder:italic"
+              placeholder="Add short name"
+              :disabled="isLocked"
+            />
+          </div>
+          <Badge
+            v-if="unitStatus"
+            variant="outline"
+            class="text-muted-foreground shrink-0"
+            >{{ unitStatus }}</Badge
+          >
+        </div>
       </template>
-      <template #trailing>
+      <template v-if="isMultiMode || isLocked" #trailing>
+        <!-- A single unit is locked from the menu; the slot only renders this while it's locked -->
         <IconButton
-          :title="isHiddenOnMap ? 'Hidden on map. Click to show' : 'Hide on map'"
-          :aria-pressed="isHiddenOnMap"
-          @click="actionWrapper(isHiddenOnMap ? UnitActions.Show : UnitActions.Hide)"
+          v-if="!isMultiMode"
+          :tooltip="lockButtonTitle"
+          :disabled="lockMenuItem.disabled"
+          @click="setLocked(false)"
         >
-          <IconEyeOff v-if="isHiddenOnMap" class="size-5" aria-hidden="true" />
-          <IconEye v-else class="size-5" aria-hidden="true" />
+          <IconLockOutline class="size-5" aria-hidden="true" />
         </IconButton>
-        <IconLockOutline v-if="isLocked" class="text-muted-foreground size-5" />
-        <Badge v-if="unitStatus" :title="unitStatusTitle">{{ unitStatus }}</Badge>
         <Button
-          v-if="isMultiMode"
+          v-else
           type="button"
           size="sm"
           variant="outline"
@@ -527,7 +574,7 @@ function locateInOrbat() {
         </Button>
       </template>
       <template v-if="isMultiMode" #summary>
-        <p class="text-muted-foreground text-sm">
+        <p class="text-muted-foreground text-sm" :title="unitStatusTitle">
           {{ selectionBreakdown
           }}<template v-if="lockedCount && !isLocked">, skipped when editing</template>
         </p>
@@ -535,45 +582,75 @@ function locateInOrbat() {
       </template>
       <template #actions>
         <div class="flex min-w-0 flex-1 items-center gap-0.5">
-          <IconButton title="Zoom to" @click="actionWrapper(UnitActions.Zoom)">
-            <ZoomIcon class="size-5" />
+          <!-- View actions first, then edit actions -->
+          <IconButton
+            size="icon-sm"
+            tooltip="Zoom to"
+            @click="actionWrapper(UnitActions.Zoom)"
+          >
+            <ZoomIcon class="size-5" aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            size="icon-sm"
+            v-if="!isMultiMode"
+            tooltip="Show in ORBAT"
+            @click="locateInOrbat()"
+          >
+            <TreeLocateIcon class="size-5" aria-hidden="true" />
+          </IconButton>
+          <!-- aria-pressed:bg-accent keeps hidden and locked states visible at a glance -->
+          <IconButton
+            size="icon-sm"
+            class="aria-pressed:bg-accent"
+            :tooltip="isHiddenOnMap ? 'Hidden on map. Click to show' : 'Hide on map'"
+            :aria-pressed="isHiddenOnMap"
+            @click="actionWrapper(isHiddenOnMap ? UnitActions.Show : UnitActions.Hide)"
+          >
+            <IconEyeOff v-if="isHiddenOnMap" class="size-5" aria-hidden="true" />
+            <IconEye v-else class="size-5" aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            size="icon-sm"
+            v-if="isMultiMode"
+            class="aria-pressed:bg-accent"
+            :tooltip="lockButtonTitle"
+            :aria-pressed="isLocked"
+            :disabled="lockMenuItem.disabled"
+            @click="setLocked(!lockTargetsLocked)"
+          >
+            <IconLockOutline v-if="isLocked" class="size-5" aria-hidden="true" />
+            <IconLockOpenVariantOutline v-else class="size-5" aria-hidden="true" />
           </IconButton>
           <!-- These only make sense for a single unit -->
           <template v-if="!isMultiMode">
-            <IconButton title="Edit unit" @click="toggleEditMode()" :disabled="isLocked">
-              <EditIcon class="size-5" />
-            </IconButton>
+            <Separator orientation="vertical" class="mx-0.5 h-5!" />
             <IconButton
-              title="Add/modify unit image"
-              @click="toggleEditMediaMode()"
+              size="icon-sm"
+              :tooltip="isLocked ? 'Unlock the unit to edit it' : 'Edit unit'"
               :disabled="isLocked"
+              @click="toggleEditMode()"
             >
-              <ImageIcon class="size-5" />
+              <EditIcon class="size-5" aria-hidden="true" />
             </IconButton>
-
             <IconButton
-              @click="recordingStore.isRecordingLocation && startGetLocation()"
-              :title="
-                recordingStore.isRecordingLocation
-                  ? 'Set unit location'
-                  : 'Set unit location disabled. Enable Unit position in Rec first.'
-              "
+              size="icon-sm"
+              :tooltip="setLocationTooltip"
               :disabled="isLocked || !recordingStore.isRecordingLocation"
+              @click="startGetLocation()"
             >
               <IconCrosshairsGps class="size-5" aria-hidden="true" />
             </IconButton>
-            <IconButton title="Show in ORBAT" @click="locateInOrbat()">
-              <TreeLocateIcon class="size-5" aria-hidden="true" />
-            </IconButton>
           </template>
           <SplitButton
-            class="ml-1"
+            class="ml-1 min-w-0"
             triggerClass="max-w-24"
+            button-class="px-3"
+            menu-label="More quick actions"
             :items="buttonItems"
             v-model:active-item="uiStore.activeItem"
           />
         </div>
-        <DotsMenu :items="unitMenuItems" />
+        <DotsMenu :items="unitMenuItems" label="Unit options" />
       </template>
     </DetailsPanelHeader>
     <div class="-mx-4">
@@ -592,11 +669,14 @@ function locateInOrbat() {
               @cancel="toggleEditMediaMode()"
               @update="updateMedia"
             />
+            <!-- Name and short name are edited in the header, so they aren't repeated here -->
             <div v-else-if="!isMultiMode" class="mb-4 space-y-4">
-              <DescriptionItem label="Name">{{ unit.name }}</DescriptionItem>
-              <DescriptionItem v-if="unit.shortName" label="Short name"
-                >{{ unit.shortName }}
-              </DescriptionItem>
+              <p
+                v-if="!unit.externalUrl && !unit.description && !unit.location"
+                class="text-muted-foreground text-sm"
+              >
+                No external URL, description or initial location.
+              </p>
               <DescriptionItem
                 v-if="unit.externalUrl"
                 label="External URL"
@@ -616,8 +696,11 @@ function locateInOrbat() {
               <DescriptionItem v-if="unit.location" label="Initial location">
                 <div class="flex items-center justify-between">
                   <p>{{ formatPosition(unit.location) }}</p>
-                  <IconButton @click="geoStore.panToLocation(unit.location)">
-                    <IconCrosshairsGps class="h-5 w-5" />
+                  <IconButton
+                    tooltip="Pan to initial location"
+                    @click="geoStore.panToLocation(unit.location)"
+                  >
+                    <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
                   </IconButton>
                 </div>
               </DescriptionItem>
