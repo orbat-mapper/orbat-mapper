@@ -46,7 +46,15 @@ function easeInOutCubic(t: number) {
  */
 export type MapOrbit = ReturnType<typeof useMapOrbit>;
 
-export function useMapOrbit(getMap: () => MlMap | undefined) {
+export function useMapOrbit(
+  getMap: () => MlMap | undefined,
+  {
+    claimClick,
+  }: {
+    /** Gets first look at an orbiting click; a claimed click doesn't pick a new center. */
+    claimClick?: (event: MapMouseEvent) => boolean;
+  } = {},
+) {
   const mapSelectStore = useMapSelectStore();
   const isOrbiting = ref(false);
   let cleanup: (() => void) | null = null;
@@ -241,6 +249,7 @@ export function useMapOrbit(getMap: () => MlMap | undefined) {
     }
 
     function onClick(event: MapMouseEvent) {
+      if (claimClick?.(event)) return;
       center = { lng: event.lngLat.lng, lat: event.lngLat.lat };
       startGlide();
       if (!paused) runFrames();

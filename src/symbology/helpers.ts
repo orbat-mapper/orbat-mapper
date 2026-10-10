@@ -1,7 +1,7 @@
 import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
-import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX } from "@/symbology/sidc.ts";
+import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX, STATUS_INDEX } from "@/symbology/sidc.ts";
 import { setCharAt } from "@/components/helpers.ts";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
@@ -55,4 +55,11 @@ export function setSid(sidc: string, sidValue: string): string {
     }
   }
   return sidc;
+}
+
+/** Sets the status digit, such as "4" for destroyed, of a plain or custom symbol code. */
+export function setStatus(sidc: string, status: string): string {
+  const offset = sidc.startsWith(CUSTOM_SYMBOL_PREFIX) ? CUSTOM_SYMBOL_PREFIX.length : 0;
+  const index = offset + STATUS_INDEX;
+  return sidc[index] === status ? sidc : setCharAt(sidc, index, status);
 }

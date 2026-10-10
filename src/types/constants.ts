@@ -86,7 +86,8 @@ export type ScenarioActions =
   | "redo"
   | "shareAsUrl"
   | "share"
-  | "exportEncrypted";
+  | "exportEncrypted"
+  | "toggleHellfire";
 
 export type ScenarioFeatureActions =
   | "delete"

@@ -20,6 +20,7 @@ import {
 import { inputEventFilter } from "@/components/helpers";
 import { useRoute, useRouter } from "vue-router";
 import { useUiStore } from "@/stores/uiStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
   IconKeyboard,
   IconRedoVariant as IconRedo,
@@ -396,6 +397,10 @@ async function onScenarioAction(action: ScenarioActions) {
       initialSidc = getUnitById(activeUnitId).sidc;
     }
     await getModalSidc(initialSidc, { title: "Symbol browser", initialTab: 1 });
+  } else if (action === "toggleHellfire") {
+    const mapSettings = useMapSettingsStore();
+    mapSettings.hellfireEnabled = !mapSettings.hellfireEnabled;
+    send({ message: `Hellfire ${mapSettings.hellfireEnabled ? "on" : "off"}` });
   }
   await onScenarioActionHook.trigger({ action });
 }

@@ -31,6 +31,7 @@ import {
   routeDetailsPanelKey,
   activeScenarioKey,
   activeScenarioMapEngineKey,
+  mapHellfireKey,
   mapOrbitKey,
   scenarioDrawKey,
   tacticalGraphicRenderFeedKey,
@@ -62,6 +63,7 @@ import {
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useMapOrbit } from "@/modules/maplibreview/useMapOrbit";
+import { useHellfire } from "@/modules/maplibreview/useHellfire";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
 import { useScenarioEvents } from "@/modules/scenarioeditor/scenarioEvents";
@@ -150,7 +152,13 @@ provide(routeDetailsPanelKey, {
   handleEscape,
 });
 useMapLibreRoutingPreview(() => mlMap.value);
-const mapOrbit = useMapOrbit(() => mlMap.value);
+const hellfire = useHellfire(
+  () => mlMap.value,
+  () => mapOrbit.isOrbiting.value,
+  activeScenario,
+);
+provide(mapHellfireKey, hellfire);
+const mapOrbit = useMapOrbit(() => mlMap.value, { claimClick: hellfire.claimClick });
 provide(mapOrbitKey, mapOrbit);
 
 const geoStore = useGeoStore();

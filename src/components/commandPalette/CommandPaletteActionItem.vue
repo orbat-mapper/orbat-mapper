@@ -10,6 +10,7 @@ import {
   IconImageOutline,
   IconPause,
   IconPlay,
+  IconRocketLaunch,
   IconShareVariant,
   IconSpeedometer,
   IconSpeedometerSlow,
@@ -28,6 +29,7 @@ const iconMap: Record<string, any> = {
   increaseSpeed: IconSpeedometer,
   decreaseSpeed: IconSpeedometerSlow,
   share: IconShareVariant,
+  rocket: IconRocketLaunch,
 };
 
 const props = defineProps<{ item: ActionSearchResult }>();

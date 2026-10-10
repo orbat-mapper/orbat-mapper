@@ -189,6 +189,33 @@
   cursor: crosshair;
 }
 
+/* Orbit mode's Hellfire missile (hellfire.ts): the map shakes on impact. */
+.maplibregl-canvas-container.hellfire-shake {
+  animation: hellfire-shake 0.45s ease-out;
+}
+
+@keyframes hellfire-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-6px, 4px);
+  }
+  30% {
+    transform: translate(5px, -5px);
+  }
+  45% {
+    transform: translate(-4px, -3px);
+  }
+  60% {
+    transform: translate(3px, 3px);
+  }
+  80% {
+    transform: translate(-1px, 1px);
+  }
+}
+
 .badge {
   @apply inline-flex items-center rounded-md bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-yellow-600/20 ring-inset;
 }

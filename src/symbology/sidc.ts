@@ -185,6 +185,7 @@ export function buildSidc(version: string, values: Partial<SidcBuildValues> = {}
 }
 
 export const SID_INDEX = 3;
+export const STATUS_INDEX = 6;
 export const ORBAT_MAPPER_ORIGINATOR = "987";
 export const CUSTOM_SYMBOL_SID_INDEX = CUSTOM_SYMBOL_PREFIX.length + SID_INDEX;
 

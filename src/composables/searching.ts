@@ -224,6 +224,7 @@ const actionItems: ActionItem[] = [
   { action: "decreaseSpeed", label: "slow down playback", icon: "decreaseSpeed" },
   { action: "shareAsUrl", label: "Share scenario as URL", icon: "share" },
   { action: "share", label: "Share scenario online", icon: "share" },
+  { action: "toggleHellfire", label: "Toggle Hellfire (orbit mode)", icon: "rocket" },
 ];
 
 export function useActionSearch() {

@@ -13,6 +13,7 @@ import type {
   MeasurementTypes,
 } from "@/geo/measurementTypes";
 import type { MapOrbit } from "@/modules/maplibreview/useMapOrbit";
+import type { MapHellfire } from "@/modules/maplibreview/useHellfire";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import type {
   ScenarioDraw,
@@ -118,6 +119,9 @@ export const scenarioDrawKey = Symbol("Scenario draw") as InjectionKey<ScenarioD
  * starts it and the scenario editor's Escape chain stops it.
  */
 export const mapOrbitKey = Symbol("Map orbit") as InjectionKey<MapOrbit>;
+
+/** Orbit mode's Hellfire missile. Provided by the MapLibre scenario view for the context menu. */
+export const mapHellfireKey = Symbol("Map hellfire") as InjectionKey<MapHellfire>;
 
 /**
  * Registration holder for the keyboard owner (Escape / Enter / Ctrl+Z).
