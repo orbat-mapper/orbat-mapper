@@ -1,8 +1,13 @@
 <script lang="ts">
+import type { Component } from "vue";
+
+// A row shows its symbol code, else its icon, else a dot in its color.
 export type NestedUnitStatItem = {
   key: string;
   label: string;
-  sidc: string;
+  sidc?: string;
+  icon?: Component;
+  color?: string;
   children?: NestedUnitStatItem[];
 };
 </script>
@@ -94,11 +99,26 @@ const badgeProps = {
       <div class="flex w-full min-w-0 items-center gap-2">
         <div class="flex min-w-0 cursor-pointer items-center gap-1">
           <MilitarySymbol
+            v-if="item.value.sidc"
             :sidc="item.value.sidc"
             :size="16"
             :options="{ monoColor: 'currentColor' }"
             class="text-foreground/90 w-7 shrink-0"
           />
+          <span v-else class="flex w-7 shrink-0 justify-center">
+            <component
+              v-if="item.value.icon"
+              :is="item.value.icon"
+              class="text-muted-foreground size-4"
+            />
+            <span
+              v-else
+              class="border-muted-foreground size-3 rounded-full border"
+              :style="
+                item.value.color ? { backgroundColor: item.value.color } : undefined
+              "
+            />
+          </span>
           <span>{{ item.value.label }}</span>
         </div>
         <Badge

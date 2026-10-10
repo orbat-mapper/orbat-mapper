@@ -20,6 +20,10 @@ import {
   IconClose,
   IconCollapseAll,
   IconExpandAll,
+  IconMapMarker,
+  IconMapMarkerMultiple,
+  IconMapMarkerOff,
+  IconMapMarkerStar,
   IconEye,
   IconEyeOff,
   IconSelectInverse,
@@ -36,7 +40,6 @@ const VISIBILITY_HAS_LOCATIONS_KEY = "visibility-has-locations";
 const VISIBILITY_NO_LOCATIONS_KEY = "visibility-no-locations";
 const VISIBILITY_HIDDEN_KEY = "visibility-hidden";
 const VISIBILITY_VISIBLE_KEY = "visibility-visible";
-const GENERIC_FILTER_SIDC = "10031000100000000000";
 const NO_UNIT_STATUS_KEY = "unit-status-none";
 
 const {
@@ -337,32 +340,32 @@ watchEffect(() => {
     {
       key: VISIBILITY_CURRENT_LOCATION_KEY,
       label: "Has location at current time",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconMapMarker,
     },
     {
       key: VISIBILITY_HAS_LOCATIONS_KEY,
       label: "Has locations",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconMapMarkerMultiple,
     },
     {
       key: VISIBILITY_NO_LOCATIONS_KEY,
       label: "No locations at all",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconMapMarkerOff,
     },
     {
       key: VISIBILITY_INITIAL_LOCATION_KEY,
       label: "Has initial location",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconMapMarkerStar,
     },
     {
       key: VISIBILITY_VISIBLE_KEY,
       label: "Visible on map",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconEye,
     },
     {
       key: VISIBILITY_HIDDEN_KEY,
       label: "Hidden on map",
-      sidc: GENERIC_FILTER_SIDC,
+      icon: IconEyeOff,
     },
   ];
   visibilityTree.value.forEach(({ key }) => (stats[key] ||= 0));
@@ -371,9 +374,9 @@ watchEffect(() => {
     ...Object.values(state.unitStatusMap).map((status) => ({
       key: unitStatusKeyFor(status.id),
       label: status.name,
-      sidc: GENERIC_FILTER_SIDC,
+      color: status.color,
     })),
-    { key: NO_UNIT_STATUS_KEY, label: "No status", sidc: GENERIC_FILTER_SIDC },
+    { key: NO_UNIT_STATUS_KEY, label: "No status" },
   ].filter(({ key }) => stats[key]);
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
@@ -612,12 +615,16 @@ function parentKeys(items: NestedUnitStatItem[]): string[] {
   );
 }
 
+const iconParentKeys = computed(() => parentKeys(iconTree.value));
+const allIconsExpanded = computed(() =>
+  iconParentKeys.value.every((key) => expandedKeys.value.includes(key)),
+);
+
 // Toggles every expandable main icon node, leaving the other trees as they are.
-function expandAllIcons() {
-  const iconKeys = new Set(parentKeys(iconTree.value));
+function toggleAllIcons() {
+  const iconKeys = new Set(iconParentKeys.value);
   const otherKeys = expandedKeys.value.filter((key) => !iconKeys.has(key));
-  const allExpanded = [...iconKeys].every((key) => expandedKeys.value.includes(key));
-  expandedKeys.value = allExpanded ? otherKeys : [...otherKeys, ...iconKeys];
+  expandedKeys.value = allIconsExpanded.value ? otherKeys : [...otherKeys, ...iconKeys];
 }
 </script>
 <template>
@@ -680,9 +687,17 @@ function expandAllIcons() {
       v-model="panelsOpen[section.id]"
     >
       <template v-if="section.id === 'mainIcon'" #header
-        ><IconButton title="Expand all icons" @click.stop="expandAllIcons()"
-          ><IconExpandAll /></IconButton
-      ></template>
+        ><Button
+          variant="ghost"
+          size="sm"
+          class="text-muted-foreground h-7 px-2 text-xs"
+          :title="
+            allIconsExpanded ? 'Collapse every icon group' : 'Expand every icon group'
+          "
+          @click.stop="toggleAllIcons()"
+          >{{ allIconsExpanded ? "Collapse all" : "Expand all" }}</Button
+        ></template
+      >
       <FilterTree
         :tree="section.tree"
         v-model:expandedKeys="expandedKeys"
