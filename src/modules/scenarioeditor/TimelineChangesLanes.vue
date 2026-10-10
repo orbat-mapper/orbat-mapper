@@ -157,15 +157,6 @@ function markTitle(change: TimelineChange) {
     formatChangeKinds(change),
     change.title ? `“${change.title}”` : "",
     ...details(change),
-    ...(change.leg
-      ? [
-          "Click to go to that time. Double-click to also zoom to the unit.",
-          props.canRetime(change) ? "Drag to move the leg." : "",
-        ]
-      : [
-          "Cmd/Ctrl-click or Shift-click to select more. Double-click to go to it.",
-          props.canRetime(change) ? "Drag, or Alt+arrows, to change the time." : "",
-        ]),
   ]
     .filter(Boolean)
     .join("\n");
