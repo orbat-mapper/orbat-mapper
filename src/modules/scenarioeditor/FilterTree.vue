@@ -24,6 +24,9 @@ const props = defineProps<{
   selectedStats: Record<string, number>;
   addableStats: Record<string, number>;
   excludedKeys: Set<string>;
+  // Narrow mode with a selection: a click keeps only the selected units in the row.
+  narrowing: boolean;
+  selectedCount: number;
 }>();
 const emit = defineEmits(["select", "exclude", "clearExclude"]);
 const expandedKeys = defineModel<string[]>("expandedKeys");
@@ -38,11 +41,23 @@ function units(count: number) {
   return `${count} ${count === 1 ? "unit" : "units"}`;
 }
 
+// Rows a click can't change: no units, excluded, or no selected units to narrow to.
+function isDimmed(key: string) {
+  if (!props.stats[key] || props.excludedKeys.has(key)) return true;
+  return props.narrowing && !props.selectedStats[key];
+}
+
 // Says what clicking the row will do.
 function rowTitle(item: NestedUnitStatItem) {
   const { key, label } = item;
   if (!props.stats[key]) return `${label}: no units`;
   const selected = props.selectedStats[key] || 0;
+  if (props.narrowing) {
+    if (!selected) return `${label}: no selected units, so clicking keeps the selection`;
+    if (selected === props.selectedCount)
+      return `${label}: every selected unit is already in this category`;
+    return `${label}: click to keep only the ${units(selected)} selected in this category`;
+  }
   if (selected) return `${label}: click to remove ${units(selected)} from the selection`;
   if (props.excludedKeys.has(key))
     return `${label}: excluded, so clicking selects nothing`;
@@ -83,7 +98,7 @@ const badgeProps = {
         }
       "
       class="focus:ring-accent-foreground/50 data-selected:bg-accent/50 group even:bg-muted/60 dark:even:bg-muted/50 hover:bg-muted my-0.5 flex items-center rounded px-2 py-1 outline-hidden focus:ring-2"
-      :class="{ 'opacity-50': excludedKeys.has(item._id) || !stats[item._id] }"
+      :class="{ 'opacity-50': isDimmed(item._id) }"
     >
       <template v-if="item.hasChildren">
         <button type="button" tabindex="-1" @click.stop="handleToggle" class="">
@@ -144,7 +159,7 @@ const badgeProps = {
             <IconClose class="text-foreground size-5" />
           </button>
           <button
-            v-else-if="stats[item._id] && !selectedStats[item._id]"
+            v-else-if="!narrowing && stats[item._id] && !selectedStats[item._id]"
             type="button"
             @click.stop="emit('exclude', item._id)"
             title="Exclude"
