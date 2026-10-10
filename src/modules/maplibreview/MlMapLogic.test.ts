@@ -15,6 +15,7 @@ import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useUiStore } from "@/stores/uiStore";
 import { TAB_TOOLS } from "@/types/constants";
@@ -318,6 +319,8 @@ function mountMlMapLogic({
 
 describe("MlMapLogic", () => {
   beforeEach(() => {
+    // Map and symbol settings persist in localStorage, so keep tests independent.
+    localStorage.clear();
     setActivePinia(createPinia());
     saveMapLibreMapAsPng.mockReset();
     vi.mocked(symbolGenerator).mockClear();
@@ -703,6 +706,106 @@ describe("MlMapLogic", () => {
       label: "A1",
       textOffset: [0, 3],
     });
+  });
+
+  function createLabelScenario(id: string) {
+    return {
+      store: {
+        getMutationCount: () => 0,
+        state: { id, currentTime: 0, featureStateCounter: 0 },
+      },
+      unitActions: {
+        isUnitHidden: vi.fn(() => false),
+        getCombinedSymbolOptions: vi.fn(() => ({})),
+      },
+      geo: {
+        everyVisibleUnit: computed(() => [
+          {
+            id: "unit-label",
+            sidc: "SFGPUCI----K",
+            name: "Alpha Bravo Charlie",
+            _state: { location: [10, 20] },
+          },
+        ]),
+      },
+      time: { setCurrentTime: vi.fn() },
+    } as any;
+  }
+
+  function getLastUnitFeature(mockMap: ReturnType<typeof createMockMap>) {
+    const setDataCalls = mockMap.getSource("unitSource")?.setData.mock.calls ?? [];
+    return setDataCalls[setDataCalls.length - 1]?.[0].features[0];
+  }
+
+  it("applies the simple status modifier setting to map symbols", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const symbolSettings = useSymbolSettingsStore(pinia);
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createLabelScenario("scenario-simple-status"),
+      pinia,
+    });
+    const before = getLastUnitFeature(mockMap).properties.symbolKey;
+
+    symbolSettings.simpleStatusModifier = true;
+    await nextTick();
+
+    const symbolKey = getLastUnitFeature(mockMap).properties.symbolKey;
+    expect(symbolKey).not.toBe(before);
+    mockMap.resolveMissingImage(symbolKey);
+    expect(symbolGenerator).toHaveBeenLastCalledWith(
+      "SFGPUCI----K",
+      expect.objectContaining({ simpleStatusModifier: true }),
+    );
+  });
+
+  it("wraps MapLibre unit labels by the label wrap settings", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapUnitLabelBelow = true;
+    mapSettings.mapWrapUnitLabels = false;
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createLabelScenario("scenario-label-wrap"),
+      pinia,
+    });
+    expect(getLastUnitFeature(mockMap).properties.label).toBe("Alpha Bravo Charlie");
+
+    mapSettings.mapWrapLabelWidth = 6;
+    mapSettings.mapWrapUnitLabels = true;
+    await nextTick();
+
+    expect(getLastUnitFeature(mockMap).properties.label).toBe("Alpha\nBravo\nCharlie");
+  });
+
+  it("applies the unit label size setting to the label layer and offset", async () => {
+    const mockMap = createMockMap();
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const mapSettings = useMapSettingsStore(pinia);
+    mapSettings.mapUnitLabelBelow = true;
+    mountMlMapLogic({
+      mockMap,
+      activeScenario: createLabelScenario("scenario-label-size"),
+      pinia,
+    });
+    const [, offsetBefore] = getLastUnitFeature(mockMap).properties.textOffset;
+
+    mockMap.map.setLayoutProperty.mockClear();
+    mapSettings.mapLabelSize = mapSettings.mapLabelSize * 2;
+    await nextTick();
+
+    expect(mockMap.map.setLayoutProperty).toHaveBeenCalledWith(
+      "unitLayer",
+      "text-size",
+      mapSettings.mapLabelSize,
+    );
+    const [, offsetAfter] = getLastUnitFeature(mockMap).properties.textOffset;
+    expect(offsetAfter).toBeCloseTo(offsetBefore / 2);
   });
 
   it("registers custom MapLibre unit symbols without generating milsymbols", async () => {
