@@ -93,7 +93,7 @@ function passesFilters(change: TimelineChange) {
 
 const kindCounts = computed(() => [...countChangeKinds(changes.value)]);
 const listedChanges = computed(() => changes.value.filter(passesFilters));
-// Scenario events are only listed, since they have no lane.
+// Scenario events have no lane: they are listed, or drawn as lines across the lanes.
 const listedEvents = computed(() =>
   showEvents.value
     ? events.value.filter(
@@ -137,7 +137,8 @@ const hiddenCount = computed(
   () =>
     changes.value.length -
     listedChanges.value.length +
-    (view.value === "list" ? events.value.length - listedEvents.value.length : 0),
+    events.value.length -
+    listedEvents.value.length,
 );
 /** The changes either side of the range, so an empty stretch isn't a dead end. */
 const previousChange = computed(() => findBeforeRange(passesFilters));
@@ -349,7 +350,7 @@ const rangeLabel = computed(
             {{ changeKindLabels[kind] }} {{ count }}
           </button>
           <button
-            v-if="view === 'list' && events.length"
+            v-if="events.length"
             type="button"
             class="inline-flex items-center gap-1 rounded-full border px-1.5 tabular-nums"
             :class="showEvents ? '' : 'line-through opacity-40'"
@@ -376,6 +377,7 @@ const rangeLabel = computed(
       :highlight="binRange"
       :can-retime="canRetime"
       :is-lane-selected="isSelected"
+      :events="listedEvents"
       @select="(c) => select(c)"
       @select-many="selectMany"
       @zoom="(c) => select(c, { zoom: true })"
@@ -384,6 +386,8 @@ const rangeLabel = computed(
       @go="goTo"
       @retime="onRetime"
       @retime-leg="onRetimeLeg"
+      @jump-event="jumpToEvent"
+      @go-event="goToEvent"
     >
       <TimelineChangesEnd
         :empty="isEmpty"

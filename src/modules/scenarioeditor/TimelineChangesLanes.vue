@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, markRaw, onBeforeUnmount, ref } from "vue";
 import { ArrowDownIcon, ArrowUpIcon, ZoomInIcon } from "@lucide/vue";
 import { onKeyStroke } from "@vueuse/core";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { storeToRefs } from "pinia";
 import { useActiveScenario } from "@/composables/scenarioUtils";
 import { getTimeZoneOffset } from "@/geo/utils";
+import type { NScenarioEvent } from "@/types/internalModels";
 import GridHeaderResizeHandle from "@/modules/grid/GridHeaderResizeHandle.vue";
 import {
   timelineChangesColumnLabels,
@@ -17,6 +18,7 @@ import TimelineChangeEntity from "./TimelineChangeEntity.vue";
 import TimelineChangesNowLine from "./TimelineChangesNowLine.vue";
 import { changeKindDotClasses, formatChangeKinds } from "./timelineChangeFormat";
 import { changesBetween, changesInBox } from "./laneSelection";
+import { nearestSnap, snapTargets, snapTimes } from "./laneSnap";
 import {
   atStart,
   groupChangesByEntity,
@@ -37,6 +39,8 @@ const props = defineProps<{
   canRetime: (change: TimelineChange) => boolean;
   /** Whether a lane's unit or map item is selected in the scenario. */
   isLaneSelected?: (lane: ChangeGroup) => boolean;
+  /** Scenario events, drawn as lines across the lanes for marks to snap to. */
+  events?: NScenarioEvent[];
 }>();
 const emit = defineEmits<{
   select: [change: TimelineChange];
@@ -49,18 +53,25 @@ const emit = defineEmits<{
   /** Moves a leg's start and end by the same time. */
   retimeLeg: [change: TimelineChange, delta: number];
   delete: [changes: TimelineChange[]];
+  jumpEvent: [event: NScenarioEvent];
+  goEvent: [event: NScenarioEvent];
 }>();
 
 const LANE_HEIGHT = 28;
 const DRAG_THRESHOLD_PX = 3;
 const DOUBLE_CLICK_MS = 300;
+/** How near, in px, a dragged mark must come to another lane's mark to snap to it. */
+const SNAP_PX = 8;
 
 const labelColumns = (["unit", "side"] as const).map((key) => ({
   key,
   label: timelineChangesColumnLabels[key],
 }));
 
-const { time } = useActiveScenario();
+const {
+  time,
+  store: { state },
+} = useActiveScenario();
 const { entityName, sideName, details, formatTime } = useTimelineChangeNames();
 const changesStore = useTimelineChangesStore();
 const { laneColumns: shown, columnWidths, laneSort } = storeToRefs(changesStore);
@@ -187,10 +198,26 @@ function onMarkPointerEnter(event: PointerEvent, change: TimelineChange) {
 // When the axis follows the current time, a jump recentres it and moves the mark from
 // under the pointer, so a click always waits to see whether it starts a double-click.
 let pendingJump: ReturnType<typeof setTimeout> | undefined;
-function jumpOnClick(change: TimelineChange) {
+function jumpLater(jump: () => void) {
   clearTimeout(pendingJump);
-  pendingJump = setTimeout(() => emit("jump", change), DOUBLE_CLICK_MS);
+  pendingJump = setTimeout(jump, DOUBLE_CLICK_MS);
 }
+function onEventClick(event: MouseEvent, scenarioEvent: NScenarioEvent) {
+  const jump = () => emit("jumpEvent", scenarioEvent);
+  // From the keyboard there is no double-click to wait for.
+  if (event.detail === 0) jump();
+  else jumpLater(jump);
+}
+function onEventDblClick(scenarioEvent: NScenarioEvent) {
+  clearTimeout(pendingJump);
+  emit("goEvent", scenarioEvent);
+}
+/** Set on pointerenter, like a mark's tooltip. */
+function onEventPointerEnter(event: PointerEvent, scenarioEvent: NScenarioEvent) {
+  (event.currentTarget as HTMLElement).title =
+    `${formatTime(scenarioEvent.startTime, DATE_TIME_PATTERN)}\n${scenarioEvent.title}`;
+}
+
 function onMarkDblClick(event: MouseEvent, change: TimelineChange) {
   clearTimeout(pendingJump);
   emit("go", change.leg ? atPointer(event, change) : change);
@@ -259,7 +286,7 @@ function onMarkSelectClick(event: PointerEvent, change: TimelineChange) {
     }
   } else {
     selectOnly(change);
-    jumpOnClick(change);
+    jumpLater(() => emit("jump", change));
   }
 }
 
@@ -310,8 +337,10 @@ function focusLanes() {
 
 // Dragging a mark retimes it, with the rest of the selection if it is selected, and
 // keeps it on the axis. Dragging a leg moves its start and end, and its arrival mark,
-// between the states around it. Snaps to 5 minutes, or 1 minute with Shift held. Esc
-// cancels. A press without movement is a click.
+// between the states around it. Snaps to the marks on the lanes in view, the current
+// time and scenario events when near them, else to 5 minutes, or 1 minute with Shift
+// held. Alt turns the snapping to marks off. Esc cancels. A press without movement is a
+// click.
 interface Drag {
   change: TimelineChange;
   startX: number;
@@ -319,6 +348,11 @@ interface Drag {
   delta: number;
   moved: boolean;
   moving: Set<string>;
+  /** The times to snap to, found once the drag starts. Not reactive, since they are
+   * only read. */
+  targets: number[];
+  /** The time the drag snapped to, shown as a line across the lanes. */
+  snappedTo: number | null;
 }
 const drag = ref<Drag | null>(null);
 
@@ -333,6 +367,8 @@ function onMarkPointerDown(event: PointerEvent, change: TimelineChange) {
     delta: 0,
     moved: false,
     moving: new Set(),
+    targets: [],
+    snappedTo: null,
   };
   mark.setPointerCapture(event.pointerId);
 }
@@ -350,20 +386,32 @@ function onMarkPointerMove(event: PointerEvent) {
       if (!isSelected(d.change)) selectOnly(d.change);
       d.moving = new Set(editableSelection.value.map((c) => c.id));
     }
+    d.targets = markRaw([
+      ...snapTargets(
+        visibleLanes.value.map(({ lane }) => lane),
+        new Set([...d.moving, d.change.id]),
+      ),
+      state.currentTime,
+      ...(props.events ?? []).map((e) => e.startTime),
+    ]);
     // No tooltip over the mark while it is dragged.
     (event.currentTarget as HTMLElement).title = "";
   }
   const snap = event.shiftKey ? MS_PER_MINUTE : 5 * MS_PER_MINUTE;
   const leg = d.change.leg;
-  // A leg snaps by its arrival, a mark by its own time.
+  // A leg snaps to the grid by its arrival, a mark by its own time.
   const from = leg ? leg.end : d.change.t;
-  const t = Math.round((from + dx * d.msPerPx) / snap) * snap;
-  if (leg) {
-    const [min, max] = legShiftBounds(leg);
-    d.delta = Math.min(Math.max(t - from, min), max);
-  } else {
-    d.delta = Math.min(Math.max(t, props.axis[0]), props.axis[1]) - from;
-  }
+  // A leg moves between the states around it, a mark within the axis.
+  const bounds = leg
+    ? legShiftBounds(leg)
+    : ([props.axis[0] - from, props.axis[1] - from] as const);
+  const raw = dx * d.msPerPx;
+  const near = event.altKey
+    ? null
+    : nearestSnap(snapTimes(d.change), raw, d.targets, SNAP_PX * d.msPerPx, bounds);
+  const grid = Math.round((from + raw) / snap) * snap - from;
+  d.delta = near ? near.delta : Math.min(Math.max(grid, bounds[0]), bounds[1]);
+  d.snappedTo = near?.target ?? null;
 }
 /** The id of the state mark a leg arrives at. */
 function arrivalId(leg: TimelineChange) {
@@ -374,8 +422,10 @@ function onMarkPointerUp(event: PointerEvent) {
   drag.value = null;
   if (!d) return;
   if (!d.moved) {
-    if (d.change.leg) jumpOnClick(atPointer(event, d.change));
-    else onMarkSelectClick(event, d.change);
+    if (d.change.leg) {
+      const at = atPointer(event, d.change);
+      jumpLater(() => emit("jump", at));
+    } else onMarkSelectClick(event, d.change);
   } else if (d.change.leg) {
     if (d.delta) emit("retimeLeg", d.change, d.delta);
   } else if (d.delta) {
@@ -398,6 +448,17 @@ function isDragging(change: TimelineChange) {
 }
 function markTime(change: TimelineChange) {
   return isMoving(change) ? change.t + drag.value!.delta : change.t;
+}
+/** Whether a time, such as an event's, is where the drag snapped to. */
+function isSnappedTo(t: number) {
+  return drag.value?.snappedTo === t;
+}
+/** Whether a mark or leg the drag isn't moving is where it snapped to. */
+function isSnapTarget(change: TimelineChange) {
+  const d = drag.value;
+  if (d?.snappedTo == null || d.change.id === change.id || d.moving.has(change.id))
+    return false;
+  return snapTimes(change).includes(d.snappedTo);
 }
 function legSpan({ leg }: TimelineChange, delta = 0): [number, number] {
   return [leg!.start + delta, leg!.end + delta];
@@ -595,6 +656,22 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
           class="absolute inset-y-0 bg-amber-400/30"
           :style="spanStyle(highlight)"
         />
+        <button
+          v-for="scenarioEvent in events"
+          :key="scenarioEvent.id"
+          type="button"
+          class="absolute bottom-0 z-[1] size-2 -translate-x-1/2 translate-y-1/2 rotate-45 border border-gray-500 bg-amber-500"
+          :class="
+            isSnappedTo(scenarioEvent.startTime)
+              ? 'scale-150 ring-1 ring-fuchsia-500'
+              : 'hover:scale-150'
+          "
+          :style="{ left: `${toPercent(scenarioEvent.startTime)}%` }"
+          :aria-label="`Event: ${scenarioEvent.title}`"
+          @pointerenter="onEventPointerEnter($event, scenarioEvent)"
+          @click="onEventClick($event, scenarioEvent)"
+          @dblclick="onEventDblClick(scenarioEvent)"
+        />
         <span
           v-for="tick in ticks"
           :key="tick.t"
@@ -614,6 +691,26 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
       @pointerup="onBodyPointerUp"
       @pointercancel="box = null"
     >
+      <!-- Lines across the lanes: over the lanes' borders, so they don't break up, and
+           under the marks. -->
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 z-[1]"
+        :style="{ left: `${labelWidth}px` }"
+      >
+        <div
+          v-for="scenarioEvent in events"
+          :key="scenarioEvent.id"
+          class="absolute inset-y-0 border-l border-amber-500/60"
+          :style="{ left: `${toPercent(scenarioEvent.startTime)}%` }"
+        />
+        <TimelineChangesNowLine :axis="axis" />
+        <div
+          v-if="drag && drag.snappedTo !== null"
+          data-snap-guide
+          class="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-fuchsia-500 shadow-[0_0_0_1px_var(--background)]"
+          :style="{ left: `${toPercent(drag.snappedTo)}%` }"
+        />
+      </div>
       <div
         v-for="{ start, lane } in visibleLanes"
         :key="lane.entityId"
@@ -674,8 +771,10 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
                 class="absolute top-1/2 h-1.5 -translate-y-1/2 touch-none rounded-full bg-cyan-500/80 hover:bg-cyan-700 dark:bg-cyan-300/70 dark:hover:bg-cyan-300"
                 :class="[
                   canRetime(change) ? 'cursor-ew-resize' : 'cursor-pointer',
-                  isDragging(change) &&
-                    'ring-primary z-10 bg-cyan-700 ring-2 dark:bg-cyan-300',
+                  // Over the lines, which come first, and under the marks unless dragged.
+                  isDragging(change)
+                    ? 'ring-primary z-10 bg-cyan-700 ring-2 dark:bg-cyan-300'
+                    : ['z-[1]', isSnapTarget(change) && 'ring-1 ring-fuchsia-500'],
                 ]"
                 :style="spanStyle(legSpan(change, isDragging(change) ? drag!.delta : 0))"
                 :aria-label="markLabel(change)"
@@ -708,9 +807,11 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
                 canRetime(change) ? 'cursor-ew-resize' : 'cursor-pointer',
                 isDragging(change) ? 'z-10 scale-150' : 'hover:scale-150',
                 // Above the moving bars, which can start where a mark is.
-                isSelected(change) || isMoving(change)
-                  ? 'ring-primary bg-primary/30 z-10 ring-2'
-                  : 'z-[2] hover:z-10',
+                isSnapTarget(change)
+                  ? 'z-10 scale-150 border-fuchsia-500 ring-1 ring-fuchsia-500'
+                  : isSelected(change) || isMoving(change)
+                    ? 'ring-primary bg-primary/30 z-10 ring-2'
+                    : 'z-[2] hover:z-10',
               ]"
               :aria-pressed="isSelected(change)"
               :style="{ left: `${toPercent(markTime(change))}%` }"
@@ -747,12 +848,6 @@ function onLaneNameClick(event: MouseEvent, lane: ChangeGroup) {
             </div>
           </template>
         </div>
-      </div>
-      <div
-        class="pointer-events-none absolute inset-y-0 right-0"
-        :style="{ left: `${labelWidth}px` }"
-      >
-        <TimelineChangesNowLine :axis="axis" />
       </div>
       <div
         v-if="boxStyle"
