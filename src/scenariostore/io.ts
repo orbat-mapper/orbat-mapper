@@ -291,6 +291,29 @@ export function normalizeScenarioForComparison(scenario: Scenario): Scenario {
   return normalized;
 }
 
+/**
+ * Counts the timestamp fields that do not parse. The loader turns them into NaN,
+ * which silently drops the affected states and events from the timeline.
+ */
+export function countInvalidTimestamps(data: unknown): number {
+  let count = 0;
+  const walk = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+    } else if (value && typeof value === "object") {
+      for (const [key, child] of Object.entries(value)) {
+        if (TIMESTAMP_NAMES.includes(key) && child !== undefined && child !== null) {
+          if (!dayjs(child as string | number).isValid()) count++;
+        } else {
+          walk(child);
+        }
+      }
+    }
+  };
+  walk(data);
+  return count;
+}
+
 export function getScenarioComparisonKey(scenario: Scenario) {
   return JSON.stringify(normalizeScenarioForComparison(scenario));
 }
@@ -385,9 +408,17 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     if (val === undefined) return undefined;
     if (INTERNAL_NAMES.includes(name)) return undefined;
     if (TIMESTAMP_NAMES.includes(name)) {
-      return dayjs(val)
-        .tz(resolveTimeZone(store.value.state.info.timeZone || "UTC"))
-        .format();
+      const local = dayjs(val).tz(
+        resolveTimeZone(store.value.state.info.timeZone || "UTC"),
+      );
+      // Historical local mean time offsets are not whole minutes (Santiago in
+      // 1879 was -4:42:45), and dayjs formats them as an unparseable "-04:42.75".
+      // An invalid date has a NaN offset and must not reach toISOString(), which throws.
+      const offset = local.utcOffset();
+      if (Number.isFinite(offset) && !Number.isInteger(offset)) {
+        return dayjs(val).toISOString();
+      }
+      return local.format();
     }
     return val;
   }
@@ -502,6 +533,14 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     if (compareVersions(data.version, SCENARIO_FILE_VERSION, ">")) {
       send({
         message: `This scenario was created with a newer version (${data.version}). The current supported version is ${SCENARIO_FILE_VERSION}. Some features may not work correctly.`,
+        type: "warning",
+      });
+    }
+
+    const invalidTimestamps = countInvalidTimestamps(data);
+    if (invalidTimestamps > 0) {
+      send({
+        message: `This scenario has ${invalidTimestamps} invalid ${invalidTimestamps === 1 ? "timestamp" : "timestamps"}. Units and events at those times may not appear on the map or timeline.`,
         type: "warning",
       });
     }
