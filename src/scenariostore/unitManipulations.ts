@@ -7,6 +7,7 @@ import type {
   NState,
   NUnit,
   NUnitAdd,
+  NUnitStatus,
   SideGroupUpdate,
   SideUpdate,
   UnitStatusUpdate,
@@ -1184,14 +1185,16 @@ export function useUnitManipulations(store: NewScenarioStore) {
       const status = s.unitStatusMap[id];
       if (!status) return;
       Object.assign(status, data);
+      if (!status.color) delete status.color;
     });
   }
 
   function addUnitStatus(data: Partial<UnitStatusUpdate>) {
-    const newStatus = { id: nanoid(), name: "Status", ...klona(data) };
+    const newStatus: NUnitStatus = { id: nanoid(), name: "Status", ...klona(data) };
     if (newStatus.id === undefined) {
       newStatus.id = nanoid();
     }
+    if (!newStatus.color) delete newStatus.color;
     const newId = newStatus.id;
     update((s) => {
       s.unitStatusMap[newId] = newStatus;

@@ -1086,3 +1086,36 @@ describe("updateUnitStateEntry", () => {
     expect(state().viaStartTime).toBe(T2);
   });
 });
+
+describe("unit status colour", () => {
+  it("sets a colour on an existing status", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    actions.addUnitStatus({ name: "Damaged" });
+    const id = Object.keys(store.state.unitStatusMap)[0];
+
+    actions.updateUnitStatus(id, { color: "#ef4444" });
+
+    expect(store.state.unitStatusMap[id].color).toBe("#ef4444");
+  });
+
+  it("removes the colour field when it is cleared", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    actions.addUnitStatus({ name: "Damaged", color: "#ef4444" });
+    const id = Object.keys(store.state.unitStatusMap)[0];
+
+    actions.updateUnitStatus(id, { name: "Damaged", color: undefined });
+
+    expect("color" in store.state.unitStatusMap[id]).toBe(false);
+  });
+
+  it("does not store an empty colour when adding a status", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    actions.addUnitStatus({ name: "Damaged", color: undefined });
+    const id = Object.keys(store.state.unitStatusMap)[0];
+
+    expect("color" in store.state.unitStatusMap[id]).toBe(false);
+  });
+});

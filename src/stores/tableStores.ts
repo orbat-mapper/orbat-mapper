@@ -30,3 +30,5 @@ export const useUnitEquipmentTableStore = tableStoreFactory("unitEquipmentTableS
 export const useUnitPersonnelTableStore = tableStoreFactory("unitPersonnelTableStore");
 export const useFillColorTableStore = tableStoreFactory("fillColorTableStore");
 export const useCustomSymbolTableStore = tableStoreFactory("customSymbolTableStore");
+export const useUnitStatusTableStore = tableStoreFactory("unitStatusTableStore");
+export const useRangeRingGroupTableStore = tableStoreFactory("rangeRingGroupTableStore");

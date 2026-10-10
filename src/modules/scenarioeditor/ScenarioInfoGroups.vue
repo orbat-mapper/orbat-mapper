@@ -1,138 +1,120 @@
 <script setup lang="ts">
+import { computed, triggerRef } from "vue";
+import type { ColumnDef } from "@tanstack/vue-table";
+import { storeToRefs } from "pinia";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
 import TableHeader from "@/components/TableHeader.vue";
 import type { NRangeRingGroup } from "@/types/internalModels";
-import DotsMenu from "@/components/DotsMenu.vue";
 import { useNotifications } from "@/composables/notifications";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import SettingsItemForm, {
+  type SettingsItem,
+} from "@/modules/scenarioeditor/SettingsItemForm.vue";
+import { useRangeRingGroupTableStore } from "@/stores/tableStores";
+import { useToeEditableItems } from "@/composables/toeUtils";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
-import InputGroup from "@/components/InputGroup.vue";
-import { Button } from "@/components/ui/button";
 
 const scn = injectStrict(activeScenarioKey);
-const store = useScenarioInfoPanelStore();
 const { send } = useNotifications();
 
+const { editMode, editedId, rerender, selectedItems } =
+  useToeEditableItems<NRangeRingGroup>();
+// Shared with goToAddGroup in useToeActions, which opens this form from unit details
+const { showAddGroup: showAddForm } = storeToRefs(useScenarioInfoPanelStore());
+const tableStore = useRangeRingGroupTableStore();
+
 const groups = computed(() => {
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.rangeRingGroupMap);
 });
 
-const itemActions = [
-  { label: "Edit", action: "edit" },
-  { label: "Delete", action: "delete" },
+const columns: ColumnDef<NRangeRingGroup>[] = [
+  { id: "name", header: "Name", accessorKey: "name" },
 ];
 
-const editedId = ref();
-const form = ref<Omit<NRangeRingGroup, "id">>({ name: "" });
-const addForm = ref<Omit<NRangeRingGroup, "id">>({ name: "" });
-
-function startEdit(data: NRangeRingGroup) {
-  editedId.value = data.id;
-  const { id, ...rest } = data;
-  form.value = rest;
+function namesExcept(id?: string) {
+  return groups.value.filter((g) => g.id !== id).map((g) => g.name);
 }
 
-function onSubmit() {
-  scn.unitActions.updateRangeRingGroup(editedId.value, form.value!);
+function onSubmit(id: string, data: SettingsItem) {
+  scn.unitActions.updateRangeRingGroup(id, data);
   editedId.value = null;
+  triggerRef(rerender);
 }
 
-function cancelEdit() {
-  editedId.value = null;
+function onAddSubmit(data: SettingsItem) {
+  scn.unitActions.addRangeRingGroup(data);
+  showAddForm.value = false;
 }
 
-function onItemAction(item: NRangeRingGroup, action: string) {
-  switch (action) {
-    case "edit":
-      startEdit(item);
-      break;
-    case "delete":
-      const success = scn.unitActions.deleteRangeRingGroup(item.id);
+function onDelete() {
+  const notDeletedItems: NRangeRingGroup[] = [];
+  scn.store.groupUpdate(() => {
+    selectedItems.value.forEach((e) => {
+      const success = scn.unitActions.deleteRangeRingGroup(e.id);
       if (!success) {
         send({
           type: "error",
-          message: "Cannot delete a group that is in use.",
+          message: `${e.name}: Cannot delete a range ring group that is in use.`,
         });
+        notDeletedItems.push(e);
       }
-      break;
-  }
-}
-
-function onAddSubmit() {
-  // check if name exists
-  if (groups.value.find((e) => e.name === addForm.value.name)) {
-    send({
-      type: "error",
-      message: "A group with this name already exists.",
     });
-    return;
-  }
-  scn.unitActions.addRangeRingGroup({ ...addForm.value });
-  addForm.value = { name: "" };
+  });
+  triggerRef(editMode);
+  selectedItems.value = notDeletedItems;
 }
 </script>
 
 <template>
-  <div class="prose dark:prose-invert max-w-none">
-    <TableHeader description="Range ring groups available in this scenario.">
-      <Button variant="outline" @click="store.toggleAddGroup()">
-        {{ store.showAddGroup ? "Hide form" : "Add" }}
-      </Button>
-    </TableHeader>
-    <form
-      v-if="store.showAddGroup"
-      @submit.prevent="onAddSubmit"
-      class="not-prose grid grid-cols-3 gap-2"
+  <div>
+    <TableHeader description="Range ring groups available in this scenario." />
+    <ToeGridHeader
+      v-model:editMode="editMode"
+      v-model:addMode="showAddForm"
+      editLabel="Edit groups"
+      :selected-count="selectedItems.length"
+      :hideEdit="groups.length === 0"
+      @delete="onDelete()"
+    />
+    <SettingsItemForm
+      v-if="showAddForm"
+      class="mb-4"
+      heading="Add new range ring group"
+      submit-label="Add group"
+      :taken-names="namesExcept()"
+      @submit="onAddSubmit"
+      @cancel="showAddForm = false"
+    />
+    <ToeGrid
+      v-if="groups.length"
+      :columns="columns"
+      :data="groups"
+      v-model:editedId="editedId"
+      :select="editMode"
+      v-model:selected="selectedItems"
+      v-model:editMode="editMode"
+      :tableStore="tableStore"
     >
-      <InputGroup autofocus label="Name" required v-model="addForm.name" />
-      <div class="col-span-2 flex items-start gap-3">
-        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
-      </div>
-    </form>
-    <form @submit.prevent="onSubmit">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="eq in groups"
-            :key="eq.id"
-            @dblclick="startEdit(eq)"
-            class="cursor-pointer"
-          >
-            <template v-if="eq.id === editedId">
-              <td>
-                <input
-                  type="text"
-                  @vue:mounted="({ el }: any) => el.focus()"
-                  v-model="form.name"
-                  class="h-full w-full text-sm"
-                  placeholder="Name"
-                />
-              </td>
-              <td class="" colspan="3">
-                <div class="flex">
-                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
-                </div>
-              </td>
-            </template>
-            <template v-else>
-              <td>{{ eq.name }}</td>
-              <td class="not-prose w-6">
-                <DotsMenu :items="itemActions" @action="onItemAction(eq, $event)" />
-              </td>
-            </template>
-          </tr>
-        </tbody>
-      </table>
-    </form>
+      <template #inline-form="{ row }">
+        <InlineFormWrapper class="pr-6">
+          <SettingsItemForm
+            :item="row"
+            heading="Edit range ring group"
+            :taken-names="namesExcept(row.id)"
+            @submit="onSubmit(row.id, $event)"
+            @cancel="editedId = null"
+          />
+        </InlineFormWrapper>
+      </template>
+    </ToeGrid>
+    <p v-else class="prose prose-sm dark:prose-invert">
+      Use the <kbd>Add</kbd> button to add range ring groups to this scenario.
+    </p>
   </div>
 </template>
