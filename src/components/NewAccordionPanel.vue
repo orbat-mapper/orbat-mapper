@@ -29,7 +29,7 @@ const isOpen = defineModel<boolean>({ default: true });
     </CollapsibleTrigger>
     <div
       v-if="$slots.header && open"
-      class="pointer-events-none absolute top-0 right-6 left-0 flex justify-end"
+      class="pointer-events-none absolute top-0 right-6 left-0 flex h-11 items-center justify-end"
     >
       <div class="pointer-events-auto"><slot name="header" /></div>
     </div>
