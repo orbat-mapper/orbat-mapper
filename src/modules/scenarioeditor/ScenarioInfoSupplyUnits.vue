@@ -3,7 +3,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
 import TableHeader from "@/components/TableHeader.vue";
-import type { NPersonnelData, NSupplyUoM } from "@/types/internalModels";
+import type { NSupplyUoM } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
 import type { ColumnDef } from "@tanstack/vue-table";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
@@ -21,7 +21,9 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
 const tableStore = useSupplyUoMTableStore();
 
 const supplyUnits = computed(() => {
-  scn.store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.supplyUomMap);
 });
 
@@ -44,7 +46,7 @@ const addForm = ref<Omit<NSupplyUoM, "id">>({
   type: "",
 });
 
-function onSubmit(e: NPersonnelData) {
+function onSubmit(e: NSupplyUoM) {
   const { id, ...rest } = e;
   scn.unitActions.updateSupplyUom(id, rest);
   editedId.value = null;
@@ -121,7 +123,7 @@ function onDelete() {
         <InlineFormWrapper class="pr-6">
           <AddSupplyUoMForm
             :model-value="row"
-            @submit="onSubmit($event as NPersonnelData)"
+            @submit="onSubmit($event as NSupplyUoM)"
             @cancel="cancelEdit()"
             heading="Edit unit of measure/issue"
           />

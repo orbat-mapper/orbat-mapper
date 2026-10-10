@@ -77,7 +77,7 @@ function showScenarioInfo() {
     </AccordionPanel>
 
     <AccordionPanel
-      label="Sensor groups"
+      label="Range ring groups"
       :key="scenarioInfoPanelStore.tabIndex + 60"
       :defaultOpen="scenarioInfoPanelStore.tabIndex === 4"
     >

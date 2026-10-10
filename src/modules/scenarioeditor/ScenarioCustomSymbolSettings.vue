@@ -18,7 +18,9 @@ import { ArrowUpRightIcon } from "@lucide/vue";
 
 const scn = injectStrict(activeScenarioKey);
 const icons = computed(() => {
-  scn.store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.customSymbolMap) ?? [];
 });
 

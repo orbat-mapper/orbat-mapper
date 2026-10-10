@@ -2,6 +2,7 @@
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
+import { storeToRefs } from "pinia";
 import TableHeader from "@/components/TableHeader.vue";
 import type { NSupplyCategory } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
@@ -13,6 +14,7 @@ import { useSupplyCategoryTableStore } from "@/stores/tableStores";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import { useToeEditableItems } from "@/composables/toeUtils";
 import { useUiStore } from "@/stores/uiStore";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
 
 const { store, unitActions } = injectStrict(activeScenarioKey);
@@ -22,16 +24,19 @@ const { send } = useNotifications();
 const {
   editMode,
   editedId,
-  showAddForm,
   rerender,
   selectedItems: selectedSupplies,
 } = useToeEditableItems<NSupplyCategory>();
 
 const tableStore = useSupplyCategoryTableStore();
 const uiStore = useUiStore();
+// Shared with the add shortcuts in useToeActions, which open this form from elsewhere
+const { showAddSupplies: showAddForm } = storeToRefs(useScenarioInfoPanelStore());
 
 const supplies = computed(() => {
-  store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(store.state.supplyCategoryMap);
 });
 

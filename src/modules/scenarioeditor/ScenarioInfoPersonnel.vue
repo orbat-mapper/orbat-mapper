@@ -2,6 +2,7 @@
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
+import { storeToRefs } from "pinia";
 import TableHeader from "@/components/TableHeader.vue";
 import type { NPersonnelData } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
@@ -13,16 +14,21 @@ import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionF
 import { usePersonnelTableStore } from "@/stores/tableStores";
 import { useToeEditableItems } from "@/composables/toeUtils";
 import { useUiStore } from "@/stores/uiStore";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 
-const { editMode, editedId, showAddForm, rerender, selectedItems } =
+const { editMode, editedId, rerender, selectedItems } =
   useToeEditableItems<NPersonnelData>();
 const tableStore = usePersonnelTableStore();
 const uiStore = useUiStore();
+// Shared with the add shortcuts in useToeActions, which open this form from elsewhere
+const { showAddPersonnel: showAddForm } = storeToRefs(useScenarioInfoPanelStore());
 const personnel = computed(() => {
-  rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.personnelMap);
 });
 
@@ -69,7 +75,7 @@ function onDelete() {
       if (!success) {
         send({
           type: "error",
-          message: `${e.name}: Cannot delete an equipment category that is in use.`,
+          message: `${e.name}: Cannot delete a personnel category that is in use.`,
         });
         notDeletedItems.push(e);
       }
@@ -123,7 +129,7 @@ function onDelete() {
       </template>
     </ToeGrid>
     <p v-else class="prose prose-sm dark:prose-invert">
-      Use the <kbd>Add</kbd> button to add equipment categories to this scenario.
+      Use the <kbd>Add</kbd> button to add personnel categories to this scenario.
     </p>
   </div>
 </template>
