@@ -47,6 +47,9 @@ All notable changes to this project will be documented in this file.
 - Reworked the Select tab's categories. Status is now Symbol status, and headquarters, task force and dummy indicators have their own category. The categories are reordered, starting with Side, Main unit icon and Command level. Categories that can't narrow the selection, such as one where every unit shares the same value, are hidden, and rows with no units are dimmed. Map visibility rows have their own icons, and Main unit icon has an "Expand all" / "Collapse all" button.
 - Moved the Select tab between Layers and Settings.
 - The Select tab's mode switch, Invert and a new Clear button now stay at the top while scrolling, in place of the panel title. Excluded categories show as a line there with their own Clear, and the help text is shorter.
+- The unit details header shows the unit's status next to its short name, and units without a short name get an "Add short name" field.
+- The hide-on-map button has moved to the unit details toolbar. Locked units show a lock icon in the header that unlocks them, and multi-select gets a lock button in the toolbar.
+- The unit details toolbar has tooltips, including why a button is disabled, and the unit symbol shows that it can be clicked to change it.
 
 ### Fixed
 

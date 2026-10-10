@@ -16,8 +16,13 @@ interface Props {
   static?: boolean;
   activeItem?: ButtonGroupItem | null | undefined;
   triggerClass?: string;
+  buttonClass?: string;
+  menuLabel?: string;
 }
-const props = withDefaults(defineProps<Props>(), { static: false });
+const props = withDefaults(defineProps<Props>(), {
+  static: false,
+  menuLabel: "More options",
+});
 const emit = defineEmits(["update:activeItem"]);
 const fallbackItem: ButtonGroupItem = { label: "", onClick: () => {}, disabled: true };
 
@@ -53,12 +58,13 @@ const onClick = (item: ButtonGroupItem) => {
 </script>
 
 <template>
-  <div class="flex items-center">
+  <!-- min-w-0 and shrink let the label truncate in narrow toolbars -->
+  <div class="flex min-w-0 items-center">
     <Button
       variant="outline"
       @click="onClick(activeItemRef)"
       :disabled="activeItemRef.disabled"
-      class="rounded-r-none text-left ring-inset"
+      :class="cn('min-w-0 shrink rounded-r-none text-left ring-inset', buttonClass)"
       :title="activeItemRef.label"
     >
       <span :class="cn('truncate', triggerClass)">{{ activeItemRef.label }}</span>
@@ -69,7 +75,9 @@ const onClick = (item: ButtonGroupItem) => {
           variant="outline"
           size="icon"
           class="rounded-l-none border-l-0 px-2 ring-inset"
-          ><ChevronDown
+          :aria-label="menuLabel"
+          :title="menuLabel"
+          ><ChevronDown aria-hidden="true"
         /></Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
