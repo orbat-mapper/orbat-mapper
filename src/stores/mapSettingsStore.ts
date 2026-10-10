@@ -17,6 +17,9 @@ export interface RememberedBasemapArchive {
   key?: string;
 }
 export type MapLibreUnitRotationMode = "screen" | "mixed" | "map";
+/** What an orbit-mode Hellfire strike does to the units caught in its blast. */
+export type HellfireImpactAction =
+  "none" | "hide" | "removeFromMap" | "delete" | "destroyed";
 
 const LEGACY_REMEMBERED_ARCHIVE_KEY = "lastBasemapArchive";
 
@@ -80,6 +83,11 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     mapLibreUnitRotationMode: useLocalStorage<MapLibreUnitRotationMode>(
       "mapLibreUnitRotationMode",
       "screen",
+    ),
+    hellfireEnabled: useLocalStorage("hellfireEnabled", false),
+    hellfireImpactAction: useLocalStorage<HellfireImpactAction>(
+      "hellfireImpactAction",
+      "none",
     ),
   }),
 });

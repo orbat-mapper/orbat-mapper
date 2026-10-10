@@ -4,6 +4,7 @@ import {
   ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuLabel,
   ContextMenuRadioGroup,
   ContextMenuRadioItem,
   ContextMenuSeparator,
@@ -21,6 +22,7 @@ import {
   IconOrbitVariant,
   IconPause,
   IconPlay,
+  IconRocketLaunch,
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
@@ -66,6 +68,7 @@ import { injectStrict, nanoid } from "@/utils";
 import {
   activeLayerKey,
   activeScenarioKey,
+  mapHellfireKey,
   mapOrbitKey,
   searchActionsKey,
 } from "@/components/injects";
@@ -78,6 +81,7 @@ import { useActiveUnitStore } from "@/stores/dragStore";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore.ts";
 import UnitSymbol from "@/components/UnitSymbol.vue";
 import { useRecordingStore } from "@/stores/recordingStore";
+import { HELLFIRE_IMPACT_ACTIONS } from "@/modules/maplibreview/useHellfire";
 import AddMapServerDialog from "@/components/AddMapServerDialog.vue";
 import { queryTrackPointAt, type TrackPointHit } from "@/composables/maplibreUnitHistory";
 import TerrainMenu from "@/modules/maplibreview/TerrainMenu.vue";
@@ -195,10 +199,16 @@ function onRemoveActiveArchive() {
   void removeBasemapArchive(layer.name);
 }
 const { isOrbiting, startOrbit, stopOrbit } = injectStrict(mapOrbitKey);
+const hellfire = injectStrict(mapHellfireKey);
 
 function onOrbitHere() {
   const [lng, lat] = dropPosition.value;
   startOrbit({ lng, lat });
+}
+
+function onLaunchHellfire() {
+  const [lng, lat] = dropPosition.value;
+  hellfire.launch({ lng, lat });
 }
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -499,6 +509,30 @@ function onContextMenu(event: MouseEvent) {
         Stop orbiting
         <ContextMenuShortcut>Esc</ContextMenuShortcut>
       </ContextMenuItem>
+      <ContextMenuSub v-if="mapSettings.hellfireEnabled">
+        <ContextMenuSubTrigger>
+          <IconRocketLaunch class="mr-2 h-4 w-4" />
+          <span>Hellfire</span>
+        </ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuItem :disabled="!isOrbiting" @select="onLaunchHellfire()">
+            <span>Launch missile</span>
+            <ContextMenuShortcut>Shift+click</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuLabel inset>On impact</ContextMenuLabel>
+          <ContextMenuRadioGroup v-model="mapSettings.hellfireImpactAction">
+            <ContextMenuRadioItem
+              v-for="option in HELLFIRE_IMPACT_ACTIONS"
+              :key="option.value"
+              :value="option.value"
+              @select.prevent
+            >
+              {{ option.label }}
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
       <ContextMenuSeparator />
       <template v-if="clickedTrackPoint">
         <ContextMenuItem
@@ -720,6 +754,9 @@ function onContextMenu(event: MouseEvent) {
           </ContextMenuCheckboxItem>
           <ContextMenuCheckboxItem v-model="showDayNightTerminator" @select.prevent>
             Day/night terminator
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem v-model="mapSettings.hellfireEnabled" @select.prevent>
+            Hellfire (orbit mode)
           </ContextMenuCheckboxItem>
           <ContextMenuSeparator />
           <ContextMenuCheckboxItem

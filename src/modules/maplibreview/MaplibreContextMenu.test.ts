@@ -6,6 +6,7 @@ import { createPinia, setActivePinia } from "pinia";
 import {
   activeLayerKey,
   activeScenarioKey,
+  mapHellfireKey,
   mapOrbitKey,
   searchActionsKey,
 } from "@/components/injects";
@@ -286,6 +287,7 @@ describe("MaplibreContextMenu", () => {
             startOrbit: vi.fn(),
             stopOrbit: vi.fn(),
           },
+          [mapHellfireKey as symbol]: { launch: vi.fn() },
         },
         stubs: {
           ContextMenu: ContextMenuStub,
