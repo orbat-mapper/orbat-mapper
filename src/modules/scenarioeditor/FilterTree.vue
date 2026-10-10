@@ -119,7 +119,12 @@ const badgeProps = {
               "
             />
           </span>
-          <span>{{ item.value.label }}</span>
+          <!-- Labels like "Armour/Armoured/Mechanized" may wrap after each slash. -->
+          <span class="min-w-0 wrap-break-word"
+            ><template v-for="(part, i) in item.value.label.split('/')" :key="i"
+              ><template v-if="i">/<wbr /></template>{{ part }}</template
+            ></span
+          >
         </div>
         <Badge
           v-bind="badgeProps[selectionState(item._id)]"
