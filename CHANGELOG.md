@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Added a Graphics tab to the sidebar, after the Select tab: a catalogue of every control measure with search, filters for Points, Lines, Areas, Tasks and Generic, collapsible sections, a choice of cell size and optional descriptions. Click a control measure to draw it, or drag it onto the map to place it where it is dropped.
 - Added the point control measures from symbol set 25 that were not available before, such as checkpoints and action points. They are placed from the Graphics tab, stored in control-measure layers, and can be moved, rotated, resized and given text amplifiers from their details panel.
 - Point control measures can be sized in pixels, keeping their size on screen, or in meters, scaling with the map. Switching keeps the symbol's current size on screen, and the Graphics tab sets the unit for new ones.
+- Added an optional Hellfire strike to orbit mode. Turn it on in the map settings or the command palette, then shift-click while orbiting, or use the map context menu, to fire a missile at a point. A setting decides what happens to the units hit, and each strike is one undo step.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -76,6 +77,7 @@ All notable changes to this project will be documented in this file.
 - Fixed long category names in the Select tab running into the unit count.
 - Fixed the add equipment, personnel and supplies shortcuts not opening the add form in the scenario settings.
 - Fixed settings grids not refreshing after an inline edit, and row stripes stopping short of the action column.
+- Fixed drawing a feature doing nothing when the scenario had no feature layer. The layer is now created with the first drawn item, and arming a control measure tool no longer adds an empty layer.
 
 ## September 2026
 
