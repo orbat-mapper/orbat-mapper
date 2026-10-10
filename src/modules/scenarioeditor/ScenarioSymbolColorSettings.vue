@@ -6,6 +6,7 @@ import { useToeEditableItems } from "@/composables/toeUtils.ts";
 import { useFillColorTableStore } from "@/stores/tableStores.ts";
 import type { ColumnDef } from "@tanstack/vue-table";
 import type { SymbolFillColor } from "@/config/colors.ts";
+import ColorDot from "@/components/ColorDot.vue";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
 import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
 import ToeGrid from "@/modules/grid/ToeGrid.vue";
@@ -30,16 +31,14 @@ const columns: ColumnDef<SymbolFillColor>[] = [
     id: "color",
     header: "Color",
     accessorKey: "code",
-    enableSorting: false,
-    cell: ({ row, getValue, cell }) => {
-      return h("div", {
-        class: "size-8  border border-black ",
-        style: { backgroundColor: getValue() as string },
-      });
+    cell: ({ getValue }) => {
+      const code = getValue() as string;
+      return h("span", { class: "inline-flex items-center gap-2" }, [
+        h(ColorDot, { color: code, class: "size-4" }),
+        h("span", { class: "font-mono text-xs" }, code.toUpperCase()),
+      ]);
     },
-    size: 100,
   },
-  { id: "code", header: "Value", accessorKey: "code" },
 ];
 
 const addForm = ref<SymbolFillColor>({
@@ -48,7 +47,9 @@ const addForm = ref<SymbolFillColor>({
 });
 
 const colors = computed(() => {
-  store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(store.state.symbolFillColorMap);
 });
 
@@ -93,7 +94,7 @@ function onSubmit(e: NSymbolFillColor) {
     <ToeGridHeader
       v-model:editMode="editMode"
       v-model:addMode="showAddForm"
-      editLabel="Edit Colors"
+      editLabel="Edit colors"
       :selectedCount="selectedColors.length"
       :hideEdit="colors.length === 0"
       @delete="onDelete()"
@@ -121,7 +122,7 @@ function onSubmit(e: NSymbolFillColor) {
             :model-value="row"
             @submit="onSubmit($event as NSymbolFillColor)"
             @cancel="cancelEdit()"
-            heading="Add new symbol fill color"
+            heading="Edit symbol fill color"
           />
         </InlineFormWrapper>
       </template>
