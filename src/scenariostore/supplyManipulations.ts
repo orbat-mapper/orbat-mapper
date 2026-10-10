@@ -48,8 +48,8 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       const supplyClass = s.supplyClassMap[id];
       if (!supplyClass) return;
       Object.assign(supplyClass, data);
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function addSupplyCategory(
@@ -76,8 +76,8 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       const supplyCategory = s.supplyCategoryMap[id];
       if (!supplyCategory) return;
       Object.assign(supplyCategory, data);
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function deleteSupplyClass(id: string): boolean {
@@ -150,8 +150,8 @@ export function useSupplyManipulations(store: NewScenarioStore) {
       const supplyUom = s.supplyUomMap[id];
       if (!supplyUom) return;
       Object.assign(supplyUom, data);
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function deleteSupplyUom(id: string): boolean {

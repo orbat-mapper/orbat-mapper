@@ -461,13 +461,25 @@ export function computeScenarioLayerItemHidden(
   const projected = (item._state ?? undefined) as
     | Partial<Pick<ScenarioLayerItemBase, "visibleFromT" | "visibleUntilT" | "isHidden">>
     | undefined;
-  const visibleFromT =
-    projected?.visibleFromT ?? item.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-  const visibleUntilT =
-    projected?.visibleUntilT ?? item.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  const timeHidden = isOutsideVisibleWindow(
+    {
+      visibleFromT: projected?.visibleFromT ?? item.visibleFromT,
+      visibleUntilT: projected?.visibleUntilT ?? item.visibleUntilT,
+    },
+    currentTime,
+  );
   const isHidden = projected?.isHidden ?? item.isHidden;
-  const timeHidden = currentTime <= visibleFromT || currentTime >= visibleUntilT;
   return timeHidden || !!isHidden;
+}
+
+/** True when the visible-from/until window excludes the timestamp. */
+export function isOutsideVisibleWindow(
+  window: { visibleFromT?: number | null; visibleUntilT?: number | null },
+  timestamp: number,
+) {
+  const visibleFromT = window.visibleFromT ?? Number.MIN_SAFE_INTEGER;
+  const visibleUntilT = window.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
+  return timestamp <= visibleFromT || timestamp >= visibleUntilT;
 }
 
 export function isTacticalGraphicLayerItem(

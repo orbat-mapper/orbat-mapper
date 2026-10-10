@@ -142,26 +142,32 @@ function onLoad() {
     return;
   }
 
-  scnStore.groupUpdate(() => {
-    if (units.length) {
-      const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
-      units.forEach((entry) =>
-        unitActions.addUnit(toUnit(entry, side.standardIdentity, t), parentUnitId.value),
-      );
-    }
-    // One control measure layer per MilX layer, in file order.
-    const layerIds = new Map<number, string | undefined>();
-    for (const entry of graphics) {
-      if (!layerIds.has(entry.layerIndex)) {
-        layerIds.set(
-          entry.layerIndex,
-          createControlMeasureLayer(geo, entry.layerName)?.id,
+  scnStore.groupUpdate(
+    () => {
+      if (units.length) {
+        const { side } = unitActions.getUnitHierarchy(parentUnitId.value);
+        units.forEach((entry) =>
+          unitActions.addUnit(
+            toUnit(entry, side.standardIdentity, t),
+            parentUnitId.value,
+          ),
         );
       }
-      const layerId = layerIds.get(entry.layerIndex);
-      if (layerId) geo.addFeature({ ...entry.item, id: nanoid() }, layerId);
-    }
-  });
+      // One control measure layer per MilX layer, in file order.
+      const layerIds = new Map<number, string | undefined>();
+      for (const entry of graphics) {
+        if (!layerIds.has(entry.layerIndex)) {
+          layerIds.set(
+            entry.layerIndex,
+            createControlMeasureLayer(geo, entry.layerName)?.id,
+          );
+        }
+        const layerId = layerIds.get(entry.layerIndex);
+        if (layerId) geo.addFeature({ ...entry.item, id: nanoid() }, layerId);
+      }
+    },
+    { label: "batchLayer", value: "milx-import" },
+  );
   // Timed positions only show once the unit states are recomputed.
   if (units.length && t !== undefined) time.setCurrentTime(+time.scenarioTime.value);
 

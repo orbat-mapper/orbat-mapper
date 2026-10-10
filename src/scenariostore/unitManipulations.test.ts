@@ -359,7 +359,7 @@ describe("unitManipulations settings redraw signaling", () => {
     const actions = useUnitManipulations(store);
     const before = store.state.unitStateCounter;
 
-    actions.batchUpdateUnit(["unit-1"], { name: "Renamed" });
+    actions.batchUpdateUnit(["unit-1"], { description: "Notes" });
     expect(store.state.unitStateCounter).toBe(before);
 
     actions.batchUpdateUnit(["unit-1"], { sidc: "10031000001100000000" });
@@ -443,6 +443,48 @@ describe("unitManipulations settings redraw signaling", () => {
 
     expect(store.state.settingsStateCounter).toBe(before + 1);
     expect(store.state.sideMap["side-1"].symbolOptions?.fillColor).toBe("#AA22AA");
+  });
+
+  it("updateSide redraws units when the fill color changes, including on undo/redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.updateSide("side-1", { symbolOptions: { fillColor: "#0055FF" } });
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+    store.redo();
+    expect(store.state.unitStateCounter).toBe(before + 1);
+  });
+
+  it("updateSide updates the current state SIDC when the standard identity changes", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const unit = store.state.unitMap["unit-1"];
+    expect(unit._state?.sidc).toBe("10031000000000000000");
+    const before = store.state.unitStateCounter;
+
+    actions.updateSide("side-1", { standardIdentity: "6" });
+
+    expect(unit.sidc).toBe("10061000000000000000");
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10061000000000000000");
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    store.undo();
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10031000000000000000");
+  });
+
+  it("updateSideGroup redraws units when the fill color changes", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.updateSideGroup("group-1", { symbolOptions: { fillColor: "#33AA44" } });
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
   });
 
   it("changeUnitParent clears style cache keys and increments settingsStateCounter", () => {
@@ -1117,5 +1159,111 @@ describe("unit status colour", () => {
     const id = Object.keys(store.state.unitStatusMap)[0];
 
     expect("color" in store.state.unitStatusMap[id]).toBe(false);
+  });
+});
+
+describe("map redraw on undo/redo", () => {
+  const T0 = Date.parse("2025-01-01T00:00:00Z");
+
+  it("addUnitStateEntry changes unitStateCounter on undo and redo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.addUnitStateEntry("unit-1", { t: T0, sidc: "10031000001100000000" });
+    const afterEdit = store.state.unitStateCounter;
+    expect(afterEdit).toBeGreaterThan(before);
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10031000001100000000");
+
+    store.undo();
+    expect(store.state.unitStateCounter).not.toBe(afterEdit);
+    expect(store.state.unitMap["unit-1"]._state?.sidc).toBe("10031000000000000000");
+    const afterUndo = store.state.unitStateCounter;
+    store.redo();
+    expect(store.state.unitStateCounter).not.toBe(afterUndo);
+  });
+
+  it("updateUnitStateEntry and deleteUnitStateEntry change unitStateCounter on undo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    actions.addUnitStateEntry("unit-1", { t: T0, symbolRotation: 10 });
+
+    for (const edit of [
+      () => actions.updateUnitStateEntry("unit-1", 0, { symbolRotation: 45 }),
+      () => actions.deleteUnitStateEntry("unit-1", 0),
+    ]) {
+      edit();
+      const afterEdit = store.state.unitStateCounter;
+      store.undo();
+      expect(store.state.unitStateCounter).not.toBe(afterEdit);
+    }
+  });
+
+  it("updateUnit redraws for location and name changes, also on undo", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+
+    for (const data of [
+      { location: [11, 61] },
+      { name: "Renamed" },
+      { shortName: "R" },
+    ]) {
+      const before = store.state.unitStateCounter;
+      actions.updateUnit("unit-1", data);
+      expect(store.state.unitStateCounter).toBe(before + 1);
+      store.undo();
+      expect(store.state.unitStateCounter).toBe(before);
+    }
+  });
+
+  it("changeUnitParent to another side redraws the unit with the new identity", () => {
+    const store = useNewScenarioStore(createScenarioWithTwoSides());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.changeUnitParent("unit-1", "group-3", "on");
+
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    expect(store.state.unitMap["unit-1"]._state?.sidc?.[3]).toBe("6");
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+  });
+
+  it("changeSideGroupParent updates the current symbol and redraws", () => {
+    const store = useNewScenarioStore(createScenarioWithTwoSides());
+    const actions = useUnitManipulations(store);
+    const before = store.state.unitStateCounter;
+
+    actions.changeSideGroupParent("group-1", "side-2", "on");
+
+    expect(store.state.unitMap["unit-1"].sidc[3]).toBe("6");
+    expect(store.state.unitMap["unit-1"]._state?.sidc?.[3]).toBe("6");
+    expect(store.state.unitStateCounter).toBe(before + 1);
+    store.undo();
+    expect(store.state.unitStateCounter).toBe(before);
+  });
+
+  it("cloneUnit with subordinates leaves the original's current state alone", () => {
+    const scenario = createScenario();
+    const unit = scenario.sides[0].groups[0].subUnits[0];
+    unit.state = [{ id: "s1", t: T0, location: [11, 61] }];
+    unit.subUnits = [
+      {
+        id: "unit-2",
+        name: "Sub",
+        sidc: "10031000000000000000",
+        location: [12, 62],
+        subUnits: [],
+      },
+    ];
+    const store = useNewScenarioStore(scenario);
+    const actions = useUnitManipulations(store);
+    expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
+
+    const cloneId = actions.cloneUnit("unit-1", { includeSubordinates: true })!;
+
+    expect(store.state.unitMap["unit-1"]._state?.location).toEqual([11, 61]);
+    const clonedSubId = store.state.unitMap[cloneId].subUnits[0];
+    expect(store.state.unitMap[clonedSubId]._state).toBeTruthy();
   });
 });

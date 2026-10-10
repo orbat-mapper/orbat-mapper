@@ -521,6 +521,31 @@ describe("createMapLibreScenarioLayerController", () => {
     expect(source?.setData).toHaveBeenCalled();
   });
 
+  it("refreshes feature sources when a feature state edit is undone", async () => {
+    const mockMap = createMockMap();
+    const { scenario, layerItemsLayers, undoRedoHook } = createScenario();
+    const controller = createMapLibreScenarioLayerController({
+      getNativeMap: () => mockMap.map,
+      fitGeometry: vi.fn(),
+      fitExtent: vi.fn(),
+      animateView: vi.fn(),
+    } as any);
+    controller.bindScenario(scenario);
+    const source = Array.from(mockMap.sources.values())[0];
+    source?.setData.mockClear();
+
+    layerItemsLayers.value[0].items[0].geometry.coordinates = [
+      [10, 20],
+      [16, 26],
+    ];
+    await undoRedoHook.trigger({
+      action: "undo",
+      meta: { label: "updateFeatureState", value: "feature-1" },
+    });
+
+    expect(source?.setData).toHaveBeenCalled();
+  });
+
   it("renders scenario ImageLayers as MapLibre image raster layers", () => {
     const mockMap = createMockMap();
     const { scenario, mapLayers } = createScenario();

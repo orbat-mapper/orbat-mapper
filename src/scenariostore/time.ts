@@ -28,6 +28,7 @@ import {
   computeScenarioLayerItemHidden,
   type CurrentGeometryLayerItemState,
   type CurrentScenarioLayerItemState,
+  isOutsideVisibleWindow,
   projectScenarioLayerItemStateAt,
 } from "@/types/scenarioLayerItems";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
@@ -245,10 +246,8 @@ export function useScenarioTime(store: NewScenarioStore) {
         isScenarioOverlayLayer,
       ) as import("@/types/scenarioStackLayers").NScenarioOverlayLayer[]
     ).forEach((layer) => {
-      const visibleFromT = layer.visibleFromT ?? Number.MIN_SAFE_INTEGER;
-      const visibleUntilT = layer.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
       const oldHidden = layer._hidden;
-      layer._hidden = timestamp <= visibleFromT || timestamp >= visibleUntilT;
+      layer._hidden = isOutsideVisibleWindow(layer, timestamp);
       if (oldHidden !== layer._hidden) {
         state.featureStateCounter++;
       }
@@ -272,6 +271,10 @@ export function useScenarioTime(store: NewScenarioStore) {
               projected;
             state.featureStateCounter++;
           }
+        } else if (feature._state) {
+          // Undo/redo can empty `state` while leaving the old projection behind.
+          feature._state = undefined;
+          state.featureStateCounter++;
         }
         const oldHidden = feature._hidden;
         feature._hidden = computeScenarioLayerItemHidden(feature, timestamp);

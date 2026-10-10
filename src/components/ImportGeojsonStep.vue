@@ -197,9 +197,13 @@ function loadAsUnits() {
 
 function loadAsFeatures() {
   const features = getSelectedScenarioFeatures();
-  scnStore.groupUpdate(() => {
-    features.forEach((feature) => geo.addFeature(feature, feature._pid));
-  });
+  // The label makes the map refresh the feature layers on undo/redo.
+  scnStore.groupUpdate(
+    () => {
+      features.forEach((feature) => geo.addFeature(feature, feature._pid));
+    },
+    { label: "batchLayer", value: "geojson-import" },
+  );
 }
 
 function loadAsUnitTracks() {
@@ -208,28 +212,31 @@ function loadAsUnitTracks() {
 
   let stateCount = 0;
   let skippedPointCount = 0;
-  scnStore.groupUpdate(() => {
-    getSelectedScenarioFeatures().forEach((feature) =>
-      geo.addFeature(feature, feature._pid),
-    );
-    trackFeatures.forEach((feature) => {
-      const unitId = getTrackAssignmentUnitId(feature);
-      if (!unitId) return;
-      const unit = scnStore.state.unitMap[unitId];
-      const result = createUnitTrackStatesFromFeature(
-        feature,
-        scnStore.state.currentTime,
-        {
-          addStartPosition: !unit?.location && !unit?._state?.location,
-        },
+  scnStore.groupUpdate(
+    () => {
+      getSelectedScenarioFeatures().forEach((feature) =>
+        geo.addFeature(feature, feature._pid),
       );
-      skippedPointCount += result.skippedPoints;
-      result.states.forEach((state) => {
-        unitActions.addUnitStateEntry(unitId, state, true);
-        stateCount++;
+      trackFeatures.forEach((feature) => {
+        const unitId = getTrackAssignmentUnitId(feature);
+        if (!unitId) return;
+        const unit = scnStore.state.unitMap[unitId];
+        const result = createUnitTrackStatesFromFeature(
+          feature,
+          scnStore.state.currentTime,
+          {
+            addStartPosition: !unit?.location && !unit?._state?.location,
+          },
+        );
+        skippedPointCount += result.skippedPoints;
+        result.states.forEach((state) => {
+          unitActions.addUnitStateEntry(unitId, state, true);
+          stateCount++;
+        });
       });
-    });
-  });
+    },
+    { label: "batchLayer", value: "geojson-import" },
+  );
 
   if (stateCount > 0) {
     time.setCurrentTime(scnStore.state.currentTime);
