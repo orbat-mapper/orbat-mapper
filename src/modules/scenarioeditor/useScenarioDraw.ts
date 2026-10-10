@@ -11,7 +11,10 @@ import {
   type ShallowRef,
 } from "vue";
 import { storeToRefs } from "pinia";
-import type { ControlMeasureKind } from "@orbat-mapper/control-measures";
+import type {
+  ControlMeasureId,
+  ControlMeasureKind,
+} from "@orbat-mapper/control-measures";
 import type { SnapCandidateProvider } from "@orbat-mapper/tactical-draw";
 import {
   activeLayerKey,
@@ -36,7 +39,18 @@ import {
 } from "@/modules/scenarioeditor/scenarioDrawHelpers";
 import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import { newControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
+import { draftOptionsForNewControlMeasure } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
 import { useControlMeasureDrawSession } from "@/modules/scenarioeditor/useControlMeasureDrawSession";
+import {
+  usePointSymbolDrawSession,
+  type PointSymbolDrawTarget,
+} from "@/modules/scenarioeditor/usePointSymbolDrawSession";
+import { newPointSymbolSize } from "@/geo/pointSymbolSizing";
+import {
+  controlMeasurePlacementAt,
+  type ControlMeasurePlacement,
+  type ControlMeasurePlacementView,
+} from "@/modules/scenarioeditor/controlMeasurePlacement";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
 import {
   getUnitSnapCandidates,
@@ -46,8 +60,12 @@ import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
 import type { MapAdapter } from "@/geo/contracts/mapAdapter";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
 import {
+  isControlMeasureLayerItemKind,
+  isNPointSymbolLayerItem,
   isNTacticalGraphicLayerItem,
   type GeometryLayerItem,
+  type NPointSymbolLayerItem,
+  type PointSymbolLayerItemUpdate,
   type TacticalGraphicLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -67,13 +85,34 @@ export type ArmedTool =
   | { kind: "none" }
   | { kind: "plainDraw"; drawType: DrawType }
   | { kind: "plainModify" }
-  | { kind: "cmDraw"; graphicKind: ControlMeasureKind }
+  | {
+      kind: "cmDraw";
+      graphicKind: ControlMeasureKind;
+      /** Seed the session with a dropped shape and commit it at once. */
+      placement?: ControlMeasurePlacement;
+    }
+  /** One click places a milsymbol point symbol. */
+  | { kind: "psDraw"; sidc: string; name: string }
   | {
       kind: "cmEdit";
       featureId: FeatureId;
       /** Return to the toolbar's target-picking mode when this session settles. */
       resume?: "plainModify";
     };
+
+type TacticalDrawTool = Extract<ArmedTool, { kind: "cmDraw" | "psDraw" }>;
+
+/** A tactical-draw *draw* tool: its session only aborts, and has no history. */
+function isTacticalDrawTool(tool: ArmedTool): tool is TacticalDrawTool {
+  return tool.kind === "cmDraw" || tool.kind === "psDraw";
+}
+
+/** Any tool whose input a tactical-draw session owns: a draw or an edit. */
+function isTacticalTool(
+  tool: ArmedTool,
+): tool is TacticalDrawTool | Extract<ArmedTool, { kind: "cmEdit" }> {
+  return isTacticalDrawTool(tool) || tool.kind === "cmEdit";
+}
 
 /**
  * The keyboard contract the armed-tool owner exposes upwards.
@@ -153,7 +192,9 @@ export type DrawSessionProgress =
       minPoints: number;
       maxPoints?: number;
       canCommit: boolean;
-    };
+    }
+  /** One click places it, so there is no point count to report. */
+  | { family: "pointSymbol"; name: string };
 
 /**
  * The armed-tool owner for the scenario map.
@@ -336,9 +377,10 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    */
   function selectedControlMeasureId(ids = [...selectedFeatureIds.value]) {
     if (!ids.length) return null;
+    // Point symbols edit through the same session, so they count as the family too.
     const allControlMeasures = ids.every((featureId) =>
-      isNTacticalGraphicLayerItem(
-        activeScenario.geo.getLayerItemById(featureId).layerItem,
+      isControlMeasureLayerItemKind(
+        activeScenario.geo.getLayerItemById(featureId).layerItem?.kind,
       ),
     );
     return allControlMeasures ? ids[0]! : null;
@@ -459,14 +501,12 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     armed.value.kind === "plainDraw" ? armed.value.drawType : null,
   );
   const isDrawing = computed(
-    () => armed.value.kind === "plainDraw" || armed.value.kind === "cmDraw",
+    () => armed.value.kind === "plainDraw" || isTacticalDrawTool(armed.value),
   );
   const isModifying = computed(
     () => armed.value.kind === "plainModify" || armed.value.kind === "cmEdit",
   );
-  const controlMeasureArmed = computed(
-    () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
-  );
+  const controlMeasureArmed = computed(() => isTacticalTool(armed.value));
 
   // The control-measure draw session. Everything transient lives in there; the only
   // thing that reaches back is a settled session asking what to arm next.
@@ -510,6 +550,38 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     },
   });
 
+  const pointSymbolDraw = usePointSymbolDrawSession({
+    scenario: activeScenario,
+    surface: () => engineRef.value?.draw,
+    renderFeed,
+    destinationLayerId: () => drawDestinationLayerId("controlMeasure"),
+    // A ground size is derived at the zoom it is placed at, so it looks the same as a
+    // screen-sized one would there.
+    size: () =>
+      newPointSymbolSize(
+        controlMeasureToolStore.pointSymbolSizeUnit,
+        mapAdapter.value?.getZoom(),
+      ),
+    onSettled({ committed, target, featureId }) {
+      if (featureId) {
+        adoptCreatedLayer(
+          "controlMeasure",
+          activeScenario.geo.getLayerItemById(featureId).layerItem?._pid,
+        );
+      }
+      // Only a clicked placement re-arms; a drop is not armed and opens for editing.
+      if (committed && addMultiple.value && armed.value.kind === "psDraw") {
+        arm({ kind: "psDraw", ...target });
+        return;
+      }
+      if (committed && featureId) {
+        arm({ kind: "cmEdit", featureId });
+        return;
+      }
+      if (armed.value.kind === "psDraw") arm({ kind: "none" });
+    },
+  });
+
   const drawSessionProgress = computed<DrawSessionProgress | null>(() => {
     if (armed.value.kind === "plainDraw") {
       const { drawType } = armed.value;
@@ -523,6 +595,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
         maxPoints,
         canCommit: pointCount >= minPoints,
       };
+    }
+    if (armed.value.kind === "psDraw") {
+      return { family: "pointSymbol", name: armed.value.name };
     }
     if (armed.value.kind === "cmDraw") {
       const progress = controlMeasureDraw.progress.value;
@@ -579,6 +654,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   function applyArm(tool: ArmedTool, deferControlMeasureSession = false) {
     armed.value = tool;
     if (tool.kind !== "cmDraw") controlMeasureDraw.stop();
+    if (tool.kind !== "psDraw") pointSymbolDraw.stop();
     if (tool.kind !== "cmEdit") controlMeasureEdit.stop();
 
     const startControlMeasureSession = () => {
@@ -588,7 +664,21 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       if (tool.kind === "cmDraw") {
         // The surface can disappear while an edit's replacement is deferred. Do not
         // leave a draw tool armed at no session with map selection suppressed.
-        if (!controlMeasureDraw.start(tool.graphicKind)) armed.value = { kind: "none" };
+        if (!controlMeasureDraw.start(tool.graphicKind, tool.placement)) {
+          armed.value = { kind: "none" };
+        } else if (tool.placement) {
+          // A drop is a finished gesture: commit through the explicit-finish path, so
+          // it lands in edit like Done does and never re-arms for `addMultiple`.
+          explicitFinishTool = tool;
+          if (!controlMeasureDraw.commit()) {
+            explicitFinishTool = null;
+            arm({ kind: "none" });
+          }
+        }
+      } else if (tool.kind === "psDraw") {
+        if (!pointSymbolDraw.start({ sidc: tool.sidc, name: tool.name })) {
+          armed.value = { kind: "none" };
+        }
       } else if (tool.kind === "cmEdit") {
         // Nothing editable behind that id — deleted, or an unsupported kind the library
         // cannot put handles on. Fall straight back to disarmed rather than leaving the
@@ -597,7 +687,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       }
     };
 
-    if (tool.kind === "cmDraw" || tool.kind === "cmEdit") {
+    if (isTacticalTool(tool)) {
       if (deferControlMeasureSession) void nextTick(startControlMeasureSession);
       else startControlMeasureSession();
     }
@@ -629,7 +719,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       const owner = item ? getOverlayLayer(item._pid) : undefined;
       if (!item || item.locked || owner?.locked) tool = { kind: "none" };
     }
-    if (tool.kind === "cmDraw" && !selectAuthoringLayer("controlMeasure")) {
+    if (isTacticalDrawTool(tool) && !selectAuthoringLayer("controlMeasure")) {
       tool = { kind: "none" };
     } else if (
       (tool.kind === "plainDraw" || tool.kind === "plainModify") &&
@@ -650,6 +740,46 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     const editWasOpen = controlMeasureEdit.featureId.value !== null;
     renderFeed?.settle("arm");
     applyArm(tool, editWasOpen);
+  }
+
+  /**
+   * Place a control measure dropped on the map at `ground`: the kind's sample shape,
+   * fitted to a fixed screen footprint at the current view. It goes through the same
+   * draw session as clicking it out, so it is born with the same defaults, sizes its
+   * pixel-anchored options for this zoom and is one undo step.
+   */
+  function placeControlMeasure(
+    graphicKind: ControlMeasureId,
+    ground: [number, number],
+    view: ControlMeasurePlacementView,
+  ): boolean {
+    if (!canControlMeasures.value) return false;
+    const defaults = newControlMeasureDefaults(
+      controlMeasureToolStore.defaults,
+      graphicKind,
+    );
+    const placement = controlMeasurePlacementAt(
+      graphicKind,
+      draftOptionsForNewControlMeasure(graphicKind, defaults),
+      ground,
+      view,
+    );
+    if (!placement) return false;
+    arm({ kind: "cmDraw", graphicKind, placement });
+    return armed.value.kind !== "none";
+  }
+
+  /**
+   * Place a point symbol dropped on the map at `ground`. Nothing to fit, so it is
+   * written straight in through the draw session's commit — one undo step — and then
+   * opened for editing, as a placed control measure is.
+   */
+  function placePointSymbol(target: PointSymbolDrawTarget, ground: [number, number]) {
+    if (!canControlMeasures.value) return false;
+    // Settles whatever was open first, the way arming any tool does.
+    arm({ kind: "none" });
+    if (!selectAuthoringLayer("controlMeasure")) return false;
+    return pointSymbolDraw.place(target, ground);
   }
 
   // The plain interactions keep their own `isDrawing`/`isModifying`/`currentDrawType`
@@ -828,6 +958,28 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     activeScenario.geo.updateTacticalGraphic(featureId, update);
   }
 
+  /**
+   * The point-symbol counterpart: settle an open move first, then write. An update
+   * derived from the symbol's current values goes in as a function, so it reads them
+   * after the settle has committed the move rather than before.
+   */
+  function updatePointSymbol(
+    featureId: FeatureId,
+    update:
+      | PointSymbolLayerItemUpdate
+      | ((current: NPointSymbolLayerItem) => PointSymbolLayerItemUpdate),
+  ) {
+    if (controlMeasureEdit.featureId.value === featureId) {
+      renderFeed?.settle("render");
+    }
+    if (typeof update === "function") {
+      const { layerItem } = activeScenario.geo.getLayerItemById(featureId);
+      if (!layerItem || !isNPointSymbolLayerItem(layerItem)) return;
+      update = update(layerItem);
+    }
+    activeScenario.geo.updatePointSymbol(featureId, update);
+  }
+
   /** Settle once before the group so an open shape edit cannot overwrite sizes. */
   function updateControlMeasureSizes(updates: ControlMeasureSizeUpdate[]) {
     if (!updates.length) return;
@@ -884,7 +1036,8 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   function finishDrawSession(): boolean {
     const progress = drawSessionProgress.value;
     if (!progress) return false;
-    if (progress.pointCount === 0) {
+    // Nothing placed yet, so Done just disarms.
+    if (progress.family === "pointSymbol" || progress.pointCount === 0) {
       arm({ kind: "none" });
       return true;
     }
@@ -927,7 +1080,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    */
   function onWindowEscapeCapture(event: KeyboardEvent) {
     if (event.key !== "Escape") return;
-    if (armed.value.kind !== "cmDraw" && armed.value.kind !== "cmEdit") return;
+    if (!isTacticalTool(armed.value)) return;
     handleEscape(event);
   }
 
@@ -943,7 +1096,8 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       arm({ kind: "none" });
       return true;
     }
-    if (armed.value.kind !== "plainDraw" && armed.value.kind !== "cmDraw") return false;
+    if (armed.value.kind !== "plainDraw" && !isTacticalDrawTool(armed.value))
+      return false;
     event?.stopPropagation();
     finishDrawSession();
     return true;
@@ -961,7 +1115,7 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
    */
   function handleHistoryKey(direction: "undo" | "redo") {
     return (event?: KeyboardEvent): boolean => {
-      if (armed.value.kind === "cmDraw") {
+      if (isTacticalDrawTool(armed.value)) {
         event?.stopPropagation();
         return true;
       }
@@ -978,7 +1132,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   function ownedUndoState() {
     // During a draw there is only abort, so both directions are unavailable rather
     // than merely swallowed.
-    if (armed.value.kind === "cmDraw") return { canUndo: false, canRedo: false };
+    if (isTacticalDrawTool(armed.value)) {
+      return { canUndo: false, canRedo: false };
+    }
     if (armed.value.kind === "cmEdit") {
       return {
         canUndo: controlMeasureEdit.canUndo.value,
@@ -1041,10 +1197,13 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
       controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
     startControlMeasureEdit: (featureId: FeatureId) => arm({ kind: "cmEdit", featureId }),
+    placeControlMeasure,
+    placePointSymbol,
     /** `engine.draw` is defined — control measures can be authored on this engine. */
     canControlMeasures,
     updateControlMeasure,
     updateControlMeasureSizes,
+    updatePointSymbol,
     duplicateSelected,
     deleteSelected,
     handleEscape,

@@ -35,6 +35,10 @@ import {
   isNTacticalGraphicLayerItem,
   projectScenarioLayerItemStateAt,
   TACTICAL_GRAPHIC_UPDATE_FIELDS,
+  POINT_SYMBOL_UPDATE_FIELDS,
+  isControlMeasureLayerItemKind,
+  isNPointSymbolLayerItem,
+  type PointSymbolLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import type {
   NScenarioOverlayLayer,
@@ -98,6 +102,8 @@ function firstGeometryPosition(geometry: Geometry | undefined): Position | undef
 }
 
 function duplicateReference(feature: NScenarioLayerItem): Position | undefined {
+  if (isNPointSymbolLayerItem(feature))
+    return feature._state?.position ?? feature.position;
   if (isNTacticalGraphicLayerItem(feature)) {
     return (feature._state?.controlPoints ?? feature.controlPoints)[0];
   }
@@ -126,6 +132,14 @@ function offsetDuplicate(feature: NScenarioLayerItem, delta: readonly [number, n
     offsetGeometry(feature.geometry, delta);
     feature.state?.forEach(({ patch }) => offsetGeometry(patch.geometry, delta));
     offsetGeometry(feature._state?.geometry, delta);
+    return;
+  }
+  if (isNPointSymbolLayerItem(feature)) {
+    offsetPosition(feature.position, delta);
+    feature.state?.forEach(
+      ({ patch }) => patch.position && offsetPosition(patch.position, delta),
+    );
+    if (feature._state?.position) offsetPosition(feature._state.position, delta);
     return;
   }
   if (!isNTacticalGraphicLayerItem(feature)) return;
@@ -559,7 +573,7 @@ export function useGeo(store: NewScenarioStore) {
     );
     if (!layer || !destinationLayer) return;
     if (layer.locked || destinationLayer.locked || feature.locked) return;
-    const itemNeedsControlMeasureLayer = feature.kind === "tacticalGraphic";
+    const itemNeedsControlMeasureLayer = isControlMeasureLayerItemKind(feature.kind);
     const destinationIsControlMeasureLayer =
       destinationLayer.specialization === "controlMeasure";
     if (itemNeedsControlMeasureLayer !== destinationIsControlMeasureLayer) return;
@@ -747,7 +761,7 @@ export function useGeo(store: NewScenarioStore) {
     newFeature._pid = layerId;
     const destination = getOverlayLayerFromMap(state.layerStackMap, layerId);
     if (!destination || destination.locked) return;
-    const requiresControlMeasureLayer = newFeature.kind === "tacticalGraphic";
+    const requiresControlMeasureLayer = isControlMeasureLayerItemKind(newFeature.kind);
     if (
       !options.allowSpecializationMismatch &&
       requiresControlMeasureLayer !== (destination.specialization === "controlMeasure")
@@ -1000,6 +1014,18 @@ export function useGeo(store: NewScenarioStore) {
     });
   }
 
+  /** The `pointSymbol` counterpart to `updateTacticalGraphic`. */
+  function updatePointSymbol(
+    itemId: FeatureId,
+    data: PointSymbolLayerItemUpdate,
+    options: UpdateOptions = {},
+  ) {
+    writeLayerItemFields(itemId, data, options, {
+      fields: POINT_SYMBOL_UPDATE_FIELDS,
+      guard: isNPointSymbolLayerItem,
+    });
+  }
+
   /**
    * The `tacticalGraphic` counterpart to `addFeatureStateGeometry`: record **shape**
    * into `state[]` at `atTime` rather than writing it top-level.
@@ -1171,6 +1197,7 @@ export function useGeo(store: NewScenarioStore) {
     updateFeature,
     updateLayerItem,
     updateTacticalGraphic,
+    updatePointSymbol,
     addTacticalGraphicStateControlPoints,
     deleteLayerItemStateEntry,
     clearLayerItemState,

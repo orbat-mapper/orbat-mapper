@@ -2,6 +2,7 @@ import type { NScenarioLayer, NSide, NSideGroup, NUnit } from "@/types/internalM
 import type { NScenarioLayerItem } from "@/types/scenarioLayerItems";
 import type { ScenarioMapLayer } from "@/types/scenarioGeoModels";
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 
 export type ItemState =
   | { type: "idle" }
@@ -156,4 +157,29 @@ export function isScenarioRangeRingsDragItem(
   data: Record<string | symbol, unknown>,
 ): data is ScenarioRangeRingsDragItem {
   return Boolean(data[_scnRangeRingsKey]);
+}
+
+const _controlMeasureKindKey = Symbol("controlMeasureKind");
+
+/** What a catalogue tile places: a generated control measure or a point symbol. */
+export type CataloguePlacement =
+  | { type: "measure"; graphicKind: ControlMeasureId }
+  | { type: "symbol"; sidc: string; name: string };
+
+/** A catalogue entry lifted from the Graphics tab, placed where it is dropped. */
+export type ControlMeasureKindDragItem = {
+  [_controlMeasureKindKey]: boolean;
+  placement: CataloguePlacement;
+};
+
+export function getControlMeasureKindDragItem(
+  data: Omit<ControlMeasureKindDragItem, typeof _controlMeasureKindKey>,
+): ControlMeasureKindDragItem {
+  return { [_controlMeasureKindKey]: true, ...data };
+}
+
+export function isControlMeasureKindDragItem(
+  data: Record<string | symbol, unknown>,
+): data is ControlMeasureKindDragItem {
+  return Boolean(data[_controlMeasureKindKey]);
 }

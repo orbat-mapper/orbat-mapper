@@ -21,6 +21,7 @@ import type { ControlMeasureKind } from "@orbat-mapper/control-measures";
 import type { TScenario } from "@/scenariostore";
 import type { TacticalDrawSurface } from "@/geo/engines/maplibre/tacticalDrawSurface";
 import type { TacticalGraphicRenderFeed } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
+import type { ControlMeasurePlacement } from "@/modules/scenarioeditor/controlMeasurePlacement";
 import { useSelectedItems } from "@/stores/selectedStore";
 import {
   addScenarioControlMeasure,
@@ -75,8 +76,12 @@ export interface ControlMeasureDrawSession {
   readonly progress: Ref<ControlMeasureDrawProgress | null>;
   /** Session-sticky destination, non-null exactly while a draw is open. */
   readonly destinationLayerId: Ref<string | null>;
-  /** Open a draw session for `graphicKind`. `false` when no surface is available. */
-  start(graphicKind: ControlMeasureKind): boolean;
+  /**
+   * Open a draw session for `graphicKind`. `false` when no surface is available.
+   * A `placement` seeds the session with its control points and options, ready to be
+   * committed as dropped.
+   */
+  start(graphicKind: ControlMeasureKind, placement?: ControlMeasurePlacement): boolean;
   /** Give up ownership of any open session without committing. */
   stop(): void;
   /** Finish the open session if it has enough points. `false` when it does not. */
@@ -158,7 +163,7 @@ export function useControlMeasureDrawSession(
     options.onSettled({ committed: true, graphicKind, featureId: added.id });
   }
 
-  function start(graphicKind: ControlMeasureKind) {
+  function start(graphicKind: ControlMeasureKind, placement?: ControlMeasurePlacement) {
     stop();
     const token = generation;
     const destinationLayerId = options.destinationLayerId?.();
@@ -169,8 +174,13 @@ export function useControlMeasureDrawSession(
       destinationLayerId == null ? null : String(destinationLayerId);
     const draft = {
       kind: graphicKind,
-      options: draftOptionsForNewControlMeasure(graphicKind, defaults),
+      options: placement
+        ? { ...placement.options }
+        : draftOptionsForNewControlMeasure(graphicKind, defaults),
       style: draftStyleForNewControlMeasure(graphicKind, defaults),
+      ...(placement
+        ? { controlPoints: placement.controlPoints.map((position) => [...position]) }
+        : {}),
     } as DrawMeasureDraft;
     surface
       .draw(draft, {

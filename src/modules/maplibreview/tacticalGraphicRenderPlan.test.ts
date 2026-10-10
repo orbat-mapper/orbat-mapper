@@ -281,3 +281,46 @@ describe("buildTacticalGraphicRenderPlan time projection", () => {
     expect(after.controlPoints).toEqual([[9, 9]]);
   });
 });
+
+describe("buildTacticalGraphicRenderPlan point symbols", () => {
+  function pointSymbol(id: string, patch: Record<string, unknown> = {}) {
+    return {
+      id,
+      kind: "pointSymbol",
+      sidc: "15032500001303000000",
+      position: [10, 60],
+      _pid: "layer-1",
+      ...patch,
+    } as unknown as NScenarioLayerItem;
+  }
+
+  it("renders point symbols in stack order with the control measures", () => {
+    const plan = buildTacticalGraphicRenderPlan(
+      [layer("layer-1", [graphic("cm-1"), pointSymbol("ps-1")])],
+      visible,
+    );
+    expect(plan.graphics.map((g) => g.id)).toEqual(["cm-1", "ps-1"]);
+    expect(plan.graphics[1]).toMatchObject({
+      kind: "point-symbol",
+      sidc: "15032500001303000000",
+      position: [10, 60],
+      rotation: 0,
+      size: { value: 30, unit: "pixels" },
+    });
+  });
+
+  it("hands back the same object while the item is unchanged", () => {
+    const item = pointSymbol("ps-1");
+    const first = buildTacticalGraphicRenderPlan([layer("l", [item])], visible);
+    const second = buildTacticalGraphicRenderPlan([layer("l", [item])], visible);
+    expect(second.graphics[0]).toBe(first.graphics[0]);
+  });
+
+  it("drops hidden point symbols", () => {
+    const plan = buildTacticalGraphicRenderPlan(
+      [layer("layer-1", [pointSymbol("ps-1", { isHidden: true })])],
+      visible,
+    );
+    expect(plan.graphics).toEqual([]);
+  });
+});

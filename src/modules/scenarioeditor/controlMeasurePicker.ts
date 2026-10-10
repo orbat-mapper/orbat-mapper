@@ -62,18 +62,24 @@ export function getControlMeasureKindOption(
 export function searchControlMeasureKinds(
   query: string,
 ): readonly ControlMeasureKindOption[] {
+  const matches = controlMeasureSearchMatcher(query);
+  return matches ? OPTIONS.filter((option) => matches(option.searchText)) : OPTIONS;
+}
+
+/** The search shared by the picker and the catalogue; `undefined` for an empty query. */
+export function controlMeasureSearchMatcher(
+  query: string,
+): ((searchText: string) => boolean) | undefined {
   const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  if (!terms.length) return OPTIONS;
-  return OPTIONS.filter((option) =>
-    terms.every((term) => option.searchText.includes(term)),
-  );
+  if (!terms.length) return undefined;
+  return (searchText) => terms.every((term) => searchText.includes(term));
 }
 
 /** Groups by registry entity, preserving registry order within and between groups. */
-export function groupControlMeasureKinds(
-  options: readonly ControlMeasureKindOption[],
-): Map<string, ControlMeasureKindOption[]> {
-  const groups = new Map<string, ControlMeasureKindOption[]>();
+export function groupControlMeasureKinds<T extends { entity: string }>(
+  options: readonly T[],
+): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
   for (const option of options) {
     const group = groups.get(option.entity);
     if (group) group.push(option);

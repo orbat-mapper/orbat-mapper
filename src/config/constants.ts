@@ -7,7 +7,9 @@ import type { ScenarioVersion } from "@/types/scenarioModels";
 // 3.5.0 reverses Classic Arrow control points to tip-first (control-measures 0.32).
 // 3.6.0 is a signal like 3.4.0: range ring groups and settings.rangeRingVisibility
 // can hide rings, which an older build would show.
-export const SCENARIO_FILE_VERSION: ScenarioVersion = "3.6.0";
+// 3.7.0 is a signal like 3.4.0: control-measure layers can hold pointSymbol items,
+// which an older build drops as an unknown layer item kind.
+export const SCENARIO_FILE_VERSION: ScenarioVersion = "3.7.0";
 export const LOCALSTORAGE_KEY = "orbat-scenario4";
 export const SHARE_HISTORY_LOCALSTORAGE_KEY = "orbat-share-history";
 

@@ -41,10 +41,7 @@ import {
   isControlMeasureLayer,
   NEW_CONTROL_MEASURE_LAYER_NAME,
 } from "@/modules/scenarioeditor/controlMeasureLayers";
-import type {
-  NScenarioLayerItem,
-  NTacticalGraphicLayerItem,
-} from "@/types/scenarioLayerItems";
+import type { NScenarioLayerItem } from "@/types/scenarioLayerItems";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   isScenarioFeatureDragItem,
@@ -380,7 +377,7 @@ function onControlMeasureLayerAction(
   onLayerAction(layer as NScenarioLayer, action);
 }
 
-function onControlMeasureDoubleClick(item: NTacticalGraphicLayerItem) {
+function onControlMeasureDoubleClick(item: { id: FeatureId }) {
   engineRef.value?.layers.zoomToFeature(item.id);
 }
 

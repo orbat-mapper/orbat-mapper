@@ -48,6 +48,9 @@ importers:
       '@orbat-mapper/convert-symbology':
         specifier: ^1.0.2
         version: 1.0.2
+      '@orbat-mapper/point-symbols':
+        specifier: 0.2.10
+        version: 0.2.10(milsymbol@3.0.4)(vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw':
         specifier: 0.13.2
         version: 0.13.2(vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
@@ -1118,6 +1121,11 @@ packages:
 
   '@orbat-mapper/convert-symbology@1.0.2':
     resolution: {integrity: sha512-FpnPXS16/C+ay7FVPLhTkRH2NmREKxhJ+pifqcW9NpsbORH94S14qU8Eyl2ofMP7upxQYNvw2qpTok5I3P4QKw==}
+
+  '@orbat-mapper/point-symbols@0.2.10':
+    resolution: {integrity: sha512-FJfMaEs6Ft729YXNvlVPOS7SdjQL5BK0Idfu7WQVNj6xRd55vjLW/ZtoJSmxEOha9HnXhOpdNiIEexw+FxckIw==}
+    peerDependencies:
+      milsymbol: '>=3.0.4 <4.0.0'
 
   '@orbat-mapper/tactical-draw-adapter-maplibre@0.8.2':
     resolution: {integrity: sha512-bsmvUaFbsQVHcCZymvPwSlYPg8qB0TXfWC9DFZTOSaqlVPRwQw82QUhen7hiDb2LkloR9v8QEY8Qe0PNNxt5Nw==}
@@ -5182,6 +5190,14 @@ snapshots:
   '@orbat-mapper/control-measures@0.32.0': {}
 
   '@orbat-mapper/convert-symbology@1.0.2': {}
+
+  '@orbat-mapper/point-symbols@0.2.10(milsymbol@3.0.4)(vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+    dependencies:
+      '@orbat-mapper/control-measures': 0.32.0
+      '@orbat-mapper/tactical-draw': 0.13.2(vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+      milsymbol: 3.0.4
+    transitivePeerDependencies:
+      - vitest
 
   '@orbat-mapper/tactical-draw-adapter-maplibre@0.8.2(maplibre-gl@6.11.2)(vitest@4.1.11(@types/node@25.9.8)(jsdom@27.4.0)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:

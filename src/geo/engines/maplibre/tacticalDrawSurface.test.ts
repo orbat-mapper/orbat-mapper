@@ -26,6 +26,11 @@ const { facades, adapters } = vi.hoisted(() => ({
 // The real engine calls `map.addSource`/`map.addLayer` from its constructor, so the
 // façade is faked here — this file is about the surface's own lifecycle logic.
 vi.mock("@orbat-mapper/tactical-draw", () => ({
+  isPointSymbol: (graphic: Graphic) => graphic.kind === "point-symbol",
+  // Every point symbol covers a 20 px box around the origin.
+  pointSymbolFootprint: () => ({
+    box: { center: [0, 0], halfWidth: 10, halfHeight: 10, angle: 0 },
+  }),
   TacticalDraw: class FakeTacticalDraw {
     constructor(_adapter: unknown, options?: { generateId?: () => string }) {
       let handler: ((event: PickEvent) => void) | null = null;
@@ -152,6 +157,41 @@ describe("createTacticalDrawSurface", () => {
     expect(facades).toHaveLength(2);
     expect(facades[0].destroy).toHaveBeenCalledTimes(1);
     expect(facades[1].render).toHaveBeenCalledWith([graphic]);
+  });
+
+  describe("pointSymbolAt", () => {
+    const symbol = (id: string) =>
+      ({
+        id,
+        kind: "point-symbol",
+        sidc: "10032500001301000000",
+        position: [0, 0],
+        rotation: 0,
+        size: { value: 30, unit: "pixels" },
+      }) as unknown as Graphic;
+    const area = {
+      id: "cm-1",
+      kind: "boundary",
+      controlPoints: [],
+    } as unknown as Graphic;
+
+    it("finds the topmost point symbol whose footprint covers the pixel", () => {
+      const surface = createTacticalDrawSurface(createFakeMap(true).map);
+      surface.render([symbol("ps-1"), symbol("ps-2")]);
+
+      expect(surface.pointSymbolAt([5, 5])).toBe("ps-2");
+      expect(surface.pointSymbolAt([50, 50])).toBeNull();
+    });
+
+    it("only counts symbols drawn above the graphic given as `above`", () => {
+      const surface = createTacticalDrawSurface(createFakeMap(true).map);
+
+      surface.render([symbol("ps-1"), area]);
+      expect(surface.pointSymbolAt([5, 5], { above: "cm-1" })).toBeNull();
+
+      surface.render([area, symbol("ps-1")]);
+      expect(surface.pointSymbolAt([5, 5], { above: "cm-1" })).toBe("ps-1");
+    });
   });
 
   it("keeps host pick subscriptions across a re-attach", () => {

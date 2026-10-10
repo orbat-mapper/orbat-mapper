@@ -1,8 +1,14 @@
 import type { Map as MlMap } from "maplibre-gl";
-import { TacticalDraw, TacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
+import {
+  isPointSymbol,
+  pointSymbolFootprint,
+  TacticalDraw,
+  TacticalDrawAbortError,
+} from "@orbat-mapper/tactical-draw";
 import type {
   DrawMeasureDraft,
   DrawOptions,
+  DrawPointSymbolDraft,
   EditOptions,
   Graphic,
   GraphicSnapshot,
@@ -12,11 +18,16 @@ import type {
   MapAdapter as TacticalDrawMapAdapter,
   PickEvent,
   PixelCoordinate,
+  PointSymbol,
   SnappingOptions,
   TacticalDrawAbortReason,
 } from "@orbat-mapper/tactical-draw";
 import type { ControlMeasure, ControlMeasureKind } from "@orbat-mapper/control-measures";
 import { MapLibreAdapter } from "@orbat-mapper/tactical-draw-adapter-maplibre";
+import { milsymbolPointSymbols } from "@orbat-mapper/point-symbols";
+import { DEFAULT_POINT_SYMBOL_SIZE } from "@/geo/pointSymbols";
+import { pointTextAmplifierMilsymbolOptions } from "@/symbology/pointTextAmplifiers";
+import "@/symbology/milsymbolLabelOverrides";
 import { isProxy, isRef } from "vue";
 import { nanoid } from "@/utils";
 
@@ -91,7 +102,21 @@ export function __resetTacticalDrawReactivityWarning() {
  * Rebuilt per attach because the façade is reconstructed on every `style.load`.
  */
 function tacticalDrawOptions() {
-  return { generateId: () => nanoid() };
+  return { generateId: () => nanoid(), pointSymbols: pointSymbolCapability() };
+}
+
+let sharedPointSymbols: ReturnType<typeof milsymbolPointSymbols> | null = null;
+
+/**
+ * Milsymbol rendering for point symbols (ADR-0029 in tactical-draw). One instance for
+ * the app, so its render cache survives the façade being rebuilt on every basemap swap.
+ */
+function pointSymbolCapability() {
+  return (sharedPointSymbols ??= milsymbolPointSymbols({
+    defaultSize: DEFAULT_POINT_SYMBOL_SIZE,
+    // Text amplifiers the package does not map to milsymbol options itself.
+    resolveOptions: pointTextAmplifierMilsymbolOptions,
+  }));
 }
 
 /**
@@ -143,6 +168,20 @@ export interface TacticalDrawSurface {
    */
   setHighlightedGraphics(ids: readonly string[]): void;
   /**
+   * The topmost rendered point symbol whose drawn footprint covers `pixel`, or `null`.
+   *
+   * `ownsInteractionAt` tests feature geometry, which for a point symbol is only its
+   * anchor — a checkpoint's pin tip, say — so a click on the rest of the symbol needs
+   * this footprint test as well. tactrace gets the same from `onGraphicPick`.
+   *
+   * With `above`, only symbols drawn over that graphic count, so a geometry hit and
+   * a footprint hit resolve by visual order.
+   */
+  pointSymbolAt(
+    pixel: PixelCoordinate,
+    options?: { tolerance?: number; above?: string },
+  ): string | null;
+  /**
    * Engine-level snapping for draw and edit sessions. Cheap and idempotent, so the
    * host re-asserts it rather than tracking what the façade currently holds — which
    * is also what makes it survive a `style.load` re-attach.
@@ -161,11 +200,18 @@ export interface TacticalDrawSurface {
     draft: DrawMeasureDraft<K>,
     options?: DrawOptions,
   ): Promise<GraphicSnapshot<ControlMeasure<K>>>;
+  /** Place one point symbol with a click. Same rejection rules. */
+  draw(
+    draft: DrawPointSymbolDraft,
+    options?: DrawOptions,
+  ): Promise<GraphicSnapshot<PointSymbol>>;
   /** Start an interactive edit on one committed control measure. Same rejection rules. */
   edit(
     measure: ControlMeasure,
     options?: EditOptions,
   ): Promise<GraphicSnapshot<ControlMeasure>>;
+  /** Start an interactive move/rotate/resize of one committed point symbol. */
+  edit(symbol: PointSymbol, options?: EditOptions): Promise<GraphicSnapshot<PointSymbol>>;
   /**
    * Abort whatever session is open. `true` when there was one. This is the settle
    * trigger's hard end — a draw aborts, an edit is closed by the caller instead.
@@ -296,6 +342,34 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     ownsInteractionAt(pixel, options) {
       return tacticalDraw?.ownsInteractionAt(pixel, options) ?? null;
     },
+    pointSymbolAt(pixel, { tolerance = 4, above } = {}) {
+      if (!tacticalDraw) return null;
+      const capability = pointSymbolCapability();
+      // Top-most first: the render array is bottom-to-top.
+      for (let i = lastRendered.length - 1; i >= 0; i--) {
+        const graphic = lastRendered[i]!;
+        if (graphic.id === above) return null;
+        if (!isPointSymbol(graphic)) continue;
+        const footprint = pointSymbolFootprint(
+          graphic,
+          capability.render(graphic),
+          adapter,
+        );
+        if (!footprint) continue;
+        const { center, halfWidth, halfHeight, angle } = footprint.box;
+        const dx = pixel[0] - center[0];
+        const dy = pixel[1] - center[1];
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        if (
+          Math.abs(dx * cos + dy * sin) <= halfWidth + tolerance &&
+          Math.abs(-dx * sin + dy * cos) <= halfHeight + tolerance
+        ) {
+          return graphic.id;
+        }
+      }
+      return null;
+    },
     setHighlightedGraphics(ids) {
       lastHighlighted = ids;
       tacticalDraw?.setHighlightedGraphics(ids);
@@ -304,16 +378,18 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
       lastSnapping = options;
       tacticalDraw?.setSnappingOptions(options);
     },
-    draw(draft, options) {
+    // Overloaded on the interface; the façade's own overloads resolve the result, so
+    // the shared implementations are cast to the overload sets they stand behind.
+    draw: ((draft: DrawMeasureDraft | DrawPointSymbolDraft, options?: DrawOptions) => {
       assertRawGraphicInput(draft, "draw");
       if (!tacticalDraw) return Promise.reject(detachedAbort());
-      return tacticalDraw.draw(draft, options);
-    },
-    edit(measure, options) {
-      assertRawGraphicInput(measure, "edit");
+      return tacticalDraw.draw(draft as DrawMeasureDraft, options);
+    }) as TacticalDrawSurface["draw"],
+    edit: ((graphic: ControlMeasure | PointSymbol, options?: EditOptions) => {
+      assertRawGraphicInput(graphic, "edit");
       if (!tacticalDraw) return Promise.reject(detachedAbort());
-      return tacticalDraw.edit(measure, options);
-    },
+      return tacticalDraw.edit(graphic as ControlMeasure, options);
+    }) as TacticalDrawSurface["edit"],
     cancel(reason) {
       return tacticalDraw?.cancel(reason) ?? false;
     },

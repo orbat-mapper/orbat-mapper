@@ -3,6 +3,7 @@ import { useLocalStorage } from "@vueuse/core";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 import { SID } from "@/symbology/values";
 import type { NewControlMeasureDefaults } from "@/modules/scenarioeditor/controlMeasureDrawHelpers";
+import type { PointSymbolSize } from "@/types/scenarioLayerItems";
 
 /**
  * The kinds the draw toolbar shows as buttons before the user has picked anything.
@@ -62,6 +63,9 @@ export const useControlMeasureToolStore = defineStore("controlMeasureTool", {
         "main-attack",
       ),
       defaults: { ...DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS } as NewControlMeasureDefaults,
+      // Screen-sized by default, like unit symbols; ground-sized symbols scale with
+      // the map from the size they had when placed.
+      pointSymbolSizeUnit: "pixels" as PointSymbolSize["unit"],
     };
   },
   actions: {

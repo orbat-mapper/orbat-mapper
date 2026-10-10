@@ -34,6 +34,7 @@ const drawingName = computed(() => {
   const progress = drawSessionProgress.value;
   if (!progress) return "Drawing";
   if (progress.family === "plain") return plainNames[progress.drawType];
+  if (progress.family === "pointSymbol") return progress.name;
   return (
     getControlMeasureKindOption(progress.graphicKind as ControlMeasureId)?.name ??
     String(progress.graphicKind)
@@ -42,6 +43,7 @@ const drawingName = computed(() => {
 
 const progressText = computed(() => {
   const progress = drawSessionProgress.value;
+  if (progress?.family === "pointSymbol") return "Tap to place";
   if (!progress || progress.pointCount === 0) return "Tap to start";
 
   const { pointCount, minPoints, maxPoints } = progress;
@@ -59,7 +61,8 @@ const progressText = computed(() => {
 
 const doneDisabled = computed(() => {
   const progress = drawSessionProgress.value;
-  return Boolean(progress && progress.pointCount > 0 && !progress.canCommit);
+  if (!progress || progress.family === "pointSymbol") return false;
+  return progress.pointCount > 0 && !progress.canCommit;
 });
 </script>
 

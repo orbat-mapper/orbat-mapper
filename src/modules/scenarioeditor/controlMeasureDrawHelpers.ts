@@ -156,20 +156,20 @@ export function toTacticalGraphicLayerItem(
  * owner: use the topmost specialized layer, otherwise create one explicitly specialized
  * as a control-measure layer.
  */
-function getOrCreateControlMeasureLayerId(scenario: TScenario): FeatureId | undefined {
+export function getOrCreateControlMeasureLayerId(
+  scenario: TScenario,
+): FeatureId | undefined {
   const existing = getControlMeasureLayerGroups(scenario.geo.layersItems.value)[0];
   if (existing) return existing.layer.id;
   return createControlMeasureLayer(scenario.geo)?.id;
 }
 
-function nextControlMeasureName(
+/** `"<baseName> <n>"` with the first `n` not already used in the layer. */
+export function nextLayerItemName(
   scenario: TScenario,
   layerId: FeatureId,
-  measureKind: ControlMeasure["kind"],
+  baseName: string,
 ): string {
-  const baseName =
-    CONTROL_MEASURE_METADATA[measureKind as ControlMeasureId]?.name ??
-    String(measureKind);
   const layer = scenario.geo.getLayerById(layerId);
   const existingNames = new Set(
     layer?.items
@@ -202,7 +202,12 @@ export function addScenarioControlMeasure(
     () => {
       const layerId = destinationLayerId ?? getOrCreateControlMeasureLayerId(scenario);
       if (!layerId) return;
-      item.name = nextControlMeasureName(scenario, layerId, measure.kind);
+      item.name = nextLayerItemName(
+        scenario,
+        layerId,
+        CONTROL_MEASURE_METADATA[measure.kind as ControlMeasureId]?.name ??
+          String(measure.kind),
+      );
       added = Boolean(scenario.geo.addFeature(item, layerId));
     },
     { label: "addFeature", value: item.id },
