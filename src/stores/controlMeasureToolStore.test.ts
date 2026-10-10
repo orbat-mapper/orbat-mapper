@@ -20,6 +20,24 @@ describe("pinned control-measure kinds", () => {
     );
   });
 
+  it("trims lists stored under an earlier, larger cap", () => {
+    localStorage.setItem(
+      "pinnedControlMeasureKinds",
+      JSON.stringify([
+        "phase-line",
+        "boundary",
+        "main-attack",
+        "area",
+        "breach",
+        "assembly-area",
+        "support-by-fire",
+      ]),
+    );
+    expect(useControlMeasureToolStore().pinnedKinds).toHaveLength(
+      MAX_PINNED_CONTROL_MEASURE_KINDS,
+    );
+  });
+
   it("pins most-recently-used first without duplicating", () => {
     const store = useControlMeasureToolStore();
     store.pinKind("breach");
@@ -36,7 +54,7 @@ describe("pinned control-measure kinds", () => {
     expect(store.pinnedKinds).toHaveLength(before);
   });
 
-  it("evicts the least recently used once the menu is full", () => {
+  it("evicts the least recently used once the strip is full", () => {
     const store = useControlMeasureToolStore();
     const extras = [
       "light-line",
@@ -44,13 +62,6 @@ describe("pinned control-measure kinds", () => {
       "battle-position",
       "strong-point",
       "ambush",
-      "encirclement",
-      "assembly-area",
-      "drop-zone",
-      "extraction-zone",
-      "landing-zone",
-      "pickup-zone",
-      "objective-area",
     ] as const;
     expect(extras).toHaveLength(MAX_PINNED_CONTROL_MEASURE_KINDS);
     extras.forEach((kind) => store.pinKind(kind));

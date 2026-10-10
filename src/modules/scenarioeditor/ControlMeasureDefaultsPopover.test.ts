@@ -126,6 +126,7 @@ describe("ControlMeasureDefaultsPopover", () => {
     expect(settings.props("graphicKind")).toBe("polygon");
     expect(settings.props("editingDefaults")).toBe(false);
     expect(wrapper.text()).toContain("Selected control measure");
+    expect(wrapper.text()).toContain("Changes also apply to new control measures.");
 
     settings.vm.$emit("update", { style: { color: "#ff0000" } });
     expect(updateControlMeasure).toHaveBeenCalledWith("cm-1", {

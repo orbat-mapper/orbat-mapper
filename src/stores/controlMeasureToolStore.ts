@@ -16,11 +16,11 @@ export const DEFAULT_PINNED_CONTROL_MEASURE_KINDS: ControlMeasureId[] = [
 ];
 
 /**
- * The pins render in the split button's dropdown menu, so the bound is about keeping
- * the menu scannable, not toolbar width. Still MRU-evicted: picking from the full
- * catalog pins every kind, and without a cap the menu would grow without end.
+ * The pins render as buttons on the draw toolbar, so the bound is toolbar width.
+ * MRU-evicted: picking from the full catalog pins every kind, and without a cap the
+ * strip would grow without end.
  */
-export const MAX_PINNED_CONTROL_MEASURE_KINDS = 12;
+export const MAX_PINNED_CONTROL_MEASURE_KINDS = 5;
 
 /**
  * What a newly drawn control measure is born with before the user has changed
@@ -46,14 +46,24 @@ export const DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS: NewControlMeasureDefaults = {
  * remembered while the user works with a kind that cannot expose that control.
  */
 export const useControlMeasureToolStore = defineStore("controlMeasureTool", {
-  state: () => ({
-    pinnedKinds: useLocalStorage<ControlMeasureId[]>("pinnedControlMeasureKinds", [
+  state: () => {
+    const pinnedKinds = useLocalStorage<ControlMeasureId[]>("pinnedControlMeasureKinds", [
       ...DEFAULT_PINNED_CONTROL_MEASURE_KINDS,
-    ]),
-    // Remembered by the control-measure split button; re-armed by its main half.
-    lastKind: useLocalStorage<ControlMeasureId>("lastControlMeasureKind", "main-attack"),
-    defaults: { ...DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS } as NewControlMeasureDefaults,
-  }),
+    ]);
+    // Lists saved under an earlier, larger cap.
+    if (pinnedKinds.value.length > MAX_PINNED_CONTROL_MEASURE_KINDS) {
+      pinnedKinds.value = pinnedKinds.value.slice(0, MAX_PINNED_CONTROL_MEASURE_KINDS);
+    }
+    return {
+      pinnedKinds,
+      // The last armed kind; the defaults popover sizes its options for it.
+      lastKind: useLocalStorage<ControlMeasureId>(
+        "lastControlMeasureKind",
+        "main-attack",
+      ),
+      defaults: { ...DEFAULT_NEW_CONTROL_MEASURE_DEFAULTS } as NewControlMeasureDefaults,
+    };
+  },
   actions: {
     /**
      * Merge a patch into the defaults. An explicitly `undefined` value clears the

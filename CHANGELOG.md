@@ -30,6 +30,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Zooming or panning to a unit or location now centers it in the part of the map not covered by toolbars or an overlay details panel.
+- The draw toolbar now puts control measures first. The pinned control measures are buttons on the toolbar instead of in a dropdown menu, an All… button opens the full control measure search, and the tools are captioned as Control measures, Shapes and Options. Up to five control measures are pinned, and the pins are reset from the control measure search. When the map is narrow, the toolbar shows fewer pins, and scroll buttons appear when the tools do not fit.
+- The draw toolbar's Edit, Move, Duplicate and Delete tools now appear in a Selection group only while map items are selected, or while Edit or Move is on. Record feature geometry moved to Options. The palette button among the control measures styles the selected control measures, or the new ones when none are selected, and changes to a selection also apply to new control measures.
+- The scale and the pointer location stay in the bottom-left corner of the map until they would run into a toolbar, and then move up just enough to clear it, including an open draw, track or measure toolbar.
 - The Falklands example scenario now has range ring groups for its surface combatants, ship tracks that no longer cross land, and the sinking or damage of Ardent, Antelope, Coventry, Sir Galahad, Glamorgan and Santa Fe.
 - Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
