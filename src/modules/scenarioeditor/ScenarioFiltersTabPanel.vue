@@ -80,19 +80,35 @@ const panelsOpen = ref({
 
 type FilterSectionId = keyof typeof panelsOpen.value;
 
-const filterSections = computed<
-  { id: FilterSectionId; label: string; tree: NestedUnitStatItem[] }[]
->(() => [
-  { id: "side", label: "Side", tree: sideTree.value },
-  { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
-  { id: "commandLevel", label: "Command level", tree: emtTree.value },
-  { id: "unitStatus", label: "Unit status", tree: unitStatusTree.value },
-  { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
-  { id: "identity", label: "Standard identity", tree: sidTree.value },
-  { id: "symbolStatus", label: "Symbol status", tree: statusTree.value },
-  { id: "hqtfd", label: "HQ / Task force / Dummy", tree: hqtfdTree.value },
-  { id: "modifiers", label: "Symbol modifiers", tree: modifierTree.value },
-]);
+type FilterSection = { id: FilterSectionId; label: string; tree: NestedUnitStatItem[] };
+
+// A section is worth showing when clicking one of its rows can select something other
+// than every unit.
+function isUsefulSection({ tree }: FilterSection) {
+  if (!tree.some(({ key }) => flatStats.value[key])) return false;
+  const unitCount = Object.keys(state.unitMap).length;
+  const [first] = tree;
+  return !(
+    tree.length === 1 &&
+    !first.children?.length &&
+    flatStats.value[first.key] === unitCount
+  );
+}
+
+const filterSections = computed(() => {
+  const sections: FilterSection[] = [
+    { id: "side", label: "Side", tree: sideTree.value },
+    { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
+    { id: "commandLevel", label: "Command level", tree: emtTree.value },
+    { id: "unitStatus", label: "Unit status", tree: unitStatusTree.value },
+    { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
+    { id: "identity", label: "Standard identity", tree: sidTree.value },
+    { id: "symbolStatus", label: "Symbol status", tree: statusTree.value },
+    { id: "hqtfd", label: "HQ / Task force / Dummy", tree: hqtfdTree.value },
+    { id: "modifiers", label: "Symbol modifiers", tree: modifierTree.value },
+  ];
+  return sections.filter(isUsefulSection);
+});
 
 // Units the map draws right now: located at the current time and not hidden by
 // the unit, its side or its side group.
@@ -654,6 +670,9 @@ function expandAllIcons() {
         <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
       >
     </div>
+    <p v-if="!filterSections.length" class="text-muted-foreground py-4 text-sm">
+      No categories to select from.
+    </p>
     <NewAccordionPanel
       v-for="section in filterSections"
       :key="section.id"
