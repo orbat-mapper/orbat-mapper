@@ -14,6 +14,16 @@ import PanelResizeHandle from "@/components/PanelResizeHandle.vue";
 import ScenarioSettingsPanel from "@/modules/scenarioeditor/ScenarioSettingsPanel.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import OrbatPanelFooterToolbar from "@/modules/scenarioeditor/OrbatPanelFooterToolbar.vue";
+import type { MyTabItem } from "@/components/types";
+import {
+  TAB_CONTROL_MEASURES,
+  TAB_EVENTS,
+  TAB_FILTERS,
+  TAB_LAYERS,
+  TAB_ORBAT,
+  TAB_SCENARIO_SETTINGS,
+  TAB_TOOLS,
+} from "@/types/constants";
 
 const ScenarioFiltersTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioFiltersTabPanel.vue"),
@@ -21,6 +31,20 @@ const ScenarioFiltersTabPanel = defineAsyncComponent(
 const ScenarioToolsTabPanel = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/ScenarioToolsTabPanel.vue"),
 );
+const ControlMeasuresTabPanel = defineAsyncComponent(
+  () => import("@/modules/scenarioeditor/ControlMeasuresTabPanel.vue"),
+);
+
+// Values are the `TAB_*` indices, so a tab can sit anywhere in the strip.
+const tabItems: MyTabItem[] = [
+  { label: "ORBAT", value: String(TAB_ORBAT) },
+  { label: "Events", value: String(TAB_EVENTS) },
+  { label: "Layers", value: String(TAB_LAYERS) },
+  { label: "Select", value: String(TAB_FILTERS) },
+  { label: "Graphics", value: String(TAB_CONTROL_MEASURES) },
+  { label: "Settings", value: String(TAB_SCENARIO_SETTINGS) },
+  { label: "Tools", value: String(TAB_TOOLS) },
+];
 
 const emit = defineEmits(["close"]);
 
@@ -49,7 +73,7 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
   >
     <ScrollTabs
       v-model="activeTabIndexString"
-      :items="['ORBAT', 'Events', 'Layers', 'Select', 'Settings', 'Tools']"
+      :items="tabItems"
       as="div"
       class="hover-none:mr-3 bg-sidebar"
       :class="{ hidden: !showBottomPanel }"
@@ -57,19 +81,30 @@ function onEventClick(scenarioEvent: ScenarioEvent) {
       <template #right>
         <CloseButton @click="emit('close')" class="bg-transparent" />
       </template>
-      <TabsContent value="0" class="flex h-full flex-col">
+      <TabsContent :value="String(TAB_ORBAT)" class="flex h-full flex-col">
         <div class="min-h-0 flex-1 overflow-y-auto">
           <OrbatPanel />
         </div>
         <OrbatPanelFooterToolbar />
       </TabsContent>
-      <TabsContent value="1" class="p-4 pb-10">
+      <TabsContent :value="String(TAB_EVENTS)" class="p-4 pb-10">
         <ScenarioEventsPanel @event-click="onEventClick" />
       </TabsContent>
-      <TabsContent value="2" class="p-4 pb-10"><ScenarioLayersTabPanel /></TabsContent>
-      <TabsContent value="3" class="h-full"> <ScenarioFiltersTabPanel /></TabsContent>
-      <TabsContent value="4" class="p-4 pb-10"> <ScenarioSettingsPanel /></TabsContent>
-      <TabsContent value="5" class="p-4 pb-10"> <ScenarioToolsTabPanel /></TabsContent>
+      <TabsContent :value="String(TAB_LAYERS)" class="p-4 pb-10"
+        ><ScenarioLayersTabPanel
+      /></TabsContent>
+      <TabsContent :value="String(TAB_FILTERS)" class="h-full">
+        <ScenarioFiltersTabPanel
+      /></TabsContent>
+      <TabsContent :value="String(TAB_SCENARIO_SETTINGS)" class="p-4 pb-10">
+        <ScenarioSettingsPanel
+      /></TabsContent>
+      <TabsContent :value="String(TAB_TOOLS)" class="p-4 pb-10">
+        <ScenarioToolsTabPanel
+      /></TabsContent>
+      <TabsContent :value="String(TAB_CONTROL_MEASURES)" class="h-full"
+        ><ControlMeasuresTabPanel
+      /></TabsContent>
     </ScrollTabs>
     <PanelResizeHandle
       :width="orbatPanelWidth"

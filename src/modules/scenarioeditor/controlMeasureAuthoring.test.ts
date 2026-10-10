@@ -379,7 +379,7 @@ describe("drawing a control measure", () => {
     useMainToolbarStore().addMultiple = true;
 
     draw.arm({ kind: "cmDraw", graphicKind: "phase-line" });
-    expect(draw.drawSessionProgress.value?.canCommit).toBe(true);
+    expect(draw.drawSessionProgress.value).toMatchObject({ canCommit: true });
     expect(draw.finishDrawSession()).toBe(true);
     await nextTick();
     await nextTick();

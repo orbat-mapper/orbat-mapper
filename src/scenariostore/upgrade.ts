@@ -20,7 +20,10 @@ import type {
   ScenarioLayerItemsLayer,
   TacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
-import { normalizeGeometryLayerItemState } from "@/types/scenarioLayerItems";
+import {
+  isControlMeasureLayerItemKind,
+  normalizeGeometryLayerItemState,
+} from "@/types/scenarioLayerItems";
 import {
   countUnsupportedGraphicKinds,
   formatUnsupportedGraphicKindWarning,
@@ -218,6 +221,7 @@ const KNOWN_LAYER_ITEM_KINDS: ReadonlySet<string> = new Set<ScenarioLayerItemKin
   "geometry",
   "annotation",
   "tacticalGraphic",
+  "pointSymbol",
   "measurement",
 ]);
 
@@ -279,7 +283,7 @@ function canonicalizeOverlayLayer(
       return;
     }
 
-    // annotation / tacticalGraphic / measurement pass through untouched. They used
+    // annotation / tacticalGraphic / pointSymbol / measurement pass through untouched. They used
     // to be dropped here, which is why no such item has ever reached the store.
     const canonicalItem = item as ScenarioLayerItemsLayer["items"][number];
     canonicalItems.push({ ...canonicalItem, id: String(canonicalItem.id) });
@@ -299,10 +303,8 @@ function canonicalizeOverlayLayer(
 
   const isControlMeasureLayer =
     (rest as { specialization?: string }).specialization === "controlMeasure";
-  const mismatchedItemCount = canonicalItems.filter((item) =>
-    isControlMeasureLayer
-      ? item.kind !== "tacticalGraphic"
-      : item.kind === "tacticalGraphic",
+  const mismatchedItemCount = canonicalItems.filter(
+    (item) => isControlMeasureLayerItemKind(item.kind) !== isControlMeasureLayer,
   ).length;
   if (mismatchedItemCount > 0) {
     console.warn(

@@ -37,6 +37,7 @@ import type {
 import {
   isNGeometryLayerItem,
   isNTacticalGraphicLayerItem,
+  isNPointSymbolLayerItem,
   type NGeometryLayerItem,
   type NScenarioLayerItem,
 } from "@/types/scenarioLayerItems";
@@ -144,6 +145,17 @@ function toZoomTargetFeature(
   if (isNGeometryLayerItem(layerItem)) return toCurrentFeature(layerItem);
   if (isNTacticalGraphicLayerItem(layerItem)) {
     return controlMeasureExtentFeature(layerItem);
+  }
+  if (isNPointSymbolLayerItem(layerItem)) {
+    return {
+      type: "Feature",
+      id: layerItem.id,
+      properties: {},
+      geometry: {
+        type: "Point",
+        coordinates: [...(layerItem._state?.position ?? layerItem.position)],
+      },
+    };
   }
   return undefined;
 }
@@ -336,6 +348,7 @@ export function createMapLibreScenarioLayerController(
     const items = fullLayer.items.filter(
       (item) =>
         isNGeometryLayerItem(item) ||
+        isNPointSymbolLayerItem(item) ||
         (isNTacticalGraphicLayerItem(item) && isSupportedTacticalGraphic(item)),
     );
     const visible = items.filter((item) => !item._hidden);

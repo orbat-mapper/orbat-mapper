@@ -372,6 +372,9 @@ export function createTacticalDrawSurfaceFake(
     ownsInteractionAt() {
       return null;
     },
+    pointSymbolAt() {
+      return null;
+    },
     setHighlightedGraphics(ids: readonly string[]) {
       calls.highlight.push(ids);
     },

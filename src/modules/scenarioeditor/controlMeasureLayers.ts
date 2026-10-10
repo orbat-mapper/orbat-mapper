@@ -1,10 +1,14 @@
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
 import type {
+  NPointSymbolLayerItem,
   NScenarioLayerItem,
   NTacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
-import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isNPointSymbolLayerItem,
+  isNTacticalGraphicLayerItem,
+} from "@/types/scenarioLayerItems";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import { nanoid } from "@/utils";
@@ -46,6 +50,9 @@ export function isControlMeasureLayer(
   return layer.specialization === "controlMeasure";
 }
 
+/** What a control-measure layer lists: generated graphics and point symbols. */
+export type ControlMeasureLayerEntry = NTacticalGraphicLayerItem | NPointSymbolLayerItem;
+
 /**
  * One control-measures section, backed by a real overlay layer.
  *
@@ -55,7 +62,7 @@ export function isControlMeasureLayer(
  */
 export interface ControlMeasureLayerGroup {
   layer: NScenarioOverlayLayer;
-  items: NTacticalGraphicLayerItem[];
+  items: ControlMeasureLayerEntry[];
 }
 
 /**
@@ -74,8 +81,8 @@ export function getControlMeasureLayerGroups(
   for (const { layer, items } of layersItems) {
     if (!isControlMeasureLayer(layer)) continue;
     const controlMeasures = items.filter(
-      (item): item is NTacticalGraphicLayerItem =>
-        !!item && isNTacticalGraphicLayerItem(item),
+      (item): item is ControlMeasureLayerEntry =>
+        !!item && (isNTacticalGraphicLayerItem(item) || isNPointSymbolLayerItem(item)),
     );
     groups.push({ layer, items: controlMeasures });
   }
@@ -88,7 +95,8 @@ export function getControlMeasureLayerGroups(
  * Falls back to the library's doctrinal name for the kind, and then to the raw
  * `graphicKind` — which is all an unsupported kind has to offer.
  */
-export function getControlMeasureLabel(item: NTacticalGraphicLayerItem): string {
+export function getControlMeasureLabel(item: ControlMeasureLayerEntry): string {
+  if (item.kind === "pointSymbol") return item.name || "Point symbol";
   return item.name || getControlMeasureKindName(item.graphicKind);
 }
 

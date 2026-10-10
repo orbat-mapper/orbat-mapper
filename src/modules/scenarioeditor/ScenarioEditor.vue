@@ -66,8 +66,7 @@ import { useBasemapArchives } from "@/composables/basemapArchives";
 import { useTabStore } from "@/stores/tabStore";
 import CommandPalette from "@/components/commandPalette/CommandPalette.vue";
 import type { PhotonSearchResult } from "@/composables/geosearching";
-import { setTacticalGraphicPredicate, useSelectedItems } from "@/stores/selectedStore";
-import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import { setLayerItemKindResolver, useSelectedItems } from "@/stores/selectedStore";
 import MainMenu from "@/modules/scenarioeditor/MainMenu.vue";
 import { useTimeFormatterProvider } from "@/stores/timeFormatStore";
 import PlaybackMenu from "@/modules/scenarioeditor/PlaybackMenu.vue";
@@ -136,8 +135,8 @@ provide(currentScenarioTabKey, activeScenarioTab);
 // share one flat id set. The lookup is registered here, the one place that owns the
 // scenario for its whole life and sits above the map view and the layers panel.
 onUnmounted(
-  setTacticalGraphicPredicate((id) =>
-    isNTacticalGraphicLayerItem(props.activeScenario.geo.getLayerItemById(id).layerItem),
+  setLayerItemKindResolver(
+    (id) => props.activeScenario.geo.getLayerItemById(id).layerItem?.kind,
   ),
 );
 

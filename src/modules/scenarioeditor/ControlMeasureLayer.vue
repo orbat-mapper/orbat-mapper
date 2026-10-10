@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ControlMeasureLayerEntry } from "@/modules/scenarioeditor/controlMeasureLayers";
+import { isControlMeasureLayerItemKind } from "@/types/scenarioLayerItems";
 import ChevronPanel from "@/components/ChevronPanel.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
 import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
@@ -21,7 +23,6 @@ import type { MenuItemData } from "@/components/types";
 import type { ScenarioFeatureActions, ScenarioLayerAction } from "@/types/constants";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { NScenarioLayer } from "@/types/internalModels";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
@@ -59,7 +60,7 @@ import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
  */
 const props = defineProps<{
   layer: NScenarioOverlayLayer;
-  items: NTacticalGraphicLayerItem[];
+  items: ControlMeasureLayerEntry[];
   layerMenuItems: MenuItemData<ScenarioLayerAction>[];
   itemMenuItems: MenuItemData<ScenarioFeatureActions>[];
   /** The edges range rings can be dropped on: the outer edges of the stack. */
@@ -69,13 +70,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (
     e: "item-click",
-    item: NTacticalGraphicLayerItem,
+    item: ControlMeasureLayerEntry,
     layer: NScenarioOverlayLayer,
     event: MouseEvent,
   ): void;
   (
     e: "item-double-click",
-    item: NTacticalGraphicLayerItem,
+    item: ControlMeasureLayerEntry,
     layer: NScenarioOverlayLayer,
     event: MouseEvent,
   ): void;
@@ -97,7 +98,7 @@ const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
 const itemState = ref<ItemState>(idle);
 
-function menuItemsFor(item: NTacticalGraphicLayerItem) {
+function menuItemsFor(item: ControlMeasureLayerEntry) {
   if (!props.layer.locked && !item.locked) return props.itemMenuItems;
   const mutationActions = new Set(["moveUp", "moveDown", "delete", "duplicate"]);
   return props.itemMenuItems.map((menuItem) =>
@@ -113,8 +114,9 @@ const availableLayerMenuItems = computed(() => {
       (item) =>
         !item.isHidden &&
         !item._hidden &&
-        isSupportedTacticalGraphic(item) &&
-        resolveControlMeasureControlPoints(item).length > 0,
+        (item.kind === "pointSymbol" ||
+          (isSupportedTacticalGraphic(item) &&
+            resolveControlMeasureControlPoints(item).length > 0)),
     );
   return props.layerMenuItems.map((menuItem) =>
     menuItem.action === "Zoom"
@@ -143,7 +145,7 @@ onMounted(() => {
         if (isScenarioFeatureDragItem(source.data)) {
           const sourceOwner = geo.getLayerById(source.data.feature._pid);
           return (
-            source.data.feature.kind === "tacticalGraphic" &&
+            isControlMeasureLayerItemKind(source.data.feature.kind) &&
             !source.data.feature.locked &&
             !sourceOwner?.locked &&
             !props.layer.locked &&
@@ -198,7 +200,7 @@ function toggleLayerLocked() {
   geo.updateLayer(props.layer.id, { locked: !props.layer.locked });
 }
 
-function toggleItemVisibility(item: NTacticalGraphicLayerItem) {
+function toggleItemVisibility(item: ControlMeasureLayerEntry) {
   // Kind-agnostic door: `updateFeature` narrows to geometry and would no-op here.
   geo.updateLayerItem(item.id, { isHidden: !item.isHidden });
 }

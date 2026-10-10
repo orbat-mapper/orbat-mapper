@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent, nextTick, ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -448,6 +448,36 @@ describe("useScenarioDraw", () => {
     expect(mapSelectStore.selectionSuppressed).toBe(false);
   });
 
+  it("places a dropped control measure as one committed draw, then edits it", async () => {
+    const scenario = {
+      ...createScenario(),
+      geo: {
+        ...createScenario().geo,
+        addFeature: vi.fn(() => true),
+        getLayerById: vi.fn(() => ({ items: [] })),
+      },
+    };
+    const { draw, engineRef } = mountHarness({ scenario });
+    const engine = createEngine();
+    engineRef.value = engine;
+    await nextTick();
+    useMainToolbarStore().addMultiple = true;
+
+    const placed = draw.placeControlMeasure("phase-line", [10, 60], {
+      zoom: 10,
+      bearing: 0,
+    });
+
+    expect(placed).toBe(true);
+    const [draft] = engine.surfaceFake.calls.draw;
+    expect(draft?.kind).toBe("phase-line");
+    expect(draft?.controlPoints?.length).toBeGreaterThan(1);
+    await flushPromises();
+    expect(scenario.geo.addFeature).toHaveBeenCalledTimes(1);
+    // A drop never re-arms for add-multiple: it lands in edit, as Done does.
+    expect(draw.armed.value).toMatchObject({ kind: "cmEdit" });
+  });
+
   it("settles the render feed when a tool is armed", async () => {
     const renderFeed = createRenderFeed();
     const { draw, engineRef } = mountHarness({ renderFeed });
@@ -679,6 +709,43 @@ describe("useScenarioDraw", () => {
     });
     expect(scenario.geo.updateTacticalGraphic).toHaveBeenCalledWith("cm-2", {
       options: { sizeMeters: 700 },
+    });
+  });
+
+  it("derives a point-symbol update from its values after settling the edit", async () => {
+    const scenario = createScenario();
+    const symbol = {
+      id: "ps-1",
+      kind: "pointSymbol",
+      sidc: "10032500001301000000",
+      position: [0, 0],
+      rotation: 0,
+      size: { value: 30, unit: "pixels" },
+    };
+    const getLayerItem = scenario.geo.getLayerItemById.getMockImplementation()!;
+    scenario.geo.getLayerItemById.mockImplementation((id: string) =>
+      id === "ps-1" ? ({ layerItem: symbol } as never) : getLayerItem(id),
+    );
+    const updatePointSymbol = vi.fn();
+    Object.assign(scenario.geo, { updatePointSymbol });
+    const renderFeed = createRenderFeed();
+    const { draw, engineRef } = mountHarness({ scenario, renderFeed });
+    engineRef.value = createEngine();
+    await nextTick();
+    draw.arm({ kind: "cmEdit", featureId: "ps-1" });
+    await nextTick();
+    // The settle folds a live resize into the store.
+    renderFeed.settle.mockImplementationOnce(() => {
+      symbol.size = { value: 60, unit: "pixels" };
+    });
+
+    draw.updatePointSymbol("ps-1", (current) => ({
+      size: { ...current.size!, value: current.size!.value + 1 },
+    }));
+
+    expect(renderFeed.settle).toHaveBeenCalledWith("render");
+    expect(updatePointSymbol).toHaveBeenCalledWith("ps-1", {
+      size: { value: 61, unit: "pixels" },
     });
   });
 

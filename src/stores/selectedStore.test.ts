@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { setTacticalGraphicPredicate, useSelectedItems } from "@/stores/selectedStore";
+import { setLayerItemKindResolver, useSelectedItems } from "@/stores/selectedStore";
+import type { ScenarioLayerItemKind } from "@/types/scenarioLayerItems";
+
+const cmKind = (id: string | number): ScenarioLayerItemKind =>
+  String(id).startsWith("cm-") ? "tacticalGraphic" : "geometry";
 
 const { selectedFeatureIds, activeDetailsPanel, clear } = useSelectedItems();
 
 describe("activeDetailsPanel — the tacticalGraphic case", () => {
   beforeEach(() => {
     clear();
-    setTacticalGraphicPredicate((id) => String(id).startsWith("cm-"))();
+    setLayerItemKindResolver(cmKind)();
   });
 
   it("falls back to the feature panel when nothing has registered the lookup", () => {
@@ -15,7 +19,7 @@ describe("activeDetailsPanel — the tacticalGraphic case", () => {
   });
 
   it("wins when every selected id is a control measure", () => {
-    const unregister = setTacticalGraphicPredicate((id) => String(id).startsWith("cm-"));
+    const unregister = setLayerItemKindResolver(cmKind);
     selectedFeatureIds.value.add("cm-1");
     expect(activeDetailsPanel.value).toBe("tacticalGraphic");
 
@@ -26,7 +30,7 @@ describe("activeDetailsPanel — the tacticalGraphic case", () => {
   });
 
   it("falls through to the feature panel on a mixed selection", () => {
-    const unregister = setTacticalGraphicPredicate((id) => String(id).startsWith("cm-"));
+    const unregister = setLayerItemKindResolver(cmKind);
     selectedFeatureIds.value.add("cm-1");
     selectedFeatureIds.value.add("feature-1");
     expect(activeDetailsPanel.value).toBe("feature");
@@ -35,7 +39,7 @@ describe("activeDetailsPanel — the tacticalGraphic case", () => {
   });
 
   it("leaves every other panel untouched", () => {
-    const unregister = setTacticalGraphicPredicate(() => true);
+    const unregister = setLayerItemKindResolver(() => "tacticalGraphic");
     const { selectedUnitIds } = useSelectedItems();
     selectedUnitIds.value.add("unit-1");
     expect(activeDetailsPanel.value).toBe("unit");

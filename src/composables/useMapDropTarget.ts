@@ -1,6 +1,10 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isUnitDragItem } from "@/types/draggables";
+import {
+  isControlMeasureKindDragItem,
+  isUnitDragItem,
+  type CataloguePlacement,
+} from "@/types/draggables";
 import type { TScenario } from "@/scenariostore";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
@@ -17,10 +21,15 @@ export interface MapDropTargetOptions {
   mapAdapter: MapAdapter;
   /** Called after units are dropped and positions updated */
   onUnitsDropped?: (unitIds: Set<string>, position: Position) => void;
+  /**
+   * Place a control-measure kind dragged from the catalogue. Control-measure drops are
+   * accepted only when this is given.
+   */
+  onControlMeasureDropped?: (placement: CataloguePlacement, position: Position) => void;
 }
 
 export function useMapDropTarget(options: MapDropTargetOptions) {
-  const { activeScenario, mapAdapter, onUnitsDropped } = options;
+  const { activeScenario, mapAdapter, onUnitsDropped, onControlMeasureDropped } = options;
   const {
     geo,
     store: { groupUpdate },
@@ -45,11 +54,19 @@ export function useMapDropTarget(options: MapDropTargetOptions) {
     if (!element) return;
     dndCleanup = dropTargetForElements({
       element,
-      canDrop: ({ source }) => isUnitDragItem(source.data),
+      canDrop: ({ source }) =>
+        isUnitDragItem(source.data) ||
+        (Boolean(onControlMeasureDropped) && isControlMeasureKindDragItem(source.data)),
+      getDropEffect: ({ source }) =>
+        isControlMeasureKindDragItem(source.data) ? "copy" : "move",
       getData: ({ input }) => {
         return { position: mapAdapter.getEventCoordinate(input as MouseEvent) };
       },
       onDragEnter: ({ source }) => {
+        if (isControlMeasureKindDragItem(source.data)) {
+          isDragging.value = true;
+          return;
+        }
         if (!isUnitDragItem(source.data)) return;
         if (!recordingStore.isRecordingLocation) {
           if (!blockedHintShown.value) {
@@ -67,14 +84,22 @@ export function useMapDropTarget(options: MapDropTargetOptions) {
         blockedHintShown.value = false;
       },
       onDrag: ({ self, source }) => {
-        if (!isUnitDragItem(source.data) || !recordingStore.isRecordingLocation) return;
-        dropPosition.value = self.data.position as Position;
+        if (
+          isControlMeasureKindDragItem(source.data) ||
+          (isUnitDragItem(source.data) && recordingStore.isRecordingLocation)
+        ) {
+          dropPosition.value = self.data.position as Position;
+        }
       },
       onDrop: ({ source, self }) => {
         isDragging.value = false;
         blockedHintShown.value = false;
-        if (!recordingStore.isRecordingLocation) return;
         const dragData = source.data;
+        if (isControlMeasureKindDragItem(dragData)) {
+          onControlMeasureDropped?.(dragData.placement, self.data.position as Position);
+          return;
+        }
+        if (!recordingStore.isRecordingLocation) return;
         if (!isUnitDragItem(dragData)) return;
 
         const pos = self.data.position as Position;

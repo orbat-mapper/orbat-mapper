@@ -38,13 +38,20 @@ import type {
   SettleReason,
   TacticalGraphicRenderFeed,
 } from "@/modules/maplibreview/useTacticalGraphicRenderFeed";
-import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isNPointSymbolLayerItem,
+  isNTacticalGraphicLayerItem,
+} from "@/types/scenarioLayerItems";
+import { toPointSymbol, toPointSymbolUpdate } from "@/geo/pointSymbols";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import {
   applyScenarioControlMeasureEdit,
   toControlMeasureEditUpdate,
   toEditStartMeasure,
 } from "@/modules/scenarioeditor/controlMeasureEditHelpers";
+
+/** An open edit session, whichever kind of graphic it edits. */
+type LiveEditSession = EditSession | GraphicEditSession<PointSymbol>;
 
 export interface UseControlMeasureEditSessionOptions {
   scenario: TScenario;
@@ -123,10 +130,11 @@ export function useControlMeasureEditSession(
 
   function setWidthGrips(enabled: boolean) {
     widthGrips.value = enabled;
-    session?.setDetailHandles(enabled);
+    controlMeasureSession()?.setDetailHandles(enabled);
   }
 
   function resetVertexWidths() {
+    const session = controlMeasureSession();
     if (!session || !canResetVertexWidths.value) return;
     session.setOptions(Object.fromEntries(widthKeys.map((key) => [key, undefined])));
   }
@@ -147,7 +155,7 @@ export function useControlMeasureEditSession(
     labelDrag.value = enabled;
     // Live, so the toggle acts on the session the user is looking at rather than only
     // on the next one. Nothing is written: mode is session state, not model state.
-    session?.setModes(editModes());
+    controlMeasureSession()?.setModes(editModes());
   }
 
   // Same role as the draw session's: a settled `edit()` promise lands a microtask
@@ -156,8 +164,13 @@ export function useControlMeasureEditSession(
   // token-guarded — a closed edit keeps its work no matter what happened since.
   let generation = 0;
   let settleReason: SettleReason | undefined;
-  // Never made reactive: the engine holds this object for the life of the session.
-  let session: EditSession | null = null;
+  // Never made reactive: the engine holds these objects for the life of the session.
+  // `live` is whichever session is open, of either kind.
+  let live: LiveEditSession | null = null;
+  /** The open session when it edits a control measure, for the extras only it has. */
+  function controlMeasureSession() {
+    return live && asControlMeasureEditSession(live);
+  }
   // Set while the feed itself is closing us, so the fold can skip its own render:
   // the feed is mid-`render()` and will hand the surface the folded batch as soon as
   // `settle()` returns. Without this the fold would re-enter `render()`.
@@ -165,7 +178,7 @@ export function useControlMeasureEditSession(
 
   function clearSession() {
     generation += 1;
-    session = null;
+    live = null;
     featureId.value = null;
     widthKeys = [];
     supportsWidthGrips.value = false;
@@ -177,12 +190,12 @@ export function useControlMeasureEditSession(
 
   /** Close the open session, keeping its work. The fold happens in `onCommit`. */
   function close() {
-    const live = session;
-    if (!live) return;
+    const closing = live;
+    if (!closing) return;
     // Dropped before `close()`, which fires `onCommit` synchronously: the fold's
     // re-render settles again, and must not find a session that is already closing.
-    session = null;
-    live.close();
+    live = null;
+    closing.close();
   }
 
   function fold(
@@ -217,12 +230,82 @@ export function useControlMeasureEditSession(
     });
   }
 
+  /** Adopt an opened session: make it the live one and mirror its history. */
+  function adopt(opened: LiveEditSession) {
+    live = opened;
+    const readHistory = () => {
+      canUndo.value = opened.history.state.canUndo;
+      canRedo.value = opened.history.state.canRedo;
+    };
+    readHistory();
+    opened.history.subscribe(readHistory);
+  }
+
+  /** Report the end of an `edit()` promise, unless a newer session has replaced it. */
+  function settleWhen(
+    edit: Promise<unknown>,
+    token: number,
+    itemId: FeatureId,
+    logTag: string,
+  ) {
+    edit
+      .then(() => {
+        if (token !== generation) return;
+        notifySettled(true, itemId, settleReason);
+      })
+      .catch((error) => {
+        // Abort is a normal outcome — a destroyed façade, a basemap swap mid-gesture.
+        // Nothing was folded, because `onCommit` never fired.
+        if (!isTacticalDrawAbortError(error)) {
+          console.error(`[${logTag}] edit session failed`, error);
+        }
+        if (token !== generation) return;
+        notifySettled(false, itemId, settleReason);
+      });
+  }
+
+  /** Move, rotate and resize a point symbol; one store write when it settles changed. */
+  function startPointSymbol(
+    itemId: FeatureId,
+    token: number,
+    surface: TacticalDrawSurface,
+    startSymbol: PointSymbol,
+  ) {
+    featureId.value = itemId;
+    const startUpdate = toPointSymbolUpdate(startSymbol);
+    const edit = surface.edit(startSymbol, {
+      onSession(opened) {
+        if (token !== generation) return;
+        const symbolEdit = opened as GraphicEditSession<PointSymbol>;
+        adopt(symbolEdit);
+        symbolEdit.onCommit((snapshot) => {
+          const update = toPointSymbolUpdate(snapshot.graphic);
+          if (!isEqual(startUpdate, update)) {
+            options.scenario.geo.updatePointSymbol(itemId, update);
+          }
+          if (!closingFromSettle) options.renderFeed?.render("commit");
+        });
+      },
+    });
+    settleWhen(edit, token, itemId, "pointSymbolEdit");
+    return true;
+  }
+
   function start(itemId: FeatureId): boolean {
     stop();
     const token = generation;
     const surface = options.surface();
     if (!surface) return false;
     const { layerItem } = options.scenario.geo.getLayerItemById(itemId);
+    if (layerItem && isNPointSymbolLayerItem(layerItem)) {
+      // Its own copy, for the same reason `toEditStartMeasure` clones.
+      return startPointSymbol(
+        itemId,
+        token,
+        surface,
+        structuredClone(toPointSymbol(layerItem)),
+      );
+    }
     if (!layerItem || !isNTacticalGraphicLayerItem(layerItem)) return false;
     // An unsupported kind is not in the render batch, so the library has nothing to
     // put handles on — and `edit()` would throw on its unknown kind.
@@ -233,55 +316,36 @@ export function useControlMeasureEditSession(
     // Detached from the object tactical-draw receives, so a library-owned mutation of
     // its working graphic cannot move the comparison baseline along with the edit.
     const startUpdate = toControlMeasureEditUpdate(startMeasure);
-    surface
-      .edit(startMeasure, {
-        // Whatever the graphic already encodes, so an edit never silently re-anchors
-        // it: a stored ground size stays ground, and a screen-anchored one — which
-        // only an import can be, since every drawn graphic bakes to ground — is not
-        // frozen to the zoom that happened to be showing when it was reshaped.
-        sizeAnchor: getSizeAnchor(startMeasure),
-        modes: editModes(),
-        detailHandles: widthGrips.value,
-        onSession(live) {
-          if (token !== generation) return;
-          const editSession = asControlMeasureEditSession(live);
-          if (!editSession) return;
-          session = editSession;
-          widthKeys = getControlMeasureVertexAlignedOptions(startMeasure.kind);
-          supportsWidthGrips.value = widthKeys.length > 0;
-          const readWidths = () => {
-            const options = editSession.workingGraphic.options as
-              Record<string, unknown> | undefined;
-            canResetVertexWidths.value = widthKeys.some((key) =>
-              Array.isArray(options?.[key]),
-            );
-          };
-          readWidths();
-          editSession.onChange(readWidths);
-          const readHistory = () => {
-            canUndo.value = editSession.history.state.canUndo;
-            canRedo.value = editSession.history.state.canRedo;
-          };
-          readHistory();
-          editSession.history.subscribe(readHistory);
-          // The fold channel. Fires exactly once, synchronously from within the
-          // `close()` that produced it, and never on abort.
-          editSession.onCommit((snapshot) => fold(snapshot.graphic, startUpdate));
-        },
-      })
-      .then(() => {
+    const edit = surface.edit(startMeasure, {
+      // Whatever the graphic already encodes, so an edit never silently re-anchors
+      // it: a stored ground size stays ground, and a screen-anchored one — which
+      // only an import can be, since every drawn graphic bakes to ground — is not
+      // frozen to the zoom that happened to be showing when it was reshaped.
+      sizeAnchor: getSizeAnchor(startMeasure),
+      modes: editModes(),
+      detailHandles: widthGrips.value,
+      onSession(opened) {
         if (token !== generation) return;
-        notifySettled(true, itemId, settleReason);
-      })
-      .catch((error) => {
-        // Abort is a normal outcome here too — a destroyed façade, a basemap swap
-        // mid-gesture. Nothing was folded, because `onCommit` never fired.
-        if (!isTacticalDrawAbortError(error)) {
-          console.error("[controlMeasureEdit] edit session failed", error);
-        }
-        if (token !== generation) return;
-        notifySettled(false, itemId, settleReason);
-      });
+        const editSession = asControlMeasureEditSession(opened);
+        if (!editSession) return;
+        adopt(editSession);
+        widthKeys = getControlMeasureVertexAlignedOptions(startMeasure.kind);
+        supportsWidthGrips.value = widthKeys.length > 0;
+        const readWidths = () => {
+          const options = editSession.workingGraphic.options as
+            Record<string, unknown> | undefined;
+          canResetVertexWidths.value = widthKeys.some((key) =>
+            Array.isArray(options?.[key]),
+          );
+        };
+        readWidths();
+        editSession.onChange(readWidths);
+        // The fold channel. Fires exactly once, synchronously from within the
+        // `close()` that produced it, and never on abort.
+        editSession.onCommit((snapshot) => fold(snapshot.graphic, startUpdate));
+      },
+    });
+    settleWhen(edit, token, itemId, "controlMeasureEdit");
     return true;
   }
 
@@ -298,7 +362,7 @@ export function useControlMeasureEditSession(
     // `fold()` performs the library-required commit render synchronously from inside
     // the live session's own `onCommit`. That session is already settling itself; it
     // is not an external reason to close or later restore it.
-    if (!session || reason === "commit") return;
+    if (!live || reason === "commit") return;
     settleReason = reason;
     closingFromSettle = true;
     try {
@@ -326,7 +390,7 @@ export function useControlMeasureEditSession(
     start,
     stop,
     setLabelDrag,
-    undo: () => session?.history.undo() ?? false,
-    redo: () => session?.history.redo() ?? false,
+    undo: () => live?.history.undo() ?? false,
+    redo: () => live?.history.redo() ?? false,
   };
 }

@@ -254,6 +254,19 @@ const { isDragging, formattedPosition } = useMaplibreMapDrop(
     drawRangeRings();
     drawHistory();
   },
+  scenarioDraw
+    ? (placement, [lng, lat]) => {
+        if (placement.type === "symbol") {
+          scenarioDraw.placePointSymbol(placement, [lng, lat]);
+          return;
+        }
+        // Sized for the view it is dropped into, the way a drawn measure is.
+        scenarioDraw.placeControlMeasure(placement.graphicKind, [lng, lat], {
+          zoom: mlMap.getZoom(),
+          bearing: mlMap.getBearing(),
+        });
+      }
+    : undefined,
 );
 
 function getUnitRotationAlignment(mode: MapLibreUnitRotationMode): {
@@ -841,9 +854,17 @@ function pickControlMeasureAt(
   originalEvent?: unknown,
 ): ControlMeasurePick | undefined {
   const hit = tacticalDrawHitAt(pixel, originalEvent);
-  if (!hit) return undefined;
-  if (hit.measureId === undefined) return {};
-  const { layerItem, layer } = activeScenario.geo.getLayerItemById(hit.measureId);
+  // A point symbol is only geometry at its anchor; test its drawn footprint too, and
+  // let it win over a committed graphic it is drawn above. Handles and edit previews
+  // sit over every committed graphic, so they keep priority.
+  const footprintId =
+    !hit || hit.layer === "graphics"
+      ? engineRef.value?.draw?.pointSymbolAt(pixel, { above: hit?.measureId })
+      : null;
+  const graphicId = footprintId ?? hit?.measureId;
+  if (!hit && graphicId === undefined) return undefined;
+  if (graphicId === undefined) return {};
+  const { layerItem, layer } = activeScenario.geo.getLayerItemById(graphicId);
   if (!layerItem) return {};
   return { featureId: layerItem.id, layerId: layer?.id };
 }

@@ -171,3 +171,5 @@ export const TAB_LAYERS = 2;
 export const TAB_FILTERS = 3;
 export const TAB_SCENARIO_SETTINGS = 4;
 export const TAB_TOOLS = 5;
+/** The Graphics tab. Shown after Select, but numbered last so the older tab indices stay put. */
+export const TAB_CONTROL_MEASURES = 6;

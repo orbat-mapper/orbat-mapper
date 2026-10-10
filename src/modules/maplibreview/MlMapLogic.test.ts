@@ -3818,6 +3818,7 @@ describe("MlMapLogic", () => {
       const ownsInteractionAt = vi.fn(() =>
         ownsPixel ? { layer: "graphics", feature: {}, measureId: "cm-1" } : null,
       );
+      const pointSymbolAt = vi.fn((): string | null => null);
       const activeScenario = {
         store: {
           getMutationCount: () => 0,
@@ -3849,7 +3850,7 @@ describe("MlMapLogic", () => {
             [activeScenarioMapEngineKey as symbol]: shallowRef({
               map: {},
               layers: { refreshScenarioFeatureLayers },
-              draw: { ownsInteractionAt },
+              draw: { ownsInteractionAt, pointSymbolAt },
             } as any),
             [searchActionsKey as symbol]: searchActions,
             ...(scenarioDraw ? { [scenarioDrawKey as symbol]: scenarioDraw } : {}),
@@ -3859,8 +3860,66 @@ describe("MlMapLogic", () => {
 
       mockMap.map.queryRenderedFeatures.mockReturnValue(renderedFeatures);
 
-      return { mockMap, featureSelectSpy, unitSelectSpy, ownsInteractionAt };
+      return {
+        mockMap,
+        featureSelectSpy,
+        unitSelectSpy,
+        ownsInteractionAt,
+        pointSymbolAt,
+      };
     }
+
+    it("selects a point symbol clicked anywhere on its drawn footprint", () => {
+      // Geometry is only the anchor, so `ownsInteractionAt` misses the body.
+      const h = createControlMeasureHarness(false);
+      h.pointSymbolAt.mockReturnValue("ps-1");
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.pointSymbolAt).toHaveBeenCalledWith([1, 2], { above: undefined });
+      expect(h.featureSelectSpy).toHaveBeenCalledWith({
+        featureId: "ps-1",
+        layerId: "layer-1",
+        options: { noZoom: true },
+      });
+    });
+
+    it("selects a point symbol drawn over the control measure whose geometry was hit", () => {
+      const h = createControlMeasureHarness(true);
+      h.pointSymbolAt.mockReturnValue("ps-1");
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.pointSymbolAt).toHaveBeenCalledWith([1, 2], { above: "cm-1" });
+      expect(h.featureSelectSpy).toHaveBeenCalledWith({
+        featureId: "ps-1",
+        layerId: "layer-1",
+        options: { noZoom: true },
+      });
+    });
+
+    it("leaves an edit handle hit to the session, without testing footprints", () => {
+      const h = createControlMeasureHarness(true);
+      h.ownsInteractionAt.mockReturnValue({
+        layer: "handles",
+        feature: {},
+        measureId: "cm-1",
+      } as never);
+      h.pointSymbolAt.mockReturnValue("ps-1");
+
+      h.mockMap.emit("click", {
+        point: { x: 1, y: 2 },
+        originalEvent: { shiftKey: false },
+      });
+
+      expect(h.pointSymbolAt).not.toHaveBeenCalled();
+    });
 
     it.each([false, true])(
       "selects the control measure instead of the plain shape under it (move mode: %s)",

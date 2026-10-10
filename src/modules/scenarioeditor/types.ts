@@ -41,6 +41,7 @@ export type DetailsPanel =
   | "mapLayer"
   | "feature"
   | "tacticalGraphic"
+  | "pointSymbol"
   | "referenceFeature"
   | "scenario";
 

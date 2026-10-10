@@ -34,7 +34,7 @@ import type {
 
 export type LayerItemId = string;
 export type ScenarioLayerItemKind =
-  "geometry" | "annotation" | "tacticalGraphic" | "measurement";
+  "geometry" | "annotation" | "tacticalGraphic" | "pointSymbol" | "measurement";
 
 export type ShapeGeometry =
   | { type: "Point"; coordinates: Position }
@@ -265,6 +265,58 @@ export interface TacticalGraphicLayerItem extends ScenarioLayerItemBase {
   _state?: CurrentTacticalGraphicLayerItemState | null;
 }
 
+/**
+ * A point symbol's size: milsymbol's octagon dimension, on screen (`pixels`) or on the
+ * ground (`meters`). A ground size carries the on-screen bounds its projection is
+ * clamped to, so zooming out never shrinks it to nothing and zooming in never blows it
+ * up past the size it was given. The same shape as tactical-draw's.
+ */
+export type PointSymbolSize =
+  | { value: number; unit: "pixels" }
+  | { value: number; unit: "meters"; minPixels?: number; maxPixels?: number };
+
+export interface PointSymbolLayerItemStatePatch {
+  sidc?: string;
+  position?: Position;
+  rotation?: number;
+  size?: PointSymbolSize;
+  textAmplifiers?: Record<string, string>;
+  name?: string;
+  description?: string;
+  isHidden?: boolean;
+}
+
+export interface PointSymbolLayerItemState {
+  id: string;
+  t: ScenarioTime;
+  note?: string;
+  patch: PointSymbolLayerItemStatePatch;
+}
+
+export interface CurrentPointSymbolLayerItemState
+  extends CurrentScenarioLayerItemState, PointSymbolLayerItemStatePatch {}
+
+/**
+ * A single-point military symbol drawn by milsymbol rather than generated from control
+ * points — the symbol set 25 point control measures the control-measures library does
+ * not model (checkpoints, contact points, …).
+ *
+ * Flattens tactical-draw's `PointSymbol` the same way `TacticalGraphicLayerItem`
+ * flattens a `ControlMeasure`, and lives in the same control-measure layers. The item
+ * id is the graphic id. Identity and status are read from the SIDC itself.
+ */
+export interface PointSymbolLayerItem extends ScenarioLayerItemBase {
+  kind: "pointSymbol";
+  sidc: string;
+  position: Position;
+  /** Radians clockwise from geographic north, as tactical-draw stores it. */
+  rotation?: number;
+  size?: PointSymbolSize;
+  textAmplifiers?: Record<string, string>;
+  state?: PointSymbolLayerItemState[];
+  _state?: CurrentPointSymbolLayerItemState | null;
+}
+
 export interface MeasurementLayerItemState {
   id: string;
   t: ScenarioTime;
@@ -305,6 +357,7 @@ export type ScenarioLayerItem =
   | GeometryLayerItem
   | AnnotationLayerItem
   | TacticalGraphicLayerItem
+  | PointSymbolLayerItem
   | MeasurementLayerItem;
 
 // `_hidden` and `_state` live on ScenarioLayerItemBase, so every kind carries them
@@ -318,6 +371,10 @@ export type NGeometryLayerItem = GeometryLayerItem & {
 };
 
 export type NTacticalGraphicLayerItem = TacticalGraphicLayerItem & {
+  _pid: LayerId;
+};
+
+export type NPointSymbolLayerItem = PointSymbolLayerItem & {
   _pid: LayerId;
 };
 
@@ -424,6 +481,26 @@ export function isNTacticalGraphicLayerItem(
   item: NScenarioLayerItem,
 ): item is NTacticalGraphicLayerItem {
   return isTacticalGraphicLayerItem(item);
+}
+
+export function isPointSymbolLayerItem(item: unknown): item is PointSymbolLayerItem {
+  if (!item || typeof item !== "object") return false;
+  return (item as { kind?: string }).kind === "pointSymbol";
+}
+
+export function isNPointSymbolLayerItem(
+  item: NScenarioLayerItem,
+): item is NPointSymbolLayerItem {
+  return isPointSymbolLayerItem(item);
+}
+
+/**
+ * The kinds that live in control-measure layers: graphics tactical-draw renders. The
+ * rule both directions follow — such an item goes only into a control-measure layer,
+ * and a control-measure layer takes nothing else.
+ */
+export function isControlMeasureLayerItemKind(kind: string | undefined): boolean {
+  return kind === "tacticalGraphic" || kind === "pointSymbol";
 }
 
 export function isGeometryLayerItem(item: unknown): item is GeometryLayerItem {
@@ -561,6 +638,20 @@ export type TacticalGraphicLayerItemUpdate = Partial<
     | "status"
   >
 >;
+
+/** The `pointSymbol`-only slice of a layer-item update; see the tactical-graphic one. */
+export type PointSymbolLayerItemUpdate = Partial<
+  Pick<PointSymbolLayerItem, "sidc" | "position" | "rotation" | "size" | "textAmplifiers">
+>;
+
+/** The fields `updatePointSymbol` copies. */
+export const POINT_SYMBOL_UPDATE_FIELDS = [
+  "sidc",
+  "position",
+  "rotation",
+  "size",
+  "textAmplifiers",
+] as const satisfies readonly (keyof PointSymbolLayerItemUpdate)[];
 
 /** The fields `updateTacticalGraphic` copies, in the order it copies them. */
 export const TACTICAL_GRAPHIC_UPDATE_FIELDS = [

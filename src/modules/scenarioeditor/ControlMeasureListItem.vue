@@ -13,7 +13,9 @@ import { getControlMeasureLabel } from "@/modules/scenarioeditor/controlMeasureL
 import { resolveControlMeasureStyle } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import type { ScenarioFeatureActions } from "@/types/constants";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import type { ControlMeasureLayerEntry } from "@/modules/scenarioeditor/controlMeasureLayers";
+import { isControlMeasureLayerItemKind } from "@/types/scenarioLayerItems";
+import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { MenuItemData } from "@/components/types";
 import {
@@ -36,7 +38,7 @@ import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 
 interface Props {
-  item: NTacticalGraphicLayerItem;
+  item: ControlMeasureLayerEntry;
   layer: NScenarioOverlayLayer;
   selected?: boolean;
   active?: boolean;
@@ -54,7 +56,10 @@ const emit = defineEmits<{
 const hidden = computed(
   () => props.layer.isHidden || props.item.isHidden || props.item._hidden,
 );
-const supported = computed(() => isSupportedGraphicKind(props.item.graphicKind));
+const supported = computed(
+  () =>
+    props.item.kind === "pointSymbol" || isSupportedGraphicKind(props.item.graphicKind),
+);
 const label = computed(() => getControlMeasureLabel(props.item));
 const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
@@ -81,7 +86,7 @@ function installDragAndDrop() {
         if (!isScenarioFeatureDragItem(source.data)) return false;
         const sourceOwner = geo.getLayerById(source.data.feature._pid);
         return (
-          source.data.feature.kind === "tacticalGraphic" &&
+          isControlMeasureLayerItemKind(source.data.feature.kind) &&
           source.data.feature.id !== props.item.id &&
           !source.data.feature.locked &&
           !sourceOwner?.locked
@@ -122,6 +127,7 @@ onUnmounted(() => {
  * and `colorMode`. Nothing derived is stored, so this recomputes rather than caches.
  */
 const strokeColor = computed(() => {
+  if (props.item.kind === "pointSymbol") return undefined;
   const style = resolveControlMeasureStyle(props.item);
   return style.strokeColor ?? style.color;
 });
@@ -151,8 +157,14 @@ const strokeColor = computed(() => {
       @dblclick="emit('item-double-click', $event)"
       class="flex min-w-0 flex-auto items-center py-1.5"
     >
+      <span
+        v-if="item.kind === 'pointSymbol'"
+        class="flex size-5 shrink-0 items-center justify-center"
+      >
+        <MilitarySymbol :sidc="item.sidc" :size="12" />
+      </span>
       <ControlMeasurePreview
-        v-if="supported"
+        v-else-if="supported"
         :kind="item.graphicKind"
         class="size-5 shrink-0"
         :style="{ color: strokeColor }"
@@ -183,7 +195,7 @@ const strokeColor = computed(() => {
         <IconLockOutline class="text-muted-foreground size-3.5 opacity-60" />
       </span>
       <span
-        v-if="!supported"
+        v-if="item.kind === 'tacticalGraphic' && !supported"
         class="ml-1 flex shrink-0 items-center"
         :title="`Unsupported control measure kind '${item.graphicKind}' — kept in the scenario, but not drawn`"
       >

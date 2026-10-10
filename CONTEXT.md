@@ -79,6 +79,13 @@ support area, … — drawn and rendered by the `@orbat-mapper/control-measures`
 registry rather than by our own shape pipeline (see [[adr-0006]]). Not a geometry
 layer item, and deliberately not a `geometryKind`.
 
+**Point symbol**:
+A single-anchor symbol set 25 control measure drawn by milsymbol rather than generated
+by the control-measures registry — checkpoint, contact point, … — stored as a
+`pointSymbol` layer item (SIDC, position, rotation, size, text amplifiers) in a
+control-measure layer (see [[adr-0008]]). Identity and status live in its SIDC.
+_Avoid_: calling it a unit; it never enters the ORBAT.
+
 **Control-measure state**:
 A control measure's time-indexed form. Its identity persists while its control points,
 and therefore its geometry, can vary across scenario time.
@@ -120,7 +127,7 @@ edited graphic aborts its session.
 
 **Armed tool**:
 The one thing the map is currently armed to do — `none`, `plainDraw`,
-`plainModify`, `cmDraw`, `cmEdit` — as a single union across both draw families,
+`plainModify`, `cmDraw`, `psDraw`, `cmEdit` — as a single union across both draw families,
 so "at most one thing armed" holds by construction.
 _Avoid_: reading `currentDrawType` / `isModifying` as state; they are derived from
 the armed tool.

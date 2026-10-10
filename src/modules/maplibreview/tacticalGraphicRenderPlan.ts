@@ -15,6 +15,7 @@
  */
 import type { Graphic } from "@orbat-mapper/tactical-draw";
 import { toControlMeasure } from "@/geo/controlMeasures";
+import { toPointSymbol } from "@/geo/pointSymbols";
 import { isSupportedTacticalGraphic } from "@/scenariostore/tacticalGraphics";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { FullScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
@@ -80,12 +81,18 @@ export function buildTacticalGraphicRenderPlan(
     if (filterVisible && layer._hidden) continue;
 
     for (const item of layer.items) {
-      if (item.kind !== "tacticalGraphic") continue;
+      if (item.kind !== "tacticalGraphic" && item.kind !== "pointSymbol") continue;
       if (item.isHidden || (filterVisible && item._hidden)) continue;
       // Captured before the predicate: its negative branch narrows `item` to `never`,
-      // since the kind check above already made it a tactical graphic.
+      // since the kind checks above already made it a tactical graphic.
       const itemId = item.id;
-      if (!isSupportedTacticalGraphic(item)) {
+      let graphic: Graphic;
+      if (item.kind === "pointSymbol") {
+        // No kind to check: milsymbol renders any SIDC, flagging an invalid one itself.
+        graphic = toPointSymbol(item);
+      } else if (isSupportedTacticalGraphic(item)) {
+        graphic = toControlMeasure(item);
+      } else {
         unsupportedIds.push(itemId);
         continue;
       }
@@ -94,7 +101,7 @@ export function buildTacticalGraphicRenderPlan(
         continue;
       }
       seenIds.add(itemId);
-      graphics.push(toControlMeasure(item));
+      graphics.push(graphic);
     }
   }
 

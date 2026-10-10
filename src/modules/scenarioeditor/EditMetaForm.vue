@@ -4,7 +4,11 @@ import { computed, defineAsyncComponent, ref, watch } from "vue";
 import BaseButton from "@/components/BaseButton.vue";
 import { klona } from "klona";
 import type { NGeometryLayerItem, NScenarioEvent, NUnit } from "@/types/internalModels";
-import type { NTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
+import {
+  isControlMeasureLayerItemKind,
+  type NPointSymbolLayerItem,
+  type NTacticalGraphicLayerItem,
+} from "@/types/scenarioLayerItems";
 import { createShortUnitName } from "@/utils/shortUnitName";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { storeToRefs } from "pinia";
@@ -38,7 +42,11 @@ const emit = defineEmits(["cancel", "update"]);
  * hard-coding `"geometry"`.
  */
 type MetaFormItem =
-  NUnit | NGeometryLayerItem | NTacticalGraphicLayerItem | NScenarioEvent;
+  | NUnit
+  | NGeometryLayerItem
+  | NTacticalGraphicLayerItem
+  | NPointSymbolLayerItem
+  | NScenarioEvent;
 
 type ItemMetaForm = {
   name: string;
@@ -60,8 +68,11 @@ const form = ref<Partial<ItemMetaForm>>({
 
 const isLayerItemType = (
   item: MetaFormItem,
-): item is NGeometryLayerItem | NTacticalGraphicLayerItem => {
-  return "kind" in item && (item.kind === "geometry" || item.kind === "tacticalGraphic");
+): item is NGeometryLayerItem | NTacticalGraphicLayerItem | NPointSymbolLayerItem => {
+  return (
+    "kind" in item &&
+    (item.kind === "geometry" || isControlMeasureLayerItemKind(item.kind))
+  );
 };
 
 const isScenarioEventType = (item: MetaFormItem): item is NScenarioEvent => {
