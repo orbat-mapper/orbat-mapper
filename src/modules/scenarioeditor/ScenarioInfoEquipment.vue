@@ -2,6 +2,7 @@
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
+import { storeToRefs } from "pinia";
 import TableHeader from "@/components/TableHeader.vue";
 import type { NEquipmentData } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
@@ -13,18 +14,23 @@ import AddNameDescriptionForm from "@/modules/scenarioeditor/AddNameDescriptionF
 import { useEquipmentTableStore } from "@/stores/tableStores";
 import { useToeEditableItems } from "@/composables/toeUtils";
 import { useUiStore } from "@/stores/uiStore";
+import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
 
-const { editMode, editedId, showAddForm, rerender, selectedItems } =
+const { editMode, editedId, rerender, selectedItems } =
   useToeEditableItems<NEquipmentData>();
 
 const tableStore = useEquipmentTableStore();
 const uiStore = useUiStore();
+// Shared with the add shortcuts in useToeActions, which open this form from elsewhere
+const { showAddEquipment: showAddForm } = storeToRefs(useScenarioInfoPanelStore());
 
 const equipment = computed(() => {
-  scn.store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.equipmentMap);
 });
 
@@ -99,6 +105,7 @@ function onDelete() {
     <AddNameDescriptionForm
       v-if="showAddForm"
       v-model="addForm"
+      heading="Add new equipment category"
       @cancel="showAddForm = false"
       @submit="onAddSubmit"
     />

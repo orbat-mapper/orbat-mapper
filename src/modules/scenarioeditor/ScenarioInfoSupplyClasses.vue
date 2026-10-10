@@ -3,7 +3,7 @@ import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
 import { computed, ref, triggerRef } from "vue";
 import TableHeader from "@/components/TableHeader.vue";
-import type { NSupplyCategory, NSupplyClass } from "@/types/internalModels";
+import type { NSupplyClass } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
 import type { ColumnDef } from "@tanstack/vue-table";
 import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
@@ -21,7 +21,9 @@ const { editMode, editedId, showAddForm, rerender, selectedItems } =
 const tableStore = useSupplyClassTableStore();
 
 const supplyClasses = computed(() => {
-  scn.store.state.settingsStateCounter && rerender.value;
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.supplyClassMap);
 });
 
@@ -57,14 +59,14 @@ function onAddSubmit(formData: Omit<NSupplyClass, "id">) {
 }
 
 function onDelete() {
-  const notDeletedItems: NSupplyCategory[] = [];
+  const notDeletedItems: NSupplyClass[] = [];
   scn.store.groupUpdate(() => {
     selectedItems.value.forEach((e) => {
       const success = scn.unitActions.deleteSupplyClass(e.id);
       if (!success) {
         send({
           type: "error",
-          message: `${e.name}: Cannot delete a supply category that is in use.`,
+          message: `${e.name}: Cannot delete a supply class that is in use.`,
         });
         notDeletedItems.push(e);
       }

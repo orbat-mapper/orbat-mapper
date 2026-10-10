@@ -7,10 +7,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-const props = defineProps(["label"]);
+const props = defineProps<{ label?: string; defaultOpen?: boolean }>();
 const emit = defineEmits(["opened", "closed"]);
 
-const open = ref(false);
+const open = ref(props.defaultOpen);
 
 watch(open, (isOpen) => {
   emit(isOpen ? "opened" : "closed");

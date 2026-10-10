@@ -13,7 +13,11 @@ defineProps<{
 const emit = defineEmits(["delete"]);
 const editMode = defineModel<boolean>("editMode");
 const addMode = defineModel<boolean>("addMode");
-const includeSubordinates = defineModel<boolean | undefined>("includeSubordinates");
+// Default to undefined so Vue's boolean casting doesn't turn an unbound model into false
+// and show the toggle in hosts that have no subordinates
+const includeSubordinates = defineModel<boolean | undefined>("includeSubordinates", {
+  default: undefined,
+});
 let prevIncludeSubordinates: boolean | undefined;
 </script>
 <template>
