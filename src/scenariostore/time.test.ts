@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createInitialState, updateCurrentUnitState, useScenarioTime } from "./time";
 import type { NUnit } from "@/types/internalModels";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
+import { useGeo } from "@/scenariostore/geo";
 
 function createUnit(overrides: Partial<NUnit> = {}): NUnit {
   return {
@@ -318,6 +319,38 @@ describe("setCurrentTime", () => {
     time.setCurrentTime(400);
 
     expect(store.state.unitMap["unplaced"]._state?.location).toEqual([5, 55]);
+  });
+
+  it("drops a layer item's _state when redo empties its timed state", () => {
+    const store = createStore();
+    const time = useScenarioTime(store);
+    const geo = useGeo(store);
+    time.setCurrentTime(600);
+    expect(store.state.layerItemMap["timed-feature"]._state).toBeTruthy();
+
+    geo.clearLayerItemState("timed-feature");
+    expect(store.state.layerItemMap["timed-feature"]._state).toBeUndefined();
+    store.undo();
+    expect(store.state.layerItemMap["timed-feature"]._state).toBeTruthy();
+    const counter = store.state.featureStateCounter;
+    store.redo();
+
+    expect(store.state.layerItemMap["timed-feature"]._state).toBeUndefined();
+    expect(store.state.featureStateCounter).toBeGreaterThan(counter);
+  });
+
+  it("hides a layer as soon as its visible window is edited to exclude the time", () => {
+    const store = createStore();
+    const time = useScenarioTime(store);
+    const geo = useGeo(store);
+    time.setCurrentTime(600);
+    expect(store.state.layerStackMap["layer-1"]._hidden).toBe(false);
+
+    geo.updateLayer("layer-1", { visibleUntilT: 300 });
+    expect(store.state.layerStackMap["layer-1"]._hidden).toBe(true);
+
+    geo.updateLayer("layer-1", { visibleUntilT: 900 }, { undoable: false });
+    expect(store.state.layerStackMap["layer-1"]._hidden).toBe(false);
   });
 
   it("syncs the side identity of units that keep their _state", () => {

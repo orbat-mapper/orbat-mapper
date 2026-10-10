@@ -27,8 +27,8 @@ export function useToeManipulations(store: NewScenarioStore) {
       const equipment = s.equipmentMap[id];
       if (!equipment) return;
       Object.assign(equipment, data);
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function addEquipment(

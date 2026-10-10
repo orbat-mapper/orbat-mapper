@@ -1,4 +1,4 @@
-import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
+import type { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
 import { computed } from "vue";
 import type { CurrentState } from "@/types/scenarioModels";
 import type {
@@ -38,6 +38,7 @@ import {
   POINT_SYMBOL_UPDATE_FIELDS,
   isControlMeasureLayerItemKind,
   isNPointSymbolLayerItem,
+  isOutsideVisibleWindow,
   type PointSymbolLayerItemUpdate,
 } from "@/types/scenarioLayerItems";
 import type {
@@ -665,19 +666,16 @@ export function useGeo(store: NewScenarioStore) {
     const undoable = options.undoable ?? true;
     const noEmit = options.noEmit ?? false;
 
-    if (undoable) {
-      update(
-        (s) => {
-          const layer = getOverlayLayerFromMap(s.layerStackMap, layerId);
-          if (!layer) return;
-          Object.assign(layer, data);
-        },
-        { label: "updateLayer", value: layerId },
-      );
-    } else {
-      const layer = getOverlayLayerFromMap(state.layerStackMap, layerId);
+    const applyUpdate = (s: ScenarioState) => {
+      const layer = getOverlayLayerFromMap(s.layerStackMap, layerId);
       if (!layer) return;
       Object.assign(layer, data);
+      layer._hidden = isOutsideVisibleWindow(layer, s.currentTime);
+    };
+    if (undoable) {
+      update(applyUpdate, { label: "updateLayer", value: layerId });
+    } else {
+      applyUpdate(state);
     }
     if (noEmit) return;
     featureLayerEvent.trigger({ type: "updateLayer", id: layerId, data }).then();

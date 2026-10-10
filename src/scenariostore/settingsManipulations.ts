@@ -60,8 +60,8 @@ export function useScenarioSettings(store: NewScenarioStore) {
       const symbolFillColor = s.symbolFillColorMap[id];
       if (!symbolFillColor) return;
       Object.assign(symbolFillColor, data);
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function deleteSymbolFillColor(id: string) {
@@ -92,8 +92,11 @@ export function useScenarioSettings(store: NewScenarioStore) {
       const customSymbol = s.customSymbolMap[id];
       if (!customSymbol) return;
       Object.assign(customSymbol, data);
+      // Bumped inside the recorded update so the map redraws units using the
+      // symbol, also on undo/redo.
+      s.unitStateCounter++;
+      s.settingsStateCounter++;
     });
-    state.settingsStateCounter++;
   }
 
   function addCustomSymbol(

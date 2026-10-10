@@ -62,6 +62,7 @@ const undoActionLabels: ActionLabel[] = [
   "deleteFeature",
   "addFeature",
   "updateFeatureGeometry",
+  "updateFeatureState",
   "updateFeature",
 ];
 

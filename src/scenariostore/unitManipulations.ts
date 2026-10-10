@@ -110,8 +110,11 @@ export function isUnitHiddenInState(state: ScenarioState, unit: NUnit): boolean 
 }
 
 // Changes to these fields need a map redraw of the unit.
-function changesUnitSymbol(data: UnitUpdate) {
+function changesUnitOnMap(data: UnitUpdate) {
   return (
+    data.name !== undefined ||
+    data.shortName !== undefined ||
+    data.location !== undefined ||
     data.style !== undefined ||
     data.textAmplifiers !== undefined ||
     data.sidc !== undefined ||
@@ -259,32 +262,12 @@ export function useUnitManipulations(store: NewScenarioStore) {
     sideData: Partial<SideUpdate>,
     { noUndo = false } = {},
   ) {
-    if (noUndo) {
-      const side = state.sideMap[sideId!];
-      if (!side) return;
-      const updateSid =
-        sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
-      Object.assign(side, sideData);
-      if (updateSid) {
-        const sid = side.standardIdentity;
-        walkSide(
-          side.id,
-          (unit) => {
-            unit.sidc = setSid(unit.sidc, sid);
-            invalidateUnitStyle(unit.id);
-            unit._ikey = undefined;
-          },
-          state,
-        );
-      }
-      state.settingsStateCounter++;
-      return;
-    }
-    update((s) => {
+    const applyUpdate = (s: ScenarioState) => {
       const side = s.sideMap[sideId!];
       if (!side) return;
       const updateSid =
-        sideData.standardIdentity ?? side.standardIdentity !== sideData.standardIdentity;
+        sideData.standardIdentity !== undefined &&
+        side.standardIdentity !== sideData.standardIdentity;
       Object.assign(side, sideData);
       if (updateSid) {
         const sid = side.standardIdentity;
@@ -292,14 +275,23 @@ export function useUnitManipulations(store: NewScenarioStore) {
           side.id,
           (unit) => {
             unit.sidc = setSid(unit.sidc, sid);
+            // The map draws the current state's symbol, so keep it in sync too.
+            if (unit._state?.sidc) unit._state.sidc = setSid(unit._state.sidc, sid);
+            if (unit._ikey) invalidateUnitStyle(unit._ikey);
             unit._ikey = undefined;
-            invalidateUnitStyle(unit.id);
           },
           s,
         );
       }
-    });
-    state.settingsStateCounter++;
+      // Bumped inside the recorded update so undo/redo also redraw the map.
+      if (updateSid || sideData.symbolOptions !== undefined) s.unitStateCounter++;
+      s.settingsStateCounter++;
+    };
+    if (noUndo) {
+      applyUpdate(state);
+    } else {
+      update(applyUpdate);
+    }
   }
 
   function deleteSide(sideId: EntityId) {
@@ -341,17 +333,20 @@ export function useUnitManipulations(store: NewScenarioStore) {
     sideGroupData: SideGroupUpdate,
     { noUndo = false } = {},
   ) {
+    const applyUpdate = (s: ScenarioState) => {
+      const sideGroup = s.sideGroupMap[sideGroupId];
+      if (!sideGroup) return;
+      Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
+      // Bumped inside the recorded update so undo/redo also redraw the map.
+      if (sideGroupData.symbolOptions !== undefined) s.unitStateCounter++;
+      s.settingsStateCounter++;
+    };
     if (noUndo) {
-      const sideGroup = state.sideGroupMap[sideGroupId];
-      if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
+      applyUpdate(state);
     } else {
-      update((s) => {
-        const sideGroup = s.sideGroupMap[sideGroupId];
-        if (sideGroup) Object.assign(sideGroup, { ...sideGroupData, _isNew: false });
-      });
+      update(applyUpdate);
     }
     clearUnitStyleCache();
-    state.settingsStateCounter++;
   }
 
   function reorderSideGroup(sideGroupId: EntityId, direction: "up" | "down") {
@@ -406,7 +401,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
         },
         s,
       );
+      refreshProjectedHierarchy(s);
       s.settingsStateCounter++;
+      s.unitStateCounter++;
     });
   }
 
@@ -447,7 +444,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     }
     // Bumped inside the recorded update so undo/redo also change it and the map
     // redraws the restored symbol.
-    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
+    const shouldUpdateUnitStateCounter = changesUnitOnMap(data);
 
     if (noUndo) {
       if (!unit) return;
@@ -475,7 +472,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       ? unitIds
       : unitIds.filter((id) => !isUnitLocked(id));
     // Bumped inside the recorded update, as in updateUnit, so undo/redo also redraw.
-    const shouldUpdateUnitStateCounter = changesUnitSymbol(data);
+    const shouldUpdateUnitStateCounter = changesUnitOnMap(data);
     update((s) => {
       filteredUnitIds.forEach((unitId) => {
         const unit = s.unitMap[unitId];
@@ -650,6 +647,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
       }
       refreshProjectedHierarchy(s);
       s.settingsStateCounter++;
+      s.unitStateCounter++;
     });
   }
 
@@ -983,7 +981,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
         update((s) => {
           function helper(currentUnitId: EntityId, parentId: EntityId) {
             const currentUnit = state.unitMap[currentUnitId]!;
-            const newUnit = {
+            const newUnit: NUnit = {
               ...currentUnit,
               id: nanoid(),
               state: includeState ? cloneUnitState(currentUnit.state ?? []) : [],
@@ -997,7 +995,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
               _isOpen: false,
             };
             if (!newUnit.state || !newUnit.state.length) {
-              unit._state = createInitialState(unit);
+              newUnit._state = createInitialState(newUnit);
             }
             s.unitMap[newUnit.id] = newUnit;
             clonedUnitIds.push(newUnit.id);

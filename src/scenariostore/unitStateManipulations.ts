@@ -75,6 +75,8 @@ function isNotEmptyState(state: NState) {
 export function useUnitStateManipulations(store: NewScenarioStore) {
   const { state, update } = store;
 
+  // Recorded updates that change what a unit draws also bump unitStateCounter inside
+  // the update, so undo/redo change it too and the map redraws the restored state.
   function updateUnitState(unitId: EntityId) {
     const unit = state.unitMap[unitId];
     if (!unit) return;
@@ -91,6 +93,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         if (!_unit) return;
         _unit.state = [];
         _unit._state = createInitialState(_unit);
+        s.unitStateCounter++;
         refreshHierarchyTimelineMetadata(s);
       },
       { label: "clearUnitState", value: unitId },
@@ -103,7 +106,9 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const _unit = s.unitMap[unitId];
       if (!_unit) return;
       const index = _unit.state?.findIndex((s) => s.id === stateId) ?? -1;
-      if (index >= 0) _unit.state?.splice(index, 1);
+      if (index < 0) return;
+      _unit.state?.splice(index, 1);
+      s.unitStateCounter++;
       refreshHierarchyTimelineMetadata(s);
     });
 
@@ -114,6 +119,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     update(
       (s) => {
         const u = s.unitMap[unitId];
+        s.unitStateCounter++;
 
         const newState = klona(state);
         newState.id = nanoid();
@@ -181,6 +187,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const _unit = s.unitMap[unitId];
       if (!_unit) return;
       _unit.state?.splice(index, 1);
+      s.unitStateCounter++;
       refreshHierarchyTimelineMetadata(s);
     });
 
@@ -193,9 +200,9 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       if (!unit?.state) return;
       Object.assign(unit.state[index], data);
       unit.state.sort(({ t: a }, { t: b }) => (a < b ? -1 : a > b ? 1 : 0));
+      s.unitStateCounter++;
       refreshHierarchyTimelineMetadata(s);
     });
-    state.unitStateCounter++;
 
     updateUnitState(unitId);
   }
@@ -205,6 +212,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       const unit = s.unitMap[unitId];
       if (!unit) return;
       unit.state = state;
+      s.unitStateCounter++;
       refreshHierarchyTimelineMetadata(s);
     });
     updateUnitState(unitId);
@@ -231,6 +239,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         } else if (action === "remove") {
           stateElement.via.splice(elementIndex, 1);
         }
+        s.unitStateCounter++;
       },
       { label: "addUnitPosition", value: unitId },
     );
@@ -298,6 +307,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         let insertIndex = stateIndex;
         while (insertIndex > 0 && u.state[insertIndex - 1]!.t > t) insertIndex--;
         u.state.splice(insertIndex, 0, newEntry);
+        s.unitStateCounter++;
         refreshHierarchyTimelineMetadata(s);
       },
       { label: "addUnitPosition", value: unitId },
@@ -343,6 +353,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
         if (!isNotEmptyState(entry) && !entry.title && !entry.description) {
           u.state.splice(stateIndex, 1);
         }
+        s.unitStateCounter++;
         refreshHierarchyTimelineMetadata(s);
       },
       { label: "addUnitPosition", value: unitId },
