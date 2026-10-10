@@ -531,6 +531,10 @@ function onContextMenu(event: MouseEvent) {
               {{ option.label }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
+          <ContextMenuSeparator />
+          <ContextMenuCheckboxItem v-model="mapSettings.hellfireShake" @select.prevent>
+            Shake map on impact
+          </ContextMenuCheckboxItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <ContextMenuSeparator />

@@ -90,5 +90,6 @@ export const useMapSettingsStore = defineStore("mapSettings", {
       "hellfireImpactAction",
       "none",
     ),
+    hellfireShake: useLocalStorage("hellfireShake", true),
   }),
 });

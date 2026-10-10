@@ -19,10 +19,41 @@ const MISSILE_WIDTH = 22;
 const MISSILE_HEIGHT = 64;
 /** How far from the camera the missile starts, as a share of the target's distance. */
 const LAUNCH_DEPTH = 0.25;
-/** Seen from behind, the missile looks this much shorter than it is. */
-const FORESHORTENING = 0.65;
+/** Seen nose or tail on, the missile still looks at least this share of its length. */
+const MIN_FORESHORTENING = 0.3;
 
 type ScreenPoint = { x: number; y: number };
+
+/**
+ * How a puff is lit, to look round: brightest at `toward`, a share of its radius from its
+ * middle, and shading off to `dark` at its edge.
+ */
+type Shade = { light: string; dark: string; toward: ScreenPoint };
+
+/**
+ * Where a shadow falls over the ground, in pixels east and north per pixel of height: away
+ * from a sun in the north-west, matching the lit side of the smoke on a north-up map.
+ */
+const SHADOW_FALL: ScreenPoint = { x: 0.5, y: -0.6 };
+
+/** Smoke lit by the sky from above. */
+const SMOKE_SHADE: Shade = {
+  light: "#a1a1aa",
+  dark: "#18181b",
+  toward: { x: -0.3, y: -0.45 },
+};
+/** Fire lit from within, brightest low down where it burns hottest. */
+const FIRE_SHADE: Shade = {
+  light: "#fef9c3",
+  dark: "#7c2d12",
+  toward: { x: 0, y: 0.3 },
+};
+/** The fireball's white-hot core. */
+const CORE_SHADE: Shade = {
+  light: "#ffffff",
+  dark: "#f97316",
+  toward: { x: 0, y: 0.2 },
+};
 
 function lerp(from: ScreenPoint, to: ScreenPoint, k: number): ScreenPoint {
   return { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
@@ -128,12 +159,20 @@ function drawMissile(): HTMLCanvasElement {
 
 export type OnUnitsHit = (unitIds: string[]) => void;
 
+export type HellfireOptions = {
+  /** Called with the ids of the units caught in the blast, once they have all gone up. */
+  onUnitsHit?: OnUnitsHit;
+  /** Whether the impact shakes the map. On unless turned off. */
+  shake?: boolean;
+};
+
 /**
  * Just for fun: fires a Hellfire missile from the orbiting "drone" (the bottom middle of the
  * screen) at a point on the map. It leaves a smoke trail, and its impact flashes, throws up a
  * fireball, a shockwave, debris and a smoke cloud, and shakes the map. Unit symbols near the
  * impact go up in secondary explosions; what happens to the units themselves is up to
- * `onUnitsHit`, called with their ids once they have all gone up.
+ * `onUnitsHit`, called with their ids once they have all gone up. `shake: false` keeps the map
+ * still.
  *
  * It all draws on a 2D canvas over the map rather than through map layers. With terrain on,
  * MapLibre drapes line layers such as the trail onto the terrain, so updating them every frame
@@ -143,7 +182,7 @@ export type OnUnitsHit = (unitIds: string[]) => void;
 export function launchHellfire(
   map: MlMap,
   target: { lng: number; lat: number },
-  onUnitsHit?: OnUnitsHit,
+  { onUnitsHit, shake: shakes = true }: HellfireOptions = {},
 ) {
   const mapCanvas = map.getCanvas();
   const to: Position = [target.lng, target.lat];
@@ -363,15 +402,45 @@ export function launchHellfire(
   }
 
   /**
-   * The missile, seen from behind as it flies away: nose towards the target, foreshortened, its
-   * motor glowing. Its middle trails the head a little.
+   * How much of its length the missile shows at `air`, where it looks `scale` times bigger than
+   * at the target: all of it seen from the side, down to `MIN_FORESHORTENING` nose or tail on.
+   * Points go back into 3D from where they show on screen and how far from the camera their
+   * scale puts them; the missile flies the straight line from the launch to the target.
    */
-  function drawMissileAt(at: ScreenPoint, scale: number, size: number) {
+  function foreshorteningAt(air: ScreenPoint, scale: number) {
+    const width = mapCanvas.clientWidth;
+    const height = mapCanvas.clientHeight;
+    const fov = (map.getVerticalFieldOfView() * Math.PI) / 180;
+    const focal = height / 2 / Math.tan(fov / 2);
+    const toWorld = (at: ScreenPoint, depth: number) => [
+      (at.x - width / 2) * depth,
+      (at.y - height / 2) * depth,
+      focal * depth,
+    ];
+    const ray = toWorld(air, 1 / scale);
+    const from = toWorld(launch, LAUNCH_DEPTH);
+    const [dx, dy, dz] = toWorld(targetPoint, 1).map((value, i) => value - from[i]);
+    const [rx, ry, rz] = ray;
+    const cross = Math.hypot(dy * rz - dz * ry, dz * rx - dx * rz, dx * ry - dy * rx);
+    const lengths = Math.hypot(dx, dy, dz) * Math.hypot(rx, ry, rz);
+    return Math.max(MIN_FORESHORTENING, lengths > 0 ? cross / lengths : 1);
+  }
+
+  /**
+   * The missile, seen from behind as it flies away: nose towards the target, `foreshortening`
+   * of its length, its motor glowing. Its middle trails the head a little.
+   */
+  function drawMissileAt(
+    at: ScreenPoint,
+    scale: number,
+    size: number,
+    foreshortening: number,
+  ) {
     const angle = Math.atan2(targetPoint.x - at.x, at.y - targetPoint.y);
     ctx.save();
     ctx.translate(at.x, at.y);
     ctx.rotate(angle);
-    ctx.scale(size * scale, size * scale * FORESHORTENING);
+    ctx.scale(size * scale, size * scale * foreshortening);
     ctx.drawImage(
       sprite,
       -MISSILE_WIDTH / 2,
@@ -390,6 +459,7 @@ export function launchHellfire(
   /**
    * One layer of an explosion; the layers stack in the order `blastPuffs` lists them. A flat
    * puff lies on the ground; any other hangs `height` pixels above it, facing the viewer.
+   * `offset` moves it over the ground, in pixels east and north of the explosion.
    */
   type Puff = {
     color: string;
@@ -400,21 +470,108 @@ export function launchHellfire(
     strokeOpacity?: number;
     flat?: boolean;
     height?: number;
+    offset?: ScreenPoint;
+    shade?: Shade;
+    /** How it blends with what is under it, such as "lighter" for a glow. */
+    composite?: GlobalCompositeOperation;
   };
 
+  /** Where an offset over the ground, in pixels east and north, puts a point on screen. */
+  function groundOffset(view: View, offset?: ScreenPoint): ScreenPoint {
+    if (!offset) return { x: 0, y: 0 };
+    const [a, b, c, d] = view.ground;
+    return { x: a * offset.x + c * offset.y, y: b * offset.x + d * offset.y };
+  }
+
+  /** How far over the ground, east and north, the shadow of something `height` up falls. */
+  function shadowFall(height: number): ScreenPoint {
+    return { x: SHADOW_FALL.x * height, y: SHADOW_FALL.y * height };
+  }
+
   /**
-   * The layers of one explosion `t` of the way through, at `scale` times the missile's own. Seen
-   * from the side, the fireball and the smoke rise off the ground, the smoke cloud on a column.
+   * Puffs in the order to draw them, furthest from the camera first, so nearer ones hide the
+   * ones behind. Further up the ground is further away, and higher is nearer, by how much the
+   * map is tilted: `tilt` is the sine of the pitch, and the ground shows squashed by its cosine.
+   * This is the distance along the camera's line of sight, times that cosine.
    */
-  function blastPuffs(t: number, scale: number, tilt: number): Puff[] {
+  function backToFront(puffs: Puff[], view: View): Puff[] {
+    const nearness = (puff: Puff) => {
+      const ground = groundOffset(view, puff.offset);
+      return (
+        -(ground.x * view.up.x + ground.y * view.up.y) +
+        (puff.height ?? 0) * (1 - view.tilt ** 2)
+      );
+    };
+    return puffs
+      .map((puff) => ({ puff, nearness: nearness(puff) }))
+      .sort((a, b) => a.nearness - b.nearness)
+      .map(({ puff }) => puff);
+  }
+
+  /**
+   * The layers of one explosion `t` of the way through. Seen from the side, the fireball and the
+   * smoke rise off the ground, the smoke cloud on a column. The fireball, column and cloud are
+   * each a clump of billows that roll outwards at their own pace.
+   */
+  function blastPuffs(t: number, explosion: Explosion, view: View): Puff[] {
+    const { scale, billows } = explosion;
     const smoke = clamp01((t - 0.08) / 0.92);
     const fire = clamp01(t / 0.45);
     const flash = clamp01(t / 0.12);
     const wave = clamp01(t / 0.35);
     const smokeRadius = scale * (20 + 75 * easeOutCubic(smoke));
     const smokeHeight = scale * 110 * easeOutCubic(smoke);
-    const smokeOpacity = 0.75 * Math.min(1, smoke * 6) * (1 - smoke ** 2);
+    // Overlapping billows add up, so each is fainter than the cloud they make.
+    const smokeFade = Math.min(1, smoke * 6) * (1 - smoke ** 2);
+    const smokeOpacity = 0.55 * smokeFade;
+    const fireRadius = scale * (12 + 48 * easeOutCubic(fire));
     const fireHeight = scale * 25 * easeOutCubic(fire);
+    // The cloud's shadow shows once it has lifted off the ground.
+    const cloudLift = clamp01(smokeHeight / (scale * 30));
+
+    const around = (billow: Billow, distance: number): ScreenPoint => ({
+      x: Math.cos(billow.angle) * billow.reach * distance,
+      y: Math.sin(billow.angle) * billow.reach * distance,
+    });
+    const cloud = billows.cloud.map((billow): Puff => {
+      const grow = easeOutCubic(clamp01(smoke * billow.speed));
+      return {
+        color: "#3f3f46",
+        radius: smokeRadius * 0.45 * billow.size,
+        opacity: smokeOpacity,
+        blur: 0.6,
+        offset: around(billow, smokeRadius * 0.6 * (0.4 + 0.6 * grow)),
+        height: Math.max(0, smokeHeight + billow.rise * smokeRadius * 0.35),
+        shade: SMOKE_SHADE,
+      };
+    });
+    // The column only shows from the side; from above, the cloud hides it.
+    const column = billows.column.map((billow, i): Puff => {
+      const up = (i + 0.5) / billows.column.length;
+      return {
+        color: "#52525b",
+        radius: smokeRadius * (0.22 + 0.12 * up) * billow.size,
+        opacity: smokeOpacity * view.tilt,
+        blur: 0.6,
+        offset: around(billow, smokeRadius * 0.1),
+        height: smokeHeight * up * 0.9,
+        shade: SMOKE_SHADE,
+      };
+    });
+    const fireball = billows.fire.map((billow): Puff => {
+      const burn = clamp01(fire * billow.speed);
+      const grow = easeOutCubic(burn);
+      return {
+        color: "#ea580c",
+        radius: fireRadius * 0.55 * billow.size,
+        opacity: 0.95 * (1 - burn ** 1.5),
+        blur: 0.5,
+        offset: around(billow, fireRadius * 0.5 * grow),
+        height: fireHeight + Math.max(0, billow.rise) * fireRadius * 0.4 * grow,
+        shade: FIRE_SHADE,
+      };
+    });
+
     return [
       {
         color: "#1c1917",
@@ -422,6 +579,23 @@ export function launchHellfire(
         opacity: 0.45 * Math.min(1, t * 8) * (1 - clamp01((t - 0.7) / 0.3)),
         blur: 0.6,
         flat: true,
+      },
+      // The fire lights up the ground around it.
+      {
+        color: "#f97316",
+        radius: fireRadius * 1.8,
+        opacity: 0.45 * (1 - fire),
+        blur: 1,
+        flat: true,
+        composite: "lighter",
+      },
+      {
+        color: "#0f172a",
+        radius: smokeRadius * 1.1,
+        opacity: 0.3 * smokeFade * cloudLift,
+        blur: 0.8,
+        flat: true,
+        offset: shadowFall(smokeHeight),
       },
       {
         color: "#fef3c7",
@@ -432,34 +606,15 @@ export function launchHellfire(
         strokeOpacity: 0.8 * (1 - wave),
         flat: true,
       },
-      // The column only shows from the side; from above, the cloud hides it.
-      ...[0.25, 0.55].map((at, i) => ({
-        color: "#52525b",
-        radius: smokeRadius * (0.4 + 0.15 * i),
-        opacity: smokeOpacity * tilt,
-        blur: 0.7,
-        height: smokeHeight * at,
-      })),
-      {
-        color: "#3f3f46",
-        radius: smokeRadius,
-        opacity: smokeOpacity,
-        blur: 0.7,
-        height: smokeHeight,
-      },
-      {
-        color: "#ea580c",
-        radius: scale * (12 + 48 * easeOutCubic(fire)),
-        opacity: 0.95 * (1 - fire ** 1.5),
-        blur: 0.5,
-        height: fireHeight,
-      },
+      ...backToFront([...column, ...cloud], view),
+      ...backToFront(fireball, view),
       {
         color: "#fde047",
         radius: scale * (8 + 26 * easeOutCubic(fire)),
         opacity: 1 - fire,
         blur: 0.6,
         height: fireHeight * 0.7,
+        shade: CORE_SHADE,
       },
       {
         color: "#ffffff",
@@ -470,23 +625,60 @@ export function launchHellfire(
     ];
   }
 
-  /** Draws a puff over the ground at `center`. Its edge fades out over the outer `blur` of it. */
+  /**
+   * Fills for puffs at unit radius and full opacity, by colour, shade and blur. They are the same
+   * every frame, so they are made once and scaled to each puff.
+   */
+  const puffFills = new Map<string, CanvasGradient>();
+
+  function puffFill({ color, blur, shade }: Puff): CanvasGradient {
+    const key = shade
+      ? `${color} ${blur} ${shade.light} ${shade.dark} ${shade.toward.x} ${shade.toward.y}`
+      : `${color} ${blur}`;
+    let fill = puffFills.get(key);
+    if (fill) return fill;
+    if (shade) {
+      fill = ctx.createRadialGradient(shade.toward.x, shade.toward.y, 0, 0, 0, 1);
+      fill.addColorStop(0, toRgbaColor(shade.light, 1, shade.light));
+      fill.addColorStop(0.5, toRgbaColor(color, 1, color));
+      fill.addColorStop(
+        clamp01(1 - blur * 0.4),
+        toRgbaColor(shade.dark, 0.8, shade.dark),
+      );
+      fill.addColorStop(1, toRgbaColor(shade.dark, 0, shade.dark));
+    } else {
+      fill = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      fill.addColorStop(0, toRgbaColor(color, 1, color));
+      fill.addColorStop(clamp01(1 - blur), toRgbaColor(color, 1, color));
+      fill.addColorStop(1, toRgbaColor(color, 0, color));
+    }
+    puffFills.set(key, fill);
+    return fill;
+  }
+
+  /**
+   * Draws a puff over the ground at `center`. Its edge fades out over the outer `blur` of it; a
+   * shaded puff also shades off from its lit side, to look round.
+   */
   function drawPuff(center: ScreenPoint, view: View, puff: Puff) {
-    const { color, radius, opacity, blur, stroke = 0, strokeOpacity = 0 } = puff;
+    const { color, radius, opacity, stroke = 0, strokeOpacity = 0 } = puff;
     if (radius <= 0) return;
-    const at = puff.flat ? center : lift(center, view, puff.height ?? 0);
+    const offset = groundOffset(view, puff.offset);
+    const ground = { x: center.x + offset.x, y: center.y + offset.y };
+    const at = puff.flat ? ground : lift(ground, view, puff.height ?? 0);
     ctx.save();
+    if (puff.composite) ctx.globalCompositeOperation = puff.composite;
     ctx.translate(at.x, at.y);
     if (puff.flat) ctx.transform(...view.ground, 0, 0);
     if (opacity > 0) {
-      const fill = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-      fill.addColorStop(0, toRgbaColor(color, opacity, color));
-      fill.addColorStop(clamp01(1 - blur), toRgbaColor(color, opacity, color));
-      fill.addColorStop(1, toRgbaColor(color, 0, color));
-      ctx.fillStyle = fill;
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.scale(radius, radius);
+      ctx.fillStyle = puffFill(puff);
       ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.arc(0, 0, 1, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
     }
     if (stroke > 0 && strokeOpacity > 0) {
       ctx.strokeStyle = toRgbaColor(color, strokeOpacity, color);
@@ -499,13 +691,41 @@ export function launchHellfire(
   }
 
   type Spark = { angle: number; distance: number; size: number };
+  /**
+   * One of the clumps an explosion's fire and smoke are made of: which way and how far out over
+   * the ground it rolls, as a share of the clump's reach, how far above or below the clump's
+   * middle it hangs, its size and how fast it grows, both relative to the clump's.
+   */
+  type Billow = {
+    angle: number;
+    reach: number;
+    rise: number;
+    size: number;
+    speed: number;
+  };
   type Explosion = {
     at: Position;
     delay: number;
     scale: number;
     sparks: Spark[];
+    billows: { cloud: Billow[]; column: Billow[]; fire: Billow[] };
     unitId?: string;
   };
+
+  function createBillows(count: number): Billow[] {
+    return Array.from({ length: count }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      // Spread evenly over a disc rather than bunched in the middle.
+      reach: Math.sqrt(Math.random()),
+      rise: Math.random() * 2 - 1,
+      size: 0.8 + Math.random() * 0.4,
+      speed: 0.75 + Math.random() * 0.5,
+    }));
+  }
+
+  function createBillowSet(): Explosion["billows"] {
+    return { cloud: createBillows(14), column: createBillows(5), fire: createBillows(7) };
+  }
 
   function createSparks(count: number, reach: number): Spark[] {
     return Array.from({ length: count }, () => ({
@@ -545,33 +765,51 @@ export function launchHellfire(
         delay: 120 + distance * 3 + Math.random() * 250,
         scale: 0.55 + Math.random() * 0.2,
         sparks: createSparks(10, 45),
+        billows: createBillowSet(),
         unitId,
       });
     }
     return explosions;
   }
 
-  /** Debris flying out over the ground and up on an arc, landing as it burns out. */
+  /**
+   * Debris flying out over the ground and up on an arc, landing as it burns out, each piece
+   * over its shadow.
+   */
   function drawSparks(origin: ScreenPoint, view: View, explosion: Explosion, t: number) {
     if (t >= 1) return;
     const travel = easeOutCubic(t);
-    const [a, b, c, d] = view.ground;
     // From above, the arc reads as a slight sag.
     const sag = 12 * t * t * (1 - view.tilt);
+    const pieces = explosion.sparks.map(({ angle, distance, size }) => {
+      const reach = distance * travel;
+      const out = groundOffset(view, {
+        x: Math.cos(angle) * reach,
+        y: Math.sin(angle) * reach,
+      });
+      const ground = { x: origin.x + out.x, y: origin.y + out.y + sag };
+      const height = distance * 2.4 * t * (1 - t);
+      const fall = groundOffset(view, shadowFall(height));
+      return {
+        at: lift(ground, view, height),
+        shadow: { x: ground.x + fall.x, y: ground.y + fall.y },
+        size,
+      };
+    });
     ctx.save();
+    ctx.globalAlpha = 0.35 * (1 - t ** 2);
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    for (const { shadow, size } of pieces) {
+      ctx.moveTo(shadow.x + size * 0.8, shadow.y);
+      ctx.arc(shadow.x, shadow.y, size * 0.8, 0, Math.PI * 2);
+    }
+    ctx.fill();
     ctx.globalAlpha = 1 - t ** 2;
     ctx.fillStyle = "#fdba74";
     ctx.strokeStyle = "#7c2d12";
     ctx.lineWidth = 0.5;
-    for (const { angle, distance, size } of explosion.sparks) {
-      const reach = distance * travel;
-      const dx = Math.cos(angle) * reach;
-      const dy = Math.sin(angle) * reach;
-      const ground = {
-        x: origin.x + a * dx + c * dy,
-        y: origin.y + b * dx + d * dy + sag,
-      };
-      const at = lift(ground, view, distance * 2.4 * t * (1 - t));
+    for (const { at, size } of pieces) {
       ctx.beginPath();
       ctx.arc(at.x, at.y, size, 0, Math.PI * 2);
       ctx.fill();
@@ -601,17 +839,23 @@ export function launchHellfire(
       drawShadow(ground, view, height, scale);
       drawTrail(progress, view);
       // The flame flickers.
-      drawMissileAt(air, scale, 0.95 + Math.random() * 0.1);
+      drawMissileAt(air, scale, 0.95 + Math.random() * 0.1, foreshorteningAt(air, scale));
     } else {
       const afterImpact = elapsed - FLIGHT_MS;
       if (!explosions) {
         explosions = [
-          { at: to, delay: 0, scale: 1, sparks: createSparks(16, 70) },
+          {
+            at: to,
+            delay: 0,
+            scale: 1,
+            sparks: createSparks(16, 70),
+            billows: createBillowSet(),
+          },
           ...findUnitsInBlast(),
         ];
         lastDelay = Math.max(...explosions.map((e) => e.delay));
         endsAt = Math.max(BLAST_MS + lastDelay, TRAIL_LINGER_MS);
-        shake();
+        if (shakes) shake();
       }
       // The units' fate is sealed once the last of their fireballs hides them.
       if (!reported && afterImpact >= lastDelay + 200) {
@@ -629,11 +873,7 @@ export function launchHellfire(
       });
       // Later explosions draw over earlier ones, and debris flies over all of them.
       for (const { explosion, sinceStart, view } of active) {
-        for (const puff of blastPuffs(
-          sinceStart / BLAST_MS,
-          explosion.scale,
-          view.tilt,
-        )) {
+        for (const puff of blastPuffs(sinceStart / BLAST_MS, explosion, view)) {
           drawPuff(view.center, view, puff);
         }
       }

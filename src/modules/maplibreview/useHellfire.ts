@@ -92,7 +92,7 @@ export function useHellfire(
     const map = getMap();
     if (!map || !isOrbiting() || !mapSettings.hellfireEnabled) return;
     void import("@/modules/maplibreview/hellfire").then(({ launchHellfire }) =>
-      launchHellfire(map, target, onUnitsHit),
+      launchHellfire(map, target, { onUnitsHit, shake: mapSettings.hellfireShake }),
     );
   }
 
