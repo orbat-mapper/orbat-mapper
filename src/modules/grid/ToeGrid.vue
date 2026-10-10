@@ -187,7 +187,14 @@ watch(
 </script>
 
 <template>
-  <div class="relative flow-root">
+  <!--
+    Rows get opaque backgrounds so the sticky action cell can inherit them: a translucent
+    stripe would either stop at that cell or let scrolled content show through it. Hosts
+    on a surface other than the sidebar set --grid-surface.
+  -->
+  <div
+    class="relative flow-root [--grid-row-alt:color-mix(in_oklab,var(--grid-row),var(--color-foreground)_2.5%)] [--grid-row:var(--grid-surface,var(--color-sidebar))]"
+  >
     <div class="-mx-4 max-h-96 overflow-x-auto whitespace-nowrap">
       <div class="inline-block min-w-full align-middle">
         <table
@@ -255,7 +262,7 @@ watch(
               v-for="(row, rowIndex) in rows"
               :key="row.id"
               :data-index="row.index"
-              class="dark:even:bg-foreground/[2.5%] even:bg-zinc-950/[2.5%]"
+              class="bg-(--grid-row) even:bg-(--grid-row-alt)"
               @dblclick="onDblClick(row, $event)"
             >
               <template v-if="row.original.id === editedId">
@@ -289,7 +296,7 @@ watch(
                     :props="cell.getContext()"
                   />
                 </td>
-                <td class="bg-card sticky right-0">
+                <td class="sticky right-0 bg-inherit">
                   <div v-if="editMode" class="flex grow-0 items-center justify-end pr-4">
                     <Button
                       variant="outline"
