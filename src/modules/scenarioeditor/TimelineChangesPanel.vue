@@ -234,134 +234,140 @@ const rangeLabel = computed(
       @pointerup="onResizeEnd"
       @pointercancel="onResizeEnd"
     />
-    <header class="flex flex-wrap items-center gap-2 border-b px-3 py-1.5 text-xs">
-      <h3 class="text-sm font-semibold">Unit changes</h3>
-      <ToggleGroup
-        :model-value="view"
-        type="single"
-        variant="outline"
-        size="sm"
-        aria-label="View"
-        @update:model-value="(v) => v && (view = v as TimelineChangesView)"
-      >
-        <ToggleGroupItem value="list" class="h-6 px-2 text-xs">List</ToggleGroupItem>
-        <ToggleGroupItem value="lanes" class="h-6 px-2 text-xs">Lanes</ToggleGroupItem>
-      </ToggleGroup>
-      <NativeSelect
-        v-model.number="windowHours"
-        aria-label="Time window"
-        class="h-6 py-0 pr-7 pl-2 text-xs"
-      >
-        <NativeSelectOption :value="1">±1 h</NativeSelectOption>
-        <NativeSelectOption :value="3">±3 h</NativeSelectOption>
-        <NativeSelectOption :value="12">±12 h</NativeSelectOption>
-        <NativeSelectOption :value="24">±24 h</NativeSelectOption>
-        <NativeSelectOption :value="48">±2 d</NativeSelectOption>
-        <NativeSelectOption :value="168">±7 d</NativeSelectOption>
-      </NativeSelect>
-      <!-- Kept ahead of the range label and kind chips, whose widths change while
+    <header class="flex flex-col gap-1.5 border-b px-3 py-1.5 text-xs">
+      <div class="flex flex-wrap items-center gap-2">
+        <h3 class="text-sm font-semibold">Unit changes</h3>
+        <ToggleGroup
+          :model-value="view"
+          type="single"
+          variant="outline"
+          size="sm"
+          aria-label="View"
+          @update:model-value="(v) => v && (view = v as TimelineChangesView)"
+        >
+          <ToggleGroupItem value="list" class="h-6 px-2 text-xs">List</ToggleGroupItem>
+          <ToggleGroupItem value="lanes" class="h-6 px-2 text-xs">Lanes</ToggleGroupItem>
+        </ToggleGroup>
+        <NativeSelect
+          v-model.number="windowHours"
+          aria-label="Time window"
+          class="h-6 py-0 pr-7 pl-2 text-xs"
+        >
+          <NativeSelectOption :value="1">±1 h</NativeSelectOption>
+          <NativeSelectOption :value="3">±3 h</NativeSelectOption>
+          <NativeSelectOption :value="12">±12 h</NativeSelectOption>
+          <NativeSelectOption :value="24">±24 h</NativeSelectOption>
+          <NativeSelectOption :value="48">±2 d</NativeSelectOption>
+          <NativeSelectOption :value="168">±7 d</NativeSelectOption>
+        </NativeSelect>
+        <!-- Kept ahead of the range label and kind chips, whose widths change while
            scrubbing, so the checkboxes stay put. -->
-      <label
-        class="flex items-center gap-1.5"
-        title="Show units travelling between positions: trips under way when the time range starts, and when trips that start in it arrive. Lanes draw each trip as a bar."
-      >
-        <Checkbox v-model="includeMoving" />
-        Trips
-      </label>
-      <label class="flex items-center gap-1.5">
-        <Checkbox v-model="onlyInView" />
-        Only in map view
-      </label>
-      <span
-        v-if="binLabel"
-        class="rounded bg-amber-400/30 px-1.5 tabular-nums"
-        title="The timeline bin the window is centred on"
-      >
-        Bin {{ binLabel }}
-      </span>
-      <button
-        v-if="centerT !== null"
-        type="button"
-        class="hover:bg-accent rounded border px-2 py-0.5"
-        title="Show the changes around the current time"
-        @click="changesStore.followNow()"
-      >
-        Back to now
-      </button>
-      <span class="text-muted-foreground tabular-nums">
-        {{ rangeLabel }} · {{ listedChanges.length }} of {{ changes.length }}
-      </span>
-      <div class="flex flex-wrap gap-1">
-        <button
-          v-for="[kind, count] in kindCounts"
-          :key="kind"
-          type="button"
-          class="inline-flex items-center gap-1 rounded-full border px-1.5 tabular-nums"
-          :class="hiddenKinds.has(kind) ? 'line-through opacity-40' : ''"
-          :aria-pressed="!hiddenKinds.has(kind)"
-          :title="hiddenKinds.has(kind) ? 'Show' : 'Hide'"
-          @click="toggleKind(kind)"
+        <label
+          class="flex items-center gap-1.5"
+          title="Show units travelling between positions: trips under way when the time range starts, and when trips that start in it arrive. Lanes draw each trip as a bar."
         >
-          <span class="size-1.5 rounded-full" :class="changeKindDotClasses[kind]" />
-          {{ changeKindLabels[kind] }} {{ count }}
-        </button>
-        <button
-          v-if="view === 'list' && events.length"
-          type="button"
-          class="inline-flex items-center gap-1 rounded-full border px-1.5 tabular-nums"
-          :class="showEvents ? '' : 'line-through opacity-40'"
-          :aria-pressed="showEvents"
-          :title="showEvents ? 'Hide scenario events' : 'Show scenario events'"
-          @click="showEvents = !showEvents"
+          <Checkbox v-model="includeMoving" />
+          Trips
+        </label>
+        <label class="flex items-center gap-1.5">
+          <Checkbox v-model="onlyInView" />
+          Only in map view
+        </label>
+        <span
+          v-if="binLabel"
+          class="rounded bg-amber-400/30 px-1.5 tabular-nums"
+          title="The timeline bin the window is centred on"
         >
-          <span class="size-2 rounded-full border border-gray-500 bg-amber-500" />
-          Events {{ events.length }}
+          Bin {{ binLabel }}
+        </span>
+        <button
+          v-if="centerT !== null"
+          type="button"
+          class="hover:bg-accent rounded border px-2 py-0.5"
+          title="Show the changes around the current time"
+          @click="changesStore.followNow()"
+        >
+          Back to now
         </button>
-      </div>
-      <Input
-        v-model="nameFilter"
-        placeholder="Filter by name…"
-        aria-label="Filter by name"
-        class="ml-auto h-6 w-40 text-xs"
-      />
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <button type="button" class="hover:bg-accent rounded p-1" title="Columns">
-            <Columns3Icon class="size-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel class="text-xs">Columns</DropdownMenuLabel>
-          <DropdownMenuCheckboxItem
-            v-for="(isShown, key) in viewColumns"
-            :key="key"
-            :model-value="isShown"
-            :disabled="isLastShownColumn(key)"
-            class="text-xs"
-            @update:model-value="viewColumns[key] = !!$event"
-            @select.prevent
+        <span class="text-muted-foreground tabular-nums">
+          {{ rangeLabel }} · {{ listedChanges.length }} of {{ changes.length }}
+        </span>
+        <div class="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button type="button" class="hover:bg-accent rounded p-1" title="Columns">
+                <Columns3Icon class="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel class="text-xs">Columns</DropdownMenuLabel>
+              <DropdownMenuCheckboxItem
+                v-for="(isShown, key) in viewColumns"
+                :key="key"
+                :model-value="isShown"
+                :disabled="isLastShownColumn(key)"
+                class="text-xs"
+                @update:model-value="viewColumns[key] = !!$event"
+                @select.prevent
+              >
+                {{ timelineChangesColumnLabels[key as TimelineChangesListColumn] }}
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            class="hover:bg-accent rounded p-1"
+            :title="panelMode === 'overlay' ? 'Dock below the map' : 'Float over the map'"
+            @click="togglePanelMode"
           >
-            {{ timelineChangesColumnLabels[key as TimelineChangesListColumn] }}
-          </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <button
-        type="button"
-        class="hover:bg-accent rounded p-1"
-        :title="panelMode === 'overlay' ? 'Dock below the map' : 'Float over the map'"
-        @click="togglePanelMode"
-      >
-        <PanelBottomIcon v-if="panelMode === 'overlay'" class="size-4" />
-        <PictureInPicture2Icon v-else class="size-4" />
-      </button>
-      <button
-        type="button"
-        class="hover:bg-accent rounded p-1"
-        title="Close"
-        @click="changesStore.close()"
-      >
-        <XIcon class="size-4" />
-      </button>
+            <PanelBottomIcon v-if="panelMode === 'overlay'" class="size-4" />
+            <PictureInPicture2Icon v-else class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="hover:bg-accent rounded p-1"
+            title="Close"
+            @click="changesStore.close()"
+          >
+            <XIcon class="size-4" />
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap gap-1">
+          <button
+            v-for="[kind, count] in kindCounts"
+            :key="kind"
+            type="button"
+            class="inline-flex items-center gap-1 rounded-full border px-1.5 tabular-nums"
+            :class="hiddenKinds.has(kind) ? 'line-through opacity-40' : ''"
+            :aria-pressed="!hiddenKinds.has(kind)"
+            :title="hiddenKinds.has(kind) ? 'Show' : 'Hide'"
+            @click="toggleKind(kind)"
+          >
+            <span class="size-1.5 rounded-full" :class="changeKindDotClasses[kind]" />
+            {{ changeKindLabels[kind] }} {{ count }}
+          </button>
+          <button
+            v-if="view === 'list' && events.length"
+            type="button"
+            class="inline-flex items-center gap-1 rounded-full border px-1.5 tabular-nums"
+            :class="showEvents ? '' : 'line-through opacity-40'"
+            :aria-pressed="showEvents"
+            :title="showEvents ? 'Hide scenario events' : 'Show scenario events'"
+            @click="showEvents = !showEvents"
+          >
+            <span class="size-2 rounded-full border border-gray-500 bg-amber-500" />
+            Events {{ events.length }}
+          </button>
+        </div>
+        <Input
+          v-model="nameFilter"
+          placeholder="Filter by name…"
+          aria-label="Filter by name"
+          class="ml-auto h-6 w-40 text-xs"
+        />
+      </div>
     </header>
     <TimelineChangesLanes
       v-if="view === 'lanes'"
