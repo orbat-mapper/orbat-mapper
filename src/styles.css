@@ -167,11 +167,12 @@
   }
 }
 
-/* On desktop the floating toolbar spans narrow maps edge to edge, so lift bottom-left controls at any narrow width. */
-@container (max-width: 60rem) {
-  .map-floating-toolbar .map-ui-root {
-    --map-toolbar-clearance-left: 4.5rem;
-  }
+/* With the desktop toolbars shown, the map shell measures them instead: the lift is 0
+   while the bottom-left controls fit beside the toolbars, and otherwise clears just the
+   toolbars they would hit, an open draw, track or measure toolbar included
+   (`--map-bottom-left-clearance`). */
+.map-measured-toolbar .map-ui-root {
+  --map-toolbar-clearance-left: var(--map-bottom-left-clearance, 0px);
 }
 
 .map-ui-root .maplibregl-ctrl-bottom-left {

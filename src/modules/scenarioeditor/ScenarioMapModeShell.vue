@@ -15,7 +15,10 @@ import KeyboardScenarioActions from "@/modules/scenarioeditor/KeyboardScenarioAc
 import ScenarioTimeline from "@/modules/scenarioeditor/ScenarioTimeline.vue";
 import UnitBreadcrumbs from "@/modules/scenarioeditor/UnitBreadcrumbs.vue";
 import { useUiStore } from "@/stores/uiStore";
-import { useOverlayBottomInset } from "@/composables/useOverlayBottomInset";
+import {
+  useBottomLeftClearance,
+  useOverlayBottomInset,
+} from "@/composables/useOverlayBottomInset";
 
 withDefaults(
   defineProps<{
@@ -56,6 +59,14 @@ const emit = defineEmits<{
 const ui = useUiStore();
 const bottomToolbarRef = useTemplateRef("bottomToolbarRef");
 const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
+// The scale line and the location readout stay in the corner until they would run into
+// a toolbar, then lift just above the toolbars they would hit.
+const mapAreaRef = useTemplateRef("mapAreaRef");
+const bottomLeftClearance = useBottomLeftClearance(
+  bottomToolbarRef,
+  mapAreaRef,
+  ".maplibregl-ctrl-bottom-left .maplibregl-ctrl, .location-control",
+);
 </script>
 
 <template>
@@ -64,7 +75,12 @@ const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
       <template v-if="!isMobile">
         <MapEditorDesktopPanel v-if="showLeftPanel" @close="emit('closeLeftPanel')" />
       </template>
-      <div class="relative flex min-w-64 flex-auto flex-col">
+      <div
+        ref="mapAreaRef"
+        class="relative flex min-w-64 flex-auto flex-col"
+        :class="{ 'map-measured-toolbar': !isMobile && showBottomToolbar }"
+        :style="{ '--map-bottom-left-clearance': `${bottomLeftClearance}px` }"
+      >
         <slot name="map" />
         <main
           v-if="mapReady"
@@ -112,7 +128,7 @@ const bottomToolbarInset = useOverlayBottomInset(bottomToolbarRef);
             v-if="!isMobile && showBottomToolbar"
             ref="bottomToolbarRef"
             data-map-overlay
-            class="pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
+            class="@container/toolbar pointer-events-none flex justify-center sm:absolute sm:bottom-2 sm:w-full sm:p-2"
           >
             <slot name="bottom-toolbar" />
           </footer>

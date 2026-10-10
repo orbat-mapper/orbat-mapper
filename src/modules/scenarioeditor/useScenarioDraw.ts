@@ -434,6 +434,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
   const isModifying = computed(
     () => armed.value.kind === "plainModify" || armed.value.kind === "cmEdit",
   );
+  const controlMeasureArmed = computed(
+    () => armed.value.kind === "cmDraw" || armed.value.kind === "cmEdit",
+  );
 
   // The control-measure draw session. Everything transient lives in there; the only
   // thing that reaches back is a settled session asking what to arm next.
@@ -980,6 +983,8 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     isModifying,
     cancel: () => arm({ kind: "none" }),
     isDrawing,
+    /** A control-measure draw or edit session is armed. */
+    controlMeasureArmed,
     controlMeasureDrawDestinationLayerId: controlMeasureDraw.destinationLayerId,
     /** The one draw-progress view; `drawSessionProgress.family` distinguishes them. */
     drawSessionProgress,

@@ -7,8 +7,13 @@ import {
   ListboxItem,
   ListboxRoot,
 } from "reka-ui";
-import { IconPin, IconPinOutline } from "@iconify-prerendered/vue-mdi";
+import {
+  IconPin,
+  IconPinOutline,
+  IconRestore as ResetIcon,
+} from "@iconify-prerendered/vue-mdi";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import { Button } from "@/components/ui/button";
 import CommandPaletteDialog from "@/components/commandPalette/CommandPaletteDialog.vue";
 import CommandPaletteInput from "@/components/commandPalette/CommandPaletteInput.vue";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
@@ -126,6 +131,17 @@ function onSelect(value: unknown) {
         aria-hidden="true"
       />
       <p class="mt-4">No control measures found</p>
+    </div>
+    <div class="border-border flex justify-end border-t px-2 py-1.5">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="text-muted-foreground text-xs"
+        @click="toolStore.resetPinnedKinds()"
+      >
+        <ResetIcon class="size-4" />
+        Reset toolbar pins to defaults
+      </Button>
     </div>
   </CommandPaletteDialog>
 </template>

@@ -304,10 +304,7 @@ function onCloseActiveDetailsPanel() {
     @close-details-panel="onCloseActiveDetailsPanel()"
   >
     <template #map>
-      <div
-        class="@container relative flex flex-auto"
-        :class="{ 'map-floating-toolbar': !isMobile && ui.showToolbar }"
-      >
+      <div class="@container relative flex flex-auto">
         <MaplibreContextMenu v-model:base-map-id="maplibreBaseMapId" :map-ref="mlMap">
           <MaplibreMap
             @ready="onMapReady"

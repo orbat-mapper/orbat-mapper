@@ -188,7 +188,7 @@ function resetSizeForCurrentZoom() {
             ? 'Control measures are not supported by this map engine'
             : editsSelection
               ? 'Style selected control measures'
-              : 'Control measure defaults'
+              : 'Style for new control measures'
         "
         :disabled="disabled"
       >
@@ -205,6 +205,11 @@ function resetSizeForCurrentZoom() {
             : "New control measures"
         }}
       </header>
+      <!-- One panel for both: a change to the selection also becomes the starting point
+           for the next control measure (see updateSettings). -->
+      <p v-if="editsSelection" class="text-muted-foreground mt-1 text-xs">
+        Changes also apply to new control measures.
+      </p>
       <PanelDataGrid class="mt-4">
         <ControlMeasureStyleSettings
           :graphic-kind="editedKind"
