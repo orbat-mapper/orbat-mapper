@@ -420,7 +420,10 @@ function getUnitLabelOffsetY(
 ) {
   if (cachedSymbol.kind === "custom") {
     const frameMultiplier = isHostileSidc(sidc) ? 1.25 : 1;
-    return Math.max(1.5, (cachedSymbol.size / 20) * frameMultiplier);
+    // Spacing tuned in ems at the default label size; kept in pixels so it does not
+    // scale with the label size.
+    const offsetEm = Math.max(1.5, (cachedSymbol.size / 20) * frameMultiplier);
+    return (offsetEm * DEFAULT_UNIT_LABEL_TEXT_SIZE) / getUnitLabelTextSize();
   }
   // Measured without the selection outline, so the label stays put on selection.
   const { bottom } = getMilSymbolMetrics(symbolKey, cachedSymbol);
