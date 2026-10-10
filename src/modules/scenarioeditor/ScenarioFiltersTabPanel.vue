@@ -67,9 +67,9 @@ const expandedKeys = ref<string[]>([]);
 const flatStats = ref<Record<string, number>>({});
 
 const panelsOpen = ref({
-  commandLevel: false,
-  mainIcon: true,
   side: false,
+  mainIcon: true,
+  commandLevel: false,
   unitStatus: false,
   visibility: false,
   identity: false,
@@ -83,9 +83,9 @@ type FilterSectionId = keyof typeof panelsOpen.value;
 const filterSections = computed<
   { id: FilterSectionId; label: string; tree: NestedUnitStatItem[] }[]
 >(() => [
-  { id: "commandLevel", label: "Command level", tree: emtTree.value },
-  { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
   { id: "side", label: "Side", tree: sideTree.value },
+  { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
+  { id: "commandLevel", label: "Command level", tree: emtTree.value },
   { id: "unitStatus", label: "Unit status", tree: unitStatusTree.value },
   { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
   { id: "identity", label: "Standard identity", tree: sidTree.value },
@@ -628,8 +628,9 @@ function expandAllIcons() {
         >
       </div>
     </header>
-    <p class="text-muted-foreground pb-2 text-sm">
+    <p class="text-muted-foreground pb-2 text-xs">
       Click a category to add its units to the selection. Click it again to remove them.
+      Categories are based on the current scenario time.
     </p>
     <div class="flex flex-wrap items-center gap-1 pb-2">
       <Button
