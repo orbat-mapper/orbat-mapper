@@ -37,6 +37,7 @@ const VISIBILITY_NO_LOCATIONS_KEY = "visibility-no-locations";
 const VISIBILITY_HIDDEN_KEY = "visibility-hidden";
 const VISIBILITY_VISIBLE_KEY = "visibility-visible";
 const GENERIC_FILTER_SIDC = "10031000100000000000";
+const NO_UNIT_STATUS_KEY = "unit-status-none";
 
 const {
   store: { state },
@@ -55,6 +56,8 @@ const emtTree = ref<NestedUnitStatItem[]>([]);
 const iconTree = ref<NestedUnitStatItem[]>([]);
 const modifierTree = ref<NestedUnitStatItem[]>([]);
 const statusTree = ref<NestedUnitStatItem[]>([]);
+const hqtfdTree = ref<NestedUnitStatItem[]>([]);
+const unitStatusTree = ref<NestedUnitStatItem[]>([]);
 const sidTree = ref<NestedUnitStatItem[]>([]);
 const visibilityTree = ref<NestedUnitStatItem[]>([]);
 const { selectedUnitIds } = useSelectedItems();
@@ -67,9 +70,11 @@ const panelsOpen = ref({
   commandLevel: false,
   mainIcon: true,
   side: false,
+  unitStatus: false,
   visibility: false,
   identity: false,
-  status: false,
+  symbolStatus: false,
+  hqtfd: false,
   modifiers: false,
 });
 
@@ -81,9 +86,11 @@ const filterSections = computed<
   { id: "commandLevel", label: "Command level", tree: emtTree.value },
   { id: "mainIcon", label: "Main unit icon", tree: iconTree.value },
   { id: "side", label: "Side", tree: sideTree.value },
+  { id: "unitStatus", label: "Unit status", tree: unitStatusTree.value },
   { id: "visibility", label: "Map visibility", tree: visibilityTree.value },
   { id: "identity", label: "Standard identity", tree: sidTree.value },
-  { id: "status", label: "Status", tree: statusTree.value },
+  { id: "symbolStatus", label: "Symbol status", tree: statusTree.value },
+  { id: "hqtfd", label: "HQ / Task force / Dummy", tree: hqtfdTree.value },
   { id: "modifiers", label: "Symbol modifiers", tree: modifierTree.value },
 ]);
 
@@ -139,6 +146,7 @@ watchEffect(() => {
   const iconStatItems: NestedUnitStatItem[] = [];
   const modifierStatItems: NestedUnitStatItem[] = [];
   const statusStatItems: NestedUnitStatItem[] = [];
+  const hqtfdStatItems: NestedUnitStatItem[] = [];
   Object.values(state.unitMap).forEach((unit) => {
     const {
       sideKey,
@@ -155,7 +163,7 @@ watchEffect(() => {
       sidKey,
     } = updateUnitStats(unit, stats);
 
-    const iconSidc = new Sidc(getFullUnitSidc(unit.sidc));
+    const iconSidc = new Sidc(currentSidc(unit));
     const originalEmt = iconSidc.emt;
     iconSidc.emt = "00";
     iconSidc.hqtfd = "0";
@@ -288,7 +296,7 @@ watchEffect(() => {
       const tmpSidc = new Sidc("10031000100000000000");
       const hqtfdCode = hqtfdKey.split("-")[1];
       tmpSidc.hqtfd = hqtfdCode;
-      statusStatItems.push({
+      hqtfdStatItems.push({
         key: hqtfdKey,
         label: getHqtfdLabel(hqtfdCode),
         sidc: tmpSidc.toString(),
@@ -341,6 +349,15 @@ watchEffect(() => {
     },
   ];
   visibilityTree.value.forEach(({ key }) => (stats[key] ||= 0));
+  // Statuses in settings order, listing only those some unit has at the current time.
+  unitStatusTree.value = [
+    ...Object.values(state.unitStatusMap).map((status) => ({
+      key: unitStatusKeyFor(status.id),
+      label: status.name,
+      sidc: GENERIC_FILTER_SIDC,
+    })),
+    { key: NO_UNIT_STATUS_KEY, label: "No status", sidc: GENERIC_FILTER_SIDC },
+  ].filter(({ key }) => stats[key]);
   sideTree.value = sortBy(sideStatItems, "label");
   emtTree.value = sortBy(emtStatItems, "label");
   iconTree.value = sortBy(iconStatItems, "label");
@@ -349,6 +366,7 @@ watchEffect(() => {
     "label",
   );
   statusTree.value = sortBy(statusStatItems, "label");
+  hqtfdTree.value = sortBy(hqtfdStatItems, "label");
   sidTree.value = sortBy(sidStatItems, "label");
 });
 
@@ -390,6 +408,7 @@ function updateUnitStats(
     mod2Key,
     modSymbolSetKey,
     statusKey,
+    unitStatusKey,
     hqtfdKey,
     sidKey,
     initialLocationKey,
@@ -407,6 +426,7 @@ function updateUnitStats(
   stats[sideGroupKey] = (stats[sideGroupKey] || 0) + 1;
   stats[modSymbolSetKey] = (stats[modSymbolSetKey] || 0) + 1;
   stats[statusKey] = (stats[statusKey] || 0) + 1;
+  stats[unitStatusKey] = (stats[unitStatusKey] || 0) + 1;
   stats[sidKey] = (stats[sidKey] || 0) + 1;
   for (const key of [
     initialLocationKey,
@@ -424,8 +444,14 @@ function updateUnitStats(
   return keys;
 }
 
+// The symbol code at the current time, so timed changes such as a unit becoming
+// damaged or destroyed are picked up.
+function currentSidc(unit: NUnit) {
+  return getFullUnitSidc(unit._state?.sidc || unit.sidc);
+}
+
 function createKeys(unit: NUnit) {
-  const sidc = new Sidc(getFullUnitSidc(unit.sidc));
+  const sidc = new Sidc(currentSidc(unit));
   const sidKey = `sid-${sidc.standardIdentity}`;
   const symbolSetKey = `${sidc.symbolSet}`;
   const entityKey = `${sidc.symbolSet}-${sidc.entity}`;
@@ -438,6 +464,11 @@ function createKeys(unit: NUnit) {
   const mod2Key = `mod2-${symbolSetKey}-${sidc.modifierTwo}`;
   const statusKey = `status-${sidc.status}`;
   const hqtfdKey = `hqtfd-${sidc.hqtfd}`;
+  const unitStatusId = unit._state?.status || unit.status;
+  const unitStatusKey =
+    unitStatusId && state.unitStatusMap[unitStatusId]
+      ? unitStatusKeyFor(unitStatusId)
+      : NO_UNIT_STATUS_KEY;
   const hasInitialLocation = Boolean(unit.location);
   const hasCurrentLocation = Boolean(unit._state?.location);
   const hasAnyStateLocation = Boolean(unit.state?.some((s) => !!s.location));
@@ -467,6 +498,7 @@ function createKeys(unit: NUnit) {
     mod1Key,
     mod2Key,
     statusKey,
+    unitStatusKey,
     hqtfdKey,
     initialLocationKey,
     currentLocationKey,
@@ -519,6 +551,10 @@ function getEchelonLabel(echelon: string) {
     return echelonValues.find((v) => v.code === nechelon)?.text || echelon;
   }
   return echelonValues.find((v) => v.code === echelon)?.text || echelon;
+}
+
+function unitStatusKeyFor(statusId: string) {
+  return `unit-status-${statusId}`;
 }
 
 function getStatusLabel(code: string) {
