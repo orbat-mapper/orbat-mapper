@@ -53,8 +53,8 @@ describe("timestamp serialization", () => {
     const out = useScenarioIO(shallowRef(store)).serializeToObject();
 
     const unit = out.sides[0].groups[0].subUnits[0];
-    expect(Date.parse(out.startTime!)).toBe(Date.parse(t));
-    expect(Date.parse(unit.state![0].t as string)).toBe(Date.parse(t));
+    expect(Date.parse(String(out.startTime))).toBe(Date.parse(t));
+    expect(Date.parse(String(unit.state![0].t))).toBe(Date.parse(t));
   });
 
   it("keeps the local offset for whole-minute zones", () => {
