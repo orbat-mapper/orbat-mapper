@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Added editing of many units at once in the unit details panel. With several units selected, setting the status, changing the symbol, removing from the map, editing text amplifiers and speeds, locking and removing TO&E items apply to every selected unit, skipping locked ones, and each change is a single undo step. Fields that differ between the units show "Mixed", and the header summarises the selection with a list for removing units from it.
 - The map context menu marks the clicked spot with a target.
 - Added an orbit mode to the map. "Orbit here" in the map context menu, or `o` for the middle of the screen, glides the camera to the spot and slowly circles it. While orbiting, clicking the map picks a new center, and zooming or tilting pauses the orbit until the gesture ends. Press `o` or Escape to stop.
+- Added a Unit status category to the Select tab for selecting units by their status at the current scenario time. Each status is marked with its colour.
 
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
@@ -40,6 +41,8 @@ All notable changes to this project will be documented in this file.
 - Opening the Layers panel no longer reveals every time-hidden layer and item. A "Show time-hidden items" switch does that instead. Control measures are listed with a preview of their symbol, layer actions appear when hovering a row so names get the full width, and items hidden with the eye toggle are dimmed.
 - Hovering an item in the Layers panel now shows a zoom button next to the visibility toggle.
 - Zooming to items, layers, units and search results now leaves a margin around the target and keeps it clear of the map header, toolbars, the floating details panel and the map controls.
+- Reworked the Select tab's categories. Status is now Symbol status, and headquarters, task force and dummy indicators have their own category. The categories are reordered, starting with Side, Main unit icon and Command level. Categories that can't narrow the selection, such as one where every unit shares the same value, are hidden, and rows with no units are dimmed. Map visibility rows have their own icons, and Main unit icon has an "Expand all" / "Collapse all" button.
+- Moved the Select tab between Layers and Settings.
 
 ### Fixed
 
@@ -51,6 +54,9 @@ All notable changes to this project will be documented in this file.
 - Fixed the play button tooltip, which described the undo action.
 - Fixed unit labels shown below the symbol covering the status bar or mobility indicator.
 - Fixed plain `.milxly` files being detected as TSV instead of MilX, and restored the "keep dialog open" toggle in the import dialog.
+- Fixed the Select tab's symbol categories using each unit's starting symbol, so units that later become damaged or destroyed were counted as present. They now use the symbol at the current scenario time.
+- Fixed the symbol set rows under Symbol modifiers in the Select tab counting and selecting every unit in the symbol set instead of only those with a modifier.
+- Fixed long category names in the Select tab running into the unit count.
 
 ## September 2026
 
