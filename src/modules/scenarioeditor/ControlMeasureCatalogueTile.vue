@@ -27,6 +27,20 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ arm: []; hover: [name: string | null] }>();
 
+/**
+ * milsymbol draws Friend, Neutral, Unknown and Civilian point symbols in plain black,
+ * which vanishes on a dark sidebar. Follow the tile's text colour instead, as the
+ * line and area previews do; Hostile and Suspect keep their red.
+ */
+const SYMBOL_OPTIONS = {
+  iconColor: {
+    Civilian: "currentColor",
+    Friend: "currentColor",
+    Neutral: "currentColor",
+    Unknown: "currentColor",
+  },
+};
+
 const dimensions = computed(() => CONTROL_MEASURE_CELL_SIZES[props.cellSize]);
 const hasDescription = computed(
   () => props.descriptionsVisible && Boolean(props.option.description),
@@ -107,6 +121,7 @@ onBeforeUnmount(() => release());
         v-if="placement.type === 'symbol'"
         :sidc="placement.sidc"
         :size="Math.round(dimensions.previewHeight * 0.55)"
+        :options="SYMBOL_OPTIONS"
         class="flex max-h-full items-center"
       />
       <ControlMeasurePreview
