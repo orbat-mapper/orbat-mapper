@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added a Narrow mode to the Select tab. With the Add/Narrow switch on Narrow, clicking a category keeps only the selected units in it, so selecting Land unit and then narrowing to a side gives that side's land units.
 - Added a Zoom to button to the Select tab's footer, which fits the map to the selected units that have a location at the current scenario time.
 - Changes dragged in the Unit changes lanes now snap to the changes on nearby lanes, scenario events and the current time, with a guide line across the lanes and the changes snapped to highlighted. Hold Alt to snap to the 5-minute grid only. Scenario events are shown as lines across the lanes, with markers on the time axis.
-
+- Unit statuses can now have a colour, set in the scenario settings.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -54,6 +54,9 @@ All notable changes to this project will be documented in this file.
 - The unit details header shows the unit's status next to its short name, and units without a short name get an "Add short name" field.
 - The hide-on-map button has moved to the unit details toolbar. Locked units show a lock icon in the header that unlocks them, and multi-select gets a lock button in the toolbar.
 - The unit details toolbar has tooltips, including why a button is disabled, and the unit symbol shows that it can be clicked to change it.
+- Unit statuses and range ring groups in the scenario settings now use the same sortable grid as the other settings lists, with multi-select delete and inline editing.
+- Renamed the "Sensor groups" settings section to "Range ring groups".
+- Symbol fill colours in the scenario settings show a swatch next to the hex code, which stays visible for dark colours in dark mode.
 
 ### Fixed
 
@@ -68,6 +71,8 @@ All notable changes to this project will be documented in this file.
 - Fixed the Select tab's symbol categories using each unit's starting symbol, so units that later become damaged or destroyed were counted as present. They now use the symbol at the current scenario time.
 - Fixed the symbol set rows under Symbol modifiers in the Select tab counting and selecting every unit in the symbol set instead of only those with a modifier.
 - Fixed long category names in the Select tab running into the unit count.
+- Fixed the add equipment, personnel and supplies shortcuts not opening the add form in the scenario settings.
+- Fixed settings grids not refreshing after an inline edit, and row stripes stopping short of the action column.
 
 ## September 2026
 
