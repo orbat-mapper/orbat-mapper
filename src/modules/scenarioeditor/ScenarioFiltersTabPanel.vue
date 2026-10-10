@@ -26,13 +26,17 @@ import {
   IconMapMarkerStar,
   IconEye,
   IconEyeOff,
-  IconSelectInverse,
+  IconMinusCircleOutline,
+  IconMagnifyExpand as ZoomIcon,
 } from "@iconify-prerendered/vue-mdi";
 import IconButton from "@/components/IconButton.vue";
 import { Button } from "@/components/ui/button";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
 import { Badge } from "@/components/ui/badge";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { getFullUnitSidc } from "@/symbology/helpers.ts";
+import { useUnitActions } from "@/composables/scenarioActions";
+import { UnitActions } from "@/types/constants";
 
 const VISIBILITY_INITIAL_LOCATION_KEY = "visibility-initial-location";
 const VISIBILITY_CURRENT_LOCATION_KEY = "visibility-current-location";
@@ -64,8 +68,31 @@ const unitStatusTree = ref<NestedUnitStatItem[]>([]);
 const sidTree = ref<NestedUnitStatItem[]>([]);
 const visibilityTree = ref<NestedUnitStatItem[]>([]);
 const { selectedUnitIds } = useSelectedItems();
+const { onUnitAction } = useUnitActions();
 
 const excludedKeys = ref<Set<string>>(new Set());
+// Add: a click adds a category's units. Narrow: a click keeps only the selected
+// units in the category.
+type SelectMode = "add" | "narrow";
+const selectMode = ref<SelectMode>("add");
+const modeOptions: { value: SelectMode; label: string; title: string; help: string }[] = [
+  {
+    value: "add",
+    label: "Add",
+    title: "Clicking a category adds its units to the selection",
+    help: "Click a category to add or remove its units.",
+  },
+  {
+    value: "narrow",
+    label: "Narrow",
+    title: "Clicking a category keeps only the selected units in it",
+    help: "Click a category to keep only its selected units.",
+  },
+];
+// With nothing selected, narrowing starts from the category itself, as in Add.
+const narrowing = computed(
+  () => selectMode.value === "narrow" && selectedUnitIds.value.size > 0,
+);
 const expandedKeys = ref<string[]>([]);
 const flatStats = ref<Record<string, number>>({});
 
@@ -125,6 +152,16 @@ const selectedHiddenCount = computed(
 const selectedVisibleCount = computed(
   () => selectedUnitIds.value.size - selectedHiddenCount.value,
 );
+
+// Zoom can only fit units with a location at the current time.
+const canZoomToSelected = computed(() =>
+  [...selectedUnitIds.value].some((id) => !!state.unitMap[id]?._state?.location),
+);
+
+function zoomToSelected() {
+  const units = [...selectedUnitIds.value].map((id) => state.unitMap[id]).filter(Boolean);
+  onUnitAction(units, UnitActions.Zoom);
+}
 
 function setSelectedHidden(hidden: boolean) {
   unitActions.setUnitsHidden(selectedUnitIds.value, hidden);
@@ -599,10 +636,21 @@ function getSideGroupLabel(sideGroupId: string) {
   return state.sideGroupMap[sideGroupId]?.name || sideGroupId;
 }
 
+// Keeps only the selected units that belong to the category.
+function narrowByKey(key: string) {
+  selectedUnitIds.value.forEach((unitId) => {
+    const unit = state.unitMap[unitId];
+    if (!unit || !unitKeys(unit).includes(key)) selectedUnitIds.value.delete(unitId);
+  });
+}
+
 function onSelect(event: CustomEvent<{ value: { key: string } }>) {
   const key = event.detail.value.key as string;
 
-  if (selectedStats.value[key]) {
+  if (narrowing.value) {
+    // Narrowing to a category with no selected units would clear the selection.
+    if (selectedStats.value[key]) narrowByKey(key);
+  } else if (selectedStats.value[key]) {
     clearByKey(key);
   } else {
     selectByKey(key);
@@ -629,9 +677,7 @@ function toggleAllIcons() {
 </script>
 <template>
   <div class="flex min-h-full flex-col px-4">
-    <header
-      class="bg-sidebar sticky top-0 z-10 -mx-4 flex h-12 items-center justify-between px-4 py-2"
-    >
+    <header class="flex h-12 items-center justify-between py-2">
       <PanelHeading>Select by category</PanelHeading>
       <div class="flex items-center space-x-1">
         <IconButton
@@ -644,39 +690,87 @@ function toggleAllIcons() {
         <IconButton v-else title="Expand all sections" @click="expandAll()">
           <IconExpandAll class="h-5 w-5" />
         </IconButton>
-        <Button
-          v-if="excludedKeys.size"
-          variant="outline"
-          size="sm"
-          @click="excludedKeys.clear()"
-          >Clear excluded
-          <Badge variant="secondary">{{ excludedKeys.size }}</Badge></Button
-        >
       </div>
     </header>
-    <p class="text-muted-foreground pb-2 text-xs">
-      Click a category to add its units to the selection. Click it again to remove them.
-      Categories are based on the current scenario time.
-    </p>
-    <div class="flex flex-wrap items-center gap-1 pb-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        class="mr-auto"
-        title="Select all units that are not selected, skipping excluded categories"
-        @click="invertSelection()"
-        ><IconSelectInverse class="size-4" />Invert selection</Button
+    <!-- Both texts share one grid cell, so switching mode doesn't shift the layout. -->
+    <div class="text-muted-foreground grid pb-2 text-xs">
+      <p
+        v-for="option in modeOptions"
+        :key="option.value"
+        class="col-start-1 row-start-1"
+        :class="{ invisible: selectMode !== option.value }"
+        :aria-hidden="selectMode !== option.value"
       >
-      <Button
-        v-if="hiddenUnitIds.length"
-        variant="outline"
-        size="sm"
-        title="Show every hidden unit on the map"
-        @click="showAllHidden()"
-        ><IconEye class="size-4" />Show all hidden
-        <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
-      >
+        {{ option.help }} Uses the current scenario time.
+      </p>
     </div>
+    <div
+      class="bg-sidebar border-border sticky top-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2"
+    >
+      <!-- A segmented control for the mode, apart from the selection actions. -->
+      <ToggleGroup
+        type="single"
+        size="sm"
+        :spacing="0.5"
+        class="bg-muted rounded-lg p-0.5"
+        aria-label="What clicking a category does"
+        :model-value="selectMode"
+        @update:model-value="(value) => value && (selectMode = value as SelectMode)"
+      >
+        <ToggleGroupItem
+          v-for="option in modeOptions"
+          :key="option.value"
+          :value="option.value"
+          :title="option.title"
+          class="text-muted-foreground hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-7 px-3 hover:bg-transparent data-[state=on]:shadow-sm"
+          >{{ option.label }}</ToggleGroupItem
+        >
+      </ToggleGroup>
+      <div class="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          title="Select all units that are not selected, skipping excluded categories"
+          @click="invertSelection()"
+          >Invert</Button
+        >
+        <Button
+          variant="outline"
+          size="sm"
+          title="Clear the selection"
+          :disabled="!selectedUnitIds.size"
+          @click="selectedUnitIds.clear()"
+          >Clear</Button
+        >
+      </div>
+      <!-- Exclusions change what a click adds, so they stay in view while scrolling. -->
+      <p
+        v-if="excludedKeys.size"
+        class="text-muted-foreground flex basis-full items-center gap-1 text-xs"
+      >
+        <IconMinusCircleOutline class="size-4" />
+        {{ excludedKeys.size }}
+        {{ excludedKeys.size === 1 ? "category" : "categories" }} excluded ·
+        <button
+          type="button"
+          class="text-foreground underline-offset-2 hover:underline"
+          title="Stop excluding categories"
+          @click="excludedKeys.clear()"
+        >
+          Clear
+        </button>
+      </p>
+    </div>
+    <Button
+      v-if="hiddenUnitIds.length"
+      variant="outline"
+      size="sm"
+      class="my-2 self-start"
+      title="Show every hidden unit on the map"
+      @click="showAllHidden()"
+      ><IconEye class="size-4" />Show all hidden
+      <Badge variant="secondary">{{ hiddenUnitIds.length }}</Badge></Button
+    >
     <p v-if="!filterSections.length" class="text-muted-foreground py-4 text-sm">
       No categories to select from.
     </p>
@@ -705,6 +799,8 @@ function toggleAllIcons() {
         :selectedStats="selectedStats"
         :addableStats="addableStats"
         :excludedKeys="excludedKeys"
+        :narrowing="narrowing"
+        :selectedCount="selectedUnitIds.size"
         @select="onSelect"
         @exclude="excludedKeys.add($event)"
         @clearExclude="excludedKeys.delete($event)"
@@ -721,6 +817,18 @@ function toggleAllIcons() {
         >
       </div>
       <div class="ml-auto flex flex-wrap items-center justify-end gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          :title="
+            canZoomToSelected
+              ? 'Zoom the map to the selected units'
+              : 'No selected unit has a location at the current time'
+          "
+          :disabled="!canZoomToSelected"
+          @click="zoomToSelected()"
+          ><ZoomIcon class="size-4" />Zoom to</Button
+        >
         <Button
           v-if="selectedVisibleCount"
           variant="outline"
