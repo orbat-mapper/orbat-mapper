@@ -126,7 +126,7 @@ const throttledResizePointerMove = useThrottleFn(onResizePointerMove, 16, false)
 
 <template>
   <main
-    class="bg-background flex flex-col overflow-hidden"
+    class="bg-background flex flex-col overflow-hidden [--grid-surface:var(--color-background)]"
     :class="[showBottomPanel ? '' : 'h-12']"
     :style="panelStyle"
   >
