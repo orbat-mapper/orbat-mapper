@@ -1,141 +1,132 @@
 <script setup lang="ts">
+import { computed, h, triggerRef } from "vue";
+import type { ColumnDef } from "@tanstack/vue-table";
 import { activeScenarioKey } from "@/components/injects";
 import { injectStrict } from "@/utils";
-import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
+import ColorDot from "@/components/ColorDot.vue";
 import TableHeader from "@/components/TableHeader.vue";
-import type { NEquipmentData, NUnitStatus } from "@/types/internalModels";
-import DotsMenu from "@/components/DotsMenu.vue";
+import type { NUnitStatus } from "@/types/internalModels";
 import { useNotifications } from "@/composables/notifications";
-import InputGroup from "@/components/InputGroup.vue";
-import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
-import { Button } from "@/components/ui/button";
+import ToeGridHeader from "@/modules/scenarioeditor/ToeGridHeader.vue";
+import ToeGrid from "@/modules/grid/ToeGrid.vue";
+import InlineFormWrapper from "@/modules/scenarioeditor/InlineFormWrapper.vue";
+import SettingsItemForm, {
+  type SettingsItem,
+} from "@/modules/scenarioeditor/SettingsItemForm.vue";
+import { useUnitStatusTableStore } from "@/stores/tableStores";
+import { useToeEditableItems } from "@/composables/toeUtils";
 
 const scn = injectStrict(activeScenarioKey);
 const { send } = useNotifications();
-const store = useScenarioInfoPanelStore();
+
+const { editMode, editedId, showAddForm, rerender, selectedItems } =
+  useToeEditableItems<NUnitStatus>();
+const tableStore = useUnitStatusTableStore();
 
 const statuses = computed(() => {
+  // Track both so the grid refreshes after undo/redo and after an inline edit
+  void scn.store.state.settingsStateCounter;
+  void rerender.value;
   return Object.values(scn.store.state.unitStatusMap);
 });
 
-const itemActions = [
-  { label: "Edit", action: "edit" },
-  { label: "Delete", action: "delete" },
+const columns: ColumnDef<NUnitStatus>[] = [
+  {
+    id: "name",
+    header: "Name",
+    accessorKey: "name",
+    size: 200,
+    cell: ({ row }) =>
+      h("span", { class: "inline-flex items-center gap-2" }, [
+        h(ColorDot, { color: row.original.color }),
+        row.original.name,
+      ]),
+  },
+  { id: "description", header: "Description", accessorKey: "description" },
 ];
 
-const editedId = ref();
-const form = ref<Omit<NUnitStatus, "id">>({ name: "", description: "" });
-const addForm = ref<Omit<NUnitStatus, "id">>({ name: "", description: "" });
-
-function startEdit(data: NUnitStatus) {
-  editedId.value = data.id;
-  const { id, ...rest } = data;
-  form.value = rest;
+function namesExcept(id?: string) {
+  return statuses.value.filter((s) => s.id !== id).map((s) => s.name);
 }
 
-function onSubmit() {
-  scn.unitActions.updateUnitStatus(editedId.value, form.value!);
+function onSubmit(id: string, data: SettingsItem) {
+  scn.unitActions.updateUnitStatus(id, data);
   editedId.value = null;
+  triggerRef(rerender);
 }
 
-function cancelEdit() {
-  editedId.value = null;
+function onAddSubmit(data: SettingsItem) {
+  scn.unitActions.addUnitStatus(data);
+  showAddForm.value = false;
 }
 
-function onAddSubmit() {
-  // check if name exists
-  if (statuses.value.find((e) => e.name === addForm.value.name)) {
-    send({
-      type: "error",
-      message: "Unit status with this name already exists.",
-    });
-    return;
-  }
-  scn.unitActions.addUnitStatus({ ...addForm.value });
-  addForm.value = { name: "", description: "" };
-}
-
-function onItemAction(item: NEquipmentData, action: string) {
-  switch (action) {
-    case "edit":
-      startEdit(item);
-      break;
-    case "delete":
-      const success = scn.unitActions.deleteUnitStatus(item.id);
+function onDelete() {
+  const notDeletedItems: NUnitStatus[] = [];
+  scn.store.groupUpdate(() => {
+    selectedItems.value.forEach((e) => {
+      const success = scn.unitActions.deleteUnitStatus(e.id);
       if (!success) {
         send({
           type: "error",
-          message: "Cannot delete unit status that is in use.",
+          message: `${e.name}: Cannot delete a unit status that is in use.`,
         });
+        notDeletedItems.push(e);
       }
-      break;
-  }
+    });
+  });
+  triggerRef(editMode);
+  selectedItems.value = notDeletedItems;
 }
 </script>
 
 <template>
-  <div class="prose dark:prose-invert max-w-none">
-    <TableHeader description="A list of unit statues is available in this scenario.">
-      <Button variant="outline" @click="store.toggleAddEquipment()">
-        {{ store.showAddEquipment ? "Hide form" : "Add" }}
-      </Button>
-    </TableHeader>
-    <form
-      v-if="store.showAddEquipment"
-      @submit.prevent="onAddSubmit"
-      class="not-prose grid grid-cols-3 gap-2"
+  <div>
+    <TableHeader description="Unit statuses available in this scenario." />
+    <ToeGridHeader
+      v-model:editMode="editMode"
+      v-model:addMode="showAddForm"
+      editLabel="Edit statuses"
+      :selected-count="selectedItems.length"
+      :hideEdit="statuses.length === 0"
+      @delete="onDelete()"
+    />
+    <SettingsItemForm
+      v-if="showAddForm"
+      class="mb-4"
+      heading="Add new unit status"
+      submit-label="Add status"
+      with-color
+      with-description
+      :taken-names="namesExcept()"
+      @submit="onAddSubmit"
+      @cancel="showAddForm = false"
+    />
+    <ToeGrid
+      v-if="statuses.length"
+      :columns="columns"
+      :data="statuses"
+      v-model:editedId="editedId"
+      :select="editMode"
+      v-model:selected="selectedItems"
+      v-model:editMode="editMode"
+      :tableStore="tableStore"
     >
-      <InputGroup autofocus label="Name" required v-model="addForm.name" />
-      <div class="col-span-2 flex items-start gap-3">
-        <InputGroup class="" label="Description" v-model="addForm.description" />
-        <BaseButton type="submit" small primary class="self-center">+Add</BaseButton>
-      </div>
-    </form>
-    <form @submit.prevent="onSubmit">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="status in statuses" :key="status.id" @dblclick="startEdit(status)">
-            <template v-if="status.id === editedId">
-              <td>
-                <input
-                  type="text"
-                  @vue:mounted="({ el }: any) => el.focus()"
-                  v-model="form.name"
-                  class="h-full w-full text-sm"
-                  placeholder="Name"
-                />
-              </td>
-              <td class="" colspan="3">
-                <div class="flex">
-                  <input
-                    type="text"
-                    v-model="form.description"
-                    class="flex-auto text-sm"
-                    placeholder="Description"
-                  />
-                  <BaseButton small type="submit" secondary class="ml-2">Save</BaseButton>
-                  <BaseButton small class="ml-2" @click="cancelEdit()">Cancel</BaseButton>
-                </div>
-              </td>
-            </template>
-            <template v-else>
-              <td>{{ status.name }}</td>
-              <td>{{ status.description }}</td>
-              <td class="not-prose w-6">
-                <DotsMenu :items="itemActions" @action="onItemAction(status, $event)" />
-              </td>
-            </template>
-          </tr>
-        </tbody>
-      </table>
-    </form>
+      <template #inline-form="{ row }">
+        <InlineFormWrapper class="pr-6">
+          <SettingsItemForm
+            :item="row"
+            heading="Edit unit status"
+            with-color
+            with-description
+            :taken-names="namesExcept(row.id)"
+            @submit="onSubmit(row.id, $event)"
+            @cancel="editedId = null"
+          />
+        </InlineFormWrapper>
+      </template>
+    </ToeGrid>
+    <p v-else class="prose prose-sm dark:prose-invert">
+      Use the <kbd>Add</kbd> button to add unit statuses to this scenario.
+    </p>
   </div>
 </template>
