@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Added a Unit status category to the Select tab for selecting units by their status at the current scenario time. Each status is marked with its colour.
 - Added a Narrow mode to the Select tab. With the Add/Narrow switch on Narrow, clicking a category keeps only the selected units in it, so selecting Land unit and then narrowing to a side gives that side's land units.
 - Added a Zoom to button to the Select tab's footer, which fits the map to the selected units that have a location at the current scenario time.
+- Changes dragged in the Unit changes lanes now snap to the changes on nearby lanes, scenario events and the current time, with a guide line across the lanes and the changes snapped to highlighted. Hold Alt to snap to the 5-minute grid only. Scenario events are shown as lines across the lanes, with markers on the time axis.
 
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 

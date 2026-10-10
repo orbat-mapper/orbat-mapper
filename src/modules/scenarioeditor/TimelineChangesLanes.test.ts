@@ -5,6 +5,7 @@ import { mount, type VueWrapper } from "@vue/test-utils";
 import { nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { activeScenarioKey } from "@/components/injects";
+import type { NScenarioEvent } from "@/types/internalModels";
 import TimelineChangesLanes from "./TimelineChangesLanes.vue";
 import type { ChangeGroup, TimelineChange } from "./timelineChanges";
 
@@ -247,6 +248,58 @@ describe("TimelineChangesLanes", () => {
     pointer(mark, "pointerup", 402, true);
     expect(wrapper.emitted("retime")).toEqual([
       [[{ change: change(), t: T0 + 61 * 60000 }]],
+    ]);
+  });
+
+  it("snaps to a mark on another lane when near it, with a line across the lanes", async () => {
+    // 10:43:12 on another lane, 2 px from where the drag ends at 10:44:24.
+    const other = change({ id: "u2:s1", entityId: "u2", t: T0 + 43.2 * 60000 });
+    const wrapper = await mountLanes([change(), other]);
+    const mark = getMark(wrapper);
+    pointer(mark, "pointerdown", 300);
+    pointer(mark, "pointermove", 374);
+    await nextTick();
+    expect(wrapper.find("[data-snap-guide]").exists()).toBe(true);
+    // The mark snapped to is highlighted while dragging.
+    const target = wrapper.get('button[aria-label^="alpha"]');
+    expect(target.classes()).toContain("ring-fuchsia-500");
+    pointer(mark, "pointerup", 374);
+    await nextTick();
+    expect(target.classes()).not.toContain("ring-fuchsia-500");
+    expect(wrapper.emitted("retime")).toEqual([[[{ change: change(), t: other.t }]]]);
+  });
+
+  it("draws scenario events across the lanes and snaps to them", async () => {
+    const wrapper = await mountLanes([change()]);
+    await wrapper.setProps({
+      events: [
+        { id: "e1", title: "H-hour", startTime: T0 + 43.2 * 60000, _type: "scenario" },
+      ] as NScenarioEvent[],
+    });
+    const marker = wrapper.get('button[aria-label="Event: H-hour"]');
+    expect(wrapper.findAll(".border-amber-500\\/60")).toHaveLength(1);
+    const mark = getMark(wrapper);
+    pointer(mark, "pointerdown", 300);
+    pointer(mark, "pointermove", 374);
+    pointer(mark, "pointerup", 374);
+    expect(wrapper.emitted("retime")).toEqual([
+      [[{ change: change(), t: T0 + 43.2 * 60000 }]],
+    ]);
+    marker.element.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 }));
+    expect(wrapper.emitted("jumpEvent")?.[0][0]).toMatchObject({ id: "e1" });
+  });
+
+  it("snaps to the grid instead with Alt held", async () => {
+    const other = change({ id: "u2:s1", entityId: "u2", t: T0 + 43.2 * 60000 });
+    const wrapper = await mountLanes([change(), other]);
+    const mark = getMark(wrapper);
+    pointerAt(mark, "pointerdown", 300);
+    pointerAt(mark, "pointermove", 374, { altKey: true });
+    await nextTick();
+    expect(wrapper.find("[data-snap-guide]").exists()).toBe(false);
+    pointerAt(mark, "pointerup", 374, { altKey: true });
+    expect(wrapper.emitted("retime")).toEqual([
+      [[{ change: change(), t: T0 + 45 * 60000 }]],
     ]);
   });
 
