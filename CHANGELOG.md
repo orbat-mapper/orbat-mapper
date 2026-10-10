@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - The map context menu marks the clicked spot with a target.
 - Added an orbit mode to the map. "Orbit here" in the map context menu, or `o` for the middle of the screen, glides the camera to the spot and slowly circles it. While orbiting, clicking the map picks a new center, and zooming or tilting pauses the orbit until the gesture ends. Press `o` or Escape to stop.
 - Added a Unit status category to the Select tab for selecting units by their status at the current scenario time. Each status is marked with its colour.
+- Added a Narrow mode to the Select tab. With the Add/Narrow switch on Narrow, clicking a category keeps only the selected units in it, so selecting Land unit and then narrowing to a side gives that side's land units.
+- Added a Zoom to button to the Select tab's footer, which fits the map to the selected units that have a location at the current scenario time.
 
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
@@ -43,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Zooming to items, layers, units and search results now leaves a margin around the target and keeps it clear of the map header, toolbars, the floating details panel and the map controls.
 - Reworked the Select tab's categories. Status is now Symbol status, and headquarters, task force and dummy indicators have their own category. The categories are reordered, starting with Side, Main unit icon and Command level. Categories that can't narrow the selection, such as one where every unit shares the same value, are hidden, and rows with no units are dimmed. Map visibility rows have their own icons, and Main unit icon has an "Expand all" / "Collapse all" button.
 - Moved the Select tab between Layers and Settings.
+- The Select tab's mode switch, Invert and a new Clear button now stay at the top while scrolling, in place of the panel title. Excluded categories show as a line there with their own Clear, and the help text is shorter.
 
 ### Fixed
 
