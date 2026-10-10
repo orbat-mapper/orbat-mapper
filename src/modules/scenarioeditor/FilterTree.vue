@@ -36,6 +36,7 @@ function units(count: number) {
 // Says what clicking the row will do.
 function rowTitle(item: NestedUnitStatItem) {
   const { key, label } = item;
+  if (!props.stats[key]) return `${label}: no units`;
   const selected = props.selectedStats[key] || 0;
   if (selected) return `${label}: click to remove ${units(selected)} from the selection`;
   if (props.excludedKeys.has(key))
@@ -77,7 +78,7 @@ const badgeProps = {
         }
       "
       class="focus:ring-accent-foreground/50 data-selected:bg-accent/50 group even:bg-muted/60 dark:even:bg-muted/50 hover:bg-muted my-0.5 flex items-center rounded px-2 py-1 outline-hidden focus:ring-2"
-      :class="{ 'opacity-50': excludedKeys.has(item._id) }"
+      :class="{ 'opacity-50': excludedKeys.has(item._id) || !stats[item._id] }"
     >
       <template v-if="item.hasChildren">
         <button type="button" tabindex="-1" @click.stop="handleToggle" class="">
@@ -118,7 +119,7 @@ const badgeProps = {
             <IconClose class="text-foreground size-5" />
           </button>
           <button
-            v-else-if="!selectedStats[item._id]"
+            v-else-if="stats[item._id] && !selectedStats[item._id]"
             type="button"
             @click.stop="emit('exclude', item._id)"
             title="Exclude"
