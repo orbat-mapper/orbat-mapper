@@ -62,10 +62,16 @@ export class MapLibreMapAdapter implements MapAdapter {
   }
 
   animateView(options: AnimateOptions): void {
+    // Only a new center needs to land clear of the overlays. The offset moves the
+    // target off the map center without leaving camera padding behind.
+    const [top, right, bottom, left] = options.center
+      ? getMapOverlayPadding(this.mlMap.getContainer(), [0, 0, 0, 0])
+      : [0, 0, 0, 0];
     this.mlMap.flyTo({
       zoom: options.zoom,
       center: options.center as [number, number] | undefined,
       duration: options.duration,
+      offset: [(left - right) / 2, (top - bottom) / 2],
     });
   }
 

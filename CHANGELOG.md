@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Zooming or panning to a unit or location now centers it in the part of the map not covered by toolbars or an overlay details panel.
 - The Falklands example scenario now has range ring groups for its surface combatants, ship tracks that no longer cross land, and the sinking or damage of Ardent, Antelope, Coventry, Sir Galahad, Glamorgan and Santa Fe.
 - Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
 - Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
