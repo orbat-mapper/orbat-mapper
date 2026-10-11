@@ -378,7 +378,7 @@ function stringifyScenarioStore(store: NewScenarioStore) {
  * uses, so it compares equal to the baselines the editor keeps. Loading adds
  * missing fill colors to the color list, for example.
  */
-export function normalizeStoredScenario(scenario: Scenario): Scenario {
+function normalizeStoredScenario(scenario: Scenario): Scenario {
   return JSON.parse(stringifyScenarioStore(useNewScenarioStore(klona(scenario))));
 }
 
@@ -639,8 +639,14 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   ) {
     if (!applyScenarioObject(data)) return;
     const currentScenario = serializeToObject();
-    const nextLoadedBaseline = options.loadedBaseline ?? currentScenario;
-    const nextSavedBaseline = options.savedBaseline ?? nextLoadedBaseline;
+    // Baselines passed in may be stored files; keep them in the form the editor
+    // serializes, so drafts record keys that getNewerDraft can match.
+    const nextLoadedBaseline = options.loadedBaseline
+      ? normalizeStoredScenario(options.loadedBaseline)
+      : currentScenario;
+    const nextSavedBaseline = options.savedBaseline
+      ? normalizeStoredScenario(options.savedBaseline)
+      : nextLoadedBaseline;
     const baselineSavedRevision = allocateScenarioStateRevision();
     const baselinesMatch =
       getScenarioComparisonKey(nextLoadedBaseline) ===
