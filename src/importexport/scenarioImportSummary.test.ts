@@ -110,6 +110,7 @@ describe("readable import changes", () => {
     expect(summary({}, {}, "unchanged")).toEqual(["Already matches; no changes needed."]);
   });
 });
+
 describe("unchanged entry tally", () => {
   const change = (
     kind: ImportChange["kind"],

@@ -442,8 +442,7 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
           <CardTitle class="text-sm">{{ data.name }}</CardTitle>
           <div
             v-if="data.description"
-            data-slot="card-description"
-            class="prose prose-sm text-muted-foreground dark:prose-invert text-xs"
+            class="prose prose-sm text-muted-foreground dark:prose-invert max-w-none"
             v-html="hDescription"
           ></div>
         </CardHeader>
@@ -474,7 +473,11 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
               :for="`import-type-${value}`"
             >
               <Field orientation="horizontal">
-                <RadioGroupItem :id="`import-type-${value}`" :value="value" class="mt-1" />
+                <RadioGroupItem
+                  :id="`import-type-${value}`"
+                  :value="value"
+                  class="mt-1"
+                />
                 <FieldContent>
                   <FieldTitle>{{ label }}</FieldTitle>
                 </FieldContent>
