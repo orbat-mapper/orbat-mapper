@@ -26,6 +26,7 @@ import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import {
   describeImportChange,
+  describeUnchangedCounts,
   summarizeImportPlan,
 } from "@/importexport/scenarioImportSummary";
 import { walkSubUnits } from "@/stores/scenarioStore";
@@ -485,7 +486,7 @@ function apply() {
             </article>
             <details v-if="unchangedChanges.length">
               <summary>
-                Left unchanged ({{ unchangedChanges.length }} sides, groups and units)
+                Left unchanged ({{ describeUnchangedCounts(unchangedChanges) }})
               </summary>
               <ul class="list-inside list-disc">
                 <li v-for="change in unchangedChanges" :key="change.id">

@@ -619,6 +619,8 @@ if (firstOverlayLayerId) {
           variant="ghost"
           size="icon"
           @click="isOpen = !isOpen"
+          title="Settings"
+          aria-label="Settings"
           class="text-foreground/70"
         >
           <MenuIcon class="size-6" />

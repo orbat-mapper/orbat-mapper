@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeImportChange } from "./scenarioImportSummary";
+import { describeImportChange, describeUnchangedCounts } from "./scenarioImportSummary";
 import type { ImportChange } from "./scenarioImportPlan";
 const names = (id: string) =>
   ({ hq: "HQ", infantry: "Infantry", child: "Platoon" })[id] ?? id;
@@ -108,5 +108,28 @@ describe("readable import changes", () => {
       "Not included in this update; kept as it is.",
     ]);
     expect(summary({}, {}, "unchanged")).toEqual(["Already matches; no changes needed."]);
+  });
+});
+describe("unchanged entry tally", () => {
+  const change = (
+    kind: ImportChange["kind"],
+    effect: ImportChange["effect"] = "unchanged",
+  ): ImportChange => ({ id: kind, name: kind, kind, effect });
+  it("counts units first, then sides and groups, with singular and plural labels", () => {
+    expect(
+      describeUnchangedCounts([
+        change("side"),
+        change("group"),
+        change("group", "preserved"),
+        change("unit"),
+        change("unit", "preserved"),
+        change("unit", "changed"),
+      ]),
+    ).toBe("2 units, 1 side, 2 groups");
+  });
+  it("omits kinds with no unchanged entries", () => {
+    expect(describeUnchangedCounts([change("unit"), change("side", "added")])).toBe(
+      "1 unit",
+    );
   });
 });

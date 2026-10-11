@@ -16,6 +16,8 @@ interface SimpleModalProps {
   description?: string;
   class?: HTMLAttributes["class"];
   fixedHeight?: boolean;
+  /** Keep the title and description for assistive technology only. */
+  hideHeader?: boolean;
 }
 
 const props = defineProps<SimpleModalProps>();
@@ -38,7 +40,10 @@ onUnmounted(() => (uiStore.modalOpen = false));
       :is="fixedHeight ? DialogContent : DialogScrollContent"
       :class="cn('min-h-0 max-w-[calc(100%-1rem)] rounded sm:max-w-lg', props.class)"
     >
-      <DialogHeader v-if="dialogTitle || $slots.description">
+      <DialogHeader
+        v-if="dialogTitle || $slots.description"
+        :class="{ 'sr-only': hideHeader }"
+      >
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
         <DialogDescription v-if="dialogTitle || $slots.description">
           <slot name="description"> {{ description }}</slot>
