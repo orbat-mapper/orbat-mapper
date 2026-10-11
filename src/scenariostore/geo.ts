@@ -1,5 +1,5 @@
 import type { NewScenarioStore, ScenarioState } from "@/scenariostore/newScenarioStore";
-import { computed } from "vue";
+import { computed, toRaw } from "vue";
 import type { CurrentState } from "@/types/scenarioModels";
 import type {
   FeatureId,
@@ -86,6 +86,23 @@ function duplicateName(feature: NScenarioLayerItem, siblings: NScenarioLayerItem
   let counter = match ? Number(match[2]) + 1 : 2;
   while (siblingNames.has(`${baseName} (${counter})`)) counter++;
   return `${baseName} (${counter})`;
+}
+
+function renewStateEntryIds(item: NScenarioLayerItem) {
+  for (const entry of item.state ?? []) entry.id = nanoid();
+}
+
+/** Layers get "(copy)" rather than `duplicateName`'s "(2)", since numbered layers such
+ * as "Phase 2" are common and "Phase 1 (2)" would read as a phase. */
+function duplicateLayerName(sourceName: string, layerNames: Iterable<string>) {
+  const trimmedName = sourceName.trim() || "Untitled";
+  const baseName = trimmedName.match(/^(.*) \(copy(?: \d+)?\)$/)?.[1] ?? trimmedName;
+  const existingNames = new Set(layerNames);
+  let candidate = `${baseName} (copy)`;
+  for (let counter = 2; existingNames.has(candidate); counter++) {
+    candidate = `${baseName} (copy ${counter})`;
+  }
+  return candidate;
 }
 
 /** First position of a nested coordinate array, without walking the rest of it. */
@@ -414,26 +431,38 @@ export function useGeo(store: NewScenarioStore) {
     updateFeatureState(featureId);
   }
 
-  function addLayer(data: NScenarioLayer) {
-    const itemIds = data.items ?? [];
+  /**
+   * Add an overlay layer at the end of the stack, or at `index`. `items` are stored as
+   * given, in the same undo step, and become the layer's items.
+   */
+  function addLayer(
+    data: NScenarioLayer,
+    options: { index?: number; items?: NScenarioLayerItem[] } = {},
+  ) {
+    const { index, items } = options;
     const newLayer = klona({
       ...data,
-      items: itemIds,
+      items: items ? items.map((item) => item.id) : (data.items ?? []),
       _isNew: true,
     });
     if (!newLayer.id) newLayer.id = nanoid();
     newLayer._isNew = true;
     newLayer._isOpen = true;
+    for (const item of items ?? []) item._pid = newLayer.id;
     update(
       (s) => {
-        s.layerStack.push(newLayer.id);
+        if (index === undefined) s.layerStack.push(newLayer.id);
+        else s.layerStack.splice(index, 0, newLayer.id);
         s.layerStackMap[newLayer.id] = {
           ...newLayer,
           kind: "overlay",
         } as NScenarioOverlayLayer;
+        for (const item of items ?? []) s.layerItemMap[item.id] = item;
       },
       { label: "addLayer", value: newLayer.id },
     );
+    // The timeline histogram only redraws on this counter.
+    if (items?.length) store.state.featureStateCounter++;
     featureLayerEvent
       .trigger({ type: "addLayer", id: newLayer.id, data: newLayer })
       .then();
@@ -817,12 +846,47 @@ export function useGeo(store: NewScenarioStore) {
     if (!owner || owner.locked || feature.locked) return;
     const copy = klona(feature);
     copy.id = nanoid();
+    renewStateEntryIds(copy);
     copy.name = duplicateName(
       feature,
       owner.items.map((id) => state.layerItemMap[id]).filter((item) => !!item),
     );
     offsetDuplicate(copy, duplicateDelta(feature, mapAdapter));
     return addFeature(copy, feature._pid);
+  }
+
+  /**
+   * Copy an overlay layer and all its items into a new layer right after the source,
+   * as one undo step. The items keep their positions, unlike `duplicateFeature`.
+   * A locked source is allowed and gives an unlocked copy; visibility and the items'
+   * own locks are copied as they are.
+   */
+  function duplicateLayer(layerId: FeatureId) {
+    const source = getOverlayLayerFromMap(state.layerStackMap, layerId);
+    if (!source) return;
+    const { items: sourceItemIds, ...layerProperties } = toRaw(source);
+    const items = sourceItemIds
+      .map((id) => state.layerItemMap[id])
+      .filter((item) => !!item)
+      .map((item) => {
+        const copy = klona(toRaw(item));
+        copy.id = nanoid();
+        renewStateEntryIds(copy);
+        return copy;
+      });
+    return addLayer(
+      {
+        ...layerProperties,
+        id: nanoid(),
+        name: duplicateLayerName(
+          source.name,
+          Object.values(state.layerStackMap).map((layer) => layer.name),
+        ),
+        items: [],
+        locked: false,
+      },
+      { index: state.layerStack.indexOf(layerId) + 1, items },
+    )?.id;
   }
 
   function updateFeature(
@@ -1191,6 +1255,7 @@ export function useGeo(store: NewScenarioStore) {
     moveLayer,
     addFeature,
     duplicateFeature,
+    duplicateLayer,
     deleteFeature,
     updateFeature,
     updateLayerItem,

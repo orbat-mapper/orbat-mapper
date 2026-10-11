@@ -56,6 +56,7 @@ import { isRangeRingLayerId } from "@/composables/maplibreRangeRings";
 const undoActionLabels: ActionLabel[] = [
   "deleteLayer",
   "moveLayer",
+  "addLayer",
   "updateLayer",
   "batchLayer",
   "moveFeature",

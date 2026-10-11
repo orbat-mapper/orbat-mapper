@@ -3,6 +3,7 @@ import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
 import { useScenarioTime } from "@/scenariostore/time";
 import * as fileHandling from "@/importexport/fileHandling";
+import { RANGE_RINGS_STACK_LAYER_ID } from "@/types/scenarioStackLayers";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -117,6 +118,8 @@ describe("scenario geo item accessors", () => {
       type: "Point",
       coordinates: [11.24, 60.76],
     });
+    expect(first.state?.[0].id).not.toBe("state-1");
+    expect(second.state?.[0].id).not.toBe(first.state?.[0].id);
   });
 
   it("offsets duplicated control points and custom label positions", () => {
@@ -616,5 +619,168 @@ describe("scenario geo item accessors", () => {
     expect(byId["cm-1"].type).toBe("tacticalGraphic");
     expect(byId["cm-1"].name).toBe("Phase Line Blue");
     expect(byId["cm-1"]._pid).toBe("layer-1");
+  });
+});
+
+function createControlMeasureLayersScenario() {
+  return {
+    id: "scenario-1",
+    type: "ORBAT-mapper",
+    version: "3.4.0",
+    name: "Scenario",
+    startTime: 0,
+    sides: [],
+    events: [],
+    layerStack: [
+      {
+        id: "phase-1",
+        kind: "overlay",
+        specialization: "controlMeasure",
+        name: "Phase 1",
+        description: "Opening moves",
+        items: [
+          {
+            id: "cm-1",
+            kind: "tacticalGraphic",
+            name: "Phase Line Alpha",
+            graphicKind: "phase-line",
+            controlPoints: [
+              [10, 60],
+              [11, 61],
+            ],
+          },
+          {
+            id: "cm-2",
+            kind: "tacticalGraphic",
+            name: "Phase Line Bravo",
+            graphicKind: "phase-line",
+            controlPoints: [
+              [12, 62],
+              [13, 63],
+            ],
+          },
+        ],
+      },
+      {
+        id: "phase-2",
+        kind: "overlay",
+        specialization: "controlMeasure",
+        name: "Phase 2",
+        items: [],
+      },
+    ],
+    mapLayers: [],
+    settings: {
+      rangeRingGroups: [],
+      statuses: [],
+      supplyClasses: [],
+      supplyUoMs: [],
+      symbolFillColors: [],
+    },
+  } as any;
+}
+
+describe("duplicateLayer", () => {
+  it("inserts a renamed copy right after the source with copied items in place", () => {
+    const store = useNewScenarioStore(createControlMeasureLayersScenario());
+    const geo = useGeo(store);
+
+    const copyId = geo.duplicateLayer("phase-1")!;
+
+    expect(store.state.layerStack).toEqual([
+      RANGE_RINGS_STACK_LAYER_ID,
+      "phase-1",
+      copyId,
+      "phase-2",
+    ]);
+    const copy = geo.getLayerById(copyId) as any;
+    expect(copy.name).toBe("Phase 1 (copy)");
+    expect(copy.description).toBe("Opening moves");
+    expect(copy.specialization).toBe("controlMeasure");
+    expect(copy.items).toHaveLength(2);
+    expect(copy.items).not.toContain("cm-1");
+    expect(copy.items).not.toContain("cm-2");
+    const [first, second] = copy.items.map(
+      (id: string) => geo.getLayerItemById(id).layerItem as any,
+    );
+    expect(first.name).toBe("Phase Line Alpha");
+    expect(first._pid).toBe(copyId);
+    expect(first.controlPoints).toEqual([
+      [10, 60],
+      [11, 61],
+    ]);
+    expect(second.name).toBe("Phase Line Bravo");
+    expect(geo.getLayerById("phase-1")!.items).toEqual(["cm-1", "cm-2"]);
+  });
+
+  it("numbers repeated copies instead of stacking copy suffixes", () => {
+    const store = useNewScenarioStore(createControlMeasureLayersScenario());
+    const geo = useGeo(store);
+
+    const firstCopyId = geo.duplicateLayer("phase-1")!;
+    const secondCopyId = geo.duplicateLayer("phase-1")!;
+    const copyOfCopyId = geo.duplicateLayer(firstCopyId)!;
+
+    expect(geo.getLayerById(firstCopyId)!.name).toBe("Phase 1 (copy)");
+    expect(geo.getLayerById(secondCopyId)!.name).toBe("Phase 1 (copy 2)");
+    expect(geo.getLayerById(copyOfCopyId)!.name).toBe("Phase 1 (copy 3)");
+  });
+
+  it("duplicates a locked layer into an unlocked copy", () => {
+    const store = useNewScenarioStore(createControlMeasureLayersScenario());
+    const geo = useGeo(store);
+    geo.updateLayer("phase-1", { locked: true });
+
+    const copy = geo.getLayerById(geo.duplicateLayer("phase-1")!)!;
+
+    expect(copy.locked).toBeFalsy();
+    expect(copy.items).toHaveLength(2);
+    expect(geo.getLayerById("phase-1")!.locked).toBe(true);
+  });
+
+  it("undoes the copy and its items in one step", () => {
+    const store = useNewScenarioStore(createControlMeasureLayersScenario());
+    const geo = useGeo(store);
+    const stackBefore = [...store.state.layerStack];
+    const itemIdsBefore = Object.keys(store.state.layerItemMap).sort();
+
+    const copyId = geo.duplicateLayer("phase-1")!;
+    const copiedItemIds = [...geo.getLayerById(copyId)!.items];
+    store.undo();
+
+    expect(store.state.layerStack).toEqual(stackBefore);
+    expect(geo.getLayerById(copyId)).toBeUndefined();
+    expect(Object.keys(store.state.layerItemMap).sort()).toEqual(itemIdsBefore);
+
+    store.redo();
+
+    expect(geo.getLayerById(copyId)!.items).toEqual(copiedItemIds);
+    expect(geo.getLayerItemById(copiedItemIds[0]).layerItem!._pid).toBe(copyId);
+  });
+
+  it("gives copied state entries new ids", () => {
+    const scenario = createControlMeasureLayersScenario();
+    scenario.layerStack[0].items[0].state = [
+      {
+        id: "cm-1-state-1",
+        t: 100,
+        patch: {
+          controlPoints: [
+            [10, 60.5],
+            [11, 61.5],
+          ],
+        },
+      },
+    ];
+    const store = useNewScenarioStore(scenario);
+    const geo = useGeo(store);
+
+    const copyId = geo.duplicateLayer("phase-1")!;
+    const copy = geo.getLayerItemById(geo.getLayerById(copyId)!.items[0]).layerItem!;
+
+    expect(copy.state).toHaveLength(1);
+    expect(copy.state![0].id).not.toBe("cm-1-state-1");
+    expect(copy.state![0].t).toBe(100);
+    expect(geo.getLayerItemById("cm-1").layerItem!.state![0].id).toBe("cm-1-state-1");
   });
 });

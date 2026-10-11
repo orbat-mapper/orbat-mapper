@@ -28,7 +28,7 @@ category on every layer.
 **Locked layer**:
 A layer whose contents cannot be added, edited, duplicated, deleted, reordered, or
 moved. The layer itself can still be shown or hidden, renamed, time-bounded,
-reordered, unlocked, or deleted.
+reordered, unlocked, duplicated (into an unlocked copy), or deleted.
 
 ### Geometry
 

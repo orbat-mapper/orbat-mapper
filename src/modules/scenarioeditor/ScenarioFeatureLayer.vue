@@ -105,6 +105,7 @@ const defaultLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Edit", action: ScenarioLayerActions.Edit },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
+  { label: "Duplicate", action: ScenarioLayerActions.Duplicate },
   { label: "Copy as GeoJSON", action: ScenarioLayerActions.CopyAsGeoJson },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];

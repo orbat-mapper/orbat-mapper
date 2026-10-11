@@ -186,6 +186,7 @@ const layerMenuItems = computed<MenuItemData<ScenarioLayerAction>[]>(() => [
   { label: "Edit", action: ScenarioLayerActions.Edit },
   { label: "Move up", action: ScenarioLayerActions.MoveUp },
   { label: "Move down", action: ScenarioLayerActions.MoveDown },
+  { label: "Duplicate", action: ScenarioLayerActions.Duplicate },
   { label: "Copy as GeoJSON", action: ScenarioLayerActions.CopyAsGeoJson },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ]);
@@ -485,6 +486,10 @@ function onLayerAction(layer: NScenarioLayer, action: ScenarioLayerAction) {
       if (direction === "down") toIndex++;
       geo.moveLayer(layer.id, toIndex);
     }
+  }
+  if (action === ScenarioLayerActions.Duplicate) {
+    const newLayerId = geo.duplicateLayer(layer.id);
+    if (newLayerId) activeLayerId.value = newLayerId;
   }
   if (action === ScenarioLayerActions.CopyAsGeoJson) {
     const fullLayer = geo.getFullLayerItemsLayer(layer.id);
