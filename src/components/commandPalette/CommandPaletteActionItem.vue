@@ -42,8 +42,6 @@ const props = defineProps<{ item: ActionSearchResult }>();
       class="text-muted-foreground size-8"
     />
   </div>
-  <p
-    class="ml-3 flex-auto truncate"
-    v-html="item.highlight ? item.highlight : item.name"
-  />
+  <p v-if="item.highlight" class="ml-3 flex-auto truncate" v-html="item.highlight" />
+  <p v-else class="ml-3 flex-auto truncate">{{ item.name }}</p>
 </template>

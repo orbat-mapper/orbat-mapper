@@ -606,11 +606,16 @@ function buildDecoratedCanvas(
   return out;
 }
 
-/** Strip HTML markup from an attribution string, collapsing whitespace. */
+/**
+ * Strip HTML markup from an attribution string, collapsing whitespace.
+ *
+ * Attribution can come from an imported scenario file, so parse it with
+ * DOMParser: its document is inert (no image loads, no event handlers), unlike
+ * `innerHTML` on an element of the live document, which fires `<img onerror>`.
+ */
 function stripHtml(html: string): string {
-  const el = document.createElement("div");
-  el.innerHTML = html;
-  return (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return (doc.body.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
 /**

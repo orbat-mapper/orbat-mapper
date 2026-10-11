@@ -14,10 +14,8 @@ const props = defineProps<{ item: EventSearchResult }>();
   <div class="flex w-7 justify-center">
     <IconCalendarClock class="text-muted-foreground size-6" />
   </div>
-  <p
-    class="ml-3 flex-auto truncate"
-    v-html="item.highlight ? item.highlight : item.name"
-  />
+  <p v-if="item.highlight" class="ml-3 flex-auto truncate" v-html="item.highlight" />
+  <p v-else class="ml-3 flex-auto truncate">{{ item.name }}</p>
   <p class="shrink-0 text-xs font-medium">
     {{ formatDateString(item.startTime, timeZone).split("T")[0] }}
   </p>
