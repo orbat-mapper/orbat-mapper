@@ -130,6 +130,9 @@ function onCancel() {
   <NewSimpleModal
     v-model="open"
     fixed-height
+    dialog-title="Import data"
+    description="Load a file and choose what to import into the scenario."
+    hide-header
     @cancel="onCancel"
     class="grid h-[90vh] grid-rows-[auto_1fr] sm:max-w-xl md:max-w-4xl lg:max-w-[95vw]"
   >

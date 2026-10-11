@@ -31,19 +31,14 @@ import { useNotifications } from "@/composables/notifications";
 import { useImportStore } from "@/stores/importExportStore";
 import ScenarioImportContribution from "@/components/ScenarioImportContribution.vue";
 import { getSupplyClass, getUom } from "@/scenariostore/supplyManipulations";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FieldSelect from "@/components/FieldSelect.vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { FeatureId } from "@/types/scenarioGeoModels";
+import { renderMarkdown } from "@/composables/formatting";
 import {
   importScenarioOverlayLayers,
   previewScenarioOverlayReplacement,
@@ -120,6 +115,8 @@ function previewItemName(id: FeatureId, removed: boolean) {
 const importedState = computed(() => {
   return prepareScenario(klona(props.data));
 });
+
+const hDescription = computed(() => renderMarkdown(props.data.description || ""));
 
 const stats = computed(() => {
   return {
@@ -443,9 +440,12 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
       <Card>
         <CardHeader class="py-3">
           <CardTitle class="text-sm">{{ data.name }}</CardTitle>
-          <CardDescription v-if="data.description" class="text-xs">{{
-            data.description
-          }}</CardDescription>
+          <div
+            v-if="data.description"
+            data-slot="card-description"
+            class="prose prose-sm text-muted-foreground dark:prose-invert text-xs"
+            v-html="hDescription"
+          ></div>
         </CardHeader>
         <CardContent class="flex items-center justify-between gap-2 py-2">
           <span class="text-muted-foreground text-xs">
@@ -468,9 +468,13 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
           <FieldLabel>Import type</FieldLabel>
           <FieldDescription>Select the type of data to import.</FieldDescription>
           <RadioGroup v-model="importMode" class="mt-2 grid grid-cols-2 gap-2">
-            <FieldLabel v-for="{ value, label } in sources" :key="value">
+            <FieldLabel
+              v-for="{ value, label } in sources"
+              :key="value"
+              :for="`import-type-${value}`"
+            >
               <Field orientation="horizontal">
-                <RadioGroupItem :id="value" :value="value" class="mt-1" />
+                <RadioGroupItem :id="`import-type-${value}`" :value="value" class="mt-1" />
                 <FieldContent>
                   <FieldTitle>{{ label }}</FieldTitle>
                 </FieldContent>

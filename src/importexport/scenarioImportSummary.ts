@@ -106,6 +106,24 @@ export function describeImportChange(
   return messages;
 }
 
+/** Tally of entries left as they are, per kind, e.g. "258 units, 1 side". */
+export function describeUnchangedCounts(changes: ImportChange[]): string {
+  const kinds = [
+    ["unit", "units"],
+    ["side", "sides"],
+    ["group", "groups"],
+  ] as const;
+  return kinds
+    .map(([kind, plural]) => {
+      const n = changes.filter(
+        (c) => c.kind === kind && (c.effect === "unchanged" || c.effect === "preserved"),
+      ).length;
+      return n && `${n} ${n === 1 ? kind : plural}`;
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
 /** Headline for the whole plan: the verb describing the action and the unit tally. */
 export function summarizeImportPlan(
   changes: ImportChange[],
