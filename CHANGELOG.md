@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - Point control measures can be sized in pixels, keeping their size on screen, or in meters, scaling with the map. Switching keeps the symbol's current size on screen, and the Graphics tab sets the unit for new ones.
 - Added an optional Hellfire strike to orbit mode. Turn it on in the map settings or the command palette, then shift-click while orbiting, or use the map context menu, to fire a missile at a point. A setting decides what happens to the units hit, and each strike is one undo step.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
+- Added Duplicate to the layer menu. It copies a layer and all its map items into a new layer right after it, named "(copy)", with the items in the same places, as a single undo step. A locked layer can be duplicated, and the copy is unlocked.
 
 ### Changed
 

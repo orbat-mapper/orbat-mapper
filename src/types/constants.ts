@@ -111,6 +111,7 @@ export const ScenarioLayerActions = {
   MoveUp: "MoveUp",
   MoveDown: "MoveDown",
   SetActive: "SetActive",
+  Duplicate: "Duplicate",
   CopyAsGeoJson: "CopyAsGeoJson",
 } as const;
 

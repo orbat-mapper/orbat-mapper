@@ -329,6 +329,7 @@ describe("ScenarioLayersTabPanel control-measures section", () => {
       ScenarioLayerActions.Edit,
       ScenarioLayerActions.MoveUp,
       ScenarioLayerActions.MoveDown,
+      ScenarioLayerActions.Duplicate,
       ScenarioLayerActions.CopyAsGeoJson,
       ScenarioLayerActions.Delete,
     ]);
