@@ -228,11 +228,52 @@ describe("Scenario IO save model", () => {
     expect(deleteScenarioDraftMock).toHaveBeenCalledWith(scenario.id);
   });
 
+  it("offers a draft when the saved scenario uses a fill color missing from the color list", async () => {
+    const { createEmptyScenario, useScenarioIO } = await import("./io");
+    const { useNewScenarioStore } = await import("./newScenarioStore");
+    const savedScenario = createEmptyScenario({ id: "scenario-1" });
+    savedScenario.sides = [
+      {
+        id: "side-1",
+        name: "Blue",
+        standardIdentity: "3",
+        symbolOptions: { fillColor: "#123456" },
+        groups: [],
+      },
+    ];
+    savedScenario.settings!.symbolFillColors = [];
+
+    const storeRef = shallowRef(useNewScenarioStore(savedScenario));
+    const io = useScenarioIO(storeRef);
+    io.loadFromObject(savedScenario);
+    vi.advanceTimersByTime(5000);
+
+    storeRef.value.update((draft) => {
+      draft.info.name = "Unsaved edit";
+    });
+    await flushMicrotasks();
+    await io.flushDraft();
+    const [[, draftScenario, draftOptions]] = putScenarioDraftMock.mock.calls;
+    (getScenarioDraftMock as any).mockImplementation(async () => ({
+      scenarioId: savedScenario.id,
+      scenario: draftScenario,
+      ...draftOptions,
+    }));
+
+    await expect(
+      io.getNewerDraft(savedScenario.id, savedScenario),
+    ).resolves.toMatchObject({
+      scenario: expect.objectContaining({ name: "Unsaved edit" }),
+    });
+    expect(deleteScenarioDraftMock).not.toHaveBeenCalled();
+  });
+
   it("restores drafts tied to the current saved baseline without relying on timestamps", async () => {
     const { io, scenario } = await createIo();
     const { getScenarioComparisonKey } = await import("./io");
+    // Stored scenarios are serialized by the editor, like the saved baseline.
     const savedScenario: Scenario = {
-      ...scenario,
+      ...io.savedBaseline.value!,
       meta: {
         createdDate: scenario.meta!.createdDate,
         lastModifiedDate: "",
