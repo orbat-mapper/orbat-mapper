@@ -26,10 +26,8 @@ const props = defineProps<{ item: UnitSearchResult }>();
       <span class="block h-1.5 w-1.5 rounded-full bg-red-800" />
     </span>
   </div>
-  <p
-    class="ml-3 flex-auto truncate"
-    v-html="item.highlight ? item.highlight : item.name"
-  />
+  <p v-if="item.highlight" class="ml-3 flex-auto truncate" v-html="item.highlight" />
+  <p v-else class="ml-3 flex-auto truncate">{{ item.name }}</p>
   <p v-if="item.parent" class="flex text-xs opacity-80">
     <UnitSymbol
       v-if="item.parent.sidc"

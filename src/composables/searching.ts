@@ -40,19 +40,22 @@ export function useScenarioSearch(
           // Show the symbol projected for the current scenario time.
           parent.sidc = parent._state?.sidc ?? parent.sidc;
         }
+        const nameHighlight =
+          u[0] &&
+          fuzzysort.highlight({
+            ...u[0],
+            score: u.score,
+            target: htmlTagEscape(u[0].target),
+          });
         return {
           name: u.obj.name,
           sidc: u.obj._state?.sidc ?? u.obj.sidc,
           id: u.obj.id,
           index: i,
           parent,
-          highlight:
-            u[0] &&
-            fuzzysort.highlight({
-              ...u[0],
-              score: u.score,
-              target: htmlTagEscape(u[0].target),
-            }),
+          // Rendered with v-html. A short-name-only match has no name
+          // highlight, so fall back to the escaped name, never the raw one.
+          highlight: nameHighlight || htmlTagEscape(u.obj.name),
           score: u.score,
           category: "Units",
           symbolOptions: unitActions.getCombinedSymbolOptions(u.obj),

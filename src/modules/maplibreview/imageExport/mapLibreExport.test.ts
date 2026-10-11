@@ -181,6 +181,19 @@ describe("getMapAttributionText", () => {
     expect(getMapAttributionText(map)).toBe("OSM · Terrain");
   });
 
+  it("reduces hostile attribution markup to plain text", () => {
+    // Attribution can come from an imported scenario file. jsdom never fires
+    // <img onerror>, so this pins the text output; the parse must also be inert
+    // in a real browser.
+    const map = fakeMap({
+      sat: {
+        type: "raster",
+        attribution: '<img src=x onerror="alert(1)">Imagery <script>alert(2)</script>Co',
+      },
+    });
+    expect(getMapAttributionText(map)).toBe("Imagery alert(2)Co");
+  });
+
   it("returns an empty string when nothing declares attribution", () => {
     const map = fakeMap({ a: { type: "vector" } });
     expect(getMapAttributionText(map)).toBe("");

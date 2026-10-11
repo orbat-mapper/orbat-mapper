@@ -9,8 +9,6 @@ const props = defineProps<{ item: LayerFeatureSearchResult }>();
   <div class="flex w-7 justify-center">
     <component :is="getItemsIcon(item.type)" class="text-muted-foreground size-6" />
   </div>
-  <p
-    class="ml-3 flex-auto truncate"
-    v-html="item.highlight ? item.highlight : item.name"
-  />
+  <p v-if="item.highlight" class="ml-3 flex-auto truncate" v-html="item.highlight" />
+  <p v-else class="ml-3 flex-auto truncate">{{ item.name }}</p>
 </template>
