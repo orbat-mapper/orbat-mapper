@@ -1,6 +1,6 @@
 /**
  * Unit resources — the counted things a unit holds (equipment, personnel, supplies),
- * each drawn from a catalog. See CONTEXT.md › Unit resources.
+ * each drawn from a catalog. See GLOSSARY.md › Unit resources.
  *
  * The three kinds share one per-entry shape (`id`, `count`, optional `onHand`) and one
  * set of timeline semantics, so the apply and name↔id round-trip logic lives here once

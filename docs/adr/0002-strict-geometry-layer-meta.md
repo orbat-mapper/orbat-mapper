@@ -4,7 +4,7 @@
 
 ## Why
 
-`radius` is only meaningful for a Circle (which is stored as a Point geometry plus a radius — see CONTEXT.md) and `shape` only for a Polygon, but the previous flat interface let any kind carry either field, so radius-less circles and rectangle-marked points were representable. Encoding the constraint in the type makes those states unrepresentable and lets reads narrow on `geometryKind` instead of defensively null-checking.
+`radius` is only meaningful for a Circle (which is stored as a Point geometry plus a radius — see GLOSSARY.md) and `shape` only for a Polygon, but the previous flat interface let any kind carry either field, so radius-less circles and rectangle-marked points were representable. Encoding the constraint in the type makes those states unrepresentable and lets reads narrow on `geometryKind` instead of defensively null-checking.
 
 A strict union cannot describe data that is mid-load or partially patched, where the kind and its extra fields are not yet guaranteed to agree. `Partial<union>` does not solve this — `keyof` a union is the intersection of member keys, so it collapses to `{ geometryKind? }` and silently drops `radius`/`shape`. Hence a deliberate second, loose type for those boundaries.
 

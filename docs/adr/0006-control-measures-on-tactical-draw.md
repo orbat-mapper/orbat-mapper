@@ -265,7 +265,7 @@ alpha bump.
   throwaway to a permanent dev-only smoke surface over representative kinds — the
   named thing a library bump is checked against. (#642)
 - **Two things are called `MapAdapter`.** An unqualified "the adapter" is now ambiguous
-  in this codebase; see `CONTEXT.md`.
+  in this codebase; see `GLOSSARY.md`.
 - **`snap` in the draw toolbar means two things** — OpenLayers-style snapping for plain
   shapes, tactical-draw's `setSnappingOptions` for control measures — behind one
   button. `freehand` is hidden for control measures (meaningless — no library concept)
