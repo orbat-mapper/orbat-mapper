@@ -289,9 +289,15 @@ const columns: ColumnDef<ImportRow>[] = [
   {
     id: "exists",
     header: "Exists?",
-    accessorFn: (row) =>
-      row.id in store.state.unitMap || row.id in store.state.sideGroupMap ? "Yes" : "No",
     size: 90,
+    enableSorting: false,
+    // Read the live store in the cell: a cached accessor would go stale after an
+    // import or undo with the dialog kept open.
+    cell: ({ row }) =>
+      row.original.id in store.state.unitMap ||
+      row.original.id in store.state.sideGroupMap
+        ? "Yes"
+        : "No",
   },
   {
     id: "history",
