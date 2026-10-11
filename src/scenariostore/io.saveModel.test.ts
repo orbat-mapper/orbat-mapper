@@ -228,7 +228,7 @@ describe("Scenario IO save model", () => {
     expect(deleteScenarioDraftMock).toHaveBeenCalledWith(scenario.id);
   });
 
-  it("offers a draft when the saved scenario uses a fill color missing from the color list", async () => {
+  async function createIoWithUnlistedFillColor() {
     const { createEmptyScenario, useScenarioIO } = await import("./io");
     const { useNewScenarioStore } = await import("./newScenarioStore");
     const savedScenario = createEmptyScenario({ id: "scenario-1" });
@@ -247,23 +247,54 @@ describe("Scenario IO save model", () => {
     const io = useScenarioIO(storeRef);
     io.loadFromObject(savedScenario);
     vi.advanceTimersByTime(5000);
+    return { io, storeRef, savedScenario };
+  }
 
+  /** Edits the scenario, writes a draft and makes it the stored draft. */
+  async function editAndWriteDraft(
+    { io, storeRef }: Awaited<ReturnType<typeof createIoWithUnlistedFillColor>>,
+    name: string,
+  ) {
     storeRef.value.update((draft) => {
-      draft.info.name = "Unsaved edit";
+      draft.info.name = name;
     });
     await flushMicrotasks();
     await io.flushDraft();
-    const [[, draftScenario, draftOptions]] = putScenarioDraftMock.mock.calls;
-    (getScenarioDraftMock as any).mockImplementation(async () => ({
-      scenarioId: savedScenario.id,
-      scenario: draftScenario,
-      ...draftOptions,
-    }));
+    const [scenarioId, scenario, options] = putScenarioDraftMock.mock.lastCall!;
+    const draft = { scenarioId, scenario, ...options };
+    (getScenarioDraftMock as any).mockImplementation(async () => draft);
+    return draft;
+  }
+
+  it("offers a draft when the saved scenario uses a fill color missing from the color list", async () => {
+    const loaded = await createIoWithUnlistedFillColor();
+    const { io, savedScenario } = loaded;
+
+    await editAndWriteDraft(loaded, "Unsaved edit");
 
     await expect(
       io.getNewerDraft(savedScenario.id, savedScenario),
     ).resolves.toMatchObject({
       scenario: expect.objectContaining({ name: "Unsaved edit" }),
+    });
+    expect(deleteScenarioDraftMock).not.toHaveBeenCalled();
+  });
+
+  it("offers a draft written after restoring an earlier draft", async () => {
+    const loaded = await createIoWithUnlistedFillColor();
+    const { io, savedScenario } = loaded;
+    const firstDraft = await editAndWriteDraft(loaded, "First edit");
+    io.loadFromObject(firstDraft.scenario, {
+      loadedBaseline: savedScenario,
+      savedBaseline: savedScenario,
+    });
+
+    await editAndWriteDraft(loaded, "Edit after restore");
+
+    await expect(
+      io.getNewerDraft(savedScenario.id, savedScenario),
+    ).resolves.toMatchObject({
+      scenario: expect.objectContaining({ name: "Edit after restore" }),
     });
     expect(deleteScenarioDraftMock).not.toHaveBeenCalled();
   });
