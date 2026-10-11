@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 const props = defineProps<{ sideId: string }>();
 const emit = defineEmits(["close"]);
-const { store, unitActions } = injectStrict(activeScenarioKey);
+const { store, unitActions, settings } = injectStrict(activeScenarioKey);
 
 interface Form {
   name: string;
@@ -36,6 +36,8 @@ watch(
 
 const onFormSubmit = () => {
   unitActions.updateSide(props.sideId, { ...form.value } as SideUpdate);
+  const { fillColor } = form.value.symbolOptions;
+  if (fillColor) settings.addColorIfAbsent(fillColor);
   emit("close");
 };
 

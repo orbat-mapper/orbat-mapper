@@ -314,6 +314,74 @@ export function countInvalidTimestamps(data: unknown): number {
   return count;
 }
 
+function scenarioStoreToObject(store: NewScenarioStore): Scenario {
+  const { state } = store;
+  return {
+    id: state.id,
+    type: "ORBAT-mapper",
+    version: SCENARIO_FILE_VERSION,
+    meta: {
+      createdDate: state?.meta?.createdDate,
+      lastModifiedDate: new Date().toISOString(),
+    },
+    ...getScenarioInfo(state),
+    sides: getSides(state),
+    layerStack: getLayerStack(state),
+    events: getScenarioEvents(state),
+    equipment: getEquipment(state),
+    personnel: getPersonnel(state),
+    supplyCategories: getSupplyCategories(state),
+    settings: {
+      rangeRingGroups: getRangeRingGroups(state),
+      rangeRingVisibility: getRangeRingVisibility(state),
+      statuses: getUnitStatuses(state),
+      supplyClasses: getSupplyClasses(state),
+      supplyUoMs: getSupplyUoMs(state),
+      map: state.mapSettings,
+      symbolFillColors: getSymbolFillColors(state),
+      customSymbols: getCustomSymbols(state),
+      boundingBox: state.boundingBox ?? undefined,
+    },
+  };
+}
+
+function createStringifyReplacer(store: NewScenarioStore) {
+  const timeZone = resolveTimeZone(store.state.info.timeZone || "UTC");
+  return function stringifyReplacer(name: string, val: any) {
+    if (val === undefined) return undefined;
+    if (INTERNAL_NAMES.includes(name)) return undefined;
+    if (TIMESTAMP_NAMES.includes(name)) {
+      const local = dayjs(val).tz(timeZone);
+      // Historical local mean time offsets are not whole minutes (Santiago in
+      // 1879 was -4:42:45), and dayjs formats them as an unparseable "-04:42.75".
+      // An invalid date has a NaN offset and must not reach toISOString(), which throws.
+      const offset = local.utcOffset();
+      if (Number.isFinite(offset) && !Number.isInteger(offset)) {
+        return dayjs(val).toISOString();
+      }
+      return local.format();
+    }
+    return val;
+  };
+}
+
+function stringifyScenarioStore(store: NewScenarioStore) {
+  return JSON.stringify(
+    scenarioStoreToObject(store),
+    createStringifyReplacer(store),
+    "  ",
+  );
+}
+
+/**
+ * Passes a stored scenario through the same load and serialize path the editor
+ * uses, so it compares equal to the baselines the editor keeps. Loading adds
+ * missing fill colors to the color list, for example.
+ */
+export function normalizeStoredScenario(scenario: Scenario): Scenario {
+  return JSON.parse(stringifyScenarioStore(useNewScenarioStore(klona(scenario))));
+}
+
 export function getScenarioComparisonKey(scenario: Scenario) {
   return JSON.stringify(normalizeScenarioForComparison(scenario));
 }
@@ -366,61 +434,15 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
   }
 
   function toObject(): Scenario {
-    const { state } = store.value;
-    return {
-      id: state.id,
-      type: "ORBAT-mapper",
-      version: SCENARIO_FILE_VERSION,
-      meta: {
-        createdDate: state?.meta?.createdDate,
-        lastModifiedDate: new Date().toISOString(),
-      },
-      ...getScenarioInfo(state),
-      sides: getSides(state),
-      layerStack: getLayerStack(state),
-      events: getScenarioEvents(state),
-      equipment: getEquipment(state),
-      personnel: getPersonnel(state),
-      supplyCategories: getSupplyCategories(state),
-      settings: {
-        rangeRingGroups: getRangeRingGroups(state),
-        rangeRingVisibility: getRangeRingVisibility(state),
-        statuses: getUnitStatuses(state),
-        supplyClasses: getSupplyClasses(state),
-        supplyUoMs: getSupplyUoMs(state),
-        map: state.mapSettings,
-        symbolFillColors: getSymbolFillColors(state),
-        customSymbols: getCustomSymbols(state),
-        boundingBox: state.boundingBox ?? undefined,
-      },
-    };
+    return scenarioStoreToObject(store.value);
   }
 
   function stringifyScenario() {
-    return JSON.stringify(toObject(), stringifyReplacer, "  ");
+    return stringifyScenarioStore(store.value);
   }
 
   function stringifyObject(obj: any) {
-    return JSON.stringify(obj, stringifyReplacer, "  ");
-  }
-
-  function stringifyReplacer(name: string, val: any) {
-    if (val === undefined) return undefined;
-    if (INTERNAL_NAMES.includes(name)) return undefined;
-    if (TIMESTAMP_NAMES.includes(name)) {
-      const local = dayjs(val).tz(
-        resolveTimeZone(store.value.state.info.timeZone || "UTC"),
-      );
-      // Historical local mean time offsets are not whole minutes (Santiago in
-      // 1879 was -4:42:45), and dayjs formats them as an unparseable "-04:42.75".
-      // An invalid date has a NaN offset and must not reach toISOString(), which throws.
-      const offset = local.utcOffset();
-      if (Number.isFinite(offset) && !Number.isInteger(offset)) {
-        return dayjs(val).toISOString();
-      }
-      return local.format();
-    }
-    return val;
+    return JSON.stringify(obj, createStringifyReplacer(store.value), "  ");
   }
 
   function serializeToObject(): Scenario {
@@ -701,7 +723,11 @@ export function useScenarioIO(store: ShallowRef<NewScenarioStore>) {
     const draft = await getScenarioDraft(scenarioId);
     if (!draft) return null;
 
-    const savedComparison = getScenarioComparisonKey(savedScenario);
+    // Drafts record the key of the scenario as the editor loaded it, so compare
+    // against the stored file after the same load-time normalization.
+    const savedComparison = getScenarioComparisonKey(
+      normalizeStoredScenario(savedScenario),
+    );
     const draftComparison = getScenarioComparisonKey(draft.scenario);
     if (draftComparison === savedComparison) {
       await deleteScenarioDraft(scenarioId);

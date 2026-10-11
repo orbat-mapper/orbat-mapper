@@ -14,6 +14,7 @@ import { type UnitSymbolOptions } from "@/types/scenarioModels";
 const {
   store,
   unitActions,
+  settings,
   helpers: { getSideById },
 } = injectStrict(activeScenarioKey);
 const props = defineProps<{ sideGroupId: EntityId }>();
@@ -42,6 +43,8 @@ watch(
 
 const onFormSubmit = () => {
   unitActions.updateSideGroup(props.sideGroupId, { ...form.value });
+  const { fillColor } = form.value.symbolOptions;
+  if (fillColor) settings.addColorIfAbsent(fillColor);
   emit("close");
 };
 
