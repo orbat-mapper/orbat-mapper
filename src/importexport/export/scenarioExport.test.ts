@@ -1,5 +1,61 @@
-import { describe, it, expect } from "vitest";
-import { toCsv } from "./scenarioExport";
+import { describe, expect, it, vi } from "vitest";
+import { shallowRef } from "vue";
+import { toCsv, useScenarioExport } from "@/importexport/export/scenarioExport";
+import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
+import { useScenarioIO } from "@/scenariostore/io";
+import {
+  FIXTURE_T2,
+  loadControlMeasureScenarioFixture,
+} from "@/testdata/controlMeasureScenario";
+import type { TScenario } from "@/scenariostore";
+import "@/dayjs";
+
+vi.mock("@/stores/settingsStore", () => ({
+  useSymbolSettingsStore: () => ({ symbologyStandard: "2525d" }),
+}));
+
+vi.mock("@/importexport/export/kmlExport", () => ({
+  useKmlExport: () => ({
+    generateKml: vi.fn(),
+    downloadAsKML: vi.fn(),
+    downloadAsKMZ: vi.fn(),
+  }),
+}));
+
+function loadScenario() {
+  const source = loadControlMeasureScenarioFixture();
+  source.timeZone = "Europe/Oslo";
+  source.sides.push({
+    id: "blue",
+    name: "Blue",
+    standardIdentity: "3",
+    groups: [
+      {
+        id: "blue-group",
+        name: "Units",
+        subUnits: [
+          {
+            id: "blue-unit",
+            name: "1 BN",
+            sidc: "10031000001211000000",
+            subUnits: [],
+            state: [{ id: "blue-unit-s1", t: FIXTURE_T2, location: [10, 60] }],
+          },
+        ],
+      },
+    ],
+  });
+  const store = useNewScenarioStore(source);
+  const io = useScenarioIO(shallowRef(store));
+  const activeScenario = {
+    io,
+    store,
+    geo: { layerItemsLayers: { value: [] }, everyVisibleUnit: { value: [] } },
+    unitActions: {},
+    helpers: {},
+  } as unknown as TScenario;
+  return { io, exporter: useScenarioExport({ activeScenario }) };
+}
 
 describe("toCsv", () => {
   it("should return empty string for empty data", () => {
@@ -63,5 +119,31 @@ describe("toCsv", () => {
     const result = toCsv(data as any, ",");
     const lines = result.split("\n");
     expect(lines[1]).toBe(",");
+  });
+});
+
+describe("ORBAT Mapper export file format", () => {
+  const settings = {
+    sideGroups: ["blue-group"],
+    customColors: true,
+    fileName: "blue.json",
+  };
+
+  it("leaves out derived runtime fields", () => {
+    const { exporter } = loadScenario();
+    const exported = exporter.generateOrbatMapper(settings);
+    expect(exported).toContain('"blue-unit"');
+    expect(exported).not.toMatch(/"_\w+":/);
+  });
+
+  it("writes timestamps in the scenario's time zone, like Download scenario", () => {
+    const { io, exporter } = loadScenario();
+    const exported = JSON.parse(exporter.generateOrbatMapper(settings));
+    const downloaded = JSON.parse(io.stringifyScenario());
+
+    const unit = exported.sides[0].groups[0].subUnits[0];
+    expect(unit.state[0].t).toBe("2025-06-01T14:00:00+02:00");
+    expect(exported.startTime).toBe("2025-06-01T02:00:00+02:00");
+    expect(exported.layerStack).toEqual(downloaded.layerStack);
   });
 });
