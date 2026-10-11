@@ -21,9 +21,9 @@ const {
   store: { state },
 } = injectStrict(activeScenarioKey);
 
-// Existing persisted export settings predate layer selection. Start those users with
-// every layer selected, preserving the export behavior they had before this option.
-if (form.value.layerIds === undefined) form.value.layerIds = [...state.layerStack];
+// Layers are opt-in so a partial export never sends a layer the user did not choose,
+// such as another team's plans. "Select all layers" keeps a full export to one click.
+if (form.value.layerIds === undefined) form.value.layerIds = [];
 
 if (form.value.emptySideIds === undefined) form.value.emptySideIds = [];
 
@@ -37,6 +37,17 @@ const layers = computed(() => {
     .map((id) => state.layerStackMap[id])
     .filter((layer) => layer && layer.kind !== "rangeRings");
 });
+
+const allLayersSelected = computed(
+  () =>
+    layers.value.length > 0 &&
+    layers.value.every((layer) => form.value.layerIds?.includes(layer.id)),
+);
+function toggleAllLayers() {
+  form.value.layerIds = allLayersSelected.value
+    ? []
+    : layers.value.map((layer) => layer.id);
+}
 
 const automaticScenarioName = ref(
   !form.value.scenarioName || form.value.scenarioName === state.info.name,
@@ -261,9 +272,12 @@ function toggleSide(sideId: string) {
           v-model="form.layerIds"
         />
       </div>
-      <p v-if="!layers.length" class="text-muted-foreground text-sm">
-        This scenario has no layers.
-      </p>
+      <div v-if="layers.length" class="mt-3">
+        <Button type="button" variant="ghost" size="sm" @click="toggleAllLayers">{{
+          allLayersSelected ? "Clear layers" : "Select all layers"
+        }}</Button>
+      </div>
+      <p v-else class="text-muted-foreground text-sm">This scenario has no layers.</p>
     </InputGroupTemplate>
     <InputGroup
       label="Scenario name"

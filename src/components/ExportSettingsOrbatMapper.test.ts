@@ -220,11 +220,11 @@ describe("ExportSettingsOrbatMapper", () => {
     expect(wrapper.find('[role="status"]').text()).toContain("no longer exist");
   });
 
-  it("selects every layer for settings saved before layer selection existed", () => {
+  it("starts with no layers selected when no layer selection is saved", () => {
     const settings = form();
     const wrapper = mountSettings(settings);
 
-    expect(settings.layerIds).toEqual(["features", "control-measures"]);
+    expect(settings.layerIds).toEqual([]);
     expect(
       wrapper
         .findAllComponents(InputCheckboxStub)
@@ -236,6 +236,25 @@ describe("ExportSettingsOrbatMapper", () => {
       ["features", undefined],
       ["control-measures", "Control measures"],
     ]);
+  });
+
+  it("selects and clears every layer with one click", async () => {
+    const settings = form();
+    const wrapper = mountSettings(settings);
+    const button = (text: string) =>
+      wrapper.findAll("button").find((b) => b.text() === text);
+
+    await button("Select all layers")!.trigger("click");
+    expect(settings.layerIds).toEqual(["features", "control-measures"]);
+    await button("Preview recipient data")!.trigger("click");
+    const preview = wrapper.find('[aria-label="Recipient preview"]');
+    expect(preview.text()).toContain("Features (overlay)");
+    expect(preview.text()).toContain("Control measures (overlay)");
+
+    expect(button("Select all layers")).toBeUndefined();
+    await button("Clear layers")!.trigger("click");
+    expect(settings.layerIds).toEqual([]);
+    expect(preview.text()).toContain("No layers included.");
   });
 
   it("preserves an explicitly empty layer selection", () => {
