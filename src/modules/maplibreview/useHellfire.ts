@@ -8,6 +8,11 @@ import {
 import { setStatus } from "@/symbology/helpers";
 import type { NUnit } from "@/types/internalModels";
 import { type UnitAction, UnitActions } from "@/types/constants";
+import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
+import type { HellfireTargets } from "@/lib/hellfire";
+
+/** Unit symbols go up with the blast. */
+const UNIT_TARGETS: HellfireTargets = { layers: isUnitLayerId };
 
 const IMPACT_LABELS: Record<HellfireImpactAction, string> = {
   none: "Nothing (just visual)",
@@ -91,8 +96,12 @@ export function useHellfire(
   function launch(target: { lng: number; lat: number }) {
     const map = getMap();
     if (!map || !isOrbiting() || !mapSettings.hellfireEnabled) return;
-    void import("@/modules/maplibreview/hellfire").then(({ launchHellfire }) =>
-      launchHellfire(map, target, { onUnitsHit, shake: mapSettings.hellfireShake }),
+    void import("@/lib/hellfire").then(({ launchHellfire }) =>
+      launchHellfire(map, target, {
+        targets: UNIT_TARGETS,
+        onHit: onUnitsHit,
+        shake: mapSettings.hellfireShake,
+      }),
     );
   }
 
