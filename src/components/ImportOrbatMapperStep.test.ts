@@ -2,6 +2,7 @@
 import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
+import { FlexRender } from "@tanstack/vue-table";
 import ImportOrbatMapperStep from "./ImportOrbatMapperStep.vue";
 import FieldSelect from "./FieldSelect.vue";
 import { RadioGroup } from "@/components/ui/radio-group";
@@ -11,7 +12,6 @@ import { useGeo } from "@/scenariostore/geo";
 import { useScenarioTime } from "@/scenariostore/time";
 import { useScenarioSettings } from "@/scenariostore/settingsManipulations";
 import DataGrid from "@/modules/grid/DataGrid.vue";
-import { FlexRender } from "@tanstack/vue-table";
 import { loadControlMeasureScenarioFixture } from "@/testdata/controlMeasureScenario";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import "@/dayjs";
@@ -66,7 +66,7 @@ function incomingFile() {
   return data;
 }
 
-async function setup(data = incomingFile(), mode = "layers") {
+async function setup(data = incomingFile(), mode: "layers" | "customSymbols" = "layers") {
   const store = useNewScenarioStore(master());
   const geo = useGeo(store);
   const wrapper = mount(ImportOrbatMapperStep, {
