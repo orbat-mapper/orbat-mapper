@@ -77,7 +77,7 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   /** Explicitly selected sides that have no groups. */
   emptySideIds?: EntityId[];
   /**
-   * The export form starts an undefined selection with no layers. Called directly,
+   * The export form resets this to no layers each time it opens. Called directly,
    * buildRecipientScenario still treats undefined as every layer.
    */
   layerIds?: FeatureId[];

@@ -72,6 +72,7 @@ function mountSettings(form: OrbatMapperExportSettings, scenarioId = "scenario-a
 function form(layerIds?: string[]): OrbatMapperExportSettings {
   return reactive({
     sideGroups: [],
+    // Saved layers are discarded on mount; tests select layers after mounting.
     layerIds,
     customColors: true,
     fileName: "scenario.json",
@@ -82,8 +83,10 @@ describe("ExportSettingsOrbatMapper", () => {
   beforeEach(() => localStorage.clear());
 
   it("updates suggested names until each field is edited", async () => {
-    const settings = form(["features"]);
+    const settings = form();
     const wrapper = mountSettings(settings);
+    settings.layerIds = ["features"];
+    await wrapper.vm.$nextTick();
     expect(settings.scenarioName).toBe("Source scenario — Layers");
     expect(settings.fileName).toBe("source-scenario-layers.json");
     const input = (label: string) =>
@@ -115,7 +118,7 @@ describe("ExportSettingsOrbatMapper", () => {
         },
       ]),
     );
-    const settings = form([]);
+    const settings = form();
     const wrapper = mountSettings(settings);
     await wrapper.find("select").setValue("blue");
     settings.emptySideIds = ["empty"];
@@ -125,7 +128,7 @@ describe("ExportSettingsOrbatMapper", () => {
   });
 
   it("selects an empty side, previews it, and restores it from a preset", async () => {
-    const settings = form([]);
+    const settings = form();
     const wrapper = mountSettings(settings);
     const checkbox = wrapper
       .findAllComponents(InputCheckboxStub)
@@ -146,7 +149,7 @@ describe("ExportSettingsOrbatMapper", () => {
     await wrapper.vm.$nextTick();
     await button("Save as new preset").trigger("click");
     wrapper.unmount();
-    const restored = form([]);
+    const restored = form();
     const reopened = mountSettings(restored);
     await reopened
       .find("select")
@@ -161,8 +164,9 @@ describe("ExportSettingsOrbatMapper", () => {
   });
 
   it("saves explicit selections and reloads them only for the same scenario", async () => {
-    const settings = form(["features"]);
+    const settings = form();
     const wrapper = mountSettings(settings);
+    settings.layerIds = ["features"];
     wrapper
       .findComponent({ name: "InputGroup" })
       .vm.$emit("update:modelValue", "Blue contacts");
@@ -173,12 +177,12 @@ describe("ExportSettingsOrbatMapper", () => {
     expect(wrapper.findAll("option").map((o) => o.text())).toContain("Blue contacts");
     wrapper.unmount();
 
-    const reopened = mountSettings(form([]));
+    const reopened = mountSettings(form());
     const id = reopened.findAll("option")[1]!.attributes("value");
     await reopened.find("select").setValue(id);
     expect(reopened.props("modelValue").layerIds).toEqual(["features"]);
     // The other existing layer remains excluded, as will any newly added layer.
-    expect(mountSettings(form([]), "scenario-b").findAll("option")).toHaveLength(1);
+    expect(mountSettings(form(), "scenario-b").findAll("option")).toHaveLength(1);
     await reopened
       .findAll("button")
       .find((b) => b.text() === "Delete preset")!
@@ -188,7 +192,9 @@ describe("ExportSettingsOrbatMapper", () => {
   });
 
   it("shows selected content and retained scenario information in the preview", async () => {
-    const wrapper = mountSettings(form(["features"]));
+    const settings = form();
+    const wrapper = mountSettings(settings);
+    settings.layerIds = ["features"];
     await wrapper
       .findAll("button")
       .find((b) => b.text() === "Preview recipient data")!
@@ -257,8 +263,8 @@ describe("ExportSettingsOrbatMapper", () => {
     expect(preview.text()).toContain("No layers included.");
   });
 
-  it("preserves an explicitly empty layer selection", () => {
-    const settings = form([]);
+  it("does not carry layers over from a previous export", () => {
+    const settings = form(["features", "control-measures"]);
     mountSettings(settings);
 
     expect(settings.layerIds).toEqual([]);
