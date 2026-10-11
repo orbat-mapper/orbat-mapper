@@ -19,10 +19,13 @@ To start the import, select _Import data_ from the _File_ menu.
 ![Import menu](images/import-menu.png)
 
 The _Import data_ dialog opens. You see it below. As an alternative, drag a supported file and drop it on the map to
-start the import. Select the file for the import and click _Load_. Usually ORBAT Mapper finds the correct import format
-automatically. If it does not, select the correct format from the _Select import format_ dropdown list.
+start the import.
 
-![An image](images/import.png)
+Select where the data comes from: a local file, a URL, a scenario that the browser keeps, or text that you paste. Then
+select the file or give the data. Usually ORBAT Mapper finds the correct import format automatically and goes to the next
+step. If it does not, select the correct format in the _Override format_ dropdown list and click _Load_.
+
+![Import data dialog](images/import.png)
 
 ## ORBAT Mapper scenarios
 
