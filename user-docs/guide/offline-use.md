@@ -6,11 +6,11 @@ basemap from the internet.
 
 There are three ways to do this. Each way removes one more part of the infrastructure.
 
-| Level                         | The application comes from   | The basemap comes from         |
-| ----------------------------- | ---------------------------- | ------------------------------ |
-| **Level 1** — Self-hosted     | A web server on your network | A tile server on your network  |
-| **Level 2** — Local map file  | A web server                 | A basemap archive on your disk |
-| **Level 3** — Standalone file | A file on your disk          | A basemap archive on your disk |
+| Level                        | The application comes from   | The basemap comes from         |
+| ---------------------------- | ---------------------------- | ------------------------------ |
+| **Level 1**: Self-hosted     | A web server on your network | A tile server on your network  |
+| **Level 2**: Local map file  | A web server                 | A basemap archive on your disk |
+| **Level 3**: Standalone file | A file on your disk          | A basemap archive on your disk |
 
 ::: warning The numbers do not measure the internet connection that you need
 The numbers show how much infrastructure each level removes. A Level 2 deployment on a public web site still needs the
@@ -24,7 +24,7 @@ The place name search sends requests to [Photon](https://photon.komoot.io/). Thi
 replacement that operates offline. The search does not operate without an internet connection at any level.
 :::
 
-## Level 1 — Self-hosted
+## Level 1: Self-hosted
 
 At Level 1 you supply the application from your own web server, and the basemap from your own tile server. This is the
 best option for an isolated network with more than one user.
@@ -120,11 +120,11 @@ Two conditions apply to a tile server on a different machine:
 
 ### Add a map server without the configuration file
 
-`maplibreConfig.json` is a file on the web server. If you cannot change that file — or if you use the standalone file,
-which cannot read it — you can give ORBAT Mapper the address of a map server in the application:
+`maplibreConfig.json` is a file on the web server. If you cannot change that file (or if you use the standalone file,
+which cannot read it), you can give ORBAT Mapper the address of a map server in the application:
 
-1. Open the **Layers** panel and select **Add map server…**. You can also do a right click on the map, then select _Map
-   base layer_ > _Add map server…_.
+1. Open the **Settings** menu (hamburger menu) in the navigation bar. Go to the **Map layers** tab and select **Add map
+   server…**. You can also do a right click on the map, then select _Map base layer_ > _Add map server…_.
 2. Type the address. Then select **Add**.
 
 ORBAT Mapper accepts three types of address, and it identifies the type from the address:
@@ -138,10 +138,10 @@ ORBAT Mapper accepts three types of address, and it identifies the type from the
 The address must start with `http://` or `https://`. For a file on your disk, use _Open PMTiles archive…_ instead.
 
 ORBAT Mapper keeps the address in the browser, therefore the basemap is available again after a reload. The two
-conditions above also apply to this map server. To remove the basemap, select the remove control in its row in the
-**Layers** panel.
+conditions above also apply to this map server. To remove the basemap, select the remove control in its row on the
+**Map layers** tab.
 
-## Level 2 — Local map file
+## Level 2: Local map file
 
 At Level 2 you get the application from a web server, but you read the basemap from a **basemap archive**. A basemap
 archive is one file on your disk that holds a full basemap. You select the file, and ORBAT Mapper reads only the parts
@@ -192,7 +192,8 @@ the file has no effect.
 There are three ways to open an archive:
 
 - Do a right click on the map. Select _Map base layer_, then _Open PMTiles archive…_ at the bottom of the list.
-- Open the _Layers_ panel. Use the button in the _Base layers_ section.
+- Open the _Settings_ menu in the navigation bar, then the _Map layers_ tab. Use the button in the _Base layers_
+  section.
 - Drag the file and drop it on the map.
 
 You can drop basemap archives and scenario files together. ORBAT Mapper sends the basemap archives to the map, and the
@@ -209,7 +210,8 @@ A vector archive holds tiles only. It does not hold a style. Therefore, ORBAT Ma
 There are two ways to change the flavour:
 
 - Do a right click on the map. Select _Map flavour_.
-- Open the _Layers_ panel. The flavour select is in the _Base layers_ section, near the opacity control.
+- Open the _Settings_ menu in the navigation bar, then the _Map layers_ tab. The flavour select is in the _Base layers_
+  section, near the opacity control.
 
 The two controls show only when the active base layer is a vector archive. A raster archive does not need a flavour,
 because it holds finished images.
@@ -249,8 +251,6 @@ disk. Some browsers keep this reference after a reload, and some do not:
 - **The labels are different.** ORBAT Mapper does not use fonts from a server for a vector archive. The browser makes
   the labels from the fonts of your operating system. Therefore, the labels are not the same as the labels on an online
   map.
-- **Right-to-left text is not correct.** ORBAT Mapper does not install the MapLibre RTL text plugin. Arabic and Hebrew
-  labels have the incorrect shape.
 
 ### Add an archive to the configuration
 
@@ -288,7 +288,7 @@ because it must read the archive at start. To use an archive from your disk, sel
 
 ### Remove a basemap archive
 
-Each basemap archive in the _Base layers_ section of the _Layers_ panel has a remove control. It erases the reference to
+Each basemap archive in the _Base layers_ section of the _Map layers_ tab has a remove control. It erases the reference to
 the file and erases the archive from the list of base layers. If the archive was the active base layer, a different base
 layer becomes active.
 
@@ -368,7 +368,7 @@ At Level 1 you can put the elevation archive on your web server. Select **Add ma
 archive, and select **Elevation archive**. The checkbox shows only for an address that ends with `.pmtiles`. ORBAT Mapper
 keeps the address in the browser and opens the archive again after a reload.
 
-## Level 3 — Standalone file
+## Level 3: Standalone file
 
 At Level 3 there is no web server. The application is one HTML file on your disk. You open it with your browser, and you
 select a basemap archive as at Level 2.

@@ -6,7 +6,7 @@ If the standard military symbols are not sufficient, you can make custom unit sy
 
 ## Add custom symbols
 
-To make a custom unit symbol, go to _Settings -> Custom unit symbols_:
+To make a custom unit symbol, open the **Settings** tab in the sidebar. Then go to the _Custom unit symbols_ section:
 
 ![Custom symbols settings](images/custom-symbols-panel.png)
 
