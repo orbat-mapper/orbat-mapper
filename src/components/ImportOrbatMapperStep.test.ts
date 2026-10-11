@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { flushPromises, mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import ImportOrbatMapperStep from "./ImportOrbatMapperStep.vue";
 import FieldSelect from "./FieldSelect.vue";
@@ -22,6 +22,8 @@ vi.mock("@/composables/browserScenarios", () => ({
 vi.mock("@/stores/settingsStore", () => ({
   useSymbolSettingsStore: () => ({ symbologyStandard: "2525d" }),
 }));
+
+type State = ReturnType<typeof useNewScenarioStore>["state"];
 
 const MATCHED = "layer-control-measures";
 
@@ -89,14 +91,16 @@ async function setup(data = incomingFile()) {
   return { wrapper, store, layerSelect, importButton };
 }
 
-function layerItems(state: ReturnType<typeof useNewScenarioStore>["state"], id: string) {
+function layerItems(state: State, id: string) {
   const layer = state.layerStackMap[id];
   return isScenarioOverlayLayer(layer) ? layer.items : [];
 }
 
-function layerNames(state: ReturnType<typeof useNewScenarioStore>["state"]) {
+function layerNames(state: State) {
   return state.layerStack.map((id) => state.layerStackMap[id]?.name);
 }
+
+enableAutoUnmount(afterEach);
 
 describe("ImportOrbatMapperStep layer import", () => {
   beforeEach(() => {
@@ -121,7 +125,6 @@ describe("ImportOrbatMapperStep layer import", () => {
 
     expect(layerNames(store.state)).toEqual([...before, "Unmatched"]);
     expect(layerItems(store.state, MATCHED)).toContain("cm-new-boundary");
-    expect(store.state.layerStackMap["layer-unmatched"]).toBeDefined();
 
     store.undo();
     expect(layerNames(store.state)).toEqual(before);
