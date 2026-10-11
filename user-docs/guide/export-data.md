@@ -19,8 +19,9 @@ To start the export, select _Export scenario_ from the _File_ menu.
 
 Choose **ORBAT Mapper** to export selected side groups and layers as a scenario file.
 For a side without groups, select **Include side** to include it in the file.
-No layers are selected at first, so a file for one team only contains the layers
-you check for it. To export every layer, click **Select all layers**; click
+Layers start unchecked each time you open the export, even after an earlier export,
+so a file for one team only contains the layers you check for it. Load a preset to
+restore a saved layer list. To export every layer, click **Select all layers**; click
 **Clear layers** to start over.
 The scenario name and filename are suggested from the source name and selected sides
 (for example, **Northern Exercise — Blue** and `northern-exercise-blue.json`).

@@ -21,9 +21,10 @@ const {
   store: { state },
 } = injectStrict(activeScenarioKey);
 
-// Layers are opt-in so a partial export never sends a layer the user did not choose,
-// such as another team's plans. "Select all layers" keeps a full export to one click.
-if (form.value.layerIds === undefined) form.value.layerIds = [];
+// Layers are opt-in every time, so a partial export never sends a layer the user did
+// not choose, such as another team's plans. The form is persisted, so a previous
+// export's layers are dropped too. Presets restore a saved layer list.
+form.value.layerIds = [];
 
 if (form.value.emptySideIds === undefined) form.value.emptySideIds = [];
 
@@ -102,7 +103,7 @@ function savePreset(replace = false) {
     name: presetName.value.trim(),
     sideGroups: [...form.value.sideGroups],
     emptySideIds: [...(form.value.emptySideIds ?? [])],
-    layerIds: [...(form.value.layerIds ?? state.layerStack)],
+    layerIds: [...(form.value.layerIds ?? [])],
     scenarioName: form.value.scenarioName,
     fileName: form.value.fileName,
   };
