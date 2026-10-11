@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- When importing layers from an ORBAT Mapper scenario, a layer that matches an existing layer by ID now defaults to Replace existing layer, and its replacement preview shows right away, so re-importing a returned file updates the layer instead of duplicating it. Import as a separate copy is still available, and notes when a layer with the same name already exists.
 - Zooming or panning to a unit or location now centers it in the part of the map not covered by toolbars or an overlay details panel.
 - The draw toolbar now puts control measures first. The pinned control measures are buttons on the toolbar instead of in a dropdown menu, an All… button opens the full control measure search, and the tools are captioned as Control measures, Shapes and Options. Up to five control measures are pinned, and the pins are reset from the control measure search. When the map is narrow, the toolbar shows fewer pins, and scroll buttons appear when the tools do not fit.
 - The draw toolbar's Edit, Move, Duplicate and Delete tools now appear in a Selection group only while map items are selected, or while Edit or Move is on. Record feature geometry moved to Options. The palette button among the control measures styles the selected control measures, or the new ones when none are selected, and changes to a selection also apply to new control measures.
