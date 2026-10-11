@@ -25,7 +25,7 @@ vi.mock("@/stores/timeFormatStore", () => ({
     trackFormatter: { format: (t: number) => new Date(t).toISOString() },
   }),
 }));
-function setup(withOmittedUnit = false, withUnchangedUnit = false) {
+function setup(withOmittedUnit = false, withUnchangedUnit = false, withNewUnit = false) {
   const data = loadControlMeasureScenarioFixture();
   data.sides = [
     {
@@ -56,6 +56,12 @@ function setup(withOmittedUnit = false, withUnchangedUnit = false) {
   const store = useNewScenarioStore(klona(data));
   if (withOmittedUnit) data.sides[0].groups[0].subUnits.pop();
   data.sides[0].groups[0].subUnits[0].location = [10, 20];
+  if (withNewUnit)
+    data.sides[0].groups[0].subUnits.push({
+      id: "fresh",
+      name: "New unit",
+      sidc: "10031000001211000000",
+    });
   const io = useScenarioIO(shallowRef(store));
   const wrapper = mount(ScenarioImportContribution, {
     props: { data, mode: "group" },
@@ -196,6 +202,33 @@ describe("scenario import controls", () => {
     } finally {
       changed.unmount();
       unchanged.unmount();
+      wrapper.unmount();
+    }
+  });
+  it("shows live existence in the table column after import and undo", async () => {
+    const { wrapper, store, select } = setup(false, false, true);
+    await select("Group", "own");
+    const grid = wrapper.getComponent(DataGrid);
+    const column = grid.props("columns").find((c) => c && c.id === "exists");
+    if (!column) throw new Error("Exists column missing");
+    const fresh = grid.props("data").find((row) => row.id === "fresh");
+    const cell = mount(FlexRender, {
+      props: { render: column.cell, props: { row: { original: fresh } } },
+    });
+    try {
+      expect(cell.text()).toBe("No");
+      await wrapper
+        .findAll("button")
+        .find((b) => b.text() === "Import")!
+        .trigger("click");
+      await flushPromises();
+      expect(store.state.unitMap.fresh).toBeDefined();
+      expect(cell.text()).toBe("Yes");
+      expect(store.undo()).toBe(true);
+      await flushPromises();
+      expect(cell.text()).toBe("No");
+    } finally {
+      cell.unmount();
       wrapper.unmount();
     }
   });

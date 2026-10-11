@@ -259,11 +259,13 @@ const customIconColumns: ColumnDef<CustomSymbol>[] = [
   },
   { id: "id", header: "Id", accessorKey: "id", size: 150 },
   {
-    accessorFn: (f) => (f.id in targetState.customSymbolMap ? "Yes" : "No"),
     id: "exists",
     header: "Exists?",
     enableSorting: false,
     size: 90,
+    // Read the live store in the cell: a cached accessor would go stale after an
+    // import or undo with the dialog kept open.
+    cell: ({ row }) => (row.original.id in targetState.customSymbolMap ? "Yes" : "No"),
   },
 ];
 

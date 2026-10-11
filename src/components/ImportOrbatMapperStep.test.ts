@@ -9,6 +9,9 @@ import { activeScenarioKey } from "./injects";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
 import { useScenarioTime } from "@/scenariostore/time";
+import { useScenarioSettings } from "@/scenariostore/settingsManipulations";
+import DataGrid from "@/modules/grid/DataGrid.vue";
+import { FlexRender } from "@tanstack/vue-table";
 import { loadControlMeasureScenarioFixture } from "@/testdata/controlMeasureScenario";
 import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import "@/dayjs";
@@ -63,7 +66,7 @@ function incomingFile() {
   return data;
 }
 
-async function setup(data = incomingFile()) {
+async function setup(data = incomingFile(), mode = "layers") {
   const store = useNewScenarioStore(master());
   const geo = useGeo(store);
   const wrapper = mount(ImportOrbatMapperStep, {
@@ -76,13 +79,13 @@ async function setup(data = incomingFile()) {
           geo,
           time: useScenarioTime(store),
           unitActions: {},
-          settings: {},
+          settings: useScenarioSettings(store),
         },
       },
       stubs: { ScenarioImportContribution: true },
     },
   });
-  wrapper.findComponent(RadioGroup).vm.$emit("update:modelValue", "layers");
+  wrapper.findComponent(RadioGroup).vm.$emit("update:modelValue", mode);
   await flushPromises();
   const layerSelect = (label: string) =>
     wrapper.findAllComponents(FieldSelect).find((c) => c.props("label") === label);
@@ -157,5 +160,39 @@ describe("ImportOrbatMapperStep layer import", () => {
     expect(layerSelect("Control measures")!.props("description")).toMatch(
       /layer named "Control measures" already exists/,
     );
+  });
+});
+
+describe("ImportOrbatMapperStep custom symbol import", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    document.body.innerHTML = "";
+  });
+
+  it("shows live existence in the table column after import and undo", async () => {
+    const data = master();
+    data.settings!.customSymbols = [
+      { id: "sym-new", name: "New symbol", src: "data:x", sidc: "10031000001100000000" },
+    ];
+    const { wrapper, store, importButton } = await setup(data, "customSymbols");
+    const grid = wrapper.getComponent(DataGrid);
+    const column = grid.props("columns").find((c) => c && c.id === "exists");
+    if (!column) throw new Error("Exists column missing");
+    const symbol = grid.props("data")[0];
+    const cell = mount(FlexRender, {
+      props: { render: column.cell, props: { row: { original: symbol } } },
+    });
+
+    expect(cell.text()).toBe("No");
+    grid.vm.$emit("update:selected", [symbol]);
+    await flushPromises();
+    await importButton().trigger("click");
+    await flushPromises();
+    expect(store.state.customSymbolMap["sym-new"]).toBeDefined();
+    expect(cell.text()).toBe("Yes");
+
+    store.undo();
+    await flushPromises();
+    expect(cell.text()).toBe("No");
   });
 });
