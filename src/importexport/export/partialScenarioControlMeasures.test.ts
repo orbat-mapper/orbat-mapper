@@ -15,7 +15,10 @@ vi.mock("@/importexport/export/kmlExport", () => ({
 describe("partial ORBAT Mapper export", () => {
   function exporter(source = loadControlMeasureScenarioFixture()) {
     const activeScenario = {
-      io: { toObject: () => source },
+      io: {
+        toObject: () => source,
+        stringifyObject: (obj: unknown) => JSON.stringify(obj),
+      },
       store: { state: { sideMap: {} } },
       geo: { layerItemsLayers: { value: [] }, everyVisibleUnit: { value: [] } },
       unitActions: {},

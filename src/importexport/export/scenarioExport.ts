@@ -269,7 +269,7 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
       exportedFrom: scn.id,
       exportedDate: new Date().toISOString(),
     };
-    return JSON.stringify(newScenario, undefined, 2);
+    return io.stringifyObject(newScenario);
   }
 
   async function downloadAsOrbatMapper(opts: OrbatMapperExportSettings) {
