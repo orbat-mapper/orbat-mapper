@@ -89,7 +89,8 @@ const matchingLayers = computed(() =>
   ),
 );
 watch(matchingLayers, (layers) => {
-  for (const layer of layers) layerActions.value[layer.id] ??= "copy";
+  // Re-importing a returned layer is an update; copying is the explicit exception.
+  for (const layer of layers) layerActions.value[layer.id] ??= "replace";
 });
 const layerPreviews = computed(() =>
   matchingLayers.value.flatMap((layer) =>
@@ -100,6 +101,18 @@ const layerPreviews = computed(() =>
   ),
 );
 const replacementIds = computed(() => layerPreviews.value.map((p) => p.layerId));
+function layerActionDescription(layer: ScenarioOverlayLayer) {
+  const duplicateName =
+    layerActions.value[layer.id] === "copy" &&
+    targetState.layerStack.some(
+      (id) =>
+        targetState.layerStackMap[id]?.kind === "overlay" &&
+        targetState.layerStackMap[id]?.name === layer.name,
+    );
+  return duplicateName
+    ? `Matched by layer ID. A layer named "${layer.name}" already exists, so the copy will share its name.`
+    : "Matched by layer ID.";
+}
 function previewItemName(id: FeatureId, removed: boolean) {
   const item = (removed ? targetState : importedState.value).layerItemMap[id];
   return item?.name ? `${item.name} (${id})` : id;
@@ -478,7 +491,7 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
             { value: 'copy', label: 'Import as a separate copy' },
             { value: 'replace', label: 'Replace existing layer' },
           ]"
-          description="Matched by layer ID."
+          :description="layerActionDescription(layer)"
         />
       </FieldGroup>
     </template>
