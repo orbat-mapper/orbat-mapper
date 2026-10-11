@@ -104,14 +104,14 @@ const replacementIds = computed(() => layerPreviews.value.map((p) => p.layerId))
 function layerActionDescription(layer: ScenarioOverlayLayer) {
   const duplicateName =
     layerActions.value[layer.id] === "copy" &&
-    targetState.layerStack.some(
-      (id) =>
-        targetState.layerStackMap[id]?.kind === "overlay" &&
-        targetState.layerStackMap[id]?.name === layer.name,
-    );
+    targetState.layerStack.some((id) => {
+      const existing = targetState.layerStackMap[id];
+      return isScenarioOverlayLayer(existing) && existing.name === layer.name;
+    });
+  const matched = "Matched by layer ID.";
   return duplicateName
-    ? `Matched by layer ID. A layer named "${layer.name}" already exists, so the copy will share its name.`
-    : "Matched by layer ID.";
+    ? `${matched} A layer named "${layer.name}" already exists, so the copy will share its name.`
+    : matched;
 }
 function previewItemName(id: FeatureId, removed: boolean) {
   const item = (removed ? targetState : importedState.value).layerItemMap[id];
