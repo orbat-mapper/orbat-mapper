@@ -8,9 +8,18 @@ The user interface is not optimized for mobile devices. Use ORBAT Mapper on a la
 best results. Better support for mobile devices will come in subsequent releases.
 :::
 
+Use the editing mode switch in the navigation bar to change the mode. On a narrow screen, the switch is a dropdown
+menu.
+
 ### Map mode
 
-The map edit mode gives attention to the locations of the units.
+The map edit mode gives attention to the locations of the units. The switch shows it as _MapLibre_. This is the primary
+editing mode. Refer to [Map edit mode](map-edit-mode).
+
+::: info
+The legacy OpenLayers map mode is removed. MapLibre is now the only map view. Old links to the legacy map open the
+MapLibre view.
+:::
 
 ### Grid mode (limited functions)
 
