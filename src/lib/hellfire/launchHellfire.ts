@@ -1,7 +1,5 @@
-import type { Map as MlMap } from "maplibre-gl";
+import type { MapGeoJSONFeature, Map as MlMap } from "maplibre-gl";
 import type { Position } from "geojson";
-import { isUnitLayerId } from "@/geo/engines/maplibre/unitLayer";
-import { toRgbaColor } from "@/utils/cssColor";
 
 /** How long the missile takes from the drone to the target. */
 const FLIGHT_MS = 1800;
@@ -66,6 +64,23 @@ function clamp01(value: number) {
 function easeOutCubic(t: number) {
   return 1 - (1 - t) ** 3;
 }
+
+/** A `#rrggbb` colour at `alpha` opacity. */
+function rgba(hex: string, alpha: number) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** How the map shakes on impact. */
+const SHAKE_KEYFRAMES: Keyframe[] = [
+  { transform: "translate(0, 0)" },
+  { transform: "translate(-6px, 4px)", offset: 0.15 },
+  { transform: "translate(5px, -5px)", offset: 0.3 },
+  { transform: "translate(-4px, -3px)", offset: 0.45 },
+  { transform: "translate(3px, 3px)", offset: 0.6 },
+  { transform: "translate(-1px, 1px)", offset: 0.8 },
+  { transform: "translate(0, 0)" },
+];
 
 /** The missile sprite, drawn on first launch and shared by every missile after it. */
 let missileSprite: HTMLCanvasElement | undefined;
@@ -157,32 +172,45 @@ function drawMissile(): HTMLCanvasElement {
   return ctx.canvas;
 }
 
-export type OnUnitsHit = (unitIds: string[]) => void;
+/** The map features a blast can hit: point features drawn in the matching layers. */
+export type HellfireTargets = {
+  /** Whether a map layer holds features that can be hit. */
+  layers: (layerId: string) => boolean;
+  /** The id reported for a hit feature. By default its `id` property, else the feature's id. */
+  id?: (feature: MapGeoJSONFeature) => string | number | null | undefined;
+};
 
 export type HellfireOptions = {
-  /** Called with the ids of the units caught in the blast, once they have all gone up. */
-  onUnitsHit?: OnUnitsHit;
+  /** What the blast can hit. Without it, only the target point goes up. */
+  targets?: HellfireTargets;
+  /** Called once with the ids of the features caught in the blast, after they have all gone up. */
+  onHit?: (ids: string[]) => void;
   /** Whether the impact shakes the map. On unless turned off. */
   shake?: boolean;
 };
 
+const defaultTargetId = (feature: MapGeoJSONFeature) =>
+  feature.properties?.id ?? feature.id;
+
 /**
- * Just for fun: fires a Hellfire missile from the orbiting "drone" (the bottom middle of the
- * screen) at a point on the map. It leaves a smoke trail, and its impact flashes, throws up a
- * fireball, a shockwave, debris and a smoke cloud, and shakes the map. Unit symbols near the
- * impact go up in secondary explosions; what happens to the units themselves is up to
- * `onUnitsHit`, called with their ids once they have all gone up. `shake: false` keeps the map
+ * Just for fun: fires a Hellfire missile from a "drone" beside the camera (just below the bottom
+ * middle of the screen) at a point on the map. It leaves a smoke trail, and its impact flashes,
+ * throws up a fireball, a shockwave, debris and a smoke cloud, and shakes the map. Point
+ * features of `targets` near the impact go up in secondary explosions; what happens to them is
+ * up to `onHit`, called with their ids once they have all gone up. `shake: false` keeps the map
  * still.
+ *
+ * Self-contained: it needs only the MapLibre map, adds nothing to the map's style, and removes
+ * its overlay when done. Several missiles can fly at once.
  *
  * It all draws on a 2D canvas over the map rather than through map layers. With terrain on,
  * MapLibre drapes line layers such as the trail onto the terrain, so updating them every frame
- * redraws the whole basemap into the terrain's textures (see `terrainRttFilter.ts`), which drops
- * the frame rate.
+ * redraws the whole basemap into the terrain's textures, which drops the frame rate.
  */
 export function launchHellfire(
   map: MlMap,
   target: { lng: number; lat: number },
-  { onUnitsHit, shake: shakes = true }: HellfireOptions = {},
+  { targets, onHit, shake: shakes = true }: HellfireOptions = {},
 ) {
   const mapCanvas = map.getCanvas();
   const to: Position = [target.lng, target.lat];
@@ -240,13 +268,18 @@ export function launchHellfire(
     launch = { x: width / 2, y: height + 80 };
   }
 
+  /** Shakes the canvas container, so the overlay shakes with the map. */
   function shake() {
     const container = map.getCanvasContainer();
-    container.classList.remove("hellfire-shake");
-    // Restart the animation if another missile is still shaking the map.
-    void container.offsetWidth;
-    container.classList.add("hellfire-shake");
-    window.setTimeout(() => container.classList.remove("hellfire-shake"), 500);
+    // A new shake takes over from one still running.
+    container.getAnimations?.().forEach((animation) => {
+      if (animation.id === "hellfire-shake") animation.cancel();
+    });
+    container.animate?.(SHAKE_KEYFRAMES, {
+      id: "hellfire-shake",
+      duration: 450,
+      easing: "ease-out",
+    });
   }
 
   /** How the ground around a point lies on screen. */
@@ -639,18 +672,15 @@ export function launchHellfire(
     if (fill) return fill;
     if (shade) {
       fill = ctx.createRadialGradient(shade.toward.x, shade.toward.y, 0, 0, 0, 1);
-      fill.addColorStop(0, toRgbaColor(shade.light, 1, shade.light));
-      fill.addColorStop(0.5, toRgbaColor(color, 1, color));
-      fill.addColorStop(
-        clamp01(1 - blur * 0.4),
-        toRgbaColor(shade.dark, 0.8, shade.dark),
-      );
-      fill.addColorStop(1, toRgbaColor(shade.dark, 0, shade.dark));
+      fill.addColorStop(0, rgba(shade.light, 1));
+      fill.addColorStop(0.5, rgba(color, 1));
+      fill.addColorStop(clamp01(1 - blur * 0.4), rgba(shade.dark, 0.8));
+      fill.addColorStop(1, rgba(shade.dark, 0));
     } else {
       fill = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-      fill.addColorStop(0, toRgbaColor(color, 1, color));
-      fill.addColorStop(clamp01(1 - blur), toRgbaColor(color, 1, color));
-      fill.addColorStop(1, toRgbaColor(color, 0, color));
+      fill.addColorStop(0, rgba(color, 1));
+      fill.addColorStop(clamp01(1 - blur), rgba(color, 1));
+      fill.addColorStop(1, rgba(color, 0));
     }
     puffFills.set(key, fill);
     return fill;
@@ -681,7 +711,7 @@ export function launchHellfire(
       ctx.restore();
     }
     if (stroke > 0 && strokeOpacity > 0) {
-      ctx.strokeStyle = toRgbaColor(color, strokeOpacity, color);
+      ctx.strokeStyle = rgba(color, strokeOpacity);
       ctx.lineWidth = stroke;
       ctx.beginPath();
       ctx.arc(0, 0, radius + stroke / 2, 0, Math.PI * 2);
@@ -709,7 +739,7 @@ export function launchHellfire(
     scale: number;
     sparks: Spark[];
     billows: { cloud: Billow[]; column: Billow[]; fire: Billow[] };
-    unitId?: string;
+    targetId?: string;
   };
 
   function createBillows(count: number): Billow[] {
@@ -736,29 +766,33 @@ export function launchHellfire(
   }
 
   /**
-   * The unit symbols drawn within reach of the impact, each of which goes up in a secondary
-   * explosion shortly after it. Only the map shows it; the units themselves are untouched.
+   * The target features drawn within reach of the impact, each of which goes up in a secondary
+   * explosion shortly after it. Only the map shows it; the features themselves are untouched.
    */
-  function findUnitsInBlast(): Explosion[] {
+  function findTargetsInBlast(): Explosion[] {
+    if (!targets) return [];
+    const layers = map.getLayersOrder().filter((id) => targets.layers(id));
+    if (!layers.length) return [];
+    const targetIdOf = targets.id ?? defaultTargetId;
     const center = targetPoint;
     const hits = map.queryRenderedFeatures(
       [
         [center.x - BLAST_REACH_PX, center.y - BLAST_REACH_PX],
         [center.x + BLAST_REACH_PX, center.y + BLAST_REACH_PX],
       ],
-      { layers: map.getLayersOrder().filter(isUnitLayerId) },
+      { layers },
     );
     const seen = new Set<string>();
     const explosions: Explosion[] = [];
     for (const hit of hits) {
       if (hit.geometry.type !== "Point") continue;
-      const unitId = String(hit.properties?.id ?? "");
-      if (!unitId || seen.has(unitId)) continue;
+      const targetId = String(targetIdOf(hit) ?? "");
+      if (!targetId || seen.has(targetId)) continue;
       const at = hit.geometry.coordinates;
       const point = project(at);
       const distance = Math.hypot(point.x - center.x, point.y - center.y);
       if (distance > BLAST_REACH_PX) continue;
-      seen.add(unitId);
+      seen.add(targetId);
       explosions.push({
         at,
         // The blast reaches the closest units first.
@@ -766,7 +800,7 @@ export function launchHellfire(
         scale: 0.55 + Math.random() * 0.2,
         sparks: createSparks(10, 45),
         billows: createBillowSet(),
-        unitId,
+        targetId,
       });
     }
     return explosions;
@@ -851,17 +885,17 @@ export function launchHellfire(
             sparks: createSparks(16, 70),
             billows: createBillowSet(),
           },
-          ...findUnitsInBlast(),
+          ...findTargetsInBlast(),
         ];
         lastDelay = Math.max(...explosions.map((e) => e.delay));
         endsAt = Math.max(BLAST_MS + lastDelay, TRAIL_LINGER_MS);
         if (shakes) shake();
       }
-      // The units' fate is sealed once the last of their fireballs hides them.
+      // The targets' fate is sealed once the last of their fireballs hides them.
       if (!reported && afterImpact >= lastDelay + 200) {
         reported = true;
-        const unitIds = explosions.flatMap((e) => (e.unitId ? [e.unitId] : []));
-        if (unitIds.length) onUnitsHit?.(unitIds);
+        const ids = explosions.flatMap((e) => (e.targetId ? [e.targetId] : []));
+        if (ids.length) onHit?.(ids);
       }
       if (afterImpact >= endsAt) return overlay.remove();
       const fade = 1 - clamp01(afterImpact / TRAIL_LINGER_MS);
