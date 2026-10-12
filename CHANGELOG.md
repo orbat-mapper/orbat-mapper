@@ -70,6 +70,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed a moving unit stopping when a status, symbol, title or other change without a location was recorded partway along its route, and then moving at the wrong speed for the rest of the leg.
+- Fixed importing a team's units into a scenario dropping the styles of range ring groups, statuses and custom fill colours the scenario did not have yet, so a new "sensors" ring group or a coloured status arrived as a bare name. The import now brings in the definitions the imported units use and lists them under Review changes. Groups, statuses and colours the scenario already has keep their own styles.
 - Fixed "Append states after latest existing timestamp" adding a second copy of a state that the imported file had moved later, so two states shared the same ID. Such changed states are now left out and listed with the ignored items; use "Replace state history" to take them.
 - Fixed partial ORBAT Mapper exports keeping the file and scenario names of an earlier export or preset after another side was selected, which could label a file for the wrong side. The names now follow the selected sides and layers each time the dialog opens, and a name that is typed or loaded from a preset is kept only until the selection changes.
 - Fixed removing an equipment, personnel or supply item also deleting the unit's "Remove from map", "None" status and title-only entries.

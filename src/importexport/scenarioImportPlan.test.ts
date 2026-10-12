@@ -400,6 +400,71 @@ describe("import application and recovery", () => {
       false,
     );
   });
+  it("brings in the styles of new range ring groups, statuses and fill colours", () => {
+    const { store, io } = setup();
+    const master = io.serializeToObject();
+    master.settings!.rangeRingGroups = [
+      { name: "weapons", style: { stroke: { color: "#000" } } },
+    ];
+    master.settings!.statuses = [];
+    store.update((s) => {
+      for (const id of Object.keys(s.rangeRingGroupMap)) delete s.rangeRingGroupMap[id];
+      s.rangeRingGroupMap.w = { id: "w", ...master.settings!.rangeRingGroups[0] };
+    });
+    const source = contribution([
+      unit("reserve", {
+        status: "Damaged",
+        symbolOptions: { fillColor: "#123456" },
+        rangeRings: [
+          { name: "Radar", range: 50, uom: "km", group: "sensors" },
+          { name: "Guns", range: 20, uom: "km", group: "weapons" },
+        ],
+        state: [{ id: "s", t: 1000, status: "Destroyed" }],
+      }),
+    ]);
+    source.settings = {
+      ...source.settings!,
+      rangeRingGroups: [
+        { name: "sensors", style: { stroke: { color: "#00f" } } },
+        { name: "weapons", style: { stroke: { color: "#f00" } } },
+      ],
+      statuses: [
+        { name: "Damaged", color: "#fa0" },
+        { name: "Destroyed", color: "#f00" },
+        { name: "Unused", color: "#0f0" },
+      ],
+      symbolFillColors: [
+        { code: "#123456", text: "Okinawa forces" },
+        { code: "#abcdef", text: "Unused" },
+      ],
+    };
+
+    const p = planScenarioImport(master, source, opts);
+    expect(p.dependencies.map((d) => `${d.kind}: ${d.name}`)).toEqual([
+      "Range ring group: sensors",
+      "Status: Damaged",
+      "Status: Destroyed",
+      "Fill color: Okinawa forces",
+    ]);
+    applyScenarioImport(store, p);
+
+    const byName = <T extends { name: string }>(map: Record<string, T>) =>
+      Object.fromEntries(Object.values(map).map(({ name, ...rest }) => [name, rest]));
+    expect(byName(store.state.rangeRingGroupMap)).toEqual({
+      weapons: { id: "w", style: { stroke: { color: "#000" } } },
+      sensors: { id: expect.any(String), style: { stroke: { color: "#00f" } } },
+    });
+    expect(byName(store.state.unitStatusMap)).toEqual({
+      Damaged: { id: expect.any(String), color: "#fa0" },
+      Destroyed: { id: expect.any(String), color: "#f00" },
+    });
+    expect(
+      Object.values(store.state.symbolFillColorMap).filter((c) => c.code === "#123456"),
+    ).toEqual([{ id: expect.any(String), code: "#123456", text: "Okinawa forces" }]);
+    expect(planScenarioImport(io.serializeToObject(), source, opts).hasChanges).toBe(
+      false,
+    );
+  });
   it("updates projected hierarchy at current time and preserves omitted descendants", async () => {
     const { store, io } = setup();
     const source = contribution([unit("parent", { subUnits: [unit("reserve")] })]);

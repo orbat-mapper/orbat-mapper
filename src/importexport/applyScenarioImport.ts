@@ -62,6 +62,10 @@ export function applyScenarioImport(store: NewScenarioStore, plan: Plan) {
   store.update((s) => {
     for (const [id, symbol] of Object.entries(prepared.customSymbolMap))
       if (!(id in s.customSymbolMap)) s.customSymbolMap[id] = symbol;
+    // Fill colours are matched by code, as units refer to them by code.
+    const colors = new Set(Object.values(s.symbolFillColorMap).map((c) => c.code));
+    for (const [id, color] of Object.entries(prepared.symbolFillColorMap))
+      if (!colors.has(color.code)) s.symbolFillColorMap[id] = color;
     for (const key of catalogs)
       for (const [id, entry] of Object.entries(prepared[key])) {
         if (!(id in s[key])) Object.assign(s[key], { [id]: entry });
