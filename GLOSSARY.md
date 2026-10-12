@@ -213,7 +213,8 @@ function, so the preview shows exactly what the file holds.
 
 **Snapshot group**:
 A side group in a recipient export that holds only its units as drawn at the
-**snapshot time**: name, short name, symbol and position. No state history or plans,
+**snapshot time**: name, short name, symbol and position. Units hidden on the map, by
+themselves or by their side or group, are left out. No state history or plans,
 descriptions, resources, range rings or chain of command; subordinates are listed
 flat. A side seen only through snapshot groups also loses its description and the
 units attached directly to it. Used to show a side the opposing units it has
