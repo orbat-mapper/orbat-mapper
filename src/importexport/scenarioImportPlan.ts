@@ -2,6 +2,7 @@ import { klona } from "klona";
 import { isEqual } from "es-toolkit";
 import { nanoid } from "@/utils";
 import { getCustomSymbolId } from "@/symbology/helpers";
+import { SYMBOL_FILL_COLORS } from "@/config/colors";
 import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
 
 export interface ImportOptions {
@@ -363,6 +364,52 @@ export function planScenarioImport(
     incoming.supplyCategories ?? [],
     resourceNames("supplies"),
   );
+  // Range ring groups and statuses are referenced by name, so without their definitions
+  // a team's new group or status would arrive unstyled.
+  next.settings ??= {
+    rangeRingGroups: [],
+    statuses: [],
+    supplyClasses: [],
+    supplyUoMs: [],
+  };
+  next.settings.rangeRingGroups = addDefinitions(
+    "Range ring group",
+    next.settings.rangeRingGroups ?? [],
+    incoming.settings?.rangeRingGroups ?? [],
+    new Set(changedUnits.flatMap((u) => (u.rangeRings ?? []).map((r) => r.group ?? ""))),
+  );
+  next.settings.statuses = addDefinitions(
+    "Status",
+    next.settings.statuses ?? [],
+    incoming.settings?.statuses ?? [],
+    new Set(
+      changedUnits.flatMap((u) => [
+        u.status ?? "",
+        ...(u.state ?? []).map((s) => s.status ?? ""),
+      ]),
+    ),
+  );
+  // Fill colours are referenced by code. Standard colours are always in the picker.
+  const fillColors = new Set(
+    changedUnits.flatMap((u) =>
+      [u, ...(u.state ?? [])].map((s) => s.symbolOptions?.fillColor ?? ""),
+    ),
+  );
+  const knownColors = new Set(
+    [...SYMBOL_FILL_COLORS, ...(next.settings.symbolFillColors ?? [])].map((c) => c.code),
+  );
+  const addedColors = (incoming.settings?.symbolFillColors ?? []).filter(
+    (c) => fillColors.has(c.code) && !knownColors.has(c.code),
+  );
+  if (addedColors.length) {
+    next.settings.symbolFillColors = [
+      ...(next.settings.symbolFillColors ?? []),
+      ...klona(addedColors),
+    ];
+    addedColors.forEach((c) =>
+      dependencies.push({ kind: "Fill color", name: c.text, definition: c }),
+    );
+  }
   const symbols = new Set(
     changedUnits.flatMap((u) =>
       [u.sidc, ...(u.state ?? []).map((s) => s.sidc)]
@@ -377,12 +424,6 @@ export function planScenarioImport(
       !(next.settings?.customSymbols ?? []).some((e) => e.id === s.id),
   );
   if (addedSymbols.length) {
-    next.settings ??= {
-      rangeRingGroups: [],
-      statuses: [],
-      supplyClasses: [],
-      supplyUoMs: [],
-    };
     next.settings.customSymbols = [
       ...(next.settings.customSymbols ?? []),
       ...klona(addedSymbols),
