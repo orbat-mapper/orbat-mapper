@@ -158,7 +158,7 @@ function form(layerIds?: string[]): OrbatMapperExportSettings {
 describe("ExportSettingsOrbatMapper", () => {
   beforeEach(() => localStorage.clear());
 
-  it("updates suggested names until each field is edited", async () => {
+  it("keeps a typed name until the selection changes", async () => {
     const settings = form();
     const wrapper = mountSettings(settings);
     settings.layerIds = ["features"];
@@ -170,17 +170,30 @@ describe("ExportSettingsOrbatMapper", () => {
         .findAllComponents({ name: "InputGroup" })
         .find((c) => c.attributes("label") === label)!;
     input("Scenario name").vm.$emit("update:modelValue", "Custom briefing");
-    settings.emptySideIds = ["empty"];
+    input("Name of downloaded file").vm.$emit("update:modelValue", "briefing.json");
+    settings.scenarioName = "Custom briefing";
+    settings.fileName = "briefing.json";
     await wrapper.vm.$nextTick();
     expect(settings.scenarioName).toBe("Custom briefing");
-    expect(settings.fileName).toBe("source-scenario-empty-side.json");
-    input("Name of downloaded file").vm.$emit("update:modelValue", "briefing.json");
-    settings.emptySideIds = [];
-    await wrapper.vm.$nextTick();
     expect(settings.fileName).toBe("briefing.json");
+
+    settings.emptySideIds = ["empty"];
+    await wrapper.vm.$nextTick();
+    expect(settings.scenarioName).toBe("Source scenario — Empty side");
+    expect(settings.fileName).toBe("source-scenario-empty-side.json");
   });
 
-  it("preserves preset names after selections change", async () => {
+  it("does not keep names from a previous export", async () => {
+    const settings = form();
+    settings.emptySideIds = ["empty"];
+    settings.scenarioName = "Source scenario — Red";
+    settings.fileName = "source-scenario-red.json";
+    mountSettings(settings);
+    expect(settings.scenarioName).toBe("Source scenario — Empty side");
+    expect(settings.fileName).toBe("source-scenario-empty-side.json");
+  });
+
+  it("keeps preset names until the selection changes", async () => {
     localStorage.setItem(
       "orbatmapper:export-presets:scenario-a",
       JSON.stringify([
@@ -197,10 +210,15 @@ describe("ExportSettingsOrbatMapper", () => {
     const settings = form();
     const wrapper = mountSettings(settings);
     await wrapper.find("select").setValue("blue");
-    settings.emptySideIds = ["empty"];
     await wrapper.vm.$nextTick();
-    expect(settings.scenarioName).toBe("Turn 3");
-    expect(settings.fileName).toBe("turn-3.json");
+    const model = () => wrapper.props("modelValue");
+    expect(model().scenarioName).toBe("Turn 3");
+    expect(model().fileName).toBe("turn-3.json");
+
+    model().emptySideIds = ["empty"];
+    await wrapper.vm.$nextTick();
+    expect(model().scenarioName).toBe("Source scenario — Empty side");
+    expect(model().fileName).toBe("source-scenario-empty-side.json");
   });
 
   it("selects an empty side, previews it, and restores it from a preset", async () => {
