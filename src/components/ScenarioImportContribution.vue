@@ -512,7 +512,8 @@ function apply() {
               cleared fields. Updates preserve units not included.
             </p>
             <p v-if="content !== 'units-only' && states === 'add_new'">
-              Only states after each unit's latest existing timestamp are appended.
+              Only states after each unit's latest existing timestamp are appended. States
+              already in the history are not changed, even if the file moves them later.
             </p>
             <p>Use Undo to revert the import in one step.</p>
           </details>

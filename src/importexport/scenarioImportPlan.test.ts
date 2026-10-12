@@ -240,6 +240,36 @@ describe("scenario contribution import plan", () => {
     });
     expect(own(clear.scenario)[0].state).toEqual([]);
   });
+  it("append ignores existing states moved after the latest timestamp", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "s2", t: 20, location: [1, 0] },
+    ];
+    const incoming = contribution([
+      unit("reserve", {
+        state: [
+          { id: "s1", t: 40, location: [5, 5] },
+          { id: "s2", t: 20, location: [1, 0] },
+          { id: "s3", t: 30, location: [2, 0] },
+        ],
+      }),
+    ]);
+    const plan = planScenarioImport(master, incoming, {
+      ...opts,
+      content: "state-only",
+      states: "add_new",
+    });
+    expect(own(plan.scenario)[0].state).toEqual([
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "s2", t: 20, location: [1, 0] },
+      { id: "s3", t: 30, location: [2, 0] },
+    ]);
+    expect(plan.ignored).toEqual([
+      "reserve: 1 states at or before the latest timestamp ignored.",
+      'reserve: 1 changed existing states ignored. Use "Replace state history" to take them.',
+    ]);
+  });
   it("state-only replacement never deletes omitted units; units-only retains history", () => {
     const master = scenario();
     own(master)[0].state = [{ id: "old", t: 20 }];

@@ -160,11 +160,21 @@ export function planScenarioImport(
           -Infinity,
           ...(existing?.state ?? []).map((s) => +new Date(s.t)),
         );
-        const additions = (unit.state ?? []).filter((s) => +new Date(s.t) > latest);
-        const skipped = (unit.state?.length ?? 0) - additions.length;
+        // A state whose ID is already in the history was edited, such as a waypoint
+        // moved later. Appending it would give two states the same ID, and changing
+        // existing history is what "Replace state history" is for.
+        const existingIds = new Set(existing?.state?.map((s) => s.id));
+        const later = (unit.state ?? []).filter((s) => +new Date(s.t) > latest);
+        const additions = later.filter((s) => !existingIds.has(s.id));
+        const skipped = (unit.state?.length ?? 0) - later.length;
+        const edited = later.length - additions.length;
         if (skipped)
           ignored.push(
             `${unit.name}: ${skipped} states at or before the latest timestamp ignored.`,
+          );
+        if (edited)
+          ignored.push(
+            `${unit.name}: ${edited} changed existing states ignored. Use "Replace state history" to take them.`,
           );
         output.state = [...klona(existing?.state ?? []), ...additions];
       } else output.state = klona(unit.state ?? []);
