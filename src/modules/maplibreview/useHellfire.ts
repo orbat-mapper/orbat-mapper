@@ -61,11 +61,7 @@ export function useHellfire(
     // From now on the units have no location, as the unit panel's "Remove from map" does.
     removeFromMap: (units) =>
       units.forEach((unit) =>
-        unitActions.addUnitStateEntry(
-          unit.id,
-          { t: store.state.currentTime, location: null },
-          true,
-        ),
+        unitActions.removeUnitFromMap(unit.id, store.state.currentTime),
       ),
     destroyed: (units) =>
       units.forEach((unit) => {

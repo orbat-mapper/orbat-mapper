@@ -63,9 +63,12 @@ All notable changes to this project will be documented in this file.
 - Unit statuses and range ring groups in the scenario settings now use the same sortable grid as the other settings lists, with multi-select delete and inline editing.
 - Renamed the "Sensor groups" settings section to "Range ring groups".
 - Symbol fill colours in the scenario settings show a swatch next to the hex code, which stays visible for dark colours in dark mode.
+- "Remove from map" now also drops the unit's later planned moves, so a destroyed unit no longer reappears at its next waypoint. Other changes in those entries, such as a status or a title, are kept.
 
 ### Fixed
 
+- Fixed a moving unit stopping when a status, symbol, title or other change without a location was recorded partway along its route, and then moving at the wrong speed for the rest of the leg.
+- Fixed removing an equipment, personnel or supply item also deleting the unit's "Remove from map", "None" status and title-only entries.
 - Fixed changing a unit's symbol not updating the map, ORBAT, or details panel when the unit had no recorded state changes, which affected units imported or merged from other scenario files.
 - Fixed clicking an empty spot on the map in move mode not clearing the selection.
 - Fixed a dropped unit, or one that stops moving during playback, briefly disappearing from the map.

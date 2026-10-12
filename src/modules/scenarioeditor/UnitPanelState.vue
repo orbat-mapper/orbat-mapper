@@ -290,7 +290,7 @@ async function handleChangeSymbol() {
 
 function handleRemoveFromMap() {
   const t = store.state.currentTime;
-  addStateEntryToTargets(() => ({ location: null, t }));
+  forEachEditableUnit((unitId) => unitActions.removeUnitFromMap(unitId, t));
 }
 
 function setUnitStatus(newStatus?: string | null) {
