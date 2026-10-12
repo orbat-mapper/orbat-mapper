@@ -12,6 +12,8 @@ vi.mock("@/importexport/export/kmlExport", () => ({
   }),
 }));
 
+const noSnapshots = { timestamp: 0, unitsByGroup: {} };
+
 describe("partial ORBAT Mapper export", () => {
   function exporter(source = loadControlMeasureScenarioFixture()) {
     const activeScenario = {
@@ -43,14 +45,19 @@ describe("partial ORBAT Mapper export", () => {
       customColors: true,
       fileName: "empty.json",
     };
-    expect(buildRecipientScenario(source, settings).sides).toEqual([emptySide]);
+    expect(buildRecipientScenario(source, settings, noSnapshots).sides).toEqual([
+      emptySide,
+    ]);
     expect(JSON.parse(exporter(source).generateOrbatMapper(settings)).sides).toEqual([
       emptySide,
     ]);
     source.sides.push({ ...emptySide, id: "unselected" });
-    expect(buildRecipientScenario(source, settings).sides).toEqual([emptySide]);
+    expect(buildRecipientScenario(source, settings, noSnapshots).sides).toEqual([
+      emptySide,
+    ]);
     expect(
-      buildRecipientScenario(source, { ...settings, emptySideIds: [] }).sides,
+      buildRecipientScenario(source, { ...settings, emptySideIds: [] }, noSnapshots)
+        .sides,
     ).toEqual([]);
   });
 
@@ -63,7 +70,7 @@ describe("partial ORBAT Mapper export", () => {
       fileName: "blue.json",
     };
     const source = loadControlMeasureScenarioFixture();
-    const preview = buildRecipientScenario(source, settings);
+    const preview = buildRecipientScenario(source, settings, noSnapshots);
     const downloaded = JSON.parse(exporter().generateOrbatMapper(settings));
     const { id: previewId, meta: previewMeta, ...previewContent } = preview;
     const { id: downloadId, meta: downloadMeta, ...downloadContent } = downloaded;

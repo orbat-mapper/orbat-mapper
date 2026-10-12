@@ -1,27 +1,143 @@
-import type { Scenario } from "@/types/scenarioModels";
+import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
 import type { OrbatMapperExportSettings } from "@/types/importExport";
+import type { EntityId } from "@/types/base";
+import type { ScenarioState } from "@/scenariostore/newScenarioStore";
+import type { NUnit } from "@/types/internalModels";
+
+/** A unit as it is drawn at the current scenario time. */
+export type SnapshotUnit = Pick<
+  Unit,
+  "id" | "name" | "shortName" | "sidc" | "symbolOptions"
+> & {
+  location?: Unit["location"] | null;
+};
+
+/** The units of the selected snapshot groups, read at the snapshot time. */
+export interface SnapshotSource {
+  timestamp: number;
+  /** Every unit under each snapshot group, subordinates included, in ORBAT order. */
+  unitsByGroup: Record<EntityId, SnapshotUnit[]>;
+}
+
+type SnapshotSettings = Pick<
+  OrbatMapperExportSettings,
+  "sideGroups" | "snapshotGroupIds" | "snapshotTime"
+>;
+
+function toSnapshotUnit(unit: NUnit): SnapshotUnit {
+  const current = unit._state;
+  const symbolOptions = { ...unit.symbolOptions, ...current?.symbolOptions };
+  return {
+    id: unit.id,
+    name: unit.name,
+    ...(unit.shortName ? { shortName: unit.shortName } : {}),
+    sidc: current?.sidc || unit.sidc,
+    ...(Object.keys(symbolOptions).length ? { symbolOptions } : {}),
+    location: current?.location ?? null,
+  };
+}
+
+/**
+ * Reads the units of the selected snapshot groups at the snapshot time, the current
+ * time by default. The scenario time is moved there and back, as the KML export does
+ * for event times, and only when there is a snapshot group to read.
+ */
+export function snapshotSourceAt(
+  scenario: {
+    store: { state: ScenarioState };
+    time: { setCurrentTime(timestamp: number): void };
+    unitActions: { walkItem(itemId: EntityId, callback: (unit: NUnit) => void): void };
+  },
+  settings: SnapshotSettings,
+): SnapshotSource {
+  const { state } = scenario.store;
+  const currentTime = state.currentTime;
+  const timestamp = settings.snapshotTime ?? currentTime;
+  const groupIds = (settings.snapshotGroupIds ?? []).filter((id) =>
+    settings.sideGroups.includes(id),
+  );
+  const moved = groupIds.length > 0 && timestamp !== currentTime;
+  if (moved) scenario.time.setCurrentTime(timestamp);
+  try {
+    const unitsByGroup: SnapshotSource["unitsByGroup"] = {};
+    for (const groupId of groupIds) {
+      const units: SnapshotUnit[] = (unitsByGroup[groupId] = []);
+      scenario.unitActions.walkItem(groupId, (unit) => {
+        units.push(toSnapshotUnit(unit));
+      });
+    }
+    return { timestamp, unitsByGroup };
+  } finally {
+    if (moved) scenario.time.setCurrentTime(currentTime);
+  }
+}
+
+// A snapshot group shows where its units are now and nothing else: no history or
+// plans, descriptions, resources, range rings or chain of command.
+function snapshotGroup(group: SideGroup, source: SnapshotSource): SideGroup {
+  return {
+    id: group.id,
+    name: group.name,
+    ...(group.symbolOptions ? { symbolOptions: group.symbolOptions } : {}),
+    subUnits: (source.unitsByGroup[group.id] ?? [])
+      .filter((unit) => unit.location)
+      .map(({ location, ...unit }) => ({ ...unit, location: location! })),
+  };
+}
+
+// A side seen only through snapshot groups keeps its identity, not its description or
+// the units attached directly to it.
+function snapshotSide({ id, name, standardIdentity, symbolOptions }: Side) {
+  return { id, name, standardIdentity, ...(symbolOptions ? { symbolOptions } : {}) };
+}
+
+function recipientEvents(
+  scenario: Scenario,
+  settings: Pick<OrbatMapperExportSettings, "includeEvents" | "excludeFutureEvents">,
+  snapshotSource: SnapshotSource,
+) {
+  if (settings.includeEvents === false) return [];
+  if (!settings.excludeFutureEvents) return scenario.events;
+  const until = snapshotSource.timestamp;
+  return scenario.events.filter((event) => +new Date(event.startTime) <= until);
+}
 
 /** Shared by the preview and download so both include exactly the same content. */
 export function buildRecipientScenario(
   scenario: Scenario,
   settings: Pick<
     OrbatMapperExportSettings,
-    "sideGroups" | "emptySideIds" | "layerIds" | "scenarioName"
+    | "sideGroups"
+    | "emptySideIds"
+    | "layerIds"
+    | "scenarioName"
+    | "snapshotGroupIds"
+    | "includeEvents"
+    | "excludeFutureEvents"
   >,
+  snapshotSource: SnapshotSource,
 ): Scenario {
+  const snapshotIds = settings.snapshotGroupIds ?? [];
+  const isSnapshot = (group: SideGroup) => snapshotIds.includes(group.id);
   return {
     ...scenario,
     name: settings.scenarioName || scenario.name,
+    events: recipientEvents(scenario, settings, snapshotSource),
     sides: scenario.sides
       .filter((side) =>
         side.groups.length
           ? side.groups.some((group) => settings.sideGroups.includes(group.id))
           : settings.emptySideIds?.includes(side.id),
       )
-      .map((side) => ({
-        ...side,
-        groups: side.groups.filter((group) => settings.sideGroups.includes(group.id)),
-      })),
+      .map((side) => {
+        const groups = side.groups
+          .filter((group) => settings.sideGroups.includes(group.id))
+          .map((group) =>
+            isSnapshot(group) ? snapshotGroup(group, snapshotSource) : group,
+          );
+        const onlySnapshots = groups.length > 0 && groups.every(isSnapshot);
+        return { ...(onlySnapshots ? snapshotSide(side) : side), groups };
+      }),
     layerStack:
       settings.layerIds === undefined
         ? scenario.layerStack

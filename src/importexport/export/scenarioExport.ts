@@ -1,4 +1,4 @@
-import { buildRecipientScenario } from "./recipientScenario";
+import { buildRecipientScenario, snapshotSourceAt } from "./recipientScenario";
 import { featureCollection } from "@turf/helpers";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
@@ -262,7 +262,11 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   function generateOrbatMapper(settings: OrbatMapperExportSettings): string {
     const scn = io.toObject();
-    const newScenario = buildRecipientScenario(scn, settings);
+    const newScenario = buildRecipientScenario(
+      scn,
+      settings,
+      snapshotSourceAt(scenario, settings),
+    );
     newScenario.id = nanoid();
     newScenario.meta = {
       ...scn.meta!,

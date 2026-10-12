@@ -82,6 +82,17 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
    */
   layerIds?: FeatureId[];
   scenarioName?: string;
+  /**
+   * Selected groups exported as their units at the current time only, without history,
+   * plans, descriptions, resources or chain of command.
+   */
+  snapshotGroupIds?: EntityId[];
+  /** When snapshot groups are taken. Undefined means the current scenario time. */
+  snapshotTime?: number;
+  /** Undefined keeps the scenario events, as before this option existed. */
+  includeEvents?: boolean;
+  /** Leaves out events after the snapshot time. */
+  excludeFutureEvents?: boolean;
 }
 
 export type FolderMode = "one" | "side" | "sideGroup";
