@@ -48,6 +48,35 @@ describe("terrain store", () => {
     expect(settings.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
   });
 
+  it("uses elevation data from the config instead of the online default", () => {
+    setActivePinia(createPinia());
+    const settings = useTerrainStore();
+    const configured = { type: "raster-dem" as const, tiles: ["/dem/{z}/{x}/{y}.png"] };
+
+    settings.setConfigElevation({ status: "loading" });
+    expect(settings.elevationSource).toBeNull();
+
+    settings.setConfigElevation({ status: "ready", elevation: { source: configured } });
+    expect(settings.elevationSource).toEqual(configured);
+
+    // An archive the user opens still wins, and removing it brings the config back.
+    const archive = { type: "raster-dem" as const, url: "pmtiles://archive:x" };
+    settings.setArchiveSource({ kind: "file", fileName: "dem.pmtiles" }, archive);
+    expect(settings.elevationSource).toEqual(archive);
+    settings.clearArchive();
+    expect(settings.elevationSource).toEqual(configured);
+  });
+
+  it("does not fall back to the online default when the config elevation fails", () => {
+    setActivePinia(createPinia());
+    const settings = useTerrainStore();
+    settings.setConfigElevation({ status: "failed" });
+    expect(settings.elevationSource).toBeNull();
+
+    settings.setConfigElevation({ status: "none" });
+    expect(settings.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+  });
+
   it("has no source for a remembered archive that is not open yet", async () => {
     setActivePinia(createPinia());
     useTerrainStore().setArchiveSource(

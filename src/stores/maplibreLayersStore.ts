@@ -12,7 +12,13 @@ import {
 } from "@/geo/basemapArchive";
 import { unregisterArchive } from "@/geo/pmtilesProtocol";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useTerrainStore } from "@/stores/terrainStore";
 import { customBasemapToLayerConfig } from "@/geo/customBasemap";
+import {
+  readMapConfigFile,
+  resolveElevationConfig,
+  type MapConfig,
+} from "@/geo/mapConfig";
 import { canReadHostedConfig } from "@/utils/runtimeEnvironment";
 
 /**
@@ -67,20 +73,43 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
   }
 
   async function runInitialize() {
+    let config: MapConfig = { basemaps: [] };
     if (canReadHostedConfig) {
+      const terrain = useTerrainStore();
+      // The config may declare elevation data; until it is read, the map must not use the default.
+      terrain.setConfigElevation({ status: "loading" });
       try {
         const res = await fetch("/config/maplibreConfig.json");
-        const config = (await res.json()) as MlLayerConfigFile;
-        layers.value = config && config.length > 0 ? config : FALLBACK_LAYERS;
+        config = readMapConfigFile((await res.json()) as MlLayerConfigFile);
       } catch (e) {
         console.warn("Could not read config/maplibreConfig.json", e);
-        layers.value = FALLBACK_LAYERS;
       }
-    } else {
-      layers.value = FALLBACK_LAYERS;
+      // Not awaited: a slow elevation server must not hold up the basemaps.
+      void resolveConfigElevation(config.elevation);
     }
+    layers.value = config.basemaps.length > 0 ? config.basemaps : FALLBACK_LAYERS;
     addCustomBasemaps();
     await resolveArchiveLayers();
+  }
+
+  /**
+   * Hands the elevation data the config declares to the terrain store. An entry that cannot be used
+   * is reported in the console, and leaves the map without elevation data rather than with the
+   * online default the config replaced.
+   */
+  async function resolveConfigElevation(entry: unknown) {
+    const terrain = useTerrainStore();
+    if (entry === undefined) {
+      terrain.setConfigElevation({ status: "none" });
+      return;
+    }
+    try {
+      const elevation = await resolveElevationConfig(entry);
+      terrain.setConfigElevation({ status: "ready", elevation });
+    } catch (e) {
+      console.error("Failed to use the elevation data in config/maplibreConfig.json", e);
+      terrain.setConfigElevation({ status: "failed" });
+    }
   }
 
   /**
