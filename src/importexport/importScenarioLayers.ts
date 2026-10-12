@@ -52,7 +52,8 @@ function availableId(
  *
  * The source is prepared rather than raw file data so visibility and state timestamps
  * already have the runtime representation expected by the target store. Layer and item
- * ids are retained when possible and remapped on collision. Derived `_` fields are never
+ * ids are retained when possible and remapped on collision; a remapped item also gets
+ * new state entry ids. Derived `_` fields are never
  * copied; the target store recreates them for its own current time and ownership graph.
  */
 export function importScenarioOverlayLayers(
@@ -102,9 +103,15 @@ export function importScenarioOverlayLayers(
       const sourceItem = source.layerItemMap[sourceItemId];
       if (!sourceItem) continue;
       const itemId = availableId(sourceItem.id, occupiedItemIds, generateId);
+      const fields = withoutInternalFields(sourceItem);
       const item = {
-        ...withoutInternalFields(sourceItem),
+        ...fields,
         id: itemId,
+        // A remapped item is a copy that lives beside its original, so its timed state
+        // entries need their own ids too.
+        ...(itemId !== sourceItem.id && fields.state
+          ? { state: fields.state.map((entry) => ({ ...entry, id: generateId() })) }
+          : {}),
       } as ScenarioLayerItem;
       // Full-scenario loading preserves legacy/malformed mixed layers. Partial import
       // must do the same; authoring paths retain the normal specialization guard.

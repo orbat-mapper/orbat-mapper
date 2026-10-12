@@ -109,7 +109,7 @@ describe("importScenarioOverlayLayers", () => {
         },
       ]),
     );
-    const ids = ["imported-layer", "imported-item"];
+    const ids = ["imported-layer", "imported-item", "imported-state"];
 
     const result = importScenarioOverlayLayers(
       source,
@@ -127,11 +127,13 @@ describe("importScenarioOverlayLayers", () => {
       id: "imported-item",
       _pid: "imported-layer",
       graphicKind: "phase-line",
+      state: [{ id: "imported-state", t: Date.parse("2025-01-01T01:00:00Z") }],
     });
     expect(source.layerStackMap["control-measures"]).toMatchObject({
       id: "control-measures",
       items: ["phase-line"],
     });
+    expect(source.layerItemMap["phase-line"].state?.[0].id).toBe("phase-line-state");
   });
 
   it("ignores unselected layers", () => {
