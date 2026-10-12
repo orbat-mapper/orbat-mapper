@@ -88,6 +88,17 @@ describe("ScenarioCodec unit-state round-trip", () => {
     expect(unitStateToExternal(internal, scnState).status).toEqual("Dug in");
   });
 
+  it("keeps a status cleared to null", () => {
+    const internal = unitStateToInternal({ id: "s6", t: 6000 }, nameToId);
+    internal.status = null;
+    expect(unitStateToExternal(internal, scnState).status).toBeNull();
+  });
+
+  it("leaves out status when the state does not set it", () => {
+    const internal = unitStateToInternal({ id: "s7", t: 7000 }, nameToId);
+    expect(unitStateToExternal(internal, scnState)).not.toHaveProperty("status");
+  });
+
   it("preserves unknown names as a name↔name fallback in both directions", () => {
     // A toe entry whose name has no id mapping keeps the name as its id, and the reverse
     // lookup misses the map and falls back to that same string — so the round-trip is stable.
