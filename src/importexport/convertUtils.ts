@@ -188,12 +188,19 @@ export function addUnitHierarchy(
           rangeRings.push(rr);
         }
       });
+      let id = newIds ? nanoid() : (unit.id ?? nanoid());
+      if (id in store.state.unitMap) {
+        console.warn(
+          `Unit  ${unit.name} with id ${id} already exists in the scenario. Creating new id.`,
+        );
+        id = nanoid();
+      }
+      // A unit that gets a new id is a copy, so its state entries get new ids too.
+      const renewStateIds = id !== unit.id;
       const unitState =
         includeState && unit.state
           ? [...unit.state].map((s) =>
-              newIds
-                ? convertStateToInternalFormat({ ...s, id: "" })
-                : convertStateToInternalFormat(s),
+              convertStateToInternalFormat(renewStateIds ? { ...s, id: "" } : s),
             )
           : [];
 
@@ -216,13 +223,6 @@ export function addUnitHierarchy(
         status = tempUnitStatusIdMap[unit.status] || addUnitStatus({ name: unit.status });
       }
 
-      let id = newIds ? nanoid() : (unit.id ?? nanoid());
-      if (id in store.state.unitMap) {
-        console.warn(
-          `Unit  ${unit.name} with id ${id} already exists in the scenario. Creating new id.`,
-        );
-        id = nanoid();
-      }
       const newUnit: NUnitAdd = {
         ...unit,
         id,
