@@ -66,6 +66,11 @@ All notable changes to this project will be documented in this file.
 - Renamed the "Sensor groups" settings section to "Range ring groups".
 - Symbol fill colours in the scenario settings show a swatch next to the hex code, which stays visible for dark colours in dark mode.
 - "Remove from map" now also drops the unit's later planned moves, so a destroyed unit no longer reappears at its next waypoint. Other changes in those entries, such as a status or a title, are kept.
+- Partial ORBAT Mapper exports now start with no layers selected each time the export opens, so a team's file only holds the layers picked for it. A Select all layers / Clear layers toggle selects every layer in one click, and presets still restore their saved layers.
+- ORBAT Mapper exports are now written like Download scenario, without internal fields and with timestamps in the scenario's time zone.
+- The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
+- The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
+- The Hellfire strike is drawn on a canvas over the map, so 3D terrain keeps its frame rate. On a tilted map the missile, fireball and smoke look 3D and cast shadows, and a "Shake map on impact" option in the Hellfire menu turns off the shake.
 
 ### Fixed
 
@@ -88,6 +93,17 @@ All notable changes to this project will be documented in this file.
 - Fixed the add equipment, personnel and supplies shortcuts not opening the add form in the scenario settings.
 - Fixed settings grids not refreshing after an inline edit, and row stripes stopping short of the action column.
 - Fixed drawing a feature doing nothing when the scenario had no feature layer. The layer is now created with the first drawn item, and arming a control measure tool no longer adds an empty layer.
+- Fixed a unit status set to None being lost when the scenario was saved or exported, so the unit went back to its earlier status after reloading.
+- Fixed re-importing a returned partial export wiping the state history, range rings and resources of units that file showed as a snapshot group. Exports now mark snapshot groups with their snapshot time, and the import refuses a side or group that holds one and labels it "(snapshot)".
+- Fixed snapshot groups in partial exports including units hidden on the map, by themselves or by a hidden side or group.
+- Fixed a unit name containing HTML running script in the command palette when a search matched only its short name, and map attributions containing HTML running script when the image export opened.
+- Fixed copied units and map items keeping the state entry IDs of the originals when they got new IDs on import or paste.
+- Fixed the Exists? column in the import preview not updating after an import with "keep dialog open", or after undo.
+- Fixed scenarios in a historical time zone whose offset is not whole minutes, such as Santiago in 1879, losing all unit and event times when saved or duplicated. Such times are now saved in UTC.
+- Fixed draft recovery missing drafts written after restoring a draft, or when a side or group fill colour was missing from the colour list.
+- Fixed custom symbol label spacing changing when the label size changed.
+- Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
+- Fixed catalogue point symbols in the Graphics tab being hard to see in dark mode.
 
 ## September 2026
 
