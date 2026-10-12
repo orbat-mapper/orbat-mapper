@@ -112,6 +112,7 @@ describe("buildRecipientScenario snapshot groups", () => {
         id: "red-detected",
         name: "Detected by Blue 3",
         symbolOptions: { fillColor: "#ff0000" },
+        snapshotTime: new Date(200).toISOString(),
         subUnits: [
           {
             id: "r7",

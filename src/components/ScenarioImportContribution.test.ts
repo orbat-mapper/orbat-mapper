@@ -105,6 +105,29 @@ describe("scenario import controls", () => {
     wrapper.unmount();
     expect(store.state).toEqual(original);
   });
+  it("labels snapshot groups and does not pick them by default", async () => {
+    const { wrapper } = setup();
+    const data = klona(wrapper.props("data"));
+    data.sides.unshift({
+      id: "red",
+      name: "Red",
+      standardIdentity: "6",
+      groups: [
+        {
+          id: "seen",
+          name: "Seen",
+          snapshotTime: "2025-01-01T00:00:00.000Z",
+          subUnits: [],
+        },
+      ],
+    });
+    await wrapper.setProps({ data, mode: "side" });
+    const field = () =>
+      wrapper.findAllComponents(FieldSelect).find((c) => c.props("label") === "Side")!;
+    expect(field().props("modelValue")).toBe("blue");
+    const labels = (field().props("items") ?? []).map((i) => i.label);
+    expect(labels).toEqual(["Red (snapshot)", "Blue"]);
+  });
   it("defaults on import-type changes and handles files with no groups", async () => {
     const { wrapper } = setup();
     await wrapper.setProps({ mode: "side" });

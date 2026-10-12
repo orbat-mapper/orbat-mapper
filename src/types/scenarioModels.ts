@@ -193,6 +193,9 @@ export interface SideGroup {
   isHidden?: boolean;
   locked?: boolean;
   initiallyOpen?: boolean;
+  /** Set on snapshot groups in recipient exports: the time their units were read at.
+   * Such a group holds no plans or history, so it is never imported back. */
+  snapshotTime?: string;
   _pid?: EntityId;
   _isNew?: boolean;
 }

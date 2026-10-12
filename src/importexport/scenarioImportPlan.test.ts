@@ -56,6 +56,26 @@ function own(s: Scenario) {
   return s.sides[0].groups[0].subUnits;
 }
 describe("scenario contribution import plan", () => {
+  it("refuses a snapshot group, so its bare units cannot wipe the master's", () => {
+    const incoming = scenario();
+    incoming.sides[1].groups[0] = {
+      id: "enemy",
+      name: "Enemy",
+      snapshotTime: "2025-01-01T00:00:00.000Z",
+      subUnits: [unit("enemy-unit")],
+    };
+    for (const scopeId of ["enemy", "red"]) {
+      const plan = planScenarioImport(scenario(), incoming, {
+        ...opts,
+        scopeId,
+        selectedIds: ["enemy-unit"],
+      });
+      expect(plan.errors).toEqual([
+        '"Enemy" is a snapshot from a partial export. It has no plans or history, so it cannot be imported.',
+      ]);
+    }
+    expect(planScenarioImport(scenario(), incoming, opts).errors).toEqual([]);
+  });
   it("previews without mutating either scenario, so cancellation is inert", () => {
     const master = scenario(),
       incoming = contribution();

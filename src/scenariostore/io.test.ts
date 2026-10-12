@@ -613,6 +613,27 @@ describe("Scenario IO", () => {
     expect(unit._state?.status).toBeNull();
   });
 
+  it("keeps a snapshot group's mark when the file is saved again", () => {
+    const scenario = createEmptyScenario();
+    scenario.sides = [
+      {
+        id: "red",
+        name: "Red",
+        standardIdentity: "6",
+        groups: [
+          {
+            id: "seen",
+            name: "Seen",
+            snapshotTime: "2025-01-01T00:00:00.000Z",
+            subUnits: [],
+          },
+        ],
+      },
+    ];
+    const { toObject } = useScenarioIO(shallowRef(useNewScenarioStore(scenario)));
+    expect(toObject().sides[0].groups[0].snapshotTime).toBe("2025-01-01T00:00:00.000Z");
+  });
+
   it("round-trips timed hierarchy state", () => {
     const scenario = {
       id: "scenario-hierarchy",

@@ -73,6 +73,12 @@ export function comparable(value: unknown, key = ""): unknown {
     return +new Date(value as string);
   return value;
 }
+/** Snapshot groups in a side or group scope. Their units carry real IDs but none of their
+ * history, so importing them would wipe the master's copies. */
+export function snapshotGroupsIn(node: Node): SideGroup[] {
+  if ("groups" in node) return node.groups.filter((g) => g.snapshotTime);
+  return "snapshotTime" in node && node.snapshotTime ? [node] : [];
+}
 function within(entries: Map<string, Entry>, id: string, scope: string): boolean {
   const seen = new Set<string>();
   let current: string | undefined = id;
@@ -101,6 +107,11 @@ export function planScenarioImport(
   const changes: ImportChange[] = [];
   const ignored: string[] = [];
   if (!scope || scope.kind === "unit") errors.push("Select a side or group to import.");
+  else
+    for (const group of snapshotGroupsIn(scope.node))
+      errors.push(
+        `"${group.name}" is a snapshot from a partial export. It has no plans or history, so it cannot be imported.`,
+      );
   if (options.action !== "copy" && target && target.kind !== scope?.kind)
     errors.push("Target ID belongs to another entity type.");
   const selected = new Set(options.selectedIds);
