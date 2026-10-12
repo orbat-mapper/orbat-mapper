@@ -132,7 +132,11 @@ const statusText = computed(() => {
         inset
         @select="removeElevationArchive()"
       >
-        Remove elevation archive
+        {{
+          settings.elevationArchive.kind === "tiles"
+            ? "Remove elevation tile server"
+            : "Remove elevation archive"
+        }}
       </component>
       <component :is="Separator" />
       <component

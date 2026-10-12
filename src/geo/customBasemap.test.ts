@@ -50,6 +50,17 @@ describe("customBasemapTitle", () => {
       "192.168.1.10:8080/style.json",
     );
   });
+
+  it("names a tile template by the part before its placeholders", () => {
+    expect(
+      customBasemapTitle(
+        "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+      ),
+    ).toBe("s3.amazonaws.com/terrarium");
+    expect(customBasemapTitle("https://tiles.example.lan/{z}/{x}/{y}.png")).toBe(
+      "tiles.example.lan",
+    );
+  });
 });
 
 describe("customBasemapFromUrl", () => {
