@@ -111,7 +111,16 @@ export type MlLayerConfig =
   | MlMapbundleLayerConfig;
 
 /** How elevation is packed into the colour channels of a DEM tile. */
-export type ElevationEncoding = "terrarium" | "mapbox";
+export const ELEVATION_ENCODINGS = ["terrarium", "mapbox"] as const;
+
+export type ElevationEncoding = (typeof ELEVATION_ENCODINGS)[number];
+
+/** What Mapterhorn and most open elevation sets publish. */
+export const DEFAULT_ELEVATION_ENCODING: ElevationEncoding = "terrarium";
+
+export function isElevationEncoding(value: unknown): value is ElevationEncoding {
+  return ELEVATION_ENCODINGS.includes(value as ElevationEncoding);
+}
 
 interface BaseMlElevationConfig {
   /** Shown in the Terrain menu as where the elevation data comes from. */

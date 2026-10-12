@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
-import { isSameElevationArchive, useTerrainStore } from "@/stores/terrainStore";
+import { ELEVATION_UNAVAILABLE_MESSAGE, useTerrainStore } from "@/stores/terrainStore";
 import { MAPTERHORN_ELEVATION_SOURCE } from "@/modules/maplibreview/mapTerrain";
 
 describe("terrain store", () => {
@@ -77,17 +77,25 @@ describe("terrain store", () => {
     expect(settings.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
   });
 
-  it("tells tile servers apart by encoding and tile size as well as address", () => {
-    const tiles = {
-      kind: "tiles" as const,
+  it("builds the source of a tile server from what was kept, with nothing to open", () => {
+    setActivePinia(createPinia());
+    const settings = useTerrainStore();
+    settings.setTiles({
       url: "https://dem.example.lan/{z}/{x}/{y}.png",
-      encoding: "terrarium" as const,
+      encoding: "mapbox",
       tileSize: 256,
-    };
-    expect(isSameElevationArchive(tiles, { ...tiles })).toBe(true);
-    expect(isSameElevationArchive(tiles, { ...tiles, encoding: "mapbox" })).toBe(false);
-    expect(isSameElevationArchive(tiles, { ...tiles, tileSize: 512 })).toBe(false);
-    expect(isSameElevationArchive(tiles, { kind: "url", url: tiles.url })).toBe(false);
+    });
+
+    expect(settings.elevationOrigin).toBe("archive");
+    expect(settings.elevationArchivePending).toBe(false);
+    expect(settings.elevationSource).toEqual({
+      type: "raster-dem",
+      tiles: ["https://dem.example.lan/{z}/{x}/{y}.png"],
+      encoding: "mapbox",
+      tileSize: 256,
+    });
+    // A failing tile server is a connection problem, not an unreadable archive.
+    expect(settings.elevationUnavailableMessage).toBe(ELEVATION_UNAVAILABLE_MESSAGE);
   });
 
   it("has no source for a remembered archive that is not open yet", async () => {

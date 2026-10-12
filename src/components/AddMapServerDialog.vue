@@ -8,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { useElevationArchive } from "@/composables/elevationArchive";
 import { customBasemapSourceType } from "@/geo/customBasemap";
-import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
+import {
+  DEFAULT_ELEVATION_ENCODING,
+  type ElevationEncoding,
+} from "@/geo/maplibreLayerConfigTypes";
 
 // One dialog for both entry points — the Layers panel button and the map context menu — so the
 // wording, the examples and what counts as a valid address are defined once.
@@ -21,8 +24,8 @@ const url = ref("");
 const isElevation = ref(false);
 // DEM tiles do not say how they encode elevation. An archive may say so in its metadata, thus it is
 // not asked for one.
-const encoding = ref<ElevationEncoding>("terrarium");
-const ENCODINGS = [
+const encoding = ref<ElevationEncoding>(DEFAULT_ELEVATION_ENCODING);
+const ENCODINGS: { label: string; value: ElevationEncoding }[] = [
   { label: "Terrarium (Mapterhorn, AWS Terrain Tiles)", value: "terrarium" },
   { label: "Mapbox (Mapbox, MapTiler)", value: "mapbox" },
 ];
@@ -32,7 +35,7 @@ watch(open, (isOpen) => {
   if (isOpen) {
     url.value = "";
     isElevation.value = false;
-    encoding.value = "terrarium";
+    encoding.value = DEFAULT_ELEVATION_ENCODING;
   }
 });
 

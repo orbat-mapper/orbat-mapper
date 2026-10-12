@@ -29,6 +29,11 @@ export function isCustomBasemapName(name: string): boolean {
   return name.startsWith(CUSTOM_PREFIX);
 }
 
+/** An address with the `{z}`, `{x}` and `{y}` placeholders of a tile template. */
+export function isTileTemplate(url: string): boolean {
+  return url.includes("{z}") && url.includes("{x}") && url.includes("{y}");
+}
+
 /**
  * What kind of basemap an address points at.
  *
@@ -37,7 +42,7 @@ export function isCustomBasemapName(name: string): boolean {
  * what a style.json address is, and what a tile server usually offers.
  */
 export function customBasemapSourceType(url: string): CustomBasemapSourceType {
-  if (url.includes("{z}") && url.includes("{x}") && url.includes("{y}")) return "raster";
+  if (isTileTemplate(url)) return "raster";
   const path = url.split(/[?#]/)[0];
   if (path.toLowerCase().endsWith(".pmtiles")) return "pmtiles";
   return "style";

@@ -13,7 +13,7 @@ import {
 import type { HillshadeSettings } from "@/modules/maplibreview/hillshadeSettings";
 import { isOnlineElevationAvailable } from "@/utils/runtimeEnvironment";
 import type { ConfigElevation } from "@/geo/mapConfig";
-import type { ElevationTiles } from "@/geo/elevationTiles";
+import { elevationTilesSource, type ElevationTiles } from "@/geo/elevationTiles";
 
 function clampExaggeration(value: number) {
   return Number.isFinite(value)
@@ -32,7 +32,8 @@ export const ELEVATION_ARCHIVE_UNAVAILABLE_MESSAGE =
  * the user's disk, and on Chromium a handle to it may be stored in IndexedDB under
  * `ELEVATION_ARCHIVE_KEY`. An address is the whole archive, so it survives a reload by itself.
  *
- * "tiles" is not an archive but a DEM tile server, kept with everything its source is built from.
+ * "tiles" is not an archive but a DEM tile server, kept with everything its source is built from,
+ * so it never needs opening.
  */
 export type RememberedElevationArchive =
   | { kind: "file"; fileName: string }
@@ -44,21 +45,17 @@ export function isSameElevationArchive(
   b: RememberedElevationArchive | null,
 ): boolean {
   if (!a || !b) return a === b;
-  if (a.kind === "tiles" || b.kind === "tiles") {
-    return (
-      a.kind === "tiles" &&
-      b.kind === "tiles" &&
-      a.url === b.url &&
-      a.encoding === b.encoding &&
-      a.tileSize === b.tileSize
-    );
-  }
   return a.kind === b.kind && elevationArchiveLabel(a) === elevationArchiveLabel(b);
 }
 
 /** File name or address. */
 export function elevationArchiveLabel(archive: RememberedElevationArchive): string {
   return archive.kind === "file" ? archive.fileName : archive.url;
+}
+
+/** What the user chose, in words: an archive, or a tile server. */
+export function elevationArchiveNoun(archive: RememberedElevationArchive): string {
+  return archive.kind === "tiles" ? "elevation tile server" : "elevation archive";
 }
 
 const ONLINE_ELEVATION_SOURCE = markRaw(MAPTERHORN_ELEVATION_SOURCE);
@@ -74,6 +71,13 @@ export type ConfigElevationState =
   | { status: "loading" }
   | { status: "ready"; elevation: ConfigElevation }
   | { status: "failed" };
+
+/**
+ * Where the elevation source comes from, in order of precedence: what the user chose, the config,
+ * then the online default. "none" when the build offers no online data and nothing else is given.
+ */
+export type ElevationOrigin =
+  "archive" | "config" | "config-loading" | "config-failed" | "online" | "none";
 
 /** Display preferences remembered between visits; never scenario content. */
 export const useTerrainStore = defineStore("terrain", () => {
@@ -115,15 +119,18 @@ export const useTerrainStore = defineStore("terrain", () => {
     source: RasterDEMSourceSpecification;
   } | null>(null);
   /**
-   * The opened source, while it still belongs to the remembered archive. Another tab may choose a
-   * different archive; this tab then has none open until it opens that one too.
+   * The source of what the user chose. For an archive, the opened source while it still belongs to
+   * the remembered archive: another tab may choose a different archive, and this tab then has none
+   * open until it opens that one too. A tile server's source is built from what was kept.
    */
-  const archiveSource = computed(() =>
-    openedArchive.value &&
-    isSameElevationArchive(openedArchive.value.archive, elevationArchive.value)
+  const archiveSource = computed(() => {
+    const remembered = elevationArchive.value;
+    if (remembered?.kind === "tiles") return markRaw(elevationTilesSource(remembered));
+    return openedArchive.value &&
+      isSameElevationArchive(openedArchive.value.archive, remembered)
       ? openedArchive.value.source
-      : null,
-  );
+      : null;
+  });
   /** Aborted whenever the archive choice changes, here or in another tab. */
   let selection = new AbortController();
   watch(
@@ -152,6 +159,12 @@ export const useTerrainStore = defineStore("terrain", () => {
   ) {
     elevationArchive.value = remembered;
     openedArchive.value = { archive: remembered, source: markRaw(source) };
+  }
+
+  /** Uses a DEM tile server, which replaces an opened archive. */
+  function setTiles(tiles: ElevationTiles) {
+    elevationArchive.value = { kind: "tiles", ...tiles };
+    openedArchive.value = null;
   }
 
   function setConfigElevation(state: ConfigElevationState) {
@@ -184,14 +197,26 @@ export const useTerrainStore = defineStore("terrain", () => {
    * archive that is remembered but not open yet gives no source, rather than falling back to the
    * internet without the user knowing.
    */
+  const elevationOrigin = computed<ElevationOrigin>(() => {
+    if (elevationArchive.value) return "archive";
+    const { status } = configElevation.value;
+    if (status === "ready") return "config";
+    if (status !== "none") return `config-${status}`;
+    return isOnlineElevationAvailable || onlineElevationChosen.value ? "online" : "none";
+  });
+
   const elevationSource = computed(() => {
-    if (elevationArchive.value) return archiveSource.value;
     const config = configElevation.value;
-    if (config.status === "ready") return config.elevation.source;
-    if (config.status !== "none") return null;
-    return isOnlineElevationAvailable || onlineElevationChosen.value
-      ? ONLINE_ELEVATION_SOURCE
-      : null;
+    switch (elevationOrigin.value) {
+      case "archive":
+        return archiveSource.value;
+      case "config":
+        return config.status === "ready" ? config.elevation.source : null;
+      case "online":
+        return ONLINE_ELEVATION_SOURCE;
+      default:
+        return null;
+    }
   });
 
   /** An archive is remembered, but its file has not been opened in this session. */
@@ -234,12 +259,14 @@ export const useTerrainStore = defineStore("terrain", () => {
     elevationSource,
     elevationArchivePending,
     configElevation,
+    elevationOrigin,
     /** The build leaves online elevation data off until the user chooses it. */
     onlineElevationOptional: !isOnlineElevationAvailable,
     onlineElevationChosen,
     display,
     setArchiveSource,
     setConfigElevation,
+    setTiles,
     clearArchive,
     beginArchiveSelection,
     setExaggeration,

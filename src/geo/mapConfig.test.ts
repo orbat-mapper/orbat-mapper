@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  ElevationConfigError,
   parseElevationConfig,
   rasterDemElevationSource,
   readMapConfigFile,
@@ -67,7 +66,6 @@ describe("parseElevationConfig", () => {
       /Unknown elevation encoding/,
     ],
   ])("refuses %s", (_, entry, message) => {
-    expect(() => parseElevationConfig(entry)).toThrow(ElevationConfigError);
     expect(() => parseElevationConfig(entry)).toThrow(message);
   });
 });

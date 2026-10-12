@@ -7,17 +7,16 @@
  * start, as a basemap archive declared in the config is.
  */
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
-import type {
-  ElevationEncoding,
-  MlElevationConfig,
-  MlLayerConfig,
-  MlPmtilesElevationConfig,
-  MlRasterDemElevationConfig,
+import {
+  ELEVATION_ENCODINGS,
+  isElevationEncoding,
+  type MlElevationConfig,
+  type MlLayerConfig,
+  type MlPmtilesElevationConfig,
+  type MlRasterDemElevationConfig,
 } from "@/geo/maplibreLayerConfigTypes";
 import { openConfigElevationArchive } from "@/geo/elevationArchive";
-
-/** Terrarium is what Mapterhorn publishes, and what an elevation archive defaults to. */
-const DEFAULT_ELEVATION_ENCODING: ElevationEncoding = "terrarium";
+import { demSource } from "@/geo/elevationTiles";
 
 export interface MapConfig {
   /** Empty when the file declares none; the caller then uses its built-in basemaps. */
@@ -33,16 +32,14 @@ export function readMapConfigFile(json: unknown): MapConfig {
   const { basemaps, elevation } = json as Record<string, unknown>;
   return {
     basemaps: Array.isArray(basemaps) ? basemaps : [],
-    ...(elevation !== undefined && elevation !== null ? { elevation } : {}),
+    elevation: elevation ?? undefined,
   };
 }
 
-export class ElevationConfigError extends Error {}
-
 function checkEncoding(value: unknown) {
-  if (value === undefined || value === "terrarium" || value === "mapbox") return;
-  throw new ElevationConfigError(
-    `Unknown elevation encoding "${String(value)}". Use "terrarium" or "mapbox".`,
+  if (value === undefined || isElevationEncoding(value)) return;
+  throw new Error(
+    `Unknown elevation encoding "${String(value)}". Use ${ELEVATION_ENCODINGS.map((e) => `"${e}"`).join(" or ")}.`,
   );
 }
 
@@ -53,16 +50,14 @@ function isNonEmptyString(value: unknown): value is string {
 /** Checks the `elevation` entry, and says what is wrong with it. */
 export function parseElevationConfig(value: unknown): MlElevationConfig {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new ElevationConfigError("The elevation entry must be an object.");
+    throw new Error("The elevation entry must be an object.");
   }
   const entry = value as Record<string, unknown>;
   checkEncoding(entry.encoding);
   switch (entry.sourceType) {
     case "pmtiles":
       if (!isNonEmptyString(entry.url)) {
-        throw new ElevationConfigError(
-          'A "pmtiles" elevation entry needs the "url" of the archive.',
-        );
+        throw new Error('A "pmtiles" elevation entry needs the "url" of the archive.');
       }
       return entry as unknown as MlPmtilesElevationConfig;
     case "raster-dem": {
@@ -72,36 +67,35 @@ export function parseElevationConfig(value: unknown): MlElevationConfig {
         entry.tiles.length > 0 &&
         entry.tiles.every(isNonEmptyString);
       if (hasUrl === hasTiles) {
-        throw new ElevationConfigError(
+        throw new Error(
           'A "raster-dem" elevation entry needs either "url" (a TileJSON address) or "tiles", not both.',
         );
       }
       return entry as unknown as MlRasterDemElevationConfig;
     }
     default:
-      throw new ElevationConfigError(
+      throw new Error(
         `Unknown elevation sourceType "${String(entry.sourceType)}". Use "raster-dem" or "pmtiles".`,
       );
   }
 }
 
-/**
- * The MapLibre source for elevation tiles on a tile server. A TileJSON that declares its own
- * `encoding` wins over the one set here, as MapLibre reads the TileJSON last.
- */
+/** The MapLibre source for an elevation entry on a tile server. */
 export function rasterDemElevationSource(
   config: MlRasterDemElevationConfig,
 ): RasterDEMSourceSpecification {
-  return {
-    type: "raster-dem",
-    ...(config.url ? { url: config.url } : { tiles: config.tiles }),
-    encoding: config.encoding ?? DEFAULT_ELEVATION_ENCODING,
-    ...(config.tileSize !== undefined ? { tileSize: config.tileSize } : {}),
-    ...(config.minZoom !== undefined ? { minzoom: config.minZoom } : {}),
-    ...(config.maxZoom !== undefined ? { maxzoom: config.maxZoom } : {}),
-    ...(config.bounds ? { bounds: config.bounds } : {}),
-    ...(config.attribution ? { attribution: config.attribution } : {}),
-  };
+  const { url, tiles, encoding, tileSize, minZoom, maxZoom, bounds, attribution } =
+    config;
+  return demSource({
+    url,
+    tiles,
+    encoding,
+    tileSize,
+    minzoom: minZoom,
+    maxzoom: maxZoom,
+    bounds,
+    attribution,
+  });
 }
 
 /** Elevation data declared in the config, ready for 3D terrain and hillshading. */

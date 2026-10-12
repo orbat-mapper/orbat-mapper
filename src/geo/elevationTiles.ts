@@ -1,19 +1,71 @@
 /**
- * Elevation data from a DEM tile server the user adds by address: a tile template with `{z}`, `{x}`
- * and `{y}`, or a TileJSON document.
+ * The `raster-dem` sources that 3D terrain and hillshading read, and the DEM tile servers the user
+ * adds by address: a tile template with `{z}`, `{x}` and `{y}`, or a TileJSON document.
  *
- * The tiles look like imagery and carry no encoding, so the user says how they encode elevation.
- * The tile size is read once, when the server is added, and kept with the address: MapLibre needs
- * it to pick the zoom level, and a reload must not depend on the server answering at once.
+ * DEM tiles look like imagery and carry no encoding, so the user says how they encode elevation.
+ * The tile size is read once, when a server is added, and kept with the address: MapLibre needs it
+ * to pick the zoom level, and a reload must not depend on the server answering at once.
  */
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
-import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
-import { rasterDemElevationSource } from "@/geo/mapConfig";
+import { isTileTemplate } from "@/geo/customBasemap";
+import {
+  DEFAULT_ELEVATION_ENCODING,
+  type ElevationEncoding,
+} from "@/geo/maplibreLayerConfigTypes";
 
 /** Mapterhorn's tile size, and MapLibre's default for a `raster-dem` source. */
-const DEFAULT_DEM_TILE_SIZE = 512;
+export const DEFAULT_DEM_TILE_SIZE = 512;
 
-/** What is kept between visits for a DEM tile server, and all a source is built from. */
+/**
+ * The pixel width of a DEM tile. MapLibre must be told the size, because it decides which zoom
+ * level to request. When the tile cannot be decoded the default is used, which only changes the
+ * level of detail, never the position of the terrain.
+ */
+export async function demTileSize(tile: Blob): Promise<number> {
+  if (typeof createImageBitmap !== "function") return DEFAULT_DEM_TILE_SIZE;
+  try {
+    const bitmap = await createImageBitmap(tile);
+    const size = bitmap.width;
+    bitmap.close();
+    return size > 0 ? size : DEFAULT_DEM_TILE_SIZE;
+  } catch {
+    return DEFAULT_DEM_TILE_SIZE;
+  }
+}
+
+/** Where DEM tiles come from and how they read, in the words of a MapLibre source. */
+export interface DemSourceOptions {
+  /** URL of a TileJSON document. Mutually exclusive with `tiles`. */
+  url?: string;
+  tiles?: string[];
+  encoding?: ElevationEncoding;
+  tileSize?: number;
+  minzoom?: number;
+  maxzoom?: number;
+  bounds?: [number, number, number, number];
+  attribution?: string;
+}
+
+/**
+ * A `raster-dem` source for tiles on a server. A TileJSON that declares its own `encoding` wins
+ * over the one set here, as MapLibre reads the TileJSON last.
+ */
+export function demSource(options: DemSourceOptions): RasterDEMSourceSpecification {
+  const { url, tiles, encoding, tileSize, minzoom, maxzoom, bounds, attribution } =
+    options;
+  return {
+    type: "raster-dem",
+    ...(url ? { url } : { tiles }),
+    encoding: encoding ?? DEFAULT_ELEVATION_ENCODING,
+    ...(tileSize !== undefined ? { tileSize } : {}),
+    ...(minzoom !== undefined ? { minzoom } : {}),
+    ...(maxzoom !== undefined ? { maxzoom } : {}),
+    ...(bounds ? { bounds } : {}),
+    ...(attribution ? { attribution } : {}),
+  };
+}
+
+/** What is kept between visits for a DEM tile server, and all its source is built from. */
 export interface ElevationTiles {
   /** A tile template, or the address of a TileJSON document. */
   url: string;
@@ -22,27 +74,24 @@ export interface ElevationTiles {
   tileSize?: number;
 }
 
-export function isTileTemplate(url: string): boolean {
-  return url.includes("{z}") && url.includes("{x}") && url.includes("{y}");
-}
-
-export function elevationTilesSource(
-  tiles: ElevationTiles,
-): RasterDEMSourceSpecification {
-  return rasterDemElevationSource({
-    sourceType: "raster-dem",
-    ...(isTileTemplate(tiles.url) ? { tiles: [tiles.url] } : { url: tiles.url }),
-    encoding: tiles.encoding,
-    ...(tiles.tileSize !== undefined ? { tileSize: tiles.tileSize } : {}),
+export function elevationTilesSource({
+  url,
+  encoding,
+  tileSize,
+}: ElevationTiles): RasterDEMSourceSpecification {
+  return demSource({
+    ...(isTileTemplate(url) ? { tiles: [url] } : { url }),
+    encoding,
+    tileSize,
   });
 }
 
 /**
- * The pixel width of the tiles behind a template, read from the tile that covers the world.
+ * The tile size behind a template, read from the tile that covers the world.
  *
  * A server that does not answer at all is an error, as the address is then most likely wrong. A
  * server that has no tile at zoom 0, which a regional data set may not, is not: the default size is
- * used, which only changes the level of detail.
+ * used.
  */
 async function readTemplateTileSize(template: string, signal?: AbortSignal) {
   const url = template.replace("{z}", "0").replace("{x}", "0").replace("{y}", "0");
@@ -55,17 +104,7 @@ async function readTemplateTileSize(template: string, signal?: AbortSignal) {
       cause: e,
     });
   }
-  if (!response.ok || typeof createImageBitmap !== "function") {
-    return DEFAULT_DEM_TILE_SIZE;
-  }
-  try {
-    const bitmap = await createImageBitmap(await response.blob());
-    const size = bitmap.width;
-    bitmap.close();
-    return size > 0 ? size : DEFAULT_DEM_TILE_SIZE;
-  } catch {
-    return DEFAULT_DEM_TILE_SIZE;
-  }
+  return response.ok ? demTileSize(await response.blob()) : DEFAULT_DEM_TILE_SIZE;
 }
 
 /** Reads a TileJSON document, and refuses an address that does not give one. */
