@@ -149,7 +149,9 @@ export function unitStateToExternal(s: NState, scnState: ScenarioState): State {
 
   if (diff) c.diff = toeToExternal(diff, scnState);
   if (update) c.update = toeToExternal(update, scnState);
-  if (status) c.status = scnState.unitStatusMap[status]?.name;
+  // A null status clears an earlier timed status, so it must survive the round-trip.
+  if (status === null) c.status = null;
+  else if (status) c.status = scnState.unitStatusMap[status]?.name;
 
   return c;
 }

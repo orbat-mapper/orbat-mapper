@@ -558,6 +558,61 @@ describe("Scenario IO", () => {
     expect(unit._state?.reinforcedStatus).toBe("None");
   });
 
+  it("round-trips a timed status cleared to None", () => {
+    const scenario = {
+      id: "scenario-status",
+      type: "ORBAT-mapper",
+      version: "2.5.0",
+      name: "Scenario",
+      startTime: "2025-01-01T00:00:00Z",
+      sides: [
+        {
+          id: "side-1",
+          name: "Side",
+          standardIdentity: "3",
+          groups: [
+            {
+              id: "group-1",
+              name: "Group",
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "Unit",
+                  sidc: "10031000000000000000",
+                  location: [10, 60],
+                  status: "Damaged",
+                  state: [
+                    { id: "s1", t: "2025-01-01T01:00:00Z", status: "Destroyed" },
+                    { id: "s2", t: "2025-01-01T02:00:00Z", status: null },
+                  ],
+                  subUnits: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [],
+      layers: [{ id: "layer-1", name: "Features", features: [] }],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [{ name: "Damaged" }, { name: "Destroyed" }],
+        supplyClasses: [],
+        supplyUoMs: [],
+      },
+    } as any;
+
+    const { toObject } = useScenarioIO(shallowRef(useNewScenarioStore(scenario)));
+    const serialized = toObject();
+    expect(serialized.sides[0].groups[0].subUnits[0].state?.[1]?.status).toBeNull();
+
+    const reloaded = useNewScenarioStore(JSON.parse(JSON.stringify(serialized)));
+    const unit = reloaded.state.unitMap["unit-1"];
+    updateCurrentUnitState(unit, +new Date("2025-01-01T02:30:00Z"));
+    expect(unit._state?.status).toBeNull();
+  });
+
   it("round-trips timed hierarchy state", () => {
     const scenario = {
       id: "scenario-hierarchy",
