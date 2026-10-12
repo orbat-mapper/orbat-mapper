@@ -78,12 +78,19 @@ function toggleAllLayers() {
     : layers.value.map((layer) => layer.id);
 }
 
-const automaticScenarioName = ref(
-  !form.value.scenarioName || form.value.scenarioName === state.info.name,
-);
-const automaticFileName = ref(
-  !form.value.fileName || form.value.fileName === "scenario.json",
-);
+// Names follow the selection, so a file is never labelled for another side. Names from a
+// previous export are dropped, and a name typed or loaded from a preset is kept only
+// until the selection changes.
+const automaticScenarioName = ref(true);
+const automaticFileName = ref(true);
+const selectionKey = () =>
+  JSON.stringify([form.value.sideGroups, form.value.emptySideIds, form.value.layerIds]);
+let namedSelection: string | undefined;
+function keepName(field: "scenarioName" | "fileName") {
+  if (field === "scenarioName") automaticScenarioName.value = false;
+  else automaticFileName.value = false;
+  namedSelection = selectionKey();
+}
 const suggestedNames = computed(() =>
   suggestExportNames(
     state.info.name,
@@ -95,6 +102,10 @@ const suggestedNames = computed(() =>
 watch(
   suggestedNames,
   (names) => {
+    if (selectionKey() !== namedSelection) {
+      automaticScenarioName.value = true;
+      automaticFileName.value = true;
+    }
     if (automaticScenarioName.value) form.value.scenarioName = names.scenarioName;
     if (automaticFileName.value) form.value.fileName = names.fileName;
   },
@@ -148,8 +159,8 @@ function savePreset(replace = false) {
 function loadPreset() {
   const preset = presets.value.find((p) => p.id === selectedPreset.value);
   if (!preset) return;
-  automaticScenarioName.value = false;
-  automaticFileName.value = false;
+  automaticScenarioName.value = true;
+  automaticFileName.value = true;
   const groups = preset.sideGroups.filter((id) => state.sideGroupMap[id]);
   const emptySides = (preset.emptySideIds ?? []).filter(
     (id) => state.sideMap[id]?.groups.length === 0,
@@ -166,6 +177,8 @@ function loadPreset() {
     scenarioName: preset.scenarioName,
     fileName: preset.fileName,
   };
+  if (preset.scenarioName) keepName("scenarioName");
+  if (preset.fileName) keepName("fileName");
   presetName.value = preset.name;
   notice.value =
     groups.length !== preset.sideGroups.length ||
@@ -384,12 +397,13 @@ function toggleSide(sideId: string) {
     <InputGroup
       label="Scenario name"
       v-model="form.scenarioName"
-      @update:model-value="automaticScenarioName = false"
+      @update:model-value="keepName('scenarioName')"
     />
     <InputGroup
       label="Name of downloaded file"
       v-model="form.fileName"
-      @update:model-value="automaticFileName = false"
+      description="Names follow the selected sides and layers. A name you type is kept until you change the selection."
+      @update:model-value="keepName('fileName')"
     />
     <section class="space-y-3 rounded-md border p-4" aria-label="Recipient preview">
       <Button
