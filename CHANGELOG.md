@@ -70,6 +70,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fixed a moving unit stopping when a status, symbol, title or other change without a location was recorded partway along its route, and then moving at the wrong speed for the rest of the leg.
+- Fixed "Append states after latest existing timestamp" adding a second copy of a state that the imported file had moved later, so two states shared the same ID. Such changed states are now left out and listed with the ignored items; use "Replace state history" to take them.
 - Fixed partial ORBAT Mapper exports keeping the file and scenario names of an earlier export or preset after another side was selected, which could label a file for the wrong side. The names now follow the selected sides and layers each time the dialog opens, and a name that is typed or loaded from a preset is kept only until the selection changes.
 - Fixed removing an equipment, personnel or supply item also deleting the unit's "Remove from map", "None" status and title-only entries.
 - Fixed changing a unit's symbol not updating the map, ORBAT, or details panel when the unit had no recorded state changes, which affected units imported or merged from other scenario files.
