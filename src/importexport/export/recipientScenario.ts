@@ -79,6 +79,7 @@ function snapshotGroup(group: SideGroup, source: SnapshotSource): SideGroup {
     id: group.id,
     name: group.name,
     ...(group.symbolOptions ? { symbolOptions: group.symbolOptions } : {}),
+    snapshotTime: new Date(source.timestamp).toISOString(),
     subUnits: (source.unitsByGroup[group.id] ?? [])
       .filter((unit) => unit.location)
       .map(({ location, ...unit }) => ({ ...unit, location: location! })),

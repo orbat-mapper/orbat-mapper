@@ -10,6 +10,7 @@ import type {
 } from "@/types/scenarioModels";
 import {
   planScenarioImport,
+  snapshotGroupsIn,
   type ImportOptions,
 } from "@/importexport/scenarioImportPlan";
 import { applyScenarioImport } from "@/importexport/applyScenarioImport";
@@ -57,18 +58,28 @@ const selectedIds = ref<string[]>([]);
 const showChangedOnly = ref(false);
 const targetSideId = ref(store.state.sides[0]);
 const failure = ref("");
+// Snapshot groups cannot be imported, so they are labelled and never picked by default.
 const scopes = computed(() =>
   props.data.sides.flatMap((s) =>
-    props.mode === "side"
-      ? [{ value: s.id, label: s.name }]
-      : s.groups.map((g) => ({ value: g.id, label: `${s.name} / ${g.name}` })),
+    (props.mode === "side"
+      ? [{ node: s, label: s.name }]
+      : s.groups.map((g) => ({ node: g, label: `${s.name} / ${g.name}` }))
+    ).map(({ node, label }) => {
+      const snapshot = snapshotGroupsIn(node).length > 0;
+      return {
+        value: node.id,
+        label: snapshot ? `${label} (snapshot)` : label,
+        snapshot,
+      };
+    }),
   ),
 );
 watch(
   scopes,
   (available) => {
     if (!available.some((scope) => scope.value === scopeId.value)) {
-      scopeId.value = available[0]?.value ?? "";
+      scopeId.value =
+        (available.find((scope) => !scope.snapshot) ?? available[0])?.value ?? "";
     }
   },
   { immediate: true },
