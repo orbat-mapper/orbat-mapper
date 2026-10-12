@@ -19,7 +19,11 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useElevationArchive } from "@/composables/elevationArchive";
-import { elevationArchiveLabel, useTerrainStore } from "@/stores/terrainStore";
+import {
+  elevationArchiveLabel,
+  elevationArchiveNoun,
+  useTerrainStore,
+} from "@/stores/terrainStore";
 import HillshadeSettingsControl from "./HillshadeSettingsControl.vue";
 import TerrainExaggerationControl from "./TerrainExaggerationControl.vue";
 
@@ -64,21 +68,29 @@ const usingOnlineElevation = computed(
   () => settings.onlineElevationChosen && !settings.elevationArchive,
 );
 
+const OPEN_ARCHIVE = "Open an elevation archive to show terrain and hillshading.";
+
 const statusText = computed(() => {
+  if (settings.elevationUnavailable) return settings.elevationUnavailableMessage;
+  const pending = pendingElevationArchive.value;
+  if (pending) return `${pending.verb} the elevation archive to show terrain.`;
   const archive = settings.elevationArchive;
   const config = settings.configElevation;
-  if (settings.elevationUnavailable) return settings.elevationUnavailableMessage;
-  if (pendingElevationArchive.value)
-    return `${pendingElevationArchive.value.verb} the elevation archive to show terrain.`;
-  if (!archive && config.status === "loading") return "Reading the map configuration…";
-  if (!archive && config.status === "failed")
-    return "The elevation data in the map configuration could not be used. Open an elevation archive to show terrain and hillshading.";
-  if (!settings.elevationSource)
-    return "Open an elevation archive to show terrain and hillshading.";
-  if (archive) return `Elevation data from ${elevationArchiveLabel(archive)}.`;
-  if (config.status === "ready")
-    return `Elevation data from ${config.elevation.title ?? "the map configuration"}.`;
-  return "Elevation data from Mapterhorn requires a network connection.";
+  switch (settings.elevationOrigin) {
+    case "archive":
+      return archive
+        ? `Elevation data from ${elevationArchiveLabel(archive)}.`
+        : OPEN_ARCHIVE;
+    case "config":
+      return `Elevation data from ${(config.status === "ready" && config.elevation.title) || "the map configuration"}.`;
+    case "config-loading":
+      return "Reading the map configuration…";
+    case "config-failed":
+      return `The elevation data in the map configuration could not be used. ${OPEN_ARCHIVE}`;
+    case "online":
+      return "Elevation data from Mapterhorn requires a network connection.";
+  }
+  return OPEN_ARCHIVE;
 });
 </script>
 
@@ -132,11 +144,7 @@ const statusText = computed(() => {
         inset
         @select="removeElevationArchive()"
       >
-        {{
-          settings.elevationArchive.kind === "tiles"
-            ? "Remove elevation tile server"
-            : "Remove elevation archive"
-        }}
+        Remove {{ elevationArchiveNoun(settings.elevationArchive) }}
       </component>
       <component :is="Separator" />
       <component

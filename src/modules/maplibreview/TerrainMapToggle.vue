@@ -24,7 +24,7 @@ const enabled = computed(() => settings.terrainEnabled && settings.hillshadeEnab
 // of switching on a feature that would only turn amber. While the config is read it still toggles,
 // as the source it declares is on its way.
 const needsArchive = computed(
-  () => !settings.elevationSource && settings.configElevation.status !== "loading",
+  () => !settings.elevationSource && settings.elevationOrigin !== "config-loading",
 );
 // A build that leaves online data off lets the user choose between it and an archive.
 const offersChoice = computed(

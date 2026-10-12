@@ -27,7 +27,7 @@ import {
   type BasemapArchiveFileHandle,
 } from "@/geo/basemapArchiveHandles";
 import { customBasemapFromUrl } from "@/geo/customBasemap";
-import { elevationTilesSource, openElevationTiles } from "@/geo/elevationTiles";
+import { openElevationTiles } from "@/geo/elevationTiles";
 import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
 import { pickFilesFromDisk } from "@/composables/basemapArchives";
 import { useNotifications } from "@/composables/notifications";
@@ -146,8 +146,15 @@ export function useElevationArchive() {
     return file ? loadElevationArchiveFile(file) : false;
   }
 
-  /** Uses an archive on a web server. The address is kept, so it is opened again by itself. */
-  async function addElevationArchiveUrl(url: string): Promise<boolean> {
+  /**
+   * Uses elevation data on a server. `open` checks the address and returns the step that makes it
+   * the choice, which runs only if nothing else was chosen meanwhile. The address is kept, so it is
+   * used again after a reload, and the file handle of an earlier archive is let go.
+   */
+  async function addElevationAddress(
+    url: string,
+    open: (address: string, signal: AbortSignal) => Promise<() => void>,
+  ): Promise<boolean> {
     // The same rules as a basemap address: http or https, and a file on disk has its own control.
     const parsed = customBasemapFromUrl(url);
     if (!parsed.ok) {
@@ -157,9 +164,9 @@ export function useElevationArchive() {
     const address = parsed.basemap.url;
     const signal = terrain.beginArchiveSelection();
     try {
-      const source = await openElevationArchiveUrl(address, signal);
+      const commit = await open(address, signal);
       if (signal.aborted) return false;
-      terrain.setArchiveSource({ kind: "url", url: address }, source);
+      commit();
       await dropHandle();
       showTerrain();
       send({
@@ -174,39 +181,29 @@ export function useElevationArchive() {
     }
   }
 
+  /** Uses an archive on a web server. */
+  function addElevationArchiveUrl(url: string): Promise<boolean> {
+    return addElevationAddress(url, async (address, signal) => {
+      const source = await openElevationArchiveUrl(address, signal);
+      return () => terrain.setArchiveSource({ kind: "url", url: address }, source);
+    });
+  }
+
   /**
    * Uses a DEM tile server: a tile template, or the address of a TileJSON document. The tiles do not
-   * say how they encode elevation, so the caller does. Kept, so it is used again after a reload.
+   * say how they encode elevation, so the caller does.
    */
-  async function addElevationTilesUrl(
+  function addElevationTilesUrl(
     url: string,
     encoding: ElevationEncoding,
   ): Promise<boolean> {
-    const parsed = customBasemapFromUrl(url);
-    if (!parsed.ok) {
-      send({ message: parsed.message, type: "error" });
-      return false;
-    }
-    const address = parsed.basemap.url;
-    const signal = terrain.beginArchiveSelection();
-    try {
+    return addElevationAddress(url, async (address, signal) => {
       const tiles = await openElevationTiles(address, encoding, signal);
-      if (signal.aborted) return false;
-      terrain.setArchiveSource({ kind: "tiles", ...tiles }, elevationTilesSource(tiles));
-      // A tile server replaces an archive, whose file and handle are then let go.
-      closeElevationArchive();
-      await dropHandle();
-      showTerrain();
-      send({
-        message: `Using ${parsed.basemap.title} for elevation data`,
-        type: "success",
-      });
-      return true;
-    } catch (e) {
-      if (signal.aborted) return false;
-      send({ message: errorMessage(e, `Could not open ${address}`), type: "error" });
-      return false;
-    }
+      return () => {
+        terrain.setTiles(tiles);
+        closeElevationArchive();
+      };
+    });
   }
 
   /** The remembered archive that is not open, or null. */
@@ -215,7 +212,7 @@ export function useElevationArchive() {
     if (!remembered || !terrain.elevationArchivePending) return null;
     const label = elevationArchiveLabel(remembered);
     const action: PendingElevationArchiveAction =
-      remembered.kind !== "file" ? "retry" : pendingHandle.value ? "restore" : "pick";
+      remembered.kind === "url" ? "retry" : pendingHandle.value ? "restore" : "pick";
     const verb = PENDING_ACTION_VERB[action];
     return {
       label,
@@ -241,12 +238,6 @@ export function useElevationArchive() {
       // A handle with nothing remembered is an orphan holding a read grant.
       if (!remembered) await deleteBasemapArchiveHandle(ELEVATION_ARCHIVE_KEY);
       return "none";
-    }
-
-    if (remembered.kind === "tiles") {
-      // Everything the source needs was kept; the tiles load, or fail, as the map asks for them.
-      terrain.setArchiveSource(remembered, elevationTilesSource(remembered));
-      return "reopened";
     }
 
     if (remembered.kind === "url") {
@@ -293,11 +284,6 @@ export function useElevationArchive() {
    */
   async function activatePendingElevationArchive(): Promise<boolean> {
     const pending = pendingElevationArchive.value;
-    const remembered = terrain.elevationArchive;
-    if (pending && remembered?.kind === "tiles") {
-      terrain.setArchiveSource(remembered, elevationTilesSource(remembered));
-      return true;
-    }
     if (pending?.action === "retry") return addElevationArchiveUrl(pending.label);
     const handle = pendingHandle.value;
     if (!pending || !handle) return openElevationArchivePicker();

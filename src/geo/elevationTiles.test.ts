@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  elevationTilesSource,
-  isTileTemplate,
-  openElevationTiles,
-} from "@/geo/elevationTiles";
+import { isTileTemplate } from "@/geo/customBasemap";
+import { elevationTilesSource, openElevationTiles } from "@/geo/elevationTiles";
 
 const TEMPLATE = "https://dem.example.lan/{z}/{x}/{y}.png";
 const TILEJSON = "https://dem.example.lan/tiles.json";

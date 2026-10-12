@@ -1,10 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, shallowRef } from "vue";
-import {
-  type BasemapFlavor,
-  type MlLayerConfig,
-  type MlLayerConfigFile,
-} from "@/geo/maplibreLayerConfigTypes";
+import { type BasemapFlavor, type MlLayerConfig } from "@/geo/maplibreLayerConfigTypes";
 import {
   openBasemapArchiveFile,
   resolveBasemapArchiveLayer,
@@ -80,7 +76,7 @@ export const useMaplibreLayersStore = defineStore("maplibreLayers", () => {
       terrain.setConfigElevation({ status: "loading" });
       try {
         const res = await fetch("/config/maplibreConfig.json");
-        config = readMapConfigFile((await res.json()) as MlLayerConfigFile);
+        config = readMapConfigFile(await res.json());
       } catch (e) {
         console.warn("Could not read config/maplibreConfig.json", e);
       }

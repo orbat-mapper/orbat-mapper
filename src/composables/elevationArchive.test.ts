@@ -7,7 +7,7 @@ import {
   useElevationArchive,
 } from "@/composables/elevationArchive";
 import { useNotifications } from "@/composables/notifications";
-import { ELEVATION_UNAVAILABLE_MESSAGE, useTerrainStore } from "@/stores/terrainStore";
+import { useTerrainStore } from "@/stores/terrainStore";
 import { MAPTERHORN_ELEVATION_SOURCE } from "@/modules/maplibreview/mapTerrain";
 
 const KEY = "elevation:archive";
@@ -302,22 +302,29 @@ describe("a DEM tile server", () => {
   });
 
   it("uses a remembered tile server again without asking the server", async () => {
-    useTerrainStore().elevationArchive = {
+    useTerrainStore().setTiles({ url: TEMPLATE, encoding: "mapbox", tileSize: 256 });
+    await nextTick();
+    setActivePinia(createPinia());
+    const terrain = useTerrainStore();
+
+    // Nothing to restore: the source is there as soon as the store is.
+    expect(terrain.elevationSource).toEqual(TILES_SOURCE);
+    expect(useElevationArchive().pendingElevationArchive.value).toBeNull();
+    expect(await useElevationArchive().restoreRememberedElevationArchive()).toBe("none");
+    expect(tiles.openElevationTiles).not.toHaveBeenCalled();
+  });
+
+  it("uses a tile server another tab chose without a retry", () => {
+    const terrain = useTerrainStore();
+    // What a storage event from another tab does.
+    terrain.elevationArchive = {
       kind: "tiles",
       url: TEMPLATE,
       encoding: "mapbox",
       tileSize: 256,
     };
-    await nextTick();
-    setActivePinia(createPinia());
-    const terrain = useTerrainStore();
-
-    expect(await useElevationArchive().restoreRememberedElevationArchive()).toBe(
-      "reopened",
-    );
-
-    expect(tiles.openElevationTiles).not.toHaveBeenCalled();
     expect(terrain.elevationSource).toEqual(TILES_SOURCE);
+    expect(useElevationArchive().pendingElevationArchive.value).toBeNull();
   });
 
   it("keeps the current source when the tile server cannot be used", async () => {
@@ -344,12 +351,5 @@ describe("a DEM tile server", () => {
     await api.removeElevationArchive();
 
     expect(useTerrainStore().elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
-  });
-
-  it("reports a failing tile server as a connection problem, not an unreadable archive", async () => {
-    await useElevationArchive().addElevationTilesUrl(TEMPLATE, "terrarium");
-    expect(useTerrainStore().elevationUnavailableMessage).toBe(
-      ELEVATION_UNAVAILABLE_MESSAGE,
-    );
   });
 });

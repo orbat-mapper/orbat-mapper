@@ -26,7 +26,12 @@ import {
   publishArchive,
   unregisterArchive,
 } from "@/geo/pmtilesProtocol";
-import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
+import {
+  DEFAULT_ELEVATION_ENCODING,
+  isElevationEncoding,
+  type ElevationEncoding,
+} from "@/geo/maplibreLayerConfigTypes";
+import { DEFAULT_DEM_TILE_SIZE, demTileSize } from "@/geo/elevationTiles";
 
 /**
  * The one archive key elevation data is served under. The colon keeps it apart from every basemap
@@ -39,11 +44,6 @@ export const ELEVATION_ARCHIVE_KEY = "elevation:archive";
  * user's archive, so opening or removing that one leaves the configured one in place.
  */
 export const CONFIG_ELEVATION_ARCHIVE_KEY = "elevation:config";
-
-export type { ElevationEncoding };
-
-/** Mapterhorn's tile size, and MapLibre's default for a `raster-dem` source. */
-const DEFAULT_DEM_TILE_SIZE = 512;
 
 export interface ElevationArchiveInfo {
   encoding: ElevationEncoding;
@@ -58,7 +58,7 @@ function readEncoding(metadata: unknown): ElevationEncoding {
     metadata && typeof metadata === "object"
       ? (metadata as Record<string, unknown>).encoding
       : undefined;
-  return value === "mapbox" ? "mapbox" : "terrarium";
+  return isElevationEncoding(value) ? value : DEFAULT_ELEVATION_ENCODING;
 }
 
 /**
@@ -91,23 +91,15 @@ function tileAt(lon: number, lat: number, z: number): [number, number] {
 }
 
 /**
- * The pixel size of the archive's tiles, read from one decoded tile.
- *
- * MapLibre must be told the size, because it decides which zoom level to request. Mapterhorn uses
- * 512 px tiles and many other DEM sets 256 px. When no tile can be decoded the MapLibre default is
- * used, which only changes the level of detail, never the position of the terrain.
+ * The pixel size of the archive's tiles, read from the tile at the centre of its lowest zoom level.
+ * Mapterhorn uses 512 px tiles and many other DEM sets 256 px.
  */
 async function readTileSize(archive: PMTiles, header: Header): Promise<number> {
-  if (typeof createImageBitmap !== "function") return DEFAULT_DEM_TILE_SIZE;
   try {
     const z = header.minZoom;
     const [x, y] = tileAt(header.centerLon, header.centerLat, z);
     const tile = await archive.getZxy(z, x, y);
-    if (!tile) return DEFAULT_DEM_TILE_SIZE;
-    const bitmap = await createImageBitmap(new Blob([tile.data]));
-    const size = bitmap.width;
-    bitmap.close();
-    return size > 0 ? size : DEFAULT_DEM_TILE_SIZE;
+    return tile ? demTileSize(new Blob([tile.data])) : DEFAULT_DEM_TILE_SIZE;
   } catch {
     return DEFAULT_DEM_TILE_SIZE;
   }
