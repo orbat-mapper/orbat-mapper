@@ -1,32 +1,60 @@
 <script setup lang="ts">
 import { type OrbatMapperExportSettings } from "@/types/importExport.ts";
-import { computed, ref, watch } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
 import { nanoid } from "@/utils";
-import { buildRecipientScenario } from "@/importexport/export/recipientScenario";
+import {
+  buildRecipientScenario,
+  snapshotSourceAt,
+  type SnapshotSource,
+} from "@/importexport/export/recipientScenario";
 import { suggestExportNames } from "@/importexport/export/exportNames";
 import type { Unit } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, timeModalKey } from "@/components/injects";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import FieldSelect from "@/components/FieldSelect.vue";
 import InputGroup from "@/components/InputGroup.vue";
+import { formatDateString } from "@/geo/utils";
 
 const form = defineModel<OrbatMapperExportSettings>({ required: true });
 
+const scenario = injectStrict(activeScenarioKey);
 const {
   io,
   store: { state },
-} = injectStrict(activeScenarioKey);
+} = scenario;
+const { getModalTimestamp } = injectStrict(timeModalKey);
 
 // Layers are opt-in every time, so a partial export never sends a layer the user did
 // not choose, such as another team's plans. The form is persisted, so a previous
 // export's layers are dropped too. Presets restore a saved layer list.
 form.value.layerIds = [];
 
-if (form.value.emptySideIds === undefined) form.value.emptySideIds = [];
+form.value.emptySideIds ??= [];
+form.value.snapshotGroupIds ??= [];
+// Events often describe plans and outcomes for every side, so they are opt-in.
+form.value.includeEvents ??= false;
+form.value.excludeFutureEvents ??= true;
+
+// Snapshots are taken at the current scenario time unless another time is set. A time
+// set for an earlier export is dropped, like the layers.
+form.value.snapshotTime = undefined;
+const effectiveSnapshotTime = computed(
+  () => form.value.snapshotTime ?? state.currentTime,
+);
+const snapshotTime = computed(() =>
+  formatDateString(effectiveSnapshotTime.value, state.info.timeZone, "YYYY-MM-DD HH:mm"),
+);
+async function changeSnapshotTime() {
+  const timestamp = await getModalTimestamp(effectiveSnapshotTime.value, {
+    timeZone: state.info.timeZone,
+    title: "Snapshot time",
+  });
+  if (timestamp !== undefined) form.value.snapshotTime = timestamp;
+}
 
 const sides = computed(() => {
   return state.sides.map((id) => state.sideMap[id]);
@@ -79,6 +107,9 @@ interface ExportPreset {
   sideGroups: string[];
   emptySideIds?: string[];
   layerIds: NonNullable<OrbatMapperExportSettings["layerIds"]>;
+  snapshotGroupIds?: string[];
+  includeEvents?: boolean;
+  excludeFutureEvents?: boolean;
   scenarioName?: string;
   fileName: string;
 }
@@ -104,6 +135,9 @@ function savePreset(replace = false) {
     sideGroups: [...form.value.sideGroups],
     emptySideIds: [...(form.value.emptySideIds ?? [])],
     layerIds: [...(form.value.layerIds ?? [])],
+    snapshotGroupIds: [...(form.value.snapshotGroupIds ?? [])],
+    includeEvents: form.value.includeEvents,
+    excludeFutureEvents: form.value.excludeFutureEvents,
     scenarioName: form.value.scenarioName,
     fileName: form.value.fileName,
   };
@@ -126,6 +160,9 @@ function loadPreset() {
     sideGroups: groups,
     emptySideIds: emptySides,
     layerIds: layers,
+    snapshotGroupIds: (preset.snapshotGroupIds ?? []).filter((id) => groups.includes(id)),
+    includeEvents: preset.includeEvents ?? false,
+    excludeFutureEvents: preset.excludeFutureEvents ?? true,
     scenarioName: preset.scenarioName,
     fileName: preset.fileName,
   };
@@ -143,8 +180,28 @@ function deletePreset() {
   notice.value = "Preset deleted. Current export selections are unchanged.";
 }
 const showPreview = ref(false);
+// Reading the units at another time moves the scenario time there and back, so the
+// snapshot is taken in a watcher rather than inside the preview's computed.
+const snapshotSource = shallowRef<SnapshotSource>();
+// A string key, so the snapshot is only retaken when its time or selected groups change.
+watch(
+  () =>
+    showPreview.value &&
+    [
+      form.value.snapshotTime,
+      ...(form.value.snapshotGroupIds ?? []).filter((id) =>
+        form.value.sideGroups.includes(id),
+      ),
+    ].join(),
+  (key) => {
+    if (key !== false) snapshotSource.value = snapshotSourceAt(scenario, form.value);
+  },
+  { immediate: true },
+);
 const preview = computed(() =>
-  showPreview.value ? buildRecipientScenario(io.toObject(), form.value) : undefined,
+  showPreview.value && snapshotSource.value
+    ? buildRecipientScenario(io.toObject(), form.value, snapshotSource.value)
+    : undefined,
 );
 const scenarioData = computed(() => {
   if (!preview.value) return {};
@@ -248,14 +305,46 @@ function toggleSide(sideId: string) {
             :value="v.id"
             v-model="form.emptySideIds"
           />
-          <InputCheckbox
-            v-for="g in v.groups"
-            :label="state.sideGroupMap[g].name"
-            :value="g"
-            :key="g"
-            v-model="form.sideGroups"
-          />
+          <div v-for="g in v.groups" :key="g" class="flex flex-col gap-2">
+            <InputCheckbox
+              :label="state.sideGroupMap[g].name"
+              :value="g"
+              v-model="form.sideGroups"
+            />
+            <div v-if="form.sideGroups.includes(g)" class="pl-6">
+              <InputCheckbox
+                label="Snapshot"
+                :aria-label="`Snapshot of ${state.sideGroupMap[g].name}`"
+                :value="g"
+                v-model="form.snapshotGroupIds"
+              />
+            </div>
+          </div>
         </div>
+      </div>
+      <p class="text-muted-foreground mt-3 text-sm">
+        A snapshot shows where a group's units are at
+        <template v-if="form.snapshotTime === undefined"
+          >the current scenario time,</template
+        >
+        {{ snapshotTime }}, with their names and symbols. It leaves out their earlier and
+        planned moves, descriptions, equipment, personnel, supplies, range rings and chain
+        of command, so use it for opposing units a side has detected. A side exported only
+        as snapshots also leaves out its description and the units attached directly to
+        it.
+      </p>
+      <div class="mt-2 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" @click="changeSnapshotTime"
+          >Change snapshot time</Button
+        >
+        <Button
+          v-if="form.snapshotTime !== undefined"
+          type="button"
+          variant="ghost"
+          size="sm"
+          @click="form.snapshotTime = undefined"
+          >Use current time</Button
+        >
       </div>
     </InputGroupTemplate>
     <InputGroupTemplate label="Select which layers you want to export">
@@ -280,6 +369,18 @@ function toggleSide(sideId: string) {
       </div>
       <p v-else class="text-muted-foreground text-sm">This scenario has no layers.</p>
     </InputGroupTemplate>
+    <InputCheckbox
+      label="Include scenario events"
+      description="Events are shared with every side and may describe plans or outcomes."
+      v-model="form.includeEvents"
+    />
+    <div v-if="form.includeEvents" class="-mt-2 pl-6">
+      <InputCheckbox
+        label="Leave out later events"
+        description="Events after the snapshot time are not included."
+        v-model="form.excludeFutureEvents"
+      />
+    </div>
     <InputGroup
       label="Scenario name"
       v-model="form.scenarioName"
@@ -316,7 +417,11 @@ function toggleSide(sideId: string) {
           <p v-if="!side.groups.length" class="text-sm">{{ side.name }} — no groups</p>
           <details v-for="group in side.groups" :key="group.id">
             <summary class="cursor-pointer">
-              {{ side.name }} / {{ group.name }} — {{ countUnits(group.subUnits) }} units
+              {{ side.name }} / {{ group.name }} —
+              {{ countUnits(group.subUnits) }} units<span
+                v-if="form.snapshotGroupIds?.includes(group.id)"
+                >, snapshot</span
+              >
             </summary>
             <pre class="max-h-72 overflow-auto text-xs break-all whitespace-pre-wrap">{{
               JSON.stringify(group, null, 2)
@@ -333,9 +438,10 @@ function toggleSide(sideId: string) {
         </details>
         <h4 class="font-medium">Scenario-wide data</h4>
         <p class="text-sm">
-          Descriptions, events, templates, catalogs and settings are retained regardless
-          of group and layer selection. Inspect these for information the recipient should
-          not receive.
+          The scenario description, templates, catalogs and settings are retained
+          regardless of group and layer selection, and events when included. Inspect these
+          for information the recipient should not receive. Snapshot groups only contain
+          their units' names, symbols and positions at the current time.
         </p>
         <details v-for="(value, key) in scenarioData" :key="key">
           <summary class="cursor-pointer">{{ key }}</summary>

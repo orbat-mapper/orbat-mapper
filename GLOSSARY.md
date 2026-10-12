@@ -204,6 +204,27 @@ term kept so old commits and docs stay intelligible.
 _Avoid_: using "legacy" for other retired routes (`/maplibre`, `/globe` are old
 _URLs_ that redirect, not the legacy view).
 
+### Partial export
+
+**Recipient export**:
+An ORBAT Mapper export made for one participant, holding only the side groups and
+layers chosen for them. The preview and the download are built by the same
+function, so the preview shows exactly what the file holds.
+
+**Snapshot group**:
+A side group in a recipient export that holds only its units as drawn at the
+**snapshot time**: name, short name, symbol and position. No state history or plans,
+descriptions, resources, range rings or chain of command; subordinates are listed
+flat. A side seen only through snapshot groups also loses its description and the
+units attached directly to it. Used to show a side the opposing units it has
+detected.
+_Avoid_: "detected group" (detection is not recorded in the scenario).
+
+**Snapshot time**:
+The scenario time a recipient export is taken at: the current scenario time unless
+another is set in the export form. Snapshot groups show their units at this time,
+and "Leave out later events" drops events after it.
+
 ### Offline use
 
 **Offline level**:
