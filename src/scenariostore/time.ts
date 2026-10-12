@@ -130,7 +130,11 @@ function rebuildCurrentUnitState(
   let from = Number.NEGATIVE_INFINITY;
   let until = Number.POSITIVE_INFINITY;
   let currentState = createInitialState(rawUnit);
-  for (const s of rawUnit.state ?? []) {
+  // Time of the entry that set the current location. Entries without a location, such
+  // as a status change, do not start a new leg.
+  let locationT = currentState?.t ?? Number.NEGATIVE_INFINITY;
+  const entries = rawUnit.state ?? [];
+  for (const [index, s] of entries.entries()) {
     if (s.t <= timestamp) {
       from = s.t;
       const { diff, update, ...rest } = s;
@@ -141,25 +145,24 @@ function rebuildCurrentUnitState(
         }
       }
       currentState = { ...currentState, ...rest };
+      if (s.location !== undefined) locationT = s.t;
     } else {
+      // The leg ends at the next entry that sets or removes the location.
+      const legEnd = entries.slice(index).find((entry) => entry.location !== undefined);
       if (
         currentState?.location &&
-        s.location &&
-        !(s.interpolate === false) &&
-        (s.viaStartTime ?? -Infinity) <= timestamp
+        legEnd?.location &&
+        !(legEnd.interpolate === false) &&
+        (legEnd.viaStartTime ?? -Infinity) <= timestamp
       ) {
+        const legStart = legEnd.viaStartTime ?? locationT;
         const n = lineString(
-          s.via
-            ? [currentState.location, ...s.via, s.location]
-            : [currentState.location, s.location],
+          legEnd.via
+            ? [currentState.location, ...legEnd.via, legEnd.location]
+            : [currentState.location, legEnd.location],
         );
-        const timeDiff = s.t - (s.viaStartTime ?? currentState.t);
-        const pathLength = turfLength(n);
-        const averageSpeed = pathLength / timeDiff;
-        const p = turfAlong(
-          n,
-          averageSpeed * (timestamp - (s.viaStartTime ?? currentState.t)),
-        );
+        const averageSpeed = turfLength(n) / (legEnd.t - legStart);
+        const p = turfAlong(n, averageSpeed * (timestamp - legStart));
         currentState = {
           ...currentState,
           t: timestamp,
@@ -170,8 +173,8 @@ function rebuildCurrentUnitState(
         until = from;
       } else {
         until =
-          s.viaStartTime !== undefined && s.viaStartTime > timestamp
-            ? Math.min(s.t, s.viaStartTime)
+          legEnd?.viaStartTime !== undefined && legEnd.viaStartTime > timestamp
+            ? Math.min(s.t, legEnd.viaStartTime)
             : s.t;
       }
       break;

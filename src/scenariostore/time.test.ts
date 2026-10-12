@@ -159,6 +159,42 @@ describe("time unchanged state spans", () => {
     expect(unit._state?.location).not.toEqual(location);
   });
 
+  it("keeps moving when an entry without a location falls inside the leg", () => {
+    const unit = createUnit({
+      state: [
+        { id: "a", t: 0, location: [0, 0] },
+        { id: "b", t: 50, status: "Damaged" },
+        { id: "c", t: 100, location: [1, 0] },
+      ] as any,
+    });
+    const atMidLeg = (t: number) => {
+      updateCurrentUnitState(unit, t);
+      return unit._state?.location?.[0] ?? NaN;
+    };
+
+    expect(atMidLeg(25)).toBeCloseTo(0.25, 2);
+    expect(unit._state?.type).toBe("interpolated");
+    expect(unit._state?.status).toBeUndefined();
+
+    expect(atMidLeg(75)).toBeCloseTo(0.75, 2);
+    expect(unit._state?.status).toBe("Damaged");
+  });
+
+  it("does not interpolate towards a later Remove from map entry", () => {
+    const unit = createUnit({
+      state: [
+        { id: "a", t: 0, location: [0, 0] },
+        { id: "b", t: 50, sidc: "10031000001211000000" },
+        { id: "c", t: 100, location: null },
+        { id: "d", t: 200, location: [1, 0] },
+      ] as any,
+    });
+
+    updateCurrentUnitState(unit, 25);
+    expect(unit._state?.location).toEqual([0, 0]);
+    expect(unit._state?.type).not.toBe("interpolated");
+  });
+
   it("starts interpolating at viaStartTime", () => {
     const unit = createUnit({
       state: [

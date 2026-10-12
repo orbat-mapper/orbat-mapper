@@ -57,18 +57,11 @@ export function removeUnusedUnitStateEntries(unit: NUnit) {
   return filteredState.filter(isNotEmptyState);
 }
 
+// Any field besides id and t is content, including nulls: `location: null` removes the
+// unit from the map and `status: null` clears its status.
 function isNotEmptyState(state: NState) {
-  return (
-    state.update ||
-    state.diff ||
-    state.location ||
-    state.sidc ||
-    state.symbolRotation !== undefined ||
-    state.symbolOptions ||
-    state.textAmplifiers ||
-    state.status ||
-    state.reinforcedStatus ||
-    state.hierarchy
+  return Object.entries(state).some(
+    ([key, value]) => key !== "id" && key !== "t" && value !== undefined,
   );
 }
 
@@ -175,6 +168,38 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
           }
         }
         u.state.push(newState as NState);
+        refreshHierarchyTimelineMetadata(s);
+      },
+      { label: "addUnitPosition", value: unitId },
+    );
+    updateUnitState(unitId);
+  }
+
+  // Takes the unit off the map from time t. Later planned moves are dropped too, since
+  // they would put the unit back on the map. Their other content, such as a status, stays.
+  function removeUnitFromMap(unitId: EntityId, t: number) {
+    update(
+      (s) => {
+        const u = s.unitMap[unitId];
+        if (!u) return;
+        if (!u.state) u.state = [];
+        const index = u.state.findIndex((entry) => entry.t >= t);
+        if (u.state[index]?.t === t) {
+          u.state[index].location = null;
+        } else {
+          const entry: NState = { id: nanoid(), t, location: null };
+          if (index < 0) u.state.push(entry);
+          else u.state.splice(index, 0, entry);
+        }
+        for (const entry of u.state) {
+          if (entry.t < t) continue;
+          if (entry.t > t) delete entry.location;
+          delete entry.via;
+          delete entry.viaStartTime;
+          delete entry.interpolate;
+        }
+        u.state = u.state.filter(isNotEmptyState);
+        s.unitStateCounter++;
         refreshHierarchyTimelineMetadata(s);
       },
       { label: "addUnitPosition", value: unitId },
@@ -366,6 +391,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     updateUnitState,
     deleteUnitStateEntryByStateId,
     addUnitStateEntry,
+    removeUnitFromMap,
     deleteUnitStateEntry,
     updateUnitStateEntry,
     setUnitState,
