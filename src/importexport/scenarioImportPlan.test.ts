@@ -424,7 +424,7 @@ describe("import application and recovery", () => {
     const { store, io } = setup();
     const master = io.serializeToObject();
     master.settings!.rangeRingGroups = [
-      { name: "weapons", style: { stroke: { color: "#000" } } },
+      { name: "weapons", style: { stroke: "#000" } },
     ];
     master.settings!.statuses = [];
     store.update((s) => {
@@ -445,8 +445,8 @@ describe("import application and recovery", () => {
     source.settings = {
       ...source.settings!,
       rangeRingGroups: [
-        { name: "sensors", style: { stroke: { color: "#00f" } } },
-        { name: "weapons", style: { stroke: { color: "#f00" } } },
+        { name: "sensors", style: { stroke: "#00f" } },
+        { name: "weapons", style: { stroke: "#f00" } },
       ],
       statuses: [
         { name: "Damaged", color: "#fa0" },
@@ -471,8 +471,8 @@ describe("import application and recovery", () => {
     const byName = <T extends { name: string }>(map: Record<string, T>) =>
       Object.fromEntries(Object.values(map).map(({ name, ...rest }) => [name, rest]));
     expect(byName(store.state.rangeRingGroupMap)).toEqual({
-      weapons: { id: "w", style: { stroke: { color: "#000" } } },
-      sensors: { id: expect.any(String), style: { stroke: { color: "#00f" } } },
+      weapons: { id: "w", style: { stroke: "#000" } },
+      sensors: { id: expect.any(String), style: { stroke: "#00f" } },
     });
     expect(byName(store.state.unitStatusMap)).toEqual({
       Damaged: { id: expect.any(String), color: "#fa0" },
