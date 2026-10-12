@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
+import { useTerrainStore } from "@/stores/terrainStore";
+import { MAPTERHORN_ELEVATION_SOURCE } from "@/modules/maplibreview/mapTerrain";
 
 const runtimeEnvironment = vi.hoisted(() => ({ canReadHostedConfig: true }));
 
@@ -9,7 +11,22 @@ vi.mock("@/utils/runtimeEnvironment", () => ({
   get canReadHostedConfig() {
     return runtimeEnvironment.canReadHostedConfig;
   },
+  isOnlineElevationAvailable: true,
 }));
+
+const elevationArchive = vi.hoisted(() => ({ openConfigElevationArchive: vi.fn() }));
+
+vi.mock("@/geo/elevationArchive", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/geo/elevationArchive")>()),
+  openConfigElevationArchive: elevationArchive.openConfigElevationArchive,
+}));
+
+function stubConfig(config: unknown) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ json: async () => config })),
+  );
+}
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -76,6 +93,101 @@ describe("a config that cannot be read", () => {
 
     expect(fetchSpy).toHaveBeenCalledWith("/config/maplibreConfig.json");
     expect(store.layers.map((layer) => layer.name)).toEqual(["local"]);
+  });
+});
+
+describe("elevation data in the config", () => {
+  const LOCAL = { name: "local", sourceType: "raster", tiles: ["/{z}/{x}/{y}.png"] };
+
+  it("reads basemaps and DEM tiles from the object form", async () => {
+    stubConfig({
+      basemaps: [LOCAL],
+      elevation: {
+        sourceType: "raster-dem",
+        title: "Local terrain",
+        tiles: ["/dem/{z}/{x}/{y}.png"],
+      },
+    });
+    const store = useMaplibreLayersStore();
+    const terrain = useTerrainStore();
+
+    await store.initialize();
+
+    expect(store.layers.map((layer) => layer.name)).toEqual(["local"]);
+    await vi.waitFor(() => expect(terrain.configElevation.status).toBe("ready"));
+    expect(terrain.elevationSource).toEqual({
+      type: "raster-dem",
+      tiles: ["/dem/{z}/{x}/{y}.png"],
+      encoding: "terrarium",
+    });
+  });
+
+  it("opens a declared elevation archive", async () => {
+    const source = { type: "raster-dem", url: "pmtiles://archive:elevation:config" };
+    elevationArchive.openConfigElevationArchive.mockResolvedValue(source);
+    stubConfig({ elevation: { sourceType: "pmtiles", url: "/dem.pmtiles" } });
+    const store = useMaplibreLayersStore();
+    const terrain = useTerrainStore();
+
+    await store.initialize();
+
+    // No basemaps declared: the built-in ones are used.
+    expect(store.layers).toHaveLength(4);
+    await vi.waitFor(() => expect(terrain.elevationSource).toEqual(source));
+  });
+
+  it("has no elevation source while the config is read", async () => {
+    let respond!: (config: unknown) => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise((resolve) => {
+            respond = (config) => resolve({ json: async () => config });
+          }),
+      ),
+    );
+    const store = useMaplibreLayersStore();
+    const terrain = useTerrainStore();
+
+    const done = store.initialize();
+    expect(terrain.configElevation.status).toBe("loading");
+    expect(terrain.elevationSource).toBeNull();
+
+    respond([LOCAL]);
+    await done;
+    expect(terrain.configElevation.status).toBe("none");
+    expect(terrain.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+  });
+
+  it("leaves the map without elevation data when the declared archive fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    elevationArchive.openConfigElevationArchive.mockRejectedValue(new Error("404"));
+    stubConfig({
+      basemaps: [LOCAL],
+      elevation: { sourceType: "pmtiles", url: "/x.pmtiles" },
+    });
+    const terrain = useTerrainStore();
+
+    await useMaplibreLayersStore().initialize();
+
+    await vi.waitFor(() => expect(terrain.configElevation.status).toBe("failed"));
+    expect(terrain.elevationSource).toBeNull();
+  });
+
+  it("uses the online default when the config cannot be read", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("Failed to fetch");
+      }),
+    );
+    const terrain = useTerrainStore();
+
+    await useMaplibreLayersStore().initialize();
+
+    expect(terrain.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
   });
 });
 

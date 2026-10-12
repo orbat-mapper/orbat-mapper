@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TileType, type Header } from "pmtiles";
 import { UnsupportedArchiveError } from "@/geo/basemapArchive";
 import {
+  CONFIG_ELEVATION_ARCHIVE_KEY,
   describeElevationArchive,
   ELEVATION_ARCHIVE_KEY,
   elevationSourceSpec,
@@ -55,6 +56,14 @@ describe("elevationSourceSpec", () => {
       tileSize: 256,
       attribution: "© Mapterhorn",
     });
+  });
+
+  it("serves the configured archive under its own key", () => {
+    expect(
+      elevationSourceSpec({ encoding: "terrarium" }, 512, CONFIG_ELEVATION_ARCHIVE_KEY)
+        .url,
+    ).toBe(archiveSourceUrl(CONFIG_ELEVATION_ARCHIVE_KEY));
+    expect(CONFIG_ELEVATION_ARCHIVE_KEY).not.toBe(ELEVATION_ARCHIVE_KEY);
   });
 
   it("uses no attribution when the archive carries none", () => {

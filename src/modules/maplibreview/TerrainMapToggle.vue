@@ -21,8 +21,11 @@ const {
 } = useElevationArchive();
 const enabled = computed(() => settings.terrainEnabled && settings.hillshadeEnabled);
 // With no elevation source the button cannot show anything. It offers to open an archive instead
-// of switching on a feature that would only turn amber.
-const needsArchive = computed(() => !settings.elevationSource);
+// of switching on a feature that would only turn amber. While the config is read it still toggles,
+// as the source it declares is on its way.
+const needsArchive = computed(
+  () => !settings.elevationSource && settings.configElevation.status !== "loading",
+);
 // A build that leaves online data off lets the user choose between it and an archive.
 const offersChoice = computed(
   () => needsArchive.value && settings.onlineElevationOptional,

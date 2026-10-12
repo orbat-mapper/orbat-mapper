@@ -92,6 +92,29 @@ A `raster` layer uses `tiles` with one or more tile URL templates. The optional 
 
 All layers accept these optional properties: `title`, `minZoom`, `maxZoom`, `opacity`, `attribution` and `bounds`.
 
+The file can also contain a JSON object instead of an array. Put the basemap layers in `basemaps`. The object can also
+give the elevation data for 3D terrain and hillshading in `elevation`. Refer to
+[Elevation data in the configuration](#elevation-data-in-the-configuration).
+
+```json
+{
+  "basemaps": [
+    {
+      "name": "localBasemap",
+      "title": "Local basemap",
+      "sourceType": "style",
+      "styleUrl": "http://localhost:8080/styles/basic/style.json"
+    }
+  ],
+  "elevation": {
+    "sourceType": "pmtiles",
+    "url": "/maps/terrain.pmtiles"
+  }
+}
+```
+
+If the object has no `basemaps`, ORBAT Mapper uses the built-in online basemaps.
+
 For all configuration options, see the `MlLayerConfigFile` type in
 [`maplibreLayerConfigTypes.ts`](https://github.com/orbat-mapper/orbat-mapper/blob/main/src/geo/maplibreLayerConfigTypes.ts).
 
@@ -358,15 +381,86 @@ ORBAT Mapper keeps a reference to the file as it does for a basemap archive. Ref
 _Terrain_ menu shows _Restore_ or _Select_ with the name of the file. ORBAT Mapper opens the archive again without a
 question only if terrain or hillshading was on.
 
-To stop using the archive, select _Terrain_ > _Remove elevation archive_. ORBAT Mapper then uses Mapterhorn again. In
-the standalone file, ORBAT Mapper uses Mapterhorn again only if you selected _Use Mapterhorn online_. The file on your
-disk does not change.
+To stop using the archive, select _Terrain_ > _Remove elevation archive_. ORBAT Mapper then uses the elevation data from
+`maplibreConfig.json` again, or Mapterhorn if the configuration has no elevation data. In the standalone file, ORBAT
+Mapper uses Mapterhorn again only if you selected _Use Mapterhorn online_. The file on your disk does not change.
 
 ### An elevation archive on a server
 
 At Level 1 you can put the elevation archive on your web server. Select **Add map server…**, type the address of the
 archive, and select **Elevation archive**. The checkbox shows only for an address that ends with `.pmtiles`. ORBAT Mapper
 keeps the address in the browser and opens the archive again after a reload.
+
+This setting applies only to your browser. To give elevation data to all the users, put it in `maplibreConfig.json`.
+
+### Elevation data in the configuration
+
+At Level 1 you can give the elevation data in `maplibreConfig.json`. Then all users get terrain and hillshading from
+your servers, and ORBAT Mapper does not read elevation data from Mapterhorn. Use the object form of the file, and put
+the elevation data in `elevation`. There are two types of elevation data.
+
+A **PMTiles archive** on your web server. Use `sourceType` `pmtiles`, and give the address of the archive in `url`:
+
+```json
+{
+  "elevation": {
+    "sourceType": "pmtiles",
+    "title": "Local terrain",
+    "url": "/maps/terrain.pmtiles"
+  }
+}
+```
+
+ORBAT Mapper reads the header of the archive at start. The archive must hold PNG or WebP tiles. ORBAT Mapper reads the
+size of the tiles from the archive.
+
+A **DEM tile server**. Use `sourceType` `raster-dem`. Give the tile URL templates in `tiles`, or the address of a
+TileJSON document in `url`. Use only one of the two:
+
+```json
+{
+  "elevation": {
+    "sourceType": "raster-dem",
+    "title": "Local terrain",
+    "tiles": ["http://mapserver.example.local:8080/terrain/{z}/{x}/{y}.webp"],
+    "tileSize": 512,
+    "maxZoom": 12,
+    "encoding": "terrarium"
+  }
+}
+```
+
+The fields are:
+
+| Field         | Necessary | Function                                                                                                                          |
+| ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `sourceType`  | yes       | `pmtiles` or `raster-dem`.                                                                                                        |
+| `url`         | yes/no    | Address of the archive (`pmtiles`), or of a TileJSON document (`raster-dem`).                                                     |
+| `tiles`       | yes/no    | Tile URL templates (`raster-dem` only). Use `tiles` or `url`, not both.                                                           |
+| `title`       | no        | The name that the _Terrain_ menu shows for the elevation data.                                                                    |
+| `encoding`    | no        | How the tiles hold the elevation: `terrarium` or `mapbox`. The default is `terrarium`. Refer to the warning below.                |
+| `attribution` | no        | Attribution text. For an archive, it replaces the attribution in the archive.                                                     |
+| `tileSize`    | no        | Width of the tiles in pixels (`raster-dem` only). The default is 512. Mapterhorn uses 512, and many other elevation sets use 256. |
+| `minZoom`     | no        | Lowest zoom level of the tiles (`raster-dem` only).                                                                               |
+| `maxZoom`     | no        | Highest zoom level of the tiles (`raster-dem` only).                                                                              |
+| `bounds`      | no        | Area of the tiles, `[west, south, east, north]` (`raster-dem` only).                                                              |
+
+::: warning Use the correct encoding
+Mapterhorn and most open elevation sets use `terrarium`. Data from Mapbox and from MapTiler use `mapbox`. With the
+incorrect encoding, the terrain is not correct. If the archive or the TileJSON document gives an `encoding`, ORBAT
+Mapper uses it when the configuration gives none. For a TileJSON document, its `encoding` always has priority.
+:::
+
+The order of priority is:
+
+1. An elevation archive that the user opens in the application.
+2. The elevation data in `maplibreConfig.json`.
+3. Mapterhorn on the internet.
+
+If ORBAT Mapper cannot use the elevation data in the configuration (for example, the archive is not on the server),
+the map has no terrain, and the _Terrain_ menu shows a message. The browser console shows the cause. ORBAT Mapper does not
+read elevation data from Mapterhorn in its place. The tile server must also send the `Access-Control-Allow-Origin`
+header. Refer to [Use a tile server on a different machine](#use-a-tile-server-on-a-different-machine).
 
 ## Level 3: Standalone file
 

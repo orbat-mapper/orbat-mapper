@@ -66,12 +66,18 @@ const usingOnlineElevation = computed(
 
 const statusText = computed(() => {
   const archive = settings.elevationArchive;
+  const config = settings.configElevation;
   if (settings.elevationUnavailable) return settings.elevationUnavailableMessage;
   if (pendingElevationArchive.value)
     return `${pendingElevationArchive.value.verb} the elevation archive to show terrain.`;
+  if (!archive && config.status === "loading") return "Reading the map configuration…";
+  if (!archive && config.status === "failed")
+    return "The elevation data in the map configuration could not be used. Open an elevation archive to show terrain and hillshading.";
   if (!settings.elevationSource)
     return "Open an elevation archive to show terrain and hillshading.";
   if (archive) return `Elevation data from ${elevationArchiveLabel(archive)}.`;
+  if (config.status === "ready")
+    return `Elevation data from ${config.elevation.title ?? "the map configuration"}.`;
   return "Elevation data from Mapterhorn requires a network connection.";
 });
 </script>

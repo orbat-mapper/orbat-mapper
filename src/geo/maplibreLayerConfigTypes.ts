@@ -1,5 +1,5 @@
 /**
- * Types for MapLibre basemap configuration loaded from /config/maplibreConfig.json.
+ * Types for MapLibre basemap and elevation configuration loaded from /config/maplibreConfig.json.
  */
 import type { StyleSpecification } from "maplibre-gl";
 
@@ -110,4 +110,57 @@ export type MlLayerConfig =
   | MlPmtilesLayerConfig
   | MlMapbundleLayerConfig;
 
-export type MlLayerConfigFile = MlLayerConfig[];
+/** How elevation is packed into the colour channels of a DEM tile. */
+export type ElevationEncoding = "terrarium" | "mapbox";
+
+interface BaseMlElevationConfig {
+  /** Shown in the Terrain menu as where the elevation data comes from. */
+  title?: string;
+  /**
+   * How the tiles encode elevation. Defaults to `terrarium`, which is what Mapterhorn publishes.
+   * For an archive, an `encoding` in its own metadata is used when this is omitted.
+   */
+  encoding?: ElevationEncoding;
+  /** For an archive, replaces the attribution in its metadata. */
+  attribution?: string;
+}
+
+/** Elevation tiles from a tile server, used as a MapLibre `raster-dem` source. */
+export interface MlRasterDemElevationConfig extends BaseMlElevationConfig {
+  sourceType: "raster-dem";
+  /** URL of a TileJSON document. Mutually exclusive with `tiles`. */
+  url?: string;
+  /** One or more tile URL templates. Mutually exclusive with `url`. */
+  tiles?: string[];
+  /** Tile width in pixels. MapLibre's default for elevation tiles is 512. */
+  tileSize?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  /** Tile coverage bounds [minLon, minLat, maxLon, maxLat] in WGS84. */
+  bounds?: [number, number, number, number];
+}
+
+/**
+ * Elevation tiles from a PMTiles archive on a web server, read with range requests. The tile size
+ * is read from the archive.
+ */
+export interface MlPmtilesElevationConfig extends BaseMlElevationConfig {
+  sourceType: "pmtiles";
+  url: string;
+}
+
+/**
+ * The elevation data 3D terrain and hillshading read. Replaces the build default (Mapterhorn
+ * online); an elevation archive the user opens still takes precedence over it.
+ */
+export type MlElevationConfig = MlRasterDemElevationConfig | MlPmtilesElevationConfig;
+
+/** The object form of the config file, which can declare elevation data next to the basemaps. */
+export interface MlMapConfig {
+  /** Falls back to the built-in basemaps when omitted or empty. */
+  basemaps?: MlLayerConfig[];
+  elevation?: MlElevationConfig;
+}
+
+/** A plain array of basemaps, or an object that can also declare elevation data. */
+export type MlLayerConfigFile = MlLayerConfig[] | MlMapConfig;

@@ -26,6 +26,7 @@ import {
   publishArchive,
   unregisterArchive,
 } from "@/geo/pmtilesProtocol";
+import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
 
 /**
  * The one archive key elevation data is served under. The colon keeps it apart from every basemap
@@ -33,7 +34,13 @@ import {
  */
 export const ELEVATION_ARCHIVE_KEY = "elevation:archive";
 
-export type ElevationEncoding = "terrarium" | "mapbox";
+/**
+ * The key an elevation archive declared in `maplibreConfig.json` is served under. Apart from the
+ * user's archive, so opening or removing that one leaves the configured one in place.
+ */
+export const CONFIG_ELEVATION_ARCHIVE_KEY = "elevation:config";
+
+export type { ElevationEncoding };
 
 /** Mapterhorn's tile size, and MapLibre's default for a `raster-dem` source. */
 const DEFAULT_DEM_TILE_SIZE = 512;
@@ -42,6 +49,9 @@ export interface ElevationArchiveInfo {
   encoding: ElevationEncoding;
   attribution?: string;
 }
+
+/** What the config says about an archive, which wins over the archive's own metadata. */
+export type ElevationArchiveOverrides = Partial<ElevationArchiveInfo>;
 
 function readEncoding(metadata: unknown): ElevationEncoding {
   const value =
@@ -106,10 +116,11 @@ async function readTileSize(archive: PMTiles, header: Header): Promise<number> {
 export function elevationSourceSpec(
   info: ElevationArchiveInfo,
   tileSize = DEFAULT_DEM_TILE_SIZE,
+  key = ELEVATION_ARCHIVE_KEY,
 ): RasterDEMSourceSpecification {
   return {
     type: "raster-dem",
-    url: archiveSourceUrl(ELEVATION_ARCHIVE_KEY),
+    url: archiveSourceUrl(key),
     encoding: info.encoding,
     tileSize,
     ...(info.attribution ? { attribution: info.attribution } : {}),
@@ -119,16 +130,23 @@ export function elevationSourceSpec(
 async function openElevationArchive(
   archive: PMTiles,
   label: string,
-  signal?: AbortSignal,
+  options: {
+    key?: string;
+    signal?: AbortSignal;
+    overrides?: ElevationArchiveOverrides;
+  } = {},
 ): Promise<RasterDEMSourceSpecification> {
+  const { key = ELEVATION_ARCHIVE_KEY, signal, overrides } = options;
   // Validate before publishing, so a wrong file leaves the archive in use untouched.
   const { header, metadata } = await readArchive(archive, label);
   const info = describeElevationArchive(header, metadata, label);
+  if (overrides?.encoding) info.encoding = overrides.encoding;
+  if (overrides?.attribution) info.attribution = overrides.attribution;
   const tileSize = await readTileSize(archive, header);
   // The user may have chosen something else while the archive was read.
   signal?.throwIfAborted();
-  publishArchive(ELEVATION_ARCHIVE_KEY, archive);
-  return elevationSourceSpec(info, tileSize);
+  publishArchive(key, archive);
+  return elevationSourceSpec(info, tileSize, key);
 }
 
 /**
@@ -139,11 +157,9 @@ export function openElevationArchiveFile(
   file: File,
   signal?: AbortSignal,
 ): Promise<RasterDEMSourceSpecification> {
-  return openElevationArchive(
-    createFileArchive(ELEVATION_ARCHIVE_KEY, file),
-    file.name,
+  return openElevationArchive(createFileArchive(ELEVATION_ARCHIVE_KEY, file), file.name, {
     signal,
-  );
+  });
 }
 
 /** Opens an elevation archive on a web server, read with HTTP range requests. */
@@ -151,7 +167,20 @@ export function openElevationArchiveUrl(
   url: string,
   signal?: AbortSignal,
 ): Promise<RasterDEMSourceSpecification> {
-  return openElevationArchive(createUrlArchive(ELEVATION_ARCHIVE_KEY, url), url, signal);
+  return openElevationArchive(createUrlArchive(ELEVATION_ARCHIVE_KEY, url), url, {
+    signal,
+  });
+}
+
+/** Opens the elevation archive declared in `maplibreConfig.json`. */
+export function openConfigElevationArchive(
+  url: string,
+  overrides?: ElevationArchiveOverrides,
+): Promise<RasterDEMSourceSpecification> {
+  return openElevationArchive(createUrlArchive(CONFIG_ELEVATION_ARCHIVE_KEY, url), url, {
+    key: CONFIG_ELEVATION_ARCHIVE_KEY,
+    overrides,
+  });
 }
 
 export function closeElevationArchive(): void {

@@ -12,6 +12,7 @@ import {
 } from "@/modules/maplibreview/mapTerrain";
 import type { HillshadeSettings } from "@/modules/maplibreview/hillshadeSettings";
 import { isOnlineElevationAvailable } from "@/utils/runtimeEnvironment";
+import type { ConfigElevation } from "@/geo/mapConfig";
 
 function clampExaggeration(value: number) {
   return Number.isFinite(value)
@@ -47,6 +48,18 @@ export function elevationArchiveLabel(archive: RememberedElevationArchive): stri
 }
 
 const ONLINE_ELEVATION_SOURCE = markRaw(MAPTERHORN_ELEVATION_SOURCE);
+
+/**
+ * Elevation data declared in `maplibreConfig.json`, which replaces the build default. "loading"
+ * while the config is read, so the map does not reach for the online default in the meantime.
+ * "failed" when the config declares elevation data that cannot be used: the online default is not
+ * used in its place, since the config chose not to use it.
+ */
+export type ConfigElevationState =
+  | { status: "none" }
+  | { status: "loading" }
+  | { status: "ready"; elevation: ConfigElevation }
+  | { status: "failed" };
 
 /** Display preferences remembered between visits; never scenario content. */
 export const useTerrainStore = defineStore("terrain", () => {
@@ -107,6 +120,7 @@ export const useTerrainStore = defineStore("terrain", () => {
     },
     { flush: "sync" },
   );
+  const configElevation = shallowRef<ConfigElevationState>({ status: "none" });
   const terrainError = ref(false);
   const hillshadeError = ref(false);
 
@@ -126,6 +140,16 @@ export const useTerrainStore = defineStore("terrain", () => {
     openedArchive.value = { archive: remembered, source: markRaw(source) };
   }
 
+  function setConfigElevation(state: ConfigElevationState) {
+    configElevation.value =
+      state.status === "ready"
+        ? {
+            status: "ready",
+            elevation: { ...state.elevation, source: markRaw(state.elevation.source) },
+          }
+        : state;
+  }
+
   function clearArchive() {
     elevationArchive.value = null;
     openedArchive.value = null;
@@ -142,12 +166,15 @@ export const useTerrainStore = defineStore("terrain", () => {
   }
 
   /**
-   * Where elevation tiles come from: a chosen archive replaces the build default. An archive that is
-   * remembered but not open yet gives no source, rather than falling back to the internet without
-   * the user knowing.
+   * Where elevation tiles come from: a chosen archive, then the config, then the build default. An
+   * archive that is remembered but not open yet gives no source, rather than falling back to the
+   * internet without the user knowing.
    */
   const elevationSource = computed(() => {
     if (elevationArchive.value) return archiveSource.value;
+    const config = configElevation.value;
+    if (config.status === "ready") return config.elevation.source;
+    if (config.status !== "none") return null;
     return isOnlineElevationAvailable || onlineElevationChosen.value
       ? ONLINE_ELEVATION_SOURCE
       : null;
@@ -192,11 +219,13 @@ export const useTerrainStore = defineStore("terrain", () => {
     archiveSource,
     elevationSource,
     elevationArchivePending,
+    configElevation,
     /** The build leaves online elevation data off until the user chooses it. */
     onlineElevationOptional: !isOnlineElevationAvailable,
     onlineElevationChosen,
     display,
     setArchiveSource,
+    setConfigElevation,
     clearArchive,
     beginArchiveSelection,
     setExaggeration,
