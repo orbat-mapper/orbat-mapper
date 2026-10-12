@@ -13,6 +13,7 @@ import {
 import type { HillshadeSettings } from "@/modules/maplibreview/hillshadeSettings";
 import { isOnlineElevationAvailable } from "@/utils/runtimeEnvironment";
 import type { ConfigElevation } from "@/geo/mapConfig";
+import type { ElevationTiles } from "@/geo/elevationTiles";
 
 function clampExaggeration(value: number) {
   return Number.isFinite(value)
@@ -30,15 +31,28 @@ export const ELEVATION_ARCHIVE_UNAVAILABLE_MESSAGE =
  * The elevation archive the user chose, remembered between visits. Never the bytes: a file stays on
  * the user's disk, and on Chromium a handle to it may be stored in IndexedDB under
  * `ELEVATION_ARCHIVE_KEY`. An address is the whole archive, so it survives a reload by itself.
+ *
+ * "tiles" is not an archive but a DEM tile server, kept with everything its source is built from.
  */
 export type RememberedElevationArchive =
-  { kind: "file"; fileName: string } | { kind: "url"; url: string };
+  | { kind: "file"; fileName: string }
+  | { kind: "url"; url: string }
+  | ({ kind: "tiles" } & ElevationTiles);
 
 export function isSameElevationArchive(
   a: RememberedElevationArchive | null,
   b: RememberedElevationArchive | null,
 ): boolean {
   if (!a || !b) return a === b;
+  if (a.kind === "tiles" || b.kind === "tiles") {
+    return (
+      a.kind === "tiles" &&
+      b.kind === "tiles" &&
+      a.url === b.url &&
+      a.encoding === b.encoding &&
+      a.tileSize === b.tileSize
+    );
+  }
   return a.kind === b.kind && elevationArchiveLabel(a) === elevationArchiveLabel(b);
 }
 
@@ -201,7 +215,7 @@ export const useTerrainStore = defineStore("terrain", () => {
   );
 
   const elevationUnavailableMessage = computed(() =>
-    elevationArchive.value
+    elevationArchive.value && elevationArchive.value.kind !== "tiles"
       ? ELEVATION_ARCHIVE_UNAVAILABLE_MESSAGE
       : ELEVATION_UNAVAILABLE_MESSAGE,
   );

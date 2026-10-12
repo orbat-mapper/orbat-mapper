@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
+import { nextTick } from "vue";
 import {
   resetElevationArchiveSessionState,
   useElevationArchive,
 } from "@/composables/elevationArchive";
 import { useNotifications } from "@/composables/notifications";
-import { useTerrainStore } from "@/stores/terrainStore";
+import { ELEVATION_UNAVAILABLE_MESSAGE, useTerrainStore } from "@/stores/terrainStore";
 import { MAPTERHORN_ELEVATION_SOURCE } from "@/modules/maplibreview/mapTerrain";
 
 const KEY = "elevation:archive";
@@ -34,6 +35,20 @@ const elevation = vi.hoisted(() => ({
   closeElevationArchive: vi.fn(),
 }));
 vi.mock("@/geo/elevationArchive", () => elevation);
+
+const tiles = vi.hoisted(() => ({ openElevationTiles: vi.fn() }));
+vi.mock("@/geo/elevationTiles", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/geo/elevationTiles")>()),
+  openElevationTiles: tiles.openElevationTiles,
+}));
+
+const TEMPLATE = "https://dem.example.lan/{z}/{x}/{y}.png";
+const TILES_SOURCE = {
+  type: "raster-dem",
+  tiles: [TEMPLATE],
+  encoding: "mapbox",
+  tileSize: 256,
+};
 
 const handle = {
   name: "dem.pmtiles",
@@ -248,6 +263,93 @@ describe("useElevationArchive", () => {
     expect(terrain.elevationArchivePending).toBe(true);
     expect(api.pendingElevationArchive.value?.menuText).toBe(
       "Retry https://b.example.lan/dem.pmtiles",
+    );
+  });
+});
+
+describe("a DEM tile server", () => {
+  beforeEach(() => {
+    tiles.openElevationTiles.mockImplementation(async (url, encoding) => ({
+      url,
+      encoding,
+      tileSize: 256,
+    }));
+  });
+
+  it("uses a tile server for elevation data, keeps it and turns terrain on", async () => {
+    const terrain = useTerrainStore();
+
+    expect(await useElevationArchive().addElevationTilesUrl(TEMPLATE, "mapbox")).toBe(
+      true,
+    );
+
+    expect(tiles.openElevationTiles).toHaveBeenCalledWith(
+      TEMPLATE,
+      "mapbox",
+      expect.any(AbortSignal),
+    );
+    expect(terrain.elevationSource).toEqual(TILES_SOURCE);
+    expect(terrain.elevationArchive).toEqual({
+      kind: "tiles",
+      url: TEMPLATE,
+      encoding: "mapbox",
+      tileSize: 256,
+    });
+    expect(terrain.terrainEnabled && terrain.hillshadeEnabled).toBe(true);
+    // The archive it replaces is let go.
+    expect(elevation.closeElevationArchive).toHaveBeenCalled();
+    expect(handles.deleteBasemapArchiveHandle).toHaveBeenCalledWith(KEY);
+  });
+
+  it("uses a remembered tile server again without asking the server", async () => {
+    useTerrainStore().elevationArchive = {
+      kind: "tiles",
+      url: TEMPLATE,
+      encoding: "mapbox",
+      tileSize: 256,
+    };
+    await nextTick();
+    setActivePinia(createPinia());
+    const terrain = useTerrainStore();
+
+    expect(await useElevationArchive().restoreRememberedElevationArchive()).toBe(
+      "reopened",
+    );
+
+    expect(tiles.openElevationTiles).not.toHaveBeenCalled();
+    expect(terrain.elevationSource).toEqual(TILES_SOURCE);
+  });
+
+  it("keeps the current source when the tile server cannot be used", async () => {
+    tiles.openElevationTiles.mockRejectedValue(
+      new Error("Could not reach dem.example.lan for elevation tiles."),
+    );
+    const terrain = useTerrainStore();
+
+    expect(await useElevationArchive().addElevationTilesUrl(TEMPLATE, "terrarium")).toBe(
+      false,
+    );
+
+    expect(terrain.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+    expect(lastNotification()).toMatchObject({
+      type: "error",
+      message: "Could not reach dem.example.lan for elevation tiles.",
+    });
+  });
+
+  it("returns to the default source when the tile server is removed", async () => {
+    const api = useElevationArchive();
+    await api.addElevationTilesUrl(TEMPLATE, "terrarium");
+
+    await api.removeElevationArchive();
+
+    expect(useTerrainStore().elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+  });
+
+  it("reports a failing tile server as a connection problem, not an unreadable archive", async () => {
+    await useElevationArchive().addElevationTilesUrl(TEMPLATE, "terrarium");
+    expect(useTerrainStore().elevationUnavailableMessage).toBe(
+      ELEVATION_UNAVAILABLE_MESSAGE,
     );
   });
 });

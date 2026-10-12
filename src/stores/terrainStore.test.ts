@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
-import { useTerrainStore } from "@/stores/terrainStore";
+import { isSameElevationArchive, useTerrainStore } from "@/stores/terrainStore";
 import { MAPTERHORN_ELEVATION_SOURCE } from "@/modules/maplibreview/mapTerrain";
 
 describe("terrain store", () => {
@@ -75,6 +75,19 @@ describe("terrain store", () => {
 
     settings.setConfigElevation({ status: "none" });
     expect(settings.elevationSource).toEqual(MAPTERHORN_ELEVATION_SOURCE);
+  });
+
+  it("tells tile servers apart by encoding and tile size as well as address", () => {
+    const tiles = {
+      kind: "tiles" as const,
+      url: "https://dem.example.lan/{z}/{x}/{y}.png",
+      encoding: "terrarium" as const,
+      tileSize: 256,
+    };
+    expect(isSameElevationArchive(tiles, { ...tiles })).toBe(true);
+    expect(isSameElevationArchive(tiles, { ...tiles, encoding: "mapbox" })).toBe(false);
+    expect(isSameElevationArchive(tiles, { ...tiles, tileSize: 512 })).toBe(false);
+    expect(isSameElevationArchive(tiles, { kind: "url", url: tiles.url })).toBe(false);
   });
 
   it("has no source for a remembered archive that is not open yet", async () => {

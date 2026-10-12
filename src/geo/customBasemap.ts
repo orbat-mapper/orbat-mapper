@@ -43,14 +43,30 @@ export function customBasemapSourceType(url: string): CustomBasemapSourceType {
   return "style";
 }
 
-/** A short label for the address: the host, and the last part of the path if there is one. */
+/**
+ * A short label for the address: the host, and the last part of the path if there is one. For a
+ * tile template that is the last part before the `{z}/{x}/{y}` placeholders, which name nothing.
+ */
 export function customBasemapTitle(url: string): string {
   try {
     const parsed = new URL(url);
-    const lastSegment = parsed.pathname.split("/").filter(Boolean).pop();
+    const segments = parsed.pathname.split("/").filter(Boolean).map(decodeSegment);
+    const placeholder = segments.findIndex((segment) => segment.includes("{"));
+    const lastSegment = (
+      placeholder >= 0 ? segments.slice(0, placeholder) : segments
+    ).pop();
     return lastSegment ? `${parsed.host}/${lastSegment}` : parsed.host;
   } catch {
     return url;
+  }
+}
+
+/** `URL` percent-encodes the braces of a placeholder; the label shows what the user typed. */
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
   }
 }
 

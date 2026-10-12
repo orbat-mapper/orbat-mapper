@@ -2,37 +2,50 @@
 import { computed, ref, watch } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
+import SimpleSelect from "@/components/SimpleSelect.vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCustomBasemaps } from "@/composables/customBasemaps";
 import { useElevationArchive } from "@/composables/elevationArchive";
 import { customBasemapSourceType } from "@/geo/customBasemap";
+import type { ElevationEncoding } from "@/geo/maplibreLayerConfigTypes";
 
 // One dialog for both entry points — the Layers panel button and the map context menu — so the
 // wording, the examples and what counts as a valid address are defined once.
 const open = defineModel<boolean>({ default: false });
 
 const { addCustomBasemap } = useCustomBasemaps();
-const { addElevationArchiveUrl } = useElevationArchive();
+const { addElevationArchiveUrl, addElevationTilesUrl } = useElevationArchive();
 const url = ref("");
-// An elevation archive looks like imagery, thus the user has to say what the archive holds.
+// Elevation data looks like imagery, thus the user has to say what the address holds.
 const isElevation = ref(false);
+// DEM tiles do not say how they encode elevation. An archive may say so in its metadata, thus it is
+// not asked for one.
+const encoding = ref<ElevationEncoding>("terrarium");
+const ENCODINGS = [
+  { label: "Terrarium (Mapterhorn, AWS Terrain Tiles)", value: "terrarium" },
+  { label: "Mapbox (Mapbox, MapTiler)", value: "mapbox" },
+];
 const isArchiveAddress = computed(() => customBasemapSourceType(url.value) === "pmtiles");
 
 watch(open, (isOpen) => {
   if (isOpen) {
     url.value = "";
     isElevation.value = false;
+    encoding.value = "terrarium";
   }
 });
 
+function addAddress() {
+  if (!isElevation.value) return addCustomBasemap(url.value);
+  return isArchiveAddress.value
+    ? addElevationArchiveUrl(url.value)
+    : addElevationTilesUrl(url.value, encoding.value);
+}
+
 async function onSubmit() {
   // The composables report a bad address themselves, and leave the dialog open with the text in it.
-  const added =
-    isArchiveAddress.value && isElevation.value
-      ? await addElevationArchiveUrl(url.value)
-      : await addCustomBasemap(url.value);
-  if (added) open.value = false;
+  if (await addAddress()) open.value = false;
 }
 </script>
 
@@ -40,7 +53,7 @@ async function onSubmit() {
   <NewSimpleModal v-model="open" dialog-title="Add map server">
     <template #description>
       Type the address of a map server. ORBAT Mapper keeps it in this browser and offers
-      it as a base layer.
+      it as a base layer, or uses it for elevation data.
     </template>
     <form class="space-y-4" @submit.prevent="onSubmit()">
       <Input
@@ -66,11 +79,22 @@ async function onSubmit() {
         </div>
       </dl>
       <InputCheckbox
-        v-if="isArchiveAddress"
         v-model="isElevation"
-        label="Elevation archive"
-        description="Use the archive for 3D terrain and hillshading, not as a base layer."
+        label="Elevation data"
+        :description="
+          isArchiveAddress
+            ? 'Use the archive for 3D terrain and hillshading, not as a base layer.'
+            : 'Use the tiles for 3D terrain and hillshading, not as a base layer. Type a tile address with {z}, {x} and {y}, or the address of a TileJSON document.'
+        "
         data-test="map-server-elevation"
+      />
+      <SimpleSelect
+        v-if="isElevation && !isArchiveAddress"
+        v-model="encoding"
+        label="Encoding"
+        description="How the tiles hold the elevation. With the incorrect encoding, the terrain is not correct."
+        :items="ENCODINGS"
+        data-test="map-server-encoding"
       />
       <div class="flex justify-end gap-2">
         <Button type="button" variant="ghost" @click="open = false">Cancel</Button>

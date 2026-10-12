@@ -385,11 +385,24 @@ To stop using the archive, select _Terrain_ > _Remove elevation archive_. ORBAT 
 `maplibreConfig.json` again, or Mapterhorn if the configuration has no elevation data. In the standalone file, ORBAT
 Mapper uses Mapterhorn again only if you selected _Use Mapterhorn online_. The file on your disk does not change.
 
-### An elevation archive on a server
+### Elevation data on a server
 
-At Level 1 you can put the elevation archive on your web server. Select **Add map server…**, type the address of the
-archive, and select **Elevation archive**. The checkbox shows only for an address that ends with `.pmtiles`. ORBAT Mapper
-keeps the address in the browser and opens the archive again after a reload.
+At Level 1 you can put the elevation data on a server. Select **Add map server…**, type the address, and select
+**Elevation data**. ORBAT Mapper accepts three types of address:
+
+| Address                                    | Type              | Example                                                       |
+| ------------------------------------------ | ----------------- | ------------------------------------------------------------- |
+| A file with the extension `.pmtiles`       | Elevation archive | `http://mapserver.example.local:8080/terrain.pmtiles`         |
+| A tile address with `{z}`, `{x}` and `{y}` | DEM tile server   | `http://mapserver.example.local:8080/terrain/{z}/{x}/{y}.png` |
+| All other addresses                        | TileJSON document | `http://mapserver.example.local:8080/terrain/tiles.json`      |
+
+For a DEM tile server or a TileJSON document, also select the **Encoding**: `Terrarium` or `Mapbox`. The tiles do not
+tell ORBAT Mapper which encoding they use. Refer to the warning in
+[Elevation data in the configuration](#elevation-data-in-the-configuration). ORBAT Mapper reads the size of the tiles
+from one tile when you add the server.
+
+ORBAT Mapper keeps the address in the browser and uses it again after a reload. It replaces an elevation archive that
+you opened before. To stop using a tile server, select _Terrain_ > _Remove elevation tile server_.
 
 This setting applies only to your browser. To give elevation data to all the users, put it in `maplibreConfig.json`.
 
