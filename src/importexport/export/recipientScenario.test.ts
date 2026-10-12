@@ -204,6 +204,22 @@ describe("snapshotSourceAt", () => {
     });
   });
 
+  it("leaves out units hidden on the map by themselves, their group or their side", () => {
+    const hide = (apply: (scenario: ReturnType<typeof scenarioAt>) => void) => {
+      const scenario = scenarioAt(200);
+      apply(scenario);
+      return snapshotSourceAt(scenario, settings).unitsByGroup["red-detected"];
+    };
+
+    expect(hide(({ store }) => (store.state.unitMap["r7"].isHidden = true))).toEqual([
+      expect.objectContaining({ id: "r7-1" }),
+    ]);
+    expect(
+      hide(({ store }) => (store.state.sideGroupMap["red-detected"].isHidden = true)),
+    ).toEqual([]);
+    expect(hide(({ store }) => (store.state.sideMap["red"].isHidden = true))).toEqual([]);
+  });
+
   it("reads the units at another time and restores the current time", () => {
     const scenario = scenarioAt(200);
     const { state } = scenario.store;

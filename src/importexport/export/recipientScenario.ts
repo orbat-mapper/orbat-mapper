@@ -3,6 +3,7 @@ import type { OrbatMapperExportSettings } from "@/types/importExport";
 import type { EntityId } from "@/types/base";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
 import type { NUnit } from "@/types/internalModels";
+import { isUnitHiddenInState } from "@/scenariostore/unitManipulations";
 
 /** A unit as it is drawn at the current scenario time. */
 export type SnapshotUnit = Pick<
@@ -63,7 +64,8 @@ export function snapshotSourceAt(
     for (const groupId of groupIds) {
       const units: SnapshotUnit[] = (unitsByGroup[groupId] = []);
       scenario.unitActions.walkItem(groupId, (unit) => {
-        units.push(toSnapshotUnit(unit));
+        // Units hidden on the map are not drawn, so a snapshot must not show them.
+        if (!isUnitHiddenInState(state, unit)) units.push(toSnapshotUnit(unit));
       });
     }
     return { timestamp, unitsByGroup };
