@@ -5,6 +5,7 @@ import type { NState, NUnitAdd } from "@/types/internalModels";
 import { createNameToIdMapObject, nanoid } from "@/utils";
 import {
   convertStateToInternalFormat,
+  sortStatesByTime,
   type ScenarioState,
 } from "@/scenariostore/newScenarioStore";
 import {
@@ -199,8 +200,10 @@ export function addUnitHierarchy(
       const renewStateIds = id !== unit.id;
       const unitState =
         includeState && unit.state
-          ? [...unit.state].map((s) =>
-              convertStateToInternalFormat(renewStateIds ? { ...s, id: "" } : s),
+          ? sortStatesByTime(
+              unit.state.map((s) =>
+                convertStateToInternalFormat(renewStateIds ? { ...s, id: "" } : s),
+              ),
             )
           : [];
 

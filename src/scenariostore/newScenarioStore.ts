@@ -119,6 +119,12 @@ export function convertStateToInternalFormat(e: State): State {
   };
 }
 
+/** Files may list states in any order, but the time code expects them sorted by
+ * time. The sort is stable, so states at the same time keep their file order. */
+export function sortStatesByTime<T extends { t: number }>(states: T[]): T[] {
+  return states.sort((a, b) => a.t - b.t);
+}
+
 export function prepareScenario(newScenario: Scenario | LoadableScenario): ScenarioState {
   const unitMap: Record<EntityId, NUnit> = {};
   const sideMap: Record<EntityId, NSide> = {};
@@ -256,7 +262,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     if (!unit.state) {
       unit.state = [];
     } else {
-      unit.state = unit.state.map(convertStateToInternalFormat);
+      unit.state = sortStatesByTime(unit.state.map(convertStateToInternalFormat));
     }
     unit.state
       ?.filter((s) => s.status)
