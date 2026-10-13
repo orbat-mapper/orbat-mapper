@@ -6,108 +6,77 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added a Snapshot option for each selected side group in the partial ORBAT Mapper export. A snapshot group holds only where its units are at the current scenario time, or at another time set in the export, with their names and symbols, so a side can be shown the opposing units it has detected without their history, plans, descriptions, resources, range rings or chain of command. A side exported only through snapshot groups also leaves out its description and the units attached directly to it.
-- Scenario events are now left out of partial ORBAT Mapper exports unless "Include scenario events" is ticked. Events after the snapshot time are then left out too, unless "Leave out later events" is unticked.
-- Added a Unit changes panel to the scenario timeline. Clicking a timeline bin lists the unit and map item changes behind it, and the Changes button (or `h`) lists the changes around the current time. The list view shows the changes in time order with a divider at the current time and links to the previous and next change. The lanes view shows one lane per unit or map item on a time axis in the scenario's time zone, with optional trips, and changes can be dragged to a new time. Box selecting in the lanes scrolls them when the pointer is held near the top or bottom edge, so changes outside the view can be selected. Changes can be filtered by kind, by name and to the current map view, over a window from ±1 hour to ±7 days. The panel floats over the map or docks below it, and its view, columns and sorting are remembered.
+- Added a Snapshot option for side groups in partial ORBAT Mapper exports. A snapshot group holds only the positions, names and symbols of its visible units at a chosen time, so a side can be shown the opposing units it has detected without their history or plans. Importing a file refuses its snapshot groups, so they cannot wipe the scenario's units.
+- Partial ORBAT Mapper exports leave out scenario events unless "Include scenario events" is ticked, and then leave out events after the snapshot time by default.
+- Added a Unit changes panel to the scenario timeline, opened from a timeline bin or the Changes button (`h`). It lists the unit and map item changes around the current time, or shows them on lanes where they can be dragged to a new time, snapping to nearby changes, scenario events and the current time.
 - Added new control measures: Bomb Area, Smoke, Series or Group of Targets, Lane, Ferry, Raft Site, Ford Easy, Ford Difficult, Unexploded Explosive Ordnance (UXO) Area, and the Interdict mission task.
+- Added a Graphics tab to the sidebar: a searchable catalogue of every control measure to draw, or drag onto the map. It includes the point control measures from symbol set 25 that were missing before, such as checkpoints, which can be sized in pixels or meters.
 - Added a unique designation (Field T) label to generic lines, polygons, rectangles, circles, sectors, and Classic Arrows.
 - Added a Bézier smoothing style to generic lines, polygons, and Classic Arrows, where the control points shape the curve instead of lying on it.
 - Added an arrowhead handle to Classic Arrows for adjusting the head length and width while editing. Alt+click the handle to restore the default size.
-- MilX imports now bring in tactical graphics as control measures, with each MilX layer becoming a control-measure layer. Identity and planned status are kept, map.army free-format shapes are imported as generic graphics with their colours and text, and graphics without an equivalent are reported. Imported units also keep their direction and all text amplifiers.
-- Added a choice of where imported MilX units get their positions: as the initial location, at the current scenario time, or at a scenario event.
-- Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together. Turning it on tilts a top-down map so the relief is visible, and turning it off levels the map again. The button turns amber when elevation data is unavailable.
-- Added offline 3D terrain and hillshading from an elevation archive: a PMTiles archive of elevation tiles, such as an extract of Mapterhorn. Open it from the Terrain submenu, or by address from "Add map server" with the new "Elevation archive" checkbox. The archive replaces Mapterhorn while it is in use, and Chromium browsers can reopen it in the next session.
-- A PMTiles archive of PNG or WebP tiles dropped on the map opens as a basemap and offers "Use for terrain", which moves it to elevation data and puts back the previous basemap. The drop message now lists every kind of file that the map accepts.
-- Added range rings to the Layers panel. Range rings as a whole, each range ring group and the ungrouped rings can be shown or hidden there, and each group and the ungrouped rings open into a list of their rings, each with its own visibility toggle. Range ring groups can also be added and renamed there. Hiding all rings, a group or the ungrouped rings is saved with the scenario and does not change each ring's own visibility setting. Range rings draw in their place in the layer order and can be dragged among the feature and reference layers, or above the control measures.
-- Added editing of many units at once in the unit details panel. With several units selected, setting the status, changing the symbol, removing from the map, editing text amplifiers and speeds, locking and removing TO&E items apply to every selected unit, skipping locked ones, and each change is a single undo step. Fields that differ between the units show "Mixed", and the header summarises the selection with a list for removing units from it.
+- MilX imports now bring in tactical graphics as control measures and keep the units' direction and text amplifiers, with a choice of where imported units get their positions.
+- Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together and tilts the map to show the relief.
+- Added offline 3D terrain from a PMTiles elevation archive, opened from the Terrain submenu or "Add map server". A PMTiles archive of PNG or WebP tiles dropped on the map can also be used for terrain.
+- Added range rings to the Layers panel. All rings, each group and single rings can be shown or hidden there, groups can be added and renamed, and rings can be moved in the layer order.
+- Added editing of many units at once in the unit details panel, such as setting the status, changing the symbol or removing from the map, with each change a single undo step.
+- Added an orbit mode to the map ("Orbit here" in the map context menu, or `o`) that slowly circles a spot, with an optional Hellfire strike (shift-click while orbiting).
 - The map context menu marks the clicked spot with a target.
-- Added an orbit mode to the map. "Orbit here" in the map context menu, or `o` for the middle of the screen, glides the camera to the spot and slowly circles it. While orbiting, clicking the map picks a new center, and zooming or tilting pauses the orbit until the gesture ends. Press `o` or Escape to stop.
-- Added a Unit status category to the Select tab for selecting units by their status at the current scenario time. Each status is marked with its colour.
-- Added a Narrow mode to the Select tab. With the Add/Narrow switch on Narrow, clicking a category keeps only the selected units in it, so selecting Land unit and then narrowing to a side gives that side's land units.
-- Added a Zoom to button to the Select tab's footer, which fits the map to the selected units that have a location at the current scenario time.
-- Changes dragged in the Unit changes lanes now snap to the changes on nearby lanes, scenario events and the current time, with a guide line across the lanes and the changes snapped to highlighted. Hold Alt to snap to the 5-minute grid only. Scenario events are shown as lines across the lanes, with markers on the time axis.
+- Added a Unit status category, a Narrow mode and a Zoom to button to the Select tab. Narrow keeps only the selected units in a clicked category, such as one side's land units.
 - Unit statuses can now have a colour, set in the scenario settings.
-- Added a Graphics tab to the sidebar, after the Select tab: a catalogue of every control measure with search, filters for Points, Lines, Areas, Tasks and Generic, collapsible sections, a choice of cell size and optional descriptions. Click a control measure to draw it, or drag it onto the map to place it where it is dropped.
-- Added the point control measures from symbol set 25 that were not available before, such as checkpoints and action points. They are placed from the Graphics tab, stored in control-measure layers, and can be moved, rotated, resized and given text amplifiers from their details panel.
-- Point control measures can be sized in pixels, keeping their size on screen, or in meters, scaling with the map. Switching keeps the symbol's current size on screen, and the Graphics tab sets the unit for new ones.
-- Added an optional Hellfire strike to orbit mode. Turn it on in the map settings or the command palette, then shift-click while orbiting, or use the map context menu, to fire a missile at a point. A setting decides what happens to the units hit, and each strike is one undo step.
+- Added Duplicate to the layer menu, which copies a layer and its map items into a new, unlocked layer.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
-- Added Duplicate to the layer menu. It copies a layer and all its map items into a new layer right after it, named "(copy)", with the items in the same places, as a single undo step. A locked layer can be duplicated, and the copy is unlocked.
 
 ### Changed
 
-- When importing layers from an ORBAT Mapper scenario, a layer that matches an existing layer by ID now defaults to Replace existing layer, and its replacement preview shows right away, so re-importing a returned file updates the layer instead of duplicating it. Import as a separate copy is still available, and notes when a layer with the same name already exists.
-- Zooming or panning to a unit or location now centers it in the part of the map not covered by toolbars or an overlay details panel.
-- The draw toolbar now puts control measures first. The pinned control measures are buttons on the toolbar instead of in a dropdown menu, an All… button opens the full control measure search, and the tools are captioned as Control measures, Shapes and Options. Up to five control measures are pinned, and the pins are reset from the control measure search. When the map is narrow, the toolbar shows fewer pins, and scroll buttons appear when the tools do not fit.
-- The draw toolbar's Edit, Move, Duplicate and Delete tools now appear in a Selection group only while map items are selected, or while Edit or Move is on. Record feature geometry moved to Options. The palette button among the control measures styles the selected control measures, or the new ones when none are selected, and changes to a selection also apply to new control measures.
-- The scale and the pointer location stay in the bottom-left corner of the map until they would run into a toolbar, and then move up just enough to clear it, including an open draw, track or measure toolbar.
-- The Falklands example scenario now has range ring groups for its surface combatants, ship tracks that no longer cross land, and the sinking or damage of Ardent, Antelope, Coventry, Sir Galahad, Glamorgan and Santa Fe.
-- Classic Arrow heads now keep the same size whatever the arrow's length, instead of growing with the line.
-- Classic Arrows are now drawn from the tip: the first click places the arrowhead. Classic Arrows in existing scenarios are converted automatically when the scenario is opened.
-- Adding many control measures at once, such as when opening a large scenario, is much faster.
-- Right-to-left labels on the map (such as Arabic and Hebrew) are now drawn by MapLibre itself instead of the separate RTL text plugin, so nothing extra is downloaded for them. Labels in complex scripts such as Devanagari and Khmer are now also drawn correctly.
-- Playback and timeline scrubbing are much smoother in large scenarios. Only units and features that change are redrawn, moving units are updated separately from stationary ones, and range ring groups only merge the rings that overlap.
-- Playback speed is now set as scenario time per real second, so playback runs at the same pace whatever the frame rate. The default is 15 hours per second, and the playback menu shows the current speed.
-- Dragging units on the map is smoother, since only the dragged units are redrawn while dragging.
+- When importing layers from an ORBAT Mapper scenario, a layer with the same ID now defaults to Replace existing layer, so a returned file updates the layer instead of duplicating it.
+- Zooming or panning to a unit, item, layer or location now centers it in the part of the map not covered by toolbars or panels, with a margin around it.
+- The draw toolbar now shows up to five pinned control measures as buttons, with an All… button for the rest. Edit, Move, Duplicate and Delete appear only while map items are selected, and Record feature geometry has moved to Options.
+- The scale and pointer location now move up only when a toolbar would cover them.
+- The Falklands example scenario now has range ring groups, ship tracks that no longer cross land, and the sinking or damage of Ardent, Antelope, Coventry, Sir Galahad, Glamorgan and Santa Fe.
+- Classic Arrows are now drawn from the tip, and their heads keep the same size whatever the arrow's length. Existing arrows are converted when the scenario opens.
+- Playback, timeline scrubbing, dragging units and adding many control measures are much faster in large scenarios.
+- Playback speed is now set as scenario time per real second (15 hours by default), so it no longer depends on the frame rate.
+- Right-to-left and complex-script labels, such as Arabic and Devanagari, are now drawn by MapLibre without the separate RTL text plugin.
 - Range rings now follow the zoom visibility range of their unit, and grouped range rings with different zoom ranges still merge into one shape.
-- Units on the map are now clicked and hovered on their symbol only, instead of anywhere within their text amplifiers. When units overlap, the closest one is picked.
-- 3D terrain and hillshading are no longer experimental. Their settings have moved from the Labs menu to a Terrain submenu in the map context menu and in the main menu under View, and they are now remembered between visits.
-- The standalone file no longer reads elevation data from Mapterhorn by itself. The terrain button offers a choice between Mapterhorn online and an elevation archive, and the choice is remembered.
-- Opening the Layers panel no longer reveals every time-hidden layer and item. A "Show time-hidden items" switch does that instead. Control measures are listed with a preview of their symbol, layer actions appear when hovering a row so names get the full width, and items hidden with the eye toggle are dimmed.
-- Hovering an item in the Layers panel now shows a zoom button next to the visibility toggle.
-- Zooming to items, layers, units and search results now leaves a margin around the target and keeps it clear of the map header, toolbars, the floating details panel and the map controls.
-- Reworked the Select tab's categories. Status is now Symbol status, and headquarters, task force and dummy indicators have their own category. The categories are reordered, starting with Side, Main unit icon and Command level. Categories that can't narrow the selection, such as one where every unit shares the same value, are hidden, and rows with no units are dimmed. Map visibility rows have their own icons, and Main unit icon has an "Expand all" / "Collapse all" button.
-- Moved the Select tab between Layers and Settings.
-- The Select tab's mode switch, Invert and a new Clear button now stay at the top while scrolling, in place of the panel title. Excluded categories show as a line there with their own Clear, and the help text is shorter.
-- The unit details header shows the unit's status next to its short name, and units without a short name get an "Add short name" field.
-- The hide-on-map button has moved to the unit details toolbar. Locked units show a lock icon in the header that unlocks them, and multi-select gets a lock button in the toolbar.
-- The unit details toolbar has tooltips, including why a button is disabled, and the unit symbol shows that it can be clicked to change it.
-- Unit statuses and range ring groups in the scenario settings now use the same sortable grid as the other settings lists, with multi-select delete and inline editing.
-- Renamed the "Sensor groups" settings section to "Range ring groups".
-- Symbol fill colours in the scenario settings show a swatch next to the hex code, which stays visible for dark colours in dark mode.
-- "Remove from map" now also drops the unit's later planned moves, so a destroyed unit no longer reappears at its next waypoint. Other changes in those entries, such as a status or a title, are kept.
-- Partial ORBAT Mapper exports now start with no layers selected each time the export opens, so a team's file only holds the layers picked for it. A Select all layers / Clear layers toggle selects every layer in one click, and presets still restore their saved layers.
+- Units on the map are now clicked and hovered on their symbol only, and the closest one is picked when units overlap.
+- 3D terrain and hillshading are no longer experimental. Their settings are in a Terrain submenu and are remembered, and the standalone file asks before reading elevation data from Mapterhorn.
+- The Layers panel only reveals time-hidden items when "Show time-hidden items" is on. Control measures show a preview of their symbol, layer actions and a zoom button appear on hover, and hidden items are dimmed.
+- Reworked the Select tab, which now sits between Layers and Settings. Its categories are reordered, Status is now Symbol status, categories that can't narrow the selection are hidden, and the mode switch, Invert and a new Clear button stay at the top.
+- The unit details header shows the unit's status and an "Add short name" field, and its toolbar has the hide-on-map and lock buttons, with tooltips that say why a button is disabled.
+- Unit statuses and range ring groups in the scenario settings use the same sortable grid as the other lists, "Sensor groups" is renamed "Range ring groups", and fill colours show a swatch.
+- "Remove from map" now also drops the unit's later planned moves, so a destroyed unit no longer reappears at its next waypoint.
+- Partial ORBAT Mapper exports now start with no layers selected, with a Select all layers toggle, so a team's file only holds the layers picked for it.
 - ORBAT Mapper exports are now written like Download scenario, without internal fields and with timestamps in the scenario's time zone.
 - The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
 - The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
-- The Hellfire strike is drawn on a canvas over the map, so 3D terrain keeps its frame rate. On a tilted map the missile, fireball and smoke look 3D and cast shadows, and a "Shake map on impact" option in the Hellfire menu turns off the shake.
 - "Clear location" on a unit state entry is now "Hide until next move", since the unit comes back at its next planned move. Use "Remove from map" to keep a unit off the map.
 
 ### Fixed
 
-- Fixed a moving unit stopping when a status, symbol, title or other change without a location was recorded partway along its route, and then moving at the wrong speed for the rest of the leg.
-- Fixed importing a team's units into a scenario dropping the styles of range ring groups, statuses and custom fill colours the scenario did not have yet, so a new "sensors" ring group or a coloured status arrived as a bare name. The import now brings in the definitions the imported units use and lists them under Review changes. Groups, statuses and colours the scenario already has keep their own styles.
-- Fixed "Append states after latest existing timestamp" adding a second copy of a state that the imported file had moved later, so two states shared the same ID. Such changed states are now left out and listed with the ignored items; use "Replace state history" to take them.
-- Fixed partial ORBAT Mapper exports keeping the file and scenario names of an earlier export or preset after another side was selected, which could label a file for the wrong side. The names now follow the selected sides and layers each time the dialog opens, and a name that is typed or loaded from a preset is kept only until the selection changes.
+- Fixed a moving unit stopping, and then moving at the wrong speed, when a change without a location was recorded partway along its route.
+- Fixed importing a team's units dropping the styles of range ring groups, statuses and fill colours the scenario did not have yet. Ones the scenario already has keep their own styles.
+- Fixed "Append states after latest existing timestamp" duplicating a state that the imported file had moved later. Such states are now listed as ignored.
+- Fixed partial ORBAT Mapper exports keeping the file and scenario names of an earlier export after another side was selected, which could label a file for the wrong side.
 - Fixed removing an equipment, personnel or supply item also deleting the unit's "Remove from map", "None" status and title-only entries.
-- Fixed changing a unit's symbol not updating the map, ORBAT, or details panel when the unit had no recorded state changes, which affected units imported or merged from other scenario files.
+- Fixed a unit status set to None being lost when the scenario was saved or exported.
+- Fixed "Add new states" bringing back a unit removed from the map. A team's later planned moves for it are now left out and listed in the import preview.
+- Fixed importing a side or group being refused when one of its units had a timed attachment to a unit outside it, such as a unit on another side.
+- Fixed HTML in unit names, map attributions and KML feature details running script.
+- Fixed changing a unit's symbol not updating the map, ORBAT or details panel for units with no recorded state changes.
+- Fixed units moving during playback briefly disappearing when they stop, their labels blinking, and the map context menu and rotate tool not recognising them.
 - Fixed clicking an empty spot on the map in move mode not clearing the selection.
-- Fixed a dropped unit, or one that stops moving during playback, briefly disappearing from the map.
-- Fixed the map context menu and rotate tool not recognising units that are moving during playback.
-- Fixed unit labels blinking or barely showing on moving units during playback.
 - Fixed the play button tooltip, which described the undo action.
 - Fixed unit labels shown below the symbol covering the status bar or mobility indicator.
 - Fixed plain `.milxly` files being detected as TSV instead of MilX, and restored the "keep dialog open" toggle in the import dialog.
-- Fixed the Select tab's symbol categories using each unit's starting symbol, so units that later become damaged or destroyed were counted as present. They now use the symbol at the current scenario time.
-- Fixed the symbol set rows under Symbol modifiers in the Select tab counting and selecting every unit in the symbol set instead of only those with a modifier.
-- Fixed long category names in the Select tab running into the unit count.
-- Fixed the add equipment, personnel and supplies shortcuts not opening the add form in the scenario settings.
-- Fixed settings grids not refreshing after an inline edit, and row stripes stopping short of the action column.
-- Fixed drawing a feature doing nothing when the scenario had no feature layer. The layer is now created with the first drawn item, and arming a control measure tool no longer adds an empty layer.
-- Fixed a unit status set to None being lost when the scenario was saved or exported, so the unit went back to its earlier status after reloading.
-- Fixed re-importing a returned partial export wiping the state history, range rings and resources of units that file showed as a snapshot group. Exports now mark snapshot groups with their snapshot time, and the import refuses a side or group that holds one and labels it "(snapshot)".
-- Fixed snapshot groups in partial exports including units hidden on the map, by themselves or by a hidden side or group.
-- Fixed a unit name containing HTML running script in the command palette when a search matched only its short name, and map attributions containing HTML running script when the image export opened.
+- Fixed the Select tab's symbol categories using each unit's starting symbol instead of the one at the current scenario time, symbol modifier rows counting every unit in the symbol set, and long category names running into the count.
+- Fixed the add equipment, personnel and supplies shortcuts in the scenario settings, and settings grids not refreshing after an inline edit.
+- Fixed drawing doing nothing when the scenario had no feature layer. The layer is now created with the first drawn item.
 - Fixed copied units and map items keeping the state entry IDs of the originals when they got new IDs on import or paste.
 - Fixed the Exists? column in the import preview not updating after an import with "keep dialog open", or after undo.
-- Fixed scenarios in a historical time zone whose offset is not whole minutes, such as Santiago in 1879, losing all unit and event times when saved or duplicated. Such times are now saved in UTC.
+- Fixed scenarios in a historical time zone whose offset is not whole minutes, such as Santiago in 1879, losing all unit and event times when saved or duplicated.
 - Fixed draft recovery missing drafts written after restoring a draft, or when a side or group fill colour was missing from the colour list.
 - Fixed custom symbol label spacing changing when the label size changed.
 - Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
-- Fixed catalogue point symbols in the Graphics tab being hard to see in dark mode.
-- Fixed HTML in a KML layer's feature details running script when the feature was clicked.
-- Fixed "Add new states" bringing back a unit that had been removed from the map, by appending a team's later planned moves. Those moves are now left out and listed in the import preview, and the rest of each state is kept.
-- Fixed importing a side or group being refused when one of its units had a timed attachment to a unit outside it, such as a unit on another side or in another group. This also refused a team's unedited file after an attachment was made in the scenario. Such attachments are now kept, and only an attachment to a unit that does not exist after the import is refused.
 
 ## September 2026
 
