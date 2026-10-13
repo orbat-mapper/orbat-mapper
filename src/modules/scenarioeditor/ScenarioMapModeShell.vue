@@ -79,7 +79,10 @@ const bottomLeftClearance = useBottomLeftClearance(
         ref="mapAreaRef"
         class="relative flex min-w-64 flex-auto flex-col"
         :class="{ 'map-measured-toolbar': !isMobile && showBottomToolbar }"
-        :style="{ '--map-bottom-left-clearance': `${bottomLeftClearance}px` }"
+        :style="{
+          '--map-bottom-left-clearance': `${bottomLeftClearance}px`,
+          '--map-bottom-toolbar-inset': `${bottomToolbarInset}px`,
+        }"
       >
         <slot name="map" />
         <main

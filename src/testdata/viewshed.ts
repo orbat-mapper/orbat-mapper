@@ -117,7 +117,7 @@ export function attachPointDragMock(_map: DraggableMap, options: PointDragOption
 export const observerDrag = {
   /** Presses the observer at this index, by number. */
   start(index: number) {
-    if (!dragOptions?.enabled()) throw new Error("No observer to drag");
+    if (!dragOptions?.points().length) throw new Error("No observer to drag");
     dragOptions.onStart(index);
   },
   move(position: LngLat) {

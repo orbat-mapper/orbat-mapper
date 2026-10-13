@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   computed,
+  defineAsyncComponent,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -49,7 +50,7 @@ import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.
 import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
-import ViewshedDeck from "@/modules/maplibreview/ViewshedDeck.vue";
+import { useViewshedStore } from "@/stores/viewshedStore";
 import ReferenceGridControl from "@/modules/maplibreview/ReferenceGridControl.vue";
 import { useReferenceGridLayers } from "@/modules/maplibreview/useReferenceGridLayers";
 import { useReferenceGridStore } from "@/stores/referenceGridStore";
@@ -106,6 +107,11 @@ const {
 
 const mlMap = shallowRef<MlMap>();
 useMapViewshed(mlMap);
+const viewshed = useViewshedStore();
+// Loaded on first use: the deck shows only while the Labs viewshed is on.
+const ViewshedDeck = defineAsyncComponent(
+  () => import("@/modules/maplibreview/ViewshedDeck.vue"),
+);
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const referenceGrid = useReferenceGridStore();
 const { labels: referenceGridLabels, dispose: disposeReferenceGridLayers } =
@@ -346,7 +352,7 @@ function onCloseActiveDetailsPanel() {
       />
     </template>
     <template #footer-overlays>
-      <ViewshedDeck v-if="mlMap" />
+      <ViewshedDeck v-if="mlMap && viewshed.active" />
       <div
         v-if="referenceGrid.visible"
         data-reference-grid-labels

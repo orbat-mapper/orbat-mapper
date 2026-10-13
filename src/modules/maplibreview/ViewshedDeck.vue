@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { onKeyStroke } from "@vueuse/core";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import {
   ArrowUpToLine,
@@ -52,13 +51,11 @@ import {
   SEEN_BY_BANDS,
   VIEWSHED_COLORS,
 } from "@/geo/viewshedImage";
-import { inputEventFilter } from "@/components/helpers";
 import {
   useViewshedStore,
   VIEWSHED_DETAILS,
   VIEWSHED_RADIUS,
 } from "@/stores/viewshedStore";
-import { useTerrainStore } from "@/stores/terrainStore";
 
 /**
  * The current Viewshed, ported from tactrace, floating at the foot of the map: placing observers,
@@ -73,7 +70,6 @@ import { useTerrainStore } from "@/stores/terrainStore";
  * it on.
  */
 const viewshed = useViewshedStore();
-const terrain = useTerrainStore();
 
 /** Metrics shared by the deck's controls. */
 const motionSafe =
@@ -86,8 +82,10 @@ const FLOATING_SURFACE_CLASS =
   "rounded-lg border bg-background/90 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10";
 const DECK_SHELL_CLASS = `pointer-events-auto [scrollbar-width:none] flex max-w-[calc(100vw-2rem)] items-center gap-1 overflow-x-auto p-1 ${FLOATING_SURFACE_CLASS}`;
 const {
+  active,
   placing,
   observer,
+  currentId,
   observerHeight,
   targetHeight,
   radius,
@@ -110,15 +108,6 @@ const radiusKm = computed({
   set: (value: number) => (radius.value = value * 1000),
 });
 
-/** The current observer, by number, in the observer menu. */
-const currentNumber = computed({
-  get: () => String(number.value ?? ""),
-  set: (value: string) => {
-    const picked = viewsheds.value.find((view) => String(view.number) === value);
-    if (picked) viewshed.select(picked.id);
-  },
-});
-
 /** The settings at a glance: eye height, target height, and reach. */
 const settingsSummary = computed(() => {
   return `${observerHeight.value} m · ${targetHeight.value} m · ${radiusKm.value} km`;
@@ -128,10 +117,6 @@ const settingsTitle = computed(
     `Viewshed settings: observer ${observerHeight.value} m, target ${targetHeight.value} m, ` +
     `radius ${radiusKm.value} km`,
 );
-
-/** Escape closes an open popover or menu first, not the placing. */
-const settingsOpen = ref(false);
-const observerMenuOpen = ref(false);
 
 /** The cell size the shown result has, which the radius and the elevation
  *  data decide as much as the detail does. */
@@ -144,7 +129,6 @@ const cellLabel = computed(() =>
  *  Reading is for screen readers alone: the spinner shows it, and the word
  *  would widen the centred deck until the share replaces it. */
 const message = computed((): { text: string; suffix?: string } => {
-  if (!terrain.elevationSource) return { text: "No elevation data is open" };
   if (!observer.value) return { text: "Click the map to place the observer" };
   if (status.value === "error") return { text: "Elevation data could not be read" };
   // A drag keeps showing the last result while the next one computes.
@@ -199,27 +183,14 @@ const legend = computed(() => {
   if (display.value === "dead") return deadGroundLegend;
   return coverages.value.some((coverage) => coverage.seenBy) ? seenByLegend : null;
 });
-
-function setPlacing(on: boolean) {
-  if (on) viewshed.start();
-  else viewshed.stop();
-}
-
-onKeyStroke("Escape", (event) => {
-  if (!placing.value || !inputEventFilter(event)) return;
-  if (settingsOpen.value || observerMenuOpen.value) return;
-  event.preventDefault();
-  if (observer.value) viewshed.stop();
-  else viewshed.close();
-});
 </script>
 
 <template>
   <div
-    class="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4 sm:bottom-28"
+    class="pointer-events-none absolute inset-x-0 bottom-[calc(1rem+var(--map-bottom-toolbar-inset,0px))] z-20 flex justify-center px-4"
   >
     <Transition name="deck">
-      <div v-if="placing || observer" class="flex max-w-full flex-col items-center gap-2">
+      <div v-if="active" class="flex max-w-full flex-col items-center gap-2">
         <p
           v-if="placing && observer"
           data-test="viewshed-hint"
@@ -255,11 +226,10 @@ onKeyStroke("Escape", (event) => {
           :class="DECK_SHELL_CLASS"
         >
           <Toggle
-            :model-value="placing"
+            v-model="placing"
             :class="DECK_TOGGLE_CLASS"
             title="Place observer"
             aria-label="Place observer"
-            @update:model-value="setPlacing"
           >
             <Crosshair class="size-5 sm:size-4" />
           </Toggle>
@@ -276,7 +246,7 @@ onKeyStroke("Escape", (event) => {
             </Button>
             <!-- The number opens a menu to jump to any observer, and holds the
                  "close all" that would sit too near closing one beside ✕. -->
-            <DropdownMenu v-model:open="observerMenuOpen">
+            <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button
                   variant="ghost"
@@ -289,11 +259,11 @@ onKeyStroke("Escape", (event) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" side="top">
-                <DropdownMenuRadioGroup v-model="currentNumber">
+                <DropdownMenuRadioGroup v-model="currentId">
                   <DropdownMenuRadioItem
                     v-for="view in viewsheds"
                     :key="view.id"
-                    :value="String(view.number)"
+                    :value="view.id"
                   >
                     Observer {{ view.number }}
                   </DropdownMenuRadioItem>
@@ -360,7 +330,7 @@ onKeyStroke("Escape", (event) => {
               <Blend class="size-5 sm:size-4" />
             </Toggle>
             <Separator orientation="vertical" :class="DECK_SEPARATOR_CLASS" />
-            <Popover v-model:open="settingsOpen">
+            <Popover>
               <PopoverTrigger as-child>
                 <Button
                   variant="ghost"
@@ -520,7 +490,7 @@ onKeyStroke("Escape", (event) => {
 </template>
 
 <style scoped>
-/* The deck slides up and fades in as it arms. */
+/* The deck slides up and fades in as it opens. */
 .deck-enter-active,
 .deck-leave-active {
   transition:

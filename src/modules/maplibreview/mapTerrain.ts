@@ -26,6 +26,29 @@ export const TERRAIN_SOURCE_ID = "orbat-terrain";
 export const HILLSHADE_SOURCE_ID = "orbat-hillshade-dem";
 export const HILLSHADE_LAYER_ID = "orbat-hillshade";
 
+/** Prefix of the analysis overlays, such as viewsheds, drawn over the shading and under the scenario. */
+export const ANALYSIS_LAYER_PREFIX = "orbat-analysis-";
+
+/**
+ * Where a layer under the scenario goes, given the basemap's own layers: before the first layer
+ * above the basemap that is neither the shading nor a raster overlay. The stack runs basemap,
+ * raster overlays, shading, analysis overlays, scenario. The shading goes under the analysis
+ * overlays, and an analysis overlay `overAnalysis` goes over the others.
+ */
+export function underlayAnchor(
+  map: Map,
+  basemapIds: ReadonlySet<string>,
+  { overAnalysis = false }: { overAnalysis?: boolean } = {},
+): string | undefined {
+  // getStyle() serializes the whole style, and this runs on each tick of a slider drag, so ask
+  // only for the layer order.
+  return map.getLayersOrder().find((id) => {
+    if (basemapIds.has(id) || id === HILLSHADE_LAYER_ID) return false;
+    if (id.startsWith(ANALYSIS_LAYER_PREFIX)) return !overAnalysis;
+    return map.getLayer(id)?.type !== "raster";
+  });
+}
+
 /** Keep shading above raster overlays and below scenario vectors and controls. */
 export function syncHillshadeOrder(map: Map, beforeId?: string): void {
   if (!map.getLayer(HILLSHADE_LAYER_ID)) return;

@@ -41,7 +41,6 @@ let handlers: {
   onEnd: () => void;
 };
 let detach: () => void;
-let enabled: boolean;
 let mapPress: Mock<(event: Event) => void>;
 
 beforeEach(() => {
@@ -51,10 +50,8 @@ beforeEach(() => {
     onMove: vi.fn<(position: [number, number]) => void>(),
     onEnd: vi.fn<() => void>(),
   };
-  enabled = true;
   detach = attachPointDrag(setup.map, {
     points: () => [[100, 100]],
-    enabled: () => enabled,
     ...handlers,
   });
   // Stands in for MapLibre's own press handling on the canvas.
@@ -91,13 +88,6 @@ describe("attachPointDrag", () => {
     expect(mapClick).toHaveBeenCalledTimes(1);
   });
 
-  it("leaves the press to the map while the active tool does not drag points", () => {
-    enabled = false;
-    press(setup.canvas, 100, 100);
-    expect(handlers.onStart).not.toHaveBeenCalled();
-    expect(mapPress).toHaveBeenCalled();
-  });
-
   it("leaves a press with a modifier to the map's marquee and lasso", () => {
     press(setup.canvas, 100, 100, { ctrlKey: true });
     press(setup.canvas, 100, 100, { altKey: true });
@@ -130,7 +120,6 @@ describe("attachPointDrag", () => {
         [200, 200],
         [106, 100],
       ],
-      enabled: () => true,
       ...handlers,
     });
     press(setup.canvas, 104, 100);

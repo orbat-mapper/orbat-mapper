@@ -21,6 +21,10 @@ import {
 } from "@/geo/history";
 import { unwindCoordinates, wrapLongitude } from "@/geo/longitude";
 import { getRenderedMidpoint } from "@/geo/maplibreMidpoint";
+import {
+  HANDLE_HIT_TOLERANCE_PX,
+  TOUCH_HANDLE_HIT_TOLERANCE_PX,
+} from "@/composables/maplibreTouchDrawing";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { useUnitSettingsStore } from "@/stores/geoStore";
@@ -51,9 +55,6 @@ export const UNIT_HISTORY_LAYER_IDS = [
 
 // The handle circles are small, so a single-pixel query is nearly impossible to
 // hit. Buffer the press into a small box, as the draw interaction does.
-const HANDLE_HIT_TOLERANCE_PX = 12;
-const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
-
 const coarsePointerQuery =
   typeof window !== "undefined" && typeof window.matchMedia === "function"
     ? window.matchMedia("(pointer: coarse)")

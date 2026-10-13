@@ -29,8 +29,10 @@ import {
 } from "@/geo/maplibreMidpoint";
 import {
   createTouchDoubleTapTracker,
+  HANDLE_HIT_TOLERANCE_PX,
   normalizePathCoordinates,
   suppressMapEvent,
+  TOUCH_HANDLE_HIT_TOLERANCE_PX,
 } from "@/composables/maplibreTouchDrawing";
 import { distanceMeters, isZeroLengthSegment } from "@/geo/distance";
 import { getMapLibreSnapPosition } from "@/composables/maplibreSnapping";
@@ -45,8 +47,6 @@ const DRAW_MIDPOINT_HANDLE_LAYER_ID = `geojson-overlay-circle-${DRAW_MIDPOINT_HA
 // handle circles are only 4-6px, so a single-pixel query is nearly impossible
 // to hit with a fingertip. Buffer the tap point into a small box; touch gets a
 // wider box, mirroring the selection tolerances used by MlMapLogic.
-const HANDLE_HIT_TOLERANCE_PX = 12;
-const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
 
 const coarsePointerQuery =
   typeof window !== "undefined" && typeof window.matchMedia === "function"

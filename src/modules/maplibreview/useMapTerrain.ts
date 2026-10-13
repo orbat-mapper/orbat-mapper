@@ -7,6 +7,7 @@ import {
   TERRAIN_SOURCE_ID,
   syncHillshadeOrder,
   syncMapTerrain,
+  underlayAnchor,
 } from "./mapTerrain";
 import { installTerrainQueryCache } from "./terrainQueryCache";
 import { installTerrainRttFilter } from "./terrainRttFilter";
@@ -25,17 +26,8 @@ export function useMapTerrain(mapRef: ShallowRef<MlMap | undefined>) {
       const uninstallRttFilter = installTerrainRttFilter(map);
       const uninstallQueryCache = installTerrainQueryCache(map);
 
-      // getStyle() serializes the whole style; this runs on every settings change,
-      // including each tick of a slider drag, so ask only for the layer order.
       function beforeId() {
-        return map!
-          .getLayersOrder()
-          .find(
-            (id) =>
-              !basemapIds.has(id) &&
-              id !== HILLSHADE_LAYER_ID &&
-              map!.getLayer(id)?.type !== "raster",
-          );
+        return underlayAnchor(map!, basemapIds);
       }
       function sync() {
         // MapLibre considers errored tiles loaded. Retain failures until a source

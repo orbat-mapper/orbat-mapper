@@ -121,6 +121,20 @@ export function archiveTileUrl(key: string): string {
   return `${archiveSourceUrl(key)}/{z}/{x}/{y}`;
 }
 
+/**
+ * The archive behind a `pmtiles://` source `url` or tile template: one published under a key, or
+ * an archive on a server. Null for any other address.
+ */
+export function archiveFromUrl(url: string): PMTiles | null {
+  const prefix = `${PMTILES_PROTOCOL}://`;
+  if (!url.startsWith(prefix)) return null;
+  const address = url.slice(prefix.length).replace(/\/\{z\}\/\{x\}\/\{y\}$/, "");
+  if (!address.startsWith(ARCHIVE_PREFIX)) return new PMTiles(address);
+  const archive = getArchive(address.slice(ARCHIVE_PREFIX.length));
+  if (!archive) throw new Error("The archive is no longer open.");
+  return archive;
+}
+
 /** Test helper — drops every registered archive and unregisters the protocol. */
 export function resetPmtilesProtocol(): void {
   archives.clear();
