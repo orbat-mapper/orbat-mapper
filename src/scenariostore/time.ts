@@ -131,8 +131,9 @@ function rebuildCurrentUnitState(
   let until = Number.POSITIVE_INFINITY;
   let currentState = createInitialState(rawUnit);
   // Time of the entry that set the current location. Entries without a location, such
-  // as a status change, do not start a new leg.
-  let locationT = currentState?.t ?? Number.NEGATIVE_INFINITY;
+  // as a status change, do not start a new leg. The base location has no time, so a
+  // leg from it only moves when the next location gives a `viaStartTime`.
+  let locationT: number | undefined;
   const entries = rawUnit.state ?? [];
   for (const [index, s] of entries.entries()) {
     if (s.t <= timestamp) {
@@ -149,13 +150,14 @@ function rebuildCurrentUnitState(
     } else {
       // The leg ends at the next entry that sets or removes the location.
       const legEnd = entries.slice(index).find((entry) => entry.location !== undefined);
+      const legStart = legEnd?.viaStartTime ?? locationT;
       if (
         currentState?.location &&
         legEnd?.location &&
         !(legEnd.interpolate === false) &&
-        (legEnd.viaStartTime ?? -Infinity) <= timestamp
+        legStart !== undefined &&
+        legStart <= timestamp
       ) {
-        const legStart = legEnd.viaStartTime ?? locationT;
         const n = lineString(
           legEnd.via
             ? [currentState.location, ...legEnd.via, legEnd.location]

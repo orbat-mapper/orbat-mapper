@@ -207,7 +207,9 @@ describe("scenario geo item accessors", () => {
     expect(unit()._state?.type).toBe("initial");
 
     const threeDays = 3 * 24 * 60 * 60 * 1000;
-    geo.addUnitPosition("unit-1", [0, 50], store.state.currentTime + threeDays);
+    geo.addUnitPosition("unit-1", [0, 50], store.state.currentTime + threeDays, {
+      viaStartTime: store.state.currentTime,
+    });
 
     expect(unit()._state?.type).toBe("interpolated");
     const projected = unit()._state;
