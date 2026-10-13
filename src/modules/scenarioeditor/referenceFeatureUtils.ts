@@ -1,5 +1,6 @@
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ReferenceFeatureSelection } from "@/types/referenceFeature";
+import { escape } from "es-toolkit";
 import { sanitizeHTML } from "@/utils/dom";
 
 const allowedHtmlTags = new Set([
@@ -207,11 +208,9 @@ function serializeSanitizedNode(node: Node): string {
 
   if (tagName === "a") {
     const href = sanitizeReferenceHref(element.getAttribute("href"));
-    const title = element.getAttribute("title");
     const attrs = [
-      href ? ` href="${sanitizeHTML(href)}"` : "",
+      attr("href", href),
       href ? ' target="_blank" rel="noopener noreferrer"' : "",
-      title ? ` title="${sanitizeHTML(title)}"` : "",
       serializeCommonAttributes(element),
     ].join("");
     return `<a${attrs}>${children}</a>`;
@@ -219,12 +218,9 @@ function serializeSanitizedNode(node: Node): string {
 
   if (tagName === "img") {
     const src = sanitizeReferenceImageSrc(element.getAttribute("src"));
-    const alt = element.getAttribute("alt");
-    const title = element.getAttribute("title");
     const attrs = [
-      src ? ` src="${sanitizeHTML(src)}"` : "",
-      alt ? ` alt="${sanitizeHTML(alt)}"` : "",
-      title ? ` title="${sanitizeHTML(title)}"` : "",
+      attr("src", src),
+      attr("alt", element.getAttribute("alt")),
       serializeCommonAttributes(element),
     ].join("");
     return src ? `<img${attrs}>` : children;
@@ -232,6 +228,12 @@ function serializeSanitizedNode(node: Node): string {
 
   const attrs = serializeCommonAttributes(element);
   return `<${tagName}${attrs}>${children}</${tagName}>`;
+}
+
+// Every attribute goes through here. sanitizeHTML only escapes text, so a quote in a value
+// would end the attribute and let the rest of the value add new attributes such as onerror.
+function attr(name: string, value: string | null | undefined): string {
+  return value ? ` ${name}="${escape(value)}"` : "";
 }
 
 function sanitizeReferenceHref(href: string | null): string | null {
@@ -264,33 +266,24 @@ function sanitizeReferenceImageSrc(src: string | null): string | null {
   return null;
 }
 
+const commonAttributes: [string, (value: string | null) => string | null][] = [
+  ["style", sanitizeReferenceStyle],
+  ["title", (value) => value],
+  ["align", sanitizeTokenAttribute],
+  ["valign", sanitizeTokenAttribute],
+  ["width", sanitizeSizeAttribute],
+  ["height", sanitizeSizeAttribute],
+  ["colspan", sanitizeNumberAttribute],
+  ["rowspan", sanitizeNumberAttribute],
+  ["cellpadding", sanitizeNumberAttribute],
+  ["cellspacing", sanitizeNumberAttribute],
+  ["border", sanitizeNumberAttribute],
+];
+
 function serializeCommonAttributes(element: HTMLElement): string {
-  const attrs = [];
-  const style = sanitizeReferenceStyle(element.getAttribute("style"));
-  const title = element.getAttribute("title");
-  const align = sanitizeTokenAttribute(element.getAttribute("align"));
-  const valign = sanitizeTokenAttribute(element.getAttribute("valign"));
-  const width = sanitizeSizeAttribute(element.getAttribute("width"));
-  const height = sanitizeSizeAttribute(element.getAttribute("height"));
-  const colspan = sanitizeNumberAttribute(element.getAttribute("colspan"));
-  const rowspan = sanitizeNumberAttribute(element.getAttribute("rowspan"));
-  const cellpadding = sanitizeNumberAttribute(element.getAttribute("cellpadding"));
-  const cellspacing = sanitizeNumberAttribute(element.getAttribute("cellspacing"));
-  const border = sanitizeNumberAttribute(element.getAttribute("border"));
-
-  if (style) attrs.push(` style="${sanitizeHTML(style)}"`);
-  if (title) attrs.push(` title="${sanitizeHTML(title)}"`);
-  if (align) attrs.push(` align="${sanitizeHTML(align)}"`);
-  if (valign) attrs.push(` valign="${sanitizeHTML(valign)}"`);
-  if (width) attrs.push(` width="${sanitizeHTML(width)}"`);
-  if (height) attrs.push(` height="${sanitizeHTML(height)}"`);
-  if (colspan) attrs.push(` colspan="${sanitizeHTML(colspan)}"`);
-  if (rowspan) attrs.push(` rowspan="${sanitizeHTML(rowspan)}"`);
-  if (cellpadding) attrs.push(` cellpadding="${sanitizeHTML(cellpadding)}"`);
-  if (cellspacing) attrs.push(` cellspacing="${sanitizeHTML(cellspacing)}"`);
-  if (border) attrs.push(` border="${sanitizeHTML(border)}"`);
-
-  return attrs.join("");
+  return commonAttributes
+    .map(([name, sanitize]) => attr(name, sanitize(element.getAttribute(name))))
+    .join("");
 }
 
 function sanitizeReferenceStyle(styleValue: string | null): string {

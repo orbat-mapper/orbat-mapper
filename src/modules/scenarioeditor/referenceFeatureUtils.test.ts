@@ -68,6 +68,21 @@ describe("referenceFeatureUtils", () => {
     });
   });
 
+  it("keeps quotes in attribute values from breaking out into new attributes", () => {
+    const { value } = getReferenceFeatureDisplayValue(
+      `<p><img src="https://example.com/a.png" alt='" onerror="alert(1)'><b title='x" onmouseover="alert(1)'>Hi</b></p>`,
+    );
+    const template = document.createElement("template");
+    template.innerHTML = value;
+    const img = template.content.querySelector("img")!;
+    const b = template.content.querySelector("b")!;
+
+    expect(img.getAttributeNames()).toEqual(["src", "alt"]);
+    expect(img.getAttribute("alt")).toBe('" onerror="alert(1)');
+    expect(b.getAttributeNames()).toEqual(["title"]);
+    expect(b.getAttribute("title")).toBe('x" onmouseover="alert(1)');
+  });
+
   it("preserves common KML table layout and safe inline styles", () => {
     expect(
       getReferenceFeatureDisplayValue(
