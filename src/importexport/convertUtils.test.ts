@@ -95,6 +95,24 @@ describe("addUnitHierarchy", () => {
     expect(store.state.unitMap["unit"].state?.[0].id).toBe("unit-state");
   });
 
+  it("sorts the added unit's states by time", () => {
+    const { store, scenario } = setup();
+    const unit = klona(sourceUnit);
+    unit.state = [
+      { id: "later", t: Date.parse("2025-01-01T03:00:00Z"), location: [12, 60] },
+      { id: "earlier", t: Date.parse("2025-01-01T02:00:00Z"), location: [11, 60] },
+    ];
+    const id = addUnitHierarchy(unit, "group", scenario, {
+      newIds: false,
+      includeState: true,
+    })!;
+
+    expect(store.state.unitMap[id].state?.map((s) => s.t)).toEqual([
+      Date.parse("2025-01-01T02:00:00Z"),
+      Date.parse("2025-01-01T03:00:00Z"),
+    ]);
+  });
+
   it("gives copied state new ids when new unit ids are requested", () => {
     const { store, scenario } = setup();
     const id = addUnitHierarchy(klona(sourceUnit), "group", scenario, {

@@ -493,3 +493,71 @@ describe("setCurrentTime with a dynamic ORBAT", () => {
     expect(sidc()).toBe("10031000000000000000");
   });
 });
+
+describe("setCurrentTime with states out of order in the file", () => {
+  function createStore() {
+    return useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "2.5.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [
+        {
+          id: "side-1",
+          name: "Blue",
+          standardIdentity: "3",
+          groups: [
+            {
+              id: "group-1",
+              name: "Blue Group",
+              subUnits: [
+                {
+                  id: "unit-1",
+                  name: "Unit",
+                  sidc: "10031000000000000000",
+                  subUnits: [],
+                  state: [
+                    { id: "a", t: 10, location: [10, 60] },
+                    { id: "c", t: 30, location: [14, 60] },
+                    { id: "b", t: 20, location: [12, 60] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [],
+      layers: [],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+  }
+
+  it("sorts the states by time on load", () => {
+    const store = createStore();
+    expect(store.state.unitMap["unit-1"].state?.map((s) => s.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+  });
+
+  it("places the unit by time order, not file order", () => {
+    const store = createStore();
+    const time = useScenarioTime(store);
+    const location = () => store.state.unitMap["unit-1"]._state?.location;
+
+    time.setCurrentTime(20);
+    expect(location()).toEqual([12, 60]);
+    time.setCurrentTime(35);
+    expect(location()).toEqual([14, 60]);
+  });
+});
