@@ -63,7 +63,9 @@ const menuItems = computed((): MenuItemData<StateAction>[] => [
   { label: "Change time", action: "changeTime", disabled: props.isLocked },
   { label: "Edit title", action: "editTitle", disabled: props.isLocked },
   { label: "Edit location", action: "editLocation", disabled: props.isLocked },
-  { label: "Clear location", action: "clearLocation", disabled: props.isLocked },
+  // Sets this entry's location to null: the unit leaves the map until its next move.
+  // "Remove from map" is the action that keeps it off for good.
+  { label: "Hide until next move", action: "clearLocation", disabled: props.isLocked },
   {
     label: "Convert to initial position",
     action: "convertToInitialPosition",

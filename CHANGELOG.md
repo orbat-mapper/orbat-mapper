@@ -71,6 +71,7 @@ All notable changes to this project will be documented in this file.
 - The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
 - The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
 - The Hellfire strike is drawn on a canvas over the map, so 3D terrain keeps its frame rate. On a tilted map the missile, fireball and smoke look 3D and cast shadows, and a "Shake map on impact" option in the Hellfire menu turns off the shake.
+- "Clear location" on a unit state entry is now "Hide until next move", since the unit comes back at its next planned move. Use "Remove from map" to keep a unit off the map.
 
 ### Fixed
 
@@ -104,6 +105,8 @@ All notable changes to this project will be documented in this file.
 - Fixed custom symbol label spacing changing when the label size changed.
 - Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
 - Fixed catalogue point symbols in the Graphics tab being hard to see in dark mode.
+- Fixed HTML in a KML layer's feature details running script when the feature was clicked.
+- Fixed "Add new states" bringing back a unit that had been removed from the map, by appending a team's later planned moves. Those moves are now left out and listed in the import preview, and the rest of each state is kept.
 
 ## September 2026
 
