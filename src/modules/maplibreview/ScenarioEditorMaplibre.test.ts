@@ -164,6 +164,10 @@ vi.mock("@/modules/maplibreview/useMapOrbit", () => ({
   useMapOrbit: () => ({ toggleOrbit, handleEscape: vi.fn(() => false) }),
 }));
 
+vi.mock("@/modules/maplibreview/useMapViewshed", () => ({
+  useMapViewshed: vi.fn(),
+}));
+
 vi.mock("@/modules/maplibreview/MaplibreMap.vue", () => ({
   default: defineComponent({
     name: "MaplibreMap",
