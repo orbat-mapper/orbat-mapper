@@ -60,7 +60,9 @@ export function fakeMap() {
   const data = new Map<string, unknown>();
   const container = document.createElement("div");
   const clicks = new Set<(event: MapMouseEvent) => void>();
+  const listeners = new Map<string, Set<() => void>>();
   const map = {
+    style: {},
     getSource: (id: string) => sources.get(id),
     addSource(id: string, spec: { type: string; data?: unknown }) {
       const source: Record<string, unknown> =
@@ -87,20 +89,38 @@ export function fakeMap() {
     getLayersOrder: () => [...layers],
     hasImage: () => true,
     addImage: () => {},
+    removeImage: () => {},
     setPaintProperty: () => {},
     setLayoutProperty: () => {},
     on: (type: string, handler: (event: MapMouseEvent) => void) => {
       if (type === "click") clicks.add(handler);
+      else
+        listeners.set(
+          type,
+          (listeners.get(type) ?? new Set()).add(handler as () => void),
+        );
     },
     off: (type: string, handler: (event: MapMouseEvent) => void) => {
       if (type === "click") clicks.delete(handler);
+      else listeners.get(type)?.delete(handler as () => void);
     },
     getCanvasContainer: () => container,
   };
   /** Clicks the map at `[lng, lat]`. */
   const click = ([lng, lat]: LngLat) =>
     clicks.forEach((handler) => handler({ lngLat: { lng, lat } } as MapMouseEvent));
-  return { map: map as unknown as MlMap, updates, data, container, click };
+  /** Fires a map event other than a click, such as `style.load`. */
+  const fire = (type: string) => listeners.get(type)?.forEach((handler) => handler());
+  return {
+    map: map as unknown as MlMap,
+    updates,
+    data,
+    container,
+    layers,
+    sources,
+    click,
+    fire,
+  };
 }
 
 let dragOptions: PointDragOptions | null = null;

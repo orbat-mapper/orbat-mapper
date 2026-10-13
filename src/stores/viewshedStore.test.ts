@@ -8,13 +8,8 @@ import {
   type ViewshedRequest,
   type ViewshedResult,
 } from "@/lib/terrain";
-import {
-  FakeImageData,
-  fakeMap,
-  flatResult,
-  observerDrag,
-  settle,
-} from "@/testdata/viewshed";
+import { FakeImageData, flatResult, settle } from "@/testdata/viewshed";
+import { drawnCoverages } from "@/modules/maplibreview/viewshedLayers";
 import { useTerrainStore } from "@/stores/terrainStore";
 import {
   useViewshedStore,
@@ -27,18 +22,22 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/geo/viewshedClient", () => ({
   viewshedClient: async () => ({ compute: mocks.compute }),
-}));
-vi.mock("@/geo/pointDrag", async () => ({
-  attachPointDrag: (await import("@/testdata/viewshed")).attachPointDragMock,
+  stopViewshedWorker: () => {},
 }));
 
 const lastRequest = () => mocks.compute.mock.lastCall![0];
 
-/** A store on a map, so its observers can be dragged. */
-function viewshedOnMap() {
-  const viewshed = useViewshedStore();
-  viewshed.attachMap(fakeMap().map, []);
-  return viewshed;
+/** What the map draws: one coverage combined, or each on its own. */
+const coverages = (viewshed: ReturnType<typeof useViewshedStore>) =>
+  drawnCoverages(viewshed.shown, viewshed.combine).map(({ coverage }) => coverage);
+
+/** Drags the observer at this index, by number, as the map does. */
+function dragObserver(viewshed: ReturnType<typeof useViewshedStore>) {
+  return {
+    start: (index: number) => viewshed.startDrag(viewshed.viewsheds[index]!.id),
+    move: (position: [number, number]) => viewshed.dragTo(position),
+    end: () => viewshed.endDrag(),
+  };
 }
 
 beforeEach(() => {
@@ -81,15 +80,15 @@ describe("viewshed store", () => {
   });
 
   it("previews on a coarser grid while the observer is dragged", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
     await settle();
     const full = lastRequest().maxSize;
-    observerDrag.start(0);
-    observerDrag.move([10.01, 50]);
+    dragObserver(viewshed).start(0);
+    dragObserver(viewshed).move([10.01, 50]);
     await settle();
     expect(lastRequest().maxSize).toBeLessThan(full);
-    observerDrag.end();
+    dragObserver(viewshed).end();
     await settle();
     expect(lastRequest()).toMatchObject({ center: [10.01, 50], maxSize: full });
   });
@@ -113,23 +112,23 @@ describe("viewshed store", () => {
   });
 
   it("traces the outline only once the observer is let go", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
     await settle();
     expect(lastRequest().outline).toBeUndefined();
-    observerDrag.start(0);
-    observerDrag.move([10.01, 50]);
+    dragObserver(viewshed).start(0);
+    dragObserver(viewshed).move([10.01, 50]);
     await settle();
     expect(lastRequest().outline).toBe(false);
-    observerDrag.end();
+    dragObserver(viewshed).end();
     await settle();
     expect(lastRequest().outline).toBeUndefined();
   });
 
   it("previews a drag at the coarsest detail, whatever the detail chosen", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
-    observerDrag.start(0);
+    dragObserver(viewshed).start(0);
     await settle();
     const { cellSize, maxSize } = VIEWSHED_DETAILS.draft;
     expect(lastRequest()).toMatchObject({ cellSize, maxSize });
@@ -154,14 +153,14 @@ describe("viewshed store", () => {
           release = () => resolve(flatResult(request));
         }),
     );
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
     await settle();
-    observerDrag.start(0);
-    observerDrag.move([10.01, 50]);
-    observerDrag.move([10.02, 50]);
-    observerDrag.move([10.03, 50]);
-    observerDrag.end();
+    dragObserver(viewshed).start(0);
+    dragObserver(viewshed).move([10.01, 50]);
+    dragObserver(viewshed).move([10.02, 50]);
+    dragObserver(viewshed).move([10.03, 50]);
+    dragObserver(viewshed).end();
     release();
     await settle();
     expect(mocks.compute).toHaveBeenCalledTimes(2);
@@ -348,24 +347,24 @@ describe("several viewsheds", () => {
   });
 
   it("asks with plain data, which a worker can clone", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
-    observerDrag.start(0);
-    observerDrag.move([10.01, 50]);
-    observerDrag.end();
+    dragObserver(viewshed).start(0);
+    dragObserver(viewshed).move([10.01, 50]);
+    dragObserver(viewshed).end();
     await settle();
     expect(isProxy(lastRequest().center)).toBe(false);
     expect(() => structuredClone(lastRequest())).not.toThrow();
   });
 
   it("moves the observer pressed and makes it current, rather than adding one", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
     viewshed.place([11, 51]);
-    observerDrag.start(0);
+    dragObserver(viewshed).start(0);
     expect(viewshed.number).toBe(1);
-    observerDrag.move([10.5, 50]);
-    observerDrag.end();
+    dragObserver(viewshed).move([10.5, 50]);
+    dragObserver(viewshed).end();
     expect(viewshed.viewsheds.map(({ observer }) => observer)).toEqual([
       [10.5, 50],
       [11, 51],
@@ -410,11 +409,11 @@ describe("several viewsheds", () => {
     viewshed.place([10, 50]);
     viewshed.place([10.05, 50]);
     await settle();
-    expect(viewshed.coverages).toHaveLength(1);
-    const [combined] = viewshed.coverages;
+    expect(coverages(viewshed)).toHaveLength(1);
+    const [combined] = coverages(viewshed);
     expect(combined!.grid.width).toBeGreaterThan(viewshed.result!.grid.width);
     viewshed.combine = false;
-    expect(viewshed.coverages).toHaveLength(2);
+    expect(coverages(viewshed)).toHaveLength(2);
   });
 
   it("sets the detail of every viewshed by default", async () => {
@@ -463,19 +462,19 @@ describe("several viewsheds", () => {
   });
 
   it("combines on a coarser grid while one is a preview", async () => {
-    const viewshed = viewshedOnMap();
+    const viewshed = useViewshedStore();
     viewshed.detail = "fine";
     viewshed.place([10, 50]);
     viewshed.place([10.1, 50]);
-    observerDrag.start(1);
+    dragObserver(viewshed).start(1);
     await settle();
-    const [combined] = viewshed.coverages;
+    const [combined] = coverages(viewshed);
     expect(Math.max(combined!.grid.width, combined!.grid.height)).toBeLessThanOrEqual(
       801,
     );
-    observerDrag.end();
+    dragObserver(viewshed).end();
     await settle();
-    const [settled] = viewshed.coverages;
+    const [settled] = coverages(viewshed);
     expect(settled!.grid.width).toBeGreaterThan(801);
   });
 

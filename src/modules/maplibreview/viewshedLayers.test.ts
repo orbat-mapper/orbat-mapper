@@ -13,12 +13,14 @@ import {
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useTerrainStore } from "@/stores/terrainStore";
 import { useViewshedStore } from "@/stores/viewshedStore";
+import { attachViewshedLayers } from "./viewshedLayers";
 
 const mocks = vi.hoisted(() => ({
   compute: vi.fn<(request: ViewshedRequest) => Promise<ViewshedResult>>(),
 }));
 vi.mock("@/geo/viewshedClient", () => ({
   viewshedClient: async () => ({ compute: mocks.compute }),
+  stopViewshedWorker: () => {},
 }));
 vi.mock("@/geo/pointDrag", async () => ({
   attachPointDrag: (await import("@/testdata/viewshed")).attachPointDragMock,
@@ -46,7 +48,16 @@ beforeEach(() => {
   mocks.compute.mockReset();
   mocks.compute.mockImplementation(async (request) => flatResult(request));
 });
+/** Every map attached in a test, taken off after it. */
+const attached: (() => void)[] = [];
+const attach = (...args: Parameters<typeof attachViewshedLayers>) => {
+  const detach = attachViewshedLayers(...args);
+  attached.push(detach);
+  return detach;
+};
+
 afterEach(() => {
+  attached.splice(0).forEach((detach) => detach());
   vi.unstubAllGlobals();
 });
 
@@ -54,7 +65,7 @@ describe("viewshed on the map", () => {
   it("hands the image source its pixels, with no image to encode or load", async () => {
     const { map, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     await settle();
     const image = data.get("orbat-analysis-viewshed") as FakeImageData;
@@ -65,7 +76,7 @@ describe("viewshed on the map", () => {
   it("moves the dot with the observer, and the ring only with the viewshed that fills it", async () => {
     const { map, updates, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     await settle();
     // A drag begins with a preview where the observer stands.
@@ -98,7 +109,7 @@ describe("viewshed on the map", () => {
   it("clears the outline while dragging and draws it again once let go", async () => {
     const { map, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     await settle();
     const outline = () =>
@@ -116,7 +127,7 @@ describe("viewshed on the map", () => {
   it("draws the combined coverage as one image, or each viewshed as its own", async () => {
     const { map, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     viewshed.place([10.05, 50]);
     await settle();
@@ -139,7 +150,7 @@ describe("viewshed on the map", () => {
   it("marks every observer, the current one apart, and rings each", async () => {
     const { map, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     viewshed.place([11, 51]);
     await settle();
@@ -163,7 +174,7 @@ describe("viewshed on the map", () => {
   it("labels the observers by number only once there are several, pins included", async () => {
     const { map, data } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.pin = true;
     viewshed.place([10, 50]);
     await settle();
@@ -186,7 +197,7 @@ describe("viewshed on the map", () => {
   it("draws the image again when it switches to dead ground and back", async () => {
     const { map, updates } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     viewshed.place([10, 50]);
     await settle();
     const drawn = () => updates.filter((id) => id === "orbat-analysis-viewshed").length;
@@ -203,7 +214,7 @@ describe("viewshed on the map", () => {
     const { map, click, container } = fakeMap();
     const viewshed = useViewshedStore();
     const mapSelect = useMapSelectStore();
-    viewshed.attachMap(map, []);
+    attach(map, new Set());
     click([10, 50]);
     expect(viewshed.viewsheds).toHaveLength(0);
     viewshed.start();
@@ -222,15 +233,17 @@ describe("viewshed on the map", () => {
     expect(viewshed.viewsheds).toHaveLength(2);
   });
 
-  it("stops listening to the map once detached", () => {
-    const { map, click, container } = fakeMap();
+  it("stops listening to the map, and takes its layers off it, once detached", async () => {
+    const { map, click, container, layers, sources } = fakeMap();
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, []);
+    const detach = attach(map, new Set());
     viewshed.start();
-    viewshed.detach();
+    detach();
     expect(container.classList.contains("map-picking")).toBe(false);
     click([10, 50]);
     expect(viewshed.viewsheds).toHaveLength(0);
+    expect([...layers]).toEqual([]);
+    expect([...sources.keys()]).toEqual([]);
   });
 
   it("puts the images above the basemap, under the scenario layers", async () => {
@@ -239,7 +252,7 @@ describe("viewshed on the map", () => {
     map.addLayer({ id: "units", type: "symbol", source: "y" });
     const addLayer = vi.spyOn(map, "addLayer");
     const viewshed = useViewshedStore();
-    viewshed.attachMap(map, ["basemap-water"]);
+    attach(map, new Set(["basemap-water"]));
     viewshed.place([10, 50]);
     await settle();
     expect(addLayer).toHaveBeenCalledWith(

@@ -14,55 +14,20 @@
  * masking height map: how high a target must rise to be seen, in bands. The sweep yields all of
  * them at once, so switching recomputes nothing.
  *
- * As a pin, an observer also stands up from the map: a stick to eye height topped by a ball, with
- * a label reading the height, for a map tilted over the terrain (`observerPin`).
+ * This store holds only the state and the queue, so it costs nothing while the feature is off: the
+ * map side (`viewshedLayers`), the deck and the worker are loaded once it is on.
  *
  * The work runs in a worker (`viewshedClient`). One request is in flight at a time, and only each
  * viewshed's newest change waits behind it, so a drag shows each result as soon as the last one is
  * done rather than queueing every move.
  */
-import type { FeatureCollection, MultiPolygon } from "geojson";
-import type {
-  AddLayerObject,
-  GeoJSONSource,
-  ImageSource,
-  Map as MlMap,
-  MapMouseEvent,
-  RasterDEMSourceSpecification,
-} from "maplibre-gl";
+import type { RasterDEMSourceSpecification } from "maplibre-gl";
 import { computed, ref, shallowRef, watch } from "vue";
 import { defineStore } from "pinia";
-import circle from "@turf/circle";
-import {
-  combineViewsheds,
-  maskToPolygons,
-  type Coverage,
-  type GridDetail,
-  type LngLat,
-  type ViewshedRequest,
-  type ViewshedResult,
-} from "@/lib/terrain";
-import { viewshedImage, type ViewshedDisplay } from "@/geo/viewshedImage";
-import { attachPointDrag } from "@/geo/pointDrag";
-import { observerPin, pinHead } from "@/geo/observerPin";
-import { ANALYSIS_LAYER_PREFIX, underlayAnchor } from "@/modules/maplibreview/mapTerrain";
+import type { GridDetail, LngLat, ViewshedRequest, ViewshedResult } from "@/lib/terrain";
+import type { ViewshedDisplay } from "@/geo/viewshedImage";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useTerrainStore } from "@/stores/terrainStore";
-
-/** Each id names a source and the layer that draws it; the images and outlines are analysis overlays. */
-const IMAGE_ID = `${ANALYSIS_LAYER_PREFIX}viewshed`;
-const OUTLINE_ID = `${ANALYSIS_LAYER_PREFIX}viewshed-outline`;
-const OBSERVER_ID = "orbat-viewshed-observer";
-const OBSERVER_LABEL_ID = "orbat-viewshed-observer-label";
-const RANGE_ID = "orbat-viewshed-range";
-const PIN_ID = "orbat-viewshed-pin";
-const PIN_STICK_ID = "orbat-viewshed-pin-stick";
-const PIN_HEAD_ID = "orbat-viewshed-pin-head";
-/** On the canvas container while a click picks a point, for a crosshair cursor (`styles.css`). */
-const PICKING_CLASS = "map-picking";
-
-/** The ids of the nth image drawn, and its outline: the first keeps the bare ids. */
-const nth = (id: string, index: number) => (index ? `${id}-${index}` : id);
 
 /**
  * How fine the grid is: cells of up to `cellSize` metres where `maxSize` cells a side allow, and
@@ -93,13 +58,6 @@ const PREVIEW = { ...detailOf(VIEWSHED_DETAILS.draft), outline: false };
 
 /** How far the observer may look, in metres; the detail levels are sized for this range. */
 export const VIEWSHED_RADIUS = { min: 500, max: 200_000, step: 500 };
-
-/**
- * The most cells a side of the combined coverage while any viewshed in it is a preview: a drag
- * next to a fine viewshed would otherwise combine at the fine one's cells across them all, for
- * every move.
- */
-const COMBINED_PREVIEW_SIZE = 801;
 
 type ViewshedStatus = "loading" | "ready" | "error";
 
@@ -402,19 +360,6 @@ export const useViewshedStore = defineStore("viewshed", () => {
   );
 
   /**
-   * What is drawn: the combined coverage, or each viewshed's own, in the order opened. An outline
-   * is traced only once none is a preview.
-   */
-  interface Drawn {
-    coverage: Coverage;
-    outline: () => MultiPolygon | null;
-    /**
-     * The masking map is the same for every target height from the same sweeps, so it keys on
-     * them; the visible ground changes with every result.
-     */
-    maskingKey: string;
-  }
-  /**
    * The results in the order opened: the same array until one of them changes, so a drag move or a
    * setting that has no new result yet neither combines nor redraws anything.
    */
@@ -425,386 +370,40 @@ export const useViewshedStore = defineStore("viewshed", () => {
       each.length === lastShown.length && each.every((one, i) => one === lastShown[i]);
     return same ? lastShown : (lastShown = each);
   });
-  const drawn = computed<Drawn[]>(() => {
-    const each = shown.value;
-    if (!combine.value || each.length < 2)
-      return each.map((one) => ({
-        coverage: one,
-        outline: () => one.outline,
-        maskingKey: `masking:${one.sweep}`,
-      }));
-    // Only a preview comes without its outline.
-    const preview = each.some((one) => !one.outline);
-    const coverage = combineViewsheds(each, preview ? COMBINED_PREVIEW_SIZE : undefined);
-    let outline: MultiPolygon | null | undefined;
-    return [
-      {
-        coverage,
-        outline: () =>
-          (outline ??= preview ? null : maskToPolygons(coverage.grid, coverage.mask)),
-        maskingKey: `masking:${each.map((one) => one.sweep).join(",")}`,
-      },
-    ];
-  });
-  /** What is drawn, each as a grid of cells. */
-  const coverages = computed(() => drawn.value.map(({ coverage }) => coverage));
-
-  // The map: the coverage as images above the basemap, and the observers with their ranges, and
-  // their pins, on top.
-  let attachedMap: MlMap | null = null;
-  let detachDrag: (() => void) | null = null;
-  let releaseSelection: (() => void) | null = null;
-  /** The basemap's layers, which the images go above. */
-  let basemapIds = new Set<string>();
-
-  const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+  /** Whether the image combines several viewsheds, and shades the ground by how many see it. */
+  const combined = computed(() => combine.value && shown.value.length > 1);
 
   /** Whether there are several observers, which their numbers tell apart. */
   const several = computed(() => viewsheds.value.length > 1);
 
-  /** The observers' dots; the current one filled, and each labelled with its number once there are several. */
-  function observerData(): FeatureCollection {
-    return {
-      type: "FeatureCollection",
-      features: viewsheds.value.map(({ id, number: n, observer: position }) => ({
-        type: "Feature",
-        properties: {
-          id,
-          current: id === currentId.value,
-          label: several.value ? String(n) : "",
-        },
-        geometry: { type: "Point", coordinates: position },
-      })),
-    };
+  /** Presses an observer, which makes it current; its results are previews until let go. */
+  function startDrag(id: string) {
+    select(id);
+    draggingId.value = id;
   }
 
-  /**
-   * The ring around each viewshed shown, so it moves with the image it bounds rather than ahead
-   * of it; around the observer until there is one.
-   */
-  function rangesOf(): { center: LngLat; reach: number }[] {
-    return all.value.map(({ id, observer: position, metres }) => {
-      const grid = results.value.get(id)?.grid;
-      return grid
-        ? { center: grid.center, reach: grid.radius }
-        : { center: position, reach: metres };
-    });
+  /** Moves the observer pressed, whatever is made current meanwhile. */
+  function dragTo(position: LngLat) {
+    if (draggingId.value) patch(draggingId.value, { observer: position });
   }
 
-  /** How much the terrain on the map is stretched, which the pins follow. */
-  const exaggeration = computed(() =>
-    terrain.terrainEnabled ? terrain.exaggeration : 1,
-  );
-
-  function pinData(): FeatureCollection {
-    if (!pin.value) return EMPTY;
-    return {
-      type: "FeatureCollection",
-      // The head reads the number too, in place of the ground label it hides.
-      features: viewsheds.value.flatMap(
-        ({ number: n, observer: position, observerHeight: height }) =>
-          observerPin(position, height, exaggeration.value, {
-            label: several.value ? String(n) : undefined,
-          }).features,
-      ),
-    };
+  function endDrag() {
+    draggingId.value = null;
   }
 
-  /**
-   * What each shown image was drawn from, and the outline shown with it, and the rings: each
-   * source is written only when it changes, since over terrain every write repaints the tiles
-   * under it.
-   */
-  let imageKeys: (ImageKey | null)[] = [];
-  let outlinesShown: unknown[] = [];
-  let rangeShown: string | null = null;
-
-  /** What an image shows, and what it is drawn from: the same coverage looks different as visible or dead ground. */
-  type ImageKey = readonly [ViewshedDisplay, unknown];
-  const imageKeyOf = ({ coverage, maskingKey }: Drawn): ImageKey => [
-    display.value,
-    display.value === "masking" ? maskingKey : coverage,
-  ];
-  const sameKey = (a: ImageKey | null | undefined, b: ImageKey) =>
-    !!a && a[0] === b[0] && a[1] === b[1];
-
-  function renderRange(map: MlMap) {
-    const ranges = rangesOf();
-    const key = JSON.stringify(ranges);
-    if (key === rangeShown) return;
-    rangeShown = key;
-    (map.getSource(RANGE_ID) as GeoJSONSource | undefined)?.setData({
-      type: "FeatureCollection",
-      features: ranges.map(({ center, reach }) =>
-        circle(center, reach / 1000, { steps: 128, units: "kilometers" }),
-      ),
-    });
-  }
-
-  /** Removes the images from the nth on. */
-  function removeImages(map: MlMap, from: number) {
-    for (let index = from; index < Math.max(imageKeys.length, from + 1); index++) {
-      for (const id of [nth(OUTLINE_ID, index), nth(IMAGE_ID, index)]) {
-        if (map.getLayer(id)) map.removeLayer(id);
-        if (map.getSource(id)) map.removeSource(id);
-      }
-    }
-    imageKeys = imageKeys.slice(0, from);
-    outlinesShown = outlinesShown.slice(0, from);
-  }
-
-  /**
-   * The shading, the outline of the visible area on top of it, and the rings around them, written
-   * together: over terrain, MapLibre repaints the tiles under each, so landing them at once
-   * repaints them once.
-   */
-  function renderResult(map: MlMap) {
-    const images = drawn.value;
-    removeImages(map, images.length);
-    images.forEach((image, index) => {
-      const { grid } = image.coverage;
-      const [west, south, east, north] = grid.bounds;
-      const coordinates: [
-        [number, number],
-        [number, number],
-        [number, number],
-        [number, number],
-      ] = [
-        [west, north],
-        [east, north],
-        [east, south],
-        [west, south],
-      ];
-      const imageId = nth(IMAGE_ID, index);
-      const outlineId = nth(OUTLINE_ID, index);
-      if (!map.getSource(imageId)) {
-        // Both go in under the same layer, the outline last, so it lands on top.
-        const before = underlayAnchor(map, basemapIds, { overAnalysis: true });
-        // No url: it starts empty, and takes each result's pixels as they are.
-        map.addSource(imageId, { type: "image", coordinates });
-        map.addLayer(
-          {
-            id: imageId,
-            type: "raster",
-            source: imageId,
-            paint: { "raster-fade-duration": 0 },
-          },
-          before,
-        );
-        map.addSource(outlineId, { type: "geojson", data: EMPTY });
-        map.addLayer(
-          {
-            id: outlineId,
-            type: "line",
-            source: outlineId,
-            paint: { "line-color": "#15803d", "line-width": 1.5 },
-          },
-          before,
-        );
-        imageKeys[index] = null;
-        outlinesShown[index] = undefined;
-      }
-      const key = imageKeyOf(image);
-      if (!sameKey(imageKeys[index], key)) {
-        imageKeys[index] = key;
-        (map.getSource(imageId) as ImageSource).updateImage({
-          image: viewshedImage(image.coverage, display.value),
-          coordinates,
-        });
-      }
-      const outline = image.outline();
-      if (outline !== outlinesShown[index]) {
-        outlinesShown[index] = outline;
-        (map.getSource(outlineId) as GeoJSONSource).setData(outline ?? EMPTY);
-      }
-    });
-    renderRange(map);
-  }
-
-  watch([drawn, display], () => {
-    if (attachedMap) renderResult(attachedMap);
-  });
-  watch([viewsheds, currentId], () => {
-    (attachedMap?.getSource(OBSERVER_ID) as GeoJSONSource | undefined)?.setData(
-      observerData(),
-    );
-  });
-  // Placed or closed with no result to wait for; while a result is shown the ring waits for it,
-  // and an unchanged ring writes nothing.
-  watch(
-    () =>
-      JSON.stringify(
-        all.value.map(({ observer: position, metres }) => [position, metres]),
-      ),
-    () => {
-      if (attachedMap) renderRange(attachedMap);
-    },
-  );
-  /** Whether the pin source holds a pin, so a drag with pins off sends nothing. */
-  let pinShown = false;
-  watch([viewsheds, pin, exaggeration], () => {
-    if (!attachedMap || (!pin.value && !pinShown)) return;
-    pinShown = pin.value && viewsheds.value.length > 0;
-    (attachedMap.getSource(PIN_ID) as GeoJSONSource | undefined)?.setData(pinData());
-  });
-  watch(pin, () => {
-    if (attachedMap) styleGroundPoint(attachedMap);
-  });
-
-  /** While placing, a map click is the observer's, not a selection. */
+  // While placing, a map click is the observer's, not a selection.
+  let releaseSelection: (() => void) | null = null;
   watch(
     placing,
     (on) => {
-      if (on && !releaseSelection) releaseSelection = mapSelect.suppressSelection();
-      else if (!on && releaseSelection) {
-        releaseSelection();
+      if (on) releaseSelection ??= mapSelect.suppressSelection();
+      else {
+        releaseSelection?.();
         releaseSelection = null;
       }
-      attachedMap?.getCanvasContainer().classList.toggle(PICKING_CLASS, on);
     },
     { flush: "sync" },
   );
-
-  /** A pin narrows to a point on the ground, under the head that marks it and reads its number. */
-  function styleGroundPoint(map: MlMap) {
-    map.setPaintProperty(OBSERVER_ID, "circle-radius", pin.value ? 3 : 6);
-    map.setPaintProperty(OBSERVER_ID, "circle-stroke-width", pin.value ? 1 : 2);
-    map.setLayoutProperty(
-      OBSERVER_LABEL_ID,
-      "visibility",
-      pin.value ? "none" : "visible",
-    );
-  }
-
-  function onClick(event: MapMouseEvent) {
-    if (placing.value) place([event.lngLat.lng, event.lngLat.lat]);
-  }
-
-  /**
-   * Adds the layers. Safe to repeat after a style swap. `basemap` lists the basemap's own layers,
-   * which the images go above.
-   */
-  function attachMap(map: MlMap, basemap: Iterable<string>) {
-    detach();
-    basemapIds = new Set(basemap);
-    const ensureSource = (id: string, data: FeatureCollection) =>
-      map.getSource(id) || map.addSource(id, { type: "geojson", data });
-    const ensureLayer = (layer: AddLayerObject) =>
-      map.getLayer(layer.id) || map.addLayer(layer);
-    ensureSource(RANGE_ID, EMPTY);
-    rangeShown = null;
-    ensureLayer({
-      id: RANGE_ID,
-      type: "line",
-      source: RANGE_ID,
-      paint: { "line-color": "#16a34a", "line-width": 1.5, "line-dasharray": [3, 2] },
-    });
-    ensureSource(OBSERVER_ID, observerData());
-    ensureLayer({
-      id: OBSERVER_ID,
-      type: "circle",
-      source: OBSERVER_ID,
-      paint: {
-        "circle-color": ["case", ["get", "current"], "#16a34a", "#ffffff"],
-        "circle-stroke-color": ["case", ["get", "current"], "#ffffff", "#16a34a"],
-      },
-    });
-    ensureLayer({
-      id: OBSERVER_LABEL_ID,
-      type: "symbol",
-      source: OBSERVER_ID,
-      layout: {
-        "text-field": ["get", "label"],
-        "text-font": ["Noto Sans Regular"],
-        "text-size": 12,
-        "text-anchor": "bottom-left",
-        "text-offset": [0.5, -0.3],
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-      },
-      paint: {
-        "text-color": "#14532d",
-        "text-halo-color": "#ffffff",
-        "text-halo-width": 2,
-      },
-    });
-    styleGroundPoint(map);
-    ensureSource(PIN_ID, pinData());
-    pinShown = pin.value && viewsheds.value.length > 0;
-    ensureLayer({
-      id: PIN_STICK_ID,
-      type: "fill-extrusion",
-      source: PIN_ID,
-      filter: ["==", ["get", "kind"], "stick"],
-      paint: {
-        "fill-extrusion-color": "#16a34a",
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-base": 0,
-      },
-    });
-    if (!map.hasImage(PIN_HEAD_ID)) {
-      const pixelRatio = window.devicePixelRatio || 1;
-      map.addImage(PIN_HEAD_ID, pinHead(pixelRatio), { pixelRatio });
-    }
-    ensureLayer({
-      id: PIN_HEAD_ID,
-      type: "symbol",
-      source: PIN_ID,
-      filter: ["==", ["get", "kind"], "head"],
-      layout: {
-        "symbol-height-offset": ["get", "lift"],
-        "icon-image": PIN_HEAD_ID,
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-        "text-field": ["get", "text"],
-        "text-font": ["Noto Sans Regular"],
-        "text-size": 12,
-        "text-anchor": "left",
-        "text-offset": [1.1, 0],
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-      },
-      paint: {
-        "text-color": "#ffffff",
-        "text-halo-color": "#15803d",
-        "text-halo-width": 6,
-        "text-halo-blur": 0,
-      },
-    });
-    attachedMap = map;
-    // A new style has none of the images.
-    imageKeys = [];
-    outlinesShown = [];
-    renderResult(map);
-    map.getCanvasContainer().classList.toggle(PICKING_CLASS, placing.value);
-    map.on("click", onClick);
-    detachDrag = attachPointDrag(map, {
-      points: () => viewsheds.value.map(({ observer: position }) => position),
-      // Pressing an observer makes it current, whether or not it moves.
-      onStart: (index) => {
-        const pressed = viewsheds.value[index];
-        if (!pressed) return;
-        currentId.value = pressed.id;
-        draggingId.value = pressed.id;
-      },
-      // The pressed one moves, whatever is made current meanwhile.
-      onMove: (position) => {
-        if (draggingId.value) patch(draggingId.value, { observer: position });
-      },
-      onEnd: () => (draggingId.value = null),
-    });
-  }
-
-  function detach() {
-    attachedMap?.off("click", onClick);
-    // Let go of the last coverage drawn, which can run to many megabytes.
-    imageKeys = [];
-    outlinesShown = [];
-    attachedMap?.getCanvasContainer().classList.remove(PICKING_CLASS);
-    detachDrag?.();
-    detachDrag = null;
-    attachedMap = null;
-  }
 
   return {
     placing,
@@ -825,7 +424,8 @@ export const useViewshedStore = defineStore("viewshed", () => {
     status,
     result,
     results,
-    coverages,
+    shown,
+    combined,
     visibleShare,
     place,
     select,
@@ -835,7 +435,8 @@ export const useViewshedStore = defineStore("viewshed", () => {
     close,
     closeAll,
     handleEscape,
-    attachMap,
-    detach,
+    startDrag,
+    dragTo,
+    endDrag,
   };
 });
