@@ -195,6 +195,31 @@ describe("time unchanged state spans", () => {
     expect(unit._state?.type).not.toBe("interpolated");
   });
 
+  it("stays at the base location until the first timed location", () => {
+    const unit = createUnit({
+      location: [0, 0],
+      state: [{ id: "a", t: 100, location: [1, 0] }] as any,
+    });
+
+    updateCurrentUnitState(unit, 50);
+    expect(unit._state?.location).toEqual([0, 0]);
+    expect(unit._state?.type).not.toBe("interpolated");
+
+    updateCurrentUnitState(unit, 100);
+    expect(unit._state?.location).toEqual([1, 0]);
+  });
+
+  it("moves from the base location when the first location has a viaStartTime", () => {
+    const unit = createUnit({
+      location: [0, 0],
+      state: [{ id: "a", t: 100, location: [1, 0], viaStartTime: 0 }] as any,
+    });
+
+    updateCurrentUnitState(unit, 50);
+    expect(unit._state?.type).toBe("interpolated");
+    expect(unit._state?.location?.[0]).toBeCloseTo(0.5, 2);
+  });
+
   it("starts interpolating at viaStartTime", () => {
     const unit = createUnit({
       state: [
