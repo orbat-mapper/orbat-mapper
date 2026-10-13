@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/geo/viewshedClient", () => ({
   viewshedClient: async () => ({ compute: mocks.compute }),
+  stopViewshedWorker: () => {},
 }));
 
 /** Queries the body, so portalled Reka content is included. */

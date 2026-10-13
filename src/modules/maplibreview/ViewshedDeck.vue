@@ -98,7 +98,7 @@ const {
   visibleShare,
   combine,
   several,
-  coverages,
+  combined,
   number,
   viewsheds,
 } = storeToRefs(viewshed);
@@ -181,7 +181,7 @@ const legend = computed(() => {
   if (!observer.value) return null;
   if (display.value === "masking") return maskingLegend;
   if (display.value === "dead") return deadGroundLegend;
-  return coverages.value.some((coverage) => coverage.seenBy) ? seenByLegend : null;
+  return combined.value ? seenByLegend : null;
 });
 </script>
 
