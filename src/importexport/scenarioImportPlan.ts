@@ -254,19 +254,16 @@ export function planScenarioImport(
       seen.add(parent);
       parent = after.get(parent)?.parent;
     }
+    // A timed attachment may point anywhere in the master, such as a unit on another
+    // side or in another group, so it only needs a target that exists after the import.
     if (e.kind === "unit")
       for (const state of (e.node as Unit).state ?? []) {
         if (!state.hierarchy) continue;
         for (const ref of [state.hierarchy.targetId, state.hierarchy.parentId].filter(
           Boolean,
         ) as string[]) {
-          if (
-            !after.has(ref) ||
-            (touched.has(id) && !within(after, ref, mapped(options.scopeId)))
-          )
-            errors.push(
-              `${e.node.name}: unresolved or out-of-scope hierarchy reference ${ref}.`,
-            );
+          if (!after.has(ref))
+            errors.push(`${e.node.name}: unresolved hierarchy reference ${ref}.`);
         }
       }
   }

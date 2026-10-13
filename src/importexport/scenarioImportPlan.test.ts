@@ -159,23 +159,55 @@ describe("scenario contribution import plan", () => {
     });
     expect(plan.errors.join(" ")).toContain("outside");
   });
-  it("flags missing parents and unresolved / outside timed references", () => {
+  it("flags missing parents and unresolved timed references", () => {
     const incoming = contribution([unit("new-parent", { subUnits: [unit("reserve")] })]);
     expect(planScenarioImport(scenario(), incoming, opts).errors.join(" ")).toContain(
       "unresolved parent",
     );
-    for (const targetId of ["enemy-unit", "missing"]) {
+    const p = planScenarioImport(
+      scenario(),
+      contribution([
+        unit("reserve", {
+          state: [
+            { id: "s", t: 10, hierarchy: { targetId: "missing", placement: "on" } },
+          ],
+        }),
+      ]),
+      opts,
+    );
+    expect(p.errors.join(" ")).toContain("unresolved hierarchy reference missing");
+  });
+  it("keeps timed attachments to units on another side or in another group", () => {
+    for (const targetId of ["enemy-unit", "contact"]) {
+      const state = [{ id: "s", t: 10, hierarchy: { targetId, placement: "on" } }];
       const p = planScenarioImport(
         scenario(),
-        contribution([
-          unit("reserve", {
-            state: [{ id: "s", t: 10, hierarchy: { targetId, placement: "on" } }],
-          }),
-        ]),
+        contribution([unit("reserve", { state } as Partial<Unit>)]),
         opts,
       );
-      expect(p.errors.join(" ")).toContain("hierarchy reference");
+      expect(p.errors).toEqual([]);
+      expect(own(p.scenario)[0].state).toEqual(state);
     }
+  });
+  it("re-imports an unedited group whose master unit the facilitator attached elsewhere", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "s", t: 10, hierarchy: { targetId: "enemy-unit", placement: "on" } },
+    ];
+    const p = planScenarioImport(master, klona(master), {
+      ...opts,
+      selectedIds: ["reserve", "omitted", "parent", "child"],
+    });
+    expect(p.errors).toEqual([]);
+    expect(p.hasChanges).toBe(false);
+  });
+  it("still refuses a timed attachment to a unit the replacement removes", () => {
+    const master = scenario();
+    master.sides[0].groups[1].subUnits[0].state = [
+      { id: "s", t: 10, hierarchy: { targetId: "omitted", placement: "on" } },
+    ];
+    const p = planScenarioImport(master, contribution(), { ...opts, action: "replace" });
+    expect(p.errors.join(" ")).toContain("unresolved hierarchy reference omitted");
   });
   it("reports unchanged repeated submissions without duplication", () => {
     const first = planScenarioImport(scenario(), contribution(), opts);

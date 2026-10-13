@@ -107,6 +107,7 @@ All notable changes to this project will be documented in this file.
 - Fixed catalogue point symbols in the Graphics tab being hard to see in dark mode.
 - Fixed HTML in a KML layer's feature details running script when the feature was clicked.
 - Fixed "Add new states" bringing back a unit that had been removed from the map, by appending a team's later planned moves. Those moves are now left out and listed in the import preview, and the rest of each state is kept.
+- Fixed importing a side or group being refused when one of its units had a timed attachment to a unit outside it, such as a unit on another side or in another group. This also refused a team's unedited file after an attachment was made in the scenario. Such attachments are now kept, and only an attachment to a unit that does not exist after the import is refused.
 
 ## September 2026
 
