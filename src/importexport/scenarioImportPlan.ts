@@ -1,9 +1,9 @@
 import { klona } from "klona";
-import { isEqual } from "es-toolkit";
+import { isEqual, omit } from "es-toolkit";
 import { nanoid } from "@/utils";
 import { getCustomSymbolId } from "@/symbology/helpers";
 import { SYMBOL_FILL_COLORS } from "@/config/colors";
-import type { Scenario, Side, SideGroup, Unit } from "@/types/scenarioModels";
+import type { Scenario, Side, SideGroup, State, Unit } from "@/types/scenarioModels";
 
 export interface ImportOptions {
   scopeId: string;
@@ -78,6 +78,18 @@ export function comparable(value: unknown, key = ""): unknown {
 export function snapshotGroupsIn(node: Node): SideGroup[] {
   if ("groups" in node) return node.groups.filter((g) => g.snapshotTime);
   return "snapshotTime" in node && node.snapshotTime ? [node] : [];
+}
+/** Whether the last entry that sets a location takes the unit off the map. */
+function isOffMap(states: State[] = []): boolean {
+  const located = states.filter((s) => s.location !== undefined);
+  return located[located.length - 1]?.location === null;
+}
+/** A unit removed from the map stays off it, as "Remove from map" drops later planned
+ * moves. Entries keep their other content, such as a status, and empty ones are left out. */
+function withoutMoves(states: State[]): State[] {
+  return states
+    .map((s) => omit(s, ["location", "via", "viaStartTime", "interpolate"]))
+    .filter((s) => Object.keys(s).some((key) => key !== "id" && key !== "t"));
 }
 function within(entries: Map<string, Entry>, id: string, scope: string): boolean {
   const seen = new Set<string>();
@@ -188,7 +200,14 @@ export function planScenarioImport(
           ignored.push(
             `${unit.name}: ${edited} changed existing states ignored. Use "Replace state history" to take them.`,
           );
-        output.state = [...klona(existing?.state ?? []), ...additions];
+        const offMap = isOffMap(existing?.state);
+        const appended = offMap ? withoutMoves(additions) : additions;
+        const moves = offMap ? additions.filter((s) => s.location || s.via).length : 0;
+        if (moves)
+          ignored.push(
+            `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
+          );
+        output.state = [...klona(existing?.state ?? []), ...appended];
       } else output.state = klona(unit.state ?? []);
       if (options.action === "copy")
         output.state?.forEach((s) => {

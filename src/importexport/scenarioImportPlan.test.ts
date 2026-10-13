@@ -290,6 +290,35 @@ describe("scenario contribution import plan", () => {
       'reserve: 1 changed existing states ignored. Use "Replace state history" to take them.',
     ]);
   });
+  it("append keeps a unit removed from the map off it", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "gone", t: 20, location: null },
+    ];
+    const incoming = contribution([
+      unit("reserve", {
+        state: [
+          { id: "s1", t: 10, location: [0, 0] },
+          { id: "plan1", t: 30, location: [1, 0], status: "Damaged" },
+          { id: "plan2", t: 40, location: [2, 0], via: [[1.5, 1]], viaStartTime: 35 },
+        ],
+      }),
+    ]);
+    const plan = planScenarioImport(master, incoming, {
+      ...opts,
+      content: "state-only",
+      states: "add_new",
+    });
+    expect(own(plan.scenario)[0].state).toEqual([
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "gone", t: 20, location: null },
+      { id: "plan1", t: 30, status: "Damaged" },
+    ]);
+    expect(plan.ignored).toContain(
+      "reserve: removed from the map, so 2 planned moves were left out.",
+    );
+  });
   it("state-only replacement never deletes omitted units; units-only retains history", () => {
     const master = scenario();
     own(master)[0].state = [{ id: "old", t: 20 }];
@@ -423,9 +452,7 @@ describe("import application and recovery", () => {
   it("brings in the styles of new range ring groups, statuses and fill colours", () => {
     const { store, io } = setup();
     const master = io.serializeToObject();
-    master.settings!.rangeRingGroups = [
-      { name: "weapons", style: { stroke: "#000" } },
-    ];
+    master.settings!.rangeRingGroups = [{ name: "weapons", style: { stroke: "#000" } }];
     master.settings!.statuses = [];
     store.update((s) => {
       for (const id of Object.keys(s.rangeRingGroupMap)) delete s.rangeRingGroupMap[id];
