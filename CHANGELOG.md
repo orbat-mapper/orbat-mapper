@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - MilX imports now bring in tactical graphics as control measures and keep the units' direction and text amplifiers, with a choice of where imported units get their positions.
 - Added a terrain button to the map controls that turns 3D terrain and hillshading on or off together and tilts the map to show the relief.
 - Added offline 3D terrain from a PMTiles elevation archive, opened from the Terrain submenu or "Add map server". A PMTiles archive of PNG or WebP tiles dropped on the map can also be used for terrain.
+- Added DEM tile servers as a source of elevation data: "Add map server" takes a `{z}/{x}/{y}` tile address or a TileJSON document, with the elevation encoding chosen in the dialog.
+- `maplibreConfig.json` can now declare an elevation source, a DEM tile server or a PMTiles archive, which replaces the Mapterhorn default. An elevation archive the user opens still takes precedence.
 - Added range rings to the Layers panel. All rings, each group and single rings can be shown or hidden there, groups can be added and renamed, and rings can be moved in the layer order.
 - Added editing of many units at once in the unit details panel, such as setting the status, changing the symbol or removing from the map, with each change a single undo step.
 - Added an orbit mode to the map ("Orbit here" in the map context menu, or `o`) that slowly circles a spot, with an optional Hellfire strike (shift-click while orbiting).
@@ -54,6 +56,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed units being shown in the wrong place when a scenario file or an added unit hierarchy listed their state changes out of time order.
 - Fixed a moving unit stopping, and then moving at the wrong speed, when a change without a location was recorded partway along its route.
 - Fixed importing a team's units dropping the styles of range ring groups, statuses and fill colours the scenario did not have yet. Ones the scenario already has keep their own styles.
 - Fixed "Append states after latest existing timestamp" duplicating a state that the imported file had moved later. Such states are now listed as ignored.
