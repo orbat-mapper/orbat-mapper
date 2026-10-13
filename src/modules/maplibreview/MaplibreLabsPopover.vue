@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import ViewshedIcon from "@/components/ViewshedIcon.vue";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
+import { useTerrainStore } from "@/stores/terrainStore";
+import { useViewshedStore } from "@/stores/viewshedStore";
 
 const props = defineProps<{ mlMap?: MlMap | null }>();
 
@@ -100,7 +103,15 @@ const hexSizeLabel = computed(() => {
   return `~${parts.join(" · ")}`;
 });
 
-const activeCount = computed(() => Number(showHexGrid.value));
+const terrain = useTerrainStore();
+const viewshed = useViewshedStore();
+/** On places observers until stopped; off closes every viewshed. */
+const showViewshed = computed({
+  get: () => viewshed.active,
+  set: (on: boolean) => (on ? viewshed.start() : viewshed.closeAll()),
+});
+
+const activeCount = computed(() => Number(showHexGrid.value) + Number(viewshed.active));
 </script>
 
 <template>
@@ -143,6 +154,25 @@ const activeCount = computed(() => Number(showHexGrid.value));
       </header>
 
       <div class="flex max-h-[70vh] min-h-0 flex-col gap-3 overflow-y-auto p-3">
+        <section class="rounded-md border">
+          <div class="flex items-center justify-between gap-2 px-3 py-2">
+            <div class="flex items-center gap-2">
+              <ViewshedIcon class="size-4" />
+              <Label class="text-sm">Viewshed</Label>
+            </div>
+            <ToggleField v-model="showViewshed" :disabled="!terrain.elevationSource" />
+          </div>
+          <p class="text-muted-foreground border-t px-3 py-2 text-xs">
+            <template v-if="!terrain.elevationSource">
+              Needs elevation data. Open an elevation archive or add a DEM tile server in
+              the terrain menu.
+            </template>
+            <template v-else>
+              What an observer can see over the terrain. Click the map to place observers
+              and drag one to move it. Nothing is saved with the scenario.
+            </template>
+          </p>
+        </section>
         <section class="rounded-md border">
           <div class="flex items-center justify-between gap-2 px-3 py-2">
             <div class="flex items-center gap-2">

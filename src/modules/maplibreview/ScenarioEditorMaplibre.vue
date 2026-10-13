@@ -49,6 +49,7 @@ import MapEditorDrawToolbar from "@/modules/scenarioeditor/MapEditorDrawToolbar.
 import DrawSessionActionBar from "@/modules/scenarioeditor/DrawSessionActionBar.vue";
 import MapEditorMeasurementToolbar from "@/modules/scenarioeditor/MapEditorMeasurementToolbar.vue";
 import MaplibreLabsPopover from "@/modules/maplibreview/MaplibreLabsPopover.vue";
+import ViewshedDeck from "@/modules/maplibreview/ViewshedDeck.vue";
 import ReferenceGridControl from "@/modules/maplibreview/ReferenceGridControl.vue";
 import { useReferenceGridLayers } from "@/modules/maplibreview/useReferenceGridLayers";
 import { useReferenceGridStore } from "@/stores/referenceGridStore";
@@ -63,6 +64,7 @@ import {
   type ScenarioMapViewSnapshot,
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 import { useMapOrbit } from "@/modules/maplibreview/useMapOrbit";
+import { useMapViewshed } from "@/modules/maplibreview/useMapViewshed";
 import { useHellfire } from "@/modules/maplibreview/useHellfire";
 import { useScenarioRouting } from "@/modules/scenarioeditor/useScenarioRouting";
 import { useMapLibreRoutingPreview } from "@/geo/routing/mapLibreRoutingPreview";
@@ -103,6 +105,7 @@ const {
 });
 
 const mlMap = shallowRef<MlMap>();
+useMapViewshed(mlMap);
 const scenarioMapEngineRef = shallowRef<ScenarioMapEngine>();
 const referenceGrid = useReferenceGridStore();
 const { labels: referenceGridLabels, dispose: disposeReferenceGridLayers } =
@@ -343,6 +346,7 @@ function onCloseActiveDetailsPanel() {
       />
     </template>
     <template #footer-overlays>
+      <ViewshedDeck v-if="mlMap" />
       <div
         v-if="referenceGrid.visible"
         data-reference-grid-labels

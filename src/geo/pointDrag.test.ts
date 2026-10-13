@@ -1,0 +1,148 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { attachPointDrag } from "./pointDrag";
+
+/** A map whose pixels are degrees: x = lng, y = lat. */
+function fakeMap() {
+  const container = document.createElement("div");
+  const canvas = document.createElement("canvas");
+  container.append(canvas);
+  document.body.append(container);
+  container.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
+  return {
+    container,
+    canvas,
+    map: {
+      getCanvasContainer: () => container,
+      getCanvas: () => canvas,
+      project: ([lng, lat]: [number, number]) => ({ x: lng, y: lat }),
+      unproject: ([x, y]: [number, number]) => ({ lng: x, lat: y }),
+    },
+  };
+}
+
+const press = (target: EventTarget, x: number, y: number, init: MouseEventInit = {}) =>
+  target.dispatchEvent(
+    new MouseEvent("mousedown", {
+      clientX: x,
+      clientY: y,
+      button: 0,
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    }),
+  );
+const pointer = (type: string, x: number, y: number) =>
+  window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y }));
+
+let setup: ReturnType<typeof fakeMap>;
+let handlers: {
+  onStart: (index: number) => void;
+  onMove: (position: [number, number]) => void;
+  onEnd: () => void;
+};
+let detach: () => void;
+let enabled: boolean;
+let mapPress: Mock<(event: Event) => void>;
+
+beforeEach(() => {
+  setup = fakeMap();
+  handlers = {
+    onStart: vi.fn<(index: number) => void>(),
+    onMove: vi.fn<(position: [number, number]) => void>(),
+    onEnd: vi.fn<() => void>(),
+  };
+  enabled = true;
+  detach = attachPointDrag(setup.map, {
+    points: () => [[100, 100]],
+    enabled: () => enabled,
+    ...handlers,
+  });
+  // Stands in for MapLibre's own press handling on the canvas.
+  mapPress = vi.fn<(event: Event) => void>();
+  setup.canvas.addEventListener("mousedown", mapPress);
+});
+afterEach(() => {
+  detach();
+  setup.container.remove();
+});
+
+describe("attachPointDrag", () => {
+  it("drags the point from a press on it, keeping the press from the map", () => {
+    press(setup.canvas, 104, 97);
+    expect(handlers.onStart).toHaveBeenCalledWith(0);
+    expect(mapPress).not.toHaveBeenCalled();
+    pointer("pointermove", 150, 120);
+    expect(handlers.onMove).toHaveBeenLastCalledWith([150, 120]);
+    pointer("pointerup", 150, 120);
+    expect(handlers.onEnd).toHaveBeenCalled();
+    pointer("pointermove", 10, 10);
+    expect(handlers.onMove).toHaveBeenCalledTimes(1);
+  });
+
+  it("swallows the click that ends a drag, so it does not pick under the point", async () => {
+    const mapClick = vi.fn<(event: Event) => void>();
+    setup.canvas.addEventListener("click", mapClick);
+    press(setup.canvas, 100, 100);
+    pointer("pointerup", 120, 100);
+    setup.canvas.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mapClick).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve));
+    setup.canvas.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mapClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the press to the map while the active tool does not drag points", () => {
+    enabled = false;
+    press(setup.canvas, 100, 100);
+    expect(handlers.onStart).not.toHaveBeenCalled();
+    expect(mapPress).toHaveBeenCalled();
+  });
+
+  it("leaves a press with a modifier to the map's marquee and lasso", () => {
+    press(setup.canvas, 100, 100, { ctrlKey: true });
+    press(setup.canvas, 100, 100, { altKey: true });
+    expect(handlers.onStart).not.toHaveBeenCalled();
+    expect(mapPress).toHaveBeenCalledTimes(2);
+  });
+
+  it("leaves a press away from the point to the map", () => {
+    press(setup.canvas, 140, 100);
+    expect(handlers.onStart).not.toHaveBeenCalled();
+    expect(mapPress).toHaveBeenCalled();
+  });
+
+  it("shows a grab cursor over the point, and clears only its own", () => {
+    setup.container.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: 101, clientY: 101 }),
+    );
+    expect(setup.canvas.style.cursor).toBe("grab");
+    setup.container.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: 160, clientY: 160 }),
+    );
+    expect(setup.canvas.style.cursor).toBe("");
+  });
+
+  it("drags the nearest of several points under the press", () => {
+    detach();
+    detach = attachPointDrag(setup.map, {
+      points: () => [
+        [100, 100],
+        [200, 200],
+        [106, 100],
+      ],
+      enabled: () => true,
+      ...handlers,
+    });
+    press(setup.canvas, 104, 100);
+    expect(handlers.onStart).toHaveBeenCalledWith(2);
+    pointer("pointerup", 104, 100);
+    press(setup.canvas, 199, 201);
+    expect(handlers.onStart).toHaveBeenLastCalledWith(1);
+  });
+
+  it("stops listening once detached", () => {
+    detach();
+    press(setup.canvas, 100, 100);
+    expect(handlers.onStart).not.toHaveBeenCalled();
+  });
+});

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added an experimental Viewshed to Labs: click the map to place observers and see the ground they can see over the terrain, the dead ground none of them sees, or how high a target must rise to be seen. Observers can be dragged, and their coverage combined. It reads the same elevation data as 3D terrain, and nothing is saved with the scenario.
 - Added a Snapshot option for side groups in partial ORBAT Mapper exports. A snapshot group holds only the positions, names and symbols of its visible units at a chosen time, so a side can be shown the opposing units it has detected without their history or plans. Importing a file refuses its snapshot groups, so they cannot wipe the scenario's units.
 - Partial ORBAT Mapper exports leave out scenario events unless "Include scenario events" is ticked, and then leave out events after the snapshot time by default.
 - Added a Unit changes panel to the scenario timeline, opened from a timeline bin or the Changes button (`h`). It lists the unit and map item changes around the current time, or shows them on lanes where they can be dragged to a new time, snapping to nearby changes, scenario events and the current time.
