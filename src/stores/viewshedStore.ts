@@ -42,30 +42,24 @@ import {
   type ViewshedRequest,
   type ViewshedResult,
 } from "@/lib/terrain";
-import { viewshedClient } from "@/geo/viewshedClient";
 import { viewshedImage, type ViewshedDisplay } from "@/geo/viewshedImage";
 import { attachPointDrag } from "@/geo/pointDrag";
 import { observerPin, pinHead } from "@/geo/observerPin";
-import { HILLSHADE_LAYER_ID } from "@/modules/maplibreview/mapTerrain";
+import { ANALYSIS_LAYER_PREFIX, underlayAnchor } from "@/modules/maplibreview/mapTerrain";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useTerrainStore } from "@/stores/terrainStore";
 
-const VIEWSHED_PREFIX = "orbat-viewshed";
-const IMAGE_SOURCE_ID = VIEWSHED_PREFIX;
-const IMAGE_LAYER_ID = VIEWSHED_PREFIX;
-const OUTLINE_SOURCE_ID = `${VIEWSHED_PREFIX}-outline`;
-const OUTLINE_LAYER_ID = `${VIEWSHED_PREFIX}-outline`;
-const OBSERVER_SOURCE_ID = `${VIEWSHED_PREFIX}-observer`;
-const OBSERVER_LAYER_ID = `${VIEWSHED_PREFIX}-observer`;
-const OBSERVER_LABEL_LAYER_ID = `${VIEWSHED_PREFIX}-observer-label`;
-const RANGE_SOURCE_ID = `${VIEWSHED_PREFIX}-range`;
-const RANGE_LAYER_ID = `${VIEWSHED_PREFIX}-range`;
-const PIN_SOURCE_ID = `${VIEWSHED_PREFIX}-pin`;
-const PIN_STICK_LAYER_ID = `${VIEWSHED_PREFIX}-pin-stick`;
-const PIN_HEAD_LAYER_ID = `${VIEWSHED_PREFIX}-pin-head`;
-const PIN_HEAD_IMAGE_ID = `${VIEWSHED_PREFIX}-pin-head`;
-/** On the canvas container while placing, for a crosshair cursor (`styles.css`). */
-const PLACING_CLASS = "viewshed-placing";
+/** Each id names a source and the layer that draws it; the images and outlines are analysis overlays. */
+const IMAGE_ID = `${ANALYSIS_LAYER_PREFIX}viewshed`;
+const OUTLINE_ID = `${ANALYSIS_LAYER_PREFIX}viewshed-outline`;
+const OBSERVER_ID = "orbat-viewshed-observer";
+const OBSERVER_LABEL_ID = "orbat-viewshed-observer-label";
+const RANGE_ID = "orbat-viewshed-range";
+const PIN_ID = "orbat-viewshed-pin";
+const PIN_STICK_ID = "orbat-viewshed-pin-stick";
+const PIN_HEAD_ID = "orbat-viewshed-pin-head";
+/** On the canvas container while a click picks a point, for a crosshair cursor (`styles.css`). */
+const PICKING_CLASS = "map-picking";
 
 /** The ids of the nth image drawn, and its outline: the first keeps the bare ids. */
 const nth = (id: string, index: number) => (index ? `${id}-${index}` : id);
@@ -113,22 +107,21 @@ type ViewshedStatus = "loading" | "ready" | "error";
  * One viewshed and its own settings. Replaced, never changed in place, so the list holds plain
  * data that goes to the worker and the map as it is.
  */
-interface Viewshed {
+interface Settings {
+  /** Metres above the ground. */
+  observerHeight: number;
+  targetHeight: number;
+  /** Metres from the observer, within `VIEWSHED_RADIUS`. */
+  metres: number;
+  detail: ViewshedDetail;
+}
+
+interface Viewshed extends Readonly<Settings> {
   readonly id: string;
   /** What it is called on the map and in the deck: the lowest number free when it was opened. */
   readonly number: number;
   readonly observer: LngLat;
-  /** Metres above the ground. */
-  readonly observerHeight: number;
-  readonly targetHeight: number;
-  /** Metres from the observer, within `VIEWSHED_RADIUS`. */
-  readonly metres: number;
-  readonly detail: ViewshedDetail;
 }
-
-type Settings = {
-  -readonly [K in "observerHeight" | "targetHeight" | "metres" | "detail"]: Viewshed[K];
-};
 const DEFAULT_SETTINGS: Settings = {
   observerHeight: 2,
   targetHeight: 2,
@@ -177,13 +170,16 @@ export const useViewshedStore = defineStore("viewshed", () => {
     detail,
   });
 
-  /** A setting of the current viewshed, or of the next while none is open. */
-  function setting<K extends keyof Settings>(key: K) {
+  /** A setting of the current viewshed, or of the next while none is open; `normalize` cleans what is set. */
+  function setting<K extends keyof Settings>(
+    key: K,
+    normalize = (value: Settings[K]) => value,
+  ) {
     return computed({
       get: (): Settings[K] => (current.value ?? fresh.value)[key],
       set: (value: Settings[K]) => {
-        if (current.value) patch(current.value.id, { [key]: value });
-        else fresh.value[key] = value;
+        if (current.value) patch(current.value.id, { [key]: normalize(value) });
+        else fresh.value[key] = normalize(value);
       },
     });
   }
@@ -210,13 +206,7 @@ export const useViewshedStore = defineStore("viewshed", () => {
   });
   // Set for all again, every viewshed takes the current one's detail.
   watch(detailForAll, (on) => on && setDetail(detail.value), { flush: "sync" });
-  const radius = computed({
-    get: () => (current.value ?? fresh.value).metres,
-    set: (value: number) => {
-      if (current.value) patch(current.value.id, { metres: clampRadius(value) });
-      else fresh.value.metres = clampRadius(value);
-    },
-  });
+  const radius = setting("metres", clampRadius);
   /** What the image shows. Kept across viewsheds. */
   const display = shallowRef<ViewshedDisplay>("visible");
   /** Whether observers are drawn as pins at eye height. Kept across viewsheds. */
@@ -286,6 +276,13 @@ export const useViewshedStore = defineStore("viewshed", () => {
     placing.value = false;
   }
 
+  /** Escape's first refusal: stops placing, and says whether it did. */
+  function handleEscape(): boolean {
+    if (!placing.value) return false;
+    stop();
+    return true;
+  }
+
   function remove(id: string) {
     const removed = all.value.find((viewshed) => viewshed.id === id);
     if (removed && all.value.length === 1) fresh.value = settingsOf(removed);
@@ -309,6 +306,13 @@ export const useViewshedStore = defineStore("viewshed", () => {
     draggingId.value = null;
   }
 
+  // The worker holds a tile cache, which nothing needs once every viewshed is closed.
+  watch(active, (on) => {
+    if (on || !workerStarted) return;
+    workerStarted = false;
+    void import("@/geo/viewshedClient").then((client) => client.stopViewshedWorker());
+  });
+
   watch(
     () => terrain.elevationSource,
     (source) => {
@@ -324,13 +328,18 @@ export const useViewshedStore = defineStore("viewshed", () => {
   /** Each viewshed's newest request not yet sent. */
   const queued = new Map<string, Queued>();
 
+  /** Whether the worker was asked for, so it is stopped once nothing needs it. */
+  let workerStarted = false;
+
   async function run() {
     if (running) return;
     running = true;
+    workerStarted = true;
     while (queued.size) {
       const [id, { source, request }] = queued.entries().next().value!;
       queued.delete(id);
       try {
+        const { viewshedClient } = await import("@/geo/viewshedClient");
         const next = await (await viewshedClient(source)).compute(request);
         // Closed meanwhile; a newer request still shows this one until it lands.
         if (!all.value.some((viewshed) => viewshed.id === id)) continue;
@@ -405,8 +414,19 @@ export const useViewshedStore = defineStore("viewshed", () => {
      */
     maskingKey: string;
   }
-  const drawn = computed<Drawn[]>(() => {
+  /**
+   * The results in the order opened: the same array until one of them changes, so a drag move or a
+   * setting that has no new result yet neither combines nor redraws anything.
+   */
+  let lastShown: readonly ViewshedResult[] = [];
+  const shown = computed(() => {
     const each = all.value.flatMap(({ id }) => results.value.get(id) ?? []);
+    const same =
+      each.length === lastShown.length && each.every((one, i) => one === lastShown[i]);
+    return same ? lastShown : (lastShown = each);
+  });
+  const drawn = computed<Drawn[]>(() => {
+    const each = shown.value;
     if (!combine.value || each.length < 2)
       return each.map((one) => ({
         coverage: one,
@@ -491,22 +511,6 @@ export const useViewshedStore = defineStore("viewshed", () => {
   }
 
   /**
-   * Just above the basemap and its shading, under every scenario layer: the first layer that is
-   * none of those, nor a raster overlay.
-   */
-  function overlayBottom(map: MlMap): string | undefined {
-    return map
-      .getLayersOrder()
-      .find(
-        (id) =>
-          !basemapIds.has(id) &&
-          id !== HILLSHADE_LAYER_ID &&
-          !id.startsWith(VIEWSHED_PREFIX) &&
-          map.getLayer(id)?.type !== "raster",
-      );
-  }
-
-  /**
    * What each shown image was drawn from, and the outline shown with it, and the rings: each
    * source is written only when it changes, since over terrain every write repaints the tiles
    * under it.
@@ -529,7 +533,7 @@ export const useViewshedStore = defineStore("viewshed", () => {
     const key = JSON.stringify(ranges);
     if (key === rangeShown) return;
     rangeShown = key;
-    (map.getSource(RANGE_SOURCE_ID) as GeoJSONSource | undefined)?.setData({
+    (map.getSource(RANGE_ID) as GeoJSONSource | undefined)?.setData({
       type: "FeatureCollection",
       features: ranges.map(({ center, reach }) =>
         circle(center, reach / 1000, { steps: 128, units: "kilometers" }),
@@ -540,10 +544,10 @@ export const useViewshedStore = defineStore("viewshed", () => {
   /** Removes the images from the nth on. */
   function removeImages(map: MlMap, from: number) {
     for (let index = from; index < Math.max(imageKeys.length, from + 1); index++) {
-      for (const id of [nth(OUTLINE_LAYER_ID, index), nth(IMAGE_LAYER_ID, index)])
+      for (const id of [nth(OUTLINE_ID, index), nth(IMAGE_ID, index)]) {
         if (map.getLayer(id)) map.removeLayer(id);
-      for (const id of [nth(OUTLINE_SOURCE_ID, index), nth(IMAGE_SOURCE_ID, index)])
         if (map.getSource(id)) map.removeSource(id);
+      }
     }
     imageKeys = imageKeys.slice(0, from);
     outlinesShown = outlinesShown.slice(0, from);
@@ -571,16 +575,16 @@ export const useViewshedStore = defineStore("viewshed", () => {
         [east, south],
         [west, south],
       ];
-      const imageId = nth(IMAGE_SOURCE_ID, index);
-      const outlineId = nth(OUTLINE_SOURCE_ID, index);
+      const imageId = nth(IMAGE_ID, index);
+      const outlineId = nth(OUTLINE_ID, index);
       if (!map.getSource(imageId)) {
         // Both go in under the same layer, the outline last, so it lands on top.
-        const before = overlayBottom(map);
+        const before = underlayAnchor(map, basemapIds, { overAnalysis: true });
         // No url: it starts empty, and takes each result's pixels as they are.
         map.addSource(imageId, { type: "image", coordinates });
         map.addLayer(
           {
-            id: nth(IMAGE_LAYER_ID, index),
+            id: imageId,
             type: "raster",
             source: imageId,
             paint: { "raster-fade-duration": 0 },
@@ -590,7 +594,7 @@ export const useViewshedStore = defineStore("viewshed", () => {
         map.addSource(outlineId, { type: "geojson", data: EMPTY });
         map.addLayer(
           {
-            id: nth(OUTLINE_LAYER_ID, index),
+            id: outlineId,
             type: "line",
             source: outlineId,
             paint: { "line-color": "#15803d", "line-width": 1.5 },
@@ -621,14 +625,17 @@ export const useViewshedStore = defineStore("viewshed", () => {
     if (attachedMap) renderResult(attachedMap);
   });
   watch([viewsheds, currentId], () => {
-    (attachedMap?.getSource(OBSERVER_SOURCE_ID) as GeoJSONSource | undefined)?.setData(
+    (attachedMap?.getSource(OBSERVER_ID) as GeoJSONSource | undefined)?.setData(
       observerData(),
     );
   });
   // Placed or closed with no result to wait for; while a result is shown the ring waits for it,
   // and an unchanged ring writes nothing.
   watch(
-    () => all.value.map(({ observer: position, metres }) => [position, metres]),
+    () =>
+      JSON.stringify(
+        all.value.map(({ observer: position, metres }) => [position, metres]),
+      ),
     () => {
       if (attachedMap) renderRange(attachedMap);
     },
@@ -638,9 +645,7 @@ export const useViewshedStore = defineStore("viewshed", () => {
   watch([viewsheds, pin, exaggeration], () => {
     if (!attachedMap || (!pin.value && !pinShown)) return;
     pinShown = pin.value && viewsheds.value.length > 0;
-    (attachedMap.getSource(PIN_SOURCE_ID) as GeoJSONSource | undefined)?.setData(
-      pinData(),
-    );
+    (attachedMap.getSource(PIN_ID) as GeoJSONSource | undefined)?.setData(pinData());
   });
   watch(pin, () => {
     if (attachedMap) styleGroundPoint(attachedMap);
@@ -655,17 +660,17 @@ export const useViewshedStore = defineStore("viewshed", () => {
         releaseSelection();
         releaseSelection = null;
       }
-      attachedMap?.getCanvasContainer().classList.toggle(PLACING_CLASS, on);
+      attachedMap?.getCanvasContainer().classList.toggle(PICKING_CLASS, on);
     },
     { flush: "sync" },
   );
 
   /** A pin narrows to a point on the ground, under the head that marks it and reads its number. */
   function styleGroundPoint(map: MlMap) {
-    map.setPaintProperty(OBSERVER_LAYER_ID, "circle-radius", pin.value ? 3 : 6);
-    map.setPaintProperty(OBSERVER_LAYER_ID, "circle-stroke-width", pin.value ? 1 : 2);
+    map.setPaintProperty(OBSERVER_ID, "circle-radius", pin.value ? 3 : 6);
+    map.setPaintProperty(OBSERVER_ID, "circle-stroke-width", pin.value ? 1 : 2);
     map.setLayoutProperty(
-      OBSERVER_LABEL_LAYER_ID,
+      OBSERVER_LABEL_ID,
       "visibility",
       pin.value ? "none" : "visible",
     );
@@ -686,28 +691,28 @@ export const useViewshedStore = defineStore("viewshed", () => {
       map.getSource(id) || map.addSource(id, { type: "geojson", data });
     const ensureLayer = (layer: AddLayerObject) =>
       map.getLayer(layer.id) || map.addLayer(layer);
-    ensureSource(RANGE_SOURCE_ID, EMPTY);
+    ensureSource(RANGE_ID, EMPTY);
     rangeShown = null;
     ensureLayer({
-      id: RANGE_LAYER_ID,
+      id: RANGE_ID,
       type: "line",
-      source: RANGE_SOURCE_ID,
+      source: RANGE_ID,
       paint: { "line-color": "#16a34a", "line-width": 1.5, "line-dasharray": [3, 2] },
     });
-    ensureSource(OBSERVER_SOURCE_ID, observerData());
+    ensureSource(OBSERVER_ID, observerData());
     ensureLayer({
-      id: OBSERVER_LAYER_ID,
+      id: OBSERVER_ID,
       type: "circle",
-      source: OBSERVER_SOURCE_ID,
+      source: OBSERVER_ID,
       paint: {
         "circle-color": ["case", ["get", "current"], "#16a34a", "#ffffff"],
         "circle-stroke-color": ["case", ["get", "current"], "#ffffff", "#16a34a"],
       },
     });
     ensureLayer({
-      id: OBSERVER_LABEL_LAYER_ID,
+      id: OBSERVER_LABEL_ID,
       type: "symbol",
-      source: OBSERVER_SOURCE_ID,
+      source: OBSERVER_ID,
       layout: {
         "text-field": ["get", "label"],
         "text-font": ["Noto Sans Regular"],
@@ -724,12 +729,12 @@ export const useViewshedStore = defineStore("viewshed", () => {
       },
     });
     styleGroundPoint(map);
-    ensureSource(PIN_SOURCE_ID, pinData());
+    ensureSource(PIN_ID, pinData());
     pinShown = pin.value && viewsheds.value.length > 0;
     ensureLayer({
-      id: PIN_STICK_LAYER_ID,
+      id: PIN_STICK_ID,
       type: "fill-extrusion",
-      source: PIN_SOURCE_ID,
+      source: PIN_ID,
       filter: ["==", ["get", "kind"], "stick"],
       paint: {
         "fill-extrusion-color": "#16a34a",
@@ -737,18 +742,18 @@ export const useViewshedStore = defineStore("viewshed", () => {
         "fill-extrusion-base": 0,
       },
     });
-    if (!map.hasImage(PIN_HEAD_IMAGE_ID)) {
+    if (!map.hasImage(PIN_HEAD_ID)) {
       const pixelRatio = window.devicePixelRatio || 1;
-      map.addImage(PIN_HEAD_IMAGE_ID, pinHead(pixelRatio), { pixelRatio });
+      map.addImage(PIN_HEAD_ID, pinHead(pixelRatio), { pixelRatio });
     }
     ensureLayer({
-      id: PIN_HEAD_LAYER_ID,
+      id: PIN_HEAD_ID,
       type: "symbol",
-      source: PIN_SOURCE_ID,
+      source: PIN_ID,
       filter: ["==", ["get", "kind"], "head"],
       layout: {
         "symbol-height-offset": ["get", "lift"],
-        "icon-image": PIN_HEAD_IMAGE_ID,
+        "icon-image": PIN_HEAD_ID,
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
         "text-field": ["get", "text"],
@@ -771,11 +776,10 @@ export const useViewshedStore = defineStore("viewshed", () => {
     imageKeys = [];
     outlinesShown = [];
     renderResult(map);
-    map.getCanvasContainer().classList.toggle(PLACING_CLASS, placing.value);
+    map.getCanvasContainer().classList.toggle(PICKING_CLASS, placing.value);
     map.on("click", onClick);
     detachDrag = attachPointDrag(map, {
       points: () => viewsheds.value.map(({ observer: position }) => position),
-      enabled: () => all.value.length > 0,
       // Pressing an observer makes it current, whether or not it moves.
       onStart: (index) => {
         const pressed = viewsheds.value[index];
@@ -793,7 +797,10 @@ export const useViewshedStore = defineStore("viewshed", () => {
 
   function detach() {
     attachedMap?.off("click", onClick);
-    attachedMap?.getCanvasContainer().classList.remove(PLACING_CLASS);
+    // Let go of the last coverage drawn, which can run to many megabytes.
+    imageKeys = [];
+    outlinesShown = [];
+    attachedMap?.getCanvasContainer().classList.remove(PICKING_CLASS);
     detachDrag?.();
     detachDrag = null;
     attachedMap = null;
@@ -827,6 +834,7 @@ export const useViewshedStore = defineStore("viewshed", () => {
     stop,
     close,
     closeAll,
+    handleEscape,
     attachMap,
     detach,
   };

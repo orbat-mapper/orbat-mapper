@@ -21,6 +21,7 @@ import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 import { usePlaybackStore } from "@/stores/playbackStore";
 import { useRecordingStore } from "@/stores/recordingStore";
 import { useTimelineChangesStore } from "@/stores/timelineChangesStore";
+import { useViewshedStore } from "@/stores/viewshedStore";
 
 const activeScenario = injectStrict(activeScenarioKey);
 const {
@@ -38,6 +39,7 @@ const mapOrbit = inject(mapOrbitKey, null);
 const scenarioKeyboardOwner = inject(scenarioKeyboardOwnerKey, null);
 const uiStore = useUiStore();
 const activeUnitStore = useActiveUnitStore();
+const viewshed = useViewshedStore();
 const {
   clear: clearSelected,
   selectedUnitIds,
@@ -89,6 +91,7 @@ function handleEscape(e: KeyboardEvent) {
     if (isRekaComponent(e)) return;
     if (scenarioKeyboardOwner?.value?.handleEscape(e)) return;
     if (mapOrbit?.handleEscape()) return;
+    if (viewshed.handleEscape()) return;
     if (routeDetailsPanel?.handleEscape()) return;
     clearSelected();
     activeUnitStore.clearActiveUnit();

@@ -57,7 +57,7 @@ describe("viewshed on the map", () => {
     viewshed.attachMap(map, []);
     viewshed.place([10, 50]);
     await settle();
-    const image = data.get("orbat-viewshed") as FakeImageData;
+    const image = data.get("orbat-analysis-viewshed") as FakeImageData;
     expect(image).toBeInstanceOf(FakeImageData);
     expect(image.width).toBe(viewshed.result!.grid.width);
   });
@@ -91,7 +91,7 @@ describe("viewshed on the map", () => {
     release();
     await settle();
     // Together, in one go, so terrain repaints its tiles once for both.
-    expect(updates.slice(1)).toEqual(["orbat-viewshed", "orbat-viewshed-range"]);
+    expect(updates.slice(1)).toEqual(["orbat-analysis-viewshed", "orbat-viewshed-range"]);
     expect(ringCentre(data)).toBeCloseTo(10.01, 6);
   });
 
@@ -102,7 +102,7 @@ describe("viewshed on the map", () => {
     viewshed.place([10, 50]);
     await settle();
     const outline = () =>
-      data.get("orbat-viewshed-outline") as FeatureCollection | MultiPolygon;
+      data.get("orbat-analysis-viewshed-outline") as FeatureCollection | MultiPolygon;
     expect(outline().type).toBe("MultiPolygon");
     observerDrag.start(0);
     observerDrag.move([10.01, 50]);
@@ -121,17 +121,19 @@ describe("viewshed on the map", () => {
     viewshed.place([10.05, 50]);
     await settle();
     const single = viewshed.result!.grid.width;
-    expect((data.get("orbat-viewshed") as FakeImageData).width).toBeGreaterThan(single);
-    expect(map.getSource("orbat-viewshed-1")).toBeUndefined();
+    expect((data.get("orbat-analysis-viewshed") as FakeImageData).width).toBeGreaterThan(
+      single,
+    );
+    expect(map.getSource("orbat-analysis-viewshed-1")).toBeUndefined();
     viewshed.combine = false;
     await settle();
-    expect((data.get("orbat-viewshed") as FakeImageData).width).toBe(single);
-    expect(map.getSource("orbat-viewshed-1")).toBeDefined();
-    expect(map.getLayer("orbat-viewshed-outline-1")).toBeDefined();
+    expect((data.get("orbat-analysis-viewshed") as FakeImageData).width).toBe(single);
+    expect(map.getSource("orbat-analysis-viewshed-1")).toBeDefined();
+    expect(map.getLayer("orbat-analysis-viewshed-outline-1")).toBeDefined();
     viewshed.combine = true;
     await settle();
-    expect(map.getSource("orbat-viewshed-1")).toBeUndefined();
-    expect(map.getLayer("orbat-viewshed-outline-1")).toBeUndefined();
+    expect(map.getSource("orbat-analysis-viewshed-1")).toBeUndefined();
+    expect(map.getLayer("orbat-analysis-viewshed-outline-1")).toBeUndefined();
   });
 
   it("marks every observer, the current one apart, and rings each", async () => {
@@ -187,7 +189,7 @@ describe("viewshed on the map", () => {
     viewshed.attachMap(map, []);
     viewshed.place([10, 50]);
     await settle();
-    const drawn = () => updates.filter((id) => id === "orbat-viewshed").length;
+    const drawn = () => updates.filter((id) => id === "orbat-analysis-viewshed").length;
     const before = drawn();
     viewshed.display = "dead";
     await settle();
@@ -206,7 +208,7 @@ describe("viewshed on the map", () => {
     expect(viewshed.viewsheds).toHaveLength(0);
     viewshed.start();
     expect(mapSelect.selectionSuppressed).toBe(true);
-    expect(container.classList.contains("viewshed-placing")).toBe(true);
+    expect(container.classList.contains("map-picking")).toBe(true);
     click([10, 50]);
     click([11, 51]);
     expect(viewshed.viewsheds.map(({ observer }) => observer)).toEqual([
@@ -215,7 +217,7 @@ describe("viewshed on the map", () => {
     ]);
     viewshed.stop();
     expect(mapSelect.selectionSuppressed).toBe(false);
-    expect(container.classList.contains("viewshed-placing")).toBe(false);
+    expect(container.classList.contains("map-picking")).toBe(false);
     click([12, 52]);
     expect(viewshed.viewsheds).toHaveLength(2);
   });
@@ -226,7 +228,7 @@ describe("viewshed on the map", () => {
     viewshed.attachMap(map, []);
     viewshed.start();
     viewshed.detach();
-    expect(container.classList.contains("viewshed-placing")).toBe(false);
+    expect(container.classList.contains("map-picking")).toBe(false);
     click([10, 50]);
     expect(viewshed.viewsheds).toHaveLength(0);
   });
@@ -241,7 +243,7 @@ describe("viewshed on the map", () => {
     viewshed.place([10, 50]);
     await settle();
     expect(addLayer).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "orbat-viewshed" }),
+      expect.objectContaining({ id: "orbat-analysis-viewshed" }),
       "units",
     );
   });

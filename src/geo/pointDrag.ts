@@ -1,11 +1,10 @@
+import {
+  distancePx,
+  HANDLE_HIT_TOLERANCE_PX,
+  TOUCH_HANDLE_HIT_TOLERANCE_PX,
+} from "@/composables/maplibreTouchDrawing";
+
 type LngLat = [number, number];
-
-/** How near a press must land to a point to pick it up, in CSS pixels. */
-const HANDLE_HIT_TOLERANCE_PX = 12;
-const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
-
-const distancePx = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-  Math.hypot(a.x - b.x, a.y - b.y);
 
 /** What of a MapLibre map the drag needs. */
 export interface DraggableMap {
@@ -22,9 +21,6 @@ export interface PointDragOptions {
   onStart: (index: number) => void;
   onMove: (position: LngLat) => void;
   onEnd: () => void;
-  /** Whether the active tool lets the point be dragged; otherwise the press is
-   *  the tool's. */
-  enabled: () => boolean;
 }
 
 /**
@@ -36,7 +32,7 @@ export interface PointDragOptions {
  */
 export function attachPointDrag(
   map: DraggableMap,
-  { points, onStart, onMove, onEnd, enabled }: PointDragOptions,
+  { points, onStart, onMove, onEnd }: PointDragOptions,
 ): () => void {
   const container = map.getCanvasContainer();
   const canvas = map.getCanvas();
@@ -86,7 +82,6 @@ export function attachPointDrag(
       return;
     const tolerance =
       "touches" in event ? TOUCH_HANDLE_HIT_TOLERANCE_PX : HANDLE_HIT_TOLERANCE_PX;
-    if (!enabled()) return;
     const index = hit(point.clientX, point.clientY, tolerance);
     if (index < 0) return;
     event.preventDefault();
@@ -122,9 +117,7 @@ export function attachPointDrag(
   function onHover(event: MouseEvent) {
     if (event.buttons) return;
     setCursor(
-      enabled() && hit(event.clientX, event.clientY, HANDLE_HIT_TOLERANCE_PX) >= 0
-        ? "grab"
-        : null,
+      hit(event.clientX, event.clientY, HANDLE_HIT_TOLERANCE_PX) >= 0 ? "grab" : null,
     );
   }
 

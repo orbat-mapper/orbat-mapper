@@ -83,6 +83,10 @@ function getEventTime(e: TouchEventLike) {
     : Date.now();
 }
 
+/** How near a press must land to a handle to pick it up, in CSS pixels. */
+export const HANDLE_HIT_TOLERANCE_PX = 12;
+export const TOUCH_HANDLE_HIT_TOLERANCE_PX = 26;
+
 export function distancePx(a: { x: number; y: number }, b: { x: number; y: number }) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }

@@ -5,39 +5,29 @@
  * analysis works with 3D terrain off and at any zoom.
  */
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
-import { PMTiles } from "pmtiles";
+import type { PMTiles } from "pmtiles";
 import { demEncoding, urlTemplateProvider, type DemTileProvider } from "@/lib/terrain";
-import { getArchive, PMTILES_PROTOCOL } from "@/geo/pmtilesProtocol";
+import { archiveFromUrl } from "@/geo/pmtilesProtocol";
 import { DEFAULT_DEM_TILE_SIZE } from "@/geo/elevationTiles";
-
-const PMTILES_PREFIX = `${PMTILES_PROTOCOL}://`;
-/** How `pmtilesProtocol` addresses an archive it serves under a key. */
-const ARCHIVE_PREFIX = "archive:";
 
 /** MapLibre's default for a `raster-dem` source. */
 const DEFAULT_MAX_ZOOM = 22;
 
 type Shared = Pick<DemTileProvider, "encoding" | "tileSize">;
 
-async function readTile(archive: PMTiles, z: number, x: number, y: number) {
-  return (await archive.getZxy(z, x, y))?.data ?? null;
+function archiveProvider(
+  archive: PMTiles,
+  shared: Shared,
+  zooms: { minZoom?: number; maxZoom: number },
+): DemTileProvider {
+  return {
+    ...shared,
+    ...zooms,
+    getTile: async (z, x, y) => (await archive.getZxy(z, x, y))?.data ?? null,
+  };
 }
 
-/**
- * The archive a `pmtiles://` address names: one already published under a key, or an archive on a
- * server.
- */
-function archiveAt(address: string): PMTiles {
-  if (!address.startsWith(ARCHIVE_PREFIX)) return new PMTiles(address);
-  const archive = getArchive(address.slice(ARCHIVE_PREFIX.length));
-  if (!archive) throw new Error("The elevation archive is no longer open.");
-  return archive;
-}
-
-/**
- * Reads the tiles of a template: an address, or an archive that is already published, whose
- * `pmtiles://archive:<key>/{z}/{x}/{y}` MapLibre resolves itself.
- */
+/** Reads the tiles of a template: an address, or a `pmtiles://` archive. */
 function templateProvider(
   template: string,
   shared: Shared,
@@ -47,16 +37,10 @@ function templateProvider(
     minZoom: zooms.minZoom,
     maxZoom: zooms.maxZoom ?? DEFAULT_MAX_ZOOM,
   };
-  if (!template.startsWith(PMTILES_PREFIX))
-    return urlTemplateProvider({ url: template, ...shared, ...zoomRange });
-  const address = template
-    .slice(PMTILES_PREFIX.length)
-    .replace(/\/\{z\}\/\{x\}\/\{y\}$/, "");
-  return {
-    ...shared,
-    ...zoomRange,
-    getTile: (z, x, y) => readTile(archiveAt(address), z, x, y),
-  };
+  const archive = archiveFromUrl(template);
+  return archive
+    ? archiveProvider(archive, shared, zoomRange)
+    : urlTemplateProvider({ url: template, ...shared, ...zoomRange });
 }
 
 export async function createDemTileProvider(
@@ -74,15 +58,10 @@ export async function createDemTileProvider(
     });
   const url = source.url;
   if (!url) throw new Error("The elevation source has neither tiles nor an address.");
-  if (url.startsWith(PMTILES_PREFIX)) {
-    const archive = archiveAt(url.slice(PMTILES_PREFIX.length));
-    const header = await archive.getHeader();
-    return {
-      ...shared,
-      minZoom: header.minZoom,
-      maxZoom: header.maxZoom,
-      getTile: (z, x, y) => readTile(archive, z, x, y),
-    };
+  const archive = archiveFromUrl(url);
+  if (archive) {
+    const { minZoom, maxZoom } = await archive.getHeader();
+    return archiveProvider(archive, shared, { minZoom, maxZoom });
   }
   const response = await fetch(url);
   if (!response.ok)
@@ -99,28 +78,4 @@ export async function createDemTileProvider(
     minZoom: tileJson.minzoom,
     maxZoom: tileJson.maxzoom,
   });
-}
-
-type Source = RasterDEMSourceSpecification;
-
-/**
- * Remembers what `make` returns for the newest elevation source only, so a change of source
- * replaces it (after `dispose`) and a value that fails is made again next time.
- */
-export function perSource<T>(
-  make: (source: Source) => Promise<T>,
-  dispose?: (value: Promise<T>) => void,
-): (source: Source) => Promise<T> {
-  let current: { source: Source; value: Promise<T> } | null = null;
-  return (source) => {
-    if (current?.source !== source) {
-      if (current) dispose?.(current.value);
-      const entry = { source, value: make(source) };
-      entry.value.catch(() => {
-        if (current === entry) current = null;
-      });
-      current = entry;
-    }
-    return current.value;
-  };
 }

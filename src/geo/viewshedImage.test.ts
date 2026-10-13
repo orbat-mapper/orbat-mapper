@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { gridAround, Visibility } from "@/lib/terrain";
+import { FakeImageData } from "@/testdata/viewshed";
 import {
   DEAD_GROUND_COLOR,
   SEEN_BY_BANDS,
@@ -8,14 +9,6 @@ import {
 } from "./viewshedImage";
 
 /** jsdom has no ImageData. */
-class FakeImageData {
-  constructor(
-    readonly data: Uint8ClampedArray,
-    readonly width: number,
-    readonly height: number,
-  ) {}
-}
-
 beforeEach(() => vi.stubGlobal("ImageData", FakeImageData));
 afterEach(() => vi.unstubAllGlobals());
 

@@ -281,7 +281,7 @@ export function useMapOrbit(
     container.addEventListener("pointerdown", onPointerDown, { capture: true, signal });
     window.addEventListener("pointerup", onPointerUp, { signal });
     window.addEventListener("pointercancel", onPointerUp, { signal });
-    container.classList.add("orbit-active");
+    container.classList.add("map-picking");
 
     cleanup = () => {
       const wasCruising = cruising;
@@ -295,7 +295,7 @@ export function useMapOrbit(
       map.off("pitchend", onGestureEnd);
       map.off("rotateend", onGestureEnd);
       listeners.abort();
-      container.classList.remove("orbit-active");
+      container.classList.remove("map-picking");
       if (dragPanEnabled) map.dragPan.enable();
       map.touchZoomRotate.enableRotation();
       map.setCenterClampedToGround(centerClampedToGround);
