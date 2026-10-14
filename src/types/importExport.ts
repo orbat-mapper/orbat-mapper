@@ -89,6 +89,8 @@ export interface OrbatMapperExportSettings extends BaseExportSettings {
   snapshotGroupIds?: EntityId[];
   /** When snapshot groups are taken. Undefined means the current scenario time. */
   snapshotTime?: number;
+  /** Gives snapshot units their status at the snapshot time. Undefined includes it. */
+  includeSnapshotStatus?: boolean;
   /** Undefined keeps the scenario events, as before this option existed. */
   includeEvents?: boolean;
   /** Leaves out events after the snapshot time. */

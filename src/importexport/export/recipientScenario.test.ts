@@ -64,7 +64,8 @@ function createScenario(): Scenario {
                 rangeRings: [{ name: "Weapons", range: 70, uom: "km" }],
                 state: [
                   { id: "r7-a", t: 100, location: [1, 1], status: "Damaged" },
-                  { id: "r7-b", t: 300, location: [2, 2] },
+                  { id: "r7-b", t: 300, location: [2, 2], status: "Destroyed" },
+                  { id: "r7-c", t: 400, status: null },
                 ],
                 subUnits: [{ id: "r7-1", name: "R7 1st Coy", sidc: "x" }],
               },
@@ -76,6 +77,12 @@ function createScenario(): Scenario {
     ],
     events: [{ id: "e1", startTime: 200, title: "Red attacks at dawn" }],
     layerStack: [],
+    settings: {
+      statuses: [
+        { name: "Damaged", color: "#ffa500" },
+        { name: "Destroyed", color: "#ff0000" },
+      ],
+    },
   } as unknown as Scenario;
 }
 
@@ -126,6 +133,30 @@ describe("buildRecipientScenario snapshot groups", () => {
         ],
       },
     ]);
+  });
+
+  it("writes each snapshot unit's status with the status definitions", () => {
+    const damaged: SnapshotSource = {
+      ...source,
+      unitsByGroup: {
+        "red-detected": [
+          { id: "r7", name: "R7", sidc: "x", status: "Damaged", location: [1, 1] },
+        ],
+      },
+    };
+    const build = (includeSnapshotStatus?: boolean) =>
+      buildRecipientScenario(
+        createScenario(),
+        { ...settings, includeSnapshotStatus },
+        damaged,
+      );
+
+    expect(build().sides[1].groups[0].subUnits[0].status).toBe("Damaged");
+    expect(build().settings?.statuses).toContainEqual({
+      name: "Damaged",
+      color: "#ffa500",
+    });
+    expect(build(false).sides[1].groups[0].subUnits[0]).not.toHaveProperty("status");
   });
 
   it("drops side data when every selected group of the side is a snapshot", () => {
@@ -197,6 +228,7 @@ describe("snapshotSourceAt", () => {
           name: "R7",
           shortName: "7BN",
           sidc: "10061000001211000000",
+          status: "Damaged",
           location: [expect.closeTo(1.5, 1), expect.closeTo(1.5, 1)],
         },
         { id: "r7-1", name: "R7 1st Coy", sidc: "x", location: null },
@@ -230,6 +262,32 @@ describe("snapshotSourceAt", () => {
     expect(source.unitsByGroup["red-detected"][0].location).toEqual([2, 2]);
     expect(state.currentTime).toBe(200);
     expect(state.unitMap["r7"]._state?.location).not.toEqual([2, 2]);
+  });
+
+  it("reads each unit's status at the snapshot time", () => {
+    const statusAt = (snapshotTime: number) =>
+      snapshotSourceAt(scenarioAt(200), { ...settings, snapshotTime }).unitsByGroup[
+        "red-detected"
+      ][0].status;
+
+    expect(statusAt(200)).toBe("Damaged");
+    expect(statusAt(300)).toBe("Destroyed");
+  });
+
+  it("keeps a status cleared to None and falls back to the base status otherwise", () => {
+    const statusAt = (snapshotTime: number) => {
+      const scenario = scenarioAt(200);
+      const { unitMap, unitStatusMap } = scenario.store.state;
+      const damaged = Object.values(unitStatusMap).find((s) => s.name === "Damaged")!;
+      unitMap["r7"].status = damaged.id;
+      unitMap["r7-1"].status = damaged.id;
+      unitMap["r7-1"].location = [4, 4];
+      const units = snapshotSourceAt(scenario, { ...settings, snapshotTime })
+        .unitsByGroup["red-detected"];
+      return units.map((unit) => unit.status);
+    };
+
+    expect(statusAt(400)).toEqual([undefined, "Damaged"]);
   });
 
   it("leaves the time alone when no selected group is a snapshot", () => {

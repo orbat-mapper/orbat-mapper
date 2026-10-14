@@ -28,9 +28,10 @@ const redSide = {
       name: "R7",
       sidc: "10061000001211000000",
       subUnits: [],
-      _state: { t: 0, location: [1, 1] },
+      _state: { t: 0, location: [1, 1], status: "damaged-id" },
     },
   },
+  unitStatusMap: { "damaged-id": { id: "damaged-id", name: "Damaged" } },
   events: [
     { id: "e1", startTime: 0, title: "Red attacks at dawn" },
     {
@@ -399,6 +400,41 @@ describe("ExportSettingsOrbatMapper", () => {
       .find("select")
       .setValue(reopened.findAll("option")[1]!.attributes("value"));
     expect(restored.snapshotGroupIds).toEqual(["red-detected"]);
+    reopened.unmount();
+  });
+
+  it("includes unit status in snapshots unless left out, and saves it in presets", async () => {
+    const settings = form();
+    settings.sideGroups = ["red-detected"];
+    settings.snapshotGroupIds = ["red-detected"];
+    const wrapper = mountSettings(settings, "scenario-a", true);
+    expect(settings.includeSnapshotStatus).toBe(true);
+    const button = (text: string) =>
+      wrapper.findAll("button").find((b) => b.text() === text)!;
+    await button("Preview recipient data").trigger("click");
+    const preview = () => wrapper.find('[aria-label="Recipient preview"]').text();
+    expect(preview()).toContain('"status": "Damaged"');
+
+    wrapper
+      .findAllComponents(InputCheckboxStub)
+      .find((c) => c.props("label") === "Include unit status")!
+      .vm.$emit("update:modelValue", false);
+    await wrapper.vm.$nextTick();
+    expect(preview()).not.toContain("Damaged");
+
+    wrapper
+      .findComponent({ name: "InputGroup" })
+      .vm.$emit("update:modelValue", "No status");
+    await wrapper.vm.$nextTick();
+    await button("Save as new preset").trigger("click");
+    wrapper.unmount();
+    const restored = form();
+    const reopened = mountSettings(restored, "scenario-a", true);
+    expect(restored.includeSnapshotStatus).toBe(true);
+    await reopened
+      .find("select")
+      .setValue(reopened.findAll("option")[1]!.attributes("value"));
+    expect(restored.includeSnapshotStatus).toBe(false);
     reopened.unmount();
   });
 
