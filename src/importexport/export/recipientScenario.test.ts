@@ -210,6 +210,8 @@ describe("buildRecipientScenario snapshot groups", () => {
       buildRecipientScenario(createScenario(), settings, source),
     );
     const time = useScenarioTime(recipient);
+    expect(recipient.state.currentTime).toBe(200);
+    expect(recipient.state.unitMap["r8"]._state?.location).toEqual([3, 3]);
     const r8At = (timestamp: number) => {
       time.setCurrentTime(timestamp);
       return recipient.state.unitMap["r8"]._state?.location;
