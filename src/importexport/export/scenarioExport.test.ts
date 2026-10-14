@@ -54,7 +54,7 @@ function loadScenario() {
     unitActions: {},
     helpers: {},
   } as unknown as TScenario;
-  return { io, exporter: useScenarioExport({ activeScenario }) };
+  return { io, store, exporter: useScenarioExport({ activeScenario }) };
 }
 
 describe("toCsv", () => {
@@ -145,5 +145,50 @@ describe("ORBAT Mapper export file format", () => {
     expect(unit.state[0].t).toBe("2025-06-01T14:00:00+02:00");
     expect(exported.startTime).toBe("2025-06-01T02:00:00+02:00");
     expect(exported.layerStack).toEqual(downloaded.layerStack);
+  });
+});
+
+describe("export records", () => {
+  const settings = {
+    sideGroups: ["blue-group"],
+    layerIds: [],
+    snapshotTime: Date.parse("2025-06-01T12:00:00Z"),
+    customColors: true,
+    fileName: "blue.json",
+  };
+
+  it("records each recipient export, and the record is saved and reloaded", () => {
+    const { io, exporter } = loadScenario();
+    const exported = JSON.parse(exporter.generateOrbatMapper(settings));
+
+    const reloaded = useNewScenarioStore(io.serializeToObject());
+    expect(reloaded.state.exportRecords).toEqual([
+      {
+        id: exported.id,
+        exportedDate: exported.meta.exportedDate,
+        sideGroupIds: ["blue-group"],
+        snapshotGroupIds: [],
+        layerIds: [],
+        snapshotTime: "2025-06-01T12:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("leaves the records out of the exported file", () => {
+    const { exporter } = loadScenario();
+    exporter.generateOrbatMapper(settings);
+    const second = exporter.generateOrbatMapper(settings);
+
+    expect(second).not.toContain("exportRecords");
+    expect(JSON.parse(second).meta).not.toHaveProperty("exports");
+  });
+
+  it("does not put the record on the undo stack, but marks the scenario changed", () => {
+    const { store, exporter } = loadScenario();
+    const before = store.revision.value;
+    exporter.generateOrbatMapper(settings);
+
+    expect(store.canUndo.value).toBe(false);
+    expect(store.revision.value).not.toBe(before);
   });
 });

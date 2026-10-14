@@ -45,6 +45,12 @@ import {
   previewScenarioOverlayReplacement,
   type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
+import {
+  checkImportBase,
+  describeImportBase,
+  formatExportDate,
+} from "@/importexport/importBase";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Props {
   data: Scenario;
@@ -129,6 +135,16 @@ const stats = computed(() => {
 
 const importedLayers = computed(() =>
   props.data.layerStack.filter(isScenarioOverlayLayer),
+);
+
+const layerOriginNotice = computed(() =>
+  describeImportBase(
+    checkImportBase(targetState.exportRecords, props.data, {
+      layerIds: importedLayers.value.map((layer) => layer.id),
+    }),
+    "these layers",
+    formatExportDate,
+  ),
 );
 
 const currentEquipment = computed(() => {
@@ -516,6 +532,10 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
       />
 
       <template v-else-if="importMode === 'layers'">
+        <Alert v-if="layerOriginNotice" aria-label="File origin" class="mb-4 shrink-0">
+          <AlertTitle>{{ layerOriginNotice.title }}</AlertTitle>
+          <AlertDescription>{{ layerOriginNotice.message }}</AlertDescription>
+        </Alert>
         <section
           v-if="layerPreviews.length"
           aria-label="Layer replacement preview"

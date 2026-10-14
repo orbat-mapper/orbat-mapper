@@ -120,6 +120,29 @@ describe("ImportOrbatMapperStep layer import", () => {
     expect(preview.text()).toContain("1 added, 0 changed, 0 removed");
   });
 
+  it("warns when the file was made from an older export of its layers", async () => {
+    const data = incomingFile();
+    data.id = "export-1";
+    const exportOf = (id: string, exportedDate: string) => ({
+      id,
+      exportedDate,
+      sideGroupIds: [],
+      snapshotGroupIds: [],
+      layerIds: [MATCHED],
+      snapshotTime: exportedDate,
+    });
+    const { wrapper, store } = await setup(data);
+    store.state.exportRecords.push(
+      exportOf("export-1", "2026-10-12T14:05:00.000Z"),
+      exportOf("export-2", "2026-10-14T09:30:00.000Z"),
+    );
+    await flushPromises();
+
+    expect(wrapper.get('[aria-label="File origin"]').text()).toContain(
+      "A newer export of these layers was made on",
+    );
+  });
+
   it("updates matched layers in place and adds unmatched ones with the defaults", async () => {
     const { store, importButton } = await setup();
     const before = layerNames(store.state);

@@ -323,6 +323,7 @@ function scenarioStoreToObject(store: NewScenarioStore): Scenario {
     meta: {
       createdDate: state?.meta?.createdDate,
       lastModifiedDate: new Date().toISOString(),
+      ...(state.exportRecords.length ? { exports: klona(state.exportRecords) } : {}),
     },
     ...getScenarioInfo(state),
     sides: getSides(state),

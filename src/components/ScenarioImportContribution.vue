@@ -41,6 +41,11 @@ import {
   type FileLayerOption,
   type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
+import {
+  checkImportBase,
+  describeImportBase,
+  formatExportDate,
+} from "@/importexport/importBase";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -177,6 +182,21 @@ const summary = computed(() =>
     action: action.value,
     content: content.value,
   }),
+);
+// The groups the import takes, as the file and this scenario have them.
+const scopeGroupIds = computed(() => {
+  if (props.mode === "group") return [scopeId.value];
+  const fileGroups = sourceSide.value?.groups.map((g) => g.id) ?? [];
+  return [...fileGroups, ...(store.state.sideMap[scopeId.value]?.groups ?? [])];
+});
+const originNotice = computed(() =>
+  describeImportBase(
+    checkImportBase(store.state.exportRecords, props.data, {
+      sideGroupIds: scopeGroupIds.value,
+    }),
+    props.mode === "side" ? "this side" : "this group",
+    formatExportDate,
+  ),
 );
 const fileState = computed(() => prepareScenario(klona(props.data)));
 // Compare against the live store, so a repeated import sees its own earlier result.
@@ -492,6 +512,10 @@ function apply() {
         @update:selected="selectRows"
       />
       <div class="max-h-72 shrink-0 overflow-auto">
+        <Alert v-if="originNotice" aria-label="File origin" class="mb-2">
+          <AlertTitle>{{ originNotice.title }}</AlertTitle>
+          <AlertDescription>{{ originNotice.message }}</AlertDescription>
+        </Alert>
         <section aria-label="Import summary" aria-live="polite">
           <p>{{ summary.action }} {{ targetName }}: {{ summary.sentence }}</p>
           <p v-for="line in layerSummary" :key="line">{{ line }}</p>

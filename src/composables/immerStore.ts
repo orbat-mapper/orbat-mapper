@@ -82,6 +82,18 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     notifyMutation();
   };
 
+  /**
+   * A change that counts as unsaved but cannot be undone, for records of what the
+   * user did outside the scenario. Undo and redo leave it in place.
+   */
+  const updateWithoutUndo = (updater: (currentState: T) => void) => {
+    const [, patches] = produceWithPatches(toRaw(state), updater);
+    if (patches.length === 0) return;
+    applyPatchWrapper(state, patches);
+    revision.value = nextRevision++;
+    notifyMutation();
+  };
+
   /** Apply several updates as one undo entry. If one throws, the group is reverted. */
   function groupUpdate(updates: () => void, meta?: MetaEntry<M>) {
     const preLength = past.length;
@@ -151,6 +163,7 @@ export function useImmerStore<T extends object, M>(baseState: T) {
   return {
     state,
     update,
+    updateWithoutUndo,
     redo,
     undo,
     clearUndoRedoStack,
