@@ -407,9 +407,11 @@ describe("scenario contribution import plan", () => {
       { id: "back", t: 30, location: [1, 1] },
     ];
     const state = [{ id: "plan1", t: 40, location: [2, 0] as [number, number] }];
-    const plan = planScenarioImport(master, contribution([unit("reserve", { state })]), {
-      ...opts,
-    });
+    const plan = planScenarioImport(
+      master,
+      contribution([unit("reserve", { state })]),
+      opts,
+    );
     expect(own(plan.scenario)[0].state).toEqual(state);
     expect(plan.ignored).toEqual([]);
   });

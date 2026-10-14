@@ -79,33 +79,36 @@ export function snapshotGroupsIn(node: Node): SideGroup[] {
   if ("groups" in node) return node.groups.filter((g) => g.snapshotTime);
   return "snapshotTime" in node && node.snapshotTime ? [node] : [];
 }
+const MOVE_FIELDS = ["location", "via", "viaStartTime", "interpolate"] as const;
+const isMove = (s: State) => Boolean(s.location || s.via);
+function lastLocated(states: State[] = []): State | undefined {
+  return states.filter((s) => s.location !== undefined).at(-1);
+}
 /** Whether the last entry that sets a location takes the unit off the map. */
 function isOffMap(states: State[] = []): boolean {
-  const located = states.filter((s) => s.location !== undefined);
-  return located[located.length - 1]?.location === null;
+  return lastLocated(states)?.location === null;
 }
 /** A unit removed from the map stays off it, as "Remove from map" drops later planned
  * moves. Entries keep their other content, such as a status, and empty ones are left out. */
 function withoutMoves(states: State[]): State[] {
   return states
-    .map((s) => omit(s, ["location", "via", "viaStartTime", "interpolate"]))
+    .map((s) => omit(s, [...MOVE_FIELDS]))
     .filter((s) => Object.keys(s).some((key) => key !== "id" && key !== "t"));
 }
 /** Replacing the history of a unit removed from the map keeps the removal, also when the
  * file was saved before it. Incoming entries before the removal are taken as is, and
  * later ones lose their moves. */
-function keepRemoval(existing: State[], incoming: State[]) {
-  const removal = existing.filter((s) => s.location !== undefined).at(-1)!;
+function keepRemoval(removal: State, incoming: State[]) {
   const time = +new Date(removal.t);
-  const matches = (s: State) =>
+  const isRemoval = (s: State) =>
     s.id === removal.id || (+new Date(s.t) === time && s.location === null);
-  const kept = incoming.find(matches);
+  const kept = incoming.find(isRemoval);
   const rest = incoming.filter((s) => s !== kept);
   const before = rest.filter((s) => +new Date(s.t) < time);
   const later = rest.filter((s) => +new Date(s.t) >= time);
-  const moves = [kept, ...later].filter((s) => s?.location || s?.via).length;
-  const entry = {
-    ...omit(kept ?? removal, ["via", "viaStartTime", "interpolate"]),
+  const moves = [kept ?? removal, ...later].filter(isMove).length;
+  const entry: State = {
+    ...omit(kept ?? removal, [...MOVE_FIELDS]),
     t: removal.t,
     location: null,
   };
@@ -198,6 +201,7 @@ export function planScenarioImport(
         parent = old!.parent;
       }
       const output = node as Unit;
+      let moves = 0;
       if (options.content === "units-only") output.state = klona(existing?.state ?? []);
       else if (options.states === "add_new") {
         const latest = Math.max(
@@ -222,20 +226,17 @@ export function planScenarioImport(
           );
         const offMap = isOffMap(existing?.state);
         const appended = offMap ? withoutMoves(additions) : additions;
-        const moves = offMap ? additions.filter((s) => s.location || s.via).length : 0;
-        if (moves)
-          ignored.push(
-            `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
-          );
+        if (offMap) moves = additions.filter(isMove).length;
         output.state = [...klona(existing?.state ?? []), ...appended];
       } else if (isOffMap(existing?.state)) {
-        const { state, moves } = keepRemoval(existing!.state!, unit.state ?? []);
-        if (moves)
-          ignored.push(
-            `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
-          );
-        output.state = state;
+        const kept = keepRemoval(lastLocated(existing!.state)!, unit.state ?? []);
+        moves = kept.moves;
+        output.state = kept.state;
       } else output.state = klona(unit.state ?? []);
+      if (moves)
+        ignored.push(
+          `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
+        );
       if (options.action === "copy")
         output.state?.forEach((s) => {
           s.id = nanoid();
