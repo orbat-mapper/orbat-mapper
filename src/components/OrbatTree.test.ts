@@ -7,6 +7,18 @@ import type { EntityId } from "@/types/base";
 import type { NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import * as orbatNav from "@/modules/scenarioeditor/orbatNav";
+import { activeScenarioKey } from "@/components/injects";
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
+  draggable: vi.fn(() => () => {}),
+  dropTargetForElements: vi.fn(() => () => {}),
+}));
+vi.mock("@atlaskit/pragmatic-drag-and-drop/external/adapter", () => ({
+  dropTargetForExternal: vi.fn(() => () => {}),
+}));
+vi.mock("@/stores/dragStore", () => ({
+  useActiveUnitStore: () => ({ activeUnitParentIds: ref([]) }),
+}));
 vi.mock("@/stores/settingsStore", () => ({
   useSettingsStore: () => ({
     orbatIconSize: ref(20),
@@ -432,5 +444,58 @@ describe("OrbatTree virtualization", () => {
     expect(restoreFocusSpy).toHaveBeenCalledTimes(1);
     getByIdSpy.mockRestore();
     tempFocusedEl.remove();
+  });
+});
+
+describe("OrbatTree unit clicks", () => {
+  function mountWithRealItems() {
+    const { units, unitMap } = makeFlatTree(3);
+    const scenario = {
+      store: { state: { unitMap, sideGroupMap: {}, customSymbolMap: {} } },
+      unitActions: { isUnitLocked: () => false },
+    };
+    return mount(OrbatTree, {
+      props: { units, unitMap, virtualizationThreshold: 999 },
+      global: {
+        provide: { [activeScenarioKey as symbol]: scenario },
+        stubs: { DotsMenu: true, MilitarySymbol: true, TreeDropIndicator: true },
+      },
+    });
+  }
+
+  it("emits unit-click once for one click on a unit", async () => {
+    const wrapper = mountWithRealItems();
+    await nextTick();
+
+    await wrapper.findAll('[role="treeitem"]')[1].find("span").trigger("click");
+
+    const clicks = wrapper.emitted("unit-click") ?? [];
+    expect(clicks).toHaveLength(1);
+    expect((clicks[0][0] as NUnit).id).toBe("u-1");
+  });
+
+  it("emits unit-click once with the modifier key for a ctrl+click", async () => {
+    const wrapper = mountWithRealItems();
+    await nextTick();
+
+    await wrapper
+      .findAll('[role="treeitem"]')[2]
+      .find("span")
+      .trigger("click", { ctrlKey: true });
+
+    const clicks = wrapper.emitted("unit-click") ?? [];
+    expect(clicks).toHaveLength(1);
+    expect((clicks[0][1] as MouseEvent).ctrlKey).toBe(true);
+  });
+
+  it("emits unit-click once when Enter selects a unit", async () => {
+    const wrapper = mountWithRealItems();
+    await nextTick();
+
+    await wrapper.findAll('[role="treeitem"]')[0].trigger("keydown", { key: "Enter" });
+
+    const clicks = wrapper.emitted("unit-click") ?? [];
+    expect(clicks).toHaveLength(1);
+    expect((clicks[0][0] as NUnit).id).toBe("u-0");
   });
 });

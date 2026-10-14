@@ -475,7 +475,6 @@ watch(
             :on-toggle="handleToggle"
             :on-set-expanded="(value) => setExpanded(flattenItem.value.unit.id, value)"
             @unit-action="onUnitAction"
-            @unit-click="(unit, event) => emit('unit-click', unit, event)"
           />
         </TreeItem>
       </TreeVirtualizer>
@@ -508,7 +507,6 @@ watch(
           :on-toggle="handleToggle"
           :on-set-expanded="(value) => setExpanded(flattenItem.value.unit.id, value)"
           @unit-action="onUnitAction"
-          @unit-click="(unit, event) => emit('unit-click', unit, event)"
         />
       </TreeItem>
     </template>
