@@ -126,10 +126,20 @@ describe("buildRecipientScenario snapshot groups", () => {
             name: "R7",
             shortName: "7BN",
             sidc: "10061000001211000000",
-            location: [1.5, 1.5],
+            state: [{ id: expect.any(String), t: 200, location: [1.5, 1.5] }],
           },
-          { id: "r7-1", name: "R7 1st Coy", sidc: "x", location: [1.6, 1.6] },
-          { id: "r8", name: "R8 (moved in)", sidc: "y", location: [3, 3] },
+          {
+            id: "r7-1",
+            name: "R7 1st Coy",
+            sidc: "x",
+            state: [{ id: expect.any(String), t: 200, location: [1.6, 1.6] }],
+          },
+          {
+            id: "r8",
+            name: "R8 (moved in)",
+            sidc: "y",
+            state: [{ id: expect.any(String), t: 200, location: [3, 3] }],
+          },
         ],
       },
     ]);
@@ -151,12 +161,63 @@ describe("buildRecipientScenario snapshot groups", () => {
         damaged,
       );
 
-    expect(build().sides[1].groups[0].subUnits[0].status).toBe("Damaged");
+    expect(build().sides[1].groups[0].subUnits[0].state?.[0].status).toBe("Damaged");
     expect(build().settings?.statuses).toContainEqual({
       name: "Damaged",
       color: "#ffa500",
     });
-    expect(build(false).sides[1].groups[0].subUnits[0]).not.toHaveProperty("status");
+    expect(build(false).sides[1].groups[0].subUnits[0].state?.[0]).not.toHaveProperty(
+      "status",
+    );
+  });
+
+  it("writes each snapshot position as one state entry at the snapshot time", () => {
+    const damaged: SnapshotSource = {
+      ...source,
+      unitsByGroup: {
+        "red-detected": [
+          { id: "r7", name: "R7", sidc: "x", status: "Damaged", location: [1, 1] },
+        ],
+      },
+    };
+    const unit = (extra: object = {}) =>
+      buildRecipientScenario(createScenario(), { ...settings, ...extra }, damaged)
+        .sides[1].groups[0].subUnits[0];
+
+    expect(unit()).toEqual({
+      id: "r7",
+      name: "R7",
+      sidc: "x",
+      state: [{ id: expect.any(String), t: 200, location: [1, 1], status: "Damaged" }],
+    });
+    expect(unit({ includeSnapshotStatus: false })).toEqual({
+      id: "r7",
+      name: "R7",
+      sidc: "x",
+      state: [{ id: expect.any(String), t: 200, location: [1, 1] }],
+    });
+    expect(unit({ timedSnapshotPositions: false })).toEqual({
+      id: "r7",
+      name: "R7",
+      sidc: "x",
+      status: "Damaged",
+      location: [1, 1],
+    });
+  });
+
+  it("shows snapshot units to the recipient only from the snapshot time", () => {
+    const recipient = useNewScenarioStore(
+      buildRecipientScenario(createScenario(), settings, source),
+    );
+    const time = useScenarioTime(recipient);
+    const r8At = (timestamp: number) => {
+      time.setCurrentTime(timestamp);
+      return recipient.state.unitMap["r8"]._state?.location;
+    };
+
+    expect(r8At(199)).toBeFalsy();
+    expect(r8At(200)).toEqual([3, 3]);
+    expect(r8At(1000)).toEqual([3, 3]);
   });
 
   it("drops side data when every selected group of the side is a snapshot", () => {

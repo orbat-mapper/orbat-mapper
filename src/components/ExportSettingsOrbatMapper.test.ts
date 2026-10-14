@@ -438,6 +438,41 @@ describe("ExportSettingsOrbatMapper", () => {
     reopened.unmount();
   });
 
+  it("ties snapshot positions to the snapshot time unless turned off, and saves it in presets", async () => {
+    const settings = form();
+    settings.sideGroups = ["red-detected"];
+    settings.snapshotGroupIds = ["red-detected"];
+    const wrapper = mountSettings(settings, "scenario-a", true);
+    expect(settings.timedSnapshotPositions).toBe(true);
+    const button = (text: string) =>
+      wrapper.findAll("button").find((b) => b.text() === text)!;
+    await button("Preview recipient data").trigger("click");
+    const preview = () => wrapper.find('[aria-label="Recipient preview"]').text();
+    expect(preview()).toContain('"state"');
+
+    wrapper
+      .findAllComponents(InputCheckboxStub)
+      .find((c) => c.props("label") === "Show units only from the snapshot time")!
+      .vm.$emit("update:modelValue", false);
+    await wrapper.vm.$nextTick();
+    expect(preview()).not.toContain('"state"');
+
+    wrapper
+      .findComponent({ name: "InputGroup" })
+      .vm.$emit("update:modelValue", "Always shown");
+    await wrapper.vm.$nextTick();
+    await button("Save as new preset").trigger("click");
+    wrapper.unmount();
+    const restored = form();
+    const reopened = mountSettings(restored, "scenario-a", true);
+    expect(restored.timedSnapshotPositions).toBe(true);
+    await reopened
+      .find("select")
+      .setValue(reopened.findAll("option")[1]!.attributes("value"));
+    expect(restored.timedSnapshotPositions).toBe(false);
+    reopened.unmount();
+  });
+
   it("leaves out scenario events unless they are included", async () => {
     const settings = form();
     const wrapper = mountSettings(settings, "scenario-a", true);
