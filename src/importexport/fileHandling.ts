@@ -42,8 +42,8 @@ export function releaseImageCache() {
   }
 }
 
-export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
-  const guess: ImportedFileInfo = {
+function unknownImportInfo(fileName: string, fileSize: number): ImportedFileInfo {
+  return {
     format: "unknown",
     dialect: "unknown",
     isZipped: false,
@@ -53,9 +53,13 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     isInvalid: false,
     errors: [],
     objectUrl: "",
-    fileName: file.name,
-    fileSize: file.size,
+    fileName,
+    fileSize,
   };
+}
+
+export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
+  const guess = unknownImportInfo(file.name, file.size);
 
   if (hasZippedFileType(file)) {
     guess.isZipped = true;
@@ -134,6 +138,34 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     return guess;
   }
 
+  sniffTextFormat(text, guess);
+  if (guess.format !== "unknown" || guess.isJson) return guess;
+
+  // Fallback to extension check if delimiter detection is inconclusive
+  if (isCsvFileType(file)) {
+    guess.format = "csv";
+    guess.dataAsString = text;
+    return guess;
+  }
+
+  if (isTsvFileType(file)) {
+    guess.format = "tsv";
+    guess.dataAsString = text;
+    return guess;
+  }
+
+  return guess;
+}
+
+/** Guess the format of text that has no file name, such as pasted text. */
+export function guessTextImportFormat(text: string): ImportedFileInfo {
+  const guess = unknownImportInfo("Pasted text", text.length);
+  sniffTextFormat(text, guess);
+  return guess;
+}
+
+/** Detect JSON based formats and delimited text from the contents alone. */
+function sniffTextFormat(text: string, guess: ImportedFileInfo) {
   // is it json
   try {
     const json = JSON.parse(text);
@@ -164,33 +196,18 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
     // ignore
   }
 
-  if (guess.isJson) return guess;
+  if (guess.isJson) return;
 
   const delimiter = detectDelimiter(text);
   if (delimiter === "\t") {
     guess.format = "tsv";
     guess.dataAsString = text;
-    return guess;
+    return;
   } else if (delimiter === ",") {
     guess.format = "csv";
     guess.dataAsString = text;
-    return guess;
+    return;
   }
-
-  // Fallback to extension check if delimiter detection is inconclusive
-  if (isCsvFileType(file)) {
-    guess.format = "csv";
-    guess.dataAsString = text;
-    return guess;
-  }
-
-  if (isTsvFileType(file)) {
-    guess.format = "tsv";
-    guess.dataAsString = text;
-    return guess;
-  }
-
-  return guess;
 }
 
 function detectDelimiter(text: string): "," | "\t" | null {
