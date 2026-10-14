@@ -160,8 +160,22 @@ export async function guessImportFormat(file: File): Promise<ImportedFileInfo> {
 /** Guess the format of text that has no file name, such as pasted text. */
 export function guessTextImportFormat(text: string): ImportedFileInfo {
   const guess = unknownImportInfo("Pasted text", text.length);
-  sniffTextFormat(text, guess);
+  const rootElement = xmlRootElement(text);
+  if (rootElement === undefined) {
+    sniffTextFormat(text, guess);
+    return guess;
+  }
+  // XML is never delimited text, so only the root element decides the format
+  guess.dataAsString = text;
+  if (rootElement.startsWith("MilXDocument")) guess.format = "milx";
+  else if (rootElement === "kml") guess.format = "kml";
+  else if (rootElement === "gpx") guess.format = "gpx";
   return guess;
+}
+
+function xmlRootElement(text: string): string | undefined {
+  const match = /^\s*(?:<\?[\s\S]*?\?>\s*|<!--[\s\S]*?-->\s*)*<([\w:.-]+)/.exec(text);
+  return match?.[1];
 }
 
 /** Detect JSON based formats and delimited text from the contents alone. */

@@ -149,10 +149,19 @@ async function loadFormat(format: ImportFormat) {
 
   if (format === "kml" && stringSource.value) {
     send({ message: `Loaded data as ${format}` });
-    const kmls = fileInfos.value.filter((f) => f.format === "kml");
+    const data =
+      store.inputSource === "string"
+        ? [
+            URL.createObjectURL(
+              new Blob([stringSource.value], {
+                type: "application/vnd.google-earth.kml+xml",
+              }),
+            ),
+          ]
+        : fileInfos.value.filter((f) => f.format === "kml").map((d) => d.objectUrl);
     emit("lod", {
       format: "kml",
-      data: kmls.map((d) => d.objectUrl),
+      data,
       fileInfo: fileInfos.value,
     });
   }
@@ -267,12 +276,13 @@ async function handleFiles(files: File[]) {
 
   stringSource.value = info.dataAsString;
   objectUrl.value = info.objectUrl;
-  guessedFormat.value = info.format;
+  applyGuessedFormat(info);
+  if (info.format !== "unknown") await onLoad();
+}
 
-  if (info.format !== "unknown") {
-    form.value.format = info.format;
-    await onLoad();
-  }
+function applyGuessedFormat(info: ImportedFileInfo) {
+  guessedFormat.value = info.format;
+  if (info.format !== "unknown") form.value.format = info.format;
 }
 
 watch(stringSource, (text) => {
@@ -280,8 +290,7 @@ watch(stringSource, (text) => {
   const info = guessTextImportFormat(text);
   fileInfo.value = info;
   fileInfos.value = [info];
-  guessedFormat.value = info.format;
-  if (info.format !== "unknown") form.value.format = info.format;
+  applyGuessedFormat(info);
 });
 
 onMounted(() => {

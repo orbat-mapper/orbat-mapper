@@ -2,7 +2,7 @@
 import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import ImportLoadStep from "./ImportLoadStep.vue";
+import ImportLoadStep from "@/components/ImportLoadStep.vue";
 import { useImportStore } from "@/stores/importExportStore";
 
 vi.mock("@/composables/notifications", () => ({
@@ -64,5 +64,20 @@ describe("ImportLoadStep with pasted text", () => {
     const [format, data] = loaded![0] as [string, { name: string }];
     expect(format).toBe("orbatmapper");
     expect(data.name).toBe("Pasted scenario");
+  });
+
+  it("loads pasted KML as a KML import", async () => {
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:pasted-kml");
+    const wrapper = mountStep();
+
+    await wrapper
+      .find("textarea#rawText")
+      .setValue('<kml xmlns="http://www.opengis.net/kml/2.2"><Document /></kml>');
+    await loadButton(wrapper).trigger("click");
+    await flushPromises();
+
+    const lod = wrapper.emitted("lod");
+    expect(lod).toHaveLength(1);
+    expect(lod![0][0]).toMatchObject({ format: "kml", data: ["blob:pasted-kml"] });
   });
 });
