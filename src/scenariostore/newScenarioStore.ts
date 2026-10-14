@@ -388,6 +388,9 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     }
   }
 
+  // A recipient export shows opponents as snapshot groups read at the handoff time.
+  // Opening there draws the recipient's own units at the same time as the snapshots.
+  let openingTime = scenario.startTime || 0;
   scenario.sides.forEach((side) => {
     sideMap[side.id] = {
       ...side,
@@ -406,6 +409,8 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
         _baseSubUnits: group.subUnits.map((unit) => unit.id),
         _isOpen: group.initiallyOpen !== false,
       };
+      const snapshotTime = group.snapshotTime ? +dayjs(group.snapshotTime) : NaN;
+      if (snapshotTime > openingTime) openingTime = snapshotTime;
       checkFillColor(group);
     });
     walkSide(side, prepareUnit);
@@ -511,7 +516,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
     layerStackMap,
     layerItemMap,
     eventMap,
-    currentTime: scenario.startTime || 0,
+    currentTime: openingTime,
     info,
     sides,
     unitMap,
