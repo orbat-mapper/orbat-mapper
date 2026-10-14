@@ -76,7 +76,8 @@ const selectedIds = ref<string[]>([]);
 const showChangedOnly = ref(false);
 const targetSideId = ref(store.state.sides[0]);
 const failure = ref("");
-// Snapshot groups cannot be imported, so they are labelled and never picked by default.
+// Snapshot groups can only refresh a snapshot, so they are labelled and never picked by
+// default.
 const scopes = computed(() =>
   props.data.sides.flatMap((s) =>
     (props.mode === "side"
@@ -155,6 +156,14 @@ const plan = computed(() => {
     selectedIds: selectedIds.value,
   });
 });
+// A snapshot refresh always replaces the whole side or group, whatever is chosen above.
+const effective = computed(() => plan.value.options);
+const snapshotTime = computed(() => {
+  const times = sourceSide.value?.groups
+    .filter((g) => g.snapshotTime && (g.id === scopeId.value || props.mode === "side"))
+    .map((g) => +new Date(g.snapshotTime!));
+  return times?.length ? fmt.scenarioFormatter.format(Math.max(...times)) : "";
+});
 const sourceSide = computed(() =>
   props.data.sides.find(
     (s) => s.id === scopeId.value || s.groups.some((g) => g.id === scopeId.value),
@@ -174,8 +183,8 @@ const targetName = computed(() => {
 });
 const summary = computed(() =>
   summarizeImportPlan(plan.value.changes, {
-    action: action.value,
-    content: content.value,
+    action: effective.value.action,
+    content: effective.value.content,
   }),
 );
 const fileState = computed(() => prepareScenario(klona(props.data)));
@@ -256,7 +265,7 @@ const tableData = computed<ImportRow[]>(() => {
 });
 const changedRowFilter = computed(() => {
   if (!showChangedOnly.value) return undefined;
-  if (action.value === "copy" && content.value !== "state-only") {
+  if (effective.value.action === "copy" && effective.value.content !== "state-only") {
     // Every incoming entry can be added as a copy, even while unchecked.
     return () => true;
   }
@@ -296,16 +305,19 @@ const selectedUnitIds = computed(() => new Set(selectedIds.value));
 function rowChanges(row: ImportRow): string {
   const isUnit = "sidc" in row;
   const selected = !isUnit || selectedUnitIds.value.has(row.id);
-  if (action.value === "copy" && content.value !== "state-only") {
+  if (effective.value.action === "copy" && effective.value.content !== "state-only") {
     return selected ? "Added as a separate copy" : "Not selected";
   }
   const change = changesById.value.get(row.id);
   if (change?.effect === "unchanged") return "No changes";
   if (change?.effect === "preserved") return isUnit ? "Not selected" : "No changes";
   if (change) return change.descriptions.join(" ");
-  if (!selected && (action.value !== "replace" || content.value === "state-only"))
+  if (
+    !selected &&
+    (effective.value.action !== "replace" || effective.value.content === "state-only")
+  )
     return "Not selected";
-  if (content.value === "state-only" && isUnit && !store.state.unitMap[row.id])
+  if (effective.value.content === "state-only" && isUnit && !store.state.unitMap[row.id])
     return "Skipped: unit does not exist";
   return plan.value.errors.length ? "Not applied — see review" : "No changes";
 }
@@ -422,7 +434,11 @@ function apply() {
 <template>
   <div class="flex h-full min-h-0 flex-col gap-4">
     <Teleport :to="optionsTarget ?? 'body'" :disabled="!optionsTarget">
-      <FieldGroup>
+      <p v-if="plan.snapshotRefresh" class="text-muted-foreground text-sm">
+        A snapshot replaces the older snapshot as a whole, so there are no options to
+        choose.
+      </p>
+      <FieldGroup v-else>
         <FieldSelect
           v-model="action"
           label="Action"
@@ -485,7 +501,7 @@ function apply() {
         :row-filter="changedRowFilter"
         :get-sub-rows="(row: ImportRow) => row.subUnits ?? []"
         :row-height="40"
-        :select="action !== 'replace' || content === 'state-only'"
+        :select="effective.action !== 'replace' || effective.content === 'state-only'"
         select-all
         no-indeterminate
         class="min-h-40 flex-1"
@@ -555,8 +571,16 @@ function apply() {
             </Select>
           </div>
         </section>
+        <Alert v-if="plan.snapshotRefresh" class="mt-2">
+          <AlertTitle>Refresh snapshot</AlertTitle>
+          <AlertDescription
+            >The snapshot is replaced by the one in this file, taken at
+            {{ snapshotTime }}. Units no longer in it are removed:
+            {{ summary.counts.removed }}.</AlertDescription
+          >
+        </Alert>
         <Alert
-          v-if="action === 'replace' && content !== 'state-only'"
+          v-else-if="action === 'replace' && content !== 'state-only'"
           variant="destructive"
           class="mt-2"
         >

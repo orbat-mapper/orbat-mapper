@@ -222,9 +222,10 @@ status, shown at every time. No earlier positions or plans, descriptions,
 resources, range rings or chain of command; subordinates are listed flat. A side
 seen only through snapshot groups also loses its description and the units
 attached directly to it. Used to show a side the opposing units it has detected.
-The file marks the group with its snapshot time, and an import refuses any side or
-group that holds one, because its units keep their real IDs but none of their
-history.
+The file marks the group with its snapshot time. Its units keep their real IDs but
+none of their history, so an import refuses any side or group that holds one,
+unless the side or group it replaces holds nothing but snapshot groups. Then the
+newer snapshot replaces the older one as a whole: a **snapshot refresh**.
 _Avoid_: "detected group" (detection is not recorded in the scenario).
 
 **Snapshot time**:

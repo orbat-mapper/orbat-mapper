@@ -79,6 +79,13 @@ export function snapshotGroupsIn(node: Node): SideGroup[] {
   if ("groups" in node) return node.groups.filter((g) => g.snapshotTime);
   return "snapshotTime" in node && node.snapshotTime ? [node] : [];
 }
+/** A side or group holding nothing but snapshot groups, so replacing it as a whole
+ * cannot remove any real units, plans or history. */
+function isSnapshotOnly(node: Node): boolean {
+  if ("groups" in node)
+    return !node.subUnits?.length && node.groups.every((g) => g.snapshotTime);
+  return "snapshotTime" in node && !!node.snapshotTime;
+}
 const MOVE_FIELDS = ["location", "via", "viaStartTime", "interpolate"] as const;
 const isMove = (s: State) => Boolean(s.location || s.via);
 function lastLocated(states: State[] = []): State | undefined {
@@ -141,11 +148,27 @@ export function planScenarioImport(
   const target = before.get(options.scopeId);
   const changes: ImportChange[] = [];
   const ignored: string[] = [];
+  // A newer snapshot replaces an older one as a whole: units no longer seen are removed,
+  // and the snapshot positions are taken as they are.
+  const snapshotRefresh =
+    !!scope &&
+    scope.kind !== "unit" &&
+    target?.kind === scope.kind &&
+    snapshotGroupsIn(scope.node).length > 0 &&
+    isSnapshotOnly(scope.node) &&
+    isSnapshotOnly(target.node);
+  if (snapshotRefresh)
+    options = {
+      ...options,
+      action: "replace",
+      content: "units-and-state",
+      states: "replace",
+    };
   if (!scope || scope.kind === "unit") errors.push("Select a side or group to import.");
-  else
+  else if (!snapshotRefresh)
     for (const group of snapshotGroupsIn(scope.node))
       errors.push(
-        `"${group.name}" is a snapshot from a partial export. It has no plans or history, so it cannot be imported.`,
+        `"${group.name}" is a snapshot from a partial export. It has no plans or history, so it can only replace a snapshot.`,
       );
   if (options.action !== "copy" && target && target.kind !== scope?.kind)
     errors.push("Target ID belongs to another entity type.");
@@ -228,7 +251,7 @@ export function planScenarioImport(
         const appended = offMap ? withoutMoves(additions) : additions;
         if (offMap) moves = additions.filter(isMove).length;
         output.state = [...klona(existing?.state ?? []), ...appended];
-      } else if (isOffMap(existing?.state)) {
+      } else if (!snapshotRefresh && isOffMap(existing?.state)) {
         const kept = keepRemoval(lastLocated(existing!.state)!, unit.state ?? []);
         moves = kept.moves;
         output.state = kept.state;
@@ -494,6 +517,7 @@ export function planScenarioImport(
     ignored,
     dependencies,
     options: klona(options),
+    snapshotRefresh,
     hasChanges: changes.some((c) => ["added", "changed", "removed"].includes(c.effect)),
   };
 }

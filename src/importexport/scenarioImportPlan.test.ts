@@ -71,10 +71,82 @@ describe("scenario contribution import plan", () => {
         selectedIds: ["enemy-unit"],
       });
       expect(plan.errors).toEqual([
-        '"Enemy" is a snapshot from a partial export. It has no plans or history, so it cannot be imported.',
+        '"Enemy" is a snapshot from a partial export. It has no plans or history, so it can only replace a snapshot.',
       ]);
     }
     expect(planScenarioImport(scenario(), incoming, opts).errors).toEqual([]);
+  });
+  describe("snapshot refresh", () => {
+    const snapshot = (time: string, units: Unit[]) => ({
+      id: "enemy",
+      name: "Enemy",
+      snapshotTime: time,
+      subUnits: units,
+    });
+    function withSnapshot(time: string, units: Unit[]) {
+      const s = scenario();
+      s.sides[1].groups[0] = snapshot(time, units);
+      return s;
+    }
+    const at = (t: string, location: [number, number] | null) =>
+      unit("enemy-unit", { state: [{ id: "s", t: Date.parse(t), location }] });
+
+    it("replaces a snapshot with the file's newer one, whatever the chosen options", () => {
+      const master = withSnapshot("2025-01-01T00:00:00.000Z", [
+        at("2025-01-01T00:00:00.000Z", [1, 1]),
+        unit("lost-contact"),
+      ]);
+      const incoming = withSnapshot("2025-01-03T00:00:00.000Z", [
+        at("2025-01-03T00:00:00.000Z", [2, 2]),
+        unit("new-contact"),
+      ]);
+      for (const scopeId of ["enemy", "red"]) {
+        const plan = planScenarioImport(master, incoming, {
+          ...opts,
+          scopeId,
+          content: "state-only",
+          states: "add_new",
+          selectedIds: [],
+        });
+        expect(plan.errors).toEqual([]);
+        expect(plan.snapshotRefresh).toBe(true);
+        expect(plan.options).toMatchObject({
+          action: "replace",
+          content: "units-and-state",
+          states: "replace",
+        });
+        const group = plan.scenario.sides[1].groups[0];
+        expect(group.snapshotTime).toBe("2025-01-03T00:00:00.000Z");
+        expect(group.subUnits.map((u) => u.id)).toEqual(["enemy-unit", "new-contact"]);
+        expect(group.subUnits[0].state).toEqual(
+          incoming.sides[1].groups[0].subUnits[0].state,
+        );
+        expect(plan.scenario.sides[0]).toEqual(master.sides[0]);
+      }
+    });
+
+    it("takes the new position of a snapshot unit removed from the map", () => {
+      const master = withSnapshot("2025-01-01T00:00:00.000Z", [
+        at("2025-01-01T00:00:00.000Z", null),
+      ]);
+      const incoming = withSnapshot("2025-01-03T00:00:00.000Z", [
+        at("2025-01-03T00:00:00.000Z", [2, 2]),
+      ]);
+      const plan = planScenarioImport(master, incoming, { ...opts, scopeId: "enemy" });
+      expect(plan.scenario.sides[1].groups[0].subUnits[0].state).toEqual([
+        { id: "s", t: Date.parse("2025-01-03T00:00:00.000Z"), location: [2, 2] },
+      ]);
+      expect(plan.ignored).toEqual([]);
+    });
+
+    it("refuses a side refresh when the scenario's side also has real units", () => {
+      const master = withSnapshot("2025-01-01T00:00:00.000Z", [unit("enemy-unit")]);
+      master.sides[1].groups.push({ id: "real", name: "Real", subUnits: [unit("r")] });
+      const incoming = withSnapshot("2025-01-03T00:00:00.000Z", [unit("enemy-unit")]);
+      const plan = planScenarioImport(master, incoming, { ...opts, scopeId: "red" });
+      expect(plan.snapshotRefresh).toBe(false);
+      expect(plan.errors).toHaveLength(1);
+    });
   });
   it("previews without mutating either scenario, so cancellation is inert", () => {
     const master = scenario(),
