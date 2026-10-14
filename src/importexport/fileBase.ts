@@ -1,7 +1,7 @@
 import type { EntityId } from "@/types/base";
 import type { ExportRecord, Scenario } from "@/types/scenarioModels";
 
-export type ImportBaseCheck =
+export type FileBaseCheck =
   | { status: "latest" }
   /** Importing can undo changes made in this scenario since `baseDate`. */
   | { status: "older"; baseDate: string; latestDate: string }
@@ -9,7 +9,7 @@ export type ImportBaseCheck =
   | { status: "unknown" };
 
 /** What an import takes from the file: the side groups and layers it may change. */
-export interface ImportBaseScope {
+export interface FileBaseScope {
   sideGroupIds?: EntityId[];
   layerIds?: EntityId[];
 }
@@ -19,11 +19,11 @@ export interface ImportBaseScope {
  * the recipient exported again names its base in `meta.exportedFrom`; one saved
  * with Download scenario keeps the export's ID.
  */
-export function checkImportBase(
+export function checkFileBase(
   records: ExportRecord[],
   file: Pick<Scenario, "id" | "meta">,
-  scope: ImportBaseScope,
-): ImportBaseCheck {
+  scope: FileBaseScope,
+): FileBaseCheck {
   // A raw export names the source scenario in exportedFrom, so fall back to its ID.
   const base =
     records.find((r) => r.id === file.meta?.exportedFrom) ??
@@ -51,22 +51,29 @@ export function checkImportBase(
     : { status: "latest" };
 }
 
-export interface ImportBaseNotice {
-  variant: "warning" | "note";
+/** Export dates are real times, shown in the user's own time zone. */
+export const formatExportDate = (isoDate: string) =>
+  new Date(isoDate).toLocaleString(undefined, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+export interface FileBaseNotice {
   title: string;
   message: string;
 }
 
 /** `subject` names what the import takes, such as "this side". */
-export function describeImportBase(
-  check: ImportBaseCheck,
+export function describeFileBase(
+  check: FileBaseCheck,
   subject: string,
-  formatDate: (isoDate: string) => string,
-): ImportBaseNotice | undefined {
+  formatDate = formatExportDate,
+): FileBaseNotice | undefined {
   if (check.status === "older") {
     const base = formatDate(check.baseDate);
     return {
-      variant: "warning",
       title: "This file may be out of date",
       message:
         `This file was made from the export of ${base}. ` +
@@ -76,7 +83,6 @@ export function describeImportBase(
   }
   if (check.status === "unknown") {
     return {
-      variant: "note",
       title: "Unknown origin",
       message:
         "The origin of this file is unknown. It was not made from an export of this " +
@@ -84,12 +90,3 @@ export function describeImportBase(
     };
   }
 }
-
-/** Export dates are real times, shown in the user's own time zone. */
-export const formatExportDate = (isoDate: string) =>
-  new Date(isoDate).toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });

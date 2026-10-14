@@ -3,6 +3,7 @@ import { shallowRef } from "vue";
 import { toCsv, useScenarioExport } from "@/importexport/export/scenarioExport";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useScenarioIO } from "@/scenariostore/io";
+import { checkFileBase } from "@/importexport/fileBase";
 import {
   FIXTURE_T2,
   loadControlMeasureScenarioFixture,
@@ -181,6 +182,24 @@ describe("export records", () => {
 
     expect(second).not.toContain("exportRecords");
     expect(JSON.parse(second).meta).not.toHaveProperty("exports");
+  });
+
+  it("finds the base of a file the recipient opened and saved with Download scenario", () => {
+    const { store, exporter } = loadScenario();
+    const first = JSON.parse(exporter.generateOrbatMapper(settings));
+    vi.useFakeTimers({ now: Date.now() + 60_000 });
+    try {
+      exporter.generateOrbatMapper(settings);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const recipient = useNewScenarioStore(first);
+    const saved = useScenarioIO(shallowRef(recipient)).serializeToObject();
+
+    expect(
+      checkFileBase(store.state.exportRecords, saved, { sideGroupIds: ["blue-group"] }),
+    ).toMatchObject({ status: "older", baseDate: first.meta.exportedDate });
   });
 
   it("does not put the record on the undo stack, but marks the scenario changed", () => {

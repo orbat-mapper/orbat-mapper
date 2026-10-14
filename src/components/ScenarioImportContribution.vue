@@ -41,11 +41,7 @@ import {
   type FileLayerOption,
   type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
-import {
-  checkImportBase,
-  describeImportBase,
-  formatExportDate,
-} from "@/importexport/importBase";
+import { checkFileBase, describeFileBase } from "@/importexport/fileBase";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -183,19 +179,18 @@ const summary = computed(() =>
     content: content.value,
   }),
 );
-// The groups the import takes, as the file and this scenario have them.
-const scopeGroupIds = computed(() => {
-  if (props.mode === "group") return [scopeId.value];
-  const fileGroups = sourceSide.value?.groups.map((g) => g.id) ?? [];
-  return [...fileGroups, ...(store.state.sideMap[scopeId.value]?.groups ?? [])];
-});
+// The groups the file brings: a newer export of another group does not date them.
+const scopeGroupIds = computed(() =>
+  props.mode === "group"
+    ? [scopeId.value]
+    : (sourceSide.value?.groups.map((g) => g.id) ?? []),
+);
 const originNotice = computed(() =>
-  describeImportBase(
-    checkImportBase(store.state.exportRecords, props.data, {
+  describeFileBase(
+    checkFileBase(store.state.exportRecords, props.data, {
       sideGroupIds: scopeGroupIds.value,
     }),
     props.mode === "side" ? "this side" : "this group",
-    formatExportDate,
   ),
 );
 const fileState = computed(() => prepareScenario(klona(props.data)));

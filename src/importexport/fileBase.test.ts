@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkImportBase, describeImportBase } from "@/importexport/importBase";
+import { checkFileBase, describeFileBase } from "@/importexport/fileBase";
 import type { ExportRecord } from "@/types/scenarioModels";
 
 function record(
@@ -38,10 +38,10 @@ const downloaded = (base: string) => ({
   meta: { createdDate: "", lastModifiedDate: "" },
 });
 
-describe("checkImportBase", () => {
+describe("checkFileBase", () => {
   it("finds no problem when a re-exported file was made from the latest export", () => {
     expect(
-      checkImportBase([october12, october14], reExported("export-2"), {
+      checkFileBase([october12, october14], reExported("export-2"), {
         sideGroupIds: ["blue-group"],
       }),
     ).toEqual({ status: "latest" });
@@ -52,7 +52,7 @@ describe("checkImportBase", () => {
     ["downloaded", downloaded("export-1")],
   ])("warns when a %s file was made from an older export", (_, file) => {
     expect(
-      checkImportBase([october12, october14], file, { sideGroupIds: ["blue-group"] }),
+      checkFileBase([october12, october14], file, { sideGroupIds: ["blue-group"] }),
     ).toEqual({
       status: "older",
       baseDate: "2026-10-12T14:05:00.000Z",
@@ -64,13 +64,13 @@ describe("checkImportBase", () => {
     // The raw export names the source scenario in exportedFrom, not an export.
     const file = { ...reExported("source-scenario"), id: "export-2" };
     expect(
-      checkImportBase([october12, october14], file, { sideGroupIds: ["blue-group"] }),
+      checkFileBase([october12, october14], file, { sideGroupIds: ["blue-group"] }),
     ).toEqual({ status: "latest" });
   });
 
   it("reports an unknown origin when the base is not among the records", () => {
     expect(
-      checkImportBase([october12], downloaded("from-another-scenario"), {
+      checkFileBase([october12], downloaded("from-another-scenario"), {
         sideGroupIds: ["blue-group"],
       }),
     ).toEqual({ status: "unknown" });
@@ -79,7 +79,7 @@ describe("checkImportBase", () => {
   it("ignores newer exports that did not include the imported side groups or layers", () => {
     const otherGroup = record("export-3", "2026-10-14T12:00:00.000Z", ["red-group"]);
     expect(
-      checkImportBase([october12, otherGroup], downloaded("export-1"), {
+      checkFileBase([october12, otherGroup], downloaded("export-1"), {
         sideGroupIds: ["blue-group"],
       }),
     ).toEqual({ status: "latest" });
@@ -91,7 +91,7 @@ describe("checkImportBase", () => {
       snapshotGroupIds: ["blue-group"],
     });
     expect(
-      checkImportBase([october12, snapshot], downloaded("export-1"), {
+      checkFileBase([october12, snapshot], downloaded("export-1"), {
         sideGroupIds: ["blue-group"],
       }),
     ).toEqual({ status: "latest" });
@@ -102,14 +102,14 @@ describe("checkImportBase", () => {
       layerIds: ["layer-1"],
     });
     expect(
-      checkImportBase([october12, withLayer], downloaded("export-1"), {
+      checkFileBase([october12, withLayer], downloaded("export-1"), {
         layerIds: ["layer-1"],
       }),
     ).toMatchObject({ status: "older", latestDate: "2026-10-14T12:00:00.000Z" });
   });
 });
 
-describe("describeImportBase", () => {
+describe("describeFileBase", () => {
   const formatDate = (iso: string) => iso.slice(0, 16);
 
   it("names both export dates in the warning", () => {
@@ -118,7 +118,7 @@ describe("describeImportBase", () => {
       baseDate: "2026-10-12T14:05:00.000Z",
       latestDate: "2026-10-14T09:30:00.000Z",
     };
-    expect(describeImportBase(check, "this side", formatDate)?.message).toBe(
+    expect(describeFileBase(check, "this side", formatDate)?.message).toBe(
       "This file was made from the export of 2026-10-12T14:05. " +
         "A newer export of this side was made on 2026-10-14T09:30. " +
         "Importing it can undo changes made since 2026-10-12T14:05.",
@@ -126,7 +126,7 @@ describe("describeImportBase", () => {
   });
 
   it("says nothing when the file was made from the latest export", () => {
-    expect(describeImportBase({ status: "latest" }, "this side", formatDate)).toBe(
+    expect(describeFileBase({ status: "latest" }, "this side", formatDate)).toBe(
       undefined,
     );
   });

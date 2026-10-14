@@ -45,11 +45,7 @@ import {
   previewScenarioOverlayReplacement,
   type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
-import {
-  checkImportBase,
-  describeImportBase,
-  formatExportDate,
-} from "@/importexport/importBase";
+import { checkFileBase, describeFileBase } from "@/importexport/fileBase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Props {
@@ -138,12 +134,11 @@ const importedLayers = computed(() =>
 );
 
 const layerOriginNotice = computed(() =>
-  describeImportBase(
-    checkImportBase(targetState.exportRecords, props.data, {
+  describeFileBase(
+    checkFileBase(targetState.exportRecords, props.data, {
       layerIds: importedLayers.value.map((layer) => layer.id),
     }),
     "these layers",
-    formatExportDate,
   ),
 );
 

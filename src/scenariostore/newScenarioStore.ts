@@ -75,7 +75,7 @@ import {
 export interface ScenarioState {
   id: EntityId;
   meta: ScenarioMetadata;
-  /** Kept outside `meta`, which holds only what the loaded file said. */
+  /** Saved as `meta.exports`, and left out of recipient exports. */
   exportRecords: ExportRecord[];
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
