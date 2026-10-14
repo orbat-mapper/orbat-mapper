@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef } from "vue";
+import { computed, onMounted, ref, shallowRef, watch } from "vue";
 import { AlertCircleIcon } from "@lucide/vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
@@ -14,7 +14,11 @@ import NProgress from "nprogress";
 import { useDropZone } from "@vueuse/core";
 import { useImportStore } from "@/stores/importExportStore";
 import { useScenarioImport } from "@/composables/scenarioImport";
-import { guessImportFormat, type ImportedFileInfo } from "@/importexport/fileHandling";
+import {
+  guessImportFormat,
+  guessTextImportFormat,
+  type ImportedFileInfo,
+} from "@/importexport/fileHandling";
 import { convertGpxToGeoJSON } from "@/importexport/gpx";
 import { useDragStore } from "@/stores/dragStore";
 import type { OrbatGeneratorOrbat, SpatialIllusionsOrbat } from "@/types/externalModels";
@@ -271,6 +275,15 @@ async function handleFiles(files: File[]) {
   }
 }
 
+watch(stringSource, (text) => {
+  if (store.inputSource !== "string" || !text) return;
+  const info = guessTextImportFormat(text);
+  fileInfo.value = info;
+  fileInfos.value = [info];
+  guessedFormat.value = info.format;
+  if (info.format !== "unknown") form.value.format = info.format;
+});
+
 onMounted(() => {
   if (dragStore.draggedFiles) onDrop(dragStore.draggedFiles);
 });
@@ -392,7 +405,7 @@ onMounted(() => {
 
       <Field v-else-if="store.inputSource === 'string'" class="min-h-0 flex-1 p-6">
         <FieldLabel for="rawText">Raw text</FieldLabel>
-        <Textarea id="rawText" class="min-h-0 flex-1" />
+        <Textarea id="rawText" v-model="stringSource" class="min-h-0 flex-1" />
         <FieldDescription
           >Paste any of the supported text based sources into the text
           field</FieldDescription
