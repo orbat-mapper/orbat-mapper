@@ -36,6 +36,7 @@ form.value.layerIds = [];
 form.value.emptySideIds ??= [];
 form.value.snapshotGroupIds ??= [];
 form.value.includeSnapshotStatus ??= true;
+form.value.timedSnapshotPositions ??= true;
 // Events often describe plans and outcomes for every side, so they are opt-in.
 form.value.includeEvents ??= false;
 form.value.excludeFutureEvents ??= true;
@@ -121,6 +122,7 @@ interface ExportPreset {
   layerIds: NonNullable<OrbatMapperExportSettings["layerIds"]>;
   snapshotGroupIds?: string[];
   includeSnapshotStatus?: boolean;
+  timedSnapshotPositions?: boolean;
   includeEvents?: boolean;
   excludeFutureEvents?: boolean;
   scenarioName?: string;
@@ -150,6 +152,7 @@ function savePreset(replace = false) {
     layerIds: [...(form.value.layerIds ?? [])],
     snapshotGroupIds: [...(form.value.snapshotGroupIds ?? [])],
     includeSnapshotStatus: form.value.includeSnapshotStatus,
+    timedSnapshotPositions: form.value.timedSnapshotPositions,
     includeEvents: form.value.includeEvents,
     excludeFutureEvents: form.value.excludeFutureEvents,
     scenarioName: form.value.scenarioName,
@@ -176,6 +179,7 @@ function loadPreset() {
     layerIds: layers,
     snapshotGroupIds: (preset.snapshotGroupIds ?? []).filter((id) => groups.includes(id)),
     includeSnapshotStatus: preset.includeSnapshotStatus ?? true,
+    timedSnapshotPositions: preset.timedSnapshotPositions ?? true,
     includeEvents: preset.includeEvents ?? false,
     excludeFutureEvents: preset.excludeFutureEvents ?? true,
     scenarioName: preset.scenarioName,
@@ -357,6 +361,13 @@ function toggleSide(sideId: string) {
         label="Include unit status"
         description="Leave this off when the recipient should not know the result of an attack."
         v-model="form.includeSnapshotStatus"
+      />
+      <InputCheckbox
+        v-if="form.snapshotGroupIds?.length"
+        class="mt-3"
+        label="Show units only from the snapshot time"
+        description="The recipient sees no position before the snapshot time and the unit's history shows when it was observed. Turn this off to show the units at every time."
+        v-model="form.timedSnapshotPositions"
       />
       <div class="mt-2 flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" @click="changeSnapshotTime"

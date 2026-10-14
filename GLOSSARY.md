@@ -215,9 +215,12 @@ function, so the preview shows exactly what the file holds.
 A side group in a recipient export that holds only its units as drawn at the
 **snapshot time**: name, short name, symbol, position and, unless left out, status.
 Units hidden on the map, by
-themselves or by their side or group, are left out. No state history or plans,
-descriptions, resources, range rings or chain of command; subordinates are listed
-flat. A side seen only through snapshot groups also loses its description and the
+themselves or by their side or group, are left out. By default the position and
+status are one state entry at the snapshot time, so the recipient does not see the
+unit before it and keeps it at that position after it; the export can instead write
+them as the unit's base location and status, shown at every time. No earlier
+positions or plans, descriptions, resources, range rings or chain of command;
+subordinates are listed flat. A side seen only through snapshot groups also loses its description and the
 units attached directly to it. Used to show a side the opposing units it has
 detected. The file marks the group with its snapshot time, and an import refuses
 any side or group that holds one, because its units keep their real IDs but none

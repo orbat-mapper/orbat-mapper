@@ -4,6 +4,7 @@ import type { EntityId } from "@/types/base";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
 import type { NUnit } from "@/types/internalModels";
 import { isUnitHiddenInState } from "@/scenariostore/unitManipulations";
+import { nanoid } from "@/utils";
 
 /** A unit as it is drawn at the current scenario time. */
 export type SnapshotUnit = Pick<
@@ -79,13 +80,14 @@ export function snapshotSourceAt(
   }
 }
 
-// A snapshot group shows where its units are now and, unless left out, their status.
-// Nothing else: no history or plans, descriptions, resources, range rings or chain of
-// command.
+// A snapshot group shows where its units are at the snapshot time and, unless left out,
+// their status. Nothing else: no earlier positions or plans, descriptions, resources,
+// range rings or chain of command. A timed snapshot ties the position and status to the
+// snapshot time with one state entry, so the unit is not drawn before it.
 function snapshotGroup(
   group: SideGroup,
   source: SnapshotSource,
-  includeStatus: boolean,
+  { includeStatus, timed }: { includeStatus: boolean; timed: boolean },
 ): SideGroup {
   return {
     id: group.id,
@@ -94,11 +96,15 @@ function snapshotGroup(
     snapshotTime: new Date(source.timestamp).toISOString(),
     subUnits: (source.unitsByGroup[group.id] ?? [])
       .filter((unit) => unit.location)
-      .map(({ location, status, ...unit }) => ({
-        ...unit,
-        ...(includeStatus && status ? { status } : {}),
-        location: location!,
-      })),
+      .map(({ location, status, ...unit }) => {
+        const observed = {
+          ...(includeStatus && status ? { status } : {}),
+          location: location!,
+        };
+        return timed
+          ? { ...unit, state: [{ id: nanoid(), t: source.timestamp, ...observed }] }
+          : { ...unit, ...observed };
+      }),
   };
 }
 
@@ -130,6 +136,7 @@ export function buildRecipientScenario(
     | "scenarioName"
     | "snapshotGroupIds"
     | "includeSnapshotStatus"
+    | "timedSnapshotPositions"
     | "includeEvents"
     | "excludeFutureEvents"
   >,
@@ -152,11 +159,10 @@ export function buildRecipientScenario(
           .filter((group) => settings.sideGroups.includes(group.id))
           .map((group) =>
             isSnapshot(group)
-              ? snapshotGroup(
-                  group,
-                  snapshotSource,
-                  settings.includeSnapshotStatus !== false,
-                )
+              ? snapshotGroup(group, snapshotSource, {
+                  includeStatus: settings.includeSnapshotStatus !== false,
+                  timed: settings.timedSnapshotPositions !== false,
+                })
               : group,
           );
         const onlySnapshots = groups.length > 0 && groups.every(isSnapshot);

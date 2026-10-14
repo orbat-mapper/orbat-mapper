@@ -47,6 +47,12 @@ the snapshot time, such as **Damaged** or **Destroyed**, in the unit details. A 
 a status, or with its status cleared to **None**, has none in the file. Turn the option
 off when the recipient should not know the result of an attack.
 
+**Show units only from the snapshot time** is also on by default. Each unit's position
+and status are then written as one entry at the snapshot time in the unit's history,
+so the recipient does not see the unit before that time and can tell when it was
+observed. After the snapshot time the unit stays at its last known position. Turn the
+option off to show the units at their snapshot positions at every time.
+
 Snapshot groups cannot be imported into an existing scenario, so they never replace
 its units.
 
@@ -54,7 +60,7 @@ its units.
 
 Select the groups and layers for a recipient, expand **Export presets**, and enter a **Preset name** (for example,
 “Blue contacts update”), and click **Save as new preset**. A preset remembers the
-selected groups, empty sides and layers, snapshot choices, scenario name, and filename.
+selected groups, empty sides and layers, snapshot choices and options, scenario name, and filename.
 
 Choose a **Saved preset** to restore its settings. After making changes, click
 **Update preset** to save them, or **Save as new preset** to keep another variation.
