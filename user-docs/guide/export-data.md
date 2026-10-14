@@ -43,7 +43,7 @@ Snapshots are taken at the current scenario time. Click **Change snapshot time**
 take them at another time, and **Use current time** to go back.
 
 **Include unit status** is on by default, so the recipient sees each unit's status at
-the snapshot time, such as **Damaged** or **Destroyed**, with its colour. A unit without
+the snapshot time, such as **Damaged** or **Destroyed**, in the unit details. A unit without
 a status, or with its status cleared to **None**, has none in the file. Turn the option
 off when the recipient should not know the result of an attack.
 

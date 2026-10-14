@@ -8,7 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Added an experimental Viewshed to Labs: click the map to place observers and see the ground they can see over the terrain, the dead ground none of them sees, or how high a target must rise to be seen. Observers can be dragged, and their coverage combined. It reads the same elevation data as 3D terrain, and nothing is saved with the scenario.
 - Added a Snapshot option for side groups in partial ORBAT Mapper exports. A snapshot group holds only the positions, names and symbols of its visible units at a chosen time, so a side can be shown the opposing units it has detected without their history or plans. Importing a file refuses its snapshot groups, so they cannot wipe the scenario's units.
-- Snapshot groups now give each unit its status at the snapshot time, such as Damaged or Destroyed, so the recipient sees it on the map and in the unit details. Untick "Include unit status" when the recipient should not know the result of an attack.
+- Snapshot groups now include each unit's status at the snapshot time, such as Damaged. Untick "Include unit status" to leave it out.
+- The Side and Group import now lists the layers in the file and imports the ticked ones with the units, as one undo step.
 - Partial ORBAT Mapper exports leave out scenario events unless "Include scenario events" is ticked, and then leave out events after the snapshot time by default.
 - Added a Unit changes panel to the scenario timeline, opened from a timeline bin or the Changes button (`h`). It lists the unit and map item changes around the current time, or shows them on lanes where they can be dragged to a new time, snapping to nearby changes, scenario events and the current time.
 - Added new control measures: Bomb Area, Smoke, Series or Group of Targets, Lane, Ferry, Raft Site, Ford Easy, Ford Difficult, Unexploded Explosive Ordnance (UXO) Area, and the Interdict mission task.
@@ -32,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- A scenario file with snapshot groups now opens at the latest snapshot time, so the recipient's own units and the snapshots show the same moment.
 - When importing layers from an ORBAT Mapper scenario, a layer with the same ID now defaults to Replace existing layer, so a returned file updates the layer instead of duplicating it.
 - Zooming or panning to a unit, item, layer or location now centers it in the part of the map not covered by toolbars or panels, with a margin around it.
 - The draw toolbar now shows up to five pinned control measures as buttons, with an All… button for the rest. Edit, Move, Duplicate and Delete appear only while map items are selected, and Record feature geometry has moved to Options.
@@ -65,6 +67,10 @@ All notable changes to this project will be documented in this file.
 - Fixed removing an equipment, personnel or supply item also deleting the unit's "Remove from map", "None" status and title-only entries.
 - Fixed a unit status set to None being lost when the scenario was saved or exported.
 - Fixed "Add new states" bringing back a unit removed from the map. A team's later planned moves for it are now left out and listed in the import preview.
+- Fixed "Replace state history" bringing back a unit removed from the map. Its later planned moves are left out and listed in the import preview.
+- Fixed "Paste text" in the import dialog never enabling Load.
+- Fixed one click in the ORBAT counting twice, which added two units while placing with the lock on and made Ctrl/Cmd+click do nothing.
+- Fixed units with an untimed base location being drawn near their first destination before their first timed move.
 - Fixed importing a side or group being refused when one of its units had a timed attachment to a unit outside it, such as a unit on another side.
 - Fixed HTML in unit names, map attributions and KML feature details running script.
 - Fixed changing a unit's symbol not updating the map, ORBAT or details panel for units with no recorded state changes.
