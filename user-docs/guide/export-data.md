@@ -33,7 +33,7 @@ Names loaded from a preset are preserved. You can add a turn label manually, suc
 
 Tick **Snapshot** under a selected group to export it as a snapshot. A snapshot holds
 where the group's visible units are at the snapshot time and nothing else: each unit's
-name, short name, symbol, position and status. It leaves out their earlier and planned
+name, short name, symbol, position and, unless you leave it out, status. It leaves out their earlier and planned
 moves, descriptions, equipment, personnel, supplies, range rings and chain of command,
 so use it to show a side the opposing units it has detected. Units hidden on the map
 or not on the map at that time are left out. A side exported only as snapshots also

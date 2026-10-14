@@ -79,9 +79,9 @@ export function snapshotSourceAt(
   }
 }
 
-// A snapshot group shows where its units are now, and their status unless left out,
-// and nothing else: no history or plans, descriptions, resources, range rings or chain
-// of command.
+// A snapshot group shows where its units are now and, unless left out, their status.
+// Nothing else: no history or plans, descriptions, resources, range rings or chain of
+// command.
 function snapshotGroup(
   group: SideGroup,
   source: SnapshotSource,
