@@ -45,7 +45,6 @@ interface Props {
 
 interface Emits {
   (e: "unit-action", unit: NUnit, action: UnitAction): void;
-  (e: "unit-click", unit: NUnit, event: MouseEvent): void;
 }
 
 const props = defineProps<Props>();
@@ -260,10 +259,6 @@ const onUnitMenuAction = (unit: NUnit, action: UnitAction) => {
   emit("unit-action", unit, action);
 };
 
-const onUnitClick = (unit: NUnit, event: MouseEvent) => {
-  emit("unit-click", unit, event);
-};
-
 const toggleOpen = () => {
   if (!props.hasChildren) return;
   props.onToggle?.();
@@ -275,7 +270,6 @@ const toggleOpen = () => {
     ref="itemRef"
     class="text-foreground group relative flex items-center justify-between border-l-2 py-1 pl-2 sm:pl-0"
     @dblclick="toggleOpen"
-    @click="onUnitClick(unit, $event)"
     :class="[
       isActiveUnit
         ? 'border-primary bg-primary/10 hover:bg-primary/20'
