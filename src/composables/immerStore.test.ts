@@ -25,6 +25,31 @@ describe("useImmerStore groupUpdate", () => {
     expect(store.state.items).toEqual(["first", "second"]);
     expect(store.revision.value).toBe(2);
   });
+
+  it("reverts the applied steps and leaves no undo or redo entry when a step throws", () => {
+    const store = useImmerStore<{ items: string[] }, string>({ items: [] });
+    store.update((draft) => {
+      draft.items.push("kept");
+    });
+
+    expect(() =>
+      store.groupUpdate(() => {
+        store.update((draft) => {
+          draft.items.push("first");
+        });
+        store.update((draft) => {
+          draft.items.push("second");
+        });
+        throw new Error("step failed");
+      }),
+    ).toThrow("step failed");
+
+    expect(store.state.items).toEqual(["kept"]);
+    expect(store.revision.value).toBe(1);
+    expect(store.canRedo.value).toBe(false);
+    expect(store.undo()).toBe(true);
+    expect(store.canUndo.value).toBe(false);
+  });
 });
 
 describe("useImmerStore update", () => {

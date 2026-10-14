@@ -1,4 +1,4 @@
-import { isEqual } from "es-toolkit";
+import { isEqual, omit } from "es-toolkit";
 import { nanoid } from "@/utils";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ScenarioState } from "@/scenariostore/newScenarioStore";
@@ -86,14 +86,16 @@ export function importScenarioOverlayLayers(
       occupiedLayerIds.delete(sourceLayer.id);
     }
     const layerId = availableId(sourceLayer.id, occupiedLayerIds, generateId);
-    const { items, locked, ...layerFields } = withoutInternalFields(sourceLayer);
+    const { items, ...layerFields } = withoutInternalFields(sourceLayer);
+    const { locked } = layerFields;
     const addedLayer = geo.addLayer({
       ...layerFields,
       id: layerId,
       kind: "overlay",
       items: [],
-      // A locked source layer must be writable while its items are restored.
-      locked: false,
+      // A locked source layer must be writable while its items are restored. Other
+      // layers keep their `locked` field as is, so a re-import compares equal.
+      ...(locked ? { locked: false } : {}),
     });
     if (!addedLayer) continue;
     if (previousIndex >= 0) geo.moveLayer(layerId, previousIndex);
@@ -127,6 +129,17 @@ export function importScenarioOverlayLayers(
   return result;
 }
 
+/**
+ * An item's authored fields for comparison. State entry ids are left out: loading a
+ * file without them generates random ids, which would make every timed item differ.
+ */
+function authoredItemFields(item: ScenarioState["layerItemMap"][FeatureId]) {
+  const fields = withoutInternalFields(item);
+  return fields.state
+    ? { ...fields, state: fields.state.map((entry) => omit(entry, ["id"])) }
+    : fields;
+}
+
 /** Read-only replacement preview; authored fields include geometry, styling and history. */
 export function previewScenarioOverlayReplacement(
   source: ScenarioState,
@@ -145,13 +158,95 @@ export function previewScenarioOverlayReplacement(
     if (!oldIds.has(id)) added.push(id);
     else if (
       isEqual(
-        withoutInternalFields(source.layerItemMap[id]),
-        withoutInternalFields(target.layerItemMap[id]),
+        authoredItemFields(source.layerItemMap[id]),
+        authoredItemFields(target.layerItemMap[id]),
       )
     )
       unchanged.push(id);
     else changed.push(id);
   }
   const removed = existing.items.filter((id) => !newIds.has(id));
-  return { layerId, name: existing.name, added, removed, changed, unchanged };
+  const layerFields = (layer: typeof incoming) =>
+    omit(withoutInternalFields(layer), ["items"]);
+  const propertiesChanged = !isEqual(layerFields(incoming), layerFields(existing));
+  return {
+    layerId,
+    name: existing.name,
+    added,
+    removed,
+    changed,
+    unchanged,
+    propertiesChanged,
+  };
+}
+
+export type OverlayReplacementPreview = NonNullable<
+  ReturnType<typeof previewScenarioOverlayReplacement>
+>;
+
+export type LayerImportAction = "copy" | "replace";
+
+/** The choices for a file layer whose ID matches a layer in the scenario. */
+export const layerImportActionItems: { value: LayerImportAction; label: string }[] = [
+  { value: "copy", label: "Import as a separate copy" },
+  { value: "replace", label: "Replace existing layer" },
+];
+
+export interface FileLayerOption {
+  layerId: string;
+  name: string;
+  itemCount: number;
+  /** `new` has no same-id overlay layer in the target; the others are matched by ID. */
+  status: "new" | "changed" | "unchanged";
+  preview?: OverlayReplacementPreview;
+}
+
+function hasReplacementChanges(preview: OverlayReplacementPreview) {
+  return (
+    preview.added.length > 0 ||
+    preview.changed.length > 0 ||
+    preview.removed.length > 0 ||
+    preview.propertiesChanged
+  );
+}
+
+/** One summary line for a selected file layer, e.g. "Blue graphics: 3 added, 1 changed". */
+export function describeFileLayerImport(
+  layer: FileLayerOption,
+  action: LayerImportAction,
+): string {
+  const { preview } = layer;
+  if (action === "copy" || !preview)
+    return `${layer.name}: ${layer.itemCount} added as a new layer`;
+  const counts = `${preview.added.length} added, ${preview.changed.length} changed, ${preview.removed.length} removed`;
+  return `${layer.name}: ${counts}${preview.propertiesChanged ? ", layer properties changed" : ""}`;
+}
+
+/**
+ * Describe a file's overlay layers against the target and pick the default selection.
+ *
+ * Only a single changed matched layer is pre-selected. A file saved from the whole
+ * scenario carries copies of every layer, so several changed layers suggest stale
+ * copies of other players' layers rather than intended updates.
+ */
+export function planFileLayers(source: ScenarioState, target: ScenarioState) {
+  const layers: FileLayerOption[] = [];
+  for (const id of source.layerStack) {
+    const layer = source.layerStackMap[id];
+    if (layer?.kind !== "overlay") continue;
+    const preview = previewScenarioOverlayReplacement(source, target, layer.id);
+    layers.push({
+      layerId: layer.id,
+      name: layer.name,
+      itemCount: layer.items.length,
+      status: !preview ? "new" : hasReplacementChanges(preview) ? "changed" : "unchanged",
+      preview,
+    });
+  }
+  const changedMatched = layers.filter((l) => l.status === "changed");
+  return {
+    layers,
+    changedMatchedCount: changedMatched.length,
+    defaultSelectedIds: changedMatched.length === 1 ? [changedMatched[0].layerId] : [],
+  };
 }
