@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clearCache,
   guessImportFormat,
+  guessTextImportFormat,
   imageCache,
   releaseImageCache,
   retainImageCache,
@@ -113,6 +114,40 @@ describe("guessImportFormat", () => {
     const result = await guessImportFormat(file);
 
     expect(result.format).toBe("unknown");
+  });
+});
+
+describe("guessTextImportFormat", () => {
+  it("detects a pasted ORBAT Mapper scenario", () => {
+    const text = JSON.stringify({ type: "ORBAT-mapper", version: "2.7.0", sides: [] });
+
+    expect(guessTextImportFormat(text).format).toBe("orbatmapper");
+  });
+
+  it("detects pasted tab-indented MilX by its root element", () => {
+    const text =
+      '<?xml version="1.0" encoding="UTF-8"?>\n<MilXDocument_Layer>\n\t<MilXLayer>\t<Name>A</Name>\t</MilXLayer>\n</MilXDocument_Layer>';
+
+    expect(guessTextImportFormat(text).format).toBe("milx");
+  });
+
+  it("detects pasted KML by its root element", () => {
+    const text =
+      '<kml xmlns="http://www.opengis.net/kml/2.2">\n<Placemark><Point><coordinates>10,20,0</coordinates></Point></Placemark>\n</kml>';
+
+    expect(guessTextImportFormat(text).format).toBe("kml");
+  });
+
+  it("detects pasted GPX by its root element", () => {
+    const text = '<gpx version="1.1"><wpt lat="59.91" lon="10.75" /></gpx>';
+
+    expect(guessTextImportFormat(text).format).toBe("gpx");
+  });
+
+  it("does not read other pasted XML as delimited text", () => {
+    const text = "<root>\n\t<a>1,2</a>\n\t<b>3,4</b>\n</root>";
+
+    expect(guessTextImportFormat(text).format).toBe("unknown");
   });
 });
 
