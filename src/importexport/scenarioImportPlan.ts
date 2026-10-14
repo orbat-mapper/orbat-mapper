@@ -91,6 +91,26 @@ function withoutMoves(states: State[]): State[] {
     .map((s) => omit(s, ["location", "via", "viaStartTime", "interpolate"]))
     .filter((s) => Object.keys(s).some((key) => key !== "id" && key !== "t"));
 }
+/** Replacing the history of a unit removed from the map keeps the removal, also when the
+ * file was saved before it. Incoming entries before the removal are taken as is, and
+ * later ones lose their moves. */
+function keepRemoval(existing: State[], incoming: State[]) {
+  const removal = existing.filter((s) => s.location !== undefined).at(-1)!;
+  const time = +new Date(removal.t);
+  const matches = (s: State) =>
+    s.id === removal.id || (+new Date(s.t) === time && s.location === null);
+  const kept = incoming.find(matches);
+  const rest = incoming.filter((s) => s !== kept);
+  const before = rest.filter((s) => +new Date(s.t) < time);
+  const later = rest.filter((s) => +new Date(s.t) >= time);
+  const moves = [kept, ...later].filter((s) => s?.location || s?.via).length;
+  const entry = {
+    ...omit(kept ?? removal, ["via", "viaStartTime", "interpolate"]),
+    t: removal.t,
+    location: null,
+  };
+  return { state: klona([...before, entry, ...withoutMoves(later)]), moves };
+}
 function within(entries: Map<string, Entry>, id: string, scope: string): boolean {
   const seen = new Set<string>();
   let current: string | undefined = id;
@@ -208,6 +228,13 @@ export function planScenarioImport(
             `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
           );
         output.state = [...klona(existing?.state ?? []), ...appended];
+      } else if (isOffMap(existing?.state)) {
+        const { state, moves } = keepRemoval(existing!.state!, unit.state ?? []);
+        if (moves)
+          ignored.push(
+            `${unit.name}: removed from the map, so ${moves} planned moves were left out.`,
+          );
+        output.state = state;
       } else output.state = klona(unit.state ?? []);
       if (options.action === "copy")
         output.state?.forEach((s) => {

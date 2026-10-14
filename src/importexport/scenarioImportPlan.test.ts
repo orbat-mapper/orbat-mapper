@@ -351,6 +351,68 @@ describe("scenario contribution import plan", () => {
       "reserve: removed from the map, so 2 planned moves were left out.",
     );
   });
+  it("replace keeps a unit removed from the map off it", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "gone", t: 20, location: null },
+    ];
+    const incoming = contribution([
+      unit("reserve", {
+        state: [
+          { id: "s1", t: 10, location: [0, 0] },
+          { id: "gone", t: 20, location: null },
+          { id: "plan1", t: 30, location: [1, 0], status: "Damaged" },
+          { id: "plan2", t: 40, location: [2, 0], via: [[1.5, 1]], viaStartTime: 35 },
+        ],
+      }),
+    ]);
+    const plan = planScenarioImport(master, incoming, opts);
+    expect(own(plan.scenario)[0].state).toEqual([
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "gone", t: 20, location: null },
+      { id: "plan1", t: 30, status: "Damaged" },
+    ]);
+    expect(plan.ignored).toEqual([
+      "reserve: removed from the map, so 2 planned moves were left out.",
+    ]);
+  });
+  it("replace with a file saved before the removal does not undo it", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "s1", t: 10, location: [0, 0] },
+      { id: "gone", t: 20, location: null },
+    ];
+    const incoming = contribution([
+      unit("reserve", {
+        state: [
+          { id: "s1", t: 10, location: [5, 5] },
+          { id: "plan1", t: 30, location: [1, 0] },
+        ],
+      }),
+    ]);
+    const plan = planScenarioImport(master, incoming, { ...opts, content: "state-only" });
+    expect(own(plan.scenario)[0].state).toEqual([
+      { id: "s1", t: 10, location: [5, 5] },
+      { id: "gone", t: 20, location: null },
+    ]);
+    expect(plan.ignored).toEqual([
+      "reserve: removed from the map, so 1 planned moves were left out.",
+    ]);
+  });
+  it("replace takes the incoming history of a unit still on the map", () => {
+    const master = scenario();
+    own(master)[0].state = [
+      { id: "gone", t: 20, location: null },
+      { id: "back", t: 30, location: [1, 1] },
+    ];
+    const state = [{ id: "plan1", t: 40, location: [2, 0] as [number, number] }];
+    const plan = planScenarioImport(master, contribution([unit("reserve", { state })]), {
+      ...opts,
+    });
+    expect(own(plan.scenario)[0].state).toEqual(state);
+    expect(plan.ignored).toEqual([]);
+  });
   it("state-only replacement never deletes omitted units; units-only retains history", () => {
     const master = scenario();
     own(master)[0].state = [{ id: "old", t: 20 }];
