@@ -77,7 +77,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
       if (!parent) return { name: uunit.name, itemCount: 0, getItems: () => [] };
       return {
         name: uunit.shortName || uunit.name,
-        sidc: uunit.sidc || "",
+        sidc: uunit._state?.sidc || uunit.sidc || "",
         location: Boolean(uunit._state?.location),
         id: uunit.id,
         symbolOptions: unitActions.getCombinedSymbolOptions(uunit),
@@ -85,6 +85,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
         getItems: () => [
           ...parent.subUnits.map(getUnitById).map((subUnit) => ({
             ...subUnit,
+            sidc: subUnit._state?.sidc || subUnit.sidc,
             symbolOptions: unitActions.getCombinedSymbolOptions(subUnit),
             location: Boolean(subUnit._state?.location),
           })),
@@ -96,9 +97,10 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
     });
 
     const getSideGroups = () => [
-      ...side.subUnits.map((unitId) => ({
-        ...getUnitById(unitId),
-        symbolOptions: unitActions.getCombinedSymbolOptions(getUnitById(unitId)),
+      ...side.subUnits.map(getUnitById).map((unit) => ({
+        ...unit,
+        sidc: unit._state?.sidc || unit.sidc,
+        symbolOptions: unitActions.getCombinedSymbolOptions(unit),
       })),
       ...side.groups.map((group) => getSideGroupById(group)),
     ];
@@ -132,6 +134,7 @@ const breadcrumbItems = computed((): BreadcrumbItemType[] => {
             const unit = getUnitById(unitId);
             return {
               ...getUnitById(unit.id),
+              sidc: unit._state?.sidc || unit.sidc,
               symbolOptions: unitActions.getCombinedSymbolOptions(unit as any),
               location: Boolean(unit._state?.location),
             };

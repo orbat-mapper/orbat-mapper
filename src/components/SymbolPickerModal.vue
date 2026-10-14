@@ -63,6 +63,7 @@ const LegacyConverter = defineAsyncComponent(
 interface Props {
   initialSidc?: string;
   dialogTitle?: string;
+  description?: string;
   hideModifiers?: boolean;
   hideSymbolColor?: boolean;
   hideCustomSymbols?: boolean;
@@ -284,6 +285,7 @@ watch(currentTab, async (v) => {
   <NewSimpleModal
     v-model="open"
     :dialog-title="dialogTitle"
+    :description="description"
     @cancel="emit('cancel')"
     class="md:max-w-(--breakpoint-md) lg:max-w-(--breakpoint-lg)"
   >

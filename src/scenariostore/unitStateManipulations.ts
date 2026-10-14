@@ -65,6 +65,19 @@ function isNotEmptyState(state: NState) {
   );
 }
 
+/**
+ * Index of the latest state entry at or before `timestamp` that changes the unit's
+ * symbol. Its symbol is shown instead of the base symbol from that time on.
+ */
+export function findActiveSymbolChange(unit: NUnit, timestamp: number) {
+  let active: number | undefined;
+  for (const [index, s] of (unit.state ?? []).entries()) {
+    if (s.t > timestamp) break;
+    if (s.sidc) active = index;
+  }
+  return active;
+}
+
 export function useUnitStateManipulations(store: NewScenarioStore) {
   const { state, update } = store;
 
@@ -214,6 +227,21 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
       _unit.state?.splice(index, 1);
       s.unitStateCounter++;
       refreshHierarchyTimelineMetadata(s);
+    });
+
+    updateUnitState(unitId);
+  }
+
+  // Drops the symbol change from an entry, and the entry itself when nothing else is left.
+  function removeUnitStateSymbolChange(unitId: EntityId, index: number) {
+    update((s) => {
+      const entry = s.unitMap[unitId]?.state?.[index];
+      if (!entry) return;
+      delete entry.sidc;
+      delete entry.symbolOptions;
+      delete entry.reinforcedStatus;
+      if (!isNotEmptyState(entry)) s.unitMap[unitId].state!.splice(index, 1);
+      s.unitStateCounter++;
     });
 
     updateUnitState(unitId);
@@ -393,6 +421,7 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     addUnitStateEntry,
     removeUnitFromMap,
     deleteUnitStateEntry,
+    removeUnitStateSymbolChange,
     updateUnitStateEntry,
     setUnitState,
     updateUnitStateVia,

@@ -47,6 +47,7 @@ export function useDateModal() {
 
 export interface ModalSidcOptions {
   title: string;
+  description: string;
   hideModifiers: boolean;
   hideSymbolColor: boolean;
   hideCustomSymbols: boolean;
@@ -66,6 +67,7 @@ export function useSidcModal() {
   const { isRevealed, reveal, confirm, cancel } = useConfirmDialog<string>();
   const initialSidcModalValue = ref("10031000001211000000");
   const sidcModalTitle = ref("Select symbol");
+  const sidcModalDescription = ref<string>();
   const hideModifiers = ref(false);
   const hideSymbolColor = ref(false);
   const hideCustomSymbols = ref(false);
@@ -81,6 +83,7 @@ export function useSidcModal() {
     NProgress.start();
     initialSidcModalValue.value = initialValue;
     sidcModalTitle.value = options.title || "Symbol picker";
+    sidcModalDescription.value = options.description;
     hideModifiers.value = options.hideModifiers || false;
     hideSymbolColor.value = options.hideSymbolColor || false;
     inheritedSymbolOptions.value = options.inheritedSymbolOptions || {};
@@ -107,6 +110,7 @@ export function useSidcModal() {
     cancelSidcModal: cancel,
     initialSidcModalValue,
     sidcModalTitle,
+    sidcModalDescription,
     hideModifiers,
     hideSymbolColor,
     symbolOptions,
