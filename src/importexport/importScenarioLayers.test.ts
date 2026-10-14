@@ -3,7 +3,9 @@ import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
 import { klona } from "klona";
 import {
+  describeFileLayerImport,
   importScenarioOverlayLayers,
+  planFileLayers,
   previewScenarioOverlayReplacement,
 } from "@/importexport/importScenarioLayers";
 import type { Scenario } from "@/types/scenarioModels";
@@ -166,8 +168,8 @@ describe("importScenarioOverlayLayers", () => {
   });
 });
 
-describe("overlay replacement", () => {
-  const feature = (id: string, x = 1) => ({
+function feature(id: string, x = 1) {
+  return {
     id,
     kind: "geometry" as const,
     type: "Feature" as const,
@@ -175,11 +177,18 @@ describe("overlay replacement", () => {
     properties: {},
     geometryMeta: { geometryKind: "Point" as const },
     style: {},
-  });
+  };
+}
+
+function overlayLayer(id: string, items: ReturnType<typeof feature>[]) {
+  return { id, kind: "overlay" as const, name: id, items };
+}
+
+describe("overlay replacement", () => {
   const layer = (
     id: string,
     items = [feature("old"), feature("same"), feature("changed")],
-  ) => ({ id, kind: "overlay" as const, name: id, items });
+  ) => overlayLayer(id, items);
 
   it("previews without mutation and replaces properties, removals and geometry in place repeatedly", () => {
     const target = useNewScenarioStore(
@@ -296,5 +305,54 @@ describe("overlay replacement", () => {
       replaceLayerIds: ["other"],
     });
     expect(target.state.layerStack).toEqual(["rangeRings", "plan", "other"]);
+  });
+});
+
+describe("planFileLayers", () => {
+  const layer = (id: string, items = [feature(`${id}-a`)]) => overlayLayer(id, items);
+  const prepare = (layers: Scenario["layerStack"]) =>
+    useNewScenarioStore(scenario("s", klona(layers))).state;
+
+  it("pre-ticks one changed matched layer with Replace and leaves the rest unticked", () => {
+    const target = prepare([layer("changed"), layer("same")]);
+    const source = prepare([
+      layer("changed", [feature("changed-a", 5)]),
+      layer("same"),
+      layer("new"),
+    ]);
+    const plan = planFileLayers(source, target);
+    expect(plan.layers.map((l) => [l.layerId, l.status])).toEqual([
+      ["changed", "changed"],
+      ["same", "unchanged"],
+      ["new", "new"],
+    ]);
+    expect(plan.defaultSelectedIds).toEqual(["changed"]);
+    expect(plan.changedMatchedCount).toBe(1);
+  });
+
+  it("ticks nothing when several matched layers changed, counting property changes", () => {
+    const target = prepare([layer("items"), layer("renamed")]);
+    const source = prepare([
+      layer("items", []),
+      { ...layer("renamed"), name: "Renamed layer" },
+    ]);
+    const plan = planFileLayers(source, target);
+    expect(plan.layers.map((l) => l.status)).toEqual(["changed", "changed"]);
+    expect(plan.changedMatchedCount).toBe(2);
+    expect(plan.defaultSelectedIds).toEqual([]);
+  });
+
+  it("summarizes the item changes of a ticked layer", () => {
+    const target = prepare([layer("blue", [feature("kept"), feature("gone")])]);
+    const source = prepare([
+      { ...layer("blue", [feature("kept", 3), feature("x"), feature("y")]), name: "B" },
+      layer("new"),
+    ]);
+    const [blue, added] = planFileLayers(source, target).layers;
+    expect(describeFileLayerImport(blue, "replace")).toBe(
+      "B: 2 added, 1 changed, 1 removed, layer properties changed",
+    );
+    expect(describeFileLayerImport(blue, "copy")).toBe("B: 3 added as a new layer");
+    expect(describeFileLayerImport(added, "replace")).toBe("new: 1 added as a new layer");
   });
 });

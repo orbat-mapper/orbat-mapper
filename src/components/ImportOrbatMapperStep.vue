@@ -41,7 +41,9 @@ import type { FeatureId } from "@/types/scenarioGeoModels";
 import { renderMarkdown } from "@/composables/formatting";
 import {
   importScenarioOverlayLayers,
+  layerImportActionItems,
   previewScenarioOverlayReplacement,
+  type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
 
 interface Props {
@@ -77,7 +79,7 @@ const selectedStatuses = ref<UnitStatus[]>([]);
 const selectedSupplyCategories = ref<NSupplyCategory[]>([]);
 const selectedCustomSymbols = ref<CustomSymbol[]>([]);
 const selectedLayers = ref<ScenarioOverlayLayer[]>([]);
-const layerActions = ref<Record<string, "copy" | "replace">>({});
+const layerActions = ref<Record<string, LayerImportAction>>({});
 const matchingLayers = computed(() =>
   selectedLayers.value.filter(
     (layer) => targetState.layerStackMap[layer.id]?.kind === "overlay",
@@ -496,10 +498,7 @@ function doSupplyCategoryImport(selectedSupplyCategories: NSupplyCategory[]) {
           :key="layer.id"
           v-model="layerActions[layer.id]"
           :label="layer.name"
-          :items="[
-            { value: 'copy', label: 'Import as a separate copy' },
-            { value: 'replace', label: 'Replace existing layer' },
-          ]"
+          :items="layerImportActionItems"
           :description="layerActionDescription(layer)"
         />
       </FieldGroup>

@@ -82,29 +82,37 @@ export function useImmerStore<T extends object, M>(baseState: T) {
     notifyMutation();
   };
 
+  /** Apply several updates as one undo entry. If one throws, the group is reverted. */
   function groupUpdate(updates: () => void, meta?: MetaEntry<M>) {
     const preLength = past.length;
-    updates();
-    const diff = past.length - preLength;
-    if (diff <= 0) return;
-    const elems: UndoEntry<M>[] = [];
-    for (let i = 0; i < diff; i++) elems.push(past.pop()!);
-    elems.reverse();
-    const mergedPatches: Patch[] = [];
-    const mergedInversePatches: Patch[] = [];
-    elems.forEach(({ patches, inversePatches }) => {
-      mergedPatches.push(...patches);
-    });
-    for (let i = elems.length - 1; i >= 0; i--) {
-      mergedInversePatches.push(...elems[i].inversePatches);
+    try {
+      updates();
+    } catch (error) {
+      rollbackTo(preLength, meta);
+      throw error;
     }
+    const elems = past.splice(preLength);
+    if (!elems.length) return;
     past.push({
-      patches: mergedPatches,
-      inversePatches: mergedInversePatches,
+      patches: elems.flatMap((e) => e.patches),
+      // Inverse patches undo the newest step first.
+      inversePatches: [...elems].reverse().flatMap((e) => e.inversePatches),
       meta,
       beforeRevision: elems[0].beforeRevision,
       afterRevision: elems[elems.length - 1].afterRevision,
     });
+  }
+
+  /** Revert and discard the entries pushed after `length`, without making them redoable. */
+  function rollbackTo(length: number, meta?: MetaEntry<M>) {
+    const elems = past.splice(length);
+    if (!elems.length) return;
+    const inversePatches = elems.reverse().flatMap((e) => e.inversePatches);
+    applyPatchWrapper(state, inversePatches);
+    revision.value = elems[elems.length - 1].beforeRevision;
+    // Listeners resync derived views (such as the map) the same way they do on undo.
+    undoRedoHook.trigger({ patch: inversePatches, meta, action: "undo" });
+    notifyMutation();
   }
 
   const undo = () => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, h, ref, shallowRef, watch } from "vue";
+import { computed, h, ref, shallowRef, toRaw, watch } from "vue";
+import { klona } from "klona";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type {
@@ -31,6 +32,23 @@ import {
   summarizeImportPlan,
 } from "@/importexport/scenarioImportSummary";
 import { walkSubUnits } from "@/stores/scenarioStore";
+import { prepareScenario } from "@/scenariostore/newScenarioStore";
+import {
+  describeFileLayerImport,
+  importScenarioOverlayLayers,
+  layerImportActionItems,
+  planFileLayers,
+  type FileLayerOption,
+  type LayerImportAction,
+} from "@/importexport/importScenarioLayers";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const props = defineProps<{
   data: Scenario;
@@ -39,7 +57,7 @@ const props = defineProps<{
   actionsTarget?: HTMLElement | null;
 }>();
 const emit = defineEmits<{ applied: [] }>();
-const { store, io, time } = injectStrict(activeScenarioKey);
+const { store, io, time, geo } = injectStrict(activeScenarioKey);
 // Serializing the whole scenario is expensive, and doing it inside `plan` would make
 // the preview depend on every entity in the store. Refresh it only when the store does.
 const master = shallowRef<Scenario>(io.serializeToObject());
@@ -159,6 +177,48 @@ const summary = computed(() =>
     action: action.value,
     content: content.value,
   }),
+);
+const fileState = computed(() => prepareScenario(klona(props.data)));
+// Compare against the live store, so a repeated import sees its own earlier result.
+// The raw state keeps the deep comparison off Vue proxies; `revision` is the trigger.
+const layerPlan = computed(() => {
+  void store.revision.value;
+  return planFileLayers(fileState.value, toRaw(store.state));
+});
+const ticked = ref<Record<string, boolean>>({});
+const layerActions = ref<Record<string, LayerImportAction>>({});
+watch(
+  layerPlan,
+  (plan) => {
+    // Defaults are re-applied after an import or undo, so a repeat import starts clean.
+    ticked.value = Object.fromEntries(
+      plan.layers.map((l) => [l.layerId, plan.defaultSelectedIds.includes(l.layerId)]),
+    );
+    // Re-importing a returned layer is an update; copying is the explicit exception.
+    layerActions.value = Object.fromEntries(
+      plan.layers.filter((l) => l.preview).map((l) => [l.layerId, "replace"]),
+    );
+  },
+  { immediate: true },
+);
+const tickedLayers = computed(() =>
+  layerPlan.value.layers.filter((l) => ticked.value[l.layerId]),
+);
+const layerSummary = computed(() =>
+  tickedLayers.value.map((l) =>
+    describeFileLayerImport(l, layerActions.value[l.layerId] ?? "copy"),
+  ),
+);
+const layerNotes: Record<FileLayerOption["status"], string> = {
+  new: "Will be added as a new layer.",
+  unchanged: "No changes.",
+  changed: "Matched by layer ID. Changed in this file.",
+};
+const canImport = computed(
+  () =>
+    !!scopeId.value &&
+    !plan.value.errors.length &&
+    (plan.value.hasChanges || tickedLayers.value.length > 0),
 );
 const readableChanges = computed(() => {
   const names = new Map(plan.value.changes.map((c) => [c.id, c.name]));
@@ -328,10 +388,25 @@ function selectRows(rows: ImportRow[]) {
 }
 function apply() {
   const reviewed = plan.value;
-  if (reviewed.errors.length || !reviewed.hasChanges) return;
+  if (!canImport.value) return;
+  const layerIds = tickedLayers.value.map((l) => l.layerId);
+  const replaceLayerIds = tickedLayers.value
+    .filter((l) => l.preview && layerActions.value[l.layerId] === "replace")
+    .map((l) => l.layerId);
   failure.value = "";
   try {
-    applyScenarioImport(store, reviewed);
+    // One undo entry for units and layers, reverted as a whole if a step throws.
+    // The layer meta makes the map redraw on undo.
+    store.groupUpdate(
+      () => {
+        applyScenarioImport(store, reviewed);
+        if (layerIds.length)
+          importScenarioOverlayLayers(fileState.value, store.state, geo, layerIds, {
+            replaceLayerIds,
+          });
+      },
+      layerIds.length ? { label: "batchLayer", value: "scenario-import" } : undefined,
+    );
     time.setCurrentTime(store.state.currentTime);
     send({
       message: "Imported scenario data. Use Undo to revert the import in one step.",
@@ -419,6 +494,7 @@ function apply() {
       <div class="max-h-72 shrink-0 overflow-auto">
         <section aria-label="Import summary" aria-live="polite">
           <p>{{ summary.action }} {{ targetName }}: {{ summary.sentence }}</p>
+          <p v-for="line in layerSummary" :key="line">{{ line }}</p>
           <p v-if="summary.counts.preserved" class="text-muted-foreground">
             {{ summary.counts.preserved }}
             {{ summary.counts.preserved === 1 ? "unit is" : "units are" }} not included
@@ -431,6 +507,53 @@ function apply() {
           >
             Destination: {{ store.state.sideMap[targetSideId]?.name }}
           </p>
+        </section>
+        <section
+          v-if="layerPlan.layers.length"
+          aria-label="Layers in this file"
+          class="mt-2 flex flex-col gap-2"
+        >
+          <h4 class="font-medium">Layers in this file</h4>
+          <Alert v-if="layerPlan.changedMatchedCount > 1">
+            <AlertDescription
+              >This file changes {{ layerPlan.changedMatchedCount }} existing layers.
+              Check that they belong to this side before you import
+              them.</AlertDescription
+            >
+          </Alert>
+          <div
+            v-for="layer in layerPlan.layers"
+            :key="layer.layerId"
+            class="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-1"
+          >
+            <label class="flex min-w-0 flex-1 items-center gap-2">
+              <Checkbox
+                :id="`file-layer-${layer.layerId}`"
+                v-model="ticked[layer.layerId]"
+              />
+              <span class="truncate">{{ layer.name }}</span>
+              <span class="text-muted-foreground text-sm">{{
+                layerNotes[layer.status]
+              }}</span>
+            </label>
+            <!-- Only a ticked matched layer has a choice to make. -->
+            <Select
+              v-if="layer.preview && ticked[layer.layerId]"
+              v-model="layerActions[layer.layerId]"
+            >
+              <SelectTrigger size="sm" :aria-label="`Action for ${layer.name}`">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="option in layerImportActionItems"
+                  :key="option.value"
+                  :value="option.value"
+                  >{{ option.label }}</SelectItem
+                >
+              </SelectContent>
+            </Select>
+          </div>
         </section>
         <Alert
           v-if="action === 'replace' && content !== 'state-only'"
@@ -538,11 +661,7 @@ function apply() {
 
     <Teleport :to="actionsTarget ?? 'body'" :disabled="!actionsTarget">
       <div class="flex gap-2">
-        <Button
-          :disabled="!scopeId || plan.errors.length > 0 || !plan.hasChanges"
-          @click="apply"
-          >Import</Button
-        >
+        <Button :disabled="!canImport" @click="apply">Import</Button>
       </div>
     </Teleport>
   </div>

@@ -11,6 +11,9 @@ import { activeScenarioKey } from "./injects";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useScenarioIO } from "@/scenariostore/io";
 import { useScenarioTime } from "@/scenariostore/time";
+import { useGeo } from "@/scenariostore/geo";
+import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
+import type { Scenario } from "@/types/scenarioModels";
 import { loadControlMeasureScenarioFixture } from "@/testdata/controlMeasureScenario";
 import "@/dayjs";
 
@@ -25,7 +28,26 @@ vi.mock("@/stores/timeFormatStore", () => ({
     trackFormatter: { format: (t: number) => new Date(t).toISOString() },
   }),
 }));
-function setup(withOmittedUnit = false, withUnchangedUnit = false, withNewUnit = false) {
+/** A new item for a file layer, so the layer differs from the scenario's copy. */
+function addLayerItem(data: Scenario, layerId: string, itemId: string) {
+  const layer = data.layerStack.find((l) => l.id === layerId);
+  if (!layer || !isScenarioOverlayLayer(layer)) throw new Error("fixture changed");
+  layer.items.push({
+    id: itemId,
+    kind: "geometry",
+    type: "Feature",
+    geometry: { type: "Point", coordinates: [10, 60] },
+    properties: {},
+    geometryMeta: { geometryKind: "Point" },
+    style: {},
+  } as (typeof layer.items)[number]);
+}
+function setup(
+  withOmittedUnit = false,
+  withUnchangedUnit = false,
+  withNewUnit = false,
+  editFile?: (data: Scenario) => void,
+) {
   const data = loadControlMeasureScenarioFixture();
   data.sides = [
     {
@@ -62,12 +84,19 @@ function setup(withOmittedUnit = false, withUnchangedUnit = false, withNewUnit =
       name: "New unit",
       sidc: "10031000001211000000",
     });
+  editFile?.(data);
   const io = useScenarioIO(shallowRef(store));
+  const geo = useGeo(store);
   const wrapper = mount(ScenarioImportContribution, {
     props: { data, mode: "group" },
     global: {
       provide: {
-        [activeScenarioKey as symbol]: { store, io, time: useScenarioTime(store) },
+        [activeScenarioKey as symbol]: {
+          store,
+          io,
+          geo,
+          time: useScenarioTime(store),
+        },
       },
     },
   });
@@ -78,7 +107,7 @@ function setup(withOmittedUnit = false, withUnchangedUnit = false, withNewUnit =
       .vm.$emit("update:modelValue", value);
     await flushPromises();
   };
-  return { wrapper, store, select, io };
+  return { wrapper, store, select, io, geo };
 }
 describe("scenario import controls", () => {
   it("selects the first group and previews without modifying the scenario", async () => {
@@ -370,5 +399,106 @@ describe("scenario import controls", () => {
     expect(store.state.sideGroupMap).toEqual(original.sideGroupMap);
     expect(store.state.layerStackMap).toEqual(original.layerStackMap);
     expect(store.state.currentTime).toBe(original.currentTime);
+  });
+});
+
+describe("layers in the file", () => {
+  const section = (wrapper: ReturnType<typeof setup>["wrapper"]) =>
+    wrapper.find('[aria-label="Layers in this file"]');
+  const checked = (wrapper: ReturnType<typeof setup>["wrapper"], layerId: string) =>
+    wrapper.get(`#file-layer-${layerId}`).attributes("data-state") === "checked";
+
+  it("pre-ticks the one changed layer and adds it to the summary", async () => {
+    const { wrapper } = setup(false, false, false, (data) => {
+      addLayerItem(data, "layer-mixed", "new-point");
+      data.layerStack.push({ id: "layer-new", kind: "overlay", name: "New", items: [] });
+    });
+    await flushPromises();
+    expect(section(wrapper).exists()).toBe(true);
+    expect(checked(wrapper, "layer-mixed")).toBe(true);
+    expect(checked(wrapper, "layer-control-measures")).toBe(false);
+    expect(checked(wrapper, "layer-new")).toBe(false);
+    expect(section(wrapper).text()).toContain("No changes");
+    expect(section(wrapper).text()).toContain("Will be added as a new layer.");
+    expect(wrapper.get('[aria-label="Import summary"]').text()).toContain(
+      "Mixed: 1 added, 0 changed, 0 removed",
+    );
+  });
+
+  it("shows no section for a file without layers", async () => {
+    const { wrapper } = setup(false, false, false, (data) => (data.layerStack = []));
+    await flushPromises();
+    expect(section(wrapper).exists()).toBe(false);
+  });
+
+  it("ticks nothing and warns when several existing layers changed", async () => {
+    const { wrapper } = setup(false, false, false, (data) => {
+      addLayerItem(data, "layer-mixed", "new-point");
+      addLayerItem(data, "layer-control-measures", "other-point");
+    });
+    await flushPromises();
+    expect(checked(wrapper, "layer-mixed")).toBe(false);
+    expect(checked(wrapper, "layer-control-measures")).toBe(false);
+    expect(section(wrapper).text()).toContain(
+      "This file changes 2 existing layers. Check that they belong to this side before you import them.",
+    );
+    expect(wrapper.get('[aria-label="Import summary"]').text()).not.toContain("Mixed:");
+  });
+
+  const importButton = (wrapper: ReturnType<typeof setup>["wrapper"]) =>
+    wrapper.findAll("button").find((b) => b.text() === "Import")!;
+  const mixedItems = (store: ReturnType<typeof setup>["store"]) =>
+    (store.state.layerStackMap["layer-mixed"] as { items: string[] }).items;
+
+  it("applies units and ticked layers together and reverts both with one undo", async () => {
+    const { wrapper, store } = setup(false, false, false, (data) =>
+      addLayerItem(data, "layer-mixed", "new-point"),
+    );
+    const original = klona(store.state);
+    await flushPromises();
+    await importButton(wrapper).trigger("click");
+    await flushPromises();
+    expect(store.state.unitMap.reserve.location).toEqual([10, 20]);
+    expect(mixedItems(store)).toContain("new-point");
+    expect(store.undo()).toBe(true);
+    expect(store.canUndo.value).toBe(false);
+    expect(store.state.unitMap).toEqual(original.unitMap);
+    expect(store.state.layerStack).toEqual(original.layerStack);
+    expect(store.state.layerStackMap).toEqual(original.layerStackMap);
+    expect(store.state.layerItemMap).toEqual(original.layerItemMap);
+  });
+
+  it("does not duplicate map items when the same file is imported again", async () => {
+    const { wrapper, store } = setup(false, false, false, (data) =>
+      addLayerItem(data, "layer-mixed", "new-point"),
+    );
+    await flushPromises();
+    await importButton(wrapper).trigger("click");
+    await flushPromises();
+    const itemCount = mixedItems(store).length;
+    // The layer now matches the file, so nothing is ticked or left to import.
+    expect(checked(wrapper, "layer-mixed")).toBe(false);
+    expect(importButton(wrapper).attributes("disabled")).toBeDefined();
+    await wrapper.get("#file-layer-layer-mixed").trigger("click");
+    await importButton(wrapper).trigger("click");
+    await flushPromises();
+    expect(mixedItems(store)).toHaveLength(itemCount);
+  });
+
+  it("applies nothing when the layer import fails after the units", async () => {
+    const { wrapper, store, geo } = setup(false, false, false, (data) =>
+      addLayerItem(data, "layer-mixed", "new-point"),
+    );
+    const original = klona(store.state);
+    await flushPromises();
+    vi.spyOn(geo, "addLayer").mockImplementation(() => {
+      throw new Error("layer failed");
+    });
+    await importButton(wrapper).trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Import was not applied: layer failed");
+    expect(store.state.unitMap).toEqual(original.unitMap);
+    expect(store.state.layerStackMap).toEqual(original.layerStackMap);
+    expect(wrapper.emitted("applied")).toBeUndefined();
   });
 });

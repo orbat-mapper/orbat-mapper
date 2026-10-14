@@ -73,10 +73,31 @@ unit names, and counts of history entries added, updated or removed. Expand **Ad
 details** to inspect IDs and the full before-and-after data. Unchanged items are listed
 separately in a collapsible section.
 
+### Layers in the file
+
+If the file has map layers, the Side and Group import shows a **Layers in this file**
+section. Select the layers to import with the units. A layer with the same ID as a layer
+in your scenario can **Replace existing layer** or be imported as a separate copy. Other
+layers are added as new layers.
+
+- A matched layer that the file changes is selected automatically, with
+  **Replace existing layer**.
+- A matched layer with no changes is shown as "No changes" and is not selected.
+- A layer that is not in your scenario is not selected. It will be added as a new layer.
+- If the file changes more than one existing layer, no layer is selected and a warning
+  shows. A file saved from the whole scenario has copies of all its layers, and
+  replacing them all can overwrite other layers with older copies. Select only the
+  layers that belong to the side or group you import.
+
+The summary shows the changes for each selected layer, for example
+"Blue graphics: 3 added, 1 changed, 1 removed". The units and the selected layers
+are imported together. To import layers without units, use **Layers** import.
+
 Previewing and canceling leave the active scenario untouched. **Import**
 uses that same plan.
 
-Use **Undo** immediately after import to revert the entire import in one step.
+Use **Undo** immediately after import to revert the entire import, units and layers,
+in one step.
 
 ## GeoJSON
 
