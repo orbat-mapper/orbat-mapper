@@ -276,6 +276,7 @@ const {
   cancelSidcModal,
   initialSidcModalValue,
   sidcModalTitle,
+  sidcModalDescription,
   hideModifiers,
   hideSymbolColor,
   hideCustomSymbols,
@@ -688,6 +689,7 @@ if (firstOverlayLayerId) {
       @update:sidc="confirmSidcModal($event)"
       @cancel="cancelSidcModal"
       :dialogTitle="sidcModalTitle"
+      :description="sidcModalDescription"
       :hideModifiers
       :hideSymbolColor
       :hideCustomSymbols

@@ -63,6 +63,15 @@ import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue"
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import UnitSelectionSummary from "@/modules/scenarioeditor/UnitSelectionSummary.vue";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
+import { ChevronDown } from "@lucide/vue";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { findActiveSymbolChange } from "@/scenariostore/unitStateManipulations";
 
 const FeatureTransformations = defineAsyncComponent(
   () => import("@/modules/scenarioeditor/FeatureTransformations.vue"),
@@ -80,8 +89,11 @@ const {
     getCombinedSymbolOptions,
     isUnitLocked,
     updateUnitLocked,
+    updateUnitStateEntry,
+    removeUnitStateSymbolChange,
   },
 } = activeScenario;
+const fmt = useTimeFormatStore();
 
 const { onUnitSelectHook } = injectStrict(searchActionsKey);
 
@@ -310,6 +322,15 @@ const combinedSymbolOptions = computed(() => {
 
 const unitSidc = computed(() => unit.value._state?.sidc || unit.value.sidc);
 
+// A timed symbol change in effect now is shown instead of the base symbol
+const activeSymbolChange = computed(() => {
+  if (isMultiMode.value) return;
+  const index = findActiveSymbolChange(unit.value, store.state.currentTime);
+  if (index === undefined) return;
+  const entry = unit.value.state![index];
+  return { index, entry, time: fmt.scenarioFormatter.format(entry.t) };
+});
+
 const {
   start: startGetLocation,
   isActive: isGetLocationActive,
@@ -466,7 +487,12 @@ const buttonItems = computed(() => [
 
 async function handleChangeSymbol() {
   if (isLocked.value) return;
+  const symbolChange = activeSymbolChange.value;
   const newSidcValue = await getModalSidc(unit.value.sidc, {
+    title: symbolChange ? "Change base symbol" : undefined,
+    description: symbolChange
+      ? `The symbol change at ${symbolChange.time} replaces the base symbol from that time on.`
+      : undefined,
     symbolOptions: unit.value.symbolOptions,
     inheritedSymbolOptions: getCombinedSymbolOptions(unit.value, true),
     reinforcedStatus: unit.value.reinforcedStatus,
@@ -489,6 +515,27 @@ async function handleChangeSymbol() {
       updateUnit(props.unitId, dataUpdate, { doUpdateUnitState: true });
     }
   }
+}
+
+async function editSymbolChange() {
+  const symbolChange = activeSymbolChange.value;
+  if (isLocked.value || !symbolChange) return;
+  const { index, entry, time } = symbolChange;
+  const newSidcValue = await getModalSidc(entry.sidc!, {
+    title: `Change symbol at ${time}`,
+    symbolOptions: entry.symbolOptions,
+    inheritedSymbolOptions: getCombinedSymbolOptions(unit.value, true),
+    reinforcedStatus: entry.reinforcedStatus,
+  });
+  if (newSidcValue === undefined) return;
+  const { sidc, symbolOptions = {}, reinforcedStatus } = newSidcValue;
+  updateUnitStateEntry(props.unitId, index, { sidc, symbolOptions, reinforcedStatus });
+}
+
+function removeSymbolChange() {
+  const symbolChange = activeSymbolChange.value;
+  if (isLocked.value || !symbolChange) return;
+  removeUnitStateSymbolChange(props.unitId, symbolChange.index);
 }
 
 function locateInOrbat() {
@@ -579,6 +626,25 @@ function locateInOrbat() {
           }}<template v-if="lockedCount && !isLocked">, skipped when editing</template>
         </p>
         <UnitSelectionSummary :units="selectedUnits" />
+      </template>
+      <template v-if="activeSymbolChange" #meta>
+        <span v-if="isLocked" class="text-xs">
+          Symbol from {{ activeSymbolChange.time }}
+        </span>
+        <DropdownMenu v-else>
+          <DropdownMenuTrigger
+            class="hover:text-foreground inline-flex items-center gap-0.5 text-xs"
+          >
+            Symbol from {{ activeSymbolChange.time }}
+            <ChevronDown class="size-3.5" aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem @select="editSymbolChange()">Edit change</DropdownMenuItem>
+            <DropdownMenuItem @select="removeSymbolChange()">
+              Remove change
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </template>
       <template #actions>
         <div class="flex min-w-0 flex-1 items-center gap-0.5">

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  findActiveSymbolChange,
   removeUnusedUnitStateEntries,
   useUnitStateManipulations,
 } from "./unitStateManipulations";
@@ -141,6 +142,70 @@ describe("removeUnitFromMap", () => {
 
     expect(withoutUndefined(store.state.unitMap["unit-1"].state?.slice(2))).toEqual([
       { id: "c", t: 200, location: null, title: "Leg 2" },
+    ]);
+  });
+});
+
+describe("findActiveSymbolChange", () => {
+  const unit = createUnit([
+    { id: "a", t: 100, location: [0, 0] },
+    { id: "b", t: 200, sidc: "10031000001211000000" },
+    { id: "c", t: 300, status: "damaged" },
+    { id: "d", t: 400, sidc: "10031000001205000000" },
+  ]);
+
+  it.each([
+    [50, undefined],
+    [150, undefined],
+    [200, 1],
+    [350, 1],
+    [400, 3],
+    [900, 3],
+  ])("at time %i returns the entry index %s", (t, expected) => {
+    expect(findActiveSymbolChange(unit, t)).toBe(expected);
+  });
+});
+
+describe("removeUnitStateSymbolChange", () => {
+  const baseSidc = "10031000000000000000";
+  const armour = "10031000001205000000";
+
+  it("deletes an entry that only changed the symbol", () => {
+    const store = createStore([
+      { id: "a", t: 0, location: [0, 0] },
+      { id: "b", t: 100, sidc: armour, symbolOptions: { fillColor: "red" } },
+    ]);
+    const actions = useUnitStateManipulations(store);
+    const unit = () => store.state.unitMap["unit-1"];
+    store.state.currentTime = 150;
+    updateCurrentUnitState(unit(), 150, { force: true });
+    expect(unit()._state?.sidc).toBe(armour);
+
+    actions.removeUnitStateSymbolChange("unit-1", 1);
+
+    expect(unit().state?.map((s) => s.id)).toEqual(["a"]);
+    expect(unit()._state?.sidc || unit().sidc).toBe(baseSidc);
+    store.undo();
+    expect(unit().state?.map((s) => s.id)).toEqual(["a", "b"]);
+  });
+
+  it("keeps the rest of an entry that also does something else", () => {
+    const store = createStore([
+      {
+        id: "b",
+        t: 100,
+        location: [1, 0],
+        sidc: armour,
+        symbolOptions: { fillColor: "red" },
+        reinforcedStatus: "Reinforced",
+      },
+    ]);
+    const actions = useUnitStateManipulations(store);
+
+    actions.removeUnitStateSymbolChange("unit-1", 0);
+
+    expect(store.state.unitMap["unit-1"].state).toEqual([
+      { id: "b", t: 100, location: [1, 0] },
     ]);
   });
 });
