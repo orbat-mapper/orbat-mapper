@@ -35,6 +35,7 @@ form.value.layerIds = [];
 
 form.value.emptySideIds ??= [];
 form.value.snapshotGroupIds ??= [];
+form.value.includeSnapshotStatus ??= true;
 // Events often describe plans and outcomes for every side, so they are opt-in.
 form.value.includeEvents ??= false;
 form.value.excludeFutureEvents ??= true;
@@ -119,6 +120,7 @@ interface ExportPreset {
   emptySideIds?: string[];
   layerIds: NonNullable<OrbatMapperExportSettings["layerIds"]>;
   snapshotGroupIds?: string[];
+  includeSnapshotStatus?: boolean;
   includeEvents?: boolean;
   excludeFutureEvents?: boolean;
   scenarioName?: string;
@@ -147,6 +149,7 @@ function savePreset(replace = false) {
     emptySideIds: [...(form.value.emptySideIds ?? [])],
     layerIds: [...(form.value.layerIds ?? [])],
     snapshotGroupIds: [...(form.value.snapshotGroupIds ?? [])],
+    includeSnapshotStatus: form.value.includeSnapshotStatus,
     includeEvents: form.value.includeEvents,
     excludeFutureEvents: form.value.excludeFutureEvents,
     scenarioName: form.value.scenarioName,
@@ -172,6 +175,7 @@ function loadPreset() {
     emptySideIds: emptySides,
     layerIds: layers,
     snapshotGroupIds: (preset.snapshotGroupIds ?? []).filter((id) => groups.includes(id)),
+    includeSnapshotStatus: preset.includeSnapshotStatus ?? true,
     includeEvents: preset.includeEvents ?? false,
     excludeFutureEvents: preset.excludeFutureEvents ?? true,
     scenarioName: preset.scenarioName,
@@ -340,12 +344,20 @@ function toggleSide(sideId: string) {
         <template v-if="form.snapshotTime === undefined"
           >the current scenario time,</template
         >
-        {{ snapshotTime }}, with their names and symbols. It leaves out their earlier and
-        planned moves, descriptions, equipment, personnel, supplies, range rings and chain
-        of command, so use it for opposing units a side has detected. A side exported only
-        as snapshots also leaves out its description and the units attached directly to
-        it.
+        {{ snapshotTime }}, with their names{{
+          form.includeSnapshotStatus ? ", symbols and status" : " and symbols"
+        }}. It leaves out their earlier and planned moves, descriptions, equipment,
+        personnel, supplies, range rings and chain of command, so use it for opposing
+        units a side has detected. A side exported only as snapshots also leaves out its
+        description and the units attached directly to it.
       </p>
+      <InputCheckbox
+        v-if="form.snapshotGroupIds?.length"
+        class="mt-3"
+        label="Include unit status"
+        description="Leave this off when the recipient should not know the result of an attack."
+        v-model="form.includeSnapshotStatus"
+      />
       <div class="mt-2 flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" @click="changeSnapshotTime"
           >Change snapshot time</Button
@@ -455,7 +467,8 @@ function toggleSide(sideId: string) {
           The scenario description, templates, catalogs and settings are retained
           regardless of group and layer selection, and events when included. Inspect these
           for information the recipient should not receive. Snapshot groups only contain
-          their units' names, symbols and positions at the current time.
+          their units' names, symbols, positions and, unless left out, status at the
+          snapshot time.
         </p>
         <details v-for="(value, key) in scenarioData" :key="key">
           <summary class="cursor-pointer">{{ key }}</summary>

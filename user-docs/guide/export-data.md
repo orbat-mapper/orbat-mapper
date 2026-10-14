@@ -29,11 +29,32 @@ Layers-only exports use a **Layers** suffix; exporting all content keeps the sou
 Suggestions update with your selections until you edit the corresponding field.
 Names loaded from a preset are preserved. You can add a turn label manually, such as **Turn 3**.
 
+### Snapshot groups
+
+Tick **Snapshot** under a selected group to export it as a snapshot. A snapshot holds
+where the group's visible units are at the snapshot time and nothing else: each unit's
+name, short name, symbol, position and status. It leaves out their earlier and planned
+moves, descriptions, equipment, personnel, supplies, range rings and chain of command,
+so use it to show a side the opposing units it has detected. Units hidden on the map
+or not on the map at that time are left out. A side exported only as snapshots also
+leaves out its description and the units attached directly to it.
+
+Snapshots are taken at the current scenario time. Click **Change snapshot time** to
+take them at another time, and **Use current time** to go back.
+
+**Include unit status** is on by default, so the recipient sees each unit's status at
+the snapshot time, such as **Damaged** or **Destroyed**, with its colour. A unit without
+a status, or with its status cleared to **None**, has none in the file. Turn the option
+off when the recipient should not know the result of an attack.
+
+Snapshot groups cannot be imported into an existing scenario, so they never replace
+its units.
+
 ### Reuse an export preset
 
 Select the groups and layers for a recipient, expand **Export presets**, and enter a **Preset name** (for example,
 “Blue contacts update”), and click **Save as new preset**. A preset remembers the
-selected groups, empty sides and layers, scenario name, and filename.
+selected groups, empty sides and layers, snapshot choices, scenario name, and filename.
 
 Choose a **Saved preset** to restore its settings. After making changes, click
 **Update preset** to save them, or **Save as new preset** to keep another variation.

@@ -8,7 +8,7 @@ import { isUnitHiddenInState } from "@/scenariostore/unitManipulations";
 /** A unit as it is drawn at the current scenario time. */
 export type SnapshotUnit = Pick<
   Unit,
-  "id" | "name" | "shortName" | "sidc" | "symbolOptions"
+  "id" | "name" | "shortName" | "sidc" | "symbolOptions" | "status"
 > & {
   location?: Unit["location"] | null;
 };
@@ -25,15 +25,20 @@ type SnapshotSettings = Pick<
   "sideGroups" | "snapshotGroupIds" | "snapshotTime"
 >;
 
-function toSnapshotUnit(unit: NUnit): SnapshotUnit {
+function toSnapshotUnit(unit: NUnit, state: ScenarioState): SnapshotUnit {
   const current = unit._state;
   const symbolOptions = { ...unit.symbolOptions, ...current?.symbolOptions };
+  // A state entry with `status: null` clears the base status, so only an unset
+  // current status falls back to it.
+  const statusId = current?.status === undefined ? unit.status : current.status;
+  const status = statusId ? state.unitStatusMap[statusId]?.name : undefined;
   return {
     id: unit.id,
     name: unit.name,
     ...(unit.shortName ? { shortName: unit.shortName } : {}),
     sidc: current?.sidc || unit.sidc,
     ...(Object.keys(symbolOptions).length ? { symbolOptions } : {}),
+    ...(status ? { status } : {}),
     location: current?.location ?? null,
   };
 }
@@ -65,7 +70,7 @@ export function snapshotSourceAt(
       const units: SnapshotUnit[] = (unitsByGroup[groupId] = []);
       scenario.unitActions.walkItem(groupId, (unit) => {
         // Units hidden on the map are not drawn, so a snapshot must not show them.
-        if (!isUnitHiddenInState(state, unit)) units.push(toSnapshotUnit(unit));
+        if (!isUnitHiddenInState(state, unit)) units.push(toSnapshotUnit(unit, state));
       });
     }
     return { timestamp, unitsByGroup };
@@ -74,9 +79,14 @@ export function snapshotSourceAt(
   }
 }
 
-// A snapshot group shows where its units are now and nothing else: no history or
-// plans, descriptions, resources, range rings or chain of command.
-function snapshotGroup(group: SideGroup, source: SnapshotSource): SideGroup {
+// A snapshot group shows where its units are now, and their status unless left out,
+// and nothing else: no history or plans, descriptions, resources, range rings or chain
+// of command.
+function snapshotGroup(
+  group: SideGroup,
+  source: SnapshotSource,
+  includeStatus: boolean,
+): SideGroup {
   return {
     id: group.id,
     name: group.name,
@@ -84,7 +94,11 @@ function snapshotGroup(group: SideGroup, source: SnapshotSource): SideGroup {
     snapshotTime: new Date(source.timestamp).toISOString(),
     subUnits: (source.unitsByGroup[group.id] ?? [])
       .filter((unit) => unit.location)
-      .map(({ location, ...unit }) => ({ ...unit, location: location! })),
+      .map(({ location, status, ...unit }) => ({
+        ...unit,
+        ...(includeStatus && status ? { status } : {}),
+        location: location!,
+      })),
   };
 }
 
@@ -115,6 +129,7 @@ export function buildRecipientScenario(
     | "layerIds"
     | "scenarioName"
     | "snapshotGroupIds"
+    | "includeSnapshotStatus"
     | "includeEvents"
     | "excludeFutureEvents"
   >,
@@ -136,7 +151,13 @@ export function buildRecipientScenario(
         const groups = side.groups
           .filter((group) => settings.sideGroups.includes(group.id))
           .map((group) =>
-            isSnapshot(group) ? snapshotGroup(group, snapshotSource) : group,
+            isSnapshot(group)
+              ? snapshotGroup(
+                  group,
+                  snapshotSource,
+                  settings.includeSnapshotStatus !== false,
+                )
+              : group,
           );
         const onlySnapshots = groups.length > 0 && groups.every(isSnapshot);
         return { ...(onlySnapshots ? snapshotSide(side) : side), groups };
