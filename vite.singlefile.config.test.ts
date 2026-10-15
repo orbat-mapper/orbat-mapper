@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { inlineMaplibreWorkerInBundle } from "./scripts/inlineMaplibreWorker.ts";
 
 describe("inlineMaplibreWorkerInBundle", () => {
-  it("replaces the emitted worker path with a classic-worker Blob URL", () => {
+  it("replaces the emitted worker path with a classic-worker data URL", () => {
     const bundle = {
       "index.js": {
         type: "chunk" as const,
@@ -17,7 +17,7 @@ describe("inlineMaplibreWorkerInBundle", () => {
     inlineMaplibreWorkerInBundle(bundle);
 
     expect(bundle["index.js"].code).toContain(
-      'URL.createObjectURL(new Blob(["self.postMessage(\\"ready\\");"],{type:"text/javascript"}))+"#maplibre-worker.cjs"',
+      '"data:text/javascript;charset=utf-8,"+encodeURIComponent("self.postMessage(\\"ready\\");")+"%0A//.cjs"',
     );
     expect(bundle).not.toHaveProperty("maplibre-gl-worker-abc.js");
   });

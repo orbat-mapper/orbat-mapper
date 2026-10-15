@@ -20,14 +20,15 @@ export function inlineMaplibreWorkerInBundle(bundle: GeneratedBundle): void {
   const [workerFileName, workerOutput] = workers[0];
   const workerCode =
     workerOutput.type === "chunk" ? workerOutput.code : String(workerOutput.source);
-  // Vite emits this worker as a self-contained IIFE, so it is a classic worker. MapLibre v6 uses
-  // a `.cjs` suffix to distinguish classic workers from module workers. That distinction matters
-  // for a file:// page: Chromium rejects a module worker whose top-level Blob URL inherits an
-  // opaque origin. A URL fragment preserves the Blob resource while giving MapLibre the suffix it
-  // needs to select the classic Worker constructor.
-  const blobUrlExpression =
-    `URL.createObjectURL(new Blob([${JSON.stringify(workerCode)}],{type:"text/javascript"}))` +
-    `+"#maplibre-worker.cjs"`;
+  // Vite emits this worker as a self-contained IIFE, so it is a classic worker, and it must run as
+  // one: Chromium rejects a module worker whose Blob URL inherits the opaque origin of a file://
+  // page. MapLibre starts a classic worker only when the path of the worker URL, before any `?` or
+  // `#`, ends in `.cjs`. A Blob URL's path is a UUID, thus the worker goes in a data: URL whose body
+  // ends in a `//.cjs` comment. MapLibre sees a cross-origin `.cjs` URL, fetches it and starts a
+  // classic worker from a Blob URL of its own.
+  const dataUrlExpression =
+    `"data:text/javascript;charset=utf-8,"+encodeURIComponent(${JSON.stringify(workerCode)})` +
+    `+"%0A//.cjs"`;
   const urlValues = [workerFileName, `./${workerFileName}`, `/${workerFileName}`];
   let replacements = 0;
 
@@ -37,7 +38,7 @@ export function inlineMaplibreWorkerInBundle(bundle: GeneratedBundle): void {
       for (const quote of ['"', "'", "`"]) {
         const literal = `${quote}${url}${quote}`;
         if (!output.code.includes(literal)) continue;
-        output.code = output.code.replaceAll(literal, blobUrlExpression);
+        output.code = output.code.replaceAll(literal, dataUrlExpression);
         replacements++;
       }
     }
