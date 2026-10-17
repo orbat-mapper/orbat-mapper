@@ -1,6 +1,6 @@
 import { decodeDem, type DemEncoding } from "./dem";
 import { EARTH_RADIUS, type LngLat } from "./line";
-import { clampLatitude, mercatorY, RAD } from "./mercator";
+import { clampLatitude, latitudeAt, mercatorY, RAD } from "./mercator";
 
 /** Where DEM tiles come from: a URL template, a PMTiles archive, or anything else
  *  that can produce an encoded image for a Web Mercator tile address. */
@@ -32,6 +32,23 @@ export interface SampleOptions {
   signal?: AbortSignal;
 }
 
+export interface PixelsAroundOptions {
+  /** The most pixels across the circle: a wider one is read at a coarser zoom. */
+  maxAcross: number;
+  signal?: AbortSignal;
+}
+
+/** A square block of DEM pixels and their heights, NaN where there is no
+ *  data: rows of `width` pixels west to east, from north to south. */
+export interface DemPixels {
+  width: number;
+  /** Each pixel's centre. */
+  positions: LngLat[];
+  heights: Float64Array;
+  /** Ground metres a pixel spans at the centre of the circle. */
+  resolution: number;
+}
+
 export interface ElevationSampler {
   /** Heights in metres, or null where the DEM has no data. */
   sample(
@@ -43,6 +60,16 @@ export interface ElevationSampler {
   heights(positions: readonly LngLat[], options?: SampleOptions): Promise<Float64Array>;
   /** Ground metres one pixel of the finest zoom spans at a latitude. */
   finestResolution(latitude: number): number;
+  /** The square block of the DEM's own pixels around the circle `radius`
+   *  metres about `center`, each at its own height rather than one
+   *  interpolated between pixels: where a search should find the same summit
+   *  wherever it is centred. At the finest zoom that spans the circle in
+   *  `maxAcross` pixels, or a coarser one where that has no data. */
+  pixelsAround(
+    center: LngLat,
+    radius: number,
+    options: PixelsAroundOptions,
+  ): Promise<DemPixels>;
 }
 
 interface DecodedTile {
@@ -92,6 +119,9 @@ function zoomFor(
 const pixelX = (lng: number, worldSize: number) => ((lng + 180) / 360) * worldSize - 0.5;
 const pixelY = (lat: number, worldSize: number) =>
   (0.5 - mercatorY(clampLatitude(lat)) / (2 * Math.PI)) * worldSize - 0.5;
+/** A global pixel column, wrapped round the antimeridian. */
+const wrapColumn = (column: number, worldSize: number) =>
+  ((column % worldSize) + worldSize) % worldSize;
 
 /** Settles with `promise`, or rejects as soon as `signal` aborts. */
 function abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
@@ -138,19 +168,57 @@ export function createElevationSampler(
     return entry;
   }
 
+  /** Reads the tile at `position` if no tile has told the width the rest
+   *  share yet: pixels are addressed by it. */
+  async function learnTileWidth(z: number, [lng, lat]: LngLat, signal?: AbortSignal) {
+    if (tileWidth !== undefined) return;
+    const tiles = 2 ** z;
+    const x = Math.floor(pixelX(lng, tiles) + 0.5);
+    const y = Math.floor(pixelY(lat, tiles) + 0.5);
+    await abortable(
+      tile(z, wrapColumn(x, tiles), Math.min(tiles - 1, Math.max(0, y))),
+      signal,
+    );
+  }
+
+  /** The tile a global pixel lies in at zoom `z`, as one number. */
+  function tileKey(z: number, column: number, row: number) {
+    const size = pixelWidth();
+    return Math.floor(row / size) * 2 ** z + Math.floor(column / size);
+  }
+
+  /** Loads the tiles with these keys at zoom `z`, and returns a reader of
+   *  whole pixels by global column and row: NaN where a tile has no data. */
+  async function loadPixels(z: number, keys: ReadonlySet<number>, signal?: AbortSignal) {
+    const tiles = 2 ** z;
+    const size = pixelWidth();
+    const loaded = new Map<number, DecodedTile | null>();
+    await abortable(
+      Promise.all(
+        [...keys].map(async (key) =>
+          loaded.set(key, await tile(z, key % tiles, Math.floor(key / tiles))),
+        ),
+      ),
+      signal,
+    );
+    // Neighbouring pixels almost always share a tile.
+    let cachedKey = -1;
+    let cached: DecodedTile | null | undefined;
+    return (column: number, row: number) => {
+      const key = Math.floor(row / size) * tiles + Math.floor(column / size);
+      if (key !== cachedKey) {
+        cachedKey = key;
+        cached = loaded.get(key);
+      }
+      if (!cached) return NaN;
+      return cached.heights[(row % size) * cached.width + (column % size)] ?? NaN;
+    };
+  }
+
   /** Bilinear samples at one zoom; NaN where a touched tile has no data. */
   async function sampleAt(z: number, positions: readonly LngLat[], signal?: AbortSignal) {
     const tiles = 2 ** z;
-    if (tileWidth === undefined) {
-      // One tile tells the width the rest share.
-      const [lng, lat] = positions[0]!;
-      const x = Math.floor(pixelX(lng, tiles) + 0.5);
-      const y = Math.floor(pixelY(lat, tiles) + 0.5);
-      await abortable(
-        tile(z, ((x % tiles) + tiles) % tiles, Math.min(tiles - 1, Math.max(0, y))),
-        signal,
-      );
-    }
+    await learnTileWidth(z, positions[0]!, signal);
     const size = pixelWidth();
     const worldSize = tiles * size;
 
@@ -171,54 +239,26 @@ export function createElevationSampler(
     let r1 = 0;
     let fx = 0;
     let fy = 0;
-    const wrap = (column: number) => ((column % worldSize) + worldSize) % worldSize;
     const clampRow = (row: number) => Math.min(worldSize - 1, Math.max(0, row));
     function corners(i: number) {
       const column = Math.floor(us[i]!);
       const row = Math.floor(vs[i]!);
       fx = us[i]! - column;
       fy = vs[i]! - row;
-      c0 = wrap(column);
-      c1 = wrap(column + 1);
+      c0 = wrapColumn(column, worldSize);
+      c1 = wrapColumn(column + 1, worldSize);
       r0 = clampRow(row);
       r1 = clampRow(row + 1);
     }
-    const tileKey = (column: number, row: number) =>
-      Math.floor(row / size) * tiles + Math.floor(column / size);
-
-    const needed = new Map<number, Promise<DecodedTile | null>>();
-    const need = (column: number, row: number) => {
-      const key = tileKey(column, row);
-      if (!needed.has(key))
-        needed.set(key, tile(z, key % tiles, Math.floor(key / tiles)));
-    };
+    const needed = new Set<number>();
     for (let i = 0; i < count; i++) {
       corners(i);
-      need(c0, r0);
-      need(c1, r0);
-      need(c0, r1);
-      need(c1, r1);
+      needed.add(tileKey(z, c0, r0));
+      needed.add(tileKey(z, c1, r0));
+      needed.add(tileKey(z, c0, r1));
+      needed.add(tileKey(z, c1, r1));
     }
-    const loaded = new Map<number, DecodedTile | null>();
-    await abortable(
-      Promise.all(
-        [...needed].map(async ([key, promise]) => loaded.set(key, await promise)),
-      ),
-      signal,
-    );
-
-    // Neighbouring samples almost always share a tile.
-    let cachedKey = -1;
-    let cached: DecodedTile | null | undefined;
-    const height = (column: number, row: number) => {
-      const key = tileKey(column, row);
-      if (key !== cachedKey) {
-        cachedKey = key;
-        cached = loaded.get(key);
-      }
-      if (!cached) return NaN;
-      return cached.heights[(row % size) * cached.width + (column % size)] ?? NaN;
-    };
+    const height = await loadPixels(z, needed, signal);
 
     // Any corner without data leaves NaN.
     const heights = new Float64Array(count);
@@ -233,6 +273,58 @@ export function createElevationSampler(
       heights[i] = top + (bottom - top) * fy;
     }
     return heights;
+  }
+
+  async function pixelsAround(
+    center: LngLat,
+    radius: number,
+    { maxAcross, signal }: PixelsAroundOptions,
+  ): Promise<DemPixels> {
+    const [lng0, lat0] = center;
+    const minZoom = provider.minZoom ?? 0;
+    /** The finest zoom that spans the circle in `maxAcross` pixels this wide. */
+    const fitting = (size: number) =>
+      Math.min(
+        provider.maxZoom,
+        Math.max(
+          minZoom,
+          Math.floor(Math.log2((pixelSize(size, 0, lat0) * maxAcross) / (2 * radius))),
+        ),
+      );
+    await learnTileWidth(fitting(pixelWidth()), center, signal);
+    const size = pixelWidth();
+    for (let z = fitting(size); ; z--) {
+      const worldSize = 2 ** z * size;
+      const resolution = pixelSize(size, z, lat0);
+      const span = Math.ceil(radius / resolution);
+      const width = 2 * span + 1;
+      const column0 = Math.round(pixelX(lng0, worldSize)) - span;
+      const row0 = Math.round(pixelY(lat0, worldSize)) - span;
+      // Rows beyond the poles of the map have no pixels.
+      const onMap = (row: number) => row >= 0 && row < worldSize;
+      const needed = new Set<number>();
+      for (let row = row0; row < row0 + width; row++)
+        if (onMap(row))
+          for (let column = column0; column < column0 + width; column++)
+            needed.add(tileKey(z, wrapColumn(column, worldSize), row));
+      const height = await loadPixels(z, needed, signal);
+      const positions: LngLat[] = [];
+      const heights = new Float64Array(width * width);
+      let found = false;
+      for (let r = 0; r < width; r++) {
+        const row = row0 + r;
+        const lat = latitudeAt(2 * Math.PI * (0.5 - (row + 0.5) / worldSize));
+        for (let c = 0; c < width; c++) {
+          const column = column0 + c;
+          positions.push([((column + 0.5) / worldSize) * 360 - 180, lat]);
+          const value = onMap(row) ? height(wrapColumn(column, worldSize), row) : NaN;
+          heights[r * width + c] = value;
+          found ||= !Number.isNaN(value);
+        }
+      }
+      // An archive may stop short of this zoom here; a coarser one may cover it.
+      if (found || z <= minZoom) return { width, positions, heights, resolution };
+    }
   }
 
   /** Where a tile is missing, a coarser one may still cover the place, as
@@ -271,5 +363,5 @@ export function createElevationSampler(
     return pixelSize(pixelWidth(), provider.maxZoom, latitude);
   }
 
-  return { sample, heights, finestResolution };
+  return { sample, heights, finestResolution, pixelsAround };
 }

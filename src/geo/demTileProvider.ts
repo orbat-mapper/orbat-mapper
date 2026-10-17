@@ -6,7 +6,13 @@
  */
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
 import type { PMTiles } from "pmtiles";
-import { demEncoding, urlTemplateProvider, type DemTileProvider } from "@/lib/terrain";
+import {
+  createElevationSampler,
+  demEncoding,
+  urlTemplateProvider,
+  type DemTileProvider,
+  type ElevationSampler,
+} from "@/lib/terrain";
 import { archiveFromUrl } from "@/geo/pmtilesProtocol";
 import { DEFAULT_DEM_TILE_SIZE } from "@/geo/elevationTiles";
 
@@ -78,4 +84,29 @@ export async function createDemTileProvider(
     minZoom: tileJson.minzoom,
     maxZoom: tileJson.maxzoom,
   });
+}
+
+let sampler: {
+  source: RasterDEMSourceSpecification;
+  value: Promise<ElevationSampler>;
+} | null = null;
+
+/**
+ * A main-thread sampler for an elevation source, whose tile cache outlives an edit; the viewshed
+ * worker keeps a cache of its own. Replaced when the source changes, and made again after a failure.
+ */
+export function demSampler(
+  source: RasterDEMSourceSpecification,
+): Promise<ElevationSampler> {
+  if (sampler?.source !== source) {
+    const entry = {
+      source,
+      value: createDemTileProvider(source).then(createElevationSampler),
+    };
+    entry.value.catch(() => {
+      if (sampler === entry) sampler = null;
+    });
+    sampler = entry;
+  }
+  return sampler.value;
 }

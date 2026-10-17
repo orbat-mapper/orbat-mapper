@@ -10,7 +10,12 @@
  * where the viewshed puts them relative to the relief around.
  */
 import type { Feature, FeatureCollection } from "geojson";
-import type { LngLat } from "@/lib/terrain";
+import type { LngLat, ObserverAbove } from "@/lib/terrain";
+
+/** An observer's height as it reads, to the decimetre: "2 m", "600 m ASL". */
+export function formatEyeHeight(height: number, above: ObserverAbove = "ground"): string {
+  return `${Math.round(height * 10) / 10} m${above === "sea-level" ? " ASL" : ""}`;
+}
 
 /** How much taller than wide the stick is, and its least width, in metres. */
 const SLENDERNESS = 40;
@@ -21,8 +26,15 @@ export function observerPin(
   [lng, lat]: LngLat,
   height: number,
   exaggeration: number,
-  /** What the observer is called, read before its height, e.g. its number. */
-  { label }: { label?: string } = {},
+  {
+    label,
+    reading = formatEyeHeight(height),
+  }: {
+    /** What the observer is called, read before its height, e.g. its number. */
+    label?: string;
+    /** What the head reads after the label; the height by default. */
+    reading?: string;
+  } = {},
 ): FeatureCollection {
   const lift = height * exaggeration;
   const half = Math.max(lift / SLENDERNESS, MIN_WIDTH) / 2;
@@ -48,7 +60,7 @@ export function observerPin(
     type: "Feature",
     properties: {
       kind: "head",
-      text: `${label ? `${label} · ` : ""}${Math.round(height * 10) / 10} m`,
+      text: `${label ? `${label} · ` : ""}${reading}`,
       lift,
     },
     geometry: { type: "Point", coordinates: [lng, lat] },

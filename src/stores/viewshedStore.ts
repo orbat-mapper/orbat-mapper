@@ -7,6 +7,11 @@
  * be dragged; pressing one makes it current, and the deck edits the current one's settings.
  * Leaving placing keeps the viewsheds shown until closed.
  *
+ * While an observer is dragged, the ground under it reads beside it. It can snap to the highest or
+ * lowest ground within a few pixels of the pointer (how many is set too), as chosen in the deck or,
+ * for one drag, while Alt (with Shift, the lowest) is held, which finds a summit or a valley floor
+ * without hunting for it.
+ *
  * Their coverage is combined by default: ground is seen where any observer sees it, with the least
  * masking height of any. Otherwise each is drawn on its own, overlapping where they meet.
  *
@@ -24,8 +29,15 @@
 import type { RasterDEMSourceSpecification } from "maplibre-gl";
 import { computed, ref, shallowRef, watch } from "vue";
 import { defineStore } from "pinia";
-import type { GridDetail, LngLat, ViewshedRequest, ViewshedResult } from "@/lib/terrain";
+import type {
+  GridDetail,
+  LngLat,
+  ObserverAbove,
+  ViewshedRequest,
+  ViewshedResult,
+} from "@/lib/terrain";
 import type { ViewshedDisplay } from "@/geo/viewshedImage";
+import type { PointerAt } from "@/geo/pointDrag";
 import { useMapSelectStore } from "@/stores/mapSelectStore";
 import { useTerrainStore } from "@/stores/terrainStore";
 
@@ -61,14 +73,29 @@ export const VIEWSHED_RADIUS = { min: 500, max: 200_000, step: 500 };
 
 type ViewshedStatus = "loading" | "ready" | "error";
 
+/** Where a dragged observer goes: under the pointer, or to the highest or lowest ground near it. */
+export type ViewshedSnap = "off" | "highest" | "lowest";
+/**
+ * How far from the pointer a snap looks, in screen pixels, so it feels the same at any zoom: a
+ * ridge zoomed out, a knoll zoomed in.
+ */
+export const SNAP_AREA = { min: 8, max: 96, step: 4, fallback: 24 };
+const clampSnapArea = (value: number) =>
+  Number.isFinite(value)
+    ? Math.min(SNAP_AREA.max, Math.max(SNAP_AREA.min, value))
+    : SNAP_AREA.fallback;
+
 /**
  * One viewshed and its own settings. Replaced, never changed in place, so the list holds plain
  * data that goes to the worker and the map as it is.
  */
 interface Settings {
-  /** Metres above the ground. */
+  /** Metres above the ground, or above sea level. */
   observerHeight: number;
+  observerAbove: ObserverAbove;
   targetHeight: number;
+  /** Whether `metres` is the straight-line distance from the eye. */
+  slantRange: boolean;
   /** Metres from the observer, within `VIEWSHED_RADIUS`. */
   metres: number;
   detail: ViewshedDetail;
@@ -80,9 +107,22 @@ interface Viewshed extends Readonly<Settings> {
   readonly number: number;
   readonly observer: LngLat;
 }
+const SETTING_KEYS = [
+  "observerHeight",
+  "observerAbove",
+  "targetHeight",
+  "slantRange",
+  "metres",
+  "detail",
+] as const;
+/** Just the settings of a viewshed, as a fresh object. */
+const settingsOf = (from: Settings): Settings =>
+  Object.fromEntries(SETTING_KEYS.map((key) => [key, from[key]])) as Settings;
 const DEFAULT_SETTINGS: Settings = {
   observerHeight: 2,
+  observerAbove: "ground",
   targetHeight: 2,
+  slantRange: false,
   metres: 5000,
   detail: "standard",
 };
@@ -116,17 +156,6 @@ export const useViewshedStore = defineStore("viewshed", () => {
 
   /** The settings the next viewshed opens with while none is open: the last one closed leaves its own. */
   const fresh = ref<Settings>({ ...DEFAULT_SETTINGS });
-  const settingsOf = ({
-    observerHeight,
-    targetHeight,
-    metres,
-    detail,
-  }: Settings): Settings => ({
-    observerHeight,
-    targetHeight,
-    metres,
-    detail,
-  });
 
   /** A setting of the current viewshed, or of the next while none is open; `normalize` cleans what is set. */
   function setting<K extends keyof Settings>(
@@ -146,7 +175,9 @@ export const useViewshedStore = defineStore("viewshed", () => {
   const observer = computed(() => current.value?.observer ?? null);
   const number = computed(() => current.value?.number ?? null);
   const observerHeight = setting("observerHeight");
+  const observerAbove = setting("observerAbove");
   const targetHeight = setting("targetHeight");
+  const slantRange = setting("slantRange");
   /**
    * Whether setting the detail sets it for every viewshed, so a combined image doesn't mix grids.
    * Kept across viewsheds.
@@ -171,6 +202,14 @@ export const useViewshedStore = defineStore("viewshed", () => {
   const pin = shallowRef(false);
   /** Whether the coverage of several viewsheds is drawn as one. */
   const combine = shallowRef(true);
+  /** Where a dragged observer goes. Kept across viewsheds. */
+  const snap = shallowRef<ViewshedSnap>("off");
+  const snapArea = shallowRef(SNAP_AREA.fallback);
+  /** How far round the pointer a snap looks, within `SNAP_AREA`. Kept across viewsheds. */
+  const snapPixels = computed({
+    get: () => snapArea.value,
+    set: (value: number) => (snapArea.value = clampSnapArea(value)),
+  });
   /** The viewshed whose observer is being dragged: its results are previews meanwhile. */
   const draggingId = shallowRef<string | null>(null);
 
@@ -181,6 +220,14 @@ export const useViewshedStore = defineStore("viewshed", () => {
   );
   const status = computed(
     () => (currentId.value && statuses.value.get(currentId.value)) || "loading",
+  );
+  /**
+   * Each viewshed's cell size at its own detail, in metres: held through a drag, whose previews
+   * compute on a coarser grid.
+   */
+  const cellSizes = shallowRef<ReadonlyMap<string, number>>(new Map());
+  const cellSize = computed(() =>
+    currentId.value ? (cellSizes.value.get(currentId.value) ?? null) : null,
   );
   /** The share of ground with data within the current radius that can be seen. */
   const visibleShare = computed(() => result.value?.visibleShare ?? null);
@@ -302,10 +349,13 @@ export const useViewshedStore = defineStore("viewshed", () => {
         // Closed meanwhile; a newer request still shows this one until it lands.
         if (!all.value.some((viewshed) => viewshed.id === id)) continue;
         results.value = withEntry(results.value, id, next);
+        if (request.outline !== PREVIEW.outline)
+          cellSizes.value = withEntry(cellSizes.value, id, next.grid.cellSize);
         if (!queued.has(id)) statuses.value = withEntry(statuses.value, id, "ready");
       } catch {
         if (queued.has(id) || !all.value.some((viewshed) => viewshed.id === id)) continue;
         results.value = withEntry(results.value, id, null);
+        cellSizes.value = withEntry(cellSizes.value, id, null);
         statuses.value = withEntry(statuses.value, id, "error");
       }
     }
@@ -325,6 +375,8 @@ export const useViewshedStore = defineStore("viewshed", () => {
           ? PREVIEW
           : detailOf(VIEWSHED_DETAILS[viewshed.detail])),
         observerHeight: viewshed.observerHeight,
+        observerAbove: viewshed.observerAbove,
+        slantRange: viewshed.slantRange,
         targetHeight: viewshed.targetHeight,
       };
       requests.set(viewshed.id, { source, request, key: JSON.stringify(request) });
@@ -347,6 +399,10 @@ export const useViewshedStore = defineStore("viewshed", () => {
       for (const id of dropped.keys())
         if (!requests.has(id)) dropped = withEntry(dropped, id, null);
       if (dropped !== results.value) results.value = dropped;
+      let held = cellSizes.value;
+      for (const id of held.keys())
+        if (!requests.has(id)) held = withEntry(held, id, null);
+      if (held !== cellSizes.value) cellSizes.value = held;
       for (const [id, { source, request, key }] of requests) {
         const before = asked.get(id);
         if (before && before.source === source && before.key === key) continue;
@@ -376,19 +432,111 @@ export const useViewshedStore = defineStore("viewshed", () => {
   /** Whether there are several observers, which their numbers tell apart. */
   const several = computed(() => viewsheds.value.length > 1);
 
+  /**
+   * What a drag shows beside the observer: the ground under it, and the circle a snap searched.
+   * Set once a move lands, so the map is written once for it.
+   */
+  const dragFeedback = shallowRef<{
+    ground: { position: LngLat; height: number } | null;
+    ring: { center: LngLat; radius: number } | null;
+  } | null>(null);
+  /**
+   * The newest move of a drag, which letting go waits for. Moves are numbered, and a search lands
+   * unless a later one landed first: while tiles load, the observer keeps up as each arrives
+   * rather than waiting for the pointer to stop.
+   */
+  let lastMove: Promise<void> = Promise.resolve();
+  let moves = 0;
+  let landedMove = 0;
+  /**
+   * Where this drag last snapped, kept while it stays in reach and as high (or low) as any, so the
+   * observer holds a summit as the pointer wanders.
+   */
+  let snapped: LngLat | null = null;
+
+  function clearDrag() {
+    dragFeedback.value = null;
+    snapped = null;
+  }
+
   /** Presses an observer, which makes it current; its results are previews until let go. */
   function startDrag(id: string) {
     select(id);
     draggingId.value = id;
+    clearDrag();
   }
 
-  /** Moves the observer pressed, whatever is made current meanwhile. */
-  function dragTo(position: LngLat) {
-    if (draggingId.value) patch(draggingId.value, { observer: position });
+  /**
+   * Moves the observer pressed, whatever is made current meanwhile: to the pointer, or to a summit
+   * or pit near there, and reads the ground where it lands. With no summit in reach, as on a slope,
+   * it follows the pointer until one comes into reach. `snapRadius` is the metres on the ground
+   * that `snapPixels` span, asked for only when snapping.
+   */
+  async function moveDragged(
+    id: string,
+    position: LngLat,
+    { altKey, shiftKey }: Pick<PointerAt, "altKey" | "shiftKey">,
+    snapRadius: () => number,
+  ) {
+    const move = ++moves;
+    const mode: ViewshedSnap = altKey ? (shiftKey ? "lowest" : "highest") : snap.value;
+    const ring = mode === "off" ? null : { center: position, radius: snapRadius() };
+    if (!ring) {
+      // A plain move lands at once, so no older search may move it back.
+      landedMove = move;
+      snapped = null;
+      patch(id, { observer: position });
+    }
+    const source = terrain.elevationSource;
+    if (!source) return;
+    try {
+      const [{ demSampler }, { extremeNear }] = await Promise.all([
+        import("@/geo/demTileProvider"),
+        import("@/lib/terrain"),
+      ]);
+      const sampler = await demSampler(source);
+      const found = ring
+        ? await extremeNear(sampler, position, {
+            radius: ring.radius,
+            find: mode === "lowest" ? "lowest" : "highest",
+            prefer: snapped ?? undefined,
+          })
+        : null;
+      const height = found?.height ?? (await sampler.heights([position]))[0]!;
+      if (move < landedMove || draggingId.value !== id) return;
+      landedMove = move;
+      const landed = found?.position ?? position;
+      // Holding a summit, there is nothing to move.
+      const placed = all.value.find((viewshed) => viewshed.id === id)?.observer;
+      if (placed?.[0] !== landed[0] || placed[1] !== landed[1])
+        patch(id, { observer: landed });
+      snapped = found?.position ?? null;
+      dragFeedback.value = {
+        ground: Number.isNaN(height) ? null : { position: landed, height },
+        ring,
+      };
+    } catch {
+      // No ground to read; the observer stays where it last was.
+    }
   }
 
+  function dragTo(
+    position: LngLat,
+    pointer: Pick<PointerAt, "altKey" | "shiftKey">,
+    snapRadius: () => number,
+  ) {
+    if (draggingId.value)
+      lastMove = moveDragged(draggingId.value, position, pointer, snapRadius);
+  }
+
+  /** A snap still searching lands first, so the full viewshed is computed once, where the observer ends up. */
   function endDrag() {
-    draggingId.value = null;
+    const id = draggingId.value;
+    void lastMove.then(() => {
+      if (draggingId.value !== id) return;
+      draggingId.value = null;
+      clearDrag();
+    });
   }
 
   // While placing, a map click is the observer's, not a selection.
@@ -413,17 +561,24 @@ export const useViewshedStore = defineStore("viewshed", () => {
     number,
     observer,
     observerHeight,
+    observerAbove,
     targetHeight,
+    slantRange,
     radius,
     detail,
     detailForAll,
     display,
     pin,
     combine,
+    snap,
+    snapPixels,
     several,
     status,
     result,
     results,
+    cellSize,
+    draggingId,
+    dragFeedback,
     shown,
     combined,
     visibleShare,

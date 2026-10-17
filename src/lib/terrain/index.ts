@@ -1,13 +1,13 @@
 /**
- * DEM-based terrain analysis: elevation profiles and viewsheds. Copied as is
- * from tactrace's `src/lib/terrain`, the future `@orbat-mapper/terrain`
- * package, so keep the two in step until it is published. It imports nothing
- * from the app, Vue or a map library. GeoJSON `[lng, lat]` goes in;
+ * DEM-based terrain analysis: elevation profiles and viewsheds. This
+ * folder is the future `@orbat-mapper/terrain` package (#312), so it imports
+ * nothing from the app, Vue or a map library. GeoJSON `[lng, lat]` goes in;
  * metres, typed arrays and GeoJSON come out. App code imports only this file.
  */
 export { decodeDem, demEncoding, type DemEncoding } from "./dem";
 export {
   densifyLine,
+  distanceBetween,
   lineLength,
   EARTH_RADIUS,
   type DenseLine,
@@ -25,12 +25,16 @@ export {
   createElevationSampler,
   type DemImage,
   type DemTileProvider,
+  type DemPixels,
   type ElevationSampler,
   type ElevationSamplerOptions,
+  type PixelsAroundOptions,
   type SampleOptions,
 } from "./sampler";
+export { extremeNear, type ExtremeNearOptions } from "./extremeNear";
 export {
   cellAt,
+  centreIndex,
   gridAround,
   gridPositions,
   gridSizeFor,
@@ -49,6 +53,7 @@ export {
   visibleShare,
   Visibility,
   type MaskingOptions,
+  type ObserverAbove,
   type RangeFan,
   type Rgba,
   type ViewshedOptions,

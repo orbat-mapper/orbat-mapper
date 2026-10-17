@@ -1,5 +1,6 @@
 import type { MultiPolygon } from "geojson";
 import {
+  centreIndex,
   gridAround,
   gridSizeFor,
   sampleGrid,
@@ -19,6 +20,7 @@ import {
   maskingHeights,
   visibleAt,
   visibleShare,
+  type MaskingOptions,
   type RangeFan,
 } from "./viewshed";
 
@@ -41,13 +43,11 @@ export interface MessagePortLike {
 
 /** The grid is as fine as `cellSize` asks within `maxSize` cells a side, but no
  *  finer than the elevation data at the centre. */
-export interface ViewshedRequest extends GridDetail {
+export interface ViewshedRequest extends GridDetail, MaskingOptions {
   center: LngLat;
   /** Metres from the centre. */
   radius: number;
-  observerHeight: number;
   targetHeight: number;
-  refraction?: number;
   /** Only the ground within this fan; terrain outside it still masks. */
   fan?: RangeFan;
   /** Whether to trace the visible area's outline; false skips it, e.g. for a
@@ -65,6 +65,9 @@ export interface ViewshedResult {
   /** Which masking map this is: the same for every target height from one
    *  observer and fan, so a caller can tell the map has not changed. */
   sweep: number;
+  /** Metres above sea level of the ground under the observer; NaN where there
+   *  is no data. */
+  ground: number;
   /** The visible area's outline, or null when it was not asked for. */
   outline: MultiPolygon | null;
   /** The share of the ground with data that can be seen, or null if none has data. */
@@ -130,6 +133,8 @@ export function serveViewsheds(
       cellSize,
       maxSize,
       observerHeight,
+      observerAbove,
+      slantRange,
       targetHeight,
       refraction,
       fan,
@@ -148,13 +153,12 @@ export function serveViewsheds(
         ground = { key, grid, heights: sampleGrid(sampler, grid) };
       }
       const { grid, heights } = ground;
-      sweepKey = JSON.stringify([key, observerHeight, refraction]);
+      const options = { observerHeight, observerAbove, slantRange, refraction };
+      sweepKey = JSON.stringify([key, options]);
       if (sweep?.key !== sweepKey)
         sweep = {
           key: sweepKey,
-          masking: heights.then((ground) =>
-            maskingHeights(grid, ground, { observerHeight, refraction }),
-          ),
+          masking: heights.then((ground) => maskingHeights(grid, ground, options)),
         };
       clipKey = JSON.stringify([sweepKey, fan ?? null]);
       if (clipped?.key !== clipKey) {
@@ -173,6 +177,7 @@ export function serveViewsheds(
         // Cloned, not moved: the sweep stays here for the next target height.
         masking: await masking,
         sweep: sweepId,
+        ground: (await heights)[centreIndex(grid)]!,
         outline: outline ? maskToPolygons(grid, mask) : null,
         visibleShare: visibleShare(mask),
       };

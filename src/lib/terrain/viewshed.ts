@@ -1,4 +1,4 @@
-import { gridAxes, type DemGrid } from "./grid";
+import { centreIndex, gridAxes, type DemGrid } from "./grid";
 import { EARTH_RADIUS } from "./line";
 import { curvatureDrop, STANDARD_REFRACTION } from "./lineOfSight";
 import { RAD } from "./mercator";
@@ -33,9 +33,19 @@ function distancesFrom(grid: DemGrid, [lng0, lat0]: [number, number]): Float32Ar
   return distances;
 }
 
+/** What an observer's height is measured from: the ground for someone
+ *  standing or a mast, sea level for an aircraft or drone holding an altitude. */
+export type ObserverAbove = "ground" | "sea-level";
+
 export interface MaskingOptions {
-  /** Metres above the ground at the grid's centre. */
+  /** Metres above the ground at the grid's centre, or above sea level. */
   observerHeight: number;
+  /** What `observerHeight` is measured from; the ground by default. */
+  observerAbove?: ObserverAbove;
+  /** Whether the grid's radius is the straight-line distance from the eye to
+   *  the ground, as a sensor or radio reaches, rather than the distance along
+   *  the ground. Ground beyond it still masks. False by default. */
+  slantRange?: boolean;
   /** Coefficient of atmospheric refraction; 0.13 is the standard atmosphere. */
   refraction?: number;
 }
@@ -61,19 +71,25 @@ export interface ViewshedOptions extends MaskingOptions {
 export function maskingHeights(
   grid: DemGrid,
   heights: Float32Array,
-  { observerHeight, refraction = STANDARD_REFRACTION }: MaskingOptions,
+  {
+    observerHeight,
+    observerAbove = "ground",
+    slantRange = false,
+    refraction = STANDARD_REFRACTION,
+  }: MaskingOptions,
 ): Float32Array {
   const { width, height, center, radius } = grid;
   const masking = new Float32Array(width * height).fill(NaN);
   const column0 = (width - 1) / 2;
   const row0 = (height - 1) / 2;
-  const origin = row0 * width + column0;
+  const origin = centreIndex(grid);
   const ground = heights[origin]!;
   if (Number.isNaN(ground)) return masking;
-  const eye = ground + observerHeight;
+  const eye = observerAbove === "sea-level" ? observerHeight : ground + observerHeight;
   masking[origin] = 0;
 
   const reach = radius * (1 + 1e-9);
+  const slantReach = reach * reach;
   const distances = distancesFrom(grid, center);
 
   function cast(column: number, row: number) {
@@ -91,9 +107,14 @@ export function maskingHeights(
       const h = heights[i]!;
       if (Number.isNaN(h)) continue;
       const surface = h - curvatureDrop(d, refraction) - eye;
-      const below = Math.max(0, steepest * d - surface);
-      // NaN, not yet reached by a ray, compares false and takes the first.
-      if (!(masking[i]! <= below)) masking[i] = below;
+      // Slant range is never shorter than the distance along the ground, so
+      // the ray walks on past a cell out of reach: what lies beyond may rise
+      // back into it.
+      if (!slantRange || d * d + surface * surface <= slantReach) {
+        const below = Math.max(0, steepest * d - surface);
+        // NaN, not yet reached by a ray, compares false and takes the first.
+        if (!(masking[i]! <= below)) masking[i] = below;
+      }
       steepest = Math.max(steepest, surface / d);
     }
   }
@@ -154,7 +175,7 @@ export function clipToFan(
     cosAcross[column] = Math.cos(dLng);
   }
   const clipped = new Float32Array(masking.length).fill(NaN);
-  const origin = ((height - 1) / 2) * width + (width - 1) / 2;
+  const origin = centreIndex(grid);
   for (let row = 0; row < height; row++) {
     const latitude = lat(row) * RAD;
     const sin = Math.sin(latitude);

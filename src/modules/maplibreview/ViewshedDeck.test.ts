@@ -32,6 +32,18 @@ function openMenu(trigger: HTMLElement) {
   trigger.click();
 }
 const settingsButton = () => queryTestId<HTMLButtonElement>("viewshed-settings");
+/** One value in the settings summary on the deck: eye, target, reach or cells. */
+const summary = (value: string) => queryTestId(`viewshed-summary-${value}`);
+const summaryText = (value: string) => summary(value)?.textContent?.trim();
+/** Opens the settings popover, and with `more` unfolds the settings changed now and then, folded
+ *  under the per-observer ones. */
+async function openSettings({ more = false } = {}) {
+  settingsButton()!.click();
+  await settle();
+  if (!more) return;
+  queryTestId<HTMLButtonElement>("viewshed-more")!.click();
+  await settle();
+}
 const menuItem = (label: string) =>
   Array.from(document.body.querySelectorAll<HTMLElement>("[role^='menuitem']")).find(
     (item) => item.textContent?.includes(label),
@@ -165,8 +177,7 @@ describe("ViewshedDeck", () => {
     const forAll = () => byLabel<HTMLButtonElement>("Detail for all viewsheds");
     viewshed.place([10, 50]);
     await settle();
-    settingsButton()!.click();
-    await settle();
+    await openSettings({ more: true });
     expect(forAll()).toBeNull();
     viewshed.place([10.05, 50]);
     await settle();
@@ -197,11 +208,17 @@ describe("ViewshedDeck", () => {
     viewshed.observerHeight = 3;
     viewshed.targetHeight = 1;
     await settle();
-    expect(settingsButton()?.textContent).toMatch(/3 m.*1 m.*5 km/);
+    expect(summaryText("eye")).toBe("3 m");
+    expect(summaryText("target")).toBe("1 m");
+    expect(summaryText("reach")).toBe("5 km");
+    // Each value wears an icon and names itself on hover.
+    for (const value of ["eye", "target", "reach", "cells"])
+      expect(summary(value)?.querySelector("svg")).not.toBeNull();
+    expect(summary("eye")?.title).toBe("Observer height above ground");
+    expect(summary("target")?.title).toBe("Target height");
     // The settings are behind the button, not on the deck.
     expect(byLabel("Observer height in metres")).toBeNull();
-    settingsButton()!.click();
-    await settle();
+    await openSettings();
     expect(byLabel("Radius in kilometres")).not.toBeNull();
     const input = byLabel<HTMLInputElement>("Observer height in metres")!;
     input.value = "12";
@@ -209,8 +226,98 @@ describe("ViewshedDeck", () => {
     input.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
     await settle();
     expect(viewshed.observerHeight).toBe(12);
+  });
+
+  it("folds the settings changed now and then under a disclosure", async () => {
+    mocks.compute.mockImplementation(async (request) => flatResult(request));
+    useViewshedStore().place([10, 50]);
+    await settle();
+    await openSettings();
+    expect(byLabel("Show observer as a pin")).toBeNull();
+    expect(queryTestId("viewshed-snap-hint")).toBeNull();
+    queryTestId<HTMLButtonElement>("viewshed-more")!.click();
+    await settle();
     expect(byLabel("Show observer as a pin")).not.toBeNull();
     expect(document.body.textContent).toContain("Detail");
+  });
+
+  it("sums up the detail as the cell size, holding it while a drag previews", async () => {
+    mocks.compute.mockImplementation(async (request) => flatResult(request));
+    const viewshed = useViewshedStore();
+    viewshed.place([10, 50]);
+    await settle();
+    const full = viewshed.result!.grid.cellSize;
+    expect(summaryText("cells")).toBe(`${Math.round(full)} m`);
+    expect(summary("cells")?.title).toBe("Cell size");
+    expect(settingsButton()?.title).toContain(`${Math.round(full)} m cells`);
+    // A drag computes at a coarser grid; the summary keeps the full detail.
+    viewshed.startDrag(viewshed.viewsheds[0]!.id);
+    await settle();
+    expect(viewshed.result!.grid.cellSize).toBeGreaterThan(full);
+    expect(summaryText("cells")).toBe(`${Math.round(full)} m`);
+    viewshed.detail = "draft";
+    viewshed.endDrag();
+    await settle();
+    expect(summaryText("cells")).toBe(`${Math.round(viewshed.result!.grid.cellSize)} m`);
+  });
+
+  it("opens the settings at the detail when the cell size is clicked", async () => {
+    mocks.compute.mockImplementation(async (request) => flatResult(request));
+    useViewshedStore().place([10, 50]);
+    await settle();
+    summary("cells")!.click();
+    await settle();
+    expect(document.querySelector("#viewshed-detail")).not.toBeNull();
+  });
+
+  it("measures the eye from sea level and the radius as slant range when asked", async () => {
+    mocks.compute.mockImplementation(async (request) => flatResult(request));
+    const viewshed = useViewshedStore();
+    viewshed.place([10, 50]);
+    viewshed.observerHeight = 600;
+    await settle();
+    expect(summaryText("eye")).toBe("600 m");
+    expect(summaryText("reach")).toBe("5 km");
+    await openSettings();
+    byLabel<HTMLButtonElement>("Height above sea level")!.click();
+    byLabel<HTMLButtonElement>("Radius as slant range")!.click();
+    await settle();
+    expect(viewshed.observerAbove).toBe("sea-level");
+    expect(viewshed.slantRange).toBe(true);
+    expect(summaryText("eye")).toBe("600 m ASL");
+    expect(summary("eye")?.title).toBe("Observer height above sea level");
+    expect(summaryText("reach")).toBe("5 km slant");
+    expect(settingsButton()?.title).toContain("observer 600 m above sea level");
+    expect(settingsButton()?.title).toContain("slant range 5 km");
+  });
+
+  it("snaps a dragged observer to high or low ground from the deck, off again on a second press", async () => {
+    mocks.compute.mockImplementation(async (request) => flatResult(request));
+    const viewshed = useViewshedStore();
+    viewshed.place([10, 50]);
+    await settle();
+    const group = document.querySelector(
+      '[data-test="viewshed-deck"] [aria-label="Snap a dragged observer to"]',
+    )!;
+    expect(group.querySelector('[data-state="on"]')).toBeNull();
+    const high = group.querySelector<HTMLButtonElement>(
+      '[aria-label="Snap to the highest ground"]',
+    )!;
+    const low = group.querySelector<HTMLButtonElement>(
+      '[aria-label="Snap to the lowest ground"]',
+    )!;
+    high.click();
+    await settle();
+    expect(viewshed.snap).toBe("highest");
+    expect(high.dataset.state).toBe("on");
+    low.click();
+    await settle();
+    expect(viewshed.snap).toBe("lowest");
+    expect(high.dataset.state).toBe("off");
+    low.click();
+    await settle();
+    expect(viewshed.snap).toBe("off");
+    expect(group.querySelector('[data-state="on"]')).toBeNull();
   });
 
   it("shows the visible share as a bare percentage, naming it for screen readers", async () => {
