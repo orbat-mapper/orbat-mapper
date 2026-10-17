@@ -6,6 +6,7 @@
 import type { FeatureCollection, MultiPolygon } from "geojson";
 import type {
   AddLayerObject,
+  FilterSpecification,
   GeoJSONSource,
   ImageSource,
   Map as MlMap,
@@ -15,6 +16,7 @@ import { computed, effectScope, watch } from "vue";
 import circle from "@turf/circle";
 import {
   combineViewsheds,
+  distanceBetween,
   maskToPolygons,
   type Coverage,
   type LngLat,
@@ -22,7 +24,7 @@ import {
 } from "@/lib/terrain";
 import { viewshedImage, type ViewshedDisplay } from "@/geo/viewshedImage";
 import { attachPointDrag } from "@/geo/pointDrag";
-import { observerPin, pinHead } from "@/geo/observerPin";
+import { formatEyeHeight, observerPin, pinHead } from "@/geo/observerPin";
 import { ANALYSIS_LAYER_PREFIX, underlayAnchor } from "@/modules/maplibreview/mapTerrain";
 import { useTerrainStore } from "@/stores/terrainStore";
 import { useViewshedStore } from "@/stores/viewshedStore";
@@ -36,6 +38,11 @@ const RANGE_ID = "orbat-viewshed-range";
 const PIN_ID = "orbat-viewshed-pin";
 const PIN_STICK_ID = "orbat-viewshed-pin-stick";
 const PIN_HEAD_ID = "orbat-viewshed-pin-head";
+const DRAG_ID = "orbat-viewshed-drag";
+const DRAG_AREA_ID = "orbat-viewshed-drag-area";
+const DRAG_CASING_ID = "orbat-viewshed-drag-casing";
+const DRAG_RING_ID = "orbat-viewshed-drag-ring";
+const DRAG_LABEL_ID = "orbat-viewshed-drag-label";
 /** On the canvas container while a click picks a point, for a crosshair cursor (`styles.css`). */
 const PICKING_CLASS = "map-picking";
 
@@ -148,12 +155,43 @@ export function attachViewshedLayers(
       type: "FeatureCollection",
       // The head reads the number too, in place of the ground label it hides.
       features: viewshed.viewsheds.flatMap(
-        ({ number, observer, observerHeight }) =>
-          observerPin(observer, observerHeight, exaggeration.value, {
+        ({ id, number, observer, observerHeight, observerAbove }) => {
+          // An altitude stands over the ground its result found, once there is one.
+          const overGround =
+            observerAbove === "ground"
+              ? observerHeight
+              : observerHeight - (viewshed.results.get(id)?.ground ?? NaN);
+          if (Number.isNaN(overGround)) return [];
+          return observerPin(observer, Math.max(0, overGround), exaggeration.value, {
             label: viewshed.several ? String(number) : undefined,
-          }).features,
+            reading: formatEyeHeight(observerHeight, observerAbove),
+          }).features;
+        },
       ),
     };
+  }
+
+  /** What a drag shows beside the observer: the ground under it, and the circle a snap searched. */
+  function dragData(): FeatureCollection {
+    const { ground, ring } = (viewshed.draggingId && viewshed.dragFeedback) || {};
+    const features: FeatureCollection["features"] = [];
+    if (ground)
+      features.push({
+        type: "Feature",
+        properties: { text: `Ground ${Math.round(ground.height)} m` },
+        geometry: { type: "Point", coordinates: ground.position },
+      });
+    if (ring)
+      features.push(
+        circle(ring.center, ring.radius / 1000, { steps: 64, units: "kilometers" }),
+      );
+    return { type: "FeatureCollection", features };
+  }
+
+  /** Metres on the ground `viewshed.snapPixels` from `point` on the map. */
+  function snapRadius([x, y]: [number, number], position: LngLat): number {
+    const { lng, lat } = map.unproject([x + viewshed.snapPixels, y]);
+    return distanceBetween(position, [lng, lat]);
   }
 
   /**
@@ -364,6 +402,51 @@ export function attachViewshedLayers(
       "text-halo-blur": 0,
     },
   });
+  ensureSource(DRAG_ID, dragData());
+  // The snap area: a faint fill, and a solid ring (the range's is dashed) on a white casing, which
+  // reads over terrain, shading and dark basemaps.
+  const isRing: FilterSpecification = ["==", ["geometry-type"], "Polygon"];
+  ensureLayer({
+    id: DRAG_AREA_ID,
+    type: "fill",
+    source: DRAG_ID,
+    filter: isRing,
+    paint: { "fill-color": "#16a34a", "fill-opacity": 0.12 },
+  });
+  ensureLayer({
+    id: DRAG_CASING_ID,
+    type: "line",
+    source: DRAG_ID,
+    filter: isRing,
+    paint: { "line-color": "#ffffff", "line-width": 5, "line-opacity": 0.9 },
+  });
+  ensureLayer({
+    id: DRAG_RING_ID,
+    type: "line",
+    source: DRAG_ID,
+    filter: isRing,
+    paint: { "line-color": "#15803d", "line-width": 2.5 },
+  });
+  ensureLayer({
+    id: DRAG_LABEL_ID,
+    type: "symbol",
+    source: DRAG_ID,
+    filter: ["==", ["geometry-type"], "Point"],
+    layout: {
+      "text-field": ["get", "text"],
+      "text-font": ["Noto Sans Regular"],
+      "text-size": 12,
+      "text-anchor": "top",
+      "text-offset": [0, 0.9],
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
+    paint: {
+      "text-color": "#14532d",
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 2,
+    },
+  });
   renderResult();
 
   scope.run(() => {
@@ -380,12 +463,26 @@ export function attachViewshedLayers(
         ),
       renderRange,
     );
-    watch([() => viewshed.viewsheds, () => viewshed.pin, exaggeration], () => {
-      if (!viewshed.pin && !pinShown) return;
-      pinShown = viewshed.pin && viewshed.viewsheds.length > 0;
-      (map.getSource(PIN_ID) as GeoJSONSource | undefined)?.setData(pinData());
-    });
+    // The ground under each observer that holds an altitude: all a pin reads from the results, so
+    // other results leave the pins alone.
+    const altitudeGrounds = () =>
+      viewshed.viewsheds
+        .map(({ id, observerAbove }) =>
+          observerAbove === "sea-level" ? viewshed.results.get(id)?.ground : null,
+        )
+        .join();
+    watch(
+      [() => viewshed.viewsheds, () => viewshed.pin, exaggeration, altitudeGrounds],
+      () => {
+        if (!viewshed.pin && !pinShown) return;
+        pinShown = viewshed.pin && viewshed.viewsheds.length > 0;
+        (map.getSource(PIN_ID) as GeoJSONSource | undefined)?.setData(pinData());
+      },
+    );
     watch(() => viewshed.pin, styleGroundPoint);
+    watch([() => viewshed.draggingId, () => viewshed.dragFeedback], () =>
+      (map.getSource(DRAG_ID) as GeoJSONSource | undefined)?.setData(dragData()),
+    );
     watch(
       () => viewshed.placing,
       (on) => map.getCanvasContainer().classList.toggle(PICKING_CLASS, on),
@@ -401,7 +498,8 @@ export function attachViewshedLayers(
       const pressed = viewshed.viewsheds[index];
       if (pressed) viewshed.startDrag(pressed.id);
     },
-    onMove: (position) => viewshed.dragTo(position),
+    onMove: (position, pointer) =>
+      viewshed.dragTo(position, pointer, () => snapRadius(pointer.point, position)),
     onEnd: () => viewshed.endDrag(),
   });
 
@@ -414,6 +512,10 @@ export function attachViewshedLayers(
     if (!map.style) return;
     removeImages(0);
     for (const id of [
+      DRAG_LABEL_ID,
+      DRAG_RING_ID,
+      DRAG_CASING_ID,
+      DRAG_AREA_ID,
       PIN_HEAD_ID,
       PIN_STICK_ID,
       OBSERVER_LABEL_ID,
@@ -421,7 +523,7 @@ export function attachViewshedLayers(
       RANGE_ID,
     ])
       if (map.getLayer(id)) map.removeLayer(id);
-    for (const id of [PIN_ID, OBSERVER_ID, RANGE_ID])
+    for (const id of [DRAG_ID, PIN_ID, OBSERVER_ID, RANGE_ID])
       if (map.getSource(id)) map.removeSource(id);
     if (map.hasImage(PIN_HEAD_ID)) map.removeImage(PIN_HEAD_ID);
   };

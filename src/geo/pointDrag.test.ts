@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import { attachPointDrag } from "./pointDrag";
+import { attachPointDrag, type PointerAt } from "./pointDrag";
 
 /** A map whose pixels are degrees: x = lng, y = lat. */
 function fakeMap() {
@@ -31,13 +31,13 @@ const press = (target: EventTarget, x: number, y: number, init: MouseEventInit =
       ...init,
     }),
   );
-const pointer = (type: string, x: number, y: number) =>
-  window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y }));
+const pointer = (type: string, x: number, y: number, init: MouseEventInit = {}) =>
+  window.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, ...init }));
 
 let setup: ReturnType<typeof fakeMap>;
 let handlers: {
   onStart: (index: number) => void;
-  onMove: (position: [number, number]) => void;
+  onMove: (position: [number, number], pointer: PointerAt) => void;
   onEnd: () => void;
 };
 let detach: () => void;
@@ -47,7 +47,7 @@ beforeEach(() => {
   setup = fakeMap();
   handlers = {
     onStart: vi.fn<(index: number) => void>(),
-    onMove: vi.fn<(position: [number, number]) => void>(),
+    onMove: vi.fn<(position: [number, number], pointer: PointerAt) => void>(),
     onEnd: vi.fn<() => void>(),
   };
   detach = attachPointDrag(setup.map, {
@@ -69,11 +69,27 @@ describe("attachPointDrag", () => {
     expect(handlers.onStart).toHaveBeenCalledWith(0);
     expect(mapPress).not.toHaveBeenCalled();
     pointer("pointermove", 150, 120);
-    expect(handlers.onMove).toHaveBeenLastCalledWith([150, 120]);
+    expect(handlers.onMove).toHaveBeenLastCalledWith([150, 120], {
+      point: [150, 120],
+      altKey: false,
+      shiftKey: false,
+    });
     pointer("pointerup", 150, 120);
     expect(handlers.onEnd).toHaveBeenCalled();
     pointer("pointermove", 10, 10);
     expect(handlers.onMove).toHaveBeenCalledTimes(1);
+  });
+
+  it("tells where the pointer is on the map, and the modifiers held as it moves", () => {
+    setup.container.getBoundingClientRect = () => ({ left: 10, top: 20 }) as DOMRect;
+    press(setup.canvas, 110, 120);
+    pointer("pointermove", 160, 140, { altKey: true, shiftKey: true });
+    expect(handlers.onMove).toHaveBeenLastCalledWith([150, 120], {
+      point: [150, 120],
+      altKey: true,
+      shiftKey: true,
+    });
+    pointer("pointerup", 160, 140);
   });
 
   it("swallows the click that ends a drag, so it does not pick under the point", async () => {

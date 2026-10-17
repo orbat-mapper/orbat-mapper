@@ -15,7 +15,7 @@ import {
   type ViewshedRequest,
   type ViewshedResult,
 } from "@/lib/terrain";
-import type { DraggableMap, PointDragOptions } from "@/geo/pointDrag";
+import type { DraggableMap, PointDragOptions, PointerAt } from "@/geo/pointDrag";
 
 /** What the viewshed worker would answer: flat ground at 100 m. */
 export function flatResult(request: ViewshedRequest): ViewshedResult {
@@ -32,6 +32,7 @@ export function flatResult(request: ViewshedRequest): ViewshedResult {
     mask,
     masking,
     sweep: 0,
+    ground: 100,
     outline: request.outline === false ? null : maskToPolygons(grid, mask),
     visibleShare: visibleShare(mask),
   };
@@ -105,6 +106,8 @@ export function fakeMap() {
       else listeners.get(type)?.delete(handler as () => void);
     },
     getCanvasContainer: () => container,
+    // A pixel is 1e-4 degrees from [10, 50]: about 7 m east and west.
+    unproject: ([x, y]: [number, number]) => ({ lng: 10 + x / 1e4, lat: 50 - y / 1e4 }),
   };
   /** Clicks the map at `[lng, lat]`. */
   const click = ([lng, lat]: LngLat) =>
@@ -140,8 +143,14 @@ export const observerDrag = {
     if (!dragOptions?.points().length) throw new Error("No observer to drag");
     dragOptions.onStart(index);
   },
-  move(position: LngLat) {
-    dragOptions!.onMove(position);
+  /** Moves it to `position`, with the pointer at `point` on the map and these modifiers held. */
+  move(position: LngLat, pointer: Partial<PointerAt> = {}) {
+    dragOptions!.onMove(position, {
+      point: [0, 0],
+      altKey: false,
+      shiftKey: false,
+      ...pointer,
+    });
   },
   end() {
     dragOptions!.onEnd();

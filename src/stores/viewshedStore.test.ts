@@ -25,6 +25,11 @@ vi.mock("@/geo/viewshedClient", () => ({
   stopViewshedWorker: () => {},
 }));
 
+vi.mock("@/geo/demTileProvider", async () => ({
+  demSampler: async () =>
+    (await import("@/lib/terrain/latticeSampler")).latticeSampler(() => 100, 2),
+}));
+
 const lastRequest = () => mocks.compute.mock.lastCall![0];
 
 /** What the map draws: one coverage combined, or each on its own. */
@@ -35,7 +40,8 @@ const coverages = (viewshed: ReturnType<typeof useViewshedStore>) =>
 function dragObserver(viewshed: ReturnType<typeof useViewshedStore>) {
   return {
     start: (index: number) => viewshed.startDrag(viewshed.viewsheds[index]!.id),
-    move: (position: [number, number]) => viewshed.dragTo(position),
+    move: (position: [number, number]) =>
+      viewshed.dragTo(position, { altKey: false, shiftKey: false }, () => 0),
     end: () => viewshed.endDrag(),
   };
 }
@@ -91,6 +97,34 @@ describe("viewshed store", () => {
     dragObserver(viewshed).end();
     await settle();
     expect(lastRequest()).toMatchObject({ center: [10.01, 50], maxSize: full });
+  });
+
+  it("stands the eye on the ground and reaches along it until asked otherwise", async () => {
+    const viewshed = useViewshedStore();
+    viewshed.place([10, 50]);
+    await settle();
+    expect(lastRequest()).toMatchObject({ observerAbove: "ground", slantRange: false });
+    viewshed.observerAbove = "sea-level";
+    viewshed.slantRange = true;
+    await settle();
+    expect(lastRequest()).toMatchObject({ observerAbove: "sea-level", slantRange: true });
+  });
+
+  it("holds the cell size of the full detail through a drag's previews", async () => {
+    const viewshed = useViewshedStore();
+    expect(viewshed.cellSize).toBeNull();
+    viewshed.place([10, 50]);
+    await settle();
+    const full = viewshed.result!.grid.cellSize;
+    expect(viewshed.cellSize).toBe(full);
+    dragObserver(viewshed).start(0);
+    dragObserver(viewshed).move([10.01, 50]);
+    await settle();
+    expect(viewshed.result!.grid.cellSize).toBeGreaterThan(full);
+    expect(viewshed.cellSize).toBe(full);
+    viewshed.close();
+    await settle();
+    expect(viewshed.cellSize).toBeNull();
   });
 
   it("computes again at the detail chosen", async () => {
@@ -160,7 +194,9 @@ describe("viewshed store", () => {
     dragObserver(viewshed).move([10.01, 50]);
     dragObserver(viewshed).move([10.02, 50]);
     dragObserver(viewshed).move([10.03, 50]);
+    // The drag ends once the ground it reads under the pointer has landed.
     dragObserver(viewshed).end();
+    await vi.waitFor(() => expect(viewshed.draggingId).toBeNull());
     release();
     await settle();
     expect(mocks.compute).toHaveBeenCalledTimes(2);
@@ -286,8 +322,12 @@ describe("several viewsheds", () => {
     const viewshed = useViewshedStore();
     viewshed.place([10, 50]);
     viewshed.observerHeight = 10;
+    viewshed.observerAbove = "sea-level";
+    viewshed.slantRange = true;
     viewshed.place([11, 51]);
     expect(viewshed.observerHeight).toBe(10);
+    expect(viewshed.observerAbove).toBe("sea-level");
+    expect(viewshed.slantRange).toBe(true);
     viewshed.observerHeight = 20;
     viewshed.radius = 8000;
     await settle();

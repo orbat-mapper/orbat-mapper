@@ -39,6 +39,11 @@ export function gridAxes({ width, height, bounds }: DemGrid) {
   };
 }
 
+/** The index of the grid's middle cell, the one on its centre. */
+export function centreIndex({ width, height }: DemGrid): number {
+  return ((height - 1) / 2) * width + (width - 1) / 2;
+}
+
 /** The index of the cell `position` lies in, or -1 outside the grid. */
 export function cellAt(grid: DemGrid, [lng, lat]: LngLat): number {
   const axes = gridAxes(grid);

@@ -14,12 +14,19 @@ export interface DraggableMap {
   unproject(point: [number, number]): { lng: number; lat: number };
 }
 
+/** Where the pointer is during a drag, in map pixels, and the modifiers held. */
+export interface PointerAt {
+  point: [number, number];
+  altKey: boolean;
+  shiftKey: boolean;
+}
+
 export interface PointDragOptions {
   /** Where the points are now; none when there is nothing to drag. */
   points: () => readonly LngLat[];
   /** A drag of the point at this index in `points` begins. */
   onStart: (index: number) => void;
-  onMove: (position: LngLat) => void;
+  onMove: (position: LngLat, pointer: PointerAt) => void;
   onEnd: () => void;
 }
 
@@ -89,8 +96,13 @@ export function attachPointDrag(
     setCursor("grabbing");
     onStart(index);
     const move = (moved: PointerEvent) => {
-      const lngLat = map.unproject(local(moved.clientX, moved.clientY));
-      onMove([lngLat.lng, lngLat.lat]);
+      const at = local(moved.clientX, moved.clientY);
+      const lngLat = map.unproject(at);
+      onMove([lngLat.lng, lngLat.lat], {
+        point: at,
+        altKey: moved.altKey,
+        shiftKey: moved.shiftKey,
+      });
     };
     const end = () => {
       window.removeEventListener("pointermove", move);

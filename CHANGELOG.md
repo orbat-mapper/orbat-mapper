@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added an experimental Viewshed to Labs: click the map to place observers and see the ground they can see over the terrain, the dead ground none of them sees, or how high a target must rise to be seen. Observers can be dragged, and their coverage combined. It reads the same elevation data as 3D terrain, and nothing is saved with the scenario.
+- Added an experimental Viewshed to Labs: click the map to place draggable observers and see the ground they can see, the dead ground none of them sees, or how high a target must rise to be seen. Nothing is saved with the scenario.
+- Viewshed observers can be measured above ground or sea level, reach by slant range, and snap to the highest or lowest ground near the pointer (hold Alt, with Shift for the lowest).
 - Added a Snapshot option for side groups in partial ORBAT Mapper exports. A snapshot group holds only the positions, names and symbols of its visible units at a chosen time, so a side can be shown the opposing units it has detected without their history or plans. Importing a file refuses its snapshot groups, so they cannot wipe the scenario's units.
 - The Side and Group import can now refresh a snapshot: a side or group that holds only snapshot groups is replaced as a whole by the newer snapshot in a file, so a team can bring the opposing units it has detected up to date without opening the file. Snapshots are still refused where they would replace real units.
 - Snapshot groups now include each unit's status at the snapshot time, such as Damaged. Untick "Include unit status" to leave it out.

@@ -33,6 +33,10 @@ function centralAngle([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
   return 2 * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/** Metres between two positions along a great circle. */
+export const distanceBetween = (a: LngLat, b: LngLat): number =>
+  centralAngle(a, b) * EARTH_RADIUS;
+
 /** Spherical interpolation. The longitude is unwound towards `a`, so a segment
  *  across the antimeridian keeps its points continuous with its ends. */
 function interpolate(a: LngLat, b: LngLat, angle: number, fraction: number): LngLat {
