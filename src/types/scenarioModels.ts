@@ -387,11 +387,25 @@ export interface MapSettings {
   maxZoom?: number;
 }
 
+/** A recipient export made from this scenario, kept to check files that come back. */
+export interface ExportRecord {
+  /** The scenario ID given to the exported file. */
+  id: EntityId;
+  exportedDate: string;
+  sideGroupIds: EntityId[];
+  /** The included groups that were exported as snapshot groups. */
+  snapshotGroupIds: EntityId[];
+  layerIds: EntityId[];
+  snapshotTime: string;
+}
+
 export interface ScenarioMetadata {
   createdDate: string;
   lastModifiedDate: string;
   exportedFrom?: EntityId;
   exportedDate?: string;
+  /** Never written to an exported file. */
+  exports?: ExportRecord[];
 }
 
 export interface Scenario extends ScenarioInfo {

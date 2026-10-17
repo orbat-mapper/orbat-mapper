@@ -41,6 +41,7 @@ import {
   type FileLayerOption,
   type LayerImportAction,
 } from "@/importexport/importScenarioLayers";
+import { checkFileBase, describeFileBase } from "@/importexport/fileBase";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -186,6 +187,20 @@ const summary = computed(() =>
     action: effective.value.action,
     content: effective.value.content,
   }),
+);
+// The groups the file brings: a newer export of another group does not date them.
+const scopeGroupIds = computed(() =>
+  props.mode === "group"
+    ? [scopeId.value]
+    : (sourceSide.value?.groups.map((g) => g.id) ?? []),
+);
+const originNotice = computed(() =>
+  describeFileBase(
+    checkFileBase(store.state.exportRecords, props.data, {
+      sideGroupIds: scopeGroupIds.value,
+    }),
+    props.mode === "side" ? "this side" : "this group",
+  ),
 );
 const fileState = computed(() => prepareScenario(klona(props.data)));
 // Compare against the live store, so a repeated import sees its own earlier result.
@@ -508,6 +523,10 @@ function apply() {
         @update:selected="selectRows"
       />
       <div class="max-h-72 shrink-0 overflow-auto">
+        <Alert v-if="originNotice" aria-label="File origin" class="mb-2">
+          <AlertTitle>{{ originNotice.title }}</AlertTitle>
+          <AlertDescription>{{ originNotice.message }}</AlertDescription>
+        </Alert>
         <section aria-label="Import summary" aria-live="polite">
           <p>{{ summary.action }} {{ targetName }}: {{ summary.sentence }}</p>
           <p v-for="line in layerSummary" :key="line">{{ line }}</p>

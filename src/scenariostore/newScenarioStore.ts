@@ -2,6 +2,7 @@ import { useImmerStore } from "@/composables/immerStore";
 import type {
   CustomSymbol,
   EquipmentData,
+  ExportRecord,
   MapSettings,
   PersonnelData,
   Scenario,
@@ -74,6 +75,8 @@ import {
 export interface ScenarioState {
   id: EntityId;
   meta: ScenarioMetadata;
+  /** Saved as `meta.exports`, and left out of recipient exports. */
+  exportRecords: ExportRecord[];
   unitMap: Record<EntityId, NUnit>;
   sideMap: Record<EntityId, NSide>;
   sideGroupMap: Record<EntityId, NSideGroup>;
@@ -512,6 +515,7 @@ export function prepareScenario(newScenario: Scenario | LoadableScenario): Scena
   return {
     id: scenarioId,
     meta,
+    exportRecords: klona(scenario.meta?.exports ?? []),
     layerStack,
     layerStackMap,
     layerItemMap,

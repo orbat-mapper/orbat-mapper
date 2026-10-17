@@ -233,6 +233,18 @@ The scenario time a recipient export is taken at: the current scenario time unle
 another is set in the export form. Snapshot groups show their units at this time,
 and "Leave out later events" drops events after it.
 
+**Export record**:
+A note the scenario keeps of each recipient export: the ID given to the file, when
+it was made, its side groups (and which were snapshots), layers and snapshot time.
+Saved with the scenario, never written to an exported file. Used to check files
+that come back.
+
+**File base**:
+The recipient export a returned file was made from. A file the recipient exported
+again names it in `meta.exportedFrom`; a file saved with Download scenario keeps the
+export's ID. The Side, Group and Layers imports warn when the base is older than
+the latest export of the same side group or layer, and note when it is unknown.
+
 ### Offline use
 
 **Offline level**:
