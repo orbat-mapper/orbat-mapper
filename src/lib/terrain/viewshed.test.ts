@@ -84,6 +84,9 @@ describe("sampleGrid", () => {
         );
       },
       finestResolution: () => 1,
+      pixelsAround: async () => {
+        throw new Error("not used by sampleGrid");
+      },
     };
     const heights = await sampleGrid(sampler, grid);
     expect(resolution).toBe(100);

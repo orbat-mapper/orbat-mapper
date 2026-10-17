@@ -107,17 +107,15 @@ interface Viewshed extends Readonly<Settings> {
   readonly number: number;
   readonly observer: LngLat;
 }
-const SETTING_KEYS = [
-  "observerHeight",
-  "observerAbove",
-  "targetHeight",
-  "slantRange",
-  "metres",
-  "detail",
-] as const;
 /** Just the settings of a viewshed, as a fresh object. */
-const settingsOf = (from: Settings): Settings =>
-  Object.fromEntries(SETTING_KEYS.map((key) => [key, from[key]])) as Settings;
+const settingsOf = (from: Settings): Settings => ({
+  observerHeight: from.observerHeight,
+  observerAbove: from.observerAbove,
+  targetHeight: from.targetHeight,
+  slantRange: from.slantRange,
+  metres: from.metres,
+  detail: from.detail,
+});
 const DEFAULT_SETTINGS: Settings = {
   observerHeight: 2,
   observerAbove: "ground",
