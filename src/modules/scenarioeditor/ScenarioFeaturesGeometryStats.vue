@@ -9,6 +9,7 @@ import { feature as turfFeature, lineString, multiLineString } from "@turf/helpe
 import type { NGeometryLayerItem } from "@/types/internalModels";
 import type { ScenarioFeatureType } from "@/types/scenarioGeoModels";
 import { formatArea, formatLength, formatPosition } from "@/geo/utils";
+import { geometryKindLabels } from "@/modules/scenarioeditor/featureLayerUtils";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 
@@ -103,20 +104,6 @@ const totalArea = computed(() =>
   }, 0),
 );
 
-const kindLabels: Record<ScenarioFeatureType, { singular: string; plural: string }> = {
-  Point: { singular: "point", plural: "points" },
-  MultiPoint: { singular: "multi point", plural: "multi points" },
-  LineString: { singular: "line", plural: "lines" },
-  MultiLineString: { singular: "multi line", plural: "multi lines" },
-  Polygon: { singular: "polygon", plural: "polygons" },
-  MultiPolygon: { singular: "multi polygon", plural: "multi polygons" },
-  Circle: { singular: "circle", plural: "circles" },
-  GeometryCollection: {
-    singular: "geometry collection",
-    plural: "geometry collections",
-  },
-};
-
 const kindBreakdown = computed(() => {
   const counts = new Map<ScenarioFeatureType, number>();
   for (const f of props.features) {
@@ -126,7 +113,7 @@ const kindBreakdown = computed(() => {
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([kind, n]) => {
-      const label = kindLabels[kind];
+      const label = geometryKindLabels[kind];
       return `${n} ${n === 1 ? label.singular : label.plural}`;
     })
     .join(", ");

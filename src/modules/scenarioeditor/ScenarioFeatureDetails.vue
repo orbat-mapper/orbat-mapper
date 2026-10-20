@@ -11,12 +11,13 @@ import { GlobalEvents } from "vue-global-events";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, activeScenarioMapEngineKey } from "@/components/injects";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
-import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
+import {
+  geometryKindLabels,
+  getGeometryIcon,
+} from "@/modules/scenarioeditor/featureLayerUtils";
+import { capitalize, groupBy } from "es-toolkit";
+import type { FeatureId, ScenarioFeatureType } from "@/types/scenarioGeoModels";
 import { useDebounceFn } from "@vueuse/core";
-import ScenarioFeatureMarkerSettings from "@/modules/scenarioeditor/ScenarioFeatureMarkerSettings.vue";
-import ScenarioFeatureStrokeSettings from "@/modules/scenarioeditor/ScenarioFeatureStrokeSettings.vue";
-import ScenarioFeatureArrowSettings from "@/modules/scenarioeditor/ScenarioFeatureArrowSettings.vue";
-import ScenarioFeatureFillSettings from "@/modules/scenarioeditor/ScenarioFeatureFillSettings.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import { type SelectedScenarioFeatures, useSelectedItems } from "@/stores/selectedStore";
 import IconButton from "@/components/IconButton.vue";
@@ -39,11 +40,9 @@ import type { ScenarioFeatureActions } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";
 import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
 import ScenarioLayerItemState from "@/modules/scenarioeditor/ScenarioLayerItemState.vue";
-import ScenarioFeatureTextSettings from "@/modules/scenarioeditor/ScenarioFeatureTextSettings.vue";
-import ScenarioFeatureVisibilitySettings from "@/modules/scenarioeditor/ScenarioFeatureVisibilitySettings.vue";
 import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
 import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeaturesGeometryStats.vue";
-import PanelDataGrid from "@/components/PanelDataGrid.vue";
+import ScenarioFeatureStyleGroup from "@/modules/scenarioeditor/ScenarioFeatureStyleGroup.vue";
 import { Button } from "@/components/ui/button";
 import type { NGeometryLayerItem } from "@/types/internalModels";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
@@ -134,12 +133,19 @@ watch(
   { immediate: true },
 );
 
-const geometryType = computed(() => feature.value?.geometryMeta.geometryKind);
-const hasStroke = computed(() => geometryType.value !== "Point");
-const hasArrows = computed(() => geometryType.value === "LineString");
-const hasFill = computed(
-  () => !["Point", "LineString"].includes(geometryType.value || ""),
-);
+// Selected features grouped by geometry kind, so that each kind gets its own
+// set of style controls.
+const styleGroups = computed(() => {
+  const features = feature.value ? [feature.value] : selectedFeatures.value;
+  const groups = groupBy(features, (f) => f.geometryMeta.geometryKind);
+  return (Object.keys(geometryKindLabels) as ScenarioFeatureType[])
+    .filter((kind) => groups[kind])
+    .map((kind) => ({
+      kind,
+      features: groups[kind],
+      title: isMultiMode.value ? capitalize(geometryKindLabels[kind].plural) : undefined,
+    }));
+});
 const canTransformFeature = computed(() =>
   Boolean(engineRef.value?.layers.capabilities.featureTransform),
 );
@@ -160,7 +166,7 @@ watch(canTransformFeature, (enabled) => {
   }
 });
 
-const isMultiMode = computed(() => selectedFeatureIds.value.size > 1);
+const isMultiMode = computed(() => props.selectedIds.size > 1);
 
 const tabList = computed(() => {
   const base = [
@@ -206,8 +212,11 @@ function selectedFeatureIdList(): (string | number)[] {
   return feature.value?.id ? [feature.value.id] : [];
 }
 
-function doUpdateFeature(data: GeometryLayerItemUpdate, options?: UpdateOptions) {
-  const ids = selectedFeatureIdList();
+function doUpdateFeature(
+  ids: FeatureId[],
+  data: GeometryLayerItemUpdate,
+  options?: UpdateOptions,
+) {
   engineRef.value?.suspendFeatureSelection();
 
   if (options?.undoable === false && data.style && !previewSnapshots) {
@@ -269,7 +278,7 @@ function doCommitFeature() {
 function doMetaUpdate(
   data: Pick<GeometryLayerItemUpdate, "name" | "description" | "externalUrl">,
 ) {
-  if (data) doUpdateFeature(data);
+  if (data) doUpdateFeature(selectedFeatureIdList(), data);
   isEditMode.value = false;
 }
 
@@ -405,43 +414,22 @@ function assignFeatureToUnit() {
     <div class="-mx-4">
       <ScrollTabs :items="tabList" v-model="selectedTabString">
         <TabsContent value="0" class="mx-4">
-          <PanelDataGrid class="mt-4">
-            <ScenarioFeatureVisibilitySettings
-              v-if="feature"
-              :feature="feature"
-              @update="doUpdateFeature"
-            />
-            <ScenarioFeatureMarkerSettings
-              v-if="
-                feature &&
-                (geometryType === 'Point' || geometryType === 'GeometryCollection')
-              "
-              :feature="feature"
-              @update="doUpdateFeature"
-            />
-            <ScenarioFeatureStrokeSettings
-              v-if="feature && hasStroke"
-              :feature="feature"
-              @update="doUpdateFeature"
-              @commit="doCommitFeature"
-            />
-            <ScenarioFeatureArrowSettings
-              v-if="feature && hasArrows"
-              :feature="feature"
-              @update="doUpdateFeature"
-            />
-            <ScenarioFeatureFillSettings
-              v-if="feature && hasFill"
-              :feature="feature"
-              @update="doUpdateFeature"
-              @commit="doCommitFeature"
-            />
-            <ScenarioFeatureTextSettings
-              v-if="feature && geometryType !== 'Circle'"
-              :feature="feature"
-              @update="doUpdateFeature"
-            />
-          </PanelDataGrid>
+          <ScenarioFeatureStyleGroup
+            v-for="group in styleGroups"
+            :key="group.kind"
+            :features="group.features"
+            :title="group.title"
+            class="not-first:border-foreground/15 not-first:mt-6 not-first:border-t not-first:pt-2"
+            @update="
+              (data, options) =>
+                doUpdateFeature(
+                  group.features.map((f) => f.id),
+                  data,
+                  options,
+                )
+            "
+            @commit="doCommitFeature"
+          />
         </TabsContent>
         <TabsContent value="1" class="mx-4">
           <ScenarioFeatureGeometryStats v-if="feature && !isEditing" :feature="feature" />

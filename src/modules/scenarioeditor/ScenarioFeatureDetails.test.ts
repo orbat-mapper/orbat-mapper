@@ -351,4 +351,147 @@ describe("ScenarioFeatureDetails", () => {
     );
     expect(setCurrentTime).toHaveBeenCalledWith(Date.parse("2026-04-28T10:00:00Z"));
   });
+
+  describe("bulk style editing", () => {
+    function makeFeature(
+      id: string,
+      geometryKind: string,
+      style: Record<string, unknown> = {},
+    ) {
+      return {
+        id,
+        kind: "geometry",
+        _pid: "layer-1",
+        geometry: {
+          type: geometryKind === "Polygon" ? "Polygon" : "LineString",
+          coordinates: [],
+        },
+        geometryMeta: { geometryKind },
+        name: id,
+        style,
+      };
+    }
+
+    function mountWithFeatures(features: ReturnType<typeof makeFeature>[]) {
+      const updateFeature = vi.fn();
+      const groupUpdate = vi.fn((callback: () => void) => callback());
+      const byId = new Map(features.map((f) => [f.id, f]));
+      const scenario = makeScenarioProvide({
+        geo: {
+          getGeometryLayerItemById: vi.fn((id: string) => ({ layerItem: byId.get(id) })),
+          updateFeature,
+        },
+      });
+      scenario.store.groupUpdate = groupUpdate;
+      const settingsStub = (name: string) => ({
+        name,
+        props: ["feature"],
+        template: `<div data-test="${name}" />`,
+      });
+      const wrapper = mount(ScenarioFeatureDetails, {
+        props: { selectedIds: new Set(features.map((f) => f.id)) },
+        global: {
+          plugins: [createPinia()],
+          provide: {
+            [activeScenarioKey as symbol]: scenario,
+            [activeScenarioMapEngineKey as symbol]: shallowRef({
+              layers: { capabilities: { featureTransform: false } },
+              suspendFeatureSelection: vi.fn(),
+              resumeFeatureSelection: vi.fn(),
+            }),
+          },
+          stubs: {
+            ...baseStubs,
+            ScenarioFeaturesGeometryStats: true,
+            ScenarioFeatureVisibilitySettings: settingsStub(
+              "ScenarioFeatureVisibilitySettings",
+            ),
+            ScenarioFeatureMarkerSettings: settingsStub("ScenarioFeatureMarkerSettings"),
+            ScenarioFeatureStrokeSettings: settingsStub("ScenarioFeatureStrokeSettings"),
+            ScenarioFeatureArrowSettings: settingsStub("ScenarioFeatureArrowSettings"),
+            ScenarioFeatureFillSettings: settingsStub("ScenarioFeatureFillSettings"),
+            ScenarioFeatureTextSettings: settingsStub("ScenarioFeatureTextSettings"),
+          },
+        },
+      });
+      return { wrapper, updateFeature, groupUpdate };
+    }
+
+    const shown = (wrapper: ReturnType<typeof mount>, name: string) =>
+      wrapper.find(`[data-test="${name}"]`).exists();
+
+    const groupTitles = (wrapper: ReturnType<typeof mount>) =>
+      wrapper.findAll('[data-test="style-group-title"]').map((w) => w.text());
+
+    it("shows line style sections when all selected features are lines", () => {
+      const { wrapper } = mountWithFeatures([
+        makeFeature("a", "LineString"),
+        makeFeature("b", "LineString"),
+      ]);
+      expect(groupTitles(wrapper)).toEqual(["Lines"]);
+      expect(shown(wrapper, "ScenarioFeatureStrokeSettings")).toBe(true);
+      expect(shown(wrapper, "ScenarioFeatureArrowSettings")).toBe(true);
+      expect(shown(wrapper, "ScenarioFeatureTextSettings")).toBe(true);
+      expect(shown(wrapper, "ScenarioFeatureVisibilitySettings")).toBe(true);
+      expect(shown(wrapper, "ScenarioFeatureFillSettings")).toBe(false);
+      expect(shown(wrapper, "ScenarioFeatureMarkerSettings")).toBe(false);
+    });
+
+    it("groups style controls by geometry kind", () => {
+      const { wrapper } = mountWithFeatures([
+        makeFeature("p1", "Polygon"),
+        makeFeature("l1", "LineString"),
+        makeFeature("l2", "LineString"),
+      ]);
+      expect(groupTitles(wrapper)).toEqual(["Lines", "Polygons"]);
+      expect(
+        wrapper.findAll('[data-test="style-group-count"]').map((w) => w.text()),
+      ).toEqual(["2", "1"]);
+      expect(wrapper.findAll('[data-test="ScenarioFeatureStrokeSettings"]')).toHaveLength(
+        2,
+      );
+      expect(shown(wrapper, "ScenarioFeatureArrowSettings")).toBe(true);
+      expect(shown(wrapper, "ScenarioFeatureFillSettings")).toBe(true);
+    });
+
+    it("applies a style change to all features in the group in one undo step", async () => {
+      const { wrapper, updateFeature, groupUpdate } = mountWithFeatures([
+        makeFeature("a", "LineString"),
+        makeFeature("b", "LineString"),
+        makeFeature("c", "Polygon"),
+      ]);
+      await wrapper
+        .findAllComponents({ name: "ScenarioFeatureStrokeSettings" })[0]
+        .vm.$emit("update", { style: { stroke: "#ff0000" } });
+
+      expect(groupUpdate).toHaveBeenCalledTimes(1);
+      expect(updateFeature).toHaveBeenCalledTimes(2);
+      expect(updateFeature).toHaveBeenCalledWith("a", { style: { stroke: "#ff0000" } });
+      expect(updateFeature).toHaveBeenCalledWith("b", { style: { stroke: "#ff0000" } });
+    });
+
+    it("does not show a group title for a single feature", () => {
+      const { wrapper } = mountWithFeatures([makeFeature("a", "LineString")]);
+      expect(groupTitles(wrapper)).toEqual([]);
+      expect(shown(wrapper, "ScenarioFeatureStrokeSettings")).toBe(true);
+    });
+
+    it("uses the first feature's style and flags mixed values", () => {
+      const { wrapper } = mountWithFeatures([
+        makeFeature("a", "LineString", { stroke: "#ff0000" }),
+        makeFeature("b", "LineString", { stroke: "#00ff00" }),
+      ]);
+      const stroke = wrapper.findComponent({ name: "ScenarioFeatureStrokeSettings" });
+      expect(stroke.props("feature").id).toBe("a");
+      expect(wrapper.find('[data-test="mixed-styles-note"]').exists()).toBe(true);
+    });
+
+    it("does not flag mixed values when styles match", () => {
+      const { wrapper } = mountWithFeatures([
+        makeFeature("a", "LineString", { stroke: "#ff0000" }),
+        makeFeature("b", "LineString", { stroke: "#ff0000" }),
+      ]);
+      expect(wrapper.find('[data-test="mixed-styles-note"]').exists()).toBe(false);
+    });
+  });
 });
