@@ -68,7 +68,9 @@ function rowLabels(wrapper: VueWrapper) {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+  // Gives the virtualized list a viewport (clientHeight) and row size (offsetHeight).
   vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(400);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
 });
 
 afterEach(() => {

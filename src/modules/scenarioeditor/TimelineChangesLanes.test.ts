@@ -125,8 +125,9 @@ beforeEach(() => {
     top: 0,
     width: TRACK_WIDTH,
   } as DOMRect);
-  // Gives the virtualized lane list a viewport to fill.
+  // Gives the virtualized lane list a viewport (clientHeight) and lane size (offsetHeight).
   vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(400);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
 });
 
 afterEach(() => {
