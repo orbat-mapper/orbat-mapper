@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { getNextEchelonBelow, setStatus } from "@/symbology/helpers";
+import {
+  getCustomSymbolId,
+  getFullUnitSidc,
+  getNextEchelonBelow,
+  setSid,
+  setStatus,
+} from "@/symbology/helpers";
 
 describe("getNextEchelonBelow", function () {
   it("skips regiment", () => {
@@ -33,8 +39,52 @@ describe("setStatus", () => {
     );
   });
 
+  it("sets the status digit of a custom symbol code with a 30-character SIDC", () => {
+    expect(setStatus("custom1:150310000011000000000000000000:abc", "4")).toBe(
+      "custom1:150310400011000000000000000000:abc",
+    );
+  });
+
   it("returns the same code when the status already matches", () => {
     const sidc = "10031040001211000000";
     expect(setStatus(sidc, "4")).toBe(sidc);
+  });
+});
+
+describe("getCustomSymbolId", () => {
+  it("returns the symbol ID of a custom code with a 20-character SIDC", () => {
+    expect(getCustomSymbolId("custom1:10031000001211000000:abc-123_X")).toBe("abc-123_X");
+  });
+
+  it("returns the symbol ID of a custom code with a 30-character SIDC", () => {
+    expect(getCustomSymbolId("custom1:150310000011000000000000000000:abc-123_X")).toBe(
+      "abc-123_X",
+    );
+  });
+});
+
+describe("getFullUnitSidc", () => {
+  it("returns a plain SIDC unchanged", () => {
+    expect(getFullUnitSidc("10031000001211000000")).toBe("10031000001211000000");
+  });
+
+  it("returns the 20-character SIDC of a custom code", () => {
+    expect(getFullUnitSidc("custom1:10031000001211000000:abc-123_X")).toBe(
+      "10031000001211000000",
+    );
+  });
+
+  it("returns the 30-character SIDC of a custom code", () => {
+    expect(getFullUnitSidc("custom1:150310000011000000000000000000:abc-123_X")).toBe(
+      "150310000011000000000000000000",
+    );
+  });
+});
+
+describe("setSid", () => {
+  it("sets the standard identity of a custom symbol code with a 30-character SIDC", () => {
+    expect(setSid("custom1:150310000011000000000000000000:abc", "6")).toBe(
+      "custom1:150610000011000000000000000000:abc",
+    );
   });
 });

@@ -50,8 +50,8 @@ import { Button } from "@/components/ui/button";
 import PopoverColorPicker from "@/components/PopoverColorPicker.vue";
 import { activeScenarioKey } from "@/components/injects.ts";
 import SymbolPickerCustomSymbol from "@/components/SymbolPickerCustomSymbol.vue";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
-import { getFullUnitSidc } from "@/symbology/helpers.ts";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+import { getCustomSymbolId, getFullUnitSidc } from "@/symbology/helpers.ts";
 import SymbolExportMenu from "@/components/SymbolExportMenu.vue";
 import { useSymbolSettingsStore } from "@/stores/settingsStore.ts";
 import { getSymbologyStandardName } from "@/symbology/standards.ts";
@@ -86,9 +86,7 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
 const customSymbolId = ref(
-  props.initialSidc?.startsWith(CUSTOM_SYMBOL_PREFIX)
-    ? props.initialSidc.slice(CUSTOM_SYMBOL_SLICE)
-    : null,
+  (props.initialSidc && getCustomSymbolId(props.initialSidc)) || null,
 );
 
 const customSymbol = computed(() => {

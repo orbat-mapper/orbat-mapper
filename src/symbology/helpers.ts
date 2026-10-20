@@ -1,6 +1,6 @@
 import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
 import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX, STATUS_INDEX } from "@/symbology/sidc.ts";
 import { setCharAt } from "@/components/helpers.ts";
 
@@ -32,16 +32,27 @@ export function echelonItems(sid: SidValue) {
 }
 
 export function getFullUnitSidc(sidc: string): string {
-  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    return sidc.slice(CUSTOM_SYMBOL_PREFIX.length, CUSTOM_SYMBOL_PREFIX.length + 20);
-  }
-  return sidc;
+  return parseCustomSymbolCode(sidc)?.sidc ?? sidc;
 }
 
-export function getCustomSymbolId(sidc: string): string | null | undefined {
-  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    return sidc.slice(CUSTOM_SYMBOL_SLICE);
-  }
+/**
+ * Splits a custom symbol code, `custom1:<sidc>:<symbolId>`, into its SIDC and symbol ID.
+ * The SIDC can be 20 (2525D) or 30 (2525E) characters, so split at the last colon.
+ * Symbol IDs are nanoids and never contain a colon.
+ */
+function parseCustomSymbolCode(
+  sidc: string,
+): { sidc: string; symbolId: string } | undefined {
+  if (!sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) return;
+  const separatorIndex = sidc.lastIndexOf(":");
+  return {
+    sidc: sidc.slice(CUSTOM_SYMBOL_PREFIX.length, separatorIndex),
+    symbolId: sidc.slice(separatorIndex + 1),
+  };
+}
+
+export function getCustomSymbolId(sidc: string): string | undefined {
+  return parseCustomSymbolCode(sidc)?.symbolId;
 }
 
 export function setSid(sidc: string, sidValue: string): string {

@@ -30,7 +30,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
 import { getUnitDragItem, isUnitDragItem } from "@/types/draggables";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { getCustomSymbolId } from "@/symbology/helpers.ts";
 
 interface Props {
   item: NOrbatItemData;
@@ -93,13 +93,9 @@ const unitLabel = computed(() =>
     : unit.value.name,
 );
 
-const customSidc = computed(() => {
-  const sidc = unit.value._state?.sidc || unit.value.sidc;
-  if (sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    return sidc.slice(CUSTOM_SYMBOL_SLICE);
-  }
-  return undefined;
-});
+const customSidc = computed(() =>
+  getCustomSymbolId(unit.value._state?.sidc || unit.value.sidc),
+);
 
 const effectiveReinforcedStatus = computed(
   () => unit.value._state?.reinforcedStatus ?? unit.value.reinforcedStatus,

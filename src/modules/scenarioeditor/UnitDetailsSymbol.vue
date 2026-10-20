@@ -12,7 +12,7 @@ import { type TextAmpKey, textAmpMap } from "@/symbology/milsymbwrapper";
 import type { TextAmplifiers } from "@/types/scenarioModels";
 import { Button } from "@/components/ui/button";
 import UnitSymbol from "@/components/UnitSymbol.vue";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { getCustomSymbolId } from "@/symbology/helpers.ts";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import PanelDataGrid from "@/components/PanelDataGrid.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
@@ -45,8 +45,8 @@ const {
 } = useUnitEditTargets(() => props.unit.id);
 
 const customSymbol = computed(() => {
-  if (props.unit.sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    const symbolId = props.unit.sidc.slice(CUSTOM_SYMBOL_SLICE);
+  const symbolId = getCustomSymbolId(props.unit.sidc);
+  if (symbolId) {
     return activeScenario.store.state.customSymbolMap[symbolId];
   }
 });

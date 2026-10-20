@@ -82,7 +82,7 @@ import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTerminator";
 import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants";
+import { getCustomSymbolId } from "@/symbology/helpers";
 import { SID_INDEX } from "@/symbology/sidc";
 import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
@@ -428,10 +428,6 @@ function getUnitLabelOffsetY(
   // Measured without the selection outline, so the label stays put on selection.
   const { bottom } = getMilSymbolMetrics(symbolKey, cachedSymbol);
   return (bottom + UNIT_LABEL_GAP) / getUnitLabelTextSize();
-}
-
-function getCustomSymbolId(sidc: string) {
-  return sidc.startsWith(CUSTOM_SYMBOL_PREFIX) ? sidc.slice(CUSTOM_SYMBOL_SLICE) : "";
 }
 
 // Rasterize a loaded custom-symbol image (with optional selection highlight and
