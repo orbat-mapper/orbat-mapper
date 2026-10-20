@@ -4,6 +4,7 @@ import { ArrowUpRightIcon, ShapesIcon } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { useDebounce } from "@vueuse/core";
 import { injectStrict } from "@/utils";
+import { getCustomSymbolId } from "@/symbology/helpers.ts";
 import {
   Empty,
   EmptyDescription,
@@ -12,7 +13,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { activeScenarioKey } from "@/components/injects.ts";
-import { CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -20,6 +20,9 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {});
+const initialSymbolId = computed(
+  () => props.initialSidc && getCustomSymbolId(props.initialSidc),
+);
 const emit = defineEmits(["update-sidc"]);
 const { store } = injectStrict(activeScenarioKey);
 const searchQuery = ref("");
@@ -80,11 +83,7 @@ function onEsc(e: KeyboardEvent) {
             </span>
             <p
               class="mt-1 max-w-full shrink-0 overflow-hidden text-center text-sm font-medium break-words"
-              :class="
-                id === initialSidc?.slice(CUSTOM_SYMBOL_SLICE)
-                  ? 'text-red-900'
-                  : 'text-foreground'
-              "
+              :class="id === initialSymbolId ? 'text-red-900' : 'text-foreground'"
             >
               {{ name }}
             </p>

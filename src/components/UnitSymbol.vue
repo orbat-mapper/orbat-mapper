@@ -2,7 +2,7 @@
 import { computed, inject } from "vue";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { activeScenarioKey } from "@/components/injects.ts";
-import { CUSTOM_SYMBOL_PREFIX, CUSTOM_SYMBOL_SLICE } from "@/config/constants.ts";
+import { getCustomSymbolId } from "@/symbology/helpers.ts";
 
 type Props = {
   sidc: string;
@@ -14,8 +14,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), { size: 15 });
 const { store } = inject(activeScenarioKey, undefined) || {};
 const customSidc = computed(() => {
-  if (props.sidc?.startsWith(CUSTOM_SYMBOL_PREFIX)) {
-    const symbolId = props.sidc.slice(CUSTOM_SYMBOL_SLICE);
+  const symbolId = props.sidc && getCustomSymbolId(props.sidc);
+  if (symbolId) {
     const mapping = props.options?.customSymbolMap ?? store?.state.customSymbolMap ?? {};
     return mapping[symbolId];
   }
