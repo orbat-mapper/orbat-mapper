@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - `maplibreConfig.json` can now declare an elevation source, a DEM tile server or a PMTiles archive, which replaces the Mapterhorn default. An elevation archive the user opens still takes precedence.
 - Added range rings to the Layers panel. All rings, each group and single rings can be shown or hidden there, groups can be added and renamed, and rings can be moved in the layer order.
 - Added editing of many units at once in the unit details panel, such as setting the status, changing the symbol or removing from the map, with each change a single undo step.
+- Added editing the style of many map features at once. With several features selected, the Style tab shows a group for each kind of feature, such as lines or polygons, and a change applies to every feature in that group as a single undo step.
 - Added an orbit mode to the map ("Orbit here" in the map context menu, or `o`) that slowly circles a spot, with an optional Hellfire strike (shift-click while orbiting).
 - The map context menu marks the clicked spot with a target.
 - Added a Unit status category, a Narrow mode and a Zoom to button to the Select tab. Narrow keeps only the selected units in a clicked category, such as one side's land units.
