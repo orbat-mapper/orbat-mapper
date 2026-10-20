@@ -15,5 +15,5 @@ export const SHARE_HISTORY_LOCALSTORAGE_KEY = "orbat-share-history";
 
 export const DEFAULT_BASEMAP_ID = "osm";
 export const DEFAULT_MAPLIBRE_BASEMAP_ID = "openFreeMapPositron";
-// custom symbol format: custom1:1003100000:someid
+// custom symbol format: custom1:<sidc>:<symbolId>, see parseCustomSymbolCode
 export const CUSTOM_SYMBOL_PREFIX = "custom1:";

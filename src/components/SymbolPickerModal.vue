@@ -85,9 +85,7 @@ const symbolSettingsStore = useSymbolSettingsStore();
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("md");
 
-const customSymbolId = ref(
-  (props.initialSidc && getCustomSymbolId(props.initialSidc)) || null,
-);
+const customSymbolId = ref(getCustomSymbolId(props.initialSidc) ?? null);
 
 const customSymbol = computed(() => {
   if (!customSymbolId.value || !scn) return null;
