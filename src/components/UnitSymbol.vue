@@ -14,7 +14,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), { size: 15 });
 const { store } = inject(activeScenarioKey, undefined) || {};
 const customSidc = computed(() => {
-  const symbolId = props.sidc && getCustomSymbolId(props.sidc);
+  const symbolId = getCustomSymbolId(props.sidc);
   if (symbolId) {
     const mapping = props.options?.customSymbolMap ?? store?.state.customSymbolMap ?? {};
     return mapping[symbolId];

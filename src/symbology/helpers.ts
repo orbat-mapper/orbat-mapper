@@ -41,17 +41,18 @@ export function getFullUnitSidc(sidc: string): string {
  * Symbol IDs are nanoids and never contain a colon.
  */
 function parseCustomSymbolCode(
-  sidc: string,
+  code: string | null | undefined,
 ): { sidc: string; symbolId: string } | undefined {
-  if (!sidc.startsWith(CUSTOM_SYMBOL_PREFIX)) return;
-  const separatorIndex = sidc.lastIndexOf(":");
+  if (!code?.startsWith(CUSTOM_SYMBOL_PREFIX)) return;
+  const separatorIndex = code.lastIndexOf(":");
+  if (separatorIndex < CUSTOM_SYMBOL_PREFIX.length) return;
   return {
-    sidc: sidc.slice(CUSTOM_SYMBOL_PREFIX.length, separatorIndex),
-    symbolId: sidc.slice(separatorIndex + 1),
+    sidc: code.slice(CUSTOM_SYMBOL_PREFIX.length, separatorIndex),
+    symbolId: code.slice(separatorIndex + 1),
   };
 }
 
-export function getCustomSymbolId(sidc: string): string | undefined {
+export function getCustomSymbolId(sidc: string | null | undefined): string | undefined {
   return parseCustomSymbolCode(sidc)?.symbolId;
 }
 

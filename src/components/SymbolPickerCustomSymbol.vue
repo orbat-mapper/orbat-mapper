@@ -20,9 +20,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {});
-const initialSymbolId = computed(
-  () => props.initialSidc && getCustomSymbolId(props.initialSidc),
-);
+const initialSymbolId = computed(() => getCustomSymbolId(props.initialSidc));
 const emit = defineEmits(["update-sidc"]);
 const { store } = injectStrict(activeScenarioKey);
 const searchQuery = ref("");

@@ -61,6 +61,14 @@ describe("getCustomSymbolId", () => {
       "abc-123_X",
     );
   });
+
+  it("returns undefined for a custom code without a symbol ID separator", () => {
+    expect(getCustomSymbolId("custom1:xxxxxx")).toBeUndefined();
+  });
+
+  it("returns undefined for a missing code", () => {
+    expect(getCustomSymbolId(undefined)).toBeUndefined();
+  });
 });
 
 describe("getFullUnitSidc", () => {
