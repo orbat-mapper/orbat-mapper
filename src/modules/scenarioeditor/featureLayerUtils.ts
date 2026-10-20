@@ -1,6 +1,6 @@
 import { featureCollection } from "@turf/helpers";
 import turfCircle from "@turf/circle";
-import type { ScenarioFeature } from "@/types/scenarioGeoModels";
+import type { ScenarioFeature, ScenarioFeatureType } from "@/types/scenarioGeoModels";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import {
   IconLayersOutline,
@@ -89,6 +89,24 @@ function getItemIconKey(
   if (isGeometryLayerItemLike(item)) return getGeometryKind(item as GeometryFeatureLike);
   return "kind" in item ? item.kind : undefined;
 }
+
+// Also defines the display order of geometry kinds.
+export const geometryKindLabels: Record<
+  ScenarioFeatureType,
+  { singular: string; plural: string }
+> = {
+  Point: { singular: "point", plural: "points" },
+  MultiPoint: { singular: "multi point", plural: "multi points" },
+  LineString: { singular: "line", plural: "lines" },
+  MultiLineString: { singular: "multi line", plural: "multi lines" },
+  Polygon: { singular: "polygon", plural: "polygons" },
+  MultiPolygon: { singular: "multi polygon", plural: "multi polygons" },
+  Circle: { singular: "circle", plural: "circles" },
+  GeometryCollection: {
+    singular: "geometry collection",
+    plural: "geometry collections",
+  },
+};
 
 export function getGeometryIcon(
   feature?: ScenarioFeature | NGeometryLayerItem | ScenarioLayerItem,
