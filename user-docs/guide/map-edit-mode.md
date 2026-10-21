@@ -76,7 +76,15 @@ The ORBAT tab shows the order of battle (sides, groups and units) as a tree that
 
 #### Drag and drop
 
-- Drag units to put them in a different sequence or below a different parent.
+::: tip
+The unit symbol is the drag handle. Drag the symbol, not the name of the unit. When the pointer is on the symbol, it
+changes to a move cursor.
+:::
+
+- To place a unit on the map, drag its symbol from the ORBAT tab and drop it on the map. _Unit position_ recording
+  must be on.
+- To put units in a different sequence or below a different parent, drag their symbols to a different position in the
+  tree.
 - To make copies of the dragged units, hold **Ctrl/Cmd** and drag.
 - To make copies of the units with their state (positions and timeline data), hold **Ctrl/Cmd+Alt** and drag.
 - You can drag more than one selected unit at the same time.
@@ -182,6 +190,8 @@ measures on it.
   units in an area, **drag a box** on the map.
 - Click on the symbol of the unit, not on its labels. If units are on top of each other, the application selects the
   nearest unit.
+- To place a unit on the map, drag its symbol from the [ORBAT tab](#orbat-tab) or from the unit breadcrumbs and drop it
+  on the map. _Unit position_ recording must be on.
 - To move a unit to a new position, **drag** it. _Unit position_ recording must be on.
 - Unit symbols have a rotation that you can set, and labels that show the names of the units.
 

@@ -23,7 +23,7 @@ hero:
 
 features:
   - title: Build ORBATs
-    details: Build and organize orders of battle quickly. Drag and drop the units.
+    details: Build and organize orders of battle quickly. Drag the unit symbols to reorganize the units or to place them on the map.
   - title: ORBAT chart view
     details: Show unit hierarchies as organization charts.
   - title: Timeline and playback
