@@ -32,7 +32,7 @@ import {
   isNGeometryLayerItem,
 } from "@/types/scenarioLayerItems";
 import { hashObject } from "@/utils";
-import type { ArrowType } from "@/geo/simplestyle";
+import { defaultTextSize, type ArrowType } from "@/geo/simplestyle";
 import {
   EMPTY_OBSTACLE_HIGHLIGHT,
   isObstacleHighlighted,
@@ -73,6 +73,7 @@ type LabelFeatureProperties = {
   selected: boolean;
   zIndex: number;
   textField: string;
+  textSize: number;
   textColor: string;
   textHaloColor: string;
   textHaloWidth: number;
@@ -108,8 +109,6 @@ type ArrowGroupDefinition = GroupDefinition & {
   iconAnchor: "center" | "right";
   iconOffset: [number, number];
 };
-
-const LABEL_TEXT_SIZE = 13;
 
 type LabelPlacement = "point" | "line";
 
@@ -242,6 +241,11 @@ function getArrowVisibilityGroup(
     iconAnchor,
     iconOffset,
   } satisfies ArrowGroupDefinition;
+}
+
+function getLabelTextSize(style: StyleLike) {
+  const size = style["text-size"];
+  return typeof size === "number" && size > 0 ? size : defaultTextSize;
 }
 
 function getTextVisibilityGroup(
@@ -476,6 +480,7 @@ function buildFeatureData(
             ? normalizedGeometry
             : getLabelGeometry(normalizedGeometry);
         if (labelGeometry) {
+          const textSize = getLabelTextSize(style);
           labelGroups.add(labelGroup.id);
           labelGroupDefs.set(labelGroup.id, labelGroup);
           labels.push({
@@ -489,6 +494,7 @@ function buildFeatureData(
               selected: selectedFeatureIds.has(item.id),
               zIndex: item._zIndex ?? index,
               textField: labelText,
+              textSize,
               textColor: "#333333",
               textHaloColor: "#FBFCFB",
               textHaloWidth: 2,
@@ -496,10 +502,10 @@ function buildFeatureData(
               textAnchor: normalizeTextAnchor(style["text-align"]),
               textOffset:
                 labelPlacement === "line"
-                  ? [0, (style["text-offset-y"] ?? 0) / LABEL_TEXT_SIZE]
+                  ? [0, (style["text-offset-y"] ?? 0) / textSize]
                   : [
-                      (style["text-offset-x"] ?? 15) / LABEL_TEXT_SIZE,
-                      (style["text-offset-y"] ?? 0) / LABEL_TEXT_SIZE,
+                      (style["text-offset-x"] ?? 15) / textSize,
+                      (style["text-offset-y"] ?? 0) / textSize,
                     ],
               sourceOpacity,
             },
@@ -910,7 +916,7 @@ function createLayerDefinitions(
       visibility: layoutVisibility,
       "text-field": ["get", "textField"],
       "text-font": ["Noto Sans Italic"],
-      "text-size": LABEL_TEXT_SIZE,
+      "text-size": ["get", "textSize"],
       "text-allow-overlap": false,
       "text-ignore-placement": false,
       "symbol-sort-key": ["get", "zIndex"],
