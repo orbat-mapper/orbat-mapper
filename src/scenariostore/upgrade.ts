@@ -473,7 +473,8 @@ function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
         isHidden: false,
       };
 
-      const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke"> = {
+      // Legacy features predate label sizes; they keep the renderer default.
+      const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke" | "text-size"> = {
         fill,
         "fill-opacity": fillOpacity,
         "stroke-opacity": strokeOpacity,

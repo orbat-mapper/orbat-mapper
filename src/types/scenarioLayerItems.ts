@@ -711,6 +711,7 @@ const RESERVED_GEOMETRY_ITEM_USERDATA_KEYS = new Set([
   "text-align",
   "text-offset-x",
   "text-offset-y",
+  "text-size",
   "limitVisibility",
   "minZoom",
   "maxZoom",
