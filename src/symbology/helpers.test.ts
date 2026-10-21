@@ -6,6 +6,7 @@ import {
   getNextEchelonBelow,
   setSid,
   setStatus,
+  updateSidc,
 } from "@/symbology/helpers";
 
 describe("getNextEchelonBelow", function () {
@@ -94,5 +95,25 @@ describe("setSid", () => {
     expect(setSid("custom1:150310000011000000000000000000:abc", "6")).toBe(
       "custom1:150610000011000000000000000000:abc",
     );
+  });
+});
+
+describe("updateSidc", () => {
+  it("updates a plain SIDC", () => {
+    expect(
+      updateSidc("10031000141211000000", (sidc) => {
+        sidc.standardIdentity = "6";
+        sidc.emt = "16";
+      }),
+    ).toBe("10061000161211000000");
+  });
+
+  it("updates the embedded SIDC of a custom symbol code and keeps the symbol ID", () => {
+    expect(
+      updateSidc("custom1:10031000141211000000:abc123", (sidc) => {
+        sidc.standardIdentity = "6";
+        sidc.emt = "16";
+      }),
+    ).toBe("custom1:10061000161211000000:abc123");
   });
 });

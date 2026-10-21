@@ -74,7 +74,6 @@ import {
 } from "@/components/injects";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
@@ -620,12 +619,7 @@ function onContextMenu(event: MouseEvent) {
             @select.prevent="onAddUnit"
             :disabled="!recordingStore.isRecordingLocation"
           >
-            <MilitarySymbol
-              :sidc="sidc"
-              :options="symbolOptions"
-              :size="15"
-              class="w-8"
-            />
+            <UnitSymbol :sidc="sidc" :options="symbolOptions" :size="15" class="w-8" />
             Unit
           </ContextMenuItem>
           <ContextMenuItem @select.prevent="onAddPoint">
