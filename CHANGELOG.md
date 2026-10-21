@@ -94,6 +94,7 @@ All notable changes to this project will be documented in this file.
 - Fixed custom symbol label spacing changing when the label size changed.
 - Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
 - Fixed custom unit symbols whose corresponding SIDC is a 30-character 2525E code not showing in the ORBAT tree, unit details, breadcrumb, symbol picker or on the map.
+- Fixed custom unit symbols in the main toolbar symbol palette. A custom symbol picked with "Add symbol" now shows its image in the palette and on the Add unit button, and units added with it keep the custom symbol instead of getting a garbled one. Adding a subordinate to a unit with a custom symbol no longer garbles it either.
 
 ## September 2026
 
