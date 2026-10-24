@@ -87,6 +87,10 @@ const previewSidcs = computed(
     ),
 );
 
+// Echelon markings are black; a light outline, as in the ORBAT tree, keeps them
+// readable on a dark background.
+const LINEUP_OPTIONS = { outlineWidth: 8 };
+
 const RATIO_FORMAT = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 
 const ratioOf = (code: string) => echelonRatio(draft.value.ratios, code);
@@ -242,6 +246,7 @@ const NUMBER_INPUT = "w-28 shrink-0";
             <NewMilitarySymbol
               :sidc="previewSidcs.get(echelon.code)!"
               :size="sizePx(echelon.code)"
+              :options="LINEUP_OPTIONS"
             />
           </span>
         </div>
