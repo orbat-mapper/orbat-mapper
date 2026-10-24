@@ -171,6 +171,8 @@ function setupLayers() {
     ["get", "side"],
     "hostile",
     COLORS.hostile,
+    "contact",
+    FIRE,
     COLORS.friend,
   ] as any;
   mlMap.addLayer({
@@ -602,6 +604,63 @@ function featuresE(t: number): Feature[] {
       );
     }
   };
+  // A stylised arrow, built in screen pixels so it holds its shape at any zoom: a thin faint
+  // tail at the source widening into a large head just outside the target's rings. Dashed
+  // arrows leave out every other piece of the taper.
+  const taperedArrow = (
+    a: Position,
+    b: Position,
+    side: string,
+    active: boolean,
+    fade: number,
+    label: { label?: string },
+    dashed = false,
+  ) => {
+    const sa = mlMap.project(a as [number, number]);
+    const sb = mlMap.project(b as [number, number]);
+    const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
+    if (len < 40) return;
+    const ux = (sb.x - sa.x) / len;
+    const uy = (sb.y - sa.y) / len;
+    const at = (px: number): Position => {
+      const ll = mlMap.unproject([sa.x + ux * px, sa.y + uy * px]);
+      return [ll.lng, ll.lat];
+    };
+    const from = 16;
+    const head = len - 34;
+    const segs = dashed ? 15 : 10;
+    for (let k = 0; k < segs; k++) {
+      if (dashed && k % 2 === 1) continue;
+      const f0 = k / segs;
+      const f1 = (k + 1) / segs;
+      out.push({
+        type: "Feature",
+        properties: {
+          kind: "elink",
+          side,
+          w: (active ? 0.75 : 0.5) + (active ? 3 : 1.25) * f1,
+          o: Math.min(1, (0.15 + 0.85 * f1) * (active ? 0.9 : 0.45) * fade * fade),
+          arrows: false,
+          ...(k === Math.floor(segs / 2) ? label : {}),
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: [at(from + (head - from) * f0), at(from + (head - from) * f1)],
+        },
+      });
+    }
+    // Screen angle, clockwise from east; map-aligned icons also turn with the map bearing.
+    const rot = (Math.atan2(uy, ux) * 180) / Math.PI;
+    out.push(
+      point(at(head + 6), {
+        kind: "eend",
+        side,
+        rot: rot + mlMap.getBearing(),
+        size: active ? 1.9 : 1.3,
+        o: Math.min(1, (active ? 0.95 : 0.5) * fade * fade),
+      }),
+    );
+  };
   for (const e of engagements.value) {
     if (t < e.t || t > e.end + linger) continue;
     const active = t <= e.end;
@@ -613,15 +672,11 @@ function featuresE(t: number): Feature[] {
       for (const id of e.targets) {
         const b = unitMap[id] && locationAt(unitMap[id], t);
         if (!b) continue;
-        const [aa, bb] = shorten(a, b, 0.12);
-        out.push({
-          type: "Feature",
-          properties: { kind: "econtact", o: 0.5 },
-          geometry: { type: "LineString", coordinates: [aa, bb] },
-        });
+        // Attacker to defender, orange and dashed so it reads as a fight, not a shot.
+        taperedArrow(a, b, "contact", true, 1, {}, true);
         pulse(b, FIRE);
       }
-      pulse(a, FIRE);
+      pulse(a, COLORS[e.side]);
       continue;
     }
     const ends: Position[] = e.area
@@ -641,47 +696,7 @@ function featuresE(t: number): Feature[] {
         // A stylised arrow, built in screen pixels so it holds its shape at any zoom: a thin
         // faint tail at the shooter widening into a large head just outside the target's
         // rings.
-        const sa = mlMap.project(a as [number, number]);
-        const sb = mlMap.project(b as [number, number]);
-        const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
-        if (len < 40) return;
-        const ux = (sb.x - sa.x) / len;
-        const uy = (sb.y - sa.y) / len;
-        const at = (px: number): Position => {
-          const ll = mlMap.unproject([sa.x + ux * px, sa.y + uy * px]);
-          return [ll.lng, ll.lat];
-        };
-        const from = 16;
-        const head = len - 34;
-        const segs = 10;
-        for (let k = 0; k < segs; k++) {
-          const f0 = k / segs;
-          const f1 = (k + 1) / segs;
-          out.push({
-            type: "Feature",
-            properties: {
-              kind: "elink",
-              side: e.side,
-              w: (active ? 0.75 : 0.5) + (active ? 3 : 1.25) * f1,
-              o: Math.min(1, (0.15 + 0.85 * f1) * (active ? 0.9 : 0.45) * fade * fade),
-              arrows: false,
-              ...(k === Math.floor(segs / 2) ? label : {}),
-            },
-            geometry: {
-              type: "LineString",
-              coordinates: [at(from + (head - from) * f0), at(from + (head - from) * f1)],
-            },
-          });
-        }
-        out.push(
-          point(at(head + 6), {
-            kind: "eend",
-            side: e.side,
-            rot,
-            size: active ? 1.9 : 1.3,
-            o: Math.min(1, (active ? 0.95 : 0.5) * fade * fade),
-          }),
-        );
+        taperedArrow(a, b, e.side, active, fade, label);
         if (active && !e.area) pulse(b, FIRE);
         return;
       }

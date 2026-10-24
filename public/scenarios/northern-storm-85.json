@@ -6093,7 +6093,8 @@
                           "t": "1985-06-15T06:00:00+02:00",
                           "sidc": "10061030211205000000",
                           "status": "Combat ineffective",
-                          "title": "Bridgehead collapses"
+                          "title": "Bridgehead collapses",
+                          "location": [9.79, 51.99]
                         },
                         {
                           "id": "r-47gtd-s13",
