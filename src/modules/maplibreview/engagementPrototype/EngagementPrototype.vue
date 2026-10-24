@@ -35,6 +35,7 @@ const VARIANTS = [
   { key: "A", name: "Tracks" },
   { key: "B", name: "Arcs with flight profiles" },
   { key: "C", name: "Links + log" },
+  { key: "D", name: "Cinematic" },
 ] as const;
 const route = useRoute();
 const router = useRouter();
@@ -269,7 +270,7 @@ function removeLayers() {
   if (mlMap.getSource(SRC)) mlMap.removeSource(SRC);
 }
 function onStyleLoad() {
-  if (variant.value !== "B") setupLayers();
+  if (variant.value === "A" || variant.value === "C") setupLayers();
   redraw();
 }
 mlMap.on("style.load", onStyleLoad);
@@ -568,11 +569,346 @@ function drawB(t: number) {
   }
 }
 
+/* ---------------- Variant D: cinematic ---------------- */
+// Deterministic per-track noise, so sparks and puffs don't jump between frames.
+function hash(n: number) {
+  const x = Math.sin(n * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+const GLOW = { friend: "#60a5fa", hostile: "#ff4d4d" };
+
+function drawD(t: number) {
+  const c = ensureCanvas();
+  const el = mlMap.getCanvas();
+  const dpr = window.devicePixelRatio || 1;
+  const w = el.clientWidth;
+  const h = el.clientHeight;
+  if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    c.style.width = `${w}px`;
+    c.style.height = `${h}px`;
+  }
+  const ctx = c.getContext("2d")!;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const now = Date.now();
+  const active = isEngagementActive(t);
+
+  // Night-ops veil, deeper while something is in the air, with a vignette.
+  ctx.fillStyle = `rgba(3,7,18,${active ? 0.55 : 0.35})`;
+  ctx.fillRect(0, 0, w, h);
+  const vg = ctx.createRadialGradient(
+    w / 2,
+    h / 2,
+    Math.min(w, h) * 0.3,
+    w / 2,
+    h / 2,
+    Math.max(w, h) * 0.75,
+  );
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, `rgba(0,0,0,${active ? 0.65 : 0.4})`);
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+  // scanlines
+  ctx.fillStyle = "rgba(255,255,255,0.025)";
+  for (let y = (now / 60) % 4; y < h; y += 4) ctx.fillRect(0, y, w, 1);
+
+  const P = (p: Position, alt = 0) => {
+    const s = mlMap.project(p as [number, number]);
+    return [s.x, s.y - lift(alt)] as const;
+  };
+
+  // Radar sweeps on units firing interceptors.
+  for (const e of engagements.value) {
+    if (e.type !== "intercept" || t < e.t - 10 * MS_PER_MINUTE || t > e.end) continue;
+    const at = locationAt(unitMap[e.shooterId], t);
+    if (!at) continue;
+    const [x, y] = P(at);
+    const a = (now / 900) % (Math.PI * 2);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 160);
+    g.addColorStop(0, "rgba(96,165,250,0.35)");
+    g.addColorStop(1, "rgba(96,165,250,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, 160, a, a + 0.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(96,165,250,0.25)";
+    ctx.lineWidth = 1;
+    for (const r of [60, 110, 160]) {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  const smokeLife = wall(2.5, 6, t);
+  const linger = wall(1.5, 30, t);
+  const boomDur = wall(1.2, 4, t);
+  tracks.value.forEach((tr, ti) => {
+    if (t < tr.launch) return;
+    const stop = trackStop(tr);
+    const age = t - stop;
+    if (age > linger) return;
+    const col = GLOW[tr.side];
+    const nowD = trackPosition(tr, Math.min(t, stop)).d;
+    const samples = trackSamples(tr, nowD, 40);
+    const span = Math.min(t, stop) - tr.launch;
+
+    // smoke: each sample was passed at a time, so puffs swell and fade with age
+    ctx.globalCompositeOperation = "source-over";
+    samples.forEach((s, i) => {
+      const passed = tr.launch + (span * i) / samples.length;
+      const pa = (t - passed) / smokeLife;
+      if (pa < 0 || pa > 1) return;
+      const [x, y] = P(s.position, s.alt);
+      const drift = 6 * pa * (hash(ti * 97 + i) - 0.5);
+      ctx.fillStyle = `rgba(200,205,215,${0.22 * (1 - pa)})`;
+      ctx.beginPath();
+      ctx.arc(x + drift, y - 4 * pa, 2 + 9 * pa, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // glowing trail
+    ctx.globalCompositeOperation = "lighter";
+    const tail = samples.slice(-12);
+    if (age <= 0 && tail.length > 1) {
+      const [x0, y0] = P(tail[0].position, tail[0].alt);
+      const [x1, y1] = P(tail[tail.length - 1].position, tail[tail.length - 1].alt);
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, col);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      tail.forEach((s, i) => {
+        const [x, y] = P(s.position, s.alt);
+        if (i) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      // head with a flickering exhaust flare
+      const flick = 0.7 + 0.3 * Math.sin(now / 35 + ti);
+      const hg = ctx.createRadialGradient(x1, y1, 0, x1, y1, 14 * flick);
+      hg.addColorStop(0, "rgba(255,255,255,1)");
+      hg.addColorStop(0.25, "rgba(255,230,160,0.9)");
+      hg.addColorStop(0.6, col);
+      hg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.arc(x1, y1, 14 * flick, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // detonation: flash, fireball, shockwave, sparks; then a burning ember
+    if (age > 0) {
+      const end = samples[samples.length - 1];
+      const [x, y] = P(end.position, end.alt);
+      const big = tr.outcome === "hit" && !tr.cuts;
+      if (age < boomDur) {
+        const f = age / boomDur;
+        const R = big ? 46 : 22;
+        const fb = ctx.createRadialGradient(x, y, 0, x, y, R * (0.3 + f));
+        fb.addColorStop(0, `rgba(255,255,255,${1 - f})`);
+        fb.addColorStop(0.3, `rgba(255,214,102,${0.95 * (1 - f)})`);
+        fb.addColorStop(0.7, `rgba(255,94,0,${0.7 * (1 - f)})`);
+        fb.addColorStop(1, "rgba(120,20,0,0)");
+        ctx.fillStyle = fb;
+        ctx.beginPath();
+        ctx.arc(x, y, R * (0.3 + f), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255,240,200,${0.8 * (1 - f)})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, R * 2 * f, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = `rgba(255,200,80,${1 - f})`;
+        ctx.lineWidth = 1.5;
+        for (let k = 0; k < (big ? 14 : 7); k++) {
+          const a = hash(ti * 31 + k) * Math.PI * 2;
+          const r0 = R * 0.4 * f;
+          const r1 = R * (0.6 + 1.2 * hash(ti * 7 + k)) * f;
+          ctx.beginPath();
+          ctx.moveTo(x + r0 * Math.cos(a), y + r0 * Math.sin(a));
+          ctx.lineTo(x + r1 * Math.cos(a), y + r1 * Math.sin(a) + 8 * f * f);
+          ctx.stroke();
+        }
+      }
+      if (big) {
+        const fade = 1 - age / linger;
+        const flick = 0.6 + 0.4 * Math.abs(Math.sin(now / 90 + ti));
+        const eg = ctx.createRadialGradient(x, y, 0, x, y, 14);
+        eg.addColorStop(0, `rgba(255,180,60,${fade * flick})`);
+        eg.addColorStop(1, "rgba(255,60,0,0)");
+        ctx.fillStyle = eg;
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.fill();
+        // smoke column drifting up
+        ctx.globalCompositeOperation = "source-over";
+        for (let k = 0; k < 6; k++) {
+          const ph = (now / 1600 + k / 6) % 1;
+          ctx.fillStyle = `rgba(60,60,66,${0.35 * fade * (1 - ph)})`;
+          ctx.beginPath();
+          ctx.arc(x + 10 * ph * Math.sin(k), y - 40 * ph, 4 + 10 * ph, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalCompositeOperation = "source-over";
+  });
+
+  // contact: glowing front with tracer fire both ways and muzzle flashes
+  for (const e of engagements.value) {
+    if (e.type !== "contact" || t < e.t || t > e.end) continue;
+    const a = locationAt(unitMap[e.shooterId], t);
+    for (const id of e.targets) {
+      const b = unitMap[id] && locationAt(unitMap[id], t);
+      if (!a || !b) continue;
+      const [aa, bb] = shorten(a, b, 0.15);
+      const [ax, ay] = P(aa);
+      const [bx, by] = P(bb);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.shadowColor = FIRE;
+      ctx.shadowBlur = 12;
+      ctx.strokeStyle = "rgba(249,115,22,0.8)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      jagged(aa, bb).forEach((p, i) => {
+        const [x, y] = P(p);
+        if (i) ctx.lineTo(x, y);
+        else ctx.moveTo(x, y);
+      });
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      for (let k = 0; k < 10; k++) {
+        const dir = k % 2;
+        const f = (now / 700 + hash(k * 13)) % 1;
+        const from = dir ? [bx, by] : [ax, ay];
+        const to = dir ? [ax, ay] : [bx, by];
+        const x = from[0] + (to[0] - from[0]) * f;
+        const y = from[1] + (to[1] - from[1]) * f + 6 * (hash(k) - 0.5);
+        const dx = (to[0] - from[0]) * 0.04;
+        const dy = (to[1] - from[1]) * 0.04;
+        ctx.strokeStyle = dir ? "rgba(255,120,120,0.9)" : "rgba(160,200,255,0.9)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + dx, y + dy);
+        ctx.stroke();
+      }
+      for (const [x, y, s] of [
+        [ax, ay, 1],
+        [bx, by, 2],
+      ] as const) {
+        if (hash(Math.floor(now / 120) * s + x) > 0.55) {
+          const mg = ctx.createRadialGradient(x, y, 0, x, y, 12);
+          mg.addColorStop(0, "rgba(255,255,220,0.95)");
+          mg.addColorStop(1, "rgba(255,150,0,0)");
+          ctx.fillStyle = mg;
+          ctx.beginPath();
+          ctx.arc(x, y, 12, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalCompositeOperation = "source-over";
+    }
+  }
+
+  // salvo labels, HUD style
+  ctx.font = "700 13px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.textAlign = "center";
+  for (const e of engagements.value) {
+    if (e.type === "contact" || t < e.t || t > e.end) continue;
+    const at = locationAt(unitMap[e.shooterId], e.t);
+    if (!at) continue;
+    const [x, y] = P(at);
+    const label = `▲ ${e.weapon.toUpperCase() || "FIRE"} ×${e.rounds}`;
+    ctx.shadowColor = GLOW[e.side];
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = GLOW[e.side];
+    ctx.fillText(label, x, y - 30);
+    ctx.shadowBlur = 0;
+  }
+}
+
+// Playback moments: banners, a director camera, screen flashes and Hellfire blasts.
+const banner = ref<{
+  text: string;
+  sub: string;
+  side: "friend" | "hostile";
+  key: number;
+} | null>(null);
+const flash = ref(0);
+let bannerTimer: number | undefined;
+let lastBlast = 0;
+let lastT = state.currentTime;
+let hellfire: typeof import("@/lib/hellfire") | undefined;
+function showBanner(e: ProtoEngagement) {
+  banner.value = {
+    text: e.type === "intercept" ? `${e.weapon} intercept` : `${e.weapon} ×${e.rounds}`,
+    sub: `${e.shooterName} → ${e.targets.map((id) => unitMap[id]?.shortName || id).join(", ")}`,
+    side: e.side,
+    key: Date.now(),
+  };
+  clearTimeout(bannerTimer);
+  bannerTimer = window.setTimeout(() => (banner.value = null), 3200);
+}
+function direct(e: ProtoEngagement) {
+  const pts = [e.shooterId, ...e.targets]
+    .map((id) => unitMap[id] && locationAt(unitMap[id], e.t))
+    .filter(Boolean) as Position[];
+  if (pts.length < 2) return;
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  mlMap.fitBounds(
+    [
+      [Math.min(...xs), Math.min(...ys)],
+      [Math.max(...xs), Math.max(...ys)],
+    ],
+    { padding: 180, maxZoom: 8, duration: 1400, pitch: 35 },
+  );
+}
+async function blast(p: Position) {
+  flash.value = 1;
+  window.setTimeout(() => (flash.value = 0), 90);
+  if (Date.now() - lastBlast < 1200) return;
+  lastBlast = Date.now();
+  hellfire ??= await import("@/lib/hellfire");
+  hellfire.launchHellfire(mlMap, { lng: p[0], lat: p[1] }, { shake: true });
+}
+function onTimeD(t: number) {
+  const from = lastT;
+  lastT = t;
+  if (variant.value !== "D" || !playback.playbackRunning || t <= from) return;
+  const starting = engagements.value.filter((e) => e.t > from && e.t <= t);
+  if (starting.length) {
+    const e = starting[0];
+    showBanner(e);
+    direct(e);
+  }
+  for (const tr of tracks.value) {
+    const stop = trackStop(tr);
+    if (tr.outcome === "hit" && !tr.cuts && stop > from && stop <= t) {
+      blast(trackPosition(tr, stop).position);
+    }
+  }
+}
+
 /* ---------------- frame ---------------- */
 function redraw() {
   const t = state.currentTime;
   if (variant.value === "B") {
     drawB(t);
+    return;
+  }
+  if (variant.value === "D") {
+    drawD(t);
     return;
   }
   setupLayers();
@@ -582,7 +918,13 @@ function redraw() {
     features: variant.value === "C" ? featuresC(t) : featuresA(t),
   });
 }
-watch(() => state.currentTime, redraw);
+watch(
+  () => state.currentTime,
+  (t) => {
+    onTimeD(t);
+    redraw();
+  },
+);
 watch(
   () => state.unitStateCounter,
   () => {
@@ -591,13 +933,16 @@ watch(
   },
 );
 watch(variant, (v) => {
-  if (v === "B") removeLayers();
-  else removeCanvas();
+  if (v === "B" || v === "D") {
+    removeLayers();
+    removeCanvas();
+  } else removeCanvas();
   redraw();
 });
 mlMap.on("render", onRender);
 function onRender() {
   if (variant.value === "B") drawB(state.currentTime);
+  else if (variant.value === "D") drawD(state.currentTime);
 }
 // wall-clock animation (pulses, flowing contact lines) while paused
 let raf = 0;
@@ -665,6 +1010,38 @@ const dwellModel = computed({
 </script>
 
 <template>
+  <template v-if="variant === 'D'">
+    <div
+      class="pointer-events-none absolute inset-0 z-20 bg-white transition-opacity duration-100"
+      :style="{ opacity: flash * 0.35 }"
+    />
+    <Transition
+      enter-from-class="opacity-0 -translate-y-4 scale-95"
+      leave-to-class="opacity-0 scale-105"
+      enter-active-class="transition duration-300 ease-out"
+      leave-active-class="transition duration-500 ease-in"
+    >
+      <div
+        v-if="banner"
+        :key="banner.key"
+        class="pointer-events-none absolute top-28 left-1/2 z-30 -translate-x-1/2 text-center"
+      >
+        <div class="font-mono text-[11px] tracking-[0.4em] text-white/70">ENGAGEMENT</div>
+        <div
+          class="font-mono text-3xl font-bold tracking-widest uppercase"
+          :style="{
+            color: banner.side === 'hostile' ? '#ff6b6b' : '#7cb7ff',
+            textShadow: `0 0 18px ${banner.side === 'hostile' ? '#ff2d2d' : '#3b82f6'}`,
+          }"
+        >
+          {{ banner.text }}
+        </div>
+        <div class="mt-1 font-mono text-sm tracking-wider text-white/85">
+          {{ banner.sub }}
+        </div>
+      </div>
+    </Transition>
+  </template>
   <div
     v-if="variant === 'C'"
     class="bg-background/90 pointer-events-auto absolute top-16 left-16 z-20 max-h-[70vh] w-72 overflow-y-auto rounded-md border p-3 text-xs shadow-lg backdrop-blur-sm"
