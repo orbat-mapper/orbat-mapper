@@ -1410,7 +1410,8 @@
                           "units": ["r-47gtd"]
                         },
                         "duration": "PT16H"
-                      }
+                      },
+                      "causedBy": ["r-47gtd-arty-s2"]
                     }
                   ],
                   "shortName": "2 AD (Fwd)",
@@ -2412,6 +2413,142 @@
                         "higherFormation": "1CD"
                       },
                       "status": "Combat effective"
+                    },
+                    {
+                      "id": "n-1cd-arty",
+                      "name": "Division Artillery, 1st Cavalry Division",
+                      "shortName": "1 CD DIVARTY",
+                      "sidc": "10031000181303000000",
+                      "description": "PROTOTYPE: added to show artillery engagements. Not part of the original scenario.",
+                      "equipment": [
+                        {
+                          "name": "M109A2",
+                          "count": 72
+                        }
+                      ],
+                      "supplies": [
+                        {
+                          "name": "155 mm HE",
+                          "count": 6000
+                        }
+                      ],
+                      "status": "Combat effective",
+                      "state": [
+                        {
+                          "id": "n-1cd-arty-s1",
+                          "t": "1985-06-13T14:00:00+02:00",
+                          "location": [9.57, 52.1]
+                        },
+                        {
+                          "id": "n-1cd-arty-s2",
+                          "t": "1985-06-14T11:00:00+02:00",
+                          "title": "Fires on the Alfeld bridgehead",
+                          "diff": {
+                            "supplies": [
+                              {
+                                "name": "155 mm HE",
+                                "onHand": -2400
+                              }
+                            ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "geometry",
+                              "geometry": {
+                                "type": "Point",
+                                "coordinates": [9.8, 51.995]
+                              },
+                              "radius": 1500
+                            },
+                            "weapon": "155 mm HE",
+                            "duration": "PT2H",
+                            "flightTime": "PT1M",
+                            "flight": {
+                              "profile": "ballistic"
+                            }
+                          }
+                        },
+                        {
+                          "id": "n-1cd-arty-s3",
+                          "t": "1985-06-14T13:40:00+02:00",
+                          "title": "Counter-battery fire on 47 GTD's guns",
+                          "diff": {
+                            "supplies": [
+                              {
+                                "name": "155 mm HE",
+                                "onHand": -300
+                              }
+                            ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-47gtd-arty"]
+                            },
+                            "weapon": "155 mm HE",
+                            "duration": "PT15M",
+                            "flightTime": "PT1M",
+                            "flight": {
+                              "profile": "ballistic"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "n-1cd-mlrs",
+                      "name": "A Battery, 6-27 Field Artillery (MLRS)",
+                      "shortName": "A/6-27 FA",
+                      "sidc": "10031000151303000000",
+                      "description": "PROTOTYPE: added to show artillery engagements. Not part of the original scenario.",
+                      "equipment": [
+                        {
+                          "name": "M270 MLRS",
+                          "count": 9
+                        }
+                      ],
+                      "supplies": [
+                        {
+                          "name": "M26 rockets",
+                          "count": 216
+                        }
+                      ],
+                      "status": "Combat effective",
+                      "state": [
+                        {
+                          "id": "n-1cd-mlrs-s1",
+                          "t": "1985-06-13T14:00:00+02:00",
+                          "location": [9.5, 52.16]
+                        },
+                        {
+                          "id": "n-1cd-mlrs-s2",
+                          "t": "1985-06-14T13:30:00+02:00",
+                          "title": "Rocket strike on the Soviet gun line",
+                          "diff": {
+                            "supplies": [
+                              {
+                                "name": "M26 rockets",
+                                "onHand": -72
+                              }
+                            ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-47gtd-arty"]
+                            },
+                            "weapon": "M26 rockets",
+                            "duration": "PT4M",
+                            "flightTime": "PT2M",
+                            "flight": {
+                              "profile": "ballistic"
+                            }
+                          }
+                        }
+                      ]
                     }
                   ],
                   "state": [
@@ -5806,6 +5943,75 @@
                             "higherFormation": "47"
                           },
                           "status": "Combat effective"
+                        },
+                        {
+                          "id": "r-47gtd-arty",
+                          "name": "Artillery Regiment, 47th Guards Tank Division",
+                          "shortName": "47 GTD Arty",
+                          "sidc": "10061000171303000000",
+                          "description": "PROTOTYPE: added to show artillery engagements. Not part of the original scenario.",
+                          "equipment": [
+                            {
+                              "name": "2S3 Akatsiya",
+                              "count": 54
+                            }
+                          ],
+                          "supplies": [
+                            {
+                              "name": "152 mm HE",
+                              "count": 4000
+                            }
+                          ],
+                          "status": "Combat effective",
+                          "state": [
+                            {
+                              "id": "r-47gtd-arty-s1",
+                              "t": "1985-06-13T14:00:00+02:00",
+                              "location": [10.0, 51.96]
+                            },
+                            {
+                              "id": "r-47gtd-arty-s2",
+                              "t": "1985-06-14T12:00:00+02:00",
+                              "title": "Shells 2nd Armored Division's assembly area",
+                              "diff": {
+                                "supplies": [
+                                  {
+                                    "name": "152 mm HE",
+                                    "onHand": -900
+                                  }
+                                ]
+                              },
+                              "action": {
+                                "type": "fire",
+                                "target": {
+                                  "type": "units",
+                                  "units": ["n-2adf"]
+                                },
+                                "weapon": "152 mm HE",
+                                "duration": "PT90M",
+                                "flightTime": "PT1M",
+                                "flight": {
+                                  "profile": "ballistic"
+                                }
+                              }
+                            },
+                            {
+                              "id": "r-47gtd-arty-s3",
+                              "t": "1985-06-14T13:50:00+02:00",
+                              "title": "Silenced by counter-battery fire",
+                              "status": "Combat ineffective",
+                              "sidc": "10061030171303000000",
+                              "diff": {
+                                "equipment": [
+                                  {
+                                    "name": "2S3 Akatsiya",
+                                    "onHand": -31
+                                  }
+                                ]
+                              },
+                              "causedBy": ["n-1cd-mlrs-s2", "n-1cd-arty-s3"]
+                            }
+                          ]
                         }
                       ],
                       "state": [
@@ -10480,6 +10686,15 @@
     },
     {
       "name": "MiG-29 Fulcrum"
+    },
+    {
+      "name": "M109A2"
+    },
+    {
+      "name": "M270 MLRS"
+    },
+    {
+      "name": "2S3 Akatsiya"
     }
   ],
   "personnel": [
@@ -10570,6 +10785,21 @@
     },
     {
       "name": "Kh-22 missiles",
+      "supplyClass": "Class V",
+      "uom": "pcs"
+    },
+    {
+      "name": "155 mm HE",
+      "supplyClass": "Class V",
+      "uom": "pcs"
+    },
+    {
+      "name": "152 mm HE",
+      "supplyClass": "Class V",
+      "uom": "pcs"
+    },
+    {
+      "name": "M26 rockets",
       "supplyClass": "Class V",
       "uom": "pcs"
     }

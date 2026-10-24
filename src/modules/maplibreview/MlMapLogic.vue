@@ -26,10 +26,9 @@ import {
 import { getPlaybackStep, usePlaybackStore } from "@/stores/playbackStore.ts";
 import EngagementPrototype from "@/modules/maplibreview/engagementPrototype/EngagementPrototype.vue";
 import {
-  isEngagementActive,
+  dwellSpeedAt,
   nextEngagementStart,
   protoDwell,
-  protoDwellSpeed,
 } from "@/modules/maplibreview/engagementPrototype/engagements.prototype";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
@@ -1662,9 +1661,10 @@ const { pause, resume } = useRafFn(
     // PROTOTYPE: dwell slows playback while an engagement is in progress, and stops at
     // the start of one a fast step would jump over.
     const now = activeScenario.store.state.currentTime;
+    const dwellSpeed = protoDwell.value ? dwellSpeedAt(now) : undefined;
     const speed =
-      protoDwell.value && isEngagementActive(now)
-        ? Math.min(playback.playbackSpeed, protoDwellSpeed)
+      dwellSpeed !== undefined
+        ? Math.min(playback.playbackSpeed, dwellSpeed)
         : playback.playbackSpeed;
     let newTime = now + getPlaybackStep(speed, delta);
     if (protoDwell.value) newTime = nextEngagementStart(now, newTime) ?? newTime;

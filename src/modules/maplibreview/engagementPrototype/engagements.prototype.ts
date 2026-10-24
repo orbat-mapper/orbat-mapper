@@ -6,6 +6,7 @@ import type { Position } from "geojson";
 import turfLength from "@turf/length";
 import turfAlong from "@turf/along";
 import { lineString } from "@turf/helpers";
+import turfCircle from "@turf/circle";
 import type { NUnit } from "@/types/internalModels";
 import type { NewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { MS_PER_MINUTE } from "@/utils/time";
@@ -15,7 +16,13 @@ export type ProtoActionType = "fire" | "intercept" | "contact";
 
 interface ProtoActionJson {
   type: ProtoActionType;
-  target?: { type: "units"; units: string[] };
+  target?:
+    | { type: "units"; units: string[] }
+    | {
+        type: "geometry";
+        geometry: { type: "Point"; coordinates: Position };
+        radius?: number;
+      };
   weapon?: string;
   rounds?: number;
   flightTime?: string;
@@ -43,6 +50,9 @@ export interface ProtoEngagement {
   profile: string;
   points: ProfilePoint[];
   via: Position[];
+  flightMs: number;
+  durationMs: number;
+  area?: { center: Position; radius: number; ring: Position[] };
   title?: string;
   results: {
     unitId: string;
@@ -179,17 +189,33 @@ export function buildEngagements(store: NewScenarioStore): ProtoEngagement[] {
     for (const s of unit.state ?? []) {
       const action = (s as any).action as ProtoActionJson | undefined;
       if (!action) continue;
-      const targets = action.target?.units ?? [];
+      const targets = action.target?.type === "units" ? action.target.units : [];
+      const area =
+        action.target?.type === "geometry"
+          ? {
+              center: action.target.geometry.coordinates,
+              radius: action.target.radius ?? 500,
+              ring: turfCircle(
+                action.target.geometry.coordinates,
+                (action.target.radius ?? 500) / 1000,
+                {
+                  steps: 48,
+                },
+              ).geometry.coordinates[0],
+            }
+          : undefined;
       const spent = s.diff?.supplies?.find((x) => (x.onHand ?? 0) < 0)?.onHand;
       const rounds = action.rounds ?? (spent ? -spent : 1);
       const flightMs = parseDuration(action.flightTime) ?? MS_PER_MINUTE;
+      const durationMs =
+        action.type === "fire" ? (parseDuration(action.duration) ?? 0) : 0;
       const linked = results.get(s.id) ?? [];
       let end: number;
       if (action.type === "contact") {
         end = s.t + (parseDuration(action.duration) ?? 6 * 60 * MS_PER_MINUTE);
       } else {
         end = Math.max(
-          s.t + SALVO_SPREAD + flightMs,
+          s.t + Math.max(SALVO_SPREAD, durationMs) + flightMs,
           ...linked.filter((r) => r.t > s.t).map((r) => r.t),
         );
       }
@@ -210,6 +236,9 @@ export function buildEngagements(store: NewScenarioStore): ProtoEngagement[] {
         profile,
         points: action.flight?.points ?? PRESETS[profile] ?? PRESETS.direct,
         via: action.flight?.via ?? [],
+        flightMs,
+        durationMs,
+        area,
         title: s.title,
         results: linked,
       });
@@ -218,16 +247,84 @@ export function buildEngagements(store: NewScenarioStore): ProtoEngagement[] {
   return out.sort((a, b) => a.t - b.t);
 }
 
+function hash01(n: number) {
+  const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/** A ballistic arc whose apex grows with range, about 0.28 x the distance. */
+function ballisticPoints(a: Position, b: Position): ProfilePoint[] {
+  const apex = Math.min(30000, 0.28 * turfLength(lineString([a, b])) * 1000);
+  return Array.from({ length: 11 }, (_, i) => ({
+    d: i / 10,
+    alt: 4 * apex * (i / 10) * (1 - i / 10),
+  }));
+}
+
+const MAX_MISSION_ROUNDS = 48;
+
+/** Rounds of a fire mission: spread over its duration, scattered over the target area. */
+function missionTracks(
+  e: ProtoEngagement,
+  shooter: NUnit,
+  unitMap: Record<string, NUnit>,
+) {
+  const out: ProtoTrack[] = [];
+  const spread = e.durationMs || SALVO_SPREAD;
+  const n = Math.min(MAX_MISSION_ROUNDS, Math.max(1, e.rounds));
+  const seed = e.t / 60000;
+  for (let k = 0; k < n; k++) {
+    const launch = e.t + (spread * (k + 0.8 * hash01(seed + k))) / n;
+    const end = launch + Math.max(20000, e.flightMs);
+    const start = locationAt(shooter, launch);
+    const targetId = e.targets[k % Math.max(1, e.targets.length)];
+    const center =
+      e.area?.center ??
+      (targetId && unitMap[targetId] ? locationAt(unitMap[targetId], end) : undefined);
+    if (!start || !center) continue;
+    const radius = e.area?.radius ?? 700;
+    const r = radius * Math.sqrt(hash01(seed + k * 3.1));
+    const a = hash01(seed + k * 7.7) * Math.PI * 2;
+    const finish: Position = [
+      center[0] + (r * Math.cos(a)) / (111320 * Math.cos((center[1] * Math.PI) / 180)),
+      center[1] + (r * Math.sin(a)) / 111320,
+    ];
+    out.push({
+      engagementId: e.id,
+      side: e.side,
+      profile: e.profile,
+      points: e.profile === "ballistic" ? ballisticPoints(start, finish) : e.points,
+      launch,
+      end,
+      start,
+      finish,
+      via: [],
+      outcome: "miss",
+    });
+  }
+  // A linked result is drawn as a hit on the round that lands closest to it.
+  for (const res of e.results) {
+    let best: ProtoTrack | undefined;
+    for (const tr of out)
+      if (!best || Math.abs(tr.end - res.t) < Math.abs(best.end - res.t)) best = tr;
+    if (best) best.outcome = "hit";
+  }
+  return out;
+}
+
 /** Deterministic tracks for every fire and intercept engagement. Built once per scenario edit. */
 export function buildTracks(
   engagements: ProtoEngagement[],
   unitMap: Record<string, NUnit>,
 ): ProtoTrack[] {
   const tracks: ProtoTrack[] = [];
-  const flightOf = (e: ProtoEngagement) => e.end - e.t - SALVO_SPREAD;
   for (const e of engagements.filter((x) => x.type === "fire")) {
     const shooter = unitMap[e.shooterId];
     if (!shooter) continue;
+    if (e.durationMs || e.area) {
+      tracks.push(...missionTracks(e, shooter, unitMap));
+      continue;
+    }
     const n = Math.min(MAX_TRACKS, Math.max(1, e.rounds));
     const hitTargets = new Map(
       e.results.filter((r) => r.t > e.t).map((r) => [r.unitId, r.t]),
@@ -240,7 +337,7 @@ export function buildTracks(
       const hitT = hitTargets.get(targetId);
       // One track per hit target ends at the hit; the rest fly their nominal time.
       const isHit = hitT !== undefined && k < e.targets.length;
-      const end = isHit ? hitT : launch + Math.max(MS_PER_MINUTE, flightOf(e));
+      const end = isHit ? hitT : launch + Math.max(MS_PER_MINUTE, e.flightMs);
       const start = locationAt(shooter, launch);
       const finish = locationAt(target, end);
       if (!start || !finish) continue;
@@ -250,7 +347,7 @@ export function buildTracks(
         engagementId: e.id,
         side: e.side,
         profile: e.profile,
-        points: e.points,
+        points: e.profile === "ballistic" ? ballisticPoints(start, finish) : e.points,
         launch,
         end,
         start,
@@ -266,7 +363,7 @@ export function buildTracks(
     const shooter = unitMap[e.shooterId];
     if (!shooter) continue;
     const n = Math.min(MAX_TRACKS, Math.max(1, e.rounds));
-    const flight = Math.max(MS_PER_MINUTE, flightOf(e));
+    const flight = Math.max(MS_PER_MINUTE, e.flightMs);
     for (let k = 0; k < n; k++) {
       const launch = e.t + (k * SALVO_SPREAD) / n;
       const at = launch + flight;
@@ -384,6 +481,18 @@ export function trackSamples(track: ProtoTrack, toD: number, steps = 24) {
 let cachedEngagements: ProtoEngagement[] = [];
 export function setProtoEngagements(list: ProtoEngagement[]) {
   cachedEngagements = list;
+}
+
+/** How fast dwell plays at `t`: 1 min/s for short engagements, faster for long fire
+ * missions so a two-hour barrage takes about 20 s. Undefined when nothing is active. */
+export function dwellSpeedAt(t: number) {
+  let speed: number | undefined;
+  for (const e of cachedEngagements) {
+    if (e.type === "contact" || t < e.t - MS_PER_MINUTE || t > e.end) continue;
+    const s = Math.max(MS_PER_MINUTE, (e.end - e.t) / 20);
+    speed = speed === undefined ? s : Math.min(speed, s);
+  }
+  return speed;
 }
 
 export function isEngagementActive(t: number) {

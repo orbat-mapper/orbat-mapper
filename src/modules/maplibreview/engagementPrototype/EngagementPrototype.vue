@@ -17,7 +17,7 @@ import {
   isEngagementActive,
   locationAt,
   protoDwell,
-  protoDwellSpeed,
+  dwellSpeedAt,
   setProtoEngagements,
   trackPosition,
   trackSamples,
@@ -92,9 +92,8 @@ const FIRE = "#f97316";
 // Wall-clock seconds turned into scenario time at the current speed, so bursts and
 // lingering markers stay visible however fast playback runs.
 function effectiveSpeed(t: number) {
-  return protoDwell.value && isEngagementActive(t)
-    ? Math.min(protoDwellSpeed, playback.playbackSpeed)
-    : playback.playbackSpeed;
+  const d = protoDwell.value ? dwellSpeedAt(t) : undefined;
+  return d !== undefined ? Math.min(d, playback.playbackSpeed) : playback.playbackSpeed;
 }
 const wall = (seconds: number, minMinutes: number, t: number) =>
   Math.max(minMinutes * MS_PER_MINUTE, seconds * effectiveSpeed(t));
@@ -126,6 +125,8 @@ function shorten(a: Position, b: Position, f = 0.08): [Position, Position] {
 /* ---------------- Variant A and C: MapLibre layers ---------------- */
 const SRC = "proto-eng";
 const LAYERS = [
+  "proto-eng-area-fill",
+  "proto-eng-area-line",
   "proto-eng-link",
   "proto-eng-spent",
   "proto-eng-path",
@@ -151,6 +152,25 @@ function setupLayers() {
     COLORS.hostile,
     COLORS.friend,
   ] as any;
+  mlMap.addLayer({
+    id: "proto-eng-area-fill",
+    type: "fill",
+    source: SRC,
+    filter: kind("area"),
+    paint: { "fill-color": FIRE, "fill-opacity": ["*", 0.18, ["get", "o"]] },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-area-line",
+    type: "line",
+    source: SRC,
+    filter: kind("area"),
+    paint: {
+      "line-color": FIRE,
+      "line-width": 2,
+      "line-opacity": ["get", "o"],
+      "line-dasharray": [3, 2],
+    },
+  });
   mlMap.addLayer({
     id: "proto-eng-link",
     type: "line",
@@ -275,8 +295,24 @@ function onStyleLoad() {
 }
 mlMap.on("style.load", onStyleLoad);
 
-function featuresA(t: number): Feature[] {
+/** Target areas of fire missions while they are being fired on, then fading out. */
+function areaFeatures(t: number): Feature[] {
   const out: Feature[] = [];
+  const linger = wall(1, 20, t);
+  for (const e of engagements.value) {
+    if (!e.area || t < e.t || t > e.end + linger) continue;
+    const o = t <= e.end ? 1 : 1 - (t - e.end) / linger;
+    out.push({
+      type: "Feature",
+      properties: { kind: "area", o },
+      geometry: { type: "Polygon", coordinates: [e.area.ring] },
+    });
+  }
+  return out;
+}
+
+function featuresA(t: number): Feature[] {
+  const out: Feature[] = areaFeatures(t);
   const linger = wall(1, 20, t);
   const burstDur = wall(0.6, 3, t);
   for (const tr of tracks.value) {
@@ -368,15 +404,17 @@ function featuresA(t: number): Feature[] {
 }
 
 function featuresC(t: number): Feature[] {
-  const out: Feature[] = [];
+  const out: Feature[] = areaFeatures(t);
   const linger = wall(1.5, 30, t);
   const pulse = (Date.now() % 1400) / 1400;
   for (const e of engagements.value) {
     if (t < e.t || t > e.end + linger) continue;
     const active = t <= e.end;
     const a = locationAt(unitMap[e.shooterId], t);
-    for (const id of e.targets) {
-      const b = unitMap[id] && locationAt(unitMap[id], t);
+    const ends: (Position | undefined)[] = e.area
+      ? [e.area.center]
+      : e.targets.map((id) => unitMap[id] && locationAt(unitMap[id], t));
+    for (const b of ends) {
       if (!a || !b) continue;
       const [aa, bb] = shorten(a, b, 0.04);
       const geometry = e.type === "contact" ? jagged(aa, bb) : [aa, bb];
@@ -412,6 +450,41 @@ function featuresC(t: number): Feature[] {
 }
 
 /* ---------------- Variant B: canvas arcs ---------------- */
+function drawAreas(
+  ctx: CanvasRenderingContext2D,
+  P: (p: Position, alt?: number) => readonly [number, number],
+  t: number,
+  glow: boolean,
+) {
+  const linger = wall(1, 20, t);
+  const now = Date.now();
+  for (const e of engagements.value) {
+    if (!e.area || t < e.t || t > e.end + linger) continue;
+    const o = t <= e.end ? 1 : 1 - (t - e.end) / linger;
+    ctx.beginPath();
+    e.area.ring.forEach((p, i) => {
+      const [x, y] = P(p);
+      if (i) ctx.lineTo(x, y);
+      else ctx.moveTo(x, y);
+    });
+    ctx.closePath();
+    const pulse = glow ? 0.6 + 0.4 * Math.sin(now / 250) : 1;
+    ctx.fillStyle = `rgba(249,115,22,${0.16 * o * pulse})`;
+    ctx.fill();
+    ctx.setLineDash([6, 4]);
+    ctx.lineDashOffset = glow ? -(now / 50) % 10 : 0;
+    ctx.strokeStyle = `rgba(249,115,22,${0.9 * o})`;
+    ctx.lineWidth = 2;
+    if (glow) {
+      ctx.shadowColor = FIRE;
+      ctx.shadowBlur = 12;
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.setLineDash([]);
+  }
+}
+
 let canvas: HTMLCanvasElement | undefined;
 function ensureCanvas() {
   if (canvas) return canvas;
@@ -447,6 +520,7 @@ function drawB(t: number) {
     const s = mlMap.project(p as [number, number]);
     return [s.x, s.y - lift(alt)] as const;
   };
+  drawAreas(ctx, P, t, false);
   const linger = wall(1, 20, t);
   const burstDur = wall(0.6, 3, t);
   const now = Date.now();
@@ -618,6 +692,7 @@ function drawD(t: number) {
     const s = mlMap.project(p as [number, number]);
     return [s.x, s.y - lift(alt)] as const;
   };
+  drawAreas(ctx, P, t, true);
 
   // Radar sweeps on units firing interceptors.
   for (const e of engagements.value) {
@@ -852,7 +927,7 @@ let hellfire: typeof import("@/lib/hellfire") | undefined;
 function showBanner(e: ProtoEngagement) {
   banner.value = {
     text: e.type === "intercept" ? `${e.weapon} intercept` : `${e.weapon} ×${e.rounds}`,
-    sub: `${e.shooterName} → ${e.targets.map((id) => unitMap[id]?.shortName || id).join(", ")}`,
+    sub: `${e.shooterName} → ${e.area ? "target area" : e.targets.map((id) => unitMap[id]?.shortName || id).join(", ")}`,
     side: e.side,
     key: Date.now(),
   };
@@ -863,6 +938,7 @@ function direct(e: ProtoEngagement) {
   const pts = [e.shooterId, ...e.targets]
     .map((id) => unitMap[id] && locationAt(unitMap[id], e.t))
     .filter(Boolean) as Position[];
+  if (e.area) pts.push(e.area.center);
   if (pts.length < 2) return;
   const xs = pts.map((p) => p[0]);
   const ys = pts.map((p) => p[1]);
@@ -1003,6 +1079,10 @@ function jumpTo(e: ProtoEngagement) {
     );
 }
 const activeNow = computed(() => isEngagementActive(nowT.value));
+const dwellLabel = computed(() => {
+  const d = dwellSpeedAt(nowT.value);
+  return d === undefined ? "" : `${Math.round(d / MS_PER_MINUTE)} min/s`;
+});
 const dwellModel = computed({
   get: () => protoDwell.value,
   set: (v: boolean) => (protoDwell.value = v),
@@ -1072,7 +1152,8 @@ const dwellModel = computed({
           <span class="text-muted-foreground font-mono">{{ fmt(e.t) }}</span>
         </span>
         <span class="text-muted-foreground">
-          {{ e.shooterName }} → {{ e.targets.map(name).join(", ") }}
+          {{ e.shooterName }} →
+          {{ e.area ? "target area" : e.targets.map(name).join(", ") }}
         </span>
         <span
           v-for="r in e.results.filter((x) => x.t <= nowT)"
@@ -1120,9 +1201,9 @@ const dwellModel = computed({
       Dwell
     </label>
     <span
-      v-if="activeNow && protoDwell && playback.playbackRunning"
+      v-if="dwellLabel && protoDwell && playback.playbackRunning"
       class="font-mono text-amber-300"
-      >1 min/s</span
+      >{{ dwellLabel }}</span
     >
     <span class="text-white/60">{{ engagements.length }} engagements</span>
   </div>
