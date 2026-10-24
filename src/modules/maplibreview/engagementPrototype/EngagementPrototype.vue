@@ -453,7 +453,7 @@ function setupLayers() {
     filter: kind("eend"),
     layout: {
       "icon-image": "proto-arrow",
-      "icon-size": 1.1,
+      "icon-size": ["get", "size"],
       "icon-rotate": ["get", "rot"],
       "icon-rotation-alignment": "map",
       "icon-allow-overlap": true,
@@ -634,32 +634,80 @@ function featuresE(t: number): Feature[] {
       const o = (active ? 0.5 : 0.25) * fade * fade;
       const label = i === 0 ? { label: `${e.weapon || "Fire"} ×${e.rounds}` } : {};
       const mode = direction.value;
+      // Rotation for an east-pointing arrow icon placed on the link.
+      const dx = (bb[0] - aa[0]) * Math.cos((aa[1] * Math.PI) / 180);
+      const rot = (Math.atan2(dx, bb[1] - aa[1]) * 180) / Math.PI - 90;
+      if (mode === "comet") {
+        // A stylised arrow, built in screen pixels so it holds its shape at any zoom: a thin
+        // faint tail at the shooter widening into a large head just outside the target's
+        // rings.
+        const sa = mlMap.project(a as [number, number]);
+        const sb = mlMap.project(b as [number, number]);
+        const len = Math.hypot(sb.x - sa.x, sb.y - sa.y);
+        if (len < 40) return;
+        const ux = (sb.x - sa.x) / len;
+        const uy = (sb.y - sa.y) / len;
+        const at = (px: number): Position => {
+          const ll = mlMap.unproject([sa.x + ux * px, sa.y + uy * px]);
+          return [ll.lng, ll.lat];
+        };
+        const from = 16;
+        const head = len - 34;
+        const segs = 10;
+        for (let k = 0; k < segs; k++) {
+          const f0 = k / segs;
+          const f1 = (k + 1) / segs;
+          out.push({
+            type: "Feature",
+            properties: {
+              kind: "elink",
+              side: e.side,
+              w: (active ? 0.75 : 0.5) + (active ? 3 : 1.25) * f1,
+              o: Math.min(1, (0.15 + 0.85 * f1) * (active ? 0.9 : 0.45) * fade * fade),
+              arrows: false,
+              ...(k === Math.floor(segs / 2) ? label : {}),
+            },
+            geometry: {
+              type: "LineString",
+              coordinates: [at(from + (head - from) * f0), at(from + (head - from) * f1)],
+            },
+          });
+        }
+        out.push(
+          point(at(head + 6), {
+            kind: "eend",
+            side: e.side,
+            rot,
+            size: active ? 1.9 : 1.3,
+            o: Math.min(1, (active ? 0.95 : 0.5) * fade * fade),
+          }),
+        );
+        if (active && !e.area) pulse(b, FIRE);
+        return;
+      }
       out.push({
         type: "Feature",
         properties: {
-          kind: mode === "comet" ? "ecomet" : "elink",
+          kind: "elink",
           side: e.side,
-          w: mode === "comet" ? (active ? 2.5 : 1.25) : active ? 1.25 : 0.75,
-          o: mode === "comet" ? Math.min(1, o * 1.6) : o,
+          w: active ? 1.25 : 0.75,
+          o,
           arrows: mode === "arrows",
           ...label,
         },
         geometry: { type: "LineString", coordinates: [aa, bb] },
       });
-      if (mode !== "arrows") {
-        // One arrowhead just short of the target, pointing at it.
+      if (mode === "flow") {
         const tip: Position = [
           aa[0] + (bb[0] - aa[0]) * 0.97,
           aa[1] + (bb[1] - aa[1]) * 0.97,
         ];
-        const dx = (bb[0] - aa[0]) * Math.cos((aa[1] * Math.PI) / 180);
-        const dy = bb[1] - aa[1];
-        const bearing = (Math.atan2(dx, dy) * 180) / Math.PI;
         out.push(
           point(tip, {
             kind: "eend",
             side: e.side,
-            rot: bearing - 90,
+            rot,
+            size: 1.1,
             o: Math.min(1, o * 1.8),
           }),
         );
