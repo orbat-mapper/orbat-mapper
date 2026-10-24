@@ -45,6 +45,16 @@ const variant = computed(() => {
   return VARIANTS.some((x) => x.key === v) ? v : "A";
 });
 const variantIndex = computed(() => VARIANTS.findIndex((v) => v.key === variant.value));
+// Variant E: how a link shows its direction, ?dir=comet|flow|arrows
+const DIRECTIONS = ["comet", "flow", "arrows"] as const;
+type Direction = (typeof DIRECTIONS)[number];
+const direction = computed<Direction>(() => {
+  const d = String(route.query.dir ?? "comet");
+  return (DIRECTIONS as readonly string[]).includes(d) ? (d as Direction) : "comet";
+});
+function setDirection(d: Direction) {
+  router.replace({ query: { ...route.query, dir: d } });
+}
 function cycle(step: number) {
   const next = VARIANTS[(variantIndex.value + step + VARIANTS.length) % VARIANTS.length];
   router.replace({ query: { ...route.query, variant: next.key } });
@@ -143,12 +153,17 @@ const LAYERS = [
   "proto-eng-ering",
   "proto-eng-earrow",
   "proto-eng-elabel",
+  "proto-eng-ecomet-friend",
+  "proto-eng-ecomet-hostile",
+  "proto-eng-eflow",
+  "proto-eng-eend",
 ];
 function setupLayers() {
   if (mlMap.getSource(SRC)) return;
   mlMap.addSource(SRC, {
     type: "geojson",
     data: { type: "FeatureCollection", features: [] },
+    lineMetrics: true,
   });
   const kind = (k: string) => ["==", ["get", "kind"], k] as any;
   const color = [
@@ -350,7 +365,7 @@ function setupLayers() {
     id: "proto-eng-earrow",
     type: "symbol",
     source: SRC,
-    filter: kind("elink"),
+    filter: ["all", kind("elink"), ["==", ["get", "arrows"], true]],
     layout: {
       "symbol-placement": "line",
       "symbol-spacing": 140,
@@ -366,7 +381,11 @@ function setupLayers() {
     id: "proto-eng-elabel",
     type: "symbol",
     source: SRC,
-    filter: ["all", kind("elink"), ["has", "label"]],
+    filter: [
+      "all",
+      ["in", ["get", "kind"], ["literal", ["elink", "ecomet"]]],
+      ["has", "label"],
+    ],
     layout: {
       "symbol-placement": "line-center",
       "text-field": ["get", "label"],
@@ -382,6 +401,65 @@ function setupLayers() {
       "text-halo-width": 1.5,
       "text-opacity": ["min", 1, ["*", 1.6, ["get", "o"]]],
     },
+  });
+  // Comet links: transparent at the shooter, solid at the target. line-gradient can't be
+  // data-driven, so one layer per side.
+  for (const side of ["friend", "hostile"] as const) {
+    const rgb = side === "friend" ? "59,130,246" : "239,68,68";
+    mlMap.addLayer(
+      {
+        id: `proto-eng-ecomet-${side}`,
+        type: "line",
+        source: SRC,
+        filter: ["all", kind("ecomet"), ["==", ["get", "side"], side]],
+        layout: { "line-cap": "round" },
+        paint: {
+          "line-width": ["get", "w"],
+          "line-opacity": ["get", "o"],
+          "line-gradient": [
+            "interpolate",
+            ["linear"],
+            ["line-progress"],
+            0,
+            `rgba(${rgb},0)`,
+            0.6,
+            `rgba(${rgb},0.55)`,
+            1,
+            `rgba(${rgb},1)`,
+          ],
+        },
+      },
+      "proto-eng-elabel",
+    );
+  }
+  mlMap.addLayer({
+    id: "proto-eng-eflow",
+    type: "circle",
+    source: SRC,
+    filter: kind("eflow"),
+    paint: {
+      "circle-radius": 2.5,
+      "circle-color": color,
+      "circle-opacity": ["get", "o"],
+      "circle-stroke-color": "#ffffff",
+      "circle-stroke-width": 0.75,
+      "circle-stroke-opacity": ["get", "o"],
+    },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-eend",
+    type: "symbol",
+    source: SRC,
+    filter: kind("eend"),
+    layout: {
+      "icon-image": "proto-arrow",
+      "icon-size": 1.1,
+      "icon-rotate": ["get", "rot"],
+      "icon-rotation-alignment": "map",
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+    },
+    paint: { "icon-color": color, "icon-opacity": ["get", "o"] },
   });
 }
 function removeLayers() {
@@ -553,17 +631,47 @@ function featuresE(t: number): Feature[] {
           .filter(Boolean) as Position[]);
     ends.forEach((b, i) => {
       const [aa, bb] = shorten(a, b, 0.06);
+      const o = (active ? 0.5 : 0.25) * fade * fade;
+      const label = i === 0 ? { label: `${e.weapon || "Fire"} ×${e.rounds}` } : {};
+      const mode = direction.value;
       out.push({
         type: "Feature",
         properties: {
-          kind: "elink",
+          kind: mode === "comet" ? "ecomet" : "elink",
           side: e.side,
-          w: active ? 1.25 : 0.75,
-          o: (active ? 0.5 : 0.25) * fade * fade,
-          ...(i === 0 ? { label: `${e.weapon || "Fire"} ×${e.rounds}` } : {}),
+          w: mode === "comet" ? (active ? 2.5 : 1.25) : active ? 1.25 : 0.75,
+          o: mode === "comet" ? Math.min(1, o * 1.6) : o,
+          arrows: mode === "arrows",
+          ...label,
         },
         geometry: { type: "LineString", coordinates: [aa, bb] },
       });
+      if (mode !== "arrows") {
+        // One arrowhead just short of the target, pointing at it.
+        const tip: Position = [
+          aa[0] + (bb[0] - aa[0]) * 0.97,
+          aa[1] + (bb[1] - aa[1]) * 0.97,
+        ];
+        const dx = (bb[0] - aa[0]) * Math.cos((aa[1] * Math.PI) / 180);
+        const dy = bb[1] - aa[1];
+        const bearing = (Math.atan2(dx, dy) * 180) / Math.PI;
+        out.push(
+          point(tip, {
+            kind: "eend",
+            side: e.side,
+            rot: bearing - 90,
+            o: Math.min(1, o * 1.8),
+          }),
+        );
+      }
+      if (mode === "flow" && active) {
+        // Dots travelling from shooter to target, fading in and out at the ends.
+        for (let k = 0; k < 3; k++) {
+          const f = (now / 1500 + k / 3) % 1;
+          const p: Position = [aa[0] + (bb[0] - aa[0]) * f, aa[1] + (bb[1] - aa[1]) * f];
+          out.push(point(p, { kind: "eflow", side: e.side, o: Math.sin(Math.PI * f) }));
+        }
+      }
       if (active && !e.area) pulse(b, FIRE);
     });
     if (active) pulse(a, COLORS[e.side]);
@@ -1385,7 +1493,7 @@ const dwellModel = computed({
     >
       ←
     </button>
-    <span class="min-w-44 text-center font-medium">
+    <span class="min-w-32 text-center font-medium">
       {{ variant }} ({{ VARIANTS[variantIndex].name }})
     </span>
     <button
@@ -1396,6 +1504,20 @@ const dwellModel = computed({
     >
       →
     </button>
+    <template v-if="variant === 'E'">
+      <span class="mx-1 h-4 w-px bg-white/30" />
+      <span class="text-white/60">Dir</span>
+      <button
+        v-for="d in DIRECTIONS"
+        :key="d"
+        type="button"
+        class="rounded-full px-2 capitalize"
+        :class="d === direction ? 'bg-white text-black' : 'hover:bg-white/20'"
+        @click="setDirection(d)"
+      >
+        {{ d }}
+      </button>
+    </template>
     <span class="mx-1 h-4 w-px bg-white/30" />
     <label class="flex items-center gap-1.5">
       <input v-model="dwellModel" type="checkbox" />
