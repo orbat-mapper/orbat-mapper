@@ -83,6 +83,7 @@ import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTer
 import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { getCustomSymbolId } from "@/symbology/helpers";
+import { unitSymbolSize } from "@/symbology/echelonSize";
 import { SID_INDEX } from "@/symbology/sidc";
 import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
@@ -399,12 +400,6 @@ function applyUnitLayerRotationAlignment() {
     mlMap.setLayoutProperty(layerId, "icon-rotation-alignment", alignment.icon);
     mlMap.setLayoutProperty(layerId, "text-rotation-alignment", alignment.text);
   }
-}
-
-function getUnitMapSymbolSize(unit: { style?: { mapSymbolSize?: number } }) {
-  return typeof unit.style?.mapSymbolSize === "number"
-    ? unit.style.mapSymbolSize
-    : mapSettings.mapIconSize;
 }
 
 function isHostileSidc(sidc: string) {
@@ -1301,6 +1296,8 @@ watch(
   [
     () => mapSettings.mapUnitLabelBelow,
     () => mapSettings.mapIconSize,
+    () => mapSettings.mapSizeUnitsByEchelon,
+    () => mapSettings.mapEchelonSizeRatios,
     () => mapSettings.mapCustomIconScale,
     () => symbolSettings.symbolOptions,
     () => mapSettings.mapWrapUnitLabels,
@@ -1509,7 +1506,7 @@ function buildUnitFeature(
   const customSymbol = customSymbolId
     ? activeScenario.store.state.customSymbolMap[customSymbolId]
     : undefined;
-  const baseSymbolSize = getUnitMapSymbolSize(unit);
+  const baseSymbolSize = unitSymbolSize(unit.style?.mapSymbolSize, sidc, mapSettings);
   const renderedSymbolSize =
     customSymbol && customSymbolId
       ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)
