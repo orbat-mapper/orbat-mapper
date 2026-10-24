@@ -328,9 +328,9 @@ function setupLayers() {
     filter: kind("econtact"),
     paint: {
       "line-color": FIRE,
-      "line-width": 2,
+      "line-width": 1.25,
       "line-opacity": ["get", "o"],
-      "line-dasharray": [2, 1.5],
+      "line-dasharray": [3, 3],
     },
   });
   mlMap.addLayer({
@@ -353,13 +353,14 @@ function setupLayers() {
     filter: kind("elink"),
     layout: {
       "symbol-placement": "line",
-      "symbol-spacing": 70,
+      "symbol-spacing": 140,
+      "icon-size": 0.7,
       "icon-image": "proto-arrow",
       "icon-allow-overlap": true,
       "icon-ignore-placement": true,
       "icon-rotation-alignment": "map",
     },
-    paint: { "icon-color": color, "icon-opacity": ["get", "o"] },
+    paint: { "icon-color": color, "icon-opacity": ["*", 1.2, ["get", "o"]] },
   });
   mlMap.addLayer({
     id: "proto-eng-elabel",
@@ -370,7 +371,7 @@ function setupLayers() {
       "symbol-placement": "line-center",
       "text-field": ["get", "label"],
       "text-font": ["Noto Sans Regular"],
-      "text-size": 11,
+      "text-size": 10,
       "text-offset": [0, -0.9],
       "text-allow-overlap": true,
       "text-keep-upright": true,
@@ -379,7 +380,7 @@ function setupLayers() {
       "text-color": color,
       "text-halo-color": "#ffffff",
       "text-halo-width": 1.5,
-      "text-opacity": ["get", "o"],
+      "text-opacity": ["min", 1, ["*", 1.6, ["get", "o"]]],
     },
   });
 }
@@ -537,7 +538,7 @@ function featuresE(t: number): Feature[] {
         const [aa, bb] = shorten(a, b, 0.12);
         out.push({
           type: "Feature",
-          properties: { kind: "econtact", o: 0.85 },
+          properties: { kind: "econtact", o: 0.5 },
           geometry: { type: "LineString", coordinates: [aa, bb] },
         });
         pulse(b, FIRE);
@@ -557,8 +558,8 @@ function featuresE(t: number): Feature[] {
         properties: {
           kind: "elink",
           side: e.side,
-          w: active ? 2 : 1.25,
-          o: (active ? 0.9 : 0.5) * fade,
+          w: active ? 1.25 : 0.75,
+          o: (active ? 0.5 : 0.25) * fade * fade,
           ...(i === 0 ? { label: `${e.weapon || "Fire"} ×${e.rounds}` } : {}),
         },
         geometry: { type: "LineString", coordinates: [aa, bb] },
