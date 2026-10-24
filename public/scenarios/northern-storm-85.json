@@ -836,6 +836,14 @@
                                 "onHand": -22
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "contact",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-47gtd"]
+                            },
+                            "duration": "PT14H"
                           }
                         },
                         {
@@ -1394,6 +1402,14 @@
                             "onHand": -12
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "contact",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-47gtd"]
+                        },
+                        "duration": "PT16H"
                       }
                     }
                   ],
@@ -2323,6 +2339,18 @@
                                 "onHand": -120
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-153"]
+                            },
+                            "weapon": "Hellfire",
+                            "flightTime": "PT1M",
+                            "flight": {
+                              "profile": "direct"
+                            }
                           }
                         },
                         {
@@ -2343,7 +2371,19 @@
                               }
                             ]
                           },
-                          "title": "Attacks 47 GTD columns at the river"
+                          "title": "Attacks 47 GTD columns at the river",
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-153"]
+                            },
+                            "weapon": "Hellfire",
+                            "flightTime": "PT1M",
+                            "flight": {
+                              "profile": "direct"
+                            }
+                          }
                         },
                         {
                           "id": "n-1cd-avn-s5",
@@ -2409,6 +2449,14 @@
                       "title": "Counter-attack on the Alfeld bridgehead",
                       "textAmplifiers": {
                         "additionalInformation": "Attack"
+                      },
+                      "action": {
+                        "type": "contact",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-47gtd"]
+                        },
+                        "duration": "PT30H"
                       }
                     },
                     {
@@ -2547,6 +2595,18 @@
                             "onHand": -96
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-21"]
+                        },
+                        "weapon": "Laser-guided bombs",
+                        "flightTime": "PT1M",
+                        "flight": {
+                          "profile": "direct"
+                        }
                       }
                     },
                     {
@@ -2646,7 +2706,20 @@
                       "id": "n-jbg31-s3",
                       "t": "1985-06-09T09:50:00+02:00",
                       "location": [11.15, 53.09],
-                      "title": "MW-1 attack on bridging columns"
+                      "title": "MW-1 attack on bridging columns",
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-21"]
+                        },
+                        "weapon": "MW-1 dispensers",
+                        "flightTime": "PT1M",
+                        "flight": {
+                          "profile": "direct"
+                        },
+                        "rounds": 16
+                      }
                     },
                     {
                       "id": "n-jbg31-s4",
@@ -2787,6 +2860,19 @@
                         "onHand": -64
                       }
                     ]
+                  },
+                  "action": {
+                    "type": "fire",
+                    "target": {
+                      "type": "units",
+                      "units": ["r-kirov"]
+                    },
+                    "weapon": "AGM-84 Harpoon",
+                    "flightTime": "PT15M",
+                    "flight": {
+                      "profile": "sea-skimming",
+                      "via": [[-2.0, 67.5]]
+                    }
                   }
                 },
                 {
@@ -2878,6 +2964,15 @@
                             "onHand": -8
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-vta"]
+                        },
+                        "weapon": "AIM-7 Sparrow",
+                        "flightTime": "PT1M"
                       }
                     },
                     {
@@ -3103,14 +3198,24 @@
                               }
                             ]
                           },
-                          "title": "Tomcats engage the raid at long range"
+                          "title": "Tomcats engage the raid at long range",
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-a", "r-bf-b"]
+                            },
+                            "weapon": "AIM-54 Phoenix",
+                            "flightTime": "PT4M"
+                          }
                         },
                         {
                           "id": "n-nimitz-s4",
                           "t": "1985-06-09T11:52:00+02:00",
                           "sidc": "10033030001201000001",
                           "status": "Degraded",
-                          "title": "Hit by one missile, flight deck damaged"
+                          "title": "Hit by one missile, flight deck damaged",
+                          "causedBy": ["r-bf-b-s3"]
                         },
                         {
                           "id": "n-nimitz-s5",
@@ -3145,7 +3250,16 @@
                               }
                             ]
                           },
-                          "title": "Outer air battle: Tomcats break up the raid"
+                          "title": "Outer air battle: Tomcats break up the raid",
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-a", "r-bf-b"]
+                            },
+                            "weapon": "AIM-54 Phoenix",
+                            "flightTime": "PT4M"
+                          }
                         },
                         {
                           "id": "n-nimitz-s9",
@@ -3239,7 +3353,16 @@
                               }
                             ]
                           },
-                          "title": "Fires on incoming missiles"
+                          "title": "Fires on incoming missiles",
+                          "action": {
+                            "type": "intercept",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-a", "r-bf-b"]
+                            },
+                            "weapon": "SM-2",
+                            "flightTime": "PT3M"
+                          }
                         },
                         {
                           "id": "n-cg47-s4",
@@ -3262,7 +3385,16 @@
                               }
                             ]
                           },
-                          "title": "All leakers shot down"
+                          "title": "All leakers shot down",
+                          "action": {
+                            "type": "intercept",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-a", "r-bf-b"]
+                            },
+                            "weapon": "SM-2",
+                            "flightTime": "PT3M"
+                          }
                         },
                         {
                           "id": "n-cg47-s7",
@@ -3496,7 +3628,16 @@
                               }
                             ]
                           },
-                          "title": "Tomcats engage the raid"
+                          "title": "Tomcats engage the raid",
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-b", "r-bf-a"]
+                            },
+                            "weapon": "AIM-54 Phoenix",
+                            "flightTime": "PT4M"
+                          }
                         },
                         {
                           "id": "n-saratoga-s4",
@@ -3524,6 +3665,15 @@
                                 "onHand": -40
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-b", "r-bf-a"]
+                            },
+                            "weapon": "AIM-54 Phoenix",
+                            "flightTime": "PT4M"
                           }
                         },
                         {
@@ -3597,6 +3747,15 @@
                                 "onHand": -34
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "intercept",
+                            "target": {
+                              "type": "units",
+                              "units": ["r-bf-a", "r-bf-b"]
+                            },
+                            "weapon": "SM-2",
+                            "flightTime": "PT3M"
                           }
                         },
                         {
@@ -3685,7 +3844,8 @@
                           "t": "1985-06-09T11:50:00+02:00",
                           "sidc": "10033030001201000000",
                           "status": "Combat ineffective",
-                          "title": "Hit by three Kh-22 missiles"
+                          "title": "Hit by three Kh-22 missiles",
+                          "causedBy": ["r-bf-a-s3"]
                         },
                         {
                           "id": "n-foch-s4",
@@ -4477,7 +4637,8 @@
                         ]
                       },
                       "title": "Four ships torpedoed",
-                      "status": "Degraded"
+                      "status": "Degraded",
+                      "causedBy": ["r-k492-s5"]
                     },
                     {
                       "id": "n-rf1-s4",
@@ -4658,7 +4819,8 @@
                             "onHand": -1
                           }
                         ]
-                      }
+                      },
+                      "causedBy": ["r-k525-s5"]
                     },
                     {
                       "id": "n-rf2-s3",
@@ -4764,6 +4926,18 @@
                             "onHand": -2
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-k524"]
+                        },
+                        "weapon": "Mk 48 torpedoes",
+                        "flightTime": "PT6M",
+                        "flight": {
+                          "profile": "torpedo"
+                        }
                       }
                     },
                     {
@@ -4785,6 +4959,18 @@
                             "onHand": -2
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-vasil"]
+                        },
+                        "weapon": "Mk 48 torpedoes",
+                        "flightTime": "PT5M",
+                        "flight": {
+                          "profile": "torpedo"
+                        }
                       }
                     },
                     {
@@ -4899,6 +5085,18 @@
                             "onHand": -4
                           }
                         ]
+                      },
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-phib"]
+                        },
+                        "weapon": "Tigerfish torpedoes",
+                        "flightTime": "PT8M",
+                        "flight": {
+                          "profile": "torpedo"
+                        }
                       }
                     },
                     {
@@ -4946,7 +5144,19 @@
                           }
                         ]
                       },
-                      "title": "Datum on the Oscar"
+                      "title": "Datum on the Oscar",
+                      "action": {
+                        "type": "fire",
+                        "target": {
+                          "type": "units",
+                          "units": ["r-k525"]
+                        },
+                        "weapon": "Mk 46 torpedoes",
+                        "flightTime": "PT6M",
+                        "flight": {
+                          "profile": "torpedo"
+                        }
+                      }
                     },
                     {
                       "id": "n-vp-lajes-s4",
@@ -5145,6 +5355,14 @@
                                 "onHand": -40
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "contact",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-1bra"]
+                            },
+                            "duration": "PT18H"
                           }
                         },
                         {
@@ -5281,7 +5499,8 @@
                                   }
                                 ]
                               },
-                              "title": "Fuel convoys destroyed at the bridges"
+                              "title": "Fuel convoys destroyed at the bridges",
+                              "causedBy": ["n-1cd-avn-s4"]
                             },
                             {
                               "id": "r-153-s9",
@@ -5641,7 +5860,15 @@
                         {
                           "id": "r-47gtd-s9",
                           "t": "1985-06-13T04:00:00+02:00",
-                          "title": "Forces the Leine at Alfeld"
+                          "title": "Forces the Leine at Alfeld",
+                          "action": {
+                            "type": "contact",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-3bra"]
+                            },
+                            "duration": "PT10H"
+                          }
                         },
                         {
                           "id": "r-47gtd-s10",
@@ -6259,7 +6486,8 @@
                                 "onHand": -700
                               }
                             ]
-                          }
+                          },
+                          "causedBy": ["n-48tfw-s3"]
                         },
                         {
                           "id": "r-21-s7",
@@ -7280,7 +7508,8 @@
                                 "onHand": -60
                               }
                             ]
-                          }
+                          },
+                          "causedBy": ["n-42bw-s3"]
                         },
                         {
                           "id": "r-kirov-s6",
@@ -7414,7 +7643,8 @@
                           "t": "1985-06-12T06:05:00+02:00",
                           "sidc": "10063040001202030300",
                           "status": "Destroyed",
-                          "title": "Sunk"
+                          "title": "Sunk",
+                          "causedBy": ["n-ssn720-s6"]
                         },
                         {
                           "id": "r-vasil-s5",
@@ -7853,6 +8083,41 @@
                                 "onHand": -12
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-rf2"]
+                            },
+                            "weapon": "P-700 Granit",
+                            "flightTime": "PT8M",
+                            "flight": {
+                              "points": [
+                                {
+                                  "d": 0,
+                                  "alt": 0
+                                },
+                                {
+                                  "d": 0.05,
+                                  "alt": 14000
+                                },
+                                {
+                                  "d": 0.85,
+                                  "alt": 14000,
+                                  "t": 0.9
+                                },
+                                {
+                                  "d": 0.9,
+                                  "alt": 25
+                                },
+                                {
+                                  "d": 1,
+                                  "alt": 25,
+                                  "t": 1
+                                }
+                              ]
+                            }
                           }
                         },
                         {
@@ -7860,7 +8125,8 @@
                           "t": "1985-06-15T16:00:00+02:00",
                           "sidc": "10063540001101001006",
                           "status": "Destroyed",
-                          "title": "Sunk by P-3C torpedoes"
+                          "title": "Sunk by P-3C torpedoes",
+                          "causedBy": ["n-vp-lajes-s3"]
                         },
                         {
                           "id": "r-k525-s7",
@@ -7931,6 +8197,18 @@
                                 "onHand": -8
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-rf1"]
+                            },
+                            "weapon": "Torpedoes",
+                            "flightTime": "PT8M",
+                            "flight": {
+                              "profile": "torpedo"
+                            }
                           }
                         },
                         {
@@ -7973,7 +8251,8 @@
                           "t": "1985-06-10T04:00:00+02:00",
                           "sidc": "10063540001101000806",
                           "status": "Destroyed",
-                          "title": "Sunk by USS Pittsburgh"
+                          "title": "Sunk by USS Pittsburgh",
+                          "causedBy": ["n-ssn720-s4"]
                         },
                         {
                           "id": "r-k524-s3",
@@ -8035,6 +8314,18 @@
                                 "onHand": -4
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-tginv"]
+                            },
+                            "weapon": "Torpedoes",
+                            "flightTime": "PT8M",
+                            "flight": {
+                              "profile": "torpedo"
+                            }
                           }
                         },
                         {
@@ -8148,6 +8439,18 @@
                                 "onHand": -52
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-foch", "n-nimitz"]
+                            },
+                            "weapon": "Kh-22 missiles",
+                            "flightTime": "PT20M",
+                            "flight": {
+                              "profile": "high-dive"
+                            }
                           }
                         },
                         {
@@ -8195,6 +8498,19 @@
                                 "onHand": -16
                               }
                             ]
+                          },
+                          "causedBy": ["n-nimitz-s8"],
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-nimitz"]
+                            },
+                            "weapon": "Kh-22 missiles",
+                            "flightTime": "PT15M",
+                            "flight": {
+                              "profile": "high-dive"
+                            }
                           }
                         },
                         {
@@ -8272,6 +8588,18 @@
                                 "onHand": -50
                               }
                             ]
+                          },
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-nimitz", "n-foch"]
+                            },
+                            "weapon": "Kh-22 missiles",
+                            "flightTime": "PT17M",
+                            "flight": {
+                              "profile": "high-dive"
+                            }
                           }
                         },
                         {
@@ -8318,6 +8646,19 @@
                                 "onHand": -20
                               }
                             ]
+                          },
+                          "causedBy": ["n-saratoga-s6"],
+                          "action": {
+                            "type": "fire",
+                            "target": {
+                              "type": "units",
+                              "units": ["n-nimitz"]
+                            },
+                            "weapon": "Kh-22 missiles",
+                            "flightTime": "PT15M",
+                            "flight": {
+                              "profile": "high-dive"
+                            }
                           }
                         },
                         {

@@ -24,6 +24,13 @@ import {
   searchActionsKey,
 } from "@/components/injects.ts";
 import { getPlaybackStep, usePlaybackStore } from "@/stores/playbackStore.ts";
+import EngagementPrototype from "@/modules/maplibreview/engagementPrototype/EngagementPrototype.vue";
+import {
+  isEngagementActive,
+  nextEngagementStart,
+  protoDwell,
+  protoDwellSpeed,
+} from "@/modules/maplibreview/engagementPrototype/engagements.prototype";
 import { useMaplibreMapDrop } from "@/modules/maplibreview/useMaplibreMapDrop.ts";
 import { useRafFn } from "@vueuse/core";
 import { hashObject, haveSameItems, injectStrict, wordWrap } from "@/utils";
@@ -1652,9 +1659,15 @@ const { pause, resume } = useRafFn(
     }
 
     // Advance by elapsed real time, so playback keeps its speed when frames drop.
-    const newTime =
-      activeScenario.store.state.currentTime +
-      getPlaybackStep(playback.playbackSpeed, delta);
+    // PROTOTYPE: dwell slows playback while an engagement is in progress, and stops at
+    // the start of one a fast step would jump over.
+    const now = activeScenario.store.state.currentTime;
+    const speed =
+      protoDwell.value && isEngagementActive(now)
+        ? Math.min(playback.playbackSpeed, protoDwellSpeed)
+        : playback.playbackSpeed;
+    let newTime = now + getPlaybackStep(speed, delta);
+    if (protoDwell.value) newTime = nextEngagementStart(now, newTime) ?? newTime;
     activeScenario.time.setCurrentTime(newTime);
   },
   { immediate: false, fpsLimit: 60 },
@@ -1702,6 +1715,7 @@ watch(hoverEnabled, (enabled) => {
 </script>
 <template>
   <MapHoverFeatureTooltip :is-dragging="isDragging" />
+  <EngagementPrototype :ml-map="mlMap" :active-scenario="activeScenario" />
   <div v-if="isDragging" class="pointer-events-none absolute inset-0 z-10">
     <p
       class="text-foreground bg-background absolute bottom-1 left-2 rounded px-1 text-base tracking-tighter tabular-nums"
