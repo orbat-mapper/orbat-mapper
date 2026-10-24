@@ -36,6 +36,7 @@ const VARIANTS = [
   { key: "B", name: "Arcs with flight profiles" },
   { key: "C", name: "Links + log" },
   { key: "D", name: "Cinematic" },
+  { key: "E", name: "Pulse rings" },
 ] as const;
 const route = useRoute();
 const router = useRouter();
@@ -137,6 +138,11 @@ const LAYERS = [
   "proto-eng-head",
   "proto-eng-ring",
   "proto-eng-label",
+  "proto-eng-elink",
+  "proto-eng-econtact",
+  "proto-eng-ering",
+  "proto-eng-earrow",
+  "proto-eng-elabel",
 ];
 function setupLayers() {
   if (mlMap.getSource(SRC)) return;
@@ -284,13 +290,106 @@ function setupLayers() {
     },
     paint: { "text-color": color, "text-halo-color": "#ffffff", "text-halo-width": 1.5 },
   });
+  // Variant E
+  if (!mlMap.hasImage("proto-arrow")) {
+    const size = 24;
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#000";
+    g.beginPath();
+    g.moveTo(5, 5);
+    g.lineTo(20, 12);
+    g.lineTo(5, 19);
+    g.lineTo(9, 12);
+    g.closePath();
+    g.fill();
+    mlMap.addImage("proto-arrow", g.getImageData(0, 0, size, size), {
+      sdf: true,
+      pixelRatio: 2,
+    });
+  }
+  mlMap.addLayer({
+    id: "proto-eng-elink",
+    type: "line",
+    source: SRC,
+    filter: kind("elink"),
+    layout: { "line-cap": "round" },
+    paint: {
+      "line-color": color,
+      "line-width": ["get", "w"],
+      "line-opacity": ["get", "o"],
+    },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-econtact",
+    type: "line",
+    source: SRC,
+    filter: kind("econtact"),
+    paint: {
+      "line-color": FIRE,
+      "line-width": 2,
+      "line-opacity": ["get", "o"],
+      "line-dasharray": [2, 1.5],
+    },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-ering",
+    type: "circle",
+    source: SRC,
+    filter: kind("ering"),
+    paint: {
+      "circle-radius": ["get", "r"],
+      "circle-color": "rgba(0,0,0,0)",
+      "circle-stroke-color": ["get", "c"],
+      "circle-stroke-width": ["get", "w"],
+      "circle-stroke-opacity": ["get", "o"],
+    },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-earrow",
+    type: "symbol",
+    source: SRC,
+    filter: kind("elink"),
+    layout: {
+      "symbol-placement": "line",
+      "symbol-spacing": 70,
+      "icon-image": "proto-arrow",
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+      "icon-rotation-alignment": "map",
+    },
+    paint: { "icon-color": color, "icon-opacity": ["get", "o"] },
+  });
+  mlMap.addLayer({
+    id: "proto-eng-elabel",
+    type: "symbol",
+    source: SRC,
+    filter: ["all", kind("elink"), ["has", "label"]],
+    layout: {
+      "symbol-placement": "line-center",
+      "text-field": ["get", "label"],
+      "text-font": ["Noto Sans Regular"],
+      "text-size": 11,
+      "text-offset": [0, -0.9],
+      "text-allow-overlap": true,
+      "text-keep-upright": true,
+    },
+    paint: {
+      "text-color": color,
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 1.5,
+      "text-opacity": ["get", "o"],
+    },
+  });
 }
 function removeLayers() {
   for (const id of LAYERS) if (mlMap.getLayer(id)) mlMap.removeLayer(id);
   if (mlMap.getSource(SRC)) mlMap.removeSource(SRC);
 }
 function onStyleLoad() {
-  if (variant.value === "A" || variant.value === "C") setupLayers();
+  if (variant.value === "A" || variant.value === "C" || variant.value === "E")
+    setupLayers();
   redraw();
 }
 mlMap.on("style.load", onStyleLoad);
@@ -398,6 +497,102 @@ function featuresA(t: number): Feature[] {
           },
           geometry: { type: "Point", coordinates: at },
         });
+    }
+  }
+  return out;
+}
+
+/** Variant E: pulsing rings on units in action, thin arrowed links from shooter to target. */
+function featuresE(t: number): Feature[] {
+  const out: Feature[] = [];
+  const linger = wall(1, 20, t);
+  const now = Date.now();
+  const ph = (now % 1800) / 1800;
+  const point = (p: Position, props: Record<string, unknown>): Feature => ({
+    type: "Feature",
+    properties: props,
+    geometry: { type: "Point", coordinates: p },
+  });
+  // Two staggered rings that grow and fade, around a faint steady ring.
+  const pulse = (p: Position, c: string, strength = 1) => {
+    out.push(point(p, { kind: "ering", r: 15, c, w: 1.5, o: 0.45 * strength }));
+    for (const k of [0, 0.5]) {
+      const f = (ph + k) % 1;
+      out.push(
+        point(p, { kind: "ering", r: 15 + 16 * f, c, w: 2, o: 0.8 * (1 - f) * strength }),
+      );
+    }
+  };
+  for (const e of engagements.value) {
+    if (t < e.t || t > e.end + linger) continue;
+    const active = t <= e.end;
+    const fade = active ? 1 : 1 - (t - e.end) / linger;
+    const a = locationAt(unitMap[e.shooterId], t);
+    if (!a) continue;
+    if (e.type === "contact") {
+      if (!active) continue;
+      for (const id of e.targets) {
+        const b = unitMap[id] && locationAt(unitMap[id], t);
+        if (!b) continue;
+        const [aa, bb] = shorten(a, b, 0.12);
+        out.push({
+          type: "Feature",
+          properties: { kind: "econtact", o: 0.85 },
+          geometry: { type: "LineString", coordinates: [aa, bb] },
+        });
+        pulse(b, FIRE);
+      }
+      pulse(a, FIRE);
+      continue;
+    }
+    const ends: Position[] = e.area
+      ? [e.area.center]
+      : (e.targets
+          .map((id) => unitMap[id] && locationAt(unitMap[id], t))
+          .filter(Boolean) as Position[]);
+    ends.forEach((b, i) => {
+      const [aa, bb] = shorten(a, b, 0.06);
+      out.push({
+        type: "Feature",
+        properties: {
+          kind: "elink",
+          side: e.side,
+          w: active ? 2 : 1.25,
+          o: (active ? 0.9 : 0.5) * fade,
+          ...(i === 0 ? { label: `${e.weapon || "Fire"} ×${e.rounds}` } : {}),
+        },
+        geometry: { type: "LineString", coordinates: [aa, bb] },
+      });
+      if (active && !e.area) pulse(b, FIRE);
+    });
+    if (active) pulse(a, COLORS[e.side]);
+    if (e.area) {
+      out.push({
+        type: "Feature",
+        properties: {
+          kind: "area",
+          o: active ? 0.75 + 0.25 * Math.sin(now / 300) : fade,
+        },
+        geometry: { type: "Polygon", coordinates: [e.area.ring] },
+      });
+    }
+    for (const r of e.results) {
+      if (t < r.t || t > r.t + linger) continue;
+      const p = unitMap[r.unitId] && locationAt(unitMap[r.unitId], t);
+      if (!p) continue;
+      const age = (t - r.t) / linger;
+      out.push(point(p, { kind: "ering", r: 19, c: "#dc2626", w: 3, o: 1 - age }));
+      const burst = (t - r.t) / wall(0.8, 3, t);
+      if (burst < 1)
+        out.push(
+          point(p, {
+            kind: "ering",
+            r: 19 + 30 * burst,
+            c: "#dc2626",
+            w: 3,
+            o: 1 - burst,
+          }),
+        );
     }
   }
   return out;
@@ -991,7 +1186,12 @@ function redraw() {
   const src = mlMap.getSource(SRC) as GeoJSONSource | undefined;
   src?.setData({
     type: "FeatureCollection",
-    features: variant.value === "C" ? featuresC(t) : featuresA(t),
+    features:
+      variant.value === "C"
+        ? featuresC(t)
+        : variant.value === "E"
+          ? featuresE(t)
+          : featuresA(t),
   });
 }
 watch(
