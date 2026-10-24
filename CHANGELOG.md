@@ -62,6 +62,7 @@ All notable changes to this project will be documented in this file.
 - The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
 - The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
 - "Clear location" on a unit state entry is now "Hide until next move", since the unit comes back at its next planned move. Use "Remove from map" to keep a unit off the map.
+- Control measure labels in an area now shrink and fade with the area when zooming out, instead of spilling outside it.
 
 ### Fixed
 
