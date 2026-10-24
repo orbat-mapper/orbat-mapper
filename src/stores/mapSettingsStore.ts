@@ -74,6 +74,14 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     }),
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 25),
+    // Units without a size of their own take their echelon's ratio of mapIconSize.
+    mapSizeUnitsByEchelon: useLocalStorage("mapSizeUnitsByEchelon", false),
+    // Only the rows a user changed; the rest read from the seed table.
+    mapEchelonSizeRatios: useLocalStorage<Record<string, number>>(
+      "mapEchelonSizeRatios",
+      {},
+      { serializer: StorageSerializers.object },
+    ),
     mapCustomIconScale: useLocalStorage("mapCustomIconScale", 1.7),
     mapUnitLabelBelow: useLocalStorage("mapUnitLabelBelow", false),
     // Renamed key, so users who never saw wrapping on the map start with it on.
