@@ -9,7 +9,7 @@ import {
   type NPointSymbolLayerItem,
   type NTacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
-import { createShortUnitName } from "@/utils/shortUnitName";
+import { createShortUnitName } from "@/lib/textToOrbat";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { storeToRefs } from "pinia";
 import { WandSparklesIcon, ChevronDownIcon } from "@lucide/vue";
