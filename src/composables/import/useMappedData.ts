@@ -3,10 +3,10 @@ import { nanoid } from "@/utils";
 import { setCharAt } from "@/components/helpers";
 import type { Position } from "geojson";
 import {
-  buildSidc,
-  getEchelonCodeFromName,
-  getIconCodeFromName,
-} from "@/views/texttoorbat/textToOrbat";
+  ECHELON_UNSPECIFIED,
+  ICON_UNSPECIFIED,
+  type TextToOrbat,
+} from "@/lib/textToOrbat";
 import {
   parseLatLonPair,
   parseCoordinateString,
@@ -31,6 +31,8 @@ export interface MappedDataOptions {
   parentSidc: Ref<string | undefined>;
   parentSymbolOptions: Ref<UnitSymbolOptions | undefined>;
   parentSideIdentifier?: Ref<string | undefined>;
+  /** Matches icon and echelon names to SIDC codes. */
+  textToOrbat: Ref<TextToOrbat>;
 }
 
 // Unit type for hierarchy
@@ -69,6 +71,8 @@ export function useMappedData(options: MappedDataOptions) {
   } = options;
 
   const generatedIds = new WeakMap<object, string>();
+  const echelonCodeFromName = (name: string) =>
+    options.textToOrbat.value.classify(name).echelon?.code ?? ECHELON_UNSPECIFIED;
 
   const mappedData = computed(() => {
     if (!data.value.length) return [];
@@ -123,24 +127,25 @@ export function useMappedData(options: MappedDataOptions) {
               // Partial SIDC (10 digits) - assume it contains entity/type/subtype/mod
               // We construct full SIDC: 10 + context + identity + set + status + hq + amp + iconValue
               const derivedEchelon = echelonValue
-                ? getEchelonCodeFromName(echelonValue) || "00"
+                ? echelonCodeFromName(echelonValue)
                 : "00";
               unit.sidc = "100" + parentIdentity + "1000" + derivedEchelon + iconValue;
             }
           } else {
             const derivedIcon = iconValue
-              ? getIconCodeFromName(iconValue) || "0000000000"
+              ? (options.textToOrbat.value.classify(iconValue).icon?.entityCode ??
+                ICON_UNSPECIFIED)
               : "0000000000";
 
             const derivedEchelon = echelonValue
-              ? getEchelonCodeFromName(echelonValue) || "00"
+              ? echelonCodeFromName(echelonValue)
               : "00";
 
             // Standard Identity 3 (Friendly), SymbolSet 10 (Land Unit), Status 0, HQTFD 0
             unit.sidc = "100" + parentIdentity + "1000" + derivedEchelon + derivedIcon;
           }
         } else if (guessSidc.value && unit.name) {
-          const sidc = buildSidc(0, unit.name as string);
+          const sidc = options.textToOrbat.value.classify(unit.name as string).sidc;
           unit.sidc = setCharAt(sidc, 3, parentIdentity);
         }
       }
