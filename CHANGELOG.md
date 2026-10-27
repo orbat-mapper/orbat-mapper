@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Added a Unit status category, a Narrow mode and a Zoom to button to the Select tab. Narrow keeps only the selected units in a clicked category, such as one side's land units.
 - Unit statuses can now have a colour, set in the scenario settings.
 - Added Duplicate to the layer menu, which copies a layer and its map items into a new, unlocked layer.
+- Added "Hide until next move" to the "Remove from map" menu in the unit state panel. It takes the unit off the map at the current time and keeps its later moves, so the unit comes back at the next one.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed

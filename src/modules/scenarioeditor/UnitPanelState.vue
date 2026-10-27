@@ -94,6 +94,13 @@ const stateItems = computed((): ButtonGroupItem[] => [
     },
     disabled: props.isLocked,
   },
+  {
+    label: "Hide until next move",
+    onClick: () => {
+      handleHideUntilNextMove();
+    },
+    disabled: props.isLocked,
+  },
 ]);
 
 const coordinateInputFormat = useLocalStorage<CoordinateInputFormat>(
@@ -293,6 +300,12 @@ async function handleChangeSymbol() {
 function handleRemoveFromMap() {
   const t = store.state.currentTime;
   forEachEditableUnit((unitId) => unitActions.removeUnitFromMap(unitId, t));
+}
+
+// Unlike "Remove from map", later moves stay, so the unit comes back at its next one.
+function handleHideUntilNextMove() {
+  const t = store.state.currentTime;
+  addStateEntryToTargets(() => ({ location: null, t }));
 }
 
 function setUnitStatus(newStatus?: string | null) {

@@ -104,7 +104,8 @@ function mountPanel({
         SplitButton: {
           props: ["items"],
           template:
-            '<button data-test="change-symbol" @click="items[0].onClick()">Change symbol</button>',
+            '<button data-test="change-symbol" @click="items[0].onClick()">Change symbol</button>' +
+            '<button data-test="hide-until-next-move" @click="items.find((i) => i.label === \'Hide until next move\').onClick()">Hide until next move</button>',
         },
         DotsMenu: true,
         IconButton: true,
@@ -181,6 +182,31 @@ describe("UnitPanelState", () => {
     expect(addUnitStateEntry).toHaveBeenCalledWith(
       "unit-2",
       expect.objectContaining({ sidc: "10061000001211000000" }),
+      true,
+    );
+  });
+
+  it("hides selected units until their next move without touching later entries", async () => {
+    const addUnitStateEntry = vi.fn();
+    selectedUnitIds.value = new Set(["unit-1", "unit-2", "locked-unit"]);
+
+    const wrapper = mountPanel({
+      addUnitStateEntry,
+      getModalSidc: vi.fn(),
+      isMultiMode: true,
+    });
+
+    await wrapper.get('[data-test="hide-until-next-move"]').trigger("click");
+
+    expect(addUnitStateEntry).toHaveBeenCalledTimes(2);
+    expect(addUnitStateEntry).toHaveBeenCalledWith(
+      "unit-1",
+      { location: null, t: 1000 },
+      true,
+    );
+    expect(addUnitStateEntry).toHaveBeenCalledWith(
+      "unit-2",
+      { location: null, t: 1000 },
       true,
     );
   });
