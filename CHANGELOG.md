@@ -67,6 +67,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed the MapLibre map getting stuck adding units on every click, even after Cancel or switching tools, when a symbol was picked from the palette (or Add unit was clicked again) while already placing a unit.
 - Changing a unit's symbol from the details panel seemed to do nothing when a symbol change on the Unit state tab was in effect, since that change replaces the base symbol from its time on. The details panel now shows a "Symbol from <time>" line under the unit name while a symbol change is in effect, with a menu to edit or remove it, and the symbol picker says it is editing the base symbol. The unit breadcrumbs now show the symbol in effect instead of the base symbol.
 - Fixed units being shown in the wrong place when a scenario file or an added unit hierarchy listed their state changes out of time order.
 - Fixed a moving unit stopping, and then moving at the wrong speed, when a change without a location was recorded partway along its route.
