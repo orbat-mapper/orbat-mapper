@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, h, inject, nextTick, ref, toRef } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import {
   activeLayerKey,
@@ -9,6 +9,7 @@ import {
   mapHellfireKey,
   mapOrbitKey,
   searchActionsKey,
+  timeModalKey,
 } from "@/components/injects";
 import MaplibreContextMenu from "@/modules/maplibreview/MaplibreContextMenu.vue";
 import { useMaplibreLayersStore } from "@/stores/maplibreLayersStore";
@@ -20,6 +21,8 @@ import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import {
   canConvertViaPointToWaypoint,
   canConvertWaypointToViaPoint,
+  findFollowingLocationState,
+  getLegDepartureWindow,
 } from "@/scenariostore/unitTrackConversions";
 
 vi.mock("@/composables/mainToolbarData", () => ({
@@ -231,6 +234,7 @@ describe("MaplibreContextMenu", () => {
       store: {
         state: {
           currentTime: 123,
+          info: { timeZone: "UTC" },
         },
         groupUpdate: (fn: () => void) => fn(),
       },
@@ -252,6 +256,15 @@ describe("MaplibreContextMenu", () => {
         }),
         convertViaPointToWaypoint: vi.fn(),
         convertWaypointToViaPoint: vi.fn(),
+        getLegDepartureWindow: vi.fn((id: string, stateIndex: number) => {
+          const u = getUnit(id);
+          return u ? getLegDepartureWindow(u, stateIndex) : null;
+        }),
+        getLegAfterWaypoint: vi.fn((id: string, stateIndex: number) => {
+          const u = getUnit(id);
+          return (u && findFollowingLocationState(u, stateIndex)?.index) ?? -1;
+        }),
+        setLegDepartureTime: vi.fn(() => true),
       },
       geo: {
         addUnitPosition: vi.fn(),
@@ -271,6 +284,7 @@ describe("MaplibreContextMenu", () => {
         trigger: vi.fn(),
       },
     } as any;
+    const timeModal = { getModalTimestamp: vi.fn(async () => 500 as number | undefined) };
 
     const wrapper = mount(MaplibreContextMenu, {
       props,
@@ -288,6 +302,7 @@ describe("MaplibreContextMenu", () => {
             stopOrbit: vi.fn(),
           },
           [mapHellfireKey as symbol]: { launch: vi.fn() },
+          [timeModalKey as symbol]: timeModal,
         },
         stubs: {
           ContextMenu: ContextMenuStub,
@@ -309,7 +324,7 @@ describe("MaplibreContextMenu", () => {
       },
     });
 
-    return { wrapper, scenario, searchHooks };
+    return { wrapper, scenario, searchHooks, timeModal };
   }
 
   it("updates the bound maplibre basemap when a basemap is selected", async () => {
@@ -587,6 +602,60 @@ describe("MaplibreContextMenu", () => {
       .find((button) => button.text() === "Convert waypoint to via point");
     expect(item?.attributes("disabled")).toBeDefined();
     expect(wrapper.text()).not.toContain("Convert via point to waypoint");
+  });
+
+  function createWaypointMapRef(stateIndex: number) {
+    return createTrackMapRef({
+      unitHistoryWaypointLayer: [
+        {
+          layer: { id: "unitHistoryWaypointLayer" },
+          geometry: { type: "Point", coordinates: [0, 0] },
+          properties: { unitId: "unit-1", stateIndex },
+        },
+      ],
+    });
+  }
+
+  function findButton(wrapper: ReturnType<typeof mountMenu>["wrapper"], text: string) {
+    return wrapper.findAll("button").find((button) => button.text() === text);
+  }
+
+  it("holds a unit at a right clicked waypoint until the picked time", async () => {
+    // The initial location sets off on the leg that ends at state 0.
+    const { wrapper, scenario, timeModal } = mountMenu({
+      mapRef: createWaypointMapRef(-1),
+    });
+    await wrapper.get(".h-full.w-full").trigger("contextmenu", {
+      button: 2,
+      clientX: 10,
+      clientY: 20,
+    });
+
+    await findButton(wrapper, "Hold here until…")?.trigger("click");
+    await flushPromises();
+
+    // The current time falls on the leg, so the picker starts there.
+    expect(timeModal.getModalTimestamp).toHaveBeenCalledWith(
+      123,
+      expect.objectContaining({ title: "Hold here until" }),
+    );
+    expect(scenario.unitActions.setLegDepartureTime).toHaveBeenCalledWith(
+      "unit-1",
+      0,
+      500,
+    );
+    expect(wrapper.text()).not.toContain("Clear hold");
+  });
+
+  it("disables the hold at the last waypoint of a path", async () => {
+    const { wrapper } = mountMenu({ mapRef: createWaypointMapRef(0) });
+    await wrapper.get(".h-full.w-full").trigger("contextmenu", {
+      button: 2,
+      clientX: 10,
+      clientY: 20,
+    });
+
+    expect(findButton(wrapper, "Hold here until…")?.attributes("disabled")).toBeDefined();
   });
 
   it("triggers the shared export action from the maplibre context menu", async () => {

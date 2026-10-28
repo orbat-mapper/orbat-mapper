@@ -26,6 +26,8 @@ import {
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
+  IconTimerOffOutline,
+  IconTimerPauseOutline,
   IconVectorPoint,
   IconVectorPointMinus,
 } from "@iconify-prerendered/vue-mdi";
@@ -71,6 +73,7 @@ import {
   mapHellfireKey,
   mapOrbitKey,
   searchActionsKey,
+  timeModalKey,
 } from "@/components/injects";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
@@ -94,6 +97,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
+const { getModalTimestamp } = injectStrict(timeModalKey);
 const playback = usePlaybackStore();
 const tm = useTimeFormatStore();
 const uiSettings = useUiStore();
@@ -422,6 +426,44 @@ function onConvertViaPointToWaypoint() {
   unitActions.convertViaPointToWaypoint(hit.unitId, hit.stateIndex, hit.viaIndex);
 }
 
+// A hold at a waypoint is the departure time of the leg that sets off from it.
+const holdLeg = computed(() => {
+  const hit = clickedTrackPoint.value;
+  if (hit?.kind !== "waypoint") return null;
+  const stateIndex = unitActions.getLegAfterWaypoint(hit.unitId, hit.stateIndex);
+  if (stateIndex < 0) return null;
+  const window = unitActions.getLegDepartureWindow(hit.unitId, stateIndex);
+  return window ? { unitId: hit.unitId, stateIndex, window } : null;
+});
+
+async function onHoldUntil() {
+  const leg = holdLeg.value;
+  if (!leg) return;
+  const { earliest, arrival, departure } = leg.window;
+  const now = store.state.currentTime;
+  // Start from the current time when it falls on the leg, so scrubbing to the end of
+  // the hold first makes this a single confirm.
+  const isOnLeg = now < arrival && (earliest === undefined || now > earliest);
+  const initial = departure ?? (isOnLeg ? now : (earliest ?? now));
+  const t = await getModalTimestamp(initial, {
+    timeZone: store.state.info.timeZone,
+    title: "Hold here until",
+  });
+  if (t === undefined) return;
+  if (!unitActions.setLegDepartureTime(leg.unitId, leg.stateIndex, t)) {
+    send({
+      type: "warning",
+      message: `The hold must end before the unit is due at its next waypoint (${tm.scenarioFormatter.format(arrival)})`,
+    });
+  }
+}
+
+function onClearHold() {
+  const leg = holdLeg.value;
+  if (!leg) return;
+  unitActions.setLegDepartureTime(leg.unitId, leg.stateIndex, undefined);
+}
+
 function onContextMenuUpdate(open: boolean) {
   if (!open) pixelPosition.value = null;
 }
@@ -546,6 +588,19 @@ function onContextMenu(event: MouseEvent) {
           <IconVectorPointMinus class="mr-2 h-4 w-4" />
           <span>Convert waypoint to via point</span>
         </ContextMenuItem>
+        <template v-if="clickedTrackPoint.kind === 'waypoint'">
+          <ContextMenuItem :disabled="!holdLeg" @select="onHoldUntil()">
+            <IconTimerPauseOutline class="mr-2 h-4 w-4" />
+            <span>Hold here until…</span>
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-if="holdLeg?.window.departure !== undefined"
+            @select="onClearHold()"
+          >
+            <IconTimerOffOutline class="mr-2 h-4 w-4" />
+            <span>Clear hold</span>
+          </ContextMenuItem>
+        </template>
         <ContextMenuItem
           v-else
           :disabled="!canConvertViaPoint"

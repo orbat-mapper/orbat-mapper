@@ -225,6 +225,7 @@ items:
 - **Playback** and options to show or hide parts of the screen.
 
 On a unit track in edit mode, the menu also has _Convert waypoint to via point_ and _Convert via point to waypoint_.
+On a waypoint, it also has _Hold here until…_ and, when the unit holds there, _Clear hold_.
 
 ### Orbit mode
 
@@ -301,6 +302,11 @@ Select **Unit track**, then **Show unit track** to see the path of the selected 
 - To add a via point, drag the midpoint handle of a leg.
 - To delete a waypoint or a via point, hold **Alt** and click it. You cannot delete the initial location.
 - To change a waypoint into a via point, or a via point into a waypoint, right-click it.
+- To make the unit stay at a waypoint for a time, right-click the waypoint and select _Hold here until…_. The unit
+  stays there until the time that you set, then moves faster on the next leg so that it gets to the next waypoint at
+  the same time as before. The hold must end before that time. In the unit's state list, the time shows as
+  _Departs_ on the next waypoint. Click it to change it, or use _Set departure time…_ and _Clear departure time_ in
+  the menu of the waypoint.
 
 ### Draw toolbar
 

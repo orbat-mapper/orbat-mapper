@@ -177,6 +177,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
+    getLegDepartureWindow,
+    getLegAfterWaypoint,
+    setLegDepartureTime,
   } = useUnitStateManipulations(store);
 
   function refreshProjectedHierarchy(s = state) {
@@ -1298,6 +1301,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
+    getLegDepartureWindow,
+    getLegAfterWaypoint,
+    setLegDepartureTime,
     updateUnitStateEntry,
     addUnitStateEntry,
     removeUnitFromMap,
