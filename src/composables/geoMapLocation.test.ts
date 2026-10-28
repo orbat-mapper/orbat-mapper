@@ -54,6 +54,9 @@ function createFakeMapAdapter(initialCursor = ""): FakeMapAdapter {
     getViewBbox() {
       return undefined;
     },
+    getUnobstructedViewBbox() {
+      return undefined;
+    },
     getZoom() {
       return undefined;
     },

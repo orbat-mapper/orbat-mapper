@@ -95,6 +95,24 @@ export class MapLibreMapAdapter implements MapAdapter {
     this.fitExtent(bbox, options);
   }
 
+  getUnobstructedViewBbox(): [number, number, number, number] | undefined {
+    const container = this.mlMap.getContainer();
+    const { width, height } = container.getBoundingClientRect();
+    if (!width || !height) return this.getViewBbox();
+    // The same free area "zoom to" fits into, so previewing the saved view frames it
+    // where it was captured.
+    const [top, right, bottom, left] = getMapOverlayPadding(container, [0, 0, 0, 0]);
+    const corners = [
+      [left, top],
+      [width - right, top],
+      [width - right, height - bottom],
+      [left, height - bottom],
+    ].map((pixel) => this.mlMap.unproject(pixel as [number, number]));
+    const lngs = corners.map((c) => c.lng);
+    const lats = corners.map((c) => c.lat);
+    return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)];
+  }
+
   getViewBbox(): [number, number, number, number] | undefined {
     const bounds = this.mlMap.getBounds();
     if (!bounds) return undefined;
@@ -304,7 +322,7 @@ export class MapLibreMapAdapter implements MapAdapter {
         "circle-radius": style.circleRadius ?? 5,
         "circle-color": style.circleFillColor ?? "red",
         "circle-stroke-color": style.circleStrokeColor ?? "red",
-        "circle-stroke-width": 1,
+        "circle-stroke-width": style.circleStrokeWidth ?? 1,
       },
     } satisfies CircleLayerSpecification);
   }

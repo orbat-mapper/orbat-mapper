@@ -159,6 +159,14 @@ are a device-wide preference, not part of the scenario, and are not defined by t
 symbology standard. See ADR-0009.
 _Avoid_: unit size, stencil size, auto size
 
+### Scenario events
+
+**Event location**:
+Where the map goes when the scenario steps to a scenario event: either a fixed shape,
+or a set of units and map items framed as they are at the event's time. Optional;
+an event without one leaves the map where it is.
+_Avoid_: "event geometry" (the location is often units, not a shape), "where" in prose.
+
 ### Map engines
 
 **Reference grid**:

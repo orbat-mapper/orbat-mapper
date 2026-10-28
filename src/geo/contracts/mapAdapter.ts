@@ -36,6 +36,7 @@ export interface GeoJsonOverlayStyle {
   circleRadius?: number;
   circleFillColor?: string;
   circleStrokeColor?: string;
+  circleStrokeWidth?: number;
 }
 
 export interface GeoJsonOverlayOptions {
@@ -61,6 +62,8 @@ export interface MapAdapter {
   fitExtent(bbox: Bbox, options?: FitOptions): void;
   fitGeometry(geojson: AllGeoJSON, options?: FitOptions): void;
   getViewBbox(): Bbox | undefined;
+  /** The part of the view that no UI floating over the map covers. */
+  getUnobstructedViewBbox(): Bbox | undefined;
   getZoom(): number | undefined;
   getCenter(): Position | undefined;
   getResolution(): number | undefined;

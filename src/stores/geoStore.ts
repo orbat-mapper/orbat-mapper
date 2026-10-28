@@ -2,9 +2,9 @@ import { defineStore } from "pinia";
 import type { Unit } from "@/types/scenarioModels";
 import type { MeasurementTypes, MeasurementUnit } from "@/geo/measurementTypes";
 import type { NUnit } from "@/types/internalModels";
-import type { Position } from "geojson";
+import type { GeoJSON, Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
-import type { MapAdapter } from "@/geo/contracts/mapAdapter";
+import type { GeoJsonOverlayStyle, MapAdapter } from "@/geo/contracts/mapAdapter";
 import { useMapViewStore } from "@/stores/mapViewStore";
 
 import { shallowRef, ref } from "vue";
@@ -14,6 +14,32 @@ export interface ZoomOptions {
   maxZoom?: number;
   duration?: number;
   padding?: [number, number, number, number];
+}
+
+const FLASH_OVERLAY_ID = "flash-outline";
+const FLASH_DURATION_MS = 3000;
+const FLASH_COLOR = "#dc2626";
+const FLASH_STYLE: GeoJsonOverlayStyle = {
+  strokeColor: FLASH_COLOR,
+  strokeWidth: 3,
+  strokeLineDash: [4, 3],
+  fillColor: "rgba(0,0,0,0)",
+  // The overlay's circle layer also marks line and polygon vertices, so it stays
+  // invisible unless the outline is a single point.
+  circleRadius: 0,
+  circleStrokeWidth: 0,
+};
+const FLASH_POINT_STYLE: GeoJsonOverlayStyle = {
+  ...FLASH_STYLE,
+  circleRadius: 18,
+  circleFillColor: "rgba(0,0,0,0)",
+  circleStrokeColor: FLASH_COLOR,
+  circleStrokeWidth: 3,
+};
+
+function isPointGeoJson(geojson: GeoJSON) {
+  const geometry = geojson.type === "Feature" ? geojson.geometry : geojson;
+  return geometry?.type === "Point" || geometry?.type === "MultiPoint";
 }
 
 export const useGeoStore = defineStore("geo", () => {
@@ -88,6 +114,26 @@ export const useGeoStore = defineStore("geo", () => {
     return mapAdapter.value?.getViewBbox();
   }
 
+  let flashTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  /** Shows a dashed outline on the map for a moment, replacing any earlier one. */
+  function flashOutline(geojson: GeoJSON, durationMs = FLASH_DURATION_MS) {
+    const adapter = mapAdapter.value;
+    if (!adapter) return;
+    clearTimeout(flashTimeout);
+    adapter.addGeoJsonOverlay(FLASH_OVERLAY_ID, geojson, {
+      style: isPointGeoJson(geojson) ? FLASH_POINT_STYLE : FLASH_STYLE,
+    });
+    flashTimeout = setTimeout(
+      () => adapter.removeGeoJsonOverlay(FLASH_OVERLAY_ID),
+      durationMs,
+    );
+  }
+
+  function getUnobstructedMapViewBbox(): [number, number, number, number] | undefined {
+    return mapAdapter.value?.getUnobstructedViewBbox();
+  }
+
   function zoomToBbox(bbox: [number, number, number, number], options: ZoomOptions = {}) {
     if (!mapAdapter.value) return;
     mapAdapter.value.fitExtent(bbox, options);
@@ -99,11 +145,13 @@ export const useGeoStore = defineStore("geo", () => {
     zoomToUnit,
     zoomToUnits,
     zoomToGeometry,
+    flashOutline,
     zoomToLocation,
     panToUnit,
     panToLocation,
     updateMapSize,
     getMapViewBbox,
+    getUnobstructedMapViewBbox,
     zoomToBbox,
   };
 });

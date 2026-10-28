@@ -32,7 +32,10 @@ function createMockMap() {
     resize: vi.fn(),
     getContainer: vi.fn(() => document.createElement("div")),
     getCanvas: vi.fn(() => document.createElement("canvas")),
-    unproject: vi.fn(() => ({ lng: 10, lat: 20 })),
+    unproject: vi.fn<(pixel: [number, number]) => { lng: number; lat: number }>(() => ({
+      lng: 10,
+      lat: 20,
+    })),
     queryRenderedFeatures: vi.fn(() => [] as any[]),
     getLayersOrder: vi.fn(() => ["unitLayer", "unitLayer-visible-group"]),
     setMaxBounds: vi.fn(),
@@ -62,6 +65,30 @@ function createMockMap() {
 }
 
 describe("MapLibreMapAdapter", () => {
+  it("leaves UI floating over the map out of the unobstructed view", () => {
+    const { mlMap } = createMockMap();
+    const container = document.createElement("div");
+    container.getBoundingClientRect = () => new DOMRect(0, 0, 1000, 600);
+    mlMap.getContainer.mockReturnValue(container);
+    mlMap.unproject.mockImplementation(([x, y]) => ({
+      lng: x / 100,
+      lat: 60 - y / 100,
+    }));
+    const panel = document.createElement("div");
+    panel.setAttribute("data-map-overlay", "");
+    panel.getBoundingClientRect = () => new DOMRect(700, 0, 300, 600);
+    document.body.append(panel);
+
+    try {
+      const adapter = new MapLibreMapAdapter(
+        mlMap as unknown as ConstructorParameters<typeof MapLibreMapAdapter>[0],
+      );
+      expect(adapter.getUnobstructedViewBbox()).toEqual([0, 54, 7, 60]);
+    } finally {
+      panel.remove();
+    }
+  });
+
   it("stops propagation on the underlying DOM event", () => {
     const { mlMap, listeners } = createMockMap();
     const adapter = new MapLibreMapAdapter(mlMap as any);

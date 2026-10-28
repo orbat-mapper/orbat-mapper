@@ -14,10 +14,15 @@ import { TabsContent } from "@/components/ui/tabs";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import { useToggle } from "@vueuse/core";
+import { klona } from "klona";
 import type { MediaUpdate, ScenarioEventUpdate } from "@/types/internalModels";
+import type { EventLocation } from "@/types/scenarioModels";
 import DescriptionItem from "@/components/DescriptionItem.vue";
 import { renderMarkdown } from "@/composables/formatting";
 import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue";
+import ScenarioEventLocation from "@/modules/scenarioeditor/ScenarioEventLocation.vue";
+import { Field, FieldTitle } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   eventId: EntityId;
@@ -43,6 +48,7 @@ const ui = useUiStore();
 const fmt = useTimeFormatStore();
 const { clear: clearSelected, activeScenarioEventId } = useSelectedItems();
 const scenarioEvent = computed(() => time.getEventById(props.eventId));
+const isScenarioEvent = computed(() => scenarioEvent.value._type !== "unit");
 
 const formattedEventTime = computed(() => {
   return fmt.scenarioFormatter.format(scenarioEvent.value?.startTime ?? 0);
@@ -116,8 +122,34 @@ function updateMedia(mediaUpdate: MediaUpdate) {
   isEditMediaMode.value = false;
 }
 
+// The time and location are edited as drafts and saved with the rest of the form, so
+// Cancel discards them and Save is a single undo step.
+const draftStartTime = ref(0);
+const draftWhere = ref<EventLocation | undefined>();
+watch([isEditMode, () => props.eventId], ([editing]) => {
+  if (!editing) return;
+  draftStartTime.value = scenarioEvent.value?.startTime ?? 0;
+  draftWhere.value = klona(scenarioEvent.value?.where);
+});
+const formattedDraftTime = computed(() =>
+  fmt.scenarioFormatter.format(draftStartTime.value),
+);
+
+async function changeDraftTime() {
+  const newTimestamp = await getModalTimestamp(draftStartTime.value, {
+    timeZone: store.state.info.timeZone,
+    title: "Set scenario event time",
+  });
+  if (newTimestamp !== undefined) draftStartTime.value = newTimestamp;
+}
+
 const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
-  updateScenarioEvent(props.eventId, eventUpdate);
+  const timeChanged = draftStartTime.value !== scenarioEvent.value.startTime;
+  updateScenarioEvent(props.eventId, {
+    ...eventUpdate,
+    ...(isScenarioEvent.value && { where: draftWhere.value }),
+    ...(isScenarioEvent.value && timeChanged && { startTime: draftStartTime.value }),
+  });
   toggleEditMode();
 };
 </script>
@@ -142,7 +174,31 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
             :item="scenarioEvent"
             @update="onFormSubmit"
             @cancel="toggleEditMode()"
-          />
+          >
+            <template v-if="isScenarioEvent" #after-title>
+              <Field>
+                <FieldTitle>Time</FieldTitle>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm tabular-nums" data-test="event-draft-time">{{
+                    formattedDraftTime
+                  }}</span>
+                  <Button
+                    type="button"
+                    aria-label="Change event time"
+                    variant="outline"
+                    size="sm"
+                    @click="changeDraftTime()"
+                    >Change</Button
+                  >
+                </div>
+              </Field>
+            </template>
+            <ScenarioEventLocation
+              v-if="isScenarioEvent"
+              v-model:where="draftWhere"
+              editable
+            />
+          </EditMetaForm>
           <EditMediaForm
             v-else-if="isEditMediaMode"
             :media="media"
@@ -167,6 +223,10 @@ const onFormSubmit = (eventUpdate: ScenarioEventUpdate) => {
                 >{{ scenarioEvent.externalUrl }}</a
               ></DescriptionItem
             >
+            <ScenarioEventLocation
+              v-if="isScenarioEvent && scenarioEvent.where"
+              :where="scenarioEvent.where"
+            />
           </div>
         </TabsContent>
         <TabsContent value="1" v-if="ui.debugMode" class="mx-4">
