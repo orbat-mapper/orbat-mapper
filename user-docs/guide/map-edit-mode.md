@@ -376,7 +376,7 @@ If a field has different values for the selected units, it shows **Mixed**.
 When you select a control measure, the panel has these tabs:
 
 - **Style**: colour, line width, echelon and size.
-- **Amplifiers**: the text labels of the control measure.
+- **Text labels**: the text amplifiers of the control measure, such as its unique designation.
 - **Details**: name, description and the doctrinal description of the control measure.
 - **State**: the state entries at different times.
 

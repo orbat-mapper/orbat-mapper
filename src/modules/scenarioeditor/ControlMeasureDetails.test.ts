@@ -200,7 +200,7 @@ describe("ControlMeasureDetails tabs", () => {
 
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "2" },
+      { label: "Text labels", value: "2" },
       { label: "Details", value: "3" },
       { label: "State", value: "4" },
     ]);
@@ -209,7 +209,7 @@ describe("ControlMeasureDetails tabs", () => {
     await nextTick();
     expect(tabs.props("items")).toEqual([
       { label: "Style", value: "0" },
-      { label: "Amplifiers", value: "2" },
+      { label: "Text labels", value: "2" },
       { label: "Details", value: "3" },
       { label: "State", value: "4" },
       { label: "Debug", value: "5" },
