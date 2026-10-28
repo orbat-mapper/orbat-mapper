@@ -167,12 +167,12 @@ describe("kind-agnostic time projection", () => {
     const store = useNewScenarioStore(createScenario());
     const time = useScenarioTime(store);
 
-    time.setCurrentTime(Date.parse(T1));
-    // visibleFromT is an exclusive lower bound, matching the geometry behaviour.
+    time.setCurrentTime(Date.parse(T1) - 1);
     expect(item(store, "annotation-1")._hidden).toBe(true);
     expect(item(store, "measurement-1")._hidden).toBe(false);
 
-    time.setCurrentTime(Date.parse(T2));
+    // visibleFromT is an inclusive lower bound.
+    time.setCurrentTime(Date.parse(T1));
     expect(item(store, "annotation-1")._hidden).toBe(false);
   });
 
