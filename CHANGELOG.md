@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - Added Duplicate to the layer menu, which copies a layer and its map items into a new, unlocked layer.
 - Added "Hide until next move" to the "Remove from map" menu in the unit state panel. It takes the unit off the map at the current time and keeps its later moves, so the unit comes back at the next one.
 - Added a Location section to the scenario event form: pick units, features or control measures, or capture the current map view, for the map to move to when the event is selected. The map follows the picked units and items as they move.
+- Added "Hold here until…" to the waypoint menu on the map: the unit stays at the waypoint until a set time, then still reaches the next waypoint on time. The unit state list shows it as a departure time on the next waypoint.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -100,6 +101,7 @@ All notable changes to this project will be documented in this file.
 - Fixed draft recovery missing drafts written after restoring a draft, or when a side or group fill colour was missing from the colour list.
 - Fixed custom symbol label spacing changing when the label size changed.
 - Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
+- Fixed clicking a waypoint on the map nudging it to the pointer. A click now selects only that waypoint, Shift-click adds to the selection, and the unit state list scrolls to its entry.
 - Fixed custom unit symbols whose corresponding SIDC is a 30-character 2525E code not showing in the ORBAT tree, unit details, breadcrumb, symbol picker or on the map.
 - Fixed custom unit symbols in the main toolbar symbol palette. A custom symbol picked with "Add symbol" now shows its image in the palette and on the Add unit button, and units added with it keep the custom symbol instead of getting a garbled one. Adding a subordinate to a unit with a custom symbol no longer garbles it either.
 
