@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import type { EntityId } from "@/types/base";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
 import { setSid } from "@/symbology/helpers";
+import { useNotifications } from "@/composables/notifications";
 
 interface Props {
   unit: NUnit;
@@ -44,6 +45,7 @@ const {
   state: { unitStatusMap },
 } = store;
 const { onUnitAction } = useUnitActions();
+const { send } = useNotifications();
 const fmt = useTimeFormatStore();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
@@ -73,6 +75,24 @@ const menuItems = computed((): MenuItemData<StateAction>[] => [
   },
   // { label: "Change status", action: "changeStatus" },
 ]);
+
+// Entries that end a leg can also set when the unit leaves for them.
+function stateMenuItems(s: NState, index: number): MenuItemData<StateAction>[] {
+  if (!unitActions.getLegDepartureWindow(props.unit.id, index)) return menuItems.value;
+  return [
+    ...menuItems.value,
+    { label: "Set departure time…", action: "setDeparture", disabled: props.isLocked },
+    ...(s.viaStartTime !== undefined
+      ? [
+          {
+            label: "Clear departure time",
+            action: "clearDeparture" as const,
+            disabled: props.isLocked,
+          },
+        ]
+      : []),
+  ];
+}
 
 const initialMenuItems = computed((): MenuItemData<StateAction>[] => [
   { label: "Delete", action: "delete", disabled: props.isLocked },
@@ -194,6 +214,27 @@ async function onStateAction(index: number, action: StateAction) {
   } else if (action === "clearLocation") {
     unitActions.updateUnitStateEntry(props.unit.id, index, {
       location: null,
+    });
+  } else if (action === "setDeparture") {
+    await setDepartureTime(index);
+  } else if (action === "clearDeparture") {
+    unitActions.setLegDepartureTime(props.unit.id, index, undefined);
+  }
+}
+
+// The unit holds at the leg's start until the departure time and still arrives on time.
+async function setDepartureTime(index: number) {
+  const window = unitActions.getLegDepartureWindow(props.unit.id, index);
+  if (!window) return;
+  const t = await getModalTimestamp(
+    window.departure ?? window.earliest ?? store.state.currentTime,
+    { timeZone: store.state.info.timeZone, title: "Set departure time" },
+  );
+  if (t === undefined) return;
+  if (!unitActions.setLegDepartureTime(props.unit.id, index, t)) {
+    send({
+      type: "warning",
+      message: `The unit must leave before it is due here (${fmt.scenarioFormatter.format(window.arrival)})`,
     });
   }
 }
@@ -439,7 +480,11 @@ function setUnitStatus(newStatus?: string | null) {
         <IconButton title="Goto Time and Place" @click="changeToState(s)">
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
-        <DotsMenu :items="menuItems" @action="onStateAction(index, $event)" portal />
+        <DotsMenu
+          :items="stateMenuItems(s, index)"
+          @action="onStateAction(index, $event)"
+          portal
+        />
       </div>
       <div
         v-if="s.via?.length || s.viaStartTime !== undefined || s.interpolate === false"
@@ -453,9 +498,16 @@ function setUnitStatus(newStatus?: string | null) {
             v-else-if="s.interpolate === false"
             class="text-muted-foreground h-5 w-5"
           />
-          <span v-if="s.viaStartTime" class="text-muted-foreground ml-2 text-xs">{{
-            formatDateString(s.viaStartTime, store.state.info.timeZone)
-          }}</span>
+          <button
+            v-if="s.viaStartTime"
+            type="button"
+            class="text-muted-foreground hover:text-foreground ml-2 text-xs whitespace-nowrap disabled:pointer-events-none"
+            :title="formatDateString(s.viaStartTime, store.state.info.timeZone)"
+            :disabled="isLocked"
+            @click="setDepartureTime(index)"
+          >
+            Departs {{ fmt.scenarioFormatter.format(s.viaStartTime) }}
+          </button>
         </div>
       </div>
     </li>

@@ -164,6 +164,8 @@ export const stateActions = [
   "changeStatus",
   "editLocation",
   "editHierarchy",
+  "setDeparture",
+  "clearDeparture",
 ] as const;
 export type StateAction = (typeof stateActions)[number];
 
