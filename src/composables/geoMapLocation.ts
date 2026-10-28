@@ -44,6 +44,9 @@ export function useGetMapLocation(
   function start() {
     const map = toValue(mapSource);
     if (!map) return;
+    // A second start would otherwise orphan the first click listener, which then
+    // keeps placing units on every map click
+    if (isActive.value) cleanUp();
     activeMap = map;
     isActive.value = true;
     onStartHook.trigger(null);
