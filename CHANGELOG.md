@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 - Unit statuses can now have a colour, set in the scenario settings.
 - Added Duplicate to the layer menu, which copies a layer and its map items into a new, unlocked layer.
 - Added "Hide until next move" to the "Remove from map" menu in the unit state panel. It takes the unit off the map at the current time and keeps its later moves, so the unit comes back at the next one.
+- Added a Location section to the scenario event form: pick units, features or control measures, or capture the current map view, for the map to move to when the event is selected. The map follows the picked units and items as they move.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -63,6 +64,7 @@ All notable changes to this project will be documented in this file.
 - The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
 - The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
 - "Clear location" on a unit state entry is now "Hide until next move", since the unit comes back at its next planned move. Use "Remove from map" to keep a unit off the map.
+- The event time can now be edited in the scenario event form, and the form's changes are saved together as one undo step.
 - Control measure labels in an area now shrink and fade with the area when zooming out, instead of spilling outside it.
 
 ### Fixed
