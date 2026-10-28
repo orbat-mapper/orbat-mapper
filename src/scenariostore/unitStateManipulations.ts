@@ -18,7 +18,6 @@ import {
   findPrecedingTrackPoint,
   getLegDepartureWindow as getDepartureWindow,
   getUnitSpeedMps,
-  isValidDepartureTime,
 } from "@/scenariostore/unitTrackConversions";
 
 export function removeUnusedUnitStateEntries(unit: NUnit) {
@@ -423,19 +422,15 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
   }
 
   /**
-   * The index of the state entry that ends the leg setting off from a waypoint,
-   * or -1 when the path ends or is broken there. The initial location is the
-   * waypoint at index -1.
+   * The leg that sets off from a waypoint: the index of the state entry it ends
+   * at, and its departure window. Null when the path ends or is broken there.
+   * The initial location is the waypoint at index -1.
    */
   function getLegAfterWaypoint(unitId: EntityId, stateIndex: number) {
     const unit = state.unitMap[unitId];
-    if (!unit) return -1;
-    if (stateIndex >= 0) {
-      const s = unit.state?.[stateIndex];
-      if (!s?.location) return -1;
-    }
-    const following = findFollowingLocationState(unit, stateIndex);
-    return following && getDepartureWindow(unit, following.index) ? following.index : -1;
+    const following = unit && findFollowingLocationState(unit, stateIndex);
+    const window = following && getDepartureWindow(unit, following.index);
+    return window ? { stateIndex: following.index, window } : null;
   }
 
   /**
@@ -450,25 +445,14 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     t: number | undefined,
   ): boolean {
     const window = getLegDepartureWindow(unitId, stateIndex);
-    if (!window) return false;
-    if (t !== undefined && !isValidDepartureTime(window, t)) return false;
-    const clear =
-      t === undefined || (window.earliest !== undefined && t <= window.earliest);
-    if (clear && window.departure === undefined) return true;
-    update(
-      (s) => {
-        const entry = s.unitMap[unitId]?.state?.[stateIndex];
-        if (!entry) return;
-        if (clear) {
-          delete entry.viaStartTime;
-        } else {
-          entry.viaStartTime = t;
-        }
-        s.unitStateCounter++;
-      },
-      { label: "addUnitPosition", value: unitId },
-    );
-    updateUnitState(unitId);
+    if (!window || (t !== undefined && t >= window.arrival)) return false;
+    const departure =
+      t !== undefined && (window.earliest === undefined || t > window.earliest)
+        ? t
+        : undefined;
+    if (departure !== window.departure) {
+      updateUnitStateEntry(unitId, stateIndex, { viaStartTime: departure });
+    }
     return true;
   }
 

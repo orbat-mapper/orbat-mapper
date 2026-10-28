@@ -262,7 +262,9 @@ describe("MaplibreContextMenu", () => {
         }),
         getLegAfterWaypoint: vi.fn((id: string, stateIndex: number) => {
           const u = getUnit(id);
-          return (u && findFollowingLocationState(u, stateIndex)?.index) ?? -1;
+          const following = u && findFollowingLocationState(u, stateIndex);
+          const window = following && getLegDepartureWindow(u, following.index);
+          return window ? { stateIndex: following.index, window } : null;
         }),
         setLegDepartureTime: vi.fn(() => true),
       },

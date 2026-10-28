@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import type { EntityId } from "@/types/base";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
 import { setSid } from "@/symbology/helpers";
-import { useNotifications } from "@/composables/notifications";
+import { useLegDeparturePicker } from "@/composables/legDeparture";
 
 interface Props {
   unit: NUnit;
@@ -45,11 +45,11 @@ const {
   state: { unitStatusMap },
 } = store;
 const { onUnitAction } = useUnitActions();
-const { send } = useNotifications();
 const fmt = useTimeFormatStore();
 const state = computed(() => props.unit.state || []);
 const uiState = useUiStore();
-const { selectedWaypointIds } = useSelectedWaypoints();
+const { selectedWaypointIds, clickWaypoint } = useSelectedWaypoints();
+const { pickLegDeparture } = useLegDeparturePicker();
 const { isMultiMode, forEachEditableUnit } = useUnitEditTargets(() => props.unit.id);
 
 // State changes apply to every unlocked unit in the selection.
@@ -76,23 +76,22 @@ const menuItems = computed((): MenuItemData<StateAction>[] => [
   // { label: "Change status", action: "changeStatus" },
 ]);
 
-// Entries that end a leg can also set when the unit leaves for them.
-function stateMenuItems(s: NState, index: number): MenuItemData<StateAction>[] {
-  if (!unitActions.getLegDepartureWindow(props.unit.id, index)) return menuItems.value;
-  return [
-    ...menuItems.value,
-    { label: "Set departure time…", action: "setDeparture", disabled: props.isLocked },
-    ...(s.viaStartTime !== undefined
-      ? [
-          {
-            label: "Clear departure time",
-            action: "clearDeparture" as const,
-            disabled: props.isLocked,
-          },
-        ]
-      : []),
-  ];
-}
+// Entries that end a leg can also set when the unit leaves for them. Built once per
+// state change, not per render, since the list re-renders on every playback tick.
+const stateMenuItems = computed(() =>
+  state.value.map((s, index) => {
+    if (!unitActions.getLegDepartureWindow(props.unit.id, index)) return menuItems.value;
+    const disabled = props.isLocked;
+    const items: MenuItemData<StateAction>[] = [
+      ...menuItems.value,
+      { label: "Set departure time…", action: "setDeparture", disabled },
+    ];
+    if (s.viaStartTime !== undefined) {
+      items.push({ label: "Clear departure time", action: "clearDeparture", disabled });
+    }
+    return items;
+  }),
+);
 
 const initialMenuItems = computed((): MenuItemData<StateAction>[] => [
   { label: "Delete", action: "delete", disabled: props.isLocked },
@@ -222,34 +221,32 @@ async function onStateAction(index: number, action: StateAction) {
   }
 }
 
-// The unit holds at the leg's start until the departure time and still arrives on time.
-async function setDepartureTime(index: number) {
-  const window = unitActions.getLegDepartureWindow(props.unit.id, index);
-  if (!window) return;
-  const t = await getModalTimestamp(
-    window.departure ?? window.earliest ?? store.state.currentTime,
-    { timeZone: store.state.info.timeZone, title: "Set departure time" },
-  );
-  if (t === undefined) return;
-  if (!unitActions.setLegDepartureTime(props.unit.id, index, t)) {
-    send({
-      type: "warning",
-      message: `The unit must leave before it is due here (${fmt.scenarioFormatter.format(window.arrival)})`,
-    });
-  }
+function setDepartureTime(index: number) {
+  return pickLegDeparture(props.unit.id, index, "Set departure time");
 }
 
+const stateListRef = ref<HTMLElement | null>(null);
+
+// A waypoint selected on the map brings its entry into view. Entries picked in the
+// list are already visible, so scrolling to the nearest edge leaves them in place.
+watch(
+  () => [...selectedWaypointIds.value],
+  (ids, oldIds) => {
+    const previous = new Set(oldIds);
+    const added = ids.filter((id) => !previous.has(id));
+    const id = added[added.length - 1];
+    if (!id) return;
+    // State ids are nanoids, so they need no escaping in the selector.
+    nextTick(() =>
+      stateListRef.value
+        ?.querySelector(`[data-state-id="${id}"]`)
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
+    );
+  },
+);
+
 function onStateClick(e: MouseEvent, s: NState) {
-  if (s.location) {
-    if (selectedWaypointIds.value.has(s.id)) {
-      selectedWaypointIds.value.delete(s.id);
-    } else {
-      if (!e.shiftKey) {
-        selectedWaypointIds.value.clear();
-      }
-      selectedWaypointIds.value.add(s.id);
-    }
-  }
+  if (s.location) clickWaypoint(s.id, e.shiftKey);
 }
 
 const newTitle = ref();
@@ -369,7 +366,11 @@ function setUnitStatus(newStatus?: string | null) {
     Changes are added at the current time to all selected units. Select a single unit to
     edit its state history.
   </p>
-  <ul v-else class="divide-border border-border mt-2 divide-y border-t border-b">
+  <ul
+    v-else
+    ref="stateListRef"
+    class="divide-border border-border mt-2 divide-y border-t border-b"
+  >
     <li v-if="unit.location" class="relative flex items-center py-4">
       <div class="flex min-w-0 flex-auto flex-col text-sm">
         <span class="text-muted-foreground font-medium">Initial position</span>
@@ -395,6 +396,7 @@ function setUnitStatus(newStatus?: string | null) {
       v-for="(s, index) in state"
       class="relative flex items-center py-4"
       :key="s.id"
+      :data-state-id="s.id"
       :class="selectedWaypointIds.has(s.id) ? 'bg-accent/10' : ''"
     >
       <div class="flex min-w-0 flex-auto flex-col text-sm">
@@ -481,7 +483,7 @@ function setUnitStatus(newStatus?: string | null) {
           <IconCrosshairsGps class="h-5 w-5" aria-hidden="true" />
         </IconButton>
         <DotsMenu
-          :items="stateMenuItems(s, index)"
+          :items="stateMenuItems[index]"
           @action="onStateAction(index, $event)"
           portal
         />

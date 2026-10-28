@@ -73,8 +73,8 @@ import {
   mapHellfireKey,
   mapOrbitKey,
   searchActionsKey,
-  timeModalKey,
 } from "@/components/injects";
+import { useLegDeparturePicker } from "@/composables/legDeparture";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
@@ -97,7 +97,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
-const { getModalTimestamp } = injectStrict(timeModalKey);
+const { pickLegDeparture } = useLegDeparturePicker();
 const playback = usePlaybackStore();
 const tm = useTimeFormatStore();
 const uiSettings = useUiStore();
@@ -430,32 +430,13 @@ function onConvertViaPointToWaypoint() {
 const holdLeg = computed(() => {
   const hit = clickedTrackPoint.value;
   if (hit?.kind !== "waypoint") return null;
-  const stateIndex = unitActions.getLegAfterWaypoint(hit.unitId, hit.stateIndex);
-  if (stateIndex < 0) return null;
-  const window = unitActions.getLegDepartureWindow(hit.unitId, stateIndex);
-  return window ? { unitId: hit.unitId, stateIndex, window } : null;
+  const leg = unitActions.getLegAfterWaypoint(hit.unitId, hit.stateIndex);
+  return leg && { unitId: hit.unitId, ...leg };
 });
 
-async function onHoldUntil() {
+function onHoldUntil() {
   const leg = holdLeg.value;
-  if (!leg) return;
-  const { earliest, arrival, departure } = leg.window;
-  const now = store.state.currentTime;
-  // Start from the current time when it falls on the leg, so scrubbing to the end of
-  // the hold first makes this a single confirm.
-  const isOnLeg = now < arrival && (earliest === undefined || now > earliest);
-  const initial = departure ?? (isOnLeg ? now : (earliest ?? now));
-  const t = await getModalTimestamp(initial, {
-    timeZone: store.state.info.timeZone,
-    title: "Hold here until",
-  });
-  if (t === undefined) return;
-  if (!unitActions.setLegDepartureTime(leg.unitId, leg.stateIndex, t)) {
-    send({
-      type: "warning",
-      message: `The hold must end before the unit is due at its next waypoint (${tm.scenarioFormatter.format(arrival)})`,
-    });
-  }
+  if (leg) pickLegDeparture(leg.unitId, leg.stateIndex, "Hold here until");
 }
 
 function onClearHold() {

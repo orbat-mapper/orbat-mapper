@@ -22,6 +22,7 @@ import {
 import { unwindCoordinates, wrapLongitude } from "@/geo/longitude";
 import { getRenderedMidpoint } from "@/geo/maplibreMidpoint";
 import {
+  distancePx,
   HANDLE_HIT_TOLERANCE_PX,
   TOUCH_HANDLE_HIT_TOLERANCE_PX,
 } from "@/composables/maplibreTouchDrawing";
@@ -153,7 +154,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     () =>
       new Set([...selectedUnitIds.value].filter((id) => unitActions.isUnitHidden(id))),
   );
-  const { selectedWaypointIds } = useSelectedWaypoints();
+  const { selectedWaypointIds, clickWaypoint } = useSelectedWaypoints();
   selectedWaypointIds.value.clear();
   const unitSettings = useUnitSettingsStore();
   const { showHistory, editHistory, showWaypointTimestamps } = storeToRefs(unitSettings);
@@ -173,7 +174,10 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
     matchesVertex: (vertex: LegVertexMeta) => boolean;
     commit: (lngLat: [number, number]) => void;
   };
-  let dragState: DragState | null = null;
+  // Where the drag started on screen. A press that ends closer than
+  // CLICK_TOLERANCE_PX is a click, so it must not move the point.
+  let dragState: (DragState & { startPoint: { x: number; y: number } }) | null = null;
+  const CLICK_TOLERANCE_PX = 3;
 
   function setupUnitHistoryLayers(beforeLayerId?: string) {
     for (const id of [ARC_SOURCE_ID, LEG_SOURCE_ID]) {
@@ -523,11 +527,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
         return true;
       }
       if (waypointId) {
-        if (selectedWaypointIds.value.has(waypointId)) {
-          selectedWaypointIds.value.delete(waypointId);
-        } else {
-          selectedWaypointIds.value.add(waypointId);
-        }
+        clickWaypoint(waypointId, originalEvent.shiftKey);
         applyWaypointFeatureStates();
       }
       return true;
@@ -564,7 +564,7 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
 
   function startDrag(e: MapMouseEvent, drag: DragState) {
     e.preventDefault();
-    dragState = drag;
+    dragState = { ...drag, startPoint: { x: e.point.x, y: e.point.y } };
     mlMap.getCanvas().style.cursor = "grabbing";
     mlMap.on("mousemove", onDragMove);
     mlMap.once("mouseup", onDragEnd);
@@ -802,10 +802,12 @@ export function useMaplibreUnitHistory(mlMap: MlMap, activeScenario: TScenario) 
   function onDragEnd(e: MapMouseEvent) {
     mlMap.off("mousemove", onDragMove);
     if (!dragState) return;
-    const { commit } = dragState;
+    const { commit, startPoint } = dragState;
     dragState = null;
     mlMap.getCanvas().style.cursor = "";
-    commit([e.lngLat.lng, e.lngLat.lat]);
+    if (distancePx(e.point, startPoint) >= CLICK_TOLERANCE_PX) {
+      commit([e.lngLat.lng, e.lngLat.lat]);
+    }
     drawHistory();
   }
 

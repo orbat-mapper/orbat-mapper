@@ -317,9 +317,12 @@ describe("leg departure times", () => {
   it("finds the leg that sets off from a waypoint", () => {
     const { actions } = setup(createHoldScenario());
 
-    expect(actions.getLegAfterWaypoint("unit-1", -1)).toBe(0);
-    expect(actions.getLegAfterWaypoint("unit-1", 1)).toBe(2);
-    expect(actions.getLegAfterWaypoint("unit-1", 2)).toBe(-1);
+    expect(actions.getLegAfterWaypoint("unit-1", -1)?.stateIndex).toBe(0);
+    expect(actions.getLegAfterWaypoint("unit-1", 1)).toEqual({
+      stateIndex: 2,
+      window: { earliest: T1, arrival: T3, departure: undefined },
+    });
+    expect(actions.getLegAfterWaypoint("unit-1", 2)).toBeNull();
   });
 
   it("finds no leg after a waypoint the unit leaves the map at", () => {
@@ -331,7 +334,7 @@ describe("leg departure times", () => {
       ]),
     );
 
-    expect(actions.getLegAfterWaypoint("unit-1", 0)).toBe(-1);
+    expect(actions.getLegAfterWaypoint("unit-1", 0)).toBeNull();
   });
 
   it("holds the unit at the leg's start until it departs", () => {
