@@ -442,8 +442,8 @@ export function projectScenarioLayerItemStateAt(
 /**
  * Kind-agnostic base pass: is this item hidden at `currentTime`?
  *
- * `visibleFromT`/`visibleUntilT` are exclusive bounds, matching the pre-existing
- * geometry-only behaviour exactly.
+ * The item is visible from `visibleFromT` (inclusive) until `visibleUntilT`
+ * (exclusive), so an item stamped with an event's time shows when the event is selected.
  *
  * The three visibility fields are read through `_state` when the projection carries
  * them, so a timed patch of `isHidden` (or of either bound) actually takes effect.
@@ -472,14 +472,14 @@ export function computeScenarioLayerItemHidden(
   return timeHidden || !!isHidden;
 }
 
-/** True when the visible-from/until window excludes the timestamp. */
+/** True when the visible-from (inclusive) / until (exclusive) window excludes the timestamp. */
 export function isOutsideVisibleWindow(
   window: { visibleFromT?: number | null; visibleUntilT?: number | null },
   timestamp: number,
 ) {
   const visibleFromT = window.visibleFromT ?? Number.MIN_SAFE_INTEGER;
   const visibleUntilT = window.visibleUntilT ?? Number.MAX_SAFE_INTEGER;
-  return timestamp <= visibleFromT || timestamp >= visibleUntilT;
+  return timestamp < visibleFromT || timestamp >= visibleUntilT;
 }
 
 export function isTacticalGraphicLayerItem(

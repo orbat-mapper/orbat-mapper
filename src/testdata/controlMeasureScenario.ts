@@ -25,7 +25,7 @@ import controlMeasureScenario from "@/testdata/controlMeasureScenario.json";
 export const FIXTURE_T0 = Date.parse("2025-06-01T00:00:00Z");
 /**
  * Between T0 and T2. `annotation-note` and `cm-late` are stamped `visibleFromT` here.
- * The bound is exclusive, so at exactly T1 both are still hidden; at T2 they are not.
+ * The bound is inclusive, so both are hidden just before T1 and shown from T1 on.
  */
 export const FIXTURE_T1 = Date.parse("2025-06-01T06:00:00Z");
 /** Every timed state entry in the fixture is stamped here. */
