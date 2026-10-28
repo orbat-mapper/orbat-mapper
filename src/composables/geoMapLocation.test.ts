@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
+import { useMapSelectStore } from "@/stores/mapSelectStore";
 import type {
   AnimateOptions,
   FitOptions,
@@ -189,5 +190,65 @@ describe("useGetMapLocation", () => {
     expect(map.onceUnsubscribe).not.toHaveBeenCalled();
     expect(locationPicker.isActive.value).toBe(false);
     expect(map.targetElement.style.cursor).toBe("grab");
+  });
+
+  it("stops listening for DOM clicks after a restarted picker is cancelled", () => {
+    const map = createFakeMapAdapter("grab");
+    const activeMap = ref<MapAdapter | null>(map);
+    const locationPicker = useGetMapLocation(activeMap, {
+      cancelOnClickOutside: false,
+      eventSource: "dom",
+    });
+    const onGetLocation = vi.fn();
+
+    locationPicker.onGetLocation(onGetLocation);
+    locationPicker.start();
+    locationPicker.start();
+    locationPicker.cancel();
+
+    map.targetElement.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+
+    expect(onGetLocation).not.toHaveBeenCalled();
+    expect(map.targetElement.style.cursor).toBe("grab");
+  });
+
+  it("captures a single location when started twice", () => {
+    const map = createFakeMapAdapter();
+    const activeMap = ref<MapAdapter | null>(map);
+    const locationPicker = useGetMapLocation(activeMap, {
+      cancelOnClickOutside: false,
+      eventSource: "dom",
+    });
+    const onGetLocation = vi.fn();
+
+    locationPicker.onGetLocation(onGetLocation);
+    locationPicker.start();
+    locationPicker.start();
+
+    for (let i = 0; i < 3; i++) {
+      map.targetElement.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    }
+
+    expect(onGetLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it("restores map hover after a restarted picker finishes", () => {
+    const map = createFakeMapAdapter();
+    const activeMap = ref<MapAdapter | null>(map);
+    const mapSelectStore = useMapSelectStore();
+    mapSelectStore.hoverEnabled = true;
+    const locationPicker = useGetMapLocation(activeMap, {
+      cancelOnClickOutside: false,
+    });
+
+    locationPicker.start();
+    locationPicker.start();
+    locationPicker.cancel();
+
+    expect(mapSelectStore.hoverEnabled).toBe(true);
   });
 });
