@@ -88,11 +88,6 @@ export function getLegDepartureWindow(
   return { earliest: prev.t, arrival: s.t, departure: s.viaStartTime };
 }
 
-/** True when the leg can set off at `t` and still arrive on time. */
-export function isValidDepartureTime(window: LegDepartureWindow, t: number): boolean {
-  return t < window.arrival;
-}
-
 /** The unit's own speed in m/s, falling back to a default when it has none. */
 export function getUnitSpeedMps(unit: NUnit): number {
   const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;

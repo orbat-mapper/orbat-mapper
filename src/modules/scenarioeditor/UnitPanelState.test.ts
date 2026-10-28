@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import UnitPanelState from "./UnitPanelState.vue";
 import { activeScenarioKey, sidcModalKey, timeModalKey } from "@/components/injects";
+import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 
 vi.mock("@/geo/utils", () => ({
   formatDateString: () => "2025-01-01 00:00",
@@ -22,14 +23,10 @@ vi.mock("@/stores/uiStore", () => ({
   }),
 }));
 
-vi.mock("@/stores/selectedWaypoints", () => ({
-  useSelectedWaypoints: () => ({
-    selectedWaypointIds: { value: new Set() },
-  }),
-}));
-
 vi.mock("@/stores/timeFormatStore", () => ({
-  useTimeFormatStore: () => ({}),
+  useTimeFormatStore: () => ({
+    scenarioFormatter: { format: (t: number) => `time:${t}` },
+  }),
 }));
 
 const selectedUnitIds = { value: new Set<string>() };
@@ -42,11 +39,13 @@ function mountPanel({
   getModalSidc,
   isMultiMode = false,
   standardIdentities = {},
+  state = [],
 }: {
   addUnitStateEntry: ReturnType<typeof vi.fn>;
   getModalSidc: ReturnType<typeof vi.fn>;
   isMultiMode?: boolean;
   standardIdentities?: Record<string, string>;
+  state?: { id: string; t: number; location?: number[] }[];
 }) {
   return mount(UnitPanelState, {
     props: {
@@ -64,7 +63,7 @@ function mountPanel({
           sidc: "10031000001211000000",
           reinforcedStatus: "Reduced",
         },
-        state: [],
+        state,
       },
     },
     global: {
@@ -91,6 +90,7 @@ function mountPanel({
             updateUnit: vi.fn(),
             updateUnitStateEntry: vi.fn(),
             convertStateEntryToInitialLocation: vi.fn(),
+            getLegDepartureWindow: vi.fn(() => null),
           },
         },
         [sidcModalKey as symbol]: {
@@ -208,6 +208,29 @@ describe("UnitPanelState", () => {
       "unit-2",
       { location: null, t: 1000 },
       true,
+    );
+  });
+
+  it("scrolls to the entry of a waypoint selected on the map", async () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    const { selectedWaypointIds } = useSelectedWaypoints();
+    selectedWaypointIds.value = new Set();
+
+    mountPanel({
+      addUnitStateEntry: vi.fn(),
+      getModalSidc: vi.fn(),
+      state: [
+        { id: "state-1", t: 1000, location: [0, 0] },
+        { id: "state-2", t: 2000, location: [1, 0] },
+      ],
+    });
+    selectedWaypointIds.value.add("state-2");
+    await flushPromises();
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect((scrollIntoView.mock.contexts[0] as HTMLElement).dataset.stateId).toBe(
+      "state-2",
     );
   });
 });
