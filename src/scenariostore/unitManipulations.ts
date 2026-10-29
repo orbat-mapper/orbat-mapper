@@ -568,6 +568,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unitIds.reverse();
     update((s) => {
       removeTimedHierarchyReferences(deletedIds, s);
+      // Inside the recipe, so undo/redo also move it and redraw the timeline.
+      s.unitStateCounter++;
       for (const id of unitIds) {
         const u = s.unitMap[id];
         if (!u) {

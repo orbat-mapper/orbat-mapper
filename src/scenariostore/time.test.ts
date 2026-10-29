@@ -3,6 +3,7 @@ import { createInitialState, updateCurrentUnitState, useScenarioTime } from "./t
 import type { NUnit } from "@/types/internalModels";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
+import { useUnitManipulations } from "@/scenariostore/unitManipulations";
 
 function createUnit(overrides: Partial<NUnit> = {}): NUnit {
   return {
@@ -426,6 +427,51 @@ describe("setCurrentTime", () => {
 
     expect(store.state.unitMap["parked"]._state?.sidc).toBe("10061000000000000000");
     expect(store.state.unitMap["moving"]._state?.sidc).toBe("10061000000000000000");
+  });
+
+  // The timeline histogram only redraws when a state counter moves, so every
+  // change to the counted entries has to move one.
+  describe("timeline histogram", () => {
+    function histogramTotal(time: ReturnType<typeof useScenarioTime>) {
+      return time
+        .computeTimeHistogram()
+        .histogram.reduce((sum, bin) => sum + bin.count, 0);
+    }
+
+    it("redraws without a deleted feature's entries", () => {
+      const store = createStore();
+      const time = useScenarioTime(store);
+      const geo = useGeo(store);
+      expect(histogramTotal(time)).toBe(4);
+
+      const counter = store.state.featureStateCounter;
+      geo.deleteFeature("timed-feature");
+      expect(store.state.featureStateCounter).toBeGreaterThan(counter);
+      expect(histogramTotal(time)).toBe(3);
+    });
+
+    it("redraws without the entries of a deleted layer's items", () => {
+      const store = createStore();
+      const time = useScenarioTime(store);
+      const geo = useGeo(store);
+      const counter = store.state.featureStateCounter;
+
+      geo.deleteLayer("layer-1");
+
+      expect(store.state.featureStateCounter).toBeGreaterThan(counter);
+      expect(histogramTotal(time)).toBe(3);
+    });
+
+    it("redraws without a deleted unit's entries", () => {
+      const store = createStore();
+      const time = useScenarioTime(store);
+      const counter = store.state.unitStateCounter;
+
+      useUnitManipulations(store).deleteUnit("moving");
+
+      expect(store.state.unitStateCounter).toBeGreaterThan(counter);
+      expect(histogramTotal(time)).toBe(2);
+    });
   });
 });
 
