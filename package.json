@@ -2,7 +2,7 @@
   "name": "orbat-mapper",
   "description": "Order of Battle Mapper",
   "private": true,
-  "version": "1.22.0",
+  "version": "1.22.1",
   "repository": "github:orbat-mapper/orbat-mapper",
   "type": "module",
   "scripts": {
