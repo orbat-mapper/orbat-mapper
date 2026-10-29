@@ -38,6 +38,7 @@ All notable changes to this project will be documented in this file.
 - Added "Hide until next move" to the "Remove from map" menu in the unit state panel. It takes the unit off the map at the current time and keeps its later moves, so the unit comes back at the next one.
 - Added a Location section to the scenario event form: pick units, features or control measures, or capture the current map view, for the map to move to when the event is selected. The map follows the picked units and items as they move.
 - Added "Hold here until…" to the waypoint menu on the map: the unit stays at the waypoint until a set time, then still reaches the next waypoint on time. The unit state list shows it as a departure time on the next waypoint.
+- Added a way to give a feature a new shape from the current time without redrawing it: paste GeoJSON, for example a shape edited in QGIS, with "Paste geometry as state" in the feature menu or the State tab, or take the shape of another feature of the same kind with "Use geometry from feature", optionally deleting that feature in the same undo step. The pasted shape must be the same kind of geometry as the feature, and circles, rectangles and locked features cannot take one.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -72,6 +73,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Map items and layers with a "visible from" time now show at exactly that time instead of just after it, so items set to appear at a scenario event are shown when the event is selected.
+- Fixed Record feature geometry and the Transform tab's "Update geometry at <time>" option adding timed shapes to locked features and features in locked layers.
 - Fixed Record feature geometry keeping only the last vertex drag on a line or polygon. Each drag now starts from the shape shown at the current time, so earlier changes are kept, and the edit handles sit on that shape.
 - Fixed the MapLibre map getting stuck adding units on every click, even after Cancel or switching tools, when a symbol was picked from the palette (or Add unit was clicked again) while already placing a unit.
 - Changing a unit's symbol from the details panel seemed to do nothing when a symbol change on the Unit state tab was in effect, since that change replaces the base symbol from its time on. The details panel now shows a "Symbol from <time>" line under the unit name while a symbol change is in effect, with a menu to edit or remove it, and the symbol picker says it is editing the base symbol. The unit breadcrumbs now show the symbol in effect instead of the base symbol.
