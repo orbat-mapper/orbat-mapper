@@ -97,7 +97,8 @@ export type ScenarioFeatureActions =
   | "pan"
   | "duplicate"
   | "removeMedia"
-  | "copyAsGeoJson";
+  | "copyAsGeoJson"
+  | "pasteGeometryAsState";
 
 export type ScenarioEventAction = "delete" | "changeTime" | "editMeta" | "editMedia";
 

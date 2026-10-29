@@ -54,6 +54,7 @@ describe("ScenarioFeatureDetails", () => {
 
   const baseStubs = {
     GlobalEvents: true,
+    FeatureStateGeometryForm: true,
     EditableLabel: true,
     IconButton: {
       props: ["title"],

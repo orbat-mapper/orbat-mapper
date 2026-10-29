@@ -379,11 +379,21 @@ export function useGeo(store: NewScenarioStore) {
     syncTimedHierarchyProjection(state, state.currentTime, { units: [unit] });
   }
 
+  /** A locked layer item, or one in a locked layer, must not be changed. */
+  function isLayerItemLocked(featureId: FeatureId) {
+    const item = state.layerItemMap[featureId];
+    if (!item) return false;
+    return !!(
+      item.locked || getOverlayLayerFromMap(state.layerStackMap, item._pid)?.locked
+    );
+  }
+
   function addFeatureStateGeometry(
     featureId: FeatureId,
     geometry: Geometry,
     atTime?: number,
   ) {
+    if (isLayerItemLocked(featureId)) return;
     let newState: CurrentGeometryLayerItemState | null = null;
     update(
       (s) => {
@@ -1290,5 +1300,6 @@ export function useGeo(store: NewScenarioStore) {
     moveMapLayer,
     reorderFeature,
     addFeatureStateGeometry,
+    isLayerItemLocked,
   };
 }

@@ -500,6 +500,68 @@ describe("scenario geo item accessors", () => {
     expect(updatedMeta).not.toHaveProperty("shape");
   });
 
+  it("does not add geometry state to locked features or features in locked layers", () => {
+    const polygon = (id: string, extra = {}) => ({
+      id,
+      kind: "geometry",
+      name: id,
+      geometry: { type: "Point", coordinates: [10, 60] },
+      geometryMeta: { geometryKind: "Point" },
+      style: {},
+      ...extra,
+    });
+    const store = useNewScenarioStore({
+      id: "scenario-1",
+      type: "ORBAT-mapper",
+      version: "3.4.0",
+      name: "Scenario",
+      startTime: 0,
+      sides: [],
+      events: [],
+      layerStack: [
+        {
+          id: "open",
+          kind: "overlay",
+          name: "Open",
+          items: [polygon("locked-feature", { locked: true }), polygon("free")],
+        },
+        {
+          id: "closed",
+          kind: "overlay",
+          name: "Closed",
+          locked: true,
+          items: [polygon("in-locked-layer")],
+        },
+      ],
+      mapLayers: [],
+      settings: {
+        rangeRingGroups: [],
+        statuses: [],
+        supplyClasses: [],
+        supplyUoMs: [],
+        symbolFillColors: [],
+      },
+    } as any);
+    const geo = useGeo(store);
+    const moved = { type: "Point" as const, coordinates: [11, 61] };
+
+    expect(geo.isLayerItemLocked("locked-feature")).toBe(true);
+    expect(geo.isLayerItemLocked("in-locked-layer")).toBe(true);
+    expect(geo.isLayerItemLocked("free")).toBe(false);
+
+    geo.addFeatureStateGeometry("locked-feature", moved);
+    geo.addFeatureStateGeometry("in-locked-layer", moved);
+    geo.addFeatureStateGeometry("free", moved);
+
+    expect(
+      geo.getGeometryLayerItemById("locked-feature").layerItem?.state,
+    ).toBeUndefined();
+    expect(
+      geo.getGeometryLayerItemById("in-locked-layer").layerItem?.state,
+    ).toBeUndefined();
+    expect(geo.getGeometryLayerItemById("free").layerItem?.state).toHaveLength(1);
+  });
+
   it("creates patch-based geometry state entries at runtime", () => {
     const store = useNewScenarioStore({
       id: "scenario-1",
