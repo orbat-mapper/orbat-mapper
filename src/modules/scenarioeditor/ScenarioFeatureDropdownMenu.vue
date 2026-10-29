@@ -37,6 +37,9 @@ const emit = defineEmits<{
       <DropdownMenuItem inset @select="emit('action', 'copyAsGeoJson')">
         <span>Copy as GeoJSON</span>
       </DropdownMenuItem>
+      <DropdownMenuItem inset @select="emit('action', 'pasteGeometryAsState')">
+        <span>Paste geometry as state</span>
+      </DropdownMenuItem>
       <DropdownMenuItem inset @select="emit('action', 'removeMedia')">
         <span>Remove image</span>
       </DropdownMenuItem>
