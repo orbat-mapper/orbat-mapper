@@ -363,12 +363,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     releaseSelectionSuppression = null;
   }
 
+  // Edits start from the geometry shown at the current time. Starting from the base
+  // geometry would make each recorded edit discard the previous ones.
   const selectedGeometryFeatures = () =>
-    [...selectedFeatureIds.value]
-      .map(
-        (featureId) => activeScenario.geo.getGeometryLayerItemById(featureId).layerItem,
-      )
-      .filter(Boolean) as GeometryLayerItem[];
+    (
+      [...selectedFeatureIds.value]
+        .map(
+          (featureId) => activeScenario.geo.getGeometryLayerItemById(featureId).layerItem,
+        )
+        .filter(Boolean) as GeometryLayerItem[]
+    ).map((feature) =>
+      feature._state?.geometry
+        ? { ...feature, geometry: feature._state.geometry }
+        : feature,
+    );
 
   /**
    * Return the primary selected control measure only when the whole feature selection
