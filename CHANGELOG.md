@@ -72,6 +72,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed the Create new scenario form suggesting a start date one month before today.
 - Map items and layers with a "visible from" time now show at exactly that time instead of just after it, so items set to appear at a scenario event are shown when the event is selected.
 - Fixed Record feature geometry and the Transform tab's "Update geometry at <time>" option adding timed shapes to locked features and features in locked layers.
 - Fixed Record feature geometry keeping only the last vertex drag on a line or polygon. Each drag now starts from the shape shown at the current time, so earlier changes are kept, and the edit handles sit on that shape.
