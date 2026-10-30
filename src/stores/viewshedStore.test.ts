@@ -132,9 +132,9 @@ describe("viewshed store", () => {
     viewshed.place([10, 50]);
     await settle();
     expect(viewshed.detail).toBe("standard");
-    viewshed.detail = "max";
+    viewshed.detail = "fine";
     await settle();
-    expect(lastRequest()).toMatchObject({ maxSize: VIEWSHED_DETAILS.max.maxSize });
+    expect(lastRequest()).toMatchObject({ maxSize: VIEWSHED_DETAILS.fine.maxSize });
   });
 
   it("offers details from coarsest to finest, each with more cells than the last", () => {
@@ -463,11 +463,11 @@ describe("several viewsheds", () => {
     viewshed.place([11, 51]);
     await settle();
     mocks.compute.mockClear();
-    viewshed.detail = "max";
+    viewshed.detail = "fine";
     await settle();
     const asked = mocks.compute.mock.calls.map(([request]) => request);
     expect(asked).toHaveLength(2);
-    expect(asked.every(({ maxSize }) => maxSize === VIEWSHED_DETAILS.max.maxSize)).toBe(
+    expect(asked.every(({ maxSize }) => maxSize === VIEWSHED_DETAILS.fine.maxSize)).toBe(
       true,
     );
   });
@@ -479,7 +479,7 @@ describe("several viewsheds", () => {
     viewshed.place([11, 51]);
     await settle();
     mocks.compute.mockClear();
-    viewshed.detail = "max";
+    viewshed.detail = "fine";
     await settle();
     expect(centres()).toEqual([[11, 51]]);
     const [first] = viewshed.viewsheds;
@@ -492,13 +492,13 @@ describe("several viewsheds", () => {
     viewshed.detailForAll = false;
     viewshed.place([10, 50]);
     viewshed.place([11, 51]);
-    viewshed.detail = "max";
+    viewshed.detail = "fine";
     await settle();
     mocks.compute.mockClear();
     viewshed.detailForAll = true;
     await settle();
     expect(centres()).toEqual([[10, 50]]);
-    expect(lastRequest().maxSize).toBe(VIEWSHED_DETAILS.max.maxSize);
+    expect(lastRequest().maxSize).toBe(VIEWSHED_DETAILS.fine.maxSize);
   });
 
   it("combines on a coarser grid while one is a preview", async () => {
