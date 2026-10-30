@@ -8,7 +8,8 @@ import { useToolbarUnitSymbolData } from "@/composables/mainToolbarData";
 import { useMainToolbarStore } from "@/stores/mainToolbarStore";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
 import { injectStrict } from "@/utils";
-import { sidcModalKey } from "@/components/injects";
+import { activeScenarioKey, sidcModalKey } from "@/components/injects";
+import { getCustomSymbolId } from "@/symbology/helpers";
 import DotsMenu from "@/components/DotsMenu.vue";
 import type { MenuItemData } from "@/components/types.ts";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const { getModalSidc } = injectStrict(sidcModalKey);
+const { store: scenarioStore } = injectStrict(activeScenarioKey);
 
 const { iconItems, customIcon, customSidc, symbolPage } = useToolbarUnitSymbolData();
 const store = useMainToolbarStore();
@@ -45,7 +47,13 @@ async function handleChangeSymbol() {
     symbolOptions: props.symbolOptions,
   });
   if (newSidcValue !== undefined) {
-    customIcon.value.code = newSidcValue.sidc;
+    const symbolId = getCustomSymbolId(newSidcValue.sidc);
+    customIcon.value = {
+      code: newSidcValue.sidc,
+      text: symbolId
+        ? (scenarioStore.state.customSymbolMap[symbolId]?.name ?? "Custom symbol")
+        : customIcon.value.text,
+    };
     props.addUnit(customSidc.value);
     isOpen.value = false;
   }

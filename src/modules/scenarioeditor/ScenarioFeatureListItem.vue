@@ -2,10 +2,9 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { IconClockOutline, IconDrag } from "@iconify-prerendered/vue-mdi";
 import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
-import {
-  featureMenuItems,
-  getGeometryIcon,
-} from "@/modules/scenarioeditor/featureLayerUtils";
+import LayerItemGlyph from "@/modules/scenarioeditor/LayerItemGlyph.vue";
+import { getLayerItemLabel } from "@/modules/scenarioeditor/controlMeasureLayers";
+import { featureMenuItems } from "@/modules/scenarioeditor/featureLayerUtils";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import type { NGeometryLayerItem, NScenarioLayer } from "@/types/internalModels";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
@@ -127,15 +126,12 @@ onUnmounted(() => {
       @dblclick="emit('feature-double-click', $event)"
       class="flex min-w-0 flex-auto items-center py-1.5"
     >
-      <component
-        :is="getGeometryIcon(feature)"
-        class="text-muted-foreground size-5 shrink-0"
-      />
+      <LayerItemGlyph :item="feature" />
       <span
         class="group-hover:text-accent-foreground text-foreground ml-2 truncate text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"
       >
-        {{ feature.name || feature.geometryMeta.geometryKind || feature.geometry.type }}
+        {{ getLayerItemLabel(feature) }}
       </span>
       <!-- `title` on the wrapper, not the svg: SVG needs a <title> child to show one. -->
       <span

@@ -58,6 +58,36 @@ export function findFollowingLocationState(
   return null;
 }
 
+/**
+ * When the leg arriving at a state entry can set off. The unit waits at the
+ * leg's start until `departure`, or sets off as soon as it gets there when the
+ * leg has none.
+ */
+export interface LegDepartureWindow {
+  /** When the unit reaches the leg's start. Left out for the untimed initial location. */
+  earliest?: number;
+  /** When the unit arrives at the end of the leg. */
+  arrival: number;
+  /** The leg's own departure time, when it has one. */
+  departure?: number;
+}
+
+/**
+ * The departure window of the leg that ends at `stateIndex`. Returns null when
+ * no leg ends there, such as for an entry without a location or when the path
+ * is broken before it.
+ */
+export function getLegDepartureWindow(
+  unit: NUnit,
+  stateIndex: number,
+): LegDepartureWindow | null {
+  const s = unit.state?.[stateIndex];
+  if (!s?.location || s.interpolate === false) return null;
+  const prev = findPrecedingTrackPoint(unit, stateIndex);
+  if (!prev) return null;
+  return { earliest: prev.t, arrival: s.t, departure: s.viaStartTime };
+}
+
 /** The unit's own speed in m/s, falling back to a default when it has none. */
 export function getUnitSpeedMps(unit: NUnit): number {
   const speedValue = unit.properties?.averageSpeed || unit.properties?.maxSpeed;

@@ -150,6 +150,23 @@ for reorganization. A **diff** accumulates an `onHand` delta on matching entries
 (`onHand = (onHand ?? count) + delta`) — used for attrition and resupply. `diff`
 only ever touches `onHand`.
 
+### Unit symbols
+
+**Echelon sizing**:
+The display setting that draws each unit without a map symbol size of its own at
+its echelon's ratio of the map symbol size, which counts as a Battalion. The ratios
+are a device-wide preference, not part of the scenario, and are not defined by the
+symbology standard. See ADR-0009.
+_Avoid_: unit size, stencil size, auto size
+
+### Scenario events
+
+**Event location**:
+Where the map goes when the scenario steps to a scenario event: either a fixed shape,
+or a set of units and map items framed as they are at the event's time. Optional;
+an event without one leaves the map where it is.
+_Avoid_: "event geometry" (the location is often units, not a shape), "where" in prose.
+
 ### Map engines
 
 **Reference grid**:

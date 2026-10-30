@@ -17,12 +17,11 @@ import SplitButton from "@/components/SplitButton.vue";
 import type { ButtonGroupItem } from "@/components/types";
 import ScratchPadTreeNode from "@/views/texttoorbat/ScratchPadTreeNode.vue";
 import type { Unit } from "@/types/scenarioModels";
-import type { ParsedUnit } from "@/views/texttoorbat/textToOrbat.ts";
+import { toUnits, type ParsedUnit } from "@/lib/textToOrbat";
 import {
   convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
-  serializeParsedUnitsToScenarioUnits,
-} from "@/views/texttoorbat/textToOrbat.ts";
+} from "@/views/texttoorbat/orbatExports";
 import {
   Select,
   SelectContent,
@@ -154,9 +153,7 @@ async function handleCopyToClipboard() {
   if (isEmpty.value || isCopyingToClipboard.value) return;
   isCopyingToClipboard.value = true;
   try {
-    const serializedJson = JSON.stringify(
-      serializeParsedUnitsToScenarioUnits(parsedUnits.value),
-    );
+    const serializedJson = JSON.stringify(toUnits(parsedUnits.value));
     if (
       typeof ClipboardItem !== "undefined" &&
       typeof navigator.clipboard?.write === "function"

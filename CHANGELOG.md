@@ -28,11 +28,17 @@ All notable changes to this project will be documented in this file.
 - Added range rings to the Layers panel. All rings, each group and single rings can be shown or hidden there, groups can be added and renamed, and rings can be moved in the layer order.
 - Added editing of many units at once in the unit details panel, such as setting the status, changing the symbol or removing from the map, with each change a single undo step.
 - Added editing the style of many map features at once. With several features selected, the Style tab shows a group for each kind of feature, such as lines or polygons, and a change applies to every feature in that group as a single undo step.
+- Added a label size to scenario features, set with Size in the feature's Text settings.
+- Added an experimental Size units by echelon option to Labs: units without a map symbol size of their own are drawn larger or smaller by echelon, with a Battalion at the map symbol size. The size of each echelon can be changed in the Echelon sizes dialog, opened from Labs or a unit's Map symbol size section.
 - Added an orbit mode to the map ("Orbit here" in the map context menu, or `o`) that slowly circles a spot, with an optional Hellfire strike (shift-click while orbiting).
 - The map context menu marks the clicked spot with a target.
 - Added a Unit status category, a Narrow mode and a Zoom to button to the Select tab. Narrow keeps only the selected units in a clicked category, such as one side's land units.
 - Unit statuses can now have a colour, set in the scenario settings.
 - Added Duplicate to the layer menu, which copies a layer and its map items into a new, unlocked layer.
+- Added "Hide until next move" to the "Remove from map" menu in the unit state panel. It takes the unit off the map at the current time and keeps its later moves, so the unit comes back at the next one.
+- Added a Location section to the scenario event form: pick units, features or control measures, or capture the current map view, for the map to move to when the event is selected. The map follows the picked units and items as they move.
+- Added "Hold here until…" to the waypoint menu on the map: the unit stays at the waypoint until a set time, then still reaches the next waypoint on time. The unit state list shows it as a departure time on the next waypoint.
+- Added a way to give a feature a new shape from the current time without redrawing it: paste GeoJSON, for example a shape edited in QGIS, with "Paste geometry as state" in the feature menu or the State tab, or take the shape of another feature of the same kind with "Use geometry from feature", optionally deleting that feature in the same undo step. The pasted shape must be the same kind of geometry as the feature, and circles, rectangles and locked features cannot take one.
 - Added Northern Storm 1985, an AI-generated demo scenario of a fictional NATO–Warsaw Pact war inspired by Red Storm Rising, made to test and showcase features.
 
 ### Changed
@@ -60,9 +66,18 @@ All notable changes to this project will be documented in this file.
 - The ORBAT Mapper import dialog counts unchanged entries the same way everywhere, shows the file description formatted, and gives its controls accessible names.
 - The MapLibre map now uses the symbol and unit label settings, and wraps long unit labels by default.
 - "Clear location" on a unit state entry is now "Hide until next move", since the unit comes back at its next planned move. Use "Remove from map" to keep a unit off the map.
+- The event time can now be edited in the scenario event form, and the form's changes are saved together as one undo step.
+- The Amplifiers tab in the control measure details panel is now called Text labels.
+- Control measure labels in an area now shrink and fade with the area when zooming out, instead of spilling outside it.
 
 ### Fixed
 
+- Fixed assigning a line without timestamps to a unit from the GeoJSON import dialog making the unit jump to the end of the route. The unit now moves along it at its average speed, or 30 km/h if it has none.
+- Fixed the Create new scenario form suggesting a start date one month before today.
+- Map items and layers with a "visible from" time now show at exactly that time instead of just after it, so items set to appear at a scenario event are shown when the event is selected.
+- Fixed Record feature geometry and the Transform tab's "Update geometry at <time>" option adding timed shapes to locked features and features in locked layers.
+- Fixed Record feature geometry keeping only the last vertex drag on a line or polygon. Each drag now starts from the shape shown at the current time, so earlier changes are kept, and the edit handles sit on that shape.
+- Fixed the MapLibre map getting stuck adding units on every click, even after Cancel or switching tools, when a symbol was picked from the palette (or Add unit was clicked again) while already placing a unit.
 - Changing a unit's symbol from the details panel seemed to do nothing when a symbol change on the Unit state tab was in effect, since that change replaces the base symbol from its time on. The details panel now shows a "Symbol from <time>" line under the unit name while a symbol change is in effect, with a menu to edit or remove it, and the symbol picker says it is editing the base symbol. The unit breadcrumbs now show the symbol in effect instead of the base symbol.
 - Fixed units being shown in the wrong place when a scenario file or an added unit hierarchy listed their state changes out of time order.
 - Fixed a moving unit stopping, and then moving at the wrong speed, when a change without a location was recorded partway along its route.
@@ -93,7 +108,9 @@ All notable changes to this project will be documented in this file.
 - Fixed draft recovery missing drafts written after restoring a draft, or when a side or group fill colour was missing from the colour list.
 - Fixed custom symbol label spacing changing when the label size changed.
 - Fixed the map not redrawing after some side, hierarchy, timeline and feature edits, and after undoing or redoing them.
+- Fixed clicking a waypoint on the map nudging it to the pointer. A click now selects only that waypoint, Shift-click adds to the selection, and the unit state list scrolls to its entry.
 - Fixed custom unit symbols whose corresponding SIDC is a 30-character 2525E code not showing in the ORBAT tree, unit details, breadcrumb, symbol picker or on the map.
+- Fixed custom unit symbols in the main toolbar symbol palette. A custom symbol picked with "Add symbol" now shows its image in the palette and on the Add unit button, and units added with it keep the custom symbol instead of getting a garbled one. Adding a subordinate to a unit with a custom symbol no longer garbles it either.
 
 ## September 2026
 

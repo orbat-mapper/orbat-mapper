@@ -89,7 +89,7 @@ const { controlMeasureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const tabList = computed(() => {
   const tabs = [
     { label: "Style", value: "0" },
-    { label: "Amplifiers", value: "2" },
+    { label: "Text labels", value: "2" },
     { label: "Details", value: "3" },
     { label: "State", value: "4" },
   ];

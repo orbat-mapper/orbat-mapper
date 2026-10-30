@@ -379,11 +379,21 @@ export function useGeo(store: NewScenarioStore) {
     syncTimedHierarchyProjection(state, state.currentTime, { units: [unit] });
   }
 
+  /** A locked layer item, or one in a locked layer, must not be changed. */
+  function isLayerItemLocked(featureId: FeatureId) {
+    const item = state.layerItemMap[featureId];
+    if (!item) return false;
+    return !!(
+      item.locked || getOverlayLayerFromMap(state.layerStackMap, item._pid)?.locked
+    );
+  }
+
   function addFeatureStateGeometry(
     featureId: FeatureId,
     geometry: Geometry,
     atTime?: number,
   ) {
+    if (isLayerItemLocked(featureId)) return;
     let newState: CurrentGeometryLayerItemState | null = null;
     update(
       (s) => {
@@ -747,6 +757,8 @@ export function useGeo(store: NewScenarioStore) {
         layer.items.forEach((featureId) => delete s.layerItemMap[featureId]);
         delete s.layerStackMap[layerId];
         removeElement(layerId, s.layerStack);
+        // Inside the recipe, so undo/redo also move it and redraw the timeline.
+        s.featureStateCounter++;
       },
       { label: "deleteLayer", value: layerId },
     );
@@ -829,6 +841,8 @@ export function useGeo(store: NewScenarioStore) {
         if (!layer) return;
         delete s.layerItemMap[featureId];
         removeElement(featureId, layer.items);
+        // Inside the recipe, so undo/redo also move it and redraw the timeline.
+        s.featureStateCounter++;
       },
       { label: "deleteFeature", value: featureId },
     );
@@ -1286,5 +1300,6 @@ export function useGeo(store: NewScenarioStore) {
     moveMapLayer,
     reorderFeature,
     addFeatureStateGeometry,
+    isLayerItemLocked,
   };
 }

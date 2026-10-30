@@ -1267,3 +1267,23 @@ describe("map redraw on undo/redo", () => {
     expect(store.state.unitMap[clonedSubId]._state).toBeTruthy();
   });
 });
+
+describe("createSubordinateUnit", () => {
+  it("keeps a custom symbol code passed in as the SIDC", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    const sidc = "custom1:10031000161100000000:symbol-1";
+    const unitId = actions.createSubordinateUnit("unit-1", { sidc })!;
+    expect(store.state.unitMap[unitId].sidc).toBe(sidc);
+  });
+
+  it("uses the next echelon below a parent with a custom symbol", () => {
+    const store = useNewScenarioStore(createScenario());
+    const actions = useUnitManipulations(store);
+    store.state.unitMap["unit-1"].sidc = "custom1:10031000161100000000:symbol-1";
+    const unitId = actions.createSubordinateUnit("unit-1")!;
+    expect(store.state.unitMap[unitId].sidc).toBe(
+      "custom1:10031000151100000000:symbol-1",
+    );
+  });
+});

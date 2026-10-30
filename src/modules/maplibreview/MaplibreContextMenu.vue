@@ -26,6 +26,8 @@ import {
   IconSpeedometer,
   IconSpeedometerSlow,
   IconTarget,
+  IconTimerOffOutline,
+  IconTimerPauseOutline,
   IconVectorPoint,
   IconVectorPointMinus,
 } from "@iconify-prerendered/vue-mdi";
@@ -72,9 +74,9 @@ import {
   mapOrbitKey,
   searchActionsKey,
 } from "@/components/injects";
+import { useLegDeparturePicker } from "@/composables/legDeparture";
 import type { NGeometryLayerItem, NUnit } from "@/types/internalModels";
 import { useSelectedItems } from "@/stores/selectedStore";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { useActiveSidc } from "@/composables/mainToolbarData";
 import { useActiveUnitStore } from "@/stores/dragStore";
@@ -95,6 +97,7 @@ const {
 } = injectStrict(activeScenarioKey);
 const activeLayerId = injectStrict(activeLayerKey);
 const { onScenarioActionHook } = injectStrict(searchActionsKey);
+const { pickLegDeparture } = useLegDeparturePicker();
 const playback = usePlaybackStore();
 const tm = useTimeFormatStore();
 const uiSettings = useUiStore();
@@ -423,6 +426,25 @@ function onConvertViaPointToWaypoint() {
   unitActions.convertViaPointToWaypoint(hit.unitId, hit.stateIndex, hit.viaIndex);
 }
 
+// A hold at a waypoint is the departure time of the leg that sets off from it.
+const holdLeg = computed(() => {
+  const hit = clickedTrackPoint.value;
+  if (hit?.kind !== "waypoint") return null;
+  const leg = unitActions.getLegAfterWaypoint(hit.unitId, hit.stateIndex);
+  return leg && { unitId: hit.unitId, ...leg };
+});
+
+function onHoldUntil() {
+  const leg = holdLeg.value;
+  if (leg) pickLegDeparture(leg.unitId, leg.stateIndex, "Hold here until");
+}
+
+function onClearHold() {
+  const leg = holdLeg.value;
+  if (!leg) return;
+  unitActions.setLegDepartureTime(leg.unitId, leg.stateIndex, undefined);
+}
+
 function onContextMenuUpdate(open: boolean) {
   if (!open) pixelPosition.value = null;
 }
@@ -547,6 +569,19 @@ function onContextMenu(event: MouseEvent) {
           <IconVectorPointMinus class="mr-2 h-4 w-4" />
           <span>Convert waypoint to via point</span>
         </ContextMenuItem>
+        <template v-if="clickedTrackPoint.kind === 'waypoint'">
+          <ContextMenuItem :disabled="!holdLeg" @select="onHoldUntil()">
+            <IconTimerPauseOutline class="mr-2 h-4 w-4" />
+            <span>Hold here until…</span>
+          </ContextMenuItem>
+          <ContextMenuItem
+            v-if="holdLeg?.window.departure !== undefined"
+            @select="onClearHold()"
+          >
+            <IconTimerOffOutline class="mr-2 h-4 w-4" />
+            <span>Clear hold</span>
+          </ContextMenuItem>
+        </template>
         <ContextMenuItem
           v-else
           :disabled="!canConvertViaPoint"
@@ -620,12 +655,7 @@ function onContextMenu(event: MouseEvent) {
             @select.prevent="onAddUnit"
             :disabled="!recordingStore.isRecordingLocation"
           >
-            <MilitarySymbol
-              :sidc="sidc"
-              :options="symbolOptions"
-              :size="15"
-              class="w-8"
-            />
+            <UnitSymbol :sidc="sidc" :options="symbolOptions" :size="15" class="w-8" />
             Unit
           </ContextMenuItem>
           <ContextMenuItem @select.prevent="onAddPoint">

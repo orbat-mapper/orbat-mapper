@@ -423,11 +423,16 @@ describe("ScenarioEditorMaplibre", () => {
       } as NScenarioEvent,
     });
 
-    expect(zoomToUnits).toHaveBeenCalledWith(units, {
-      duration: 900,
-      maxZoom: undefined,
-      padding: [50, 50, 50, 50],
-    });
+    expect(zoomToGeometry).toHaveBeenCalledWith(
+      {
+        type: "FeatureCollection",
+        features: [
+          expect.objectContaining({ geometry: { type: "Point", coordinates: [10, 60] } }),
+          expect.objectContaining({ geometry: { type: "Point", coordinates: [11, 61] } }),
+        ],
+      },
+      { duration: 900, maxZoom: 15, padding: [50, 50, 50, 50] },
+    );
     wrapper.unmount();
   });
 

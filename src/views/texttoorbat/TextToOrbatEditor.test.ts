@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EditorView } from "@codemirror/view";
 import TextToOrbatEditor from "@/views/texttoorbat/TextToOrbatEditor.vue";
-import { INDENT_SIZE } from "@/views/texttoorbat/textToOrbat";
+import { createTextToOrbat, INDENT_SIZE } from "@/lib/textToOrbat";
 
 const mountedWrappers: VueWrapper[] = [];
 
@@ -82,6 +82,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "1st Infantry Division",
         },
       }),
@@ -97,6 +98,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "Alpha",
         },
       }),
@@ -117,6 +119,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "Alpha",
         },
       }),
@@ -139,6 +142,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "  Alpha\n    Bravo",
         },
       }),
@@ -163,6 +167,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "  Alpha",
         },
       }),
@@ -185,6 +190,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "frig",
           enableAutocomplete: false,
         },
@@ -208,6 +214,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue: "Alpha [brigade] |mechanized infantry|\nBravo |artillery",
         },
       }),
@@ -228,6 +235,7 @@ describe("TextToOrbatEditor", () => {
       mount(TextToOrbatEditor, {
         attachTo: document.body,
         props: {
+          engine: createTextToOrbat(),
           modelValue:
             "Alpha [brigade] |mechanized infantry| # note\n# whole-line comment",
         },

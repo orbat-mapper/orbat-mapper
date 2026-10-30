@@ -283,3 +283,100 @@ describe("convertWaypointToViaPoint", () => {
     expect(state[1].t).toBe(T1);
   });
 });
+
+describe("leg departure times", () => {
+  const T3 = Date.parse("2025-01-01T03:00:00Z");
+
+  /** A unit that reaches B at 01:00 and C at 03:00. */
+  function createHoldScenario() {
+    return createScenario([
+      { id: "state-1", t: "2025-01-01T00:00:00Z", location: [0, 0] },
+      { id: "state-2", t: "2025-01-01T01:00:00Z", location: [1, 0] },
+      { id: "state-3", t: "2025-01-01T03:00:00Z", location: [2, 0] },
+    ]);
+  }
+
+  it("gives the leg's window from the waypoint before it to its arrival", () => {
+    const { actions } = setup(createHoldScenario());
+
+    expect(actions.getLegDepartureWindow("unit-1", 2)).toEqual({
+      earliest: T1,
+      arrival: T3,
+      departure: undefined,
+    });
+  });
+
+  it("has no window for an entry without a location", () => {
+    const { actions } = setup(
+      createScenario([{ id: "state-1", t: "2025-01-01T01:00:00Z", status: "x" }]),
+    );
+
+    expect(actions.getLegDepartureWindow("unit-1", 0)).toBeNull();
+  });
+
+  it("finds the leg that sets off from a waypoint", () => {
+    const { actions } = setup(createHoldScenario());
+
+    expect(actions.getLegAfterWaypoint("unit-1", -1)?.stateIndex).toBe(0);
+    expect(actions.getLegAfterWaypoint("unit-1", 1)).toEqual({
+      stateIndex: 2,
+      window: { earliest: T1, arrival: T3, departure: undefined },
+    });
+    expect(actions.getLegAfterWaypoint("unit-1", 2)).toBeNull();
+  });
+
+  it("finds no leg after a waypoint the unit leaves the map at", () => {
+    const { actions } = setup(
+      createScenario([
+        { id: "state-1", t: "2025-01-01T01:00:00Z", location: [1, 0] },
+        { id: "state-2", t: "2025-01-01T02:00:00Z", location: null },
+        { id: "state-3", t: "2025-01-01T03:00:00Z", location: [2, 0] },
+      ]),
+    );
+
+    expect(actions.getLegAfterWaypoint("unit-1", 0)).toBeNull();
+  });
+
+  it("holds the unit at the leg's start until it departs", () => {
+    const { store, actions, time } = setup(createHoldScenario());
+
+    expect(actions.setLegDepartureTime("unit-1", 2, T2)).toBe(true);
+
+    const unit = store.state.unitMap["unit-1"];
+    expect(unit.state![2].viaStartTime).toBe(T2);
+    expect(unit.state![2].t).toBe(T3);
+    time.setCurrentTime(Date.parse("2025-01-01T01:30:00Z"));
+    expect(unit._state?.location).toEqual([1, 0]);
+    time.setCurrentTime(Date.parse("2025-01-01T02:30:00Z"));
+    expect(unit._state?.location?.[0]).toBeCloseTo(1.5, 5);
+  });
+
+  it("refuses a departure that is not before the arrival", () => {
+    const { store, actions } = setup(createHoldScenario());
+
+    expect(actions.setLegDepartureTime("unit-1", 2, T3)).toBe(false);
+    expect(store.state.unitMap["unit-1"].state![2].viaStartTime).toBeUndefined();
+  });
+
+  it("clears the hold for undefined or a time no later than the leg's start", () => {
+    const { store, actions } = setup(createHoldScenario());
+    const entry = () => store.state.unitMap["unit-1"].state![2];
+
+    actions.setLegDepartureTime("unit-1", 2, T2);
+    actions.setLegDepartureTime("unit-1", 2, undefined);
+    expect(entry().viaStartTime).toBeUndefined();
+
+    actions.setLegDepartureTime("unit-1", 2, T2);
+    actions.setLegDepartureTime("unit-1", 2, T1);
+    expect(entry().viaStartTime).toBeUndefined();
+  });
+
+  it("undoes a hold in one step", () => {
+    const { store, actions } = setup(createHoldScenario());
+
+    actions.setLegDepartureTime("unit-1", 2, T2);
+    store.undo();
+
+    expect(store.state.unitMap["unit-1"].state![2].viaStartTime).toBeUndefined();
+  });
+});

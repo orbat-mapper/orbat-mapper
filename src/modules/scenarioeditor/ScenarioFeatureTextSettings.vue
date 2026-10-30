@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { SimpleStyleSpec, TextStyleSpec } from "@/geo/simplestyle";
+import {
+  defaultTextSize,
+  type SimpleStyleSpec,
+  type TextStyleSpec,
+} from "@/geo/simplestyle";
 import type { GeometryLayerItem } from "@/types/scenarioLayerItems";
 import ToggleField from "@/components/ToggleField.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
@@ -20,6 +24,7 @@ const marker = computed((): Partial<TextStyleSpec> => {
     "text-align": style["text-align"] || "center",
     "text-offset-x": style["text-offset-x"] ?? 15,
     "text-offset-y": style["text-offset-y"] ?? 0,
+    "text-size": style["text-size"] ?? defaultTextSize,
     textMinZoom: style["textMinZoom"] ?? 0,
     textMaxZoom: style["textMaxZoom"] ?? 24,
   };
@@ -66,6 +71,15 @@ function updateValue(
   <template v-if="marker.showLabel">
     <div>Zoom levels</div>
     <ZoomSelector v-model="range" class="mt-4 flex-auto" />
+    <div class="self-center">Size</div>
+    <NumberInputGroup
+      :model-value="marker['text-size']"
+      @update:model-value="updateValue('text-size', $event)"
+      :min="6"
+      :max="72"
+      class="max-w-[10rem]"
+      data-test="label-size-input"
+    />
     <div class="self-center">Placement</div>
     <SimpleSelect
       :model-value="marker['text-placement']"

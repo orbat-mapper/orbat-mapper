@@ -2,21 +2,8 @@
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
-import {
-  ECHELON_CODE_TO_NAME,
-  ICON_CODE_TO_NAME,
-  serializeParsedUnitToScenarioUnit,
-} from "@/views/texttoorbat/textToOrbat.ts";
-
-interface ParsedUnit {
-  id: string;
-  name: string;
-  shortName?: string;
-  description?: string;
-  sidc: string;
-  children: ParsedUnit[];
-  level: number;
-}
+import { toUnits, type ParsedUnit } from "@/lib/textToOrbat";
+import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 
 const props = defineProps<{
   unit: ParsedUnit;
@@ -52,13 +39,16 @@ const echelonLabel = computed(() => {
   return echelonCodeLabels[echelonCode.value] ?? "Unit";
 });
 
-const echelonVarName = computed(() => {
-  return ECHELON_CODE_TO_NAME[echelonCode.value] ?? echelonCode.value;
-});
+const textToOrbatStore = useTextToOrbatStore();
+const symbolDescription = computed(() =>
+  textToOrbatStore.engine.describe(props.unit.sidc),
+);
 
-const entityVarName = computed(() => {
-  return ICON_CODE_TO_NAME[entityCode.value] ?? entityCode.value;
-});
+const echelonVarName = computed(
+  () => symbolDescription.value.echelon ?? echelonCode.value,
+);
+
+const entityVarName = computed(() => symbolDescription.value.icon ?? entityCode.value);
 
 onMounted(() => {
   if (!dragHandleRef.value) return;
@@ -66,17 +56,17 @@ onMounted(() => {
   dndCleanup = draggable({
     element: dragHandleRef.value,
     getInitialData: () => {
-      const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+      const serializedUnits = toUnits([props.unit]);
       return {
         type: "application/orbat",
-        orbatJson: JSON.stringify([serializedUnit]),
+        orbatJson: JSON.stringify(serializedUnits),
       };
     },
     getInitialDataForExternal: () => {
-      const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+      const serializedUnits = toUnits([props.unit]);
       return {
-        "application/orbat": JSON.stringify([serializedUnit]),
-        "text/plain": JSON.stringify([serializedUnit]),
+        "application/orbat": JSON.stringify(serializedUnits),
+        "text/plain": JSON.stringify(serializedUnits),
       };
     },
   });

@@ -97,7 +97,8 @@ export type ScenarioFeatureActions =
   | "pan"
   | "duplicate"
   | "removeMedia"
-  | "copyAsGeoJson";
+  | "copyAsGeoJson"
+  | "pasteGeometryAsState";
 
 export type ScenarioEventAction = "delete" | "changeTime" | "editMeta" | "editMedia";
 
@@ -164,6 +165,8 @@ export const stateActions = [
   "changeStatus",
   "editLocation",
   "editHierarchy",
+  "setDeparture",
+  "clearDeparture",
 ] as const;
 export type StateAction = (typeof stateActions)[number];
 

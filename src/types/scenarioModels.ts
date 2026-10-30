@@ -22,7 +22,7 @@ import type { VisibilityStyleSpec } from "@/geo/simplestyle";
 import type { SymbolFillColor } from "@/config/colors.ts";
 import type { ScenarioStackLayer } from "@/types/scenarioStackLayers";
 import type { ScenarioLayerItemsLayer } from "@/types/scenarioLayerItems";
-import type { ScenarioMapLayer } from "./scenarioGeoModels";
+import type { FeatureId, ScenarioMapLayer } from "./scenarioGeoModels";
 
 export interface State extends Partial<ScenarioEventDescription> {
   id: string;
@@ -247,7 +247,7 @@ export interface ScenarioEvent extends ScenarioEventDescription {
   uiActions?: UIAction[];
   id?: string;
   _type?: "unit" | "scenario";
-  where?: UnitsWhere | GeometryWhere;
+  where?: EventLocation;
 }
 
 export interface WhereOptions {
@@ -264,6 +264,15 @@ export interface GeometryWhere extends WhereOptions {
   type: "geometry";
   geometry: Geometry;
 }
+
+/** Units and layer items (features, control measures) framed together; see ADR-0011. */
+export interface ItemsWhere extends WhereOptions {
+  type: "items";
+  units?: EntityId[];
+  features?: FeatureId[];
+}
+
+export type EventLocation = UnitsWhere | GeometryWhere | ItemsWhere;
 
 export interface ScenarioInfo {
   name: string;

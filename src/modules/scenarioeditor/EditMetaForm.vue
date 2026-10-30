@@ -9,7 +9,7 @@ import {
   type NPointSymbolLayerItem,
   type NTacticalGraphicLayerItem,
 } from "@/types/scenarioLayerItems";
-import { createShortUnitName } from "@/utils/shortUnitName";
+import { createShortUnitName } from "@/lib/textToOrbat";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import { storeToRefs } from "pinia";
 import { WandSparklesIcon, ChevronDownIcon } from "@lucide/vue";
@@ -148,6 +148,7 @@ const onFormSubmit = () => {
   <form @submit.prevent="onFormSubmit" class="mt-0 mb-6 space-y-4">
     <template v-if="isScenarioEvent">
       <InputGroup label="Title" v-model="form.title" id="title-input" autofocus />
+      <slot name="after-title" />
       <!--      <InputGroup label="Sub title" v-model="form.subTitle" />-->
     </template>
 
@@ -232,6 +233,8 @@ const onFormSubmit = () => {
       description="Use markdown syntax for formatting"
     />
     <InputGroup label="External URL" description="" v-model="form.externalUrl" />
+    <!-- Extra fields saved by the owner together with this form, such as an event location. -->
+    <slot />
 
     <div class="flex items-center justify-end space-x-2">
       <BaseButton type="submit" small primary>Save</BaseButton>
