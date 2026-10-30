@@ -72,6 +72,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed assigning a line without timestamps to a unit from the GeoJSON import dialog making the unit jump to the end of the route. The unit now moves along it at its average speed, or 30 km/h if it has none.
 - Fixed the Create new scenario form suggesting a start date one month before today.
 - Map items and layers with a "visible from" time now show at exactly that time instead of just after it, so items set to appear at a scenario event are shown when the event is selected.
 - Fixed Record feature geometry and the Transform tab's "Update geometry at <time>" option adding timed shapes to locked features and features in locked layers.
