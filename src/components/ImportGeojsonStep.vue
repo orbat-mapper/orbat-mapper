@@ -30,6 +30,7 @@ import {
   createUnitTrackStatesFromFeature,
   isAssignableTrackFeature,
 } from "@/importexport/unitTrackAssignment";
+import { getUnitSpeedMps } from "@/scenariostore/unitTrackConversions";
 import { useNotifications } from "@/composables/notifications";
 
 interface Props {
@@ -226,6 +227,7 @@ function loadAsUnitTracks() {
           scnStore.state.currentTime,
           {
             addStartPosition: !unit?.location && !unit?._state?.location,
+            averageSpeed: unit ? getUnitSpeedMps(unit) : undefined,
           },
         );
         skippedPointCount += result.skippedPoints;
