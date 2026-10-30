@@ -2,8 +2,10 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick } from "vue";
+import length from "@turf/length";
 import ImportGeojsonStep from "@/components/ImportGeojsonStep.vue";
 import { activeScenarioKey } from "@/components/injects";
+import type { Feature as GeoJSONFeature, LineString } from "geojson";
 
 const InputRadioStub = defineComponent({
   name: "InputRadio",
@@ -28,26 +30,27 @@ const UnitTreeSelectStub = defineComponent({
     "<button type='button' data-testid='unit-tree-select' @click='$emit(\"update:modelValue\", \"group-unit\")'>{{ units.join(',') }}</button>",
 });
 
-function mountImportGeojsonStep() {
+const timedLineFeature = {
+  type: "Feature" as const,
+  properties: {
+    name: "Route",
+    coordinateProperties: {
+      times: ["2026-04-28T10:00:00Z", "2026-04-28T10:05:00Z"],
+    },
+  },
+  geometry: {
+    type: "LineString" as const,
+    coordinates: [
+      [10, 60],
+      [11, 61],
+    ],
+  },
+};
+
+function mountImportGeojsonStep(lineFeature: GeoJSONFeature = timedLineFeature) {
   const addFeature = vi.fn();
   const addUnitStateEntry = vi.fn();
   const setCurrentTime = vi.fn();
-  const lineFeature = {
-    type: "Feature" as const,
-    properties: {
-      name: "Route",
-      coordinateProperties: {
-        times: ["2026-04-28T10:00:00Z", "2026-04-28T10:05:00Z"],
-      },
-    },
-    geometry: {
-      type: "LineString" as const,
-      coordinates: [
-        [10, 60],
-        [11, 61],
-      ],
-    },
-  };
   const pointFeature = {
     type: "Feature" as const,
     properties: { name: "Point" },
@@ -96,6 +99,8 @@ function mountImportGeojsonStep() {
                   name: "Group Unit",
                   sidc: "10031000000000000000",
                   subUnits: [],
+                  location: [10, 60],
+                  properties: { averageSpeed: { value: 10, uom: "m/s" } },
                 },
               },
               sideMap: {
@@ -184,5 +189,41 @@ describe("ImportGeojsonStep", () => {
       true,
     );
     expect(setCurrentTime).toHaveBeenCalledWith(Date.parse("2026-04-28T10:00:00Z"));
+  });
+
+  it("gives untimed tracks a duration from the unit's speed", async () => {
+    const untimedLineFeature: GeoJSONFeature<LineString> = {
+      type: "Feature",
+      properties: { name: "Route" },
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [10, 60],
+          [10.5, 60.2],
+          [11, 61],
+        ],
+      },
+    };
+    const { wrapper, addUnitStateEntry } = mountImportGeojsonStep(untimedLineFeature);
+
+    await wrapper.get('[data-value="unit-tracks"]').trigger("click");
+    wrapper.findComponent(DataGridStub).vm.$emit("update:selected", [untimedLineFeature]);
+    await nextTick();
+    await wrapper.get('[data-testid="unit-tree-select"]').trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Import")!
+      .trigger("click");
+
+    const startTime = Date.parse("2026-04-28T10:00:00Z");
+    const expectedEndTime = Math.round(
+      startTime + (length(untimedLineFeature, { units: "meters" }) / 10) * 1000,
+    );
+    expect(addUnitStateEntry).toHaveBeenCalledTimes(1);
+    expect(addUnitStateEntry).toHaveBeenCalledWith(
+      "group-unit",
+      { t: expectedEndTime, location: [11, 61], via: [[10.5, 60.2]] },
+      true,
+    );
   });
 });
