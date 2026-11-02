@@ -224,22 +224,24 @@ onUnmounted(() => dndCleanup());
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
           @click="startAddGroup()"
           @keydown.stop
           title="Add range ring group"
         >
-          <IconPlus class="size-5" />
+          <IconPlus class="size-4" />
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
           @click="toggleAll()"
           @keydown.stop
           title="Toggle all range rings"
         >
-          <IconEyeOff v-if="state.rangeRingVisibility.hidden" class="size-5" />
-          <IconEye v-else class="size-5" />
+          <IconEyeOff v-if="state.rangeRingVisibility.hidden" class="size-4" />
+          <IconEye v-else class="size-4" />
         </Button>
       </LayerHeaderActions>
     </template>
