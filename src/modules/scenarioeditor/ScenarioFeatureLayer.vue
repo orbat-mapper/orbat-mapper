@@ -7,6 +7,7 @@ import {
   IconDrag,
   IconEye,
   IconEyeOff,
+  IconMagnifyExpand,
   IconStar,
   IconStarOutline,
 } from "@iconify-prerendered/vue-mdi";
@@ -24,7 +25,7 @@ import {
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { isNTacticalGraphicLayerItem } from "@/types/scenarioLayerItems";
 import { useSelectedItems } from "@/stores/selectedStore";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   draggable,
   dropTargetForElements,
@@ -109,6 +110,12 @@ const defaultLayerMenuItems: MenuItemData<ScenarioLayerAction>[] = [
   { label: "Copy as GeoJSON", action: ScenarioLayerActions.CopyAsGeoJson },
   { label: "Delete", action: ScenarioLayerActions.Delete },
 ];
+
+const zoomMenuItem = computed(() =>
+  (props.layerMenuItems || defaultLayerMenuItems).find(
+    (item) => item.action === ScenarioLayerActions.Zoom,
+  ),
+);
 
 function toggleFeatureVisibility(feature: NGeometryLayerItem) {
   geo.updateFeature(feature.id, { isHidden: !feature.isHidden });
@@ -262,28 +269,44 @@ onUnmounted(() => {
     <template #right>
       <LayerHeaderActions>
         <Button
+          v-if="zoomMenuItem"
           variant="ghost"
           size="icon"
+          class="size-7"
+          type="button"
+          :disabled="zoomMenuItem.disabled"
+          @click="emit('layer-action', layer, ScenarioLayerActions.Zoom)"
+          @keydown.stop
+          title="Zoom to layer"
+        >
+          <IconMagnifyExpand class="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="size-7"
           type="button"
           @click="activeLayerId = layer.id"
           @keydown.stop
           title="Set as active layer"
         >
-          <IconStar v-if="activeLayerId === layer.id" class="size-5" />
-          <IconStarOutline class="size-5" v-else />
+          <IconStar v-if="activeLayerId === layer.id" class="size-4" />
+          <IconStarOutline class="size-4" v-else />
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
           @click="toggleFeatureLayerVisibility(layer)"
           @keydown.stop
           title="Toggle layer visibility"
         >
-          <IconEyeOff v-if="layer.isHidden" class="size-5" />
-          <IconEye class="size-5" v-else />
+          <IconEyeOff v-if="layer.isHidden" class="size-4" />
+          <IconEye class="size-4" v-else />
         </Button>
         <DotsMenu
+          button-class="size-7"
           :items="layerMenuItems || defaultLayerMenuItems"
           @action="emit('layer-action', layer, $event)"
         />

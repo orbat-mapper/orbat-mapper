@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
-import { IconDrag, IconEye, IconEyeOff } from "@iconify-prerendered/vue-mdi";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import {
+  IconDrag,
+  IconEye,
+  IconEyeOff,
+  IconMagnifyExpand,
+} from "@iconify-prerendered/vue-mdi";
 import { Button } from "@/components/ui/button";
 import DotsMenu from "@/components/DotsMenu.vue";
 import LayerHeaderActions from "@/modules/scenarioeditor/LayerHeaderActions.vue";
@@ -44,6 +49,10 @@ const emit = defineEmits<{
   (e: "toggle-visibility"): void;
   (e: "action", action: ScenarioMapLayerAction): void;
 }>();
+
+const zoomMenuItem = computed(() =>
+  props.menuItems.find((item) => item.action === "zoom"),
+);
 
 const elRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
@@ -144,17 +153,35 @@ onUnmounted(() => dndCleanup());
           :class="selected ? 'bg-yellow-100 dark:bg-yellow-900' : undefined"
         >
           <Button
+            v-if="zoomMenuItem"
             type="button"
             variant="ghost"
             size="icon"
+            class="size-7"
+            :disabled="zoomMenuItem.disabled"
+            @click="emit('action', 'zoom')"
+            @keydown.stop
+            title="Zoom to layer"
+          >
+            <IconMagnifyExpand class="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            class="size-7"
             @click="emit('toggle-visibility')"
             @keydown.stop
             title="Toggle layer visibility"
           >
-            <IconEyeOff v-if="mapLayer.isHidden" class="size-5" />
-            <IconEye v-else class="size-5" />
+            <IconEyeOff v-if="mapLayer.isHidden" class="size-4" />
+            <IconEye v-else class="size-4" />
           </Button>
-          <DotsMenu :items="menuItems" @action="emit('action', $event)" />
+          <DotsMenu
+            button-class="size-7"
+            :items="menuItems"
+            @action="emit('action', $event)"
+          />
         </LayerHeaderActions>
       </span>
     </h3>

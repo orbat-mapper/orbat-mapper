@@ -10,6 +10,7 @@ import {
   IconEyeOff,
   IconLockOpenVariantOutline,
   IconLockOutline,
+  IconMagnifyExpand,
   IconStar,
   IconStarOutline,
 } from "@iconify-prerendered/vue-mdi";
@@ -124,6 +125,10 @@ const availableLayerMenuItems = computed(() => {
       : menuItem,
   );
 });
+
+const zoomMenuItem = computed(() =>
+  availableLayerMenuItems.value.find((item) => item.action === "Zoom"),
+);
 
 let dndCleanup = () => {};
 onMounted(() => {
@@ -254,39 +259,56 @@ function toggleItemVisibility(item: ControlMeasureLayerEntry) {
     <template #right>
       <LayerHeaderActions>
         <Button
+          v-if="zoomMenuItem"
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
+          :disabled="zoomMenuItem.disabled"
+          @click="emit('layer-action', layer, zoomMenuItem.action)"
+          @keydown.stop
+          title="Zoom to layer"
+        >
+          <IconMagnifyExpand class="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          class="size-7"
           @click="activeLayerId = layer.id"
           @keydown.stop
           title="Set as active layer"
         >
-          <IconStar v-if="activeLayerId === layer.id" class="size-5" />
-          <IconStarOutline v-else class="size-5" />
+          <IconStar v-if="activeLayerId === layer.id" class="size-4" />
+          <IconStarOutline v-else class="size-4" />
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
           @click="toggleLayerLocked()"
           @keydown.stop
           title="Toggle layer lock"
         >
-          <IconLockOutline v-if="layer.locked" class="size-5" />
-          <IconLockOpenVariantOutline class="size-5" v-else />
+          <IconLockOutline v-if="layer.locked" class="size-4" />
+          <IconLockOpenVariantOutline class="size-4" v-else />
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon"
+          class="size-7"
           @click="toggleLayerVisibility()"
           @keydown.stop
           title="Toggle layer visibility"
         >
-          <IconEyeOff v-if="layer.isHidden" class="size-5" />
-          <IconEye class="size-5" v-else />
+          <IconEyeOff v-if="layer.isHidden" class="size-4" />
+          <IconEye class="size-4" v-else />
         </Button>
         <DotsMenu
+          button-class="size-7"
           :items="availableLayerMenuItems"
           @action="emit('layer-action', layer, $event)"
         />
