@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## November 2026
+
+### Added
+
+- Added Pan to for units: in the ORBAT context menu, and as a choice on the Zoom to button in the unit details toolbar, which remembers the last one used.
+- Added a zoom button to layer headers in the Layers panel.
+- Added a 2D button under the map compass that levels the view while keeping the bearing. It shows only while the map is tilted.
+
+### Changed
+
+- Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
+- Clicking the map compass now resets only the bearing. Double-click it to also level the view.
+
 ## October 2026
 
 ### Added
