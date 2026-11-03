@@ -14,7 +14,6 @@ import {
   GlobeControl,
   type IControl,
   Map as MlMap,
-  NavigationControl,
   type MapProjectionEvent,
   ScaleControl,
   setWorkerUrl,
@@ -41,6 +40,7 @@ import { useTerrainStore } from "@/stores/terrainStore";
 import { useMapTerrain } from "./useMapTerrain";
 import { terrainElevationMeters, TERRAIN_SOURCE_ID } from "./mapTerrain";
 import TerrainMapToggle from "./TerrainMapToggle.vue";
+import { levelView, SplitResetNavigationControl } from "./splitCompassReset";
 
 setWorkerUrl(maplibreWorkerUrl);
 
@@ -124,7 +124,7 @@ const TERRAIN_TILT_PITCH = 50;
 function tiltForTerrain(enabled: boolean) {
   if (!mlMap) return;
   if (!enabled) {
-    if (mlMap.getPitch() > 0) mlMap.easeTo({ pitch: 0, duration: 800 });
+    if (mlMap.getPitch() > 0) levelView(mlMap);
     return;
   }
   if (mlMap.getPitch() >= 10) return;
@@ -273,7 +273,7 @@ onMounted(async () => {
   });
   mlMap.addControl(new GlobeControl(), "top-left");
   mlMap.addControl(
-    new NavigationControl({
+    new SplitResetNavigationControl({
       visualizePitch: true,
       visualizeRoll: true,
       showZoom: true,
@@ -503,6 +503,18 @@ onUnmounted(() => {
   transition:
     opacity 140ms ease,
     transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* Level view button: shown only while the view is tilted or rolled. */
+.map-ui-root .maplibregl-ctrl-group button.maplibregl-ctrl-level-view {
+  color: var(--color-foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.map-ui-root .maplibregl-ctrl-group button.maplibregl-ctrl-level-view[hidden] {
+  display: none;
 }
 
 /* Scale control sits in bottom-left; keep its tighter look. */
