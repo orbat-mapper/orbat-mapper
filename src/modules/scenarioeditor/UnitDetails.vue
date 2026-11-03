@@ -14,7 +14,6 @@ import {
   IconFileTreeOutline as TreeLocateIcon,
   IconLockOutline,
   IconLockOpenVariantOutline,
-  IconMagnifyExpand as ZoomIcon,
   IconPencil as EditIcon,
 } from "@iconify-prerendered/vue-mdi";
 import { useGeoStore, useUnitSettingsStore } from "@/stores/geoStore";
@@ -33,6 +32,7 @@ import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/
 import type { MediaUpdate, NUnit, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
+import UnitLocateButton from "./UnitLocateButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 
 import { useUiStore } from "@/stores/uiStore";
@@ -379,7 +379,6 @@ function setLocked(locked: boolean) {
 }
 
 const hDescription = computed(() => renderMarkdown(unit.value.description || ""));
-const hasPosition = computed(() => Boolean(unit.value._state?.location));
 const media = computed(() => {
   const { media } = unit.value;
   if (!media || isMultiMode.value) return;
@@ -463,15 +462,6 @@ const buttonItems = computed(() => [
     label: "Create subordinate",
     onClick: () => actionWrapper(UnitActions.AddSubordinate),
     disabled: isLocked.value,
-  },
-  {
-    label: "Zoom",
-    onClick: () => actionWrapper(UnitActions.Zoom),
-  },
-  {
-    label: "Pan",
-    onClick: () => actionWrapper(UnitActions.Pan),
-    disabled: !hasPosition.value,
   },
   {
     label: "Delete",
@@ -647,15 +637,10 @@ function locateInOrbat() {
         </DropdownMenu>
       </template>
       <template #actions>
-        <div class="flex min-w-0 flex-1 items-center gap-0.5">
+        <!-- Wraps instead of overflowing onto the options menu in a narrow panel -->
+        <div class="flex min-w-0 flex-1 flex-wrap items-center gap-0.5">
           <!-- View actions first, then edit actions -->
-          <IconButton
-            size="icon-sm"
-            tooltip="Zoom to"
-            @click="actionWrapper(UnitActions.Zoom)"
-          >
-            <ZoomIcon class="size-5" aria-hidden="true" />
-          </IconButton>
+          <UnitLocateButton @locate="actionWrapper" />
           <IconButton
             size="icon-sm"
             v-if="!isMultiMode"
@@ -707,16 +692,23 @@ function locateInOrbat() {
               <IconCrosshairsGps class="size-5" aria-hidden="true" />
             </IconButton>
           </template>
+          <!-- Collapses to the menu in a narrow panel, where the label would truncate to nothing -->
           <SplitButton
-            class="ml-1 min-w-0"
+            class="ml-1 min-w-0 flex-1 basis-0"
             triggerClass="max-w-24"
             button-class="px-3"
             menu-label="More quick actions"
+            collapsible
             :items="buttonItems"
             v-model:active-item="uiStore.activeItem"
           />
         </div>
-        <DotsMenu :items="unitMenuItems" label="Unit options" />
+        <DotsMenu
+          class="shrink-0 self-start"
+          trigger-class=""
+          :items="unitMenuItems"
+          label="Unit options"
+        />
       </template>
     </DetailsPanelHeader>
     <div class="-mx-4">

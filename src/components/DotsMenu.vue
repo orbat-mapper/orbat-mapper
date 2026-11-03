@@ -16,11 +16,13 @@ const props = withDefaults(
     items: MenuItemData[];
     sideOffset?: number;
     buttonClass?: HTMLAttributes["class"];
+    triggerClass?: HTMLAttributes["class"];
     label?: string;
   }>(),
   {
     sideOffset: 10,
     label: "More options",
+    triggerClass: "mr-2",
   },
 );
 const emit = defineEmits(["action"]);
@@ -34,7 +36,7 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
 <template>
   <div>
     <DropdownMenu>
-      <DropdownMenuTrigger as="child" class="mr-2" @click.stop>
+      <DropdownMenuTrigger as="child" :class="triggerClass" @click.stop>
         <Button
           variant="ghost"
           size="icon"

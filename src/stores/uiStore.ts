@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { TAB_ORBAT } from "@/types/constants";
+import type { ButtonGroupItem } from "@/components/types";
 
 export type DetailsPanelMode = "overlay" | "sidebar";
 
@@ -12,8 +13,8 @@ export const useUiStore = defineStore("ui", {
     editToolbarActive: false,
     measurementActive: false,
     getLocationActive: false,
-    activeItem: null,
-    activeStateItem: null,
+    activeItem: null as ButtonGroupItem | null,
+    activeStateItem: null as ButtonGroupItem | null,
     debugMode: useLocalStorage("debugMode", false),
     showFps: useLocalStorage("showFps", false),
     mobilePanelOpen: false,

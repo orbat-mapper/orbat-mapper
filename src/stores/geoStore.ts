@@ -4,6 +4,7 @@ import type { MeasurementTypes, MeasurementUnit } from "@/geo/measurementTypes";
 import type { NUnit } from "@/types/internalModels";
 import type { GeoJSON, Position } from "geojson";
 import { type AllGeoJSON, featureCollection, point as turfPoint } from "@turf/helpers";
+import turfCenter from "@turf/center";
 import type { GeoJsonOverlayStyle, MapAdapter } from "@/geo/contracts/mapAdapter";
 import { useMapViewStore } from "@/stores/mapViewStore";
 
@@ -14,6 +15,20 @@ export interface ZoomOptions {
   maxZoom?: number;
   duration?: number;
   padding?: [number, number, number, number];
+}
+
+/** Zoom level used when zooming to a single unit from far out. */
+const UNIT_ZOOM = 15;
+/** At or above this zoom, zooming to a unit only pans, so the view never jumps. */
+const UNIT_PAN_ONLY_ZOOM = 10;
+
+/**
+ * The zoom to use when zooming to a single unit: never zoom out, and only zoom
+ * in when the map is so far out that the unit is hard to see.
+ */
+function unitZoomTarget(currentZoom: number | undefined) {
+  if (currentZoom === undefined) return UNIT_ZOOM;
+  return currentZoom >= UNIT_PAN_ONLY_ZOOM ? currentZoom : UNIT_ZOOM;
 }
 
 const FLASH_OVERLAY_ID = "flash-outline";
@@ -36,6 +51,15 @@ const FLASH_POINT_STYLE: GeoJsonOverlayStyle = {
   circleStrokeColor: FLASH_COLOR,
   circleStrokeWidth: 3,
 };
+
+/** The units' current locations as points, or undefined if none has a location. */
+function unitPoints(units: NUnit[]) {
+  const points = units
+    .map((u) => u._state?.location)
+    .filter((loc): loc is Position => !!loc)
+    .map((loc) => turfPoint(loc));
+  return points.length ? featureCollection(points) : undefined;
+}
 
 function isPointGeoJson(geojson: GeoJSON) {
   const geometry = geojson.type === "Feature" ? geojson.geometry : geojson;
@@ -67,19 +91,15 @@ export const useGeoStore = defineStore("geo", () => {
     if (!mapAdapter.value) return;
     const location = unit?._state?.location;
     if (!location) return;
-    mapAdapter.value.animateView({ zoom: 15, center: location, duration });
+    const zoom = unitZoomTarget(mapAdapter.value.getZoom());
+    mapAdapter.value.animateView({ zoom, center: location, duration });
   }
 
   function zoomToUnits(units: NUnit[], options: ZoomOptions = {}) {
     const { duration = 900, maxZoom = 15, padding } = options;
-    const points = units
-      .map((u) => u._state?.location)
-      .filter((loc): loc is Position => !!loc)
-      .map((loc) => turfPoint(loc));
-
-    if (!points.length) return;
-    const c = featureCollection(points);
-    zoomToGeometry(c, { duration, maxZoom, padding });
+    const points = unitPoints(units);
+    if (!points) return;
+    zoomToGeometry(points, { duration, maxZoom, padding });
   }
 
   function zoomToGeometry(geometry: AllGeoJSON, options: ZoomOptions = {}) {
@@ -98,6 +118,13 @@ export const useGeoStore = defineStore("geo", () => {
     const location = unit?._state?.location;
     if (!location) return;
     mapAdapter.value.animateView({ center: location, duration });
+  }
+
+  /** Centers the map on the middle of the units' extent, keeping the zoom. */
+  function panToUnits(units: NUnit[], duration = 900) {
+    const points = unitPoints(units);
+    if (!points) return;
+    panToLocation(turfCenter(points).geometry.coordinates, duration);
   }
 
   function panToLocation(location?: Position, duration = 900) {
@@ -148,6 +175,7 @@ export const useGeoStore = defineStore("geo", () => {
     flashOutline,
     zoomToLocation,
     panToUnit,
+    panToUnits,
     panToLocation,
     updateMapSize,
     getMapViewBbox,

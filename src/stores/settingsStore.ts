@@ -3,11 +3,15 @@ import { type SymbologyStandard } from "@/types/scenarioModels";
 import { useLocalStorage } from "@vueuse/core";
 import { type ExportSettings, defaultExportSettings } from "@/composables/symbolExport";
 
+/** What the locate button in the unit details toolbar does. */
+export type UnitLocateMode = "zoom" | "pan";
+
 export const useSettingsStore = defineStore("settings", {
   state() {
     return {
       orbatIconSize: useLocalStorage("orbatIconSize", 20),
       orbatShortName: useLocalStorage("orbatShortName", false),
+      unitLocateMode: useLocalStorage<UnitLocateMode>("unitLocateMode", "zoom"),
     };
   },
 });

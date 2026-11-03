@@ -200,8 +200,10 @@ export function useUnitActions(
     }
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
-        if (action === UnitActions.Zoom || action === UnitActions.Pan) {
+        if (action === UnitActions.Zoom) {
           geoStore.zoomToUnits(unitOrUnits, { duration: 500 });
+        } else if (action === UnitActions.Pan) {
+          geoStore.panToUnits(unitOrUnits, 500);
         } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action, waypointIds));
       });
     } else _onUnitAction(unitOrUnits, action, waypointIds);
@@ -268,6 +270,11 @@ export function useUnitMenu(
       {
         label: "Zoom to",
         action: UnitActions.Zoom,
+        disabled: !unit._state?.location,
+      },
+      {
+        label: "Pan to",
+        action: UnitActions.Pan,
         disabled: !unit._state?.location,
       },
       // { label: "Copy", action: UnitActions.Copy },
