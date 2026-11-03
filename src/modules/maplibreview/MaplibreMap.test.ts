@@ -4,6 +4,7 @@ import { mount, type VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import MaplibreMap from "@/modules/maplibreview/MaplibreMap.vue";
+import { SplitResetNavigationControl } from "@/modules/maplibreview/splitCompassReset";
 import { type MapProjection, useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useMeasurementsStore } from "@/stores/geoStore";
 import type { MaplibreBasemapStyle } from "@/modules/maplibreview/maplibreBasemaps";
@@ -462,7 +463,9 @@ describe("MaplibreMap", () => {
   it("toggles terrain and hillshade together from the map control and tilts the camera", async () => {
     const { wrapper } = mountMap();
     const control = addControl.mock.calls.find(
-      ([candidate]) => typeof candidate?.onAdd === "function",
+      ([candidate]) =>
+        typeof candidate?.onAdd === "function" &&
+        !(candidate instanceof SplitResetNavigationControl),
     )?.[0];
     expect(addControl).toHaveBeenCalledWith(control, "top-left");
     const container: HTMLElement = control.onAdd();
@@ -484,7 +487,10 @@ describe("MaplibreMap", () => {
     await nextTick();
     expect(terrain.terrainEnabled).toBe(false);
     expect(terrain.hillshadeEnabled).toBe(false);
-    expect(easeTo).toHaveBeenLastCalledWith({ pitch: 0, duration: 800 });
+    expect(easeTo).toHaveBeenLastCalledWith(
+      { pitch: 0, roll: 0, duration: 1000 },
+      undefined,
+    );
 
     toggle.click();
     terrain.terrainError = true;
