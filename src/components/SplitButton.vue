@@ -18,10 +18,13 @@ interface Props {
   triggerClass?: string;
   buttonClass?: string;
   menuLabel?: string;
+  // Below a 22rem container only the chevron shows; the menu then lists every item
+  collapsible?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   static: false,
   menuLabel: "More options",
+  collapsible: false,
 });
 const emit = defineEmits(["update:activeItem"]);
 const fallbackItem: ButtonGroupItem = { label: "", onClick: () => {}, disabled: true };
@@ -47,8 +50,12 @@ const activeItemRef = computed({
     emit("update:activeItem", v);
   },
 });
+// The menu is teleported out of the container, so it can't tell whether the label is
+// hidden; a collapsible button lists every item.
 const menuItems = computed(() =>
-  props.items.filter((e) => e.label !== activeItemRef.value?.label),
+  props.collapsible
+    ? props.items
+    : props.items.filter((e) => e.label !== activeItemRef.value?.label),
 );
 
 const onClick = (item: ButtonGroupItem) => {
@@ -64,7 +71,13 @@ const onClick = (item: ButtonGroupItem) => {
       variant="outline"
       @click="onClick(activeItemRef)"
       :disabled="activeItemRef.disabled"
-      :class="cn('min-w-0 shrink rounded-r-none text-left ring-inset', buttonClass)"
+      :class="
+        cn(
+          'min-w-0 shrink rounded-r-none text-left ring-inset',
+          collapsible && 'hidden @[22rem]:inline-flex',
+          buttonClass,
+        )
+      "
       :title="activeItemRef.label"
     >
       <span :class="cn('truncate', triggerClass)">{{ activeItemRef.label }}</span>
@@ -74,7 +87,13 @@ const onClick = (item: ButtonGroupItem) => {
         <Button
           variant="outline"
           size="icon"
-          class="rounded-l-none border-l-0 px-2 ring-inset"
+          :class="
+            cn(
+              'rounded-l-none border-l-0 px-2 ring-inset',
+              collapsible &&
+                'rounded-l-md border-l @[22rem]:rounded-l-none @[22rem]:border-l-0',
+            )
+          "
           :aria-label="menuLabel"
           :title="menuLabel"
           ><ChevronDown aria-hidden="true"
