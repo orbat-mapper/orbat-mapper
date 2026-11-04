@@ -21,7 +21,7 @@ describe("partial ORBAT Mapper export", () => {
         toObject: () => source,
         stringifyObject: (obj: unknown) => JSON.stringify(obj),
       },
-      store: { state: { sideMap: {} } },
+      store: { state: { sideMap: {}, currentTime: 0 }, updateWithoutUndo: vi.fn() },
       geo: { layerItemsLayers: { value: [] }, everyVisibleUnit: { value: [] } },
       unitActions: {},
       helpers: {},

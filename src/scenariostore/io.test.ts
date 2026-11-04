@@ -16,6 +16,7 @@ function createMinimalState(overrides: Partial<ScenarioState> = {}): ScenarioSta
   return {
     id: "test-id",
     meta: { createdDate: "2024-01-01", lastModifiedDate: "2024-01-01" },
+    exportRecords: [],
     currentTime: 0,
     info: {
       name: "Test Scenario",
