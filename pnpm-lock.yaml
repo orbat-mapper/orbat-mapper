@@ -50,7 +50,7 @@ importers:
         version: 2.0.0
       '@orbat-mapper/point-symbols':
         specifier: 0.2.20
-        version: 0.2.20(milsymbol@3.0.5)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        version: 0.2.20(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw':
         specifier: 0.22.1
         version: 0.22.1(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
@@ -256,8 +256,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       milsymbol:
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: 3.0.4
+        version: 3.0.4
       nanoid:
         specifier: ^5.1.16
         version: 5.1.16
@@ -3412,8 +3412,8 @@ packages:
   milstandard-e@0.2.14:
     resolution: {integrity: sha512-DUL1SzdcdW4ZkgLr7zcXdUcIjsfaHXzuRGUqIyz+UblQxnG6b7yZT63LEQMTorYSKxygiOCZ0fCrdz7rf6GxSQ==}
 
-  milsymbol@3.0.5:
-    resolution: {integrity: sha512-LKEj0wnHIWwpdazKxwFie+h5NIEz9ezD0BoHaZXceMh3sbhGL8oMUQU7gjoVorYdKtdWaQTYpUEMxaorX/2SjQ==}
+  milsymbol@3.0.4:
+    resolution: {integrity: sha512-Jrs1RBCag2IzyEJwI476i2+pNHdi8WMwAp2mDD23g3TR48ERdHmdQgPXZUosRKyhPMr58/eOPyyLE53lMPPAgw==}
 
   mini-svg-data-uri@1.4.4:
     resolution: {integrity: sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==}
@@ -5154,11 +5154,11 @@ snapshots:
 
   '@orbat-mapper/convert-symbology@2.0.0': {}
 
-  '@orbat-mapper/point-symbols@0.2.20(milsymbol@3.0.5)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/point-symbols@0.2.20(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
       '@orbat-mapper/control-measures': 0.38.0
       '@orbat-mapper/tactical-draw': 0.22.1(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.5(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
-      milsymbol: 3.0.5
+      milsymbol: 3.0.4
     transitivePeerDependencies:
       - vitest
 
@@ -8071,7 +8071,7 @@ snapshots:
 
   milstandard-e@0.2.14: {}
 
-  milsymbol@3.0.5: {}
+  milsymbol@3.0.4: {}
 
   mini-svg-data-uri@1.4.4: {}
 

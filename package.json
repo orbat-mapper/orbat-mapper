@@ -106,7 +106,7 @@
     "markdown-it": "^14.3.3",
     "markdown-it-container": "^4.0.0",
     "mgrs": "^2.2.0",
-    "milsymbol": "^3.0.5",
+    "milsymbol": "3.0.4",
     "nanoid": "^5.1.16",
     "nprogress": "^0.2.0",
     "pbf": "^5.1.2",
