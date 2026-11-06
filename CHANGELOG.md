@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file.
 - Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
 - Clicking the map compass now resets only the bearing. Double-click it to also level the view.
 
+### Fixed
+
+- Fixed the white outline around echelon markers (III, XX and so on) being drawn above the marker instead of around it.
+
 ## October 2026
 
 ### Added
