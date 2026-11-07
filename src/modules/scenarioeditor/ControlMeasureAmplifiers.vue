@@ -30,9 +30,22 @@ const emit = defineEmits<{
   "update-options": [options: TacticalGraphicOptions];
 }>();
 
-const descriptors = computed<readonly TextAmplifierDescriptor[]>(
-  () => CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? [],
-);
+/** Where a kind's amplifier means more than the registry says. */
+const DESCRIPTION_OVERRIDES: Partial<Record<ControlMeasureId, Record<string, string>>> = {
+  "split-arrow": {
+    T: "The trunk's label. Each flow's label, and where every label sits, is in the Style tab under Flows.",
+  },
+};
+
+const descriptors = computed<readonly TextAmplifierDescriptor[]>(() => {
+  const overrides = DESCRIPTION_OVERRIDES[props.graphicKind];
+  return (CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? []).map(
+    (descriptor) =>
+      overrides?.[descriptor.key]
+        ? { ...descriptor, description: overrides[descriptor.key] }
+        : descriptor,
+  );
+});
 // The same filter the child renders from, so the section and the "nothing here"
 // message can never disagree.
 const hasDoctrinalParameters = computed(

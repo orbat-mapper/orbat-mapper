@@ -26,6 +26,7 @@ import {
   splitFlowParams,
   splitFlowValues,
   summarizeSplitFlows,
+  TRUNK_LABEL_KEY,
 } from "@/modules/scenarioeditor/splitArrowFlows";
 import type { FlowCommand } from "@/modules/scenarioeditor/controlMeasureFlows";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
@@ -40,7 +41,8 @@ import ControlMeasureParameterField from "@/modules/scenarioeditor/ControlMeasur
  * The flows of an arrow drawn as flows (the Flow Arrow and the Split Arrow): pick a
  * flow, set its own fields, and run the engine's flow edits on it. Presentational:
  * the caller routes `select` to the edit session's part selection, `patch` to an
- * options write and `edit` (points and options together) to one undo step.
+ * options write, `edit` (points and options together) to one undo step and
+ * `update:trunkLabel` to the graphic's Field T, which labels the Split Arrow's trunk.
  *
  * The engine owns the topology rules; the helpers either read the `flows` option or
  * ask the engine's own edit functions.
@@ -55,6 +57,8 @@ const props = defineProps<{
   editing: boolean;
   canAddFlow: boolean;
   addFlowArmed: boolean;
+  /** The Split Arrow's trunk label: the graphic's Field T. */
+  trunkLabel?: string;
 }>();
 
 const emit = defineEmits<{
@@ -62,6 +66,7 @@ const emit = defineEmits<{
   patch: [options: Pick<FlowArrowOptions | SplitArrowOptions, "flows">];
   edit: [edit: { controlPoints: Position[]; options: TacticalGraphicOptions }];
   "update:addFlowArmed": [armed: boolean];
+  "update:trunkLabel": [label: string];
 }>();
 
 const instanceId = useId();
@@ -105,7 +110,10 @@ const values = computed<Record<string, unknown>>(() => {
   if (selectedFlowArrow.value)
     return flowValues(selectedFlowArrow.value.flow, flowArrowOptions.value);
   if (selectedSplitArrow.value)
-    return splitFlowValues(selectedSplitArrow.value.flow, splitArrowOptions.value);
+    return {
+      ...splitFlowValues(selectedSplitArrow.value.flow, splitArrowOptions.value),
+      [TRUNK_LABEL_KEY]: props.trunkLabel ?? "",
+    };
   return {};
 });
 
@@ -128,6 +136,10 @@ function valueFor(parameter: ParamDescriptor) {
 }
 
 function onChange(patch: Record<string, unknown>) {
+  if (TRUNK_LABEL_KEY in patch) {
+    emit("update:trunkLabel", String(patch[TRUNK_LABEL_KEY]));
+    return;
+  }
   emit(
     "patch",
     props.graphicKind === "flow-arrow"

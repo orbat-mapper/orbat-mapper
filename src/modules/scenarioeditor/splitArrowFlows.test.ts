@@ -11,6 +11,7 @@ import {
   splitFlowValues,
   patchSplitFlowOptions,
   summarizeSplitFlows,
+  TRUNK_LABEL_KEY,
 } from "@/modules/scenarioeditor/splitArrowFlows";
 
 // A trunk of three points and a flow of two split from the trunk's middle point.
@@ -94,6 +95,7 @@ describe("splitFlowParams", () => {
   it("labels a flow with its own designation, but the trunk with Field T", () => {
     expect(keys(splitFlowParams(flow!))).toContain("designation");
     expect(keys(splitFlowParams(trunk!))).not.toContain("designation");
+    expect(keys(splitFlowParams(trunk!))[0]).toBe(TRUNK_LABEL_KEY);
   });
 
   it("offers the label's placement and the head's style and size", () => {
