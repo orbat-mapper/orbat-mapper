@@ -83,7 +83,8 @@ describe("ControlMeasureAmplifiers", () => {
     });
 
     expect(wrapper.text()).toContain("Mine type");
-    expect(wrapper.text()).toContain("Modifier 1 (symbol set 25 values 13–19).");
+    expect(wrapper.text()).not.toContain("Modifier 1 (symbol set 25 values 13–19).");
+    expect(wrapper.find("[aria-label='About Mine type']").exists()).toBe(true);
     expect(
       wrapper.get("#cm-doctrinal-mineType").element.closest("[data-slot='field']"),
     ).not.toBeNull();

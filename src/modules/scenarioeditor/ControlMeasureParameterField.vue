@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import type { ParamDescriptor } from "@orbat-mapper/control-measures";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Slider } from "@/components/ui/slider";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { roundToStep } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 
 const props = defineProps<{
   id: string;
@@ -80,7 +81,11 @@ function updateEnum(
 <template>
   <Field>
     <div class="flex items-center justify-between gap-2">
-      <FieldLabel :for="id">{{ parameter.label }}</FieldLabel>
+      <ControlMeasureFieldLabel
+        :for="id"
+        :label="parameter.label"
+        :description="parameter.description"
+      />
       <span
         v-if="parameter.type === 'number' && boundedNumber"
         class="text-muted-foreground text-xs tabular-nums"
@@ -88,9 +93,6 @@ function updateEnum(
         {{ numberReadout }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
       </span>
     </div>
-    <FieldDescription v-if="parameter.description">
-      {{ parameter.description }}
-    </FieldDescription>
 
     <ToggleGroup
       v-if="parameter.type === 'enum' && parameter.options.length <= 7"

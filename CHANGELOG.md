@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Size settings such as Arrowhead length and Label size now show the label and a typed value on one line, with the slider and the m/px switch below. In meters the slider covers the sizes that are visible at the current zoom.
+- Control measure field descriptions now open from an info button next to the field label instead of taking up space under every field.
 - Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
 - Clicking the map compass now resets only the bearing. Double-click it to also level the view.
 
