@@ -52,6 +52,7 @@ describe("a config that cannot be read", () => {
       "style",
       "style",
       "style",
+      "atlas",
       "style",
     ]);
   });
@@ -70,6 +71,7 @@ describe("a config that cannot be read", () => {
       "style",
       "style",
       "style",
+      "atlas",
       "style",
     ]);
     expect(store.isInitialized).toBe(true);
@@ -132,7 +134,7 @@ describe("elevation data in the config", () => {
     await store.initialize();
 
     // No basemaps declared: the built-in ones are used.
-    expect(store.layers).toHaveLength(4);
+    expect(store.layers).toHaveLength(5);
     await vi.waitFor(() => expect(terrain.elevationSource).toEqual(source));
   });
 

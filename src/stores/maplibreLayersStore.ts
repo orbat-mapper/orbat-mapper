@@ -44,6 +44,11 @@ const FALLBACK_LAYERS: MlLayerConfig[] = [
     styleUrl: "https://tiles.openfreemap.org/styles/bright",
   },
   {
+    name: "atlas",
+    title: "Atlas",
+    sourceType: "atlas",
+  },
+  {
     name: "versaTilesEclipse",
     title: "VersaTiles Eclipse (dark)",
     sourceType: "style",

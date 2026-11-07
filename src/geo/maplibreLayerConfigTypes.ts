@@ -37,6 +37,17 @@ export interface MlRasterLayerConfig extends BaseMlLayerConfig {
   scheme?: "xyz" | "tms";
 }
 
+/**
+ * The Atlas basemap (`@/geo/atlasStyle`), built from its sources. Elevation tints use Mapterhorn.
+ */
+export interface MlAtlasLayerConfig extends BaseMlLayerConfig {
+  sourceType: "atlas";
+  /** OpenMapTiles-schema vector TileJSON. Defaults to the OpenFreeMap planet. */
+  vectorUrl?: string;
+  /** Glyph URL serving Noto Sans Regular, Bold and Italic. Defaults to OpenFreeMap's fonts. */
+  glyphs?: string;
+}
+
 /** The Protomaps basemap presets a vector PMTiles archive can be styled with. */
 export const BASEMAP_FLAVORS = ["light", "dark", "white", "black", "grayscale"] as const;
 
@@ -107,6 +118,7 @@ export interface MlMapbundleLayerConfig extends BaseMlLayerConfig {
 export type MlLayerConfig =
   | MlStyleLayerConfig
   | MlRasterLayerConfig
+  | MlAtlasLayerConfig
   | MlPmtilesLayerConfig
   | MlMapbundleLayerConfig;
 
