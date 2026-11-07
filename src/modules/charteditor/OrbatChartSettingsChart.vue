@@ -2,13 +2,7 @@
 import InputGroup from "@/components/InputGroup.vue";
 import { useChartSettingsStore, useRootUnitStore } from "./chartSettingsStore";
 import SimpleSelect from "@/components/SimpleSelect.vue";
-import {
-  FontStyles,
-  FontWeights,
-  LabelPlacements,
-  LevelLayouts,
-  UnitLevelDistances,
-} from "./orbatchart";
+import { LabelPlacements, LevelLayouts, UnitLevelDistances } from "./orbatchart";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items, injectStrict } from "@/utils";
 import { defineAsyncComponent, ref } from "vue";
@@ -22,6 +16,7 @@ import AccordionPanel from "@/components/AccordionPanel.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { activeScenarioKey } from "@/components/injects";
 import SettingsToe from "@/modules/charteditor/SettingsToe.vue";
+import FontStyleControl from "@/modules/charteditor/FontStyleControl.vue";
 
 const props = defineProps({ chartMode: { type: Boolean, default: false } });
 
@@ -34,8 +29,6 @@ const {
 const options = useChartSettingsStore();
 const levelItems = enum2Items(LevelLayouts);
 const spacingItems = enum2Items(UnitLevelDistances);
-const fontWeightItems = enum2Items(FontWeights);
-const fontStyleItems = enum2Items(FontStyles);
 const labelPlacementItems = enum2Items(LabelPlacements);
 const rootUnitStore = useRootUnitStore();
 const showSearch = ref(false);
@@ -111,16 +104,13 @@ const onUnitSelect = (unitId: string) => {
 
     <AccordionPanel label="Unit settings">
       <NumberInputGroup label="Symbol size" v-model="options.symbolSize" />
-      <NumberInputGroup label="Font size" v-model="options.fontSize" />
-      <SimpleSelect
-        label="Font weight"
-        v-model="options.fontWeight"
-        :items="fontWeightItems"
-      />
-      <SimpleSelect
-        label="Font style"
-        v-model="options.fontStyle"
-        :items="fontStyleItems"
+      <FontStyleControl
+        label="Label font"
+        :font-size="options.fontSize"
+        :font-weight="options.fontWeight"
+        :font-style="options.fontStyle"
+        :font-color="options.fontColor"
+        @update="(key, value) => options.$patch({ [key]: value })"
       />
       <NumberInputGroup label="Label offset" v-model="options.labelOffset" />
       <SimpleSelect
@@ -128,7 +118,6 @@ const onUnitSelect = (unitId: string) => {
         v-model="options.labelPlacement"
         :items="labelPlacementItems"
       />
-      <InputGroup label="Font color" type="color" v-model="options.fontColor" />
       <NumberInputGroup
         label="Symbol outline width"
         v-model="options.symbolOutlineWidth"

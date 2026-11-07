@@ -58,30 +58,8 @@ export function useChartSettings(chartElementType: ChartItemType) {
     }
   });
 
-  function setValue(name: string, value: any) {
-    if (currentElement.value == null) {
-      if (chartElementType !== ChartItemTypes.Chart) return;
-    }
-    const opts = { ...(elementOptions.value || {}), [name]: value };
-    switch (chartElementType) {
-      case ChartItemTypes.Level:
-        specificOptionsStore.level[currentElement.value as number] = opts;
-        break;
-      case ChartItemTypes.Branch:
-        specificOptionsStore.branch[currentElement.value as string | number] = opts;
-        break;
-      case ChartItemTypes.Unit:
-        specificOptionsStore.unit[(currentElement.value as ChartUnit).id] = opts;
-        break;
-      case ChartItemTypes.Chart:
-        //@ts-ignore
-        options.$state[name] = value;
-        break;
-    }
-  }
-
-  function clearSpecificOptions() {
-    const opts = {};
+  // Replaces the options of the selected level, branch or unit
+  function writeElementOptions(opts: Record<string, unknown>) {
     if (currentElement.value == null) return;
     switch (chartElementType) {
       case ChartItemTypes.Level:
@@ -96,6 +74,58 @@ export function useChartSettings(chartElementType: ChartItemType) {
     }
   }
 
-  const usedOptions = computed(() => new Set(Object.keys(elementOptions.value || {})));
-  return { setValue, clearSpecificOptions, usedOptions, mergedOptions };
+  const chartState = () => options.$state as unknown as Record<string, unknown>;
+
+  function setValue(name: string, value: any) {
+    if (chartElementType === ChartItemTypes.Chart) {
+      chartState()[name] = value;
+      return;
+    }
+    writeElementOptions({ ...(elementOptions.value || {}), [name]: value });
+  }
+
+  function clearSpecificOptions() {
+    writeElementOptions({});
+  }
+
+  // Removes the options instead of setting them to undefined, which would hide the
+  // values inherited from the chart, level or branch.
+  function clearValues(names: readonly string[]) {
+    if (chartElementType === ChartItemTypes.Chart) {
+      for (const name of names) chartState()[name] = undefined;
+      return;
+    }
+    const opts: Record<string, unknown> = { ...(elementOptions.value || {}) };
+    for (const name of names) delete opts[name];
+    writeElementOptions(opts);
+  }
+
+  // Options set at this scope. An option set to undefined is not set.
+  const usedOptions = computed(
+    () =>
+      new Set(
+        Object.entries(elementOptions.value || {})
+          .filter(([, value]) => value !== undefined)
+          .map(([key]) => key),
+      ),
+  );
+  // Whether each option in `names` is inherited rather than set at this scope, keyed
+  // like `names`.
+  function inheritedOptions<K extends string>(names: Readonly<Record<K, string>>) {
+    return Object.fromEntries(
+      Object.entries<string>(names).map(([key, name]) => [
+        key,
+        !usedOptions.value.has(name),
+      ]),
+    ) as Record<K, boolean>;
+  }
+
+  return {
+    setValue,
+    clearValues,
+    clearSpecificOptions,
+    inheritedOptions,
+    usedOptions,
+    mergedOptions,
+  };
 }

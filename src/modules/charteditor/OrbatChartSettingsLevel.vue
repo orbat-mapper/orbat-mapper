@@ -10,6 +10,7 @@ import SettingsUnit from "./SettingsUnit.vue";
 import { useChartSettings } from "./composables";
 import AccordionPanel from "@/components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
+import SettingsToe from "./SettingsToe.vue";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
@@ -66,6 +67,9 @@ if (selectedElement.level === null) test.value = 0;
       </AccordionPanel>
       <AccordionPanel label="Connectors">
         <SettingConnectors :item-type="ChartItemTypes.Level" />
+      </AccordionPanel>
+      <AccordionPanel label="Equipment and personnel">
+        <SettingsToe :item-type="ChartItemTypes.Level" />
       </AccordionPanel>
     </div>
   </div>

@@ -17,10 +17,10 @@ import {
 import ms from "milsymbol";
 import { sortBy } from "@/utils";
 import { walkTree } from "@/modules/charteditor/orbatchart/utils";
+import { resolveToeFonts } from "./toeFonts";
 
 // Font sizes are in pt; SVG user units are px
 const PT_TO_PX = 4 / 3;
-const EQUIPMENT_FONT_SCALE = 0.9;
 
 const HIGHLIGT_STYLE = `
   .o-unit:hover {
@@ -220,6 +220,9 @@ export function createUnitGroup(
   level: number,
 ): RenderedUnitNode {
   const g = createGroupElement(parentElement, "o-unit");
+  // A unit's own font options go on its group, so the personnel and equipment lines
+  // inherit them like the label does.
+  addFontAttributes(g, specificOptions);
   const unitLabel = options.useShortName
     ? unitNode.unit.shortName || unitNode.unit.name
     : unitNode.unit.name;
@@ -249,32 +252,31 @@ export function createUnitGroup(
       dy = "0";
       classes = "o-label-right";
     }
-    const text = addText(y, unitLabel);
-
-    if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
-    if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
-    if (specificOptions.fontStyle) text.attr("font-style", options.fontStyle);
-    if (specificOptions.fontColor) text.attr("fill", options.fontColor);
+    addText(y, unitLabel);
   }
 
   if (options.showPersonnel || options.showEquipment) {
     const { aggregatedPersonnel, aggregatedEquipment } = aggregateData(unitNode.unit);
-    const equipmentFontSize = options.fontSize * EQUIPMENT_FONT_SCALE;
-    const lineHeight = options.fontSize * PT_TO_PX * 1.5;
-    const equipmentLineHeight = equipmentFontSize * PT_TO_PX * 1.4;
+    const toeFonts = resolveToeFonts(options);
+    const labelLineHeight = options.fontSize * PT_TO_PX * 1.5;
+    const personnelLineHeight = toeFonts.personnel.fontSize * PT_TO_PX * 1.5;
+    const equipmentLineHeight = toeFonts.equipment.fontSize * PT_TO_PX * 1.4;
+
+    let nextLineOffset = labelLineHeight;
     if (options.showPersonnel && aggregatedPersonnel.length) {
       const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
       const label = aggregatedPersonnel.map((p) => `${p.count}`).join("/");
-      y += lineHeight;
-      addText(y, `${label}  (${sum})`);
+      y += nextLineOffset;
+      nextLineOffset = personnelLineHeight;
+      addFontAttributes(addText(y, `${label}  (${sum})`), toeFonts.personnel);
     }
 
     if (options.showEquipment && (isLastLevel || !unitNode.unit.subUnits?.length)) {
-      y += lineHeight;
+      y += nextLineOffset;
       aggregatedEquipment.forEach((e, idx) => {
-        addText(y + idx * equipmentLineHeight, `${e.count} x ${e.name}`).attr(
-          "font-size",
-          `${equipmentFontSize}pt`,
+        addFontAttributes(
+          addText(y + idx * equipmentLineHeight, `${e.count} x ${e.name}`),
+          toeFonts.equipment,
         );
       });
     }
@@ -425,15 +427,15 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   }
 }
 
-export function addFontAttributes(
-  group: GElementSelection,
-  options: Partial<FontOptions>,
-) {
+export function addFontAttributes<
+  T extends { attr(name: string, value: string | number): unknown },
+>(element: T, options: Partial<FontOptions>): T {
   const { fontSize, fontWeight, fontStyle, fontColor } = options;
-  fontSize && group.attr("font-size", `${fontSize}pt`);
-  fontWeight && group.attr("font-weight", fontWeight);
-  fontStyle && group.attr("font-style", fontStyle);
-  fontColor && group.attr("fill", fontColor);
+  if (fontSize) element.attr("font-size", `${fontSize}pt`);
+  if (fontWeight) element.attr("font-weight", fontWeight);
+  if (fontStyle) element.attr("font-style", fontStyle);
+  if (fontColor) element.attr("fill", fontColor);
+  return element;
 }
 
 export function addConnectorAttributes(
