@@ -300,7 +300,7 @@ class OrbatChart {
   private _doNodeLayout(renderedChart: RenderedChart) {
     this._layoutHorizontalLevels(renderedChart);
     const numberOfLevels = this.groupedLevels.length;
-    const maxLevels = this.options.maxLevels || numberOfLevels;
+    const lastLevelIndex = renderedChart.levels.length - 1;
     const chartHeight = this.height;
     let prevY = MARGIN_TOP;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
@@ -314,7 +314,7 @@ class OrbatChart {
       }
 
       let levelLayout: LevelLayout = LevelLayouts.Horizontal;
-      if (yIdx === maxLevels - 1) levelLayout = this.options.lastLevelLayout;
+      if (yIdx === lastLevelIndex) levelLayout = this.options.lastLevelLayout;
       this._renderLevel(renderedLevel, y, levelLayout);
     });
   }
@@ -566,7 +566,7 @@ class OrbatChart {
   }
 
   private _drawConnectors(renderedChart: RenderedChart) {
-    const nLevels = this.options.maxLevels || renderedChart.levels.length;
+    const lastLevelIndex = renderedChart.levels.length - 1;
     renderedChart.levels.forEach((renderedLevel, yIdx) => {
       const levelOptions = { ...this.options, ...renderedLevel.options };
       const currentLevelGElement =
@@ -579,7 +579,9 @@ class OrbatChart {
       renderedLevel.branches.forEach((branch, groupIdx) => {
         const parent = branch.units[0].parent;
         const currentLevelLayout =
-          yIdx === nLevels - 1 ? this.options.lastLevelLayout : LevelLayouts.Horizontal;
+          yIdx === lastLevelIndex
+            ? this.options.lastLevelLayout
+            : LevelLayouts.Horizontal;
         const branchOptions = { ...levelOptions, ...branch.options };
         if (!currentLevelGElement) return;
 
