@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the scenario editor hanging on a scenario file with an unknown symbology standard, such as `app6`. Old names now map to the current standard, and unknown ones fall back to the default.
 - Fixed personnel and equipment counts in ORBAT charts starting left of the unit name when labels are placed to the right of the symbol. Their line spacing now also follows the font size.
 - Fixed the bottom level of an ORBAT chart being drawn as a pile of overlapping units when the Levels setting was higher than the number of levels in the chart.
+- Fixed symbols in the Tree, Tree right and Tree left ORBAT chart layouts being shifted sideways by the width of their labels. Symbols on the same side of a branch now line up.
 
 ## October 2026
 
