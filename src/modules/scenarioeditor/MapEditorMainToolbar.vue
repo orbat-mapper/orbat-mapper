@@ -39,6 +39,7 @@ import SymbolPickerPopover from "@/modules/scenarioeditor/SymbolPickerPopover.vu
 import EchelonPickerPopover from "@/modules/scenarioeditor/EchelonPickerPopover.vue";
 import { Button } from "@/components/ui/button";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
+import { getFullUnitSidc, updateSidc } from "@/symbology/helpers.ts";
 import { useRecordingStore } from "@/stores/recordingStore";
 
 const props = withDefaults(
@@ -95,16 +96,13 @@ const { activeUnitId, resetActiveParent, activeParent, activeParentId } =
 
 const { currentSid, currentEchelon, activeSidc } = useToolbarUnitSymbolData();
 
-const computedSidc = computed(() => {
-  const computedActiveSidc = activeSidc.value.startsWith(CUSTOM_SYMBOL_PREFIX)
-    ? "10031000141211000000"
-    : activeSidc.value;
-  const parsedSidc = new Sidc(computedActiveSidc);
-  parsedSidc.standardIdentity = currentSid.value;
-  parsedSidc.emt = "00";
-  parsedSidc.hqtfd = "0";
-  return parsedSidc.toString();
-});
+const computedSidc = computed(() =>
+  updateSidc(activeSidc.value, (sidc) => {
+    sidc.standardIdentity = currentSid.value;
+    sidc.emt = "00";
+    sidc.hqtfd = "0";
+  }),
+);
 
 const symbolOptions = computed(() =>
   activeParent.value
@@ -153,11 +151,12 @@ onGetLocation((location) => {
   groupUpdate(() => {
     if (!activeParentId.value || unitActions.isUnitLocked(activeParentId.value)) return;
     const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
-    const sidc = new Sidc(activeSidc.value!);
-    sidc.emt = currentEchelon.value;
-    sidc.standardIdentity = currentSid.value;
+    const sidc = updateSidc(activeSidc.value, (parsed) => {
+      parsed.emt = currentEchelon.value;
+      parsed.standardIdentity = currentSid.value;
+    });
     const unitId = unitActions.createSubordinateUnit(activeParentId.value, {
-      sidc: sidc.toString(),
+      sidc,
       name,
     });
     unitId && addUnitPosition(unitId, location);
@@ -173,11 +172,12 @@ bus.on((unit) => {
       cancelGetLocation();
     }
     const name = `${(activeParent.value?.subUnits?.length ?? 0) + 1}`;
-    const sidc = new Sidc(activeSidc.value!);
-    sidc.emt = currentEchelon.value;
-    sidc.standardIdentity = unit.sidc[SID_INDEX];
+    const sidc = updateSidc(activeSidc.value, (parsed) => {
+      parsed.emt = currentEchelon.value;
+      parsed.standardIdentity = getFullUnitSidc(unit.sidc)[SID_INDEX];
+    });
     const unitId = unitActions.createSubordinateUnit(unit.id, {
-      sidc: sidc.toString(),
+      sidc,
       name,
     });
   }

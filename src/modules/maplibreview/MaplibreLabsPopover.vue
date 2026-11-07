@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
-import { FlaskConicalIcon, HexagonIcon } from "@lucide/vue";
+import { FlaskConicalIcon, HexagonIcon, ScalingIcon } from "@lucide/vue";
 import { getHexagonAreaAvg, getHexagonEdgeLengthAvg } from "h3-js";
 import MainToolbarButton from "@/components/MainToolbarButton.vue";
+import EchelonSizesDialog from "@/components/EchelonSizesDialog.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import ViewshedIcon from "@/components/ViewshedIcon.vue";
 import { useH3HexGrid } from "@/modules/maplibreview/h3grid";
 import { useTerrainStore } from "@/stores/terrainStore";
 import { useViewshedStore } from "@/stores/viewshedStore";
+import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 const props = defineProps<{ mlMap?: MlMap | null }>();
 
@@ -111,11 +113,27 @@ const showViewshed = computed({
   set: (on: boolean) => (on ? viewshed.start() : viewshed.closeAll()),
 });
 
-const activeCount = computed(() => Number(showHexGrid.value) + Number(viewshed.active));
+const mapSettings = useMapSettingsStore();
+const popoverOpen = ref(false);
+const echelonSizesOpen = ref(false);
+
+// The dialog lives outside the popover content, so closing the popover to make
+// room for it does not unmount it.
+function openEchelonSizes() {
+  popoverOpen.value = false;
+  echelonSizesOpen.value = true;
+}
+
+const activeCount = computed(
+  () =>
+    Number(showHexGrid.value) +
+    Number(viewshed.active) +
+    Number(mapSettings.mapSizeUnitsByEchelon),
+);
 </script>
 
 <template>
-  <Popover>
+  <Popover v-model:open="popoverOpen">
     <PopoverTrigger as-child>
       <MainToolbarButton
         title="Experimental features"
@@ -172,6 +190,31 @@ const activeCount = computed(() => Number(showHexGrid.value) + Number(viewshed.a
               and drag one to move it. Nothing is saved with the scenario.
             </template>
           </p>
+        </section>
+        <section class="rounded-md border">
+          <div class="flex items-center justify-between gap-2 px-3 py-2">
+            <div class="flex items-center gap-2">
+              <ScalingIcon class="size-4" />
+              <Label class="text-sm">Size units by echelon</Label>
+            </div>
+            <ToggleField v-model="mapSettings.mapSizeUnitsByEchelon" />
+          </div>
+          <div class="space-y-2 border-t px-3 py-2">
+            <p class="text-muted-foreground text-xs">
+              Units without a map symbol size of their own are drawn at their echelon's
+              size, with a Battalion at the map symbol size.
+            </p>
+            <Button
+              v-if="mapSettings.mapSizeUnitsByEchelon"
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-7 text-xs"
+              @click="openEchelonSizes"
+            >
+              Echelon sizes…
+            </Button>
+          </div>
         </section>
         <section class="rounded-md border">
           <div class="flex items-center justify-between gap-2 px-3 py-2">
@@ -267,5 +310,6 @@ const activeCount = computed(() => Number(showHexGrid.value) + Number(viewshed.a
         </section>
       </div>
     </PopoverContent>
+    <EchelonSizesDialog v-model:open="echelonSizesOpen" />
   </Popover>
 </template>

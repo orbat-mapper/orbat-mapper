@@ -35,6 +35,7 @@ export interface TextStyleSpec {
   "text-align": "left" | "right" | "center" | "end" | "start";
   "text-offset-x": number;
   "text-offset-y": number;
+  "text-size": number;
   textMinZoom: number;
   textMaxZoom: number;
 }
@@ -84,3 +85,4 @@ export const strokeStyleDashed = [10, 10];
 export const strokeStyleDotted = [5, 10];
 export const defaultFillColor = "#555555";
 export const defaultFillOpacity = 0.25;
+export const defaultTextSize = 13;

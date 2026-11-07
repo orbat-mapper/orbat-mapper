@@ -1,52 +1,29 @@
 <script setup lang="ts">
-import { startCompletion } from "@codemirror/autocomplete";
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
-  Decoration,
-  type KeyBinding,
   EditorView,
   keymap,
   placeholder as placeholderExtension,
-  ViewPlugin,
-  type ViewUpdate,
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import {
-  applyIndentedNewline,
-  applyShiftTabOutdent,
-  applyTabIndent,
-} from "@/views/texttoorbat/textEditorCommands";
-import {
-  textToOrbatAutocompletion,
-  type TextToOrbatCompletion,
-} from "@/views/texttoorbat/textEditorSuggestions";
-import {
-  INDENT_SIZE,
-  serializeUnitsToIndentedText,
-} from "@/views/texttoorbat/textToOrbat";
-import {
-  defaultRegistry,
-  type MappingRegistry,
-} from "@/views/texttoorbat/mappingRegistry";
+import { unitsToText, type TextToOrbat } from "@/lib/textToOrbat";
+import { textToOrbatEditing } from "@/lib/textToOrbat/codemirror";
 import type { Unit } from "@/types/scenarioModels";
 import { symbolGenerator } from "@/symbology/milsymbwrapper";
 
 const props = withDefaults(
   defineProps<{
     modelValue: string;
+    engine: TextToOrbat;
     placeholder?: string;
     enableAutocomplete?: boolean;
     matchInputCase?: boolean;
-    registry?: MappingRegistry;
-    registryVersion?: number;
   }>(),
   {
     placeholder: "",
     enableAutocomplete: true,
     matchInputCase: true,
-    registry: () => defaultRegistry,
-    registryVersion: 0,
   },
 );
 
@@ -56,93 +33,7 @@ const emit = defineEmits<{
 
 const editorRoot = ref<HTMLDivElement | null>(null);
 const editorView = shallowRef<EditorView | null>(null);
-const autocompleteCompartment = new Compartment();
-const metadataMark = Decoration.mark({ class: "cm-text-to-orbat-metadata" });
-const commentMark = Decoration.mark({ class: "cm-text-to-orbat-comment" });
-
-function getMetadataRanges(line: string): Array<{ from: number; to: number }> {
-  const ranges: Array<{ from: number; to: number }> = [];
-  const commentStart = line.indexOf("#");
-  const content = commentStart === -1 ? line : line.slice(0, commentStart);
-  const bracketPattern = /\[[^[\]]*\]/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = bracketPattern.exec(content)) !== null) {
-    ranges.push({ from: match.index, to: match.index + match[0].length });
-  }
-
-  const slashSlashIndex = content.indexOf("//");
-  if (slashSlashIndex !== -1) {
-    ranges.push({ from: slashSlashIndex, to: content.length });
-    return ranges.sort((a, b) => a.from - b.from);
-  }
-
-  const pipeIndexes = [...content.matchAll(/\|/g)]
-    .map((item) => item.index ?? -1)
-    .filter((i) => i >= 0);
-  if (pipeIndexes.length === 1) {
-    const start = pipeIndexes[0];
-    if (start < content.length - 1) {
-      ranges.push({ from: start, to: content.length });
-    }
-  } else if (pipeIndexes.length >= 2) {
-    for (let i = 0; i + 1 < pipeIndexes.length; i += 2) {
-      const start = pipeIndexes[i];
-      const end = pipeIndexes[i + 1] + 1;
-      if (end > start + 1) {
-        ranges.push({ from: start, to: end });
-      }
-    }
-  }
-
-  return ranges.sort((a, b) => a.from - b.from);
-}
-
-function getCommentRange(line: string): { from: number; to: number } | null {
-  const commentStart = line.indexOf("#");
-  if (commentStart === -1) {
-    return null;
-  }
-  return { from: commentStart, to: line.length };
-}
-
-function buildMetadataDecorations(state: EditorState) {
-  const ranges = [];
-
-  for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber += 1) {
-    const line = state.doc.line(lineNumber);
-    const commentRange = getCommentRange(line.text);
-    for (const range of getMetadataRanges(line.text)) {
-      ranges.push(metadataMark.range(line.from + range.from, line.from + range.to));
-    }
-    if (commentRange) {
-      ranges.push(
-        commentMark.range(line.from + commentRange.from, line.from + commentRange.to),
-      );
-    }
-  }
-
-  return Decoration.set(ranges, true);
-}
-
-const metadataHighlightExtension = ViewPlugin.fromClass(
-  class {
-    decorations;
-
-    constructor(view: EditorView) {
-      this.decorations = buildMetadataDecorations(view.state);
-    }
-
-    update(update: ViewUpdate) {
-      if (update.docChanged) {
-        this.decorations = buildMetadataDecorations(update.state);
-      }
-    }
-  },
-  {
-    decorations: (value) => value.decorations,
-  },
-);
+const editingCompartment = new Compartment();
 
 function dispatchDocumentChange(
   view: EditorView,
@@ -160,83 +51,26 @@ function dispatchDocumentChange(
   });
 }
 
-function createWholeDocumentCommand(
-  handler: (
-    value: string,
-    selectionStart: number,
-    selectionEnd: number,
-  ) => {
-    value: string;
-    selectionStart: number;
-    selectionEnd: number;
-  },
-): NonNullable<KeyBinding["run"]> {
-  return ({ state, dispatch }) => {
-    const selection = state.selection.main;
-    const result = handler(state.doc.toString(), selection.from, selection.to);
-    dispatch({
-      changes: { from: 0, to: state.doc.length, insert: result.value },
-      selection: {
-        anchor: Math.max(0, Math.min(result.selectionStart, result.value.length)),
-        head: Math.max(0, Math.min(result.selectionEnd, result.value.length)),
-      },
-      scrollIntoView: true,
-    });
-    return true;
-  };
-}
-
-const indentCommand = createWholeDocumentCommand((value, selectionStart, selectionEnd) =>
-  applyTabIndent(value, selectionStart, selectionEnd, INDENT_SIZE),
-);
-const outdentCommand = createWholeDocumentCommand((value, selectionStart, selectionEnd) =>
-  applyShiftTabOutdent(value, selectionStart, selectionEnd, INDENT_SIZE),
-);
-const newlineCommand = createWholeDocumentCommand((value, selectionStart, selectionEnd) =>
-  applyIndentedNewline(value, selectionStart, selectionEnd),
-);
-
-function renderCompletionPreview(completion: TextToOrbatCompletion) {
-  if (!completion.previewSidc) {
-    return null;
-  }
-
-  const wrapper = document.createElement("span");
-  wrapper.className = "text-to-orbat-completion-preview";
-  wrapper.setAttribute("aria-hidden", "true");
-
-  const symbolNode = symbolGenerator(completion.previewSidc, {
+function renderSymbol(sidc: string) {
+  return symbolGenerator(sidc, {
     size: 18,
     simpleStatusModifier: false,
     outlineColor: "white",
     outlineWidth: 6,
   }).asDOM();
-  wrapper.innerHTML = symbolNode.outerHTML;
-
-  return wrapper;
 }
 
-function createAutocompleteExtension() {
-  if (!props.enableAutocomplete) {
-    return [];
-  }
-
-  return textToOrbatAutocompletion(
-    {
+function createEditingExtension() {
+  return textToOrbatEditing(props.engine, {
+    autocomplete: props.enableAutocomplete,
+    matchInputCase: props.matchInputCase,
+    renderSymbol,
+    autocompleteConfig: {
       icons: false,
       tooltipClass: () => "text-to-orbat-completion-tooltip",
       optionClass: () => "text-to-orbat-completion-option",
-      addToOptions: [
-        {
-          position: 15,
-          render: (completion) =>
-            renderCompletionPreview(completion as TextToOrbatCompletion),
-        },
-      ],
     },
-    props.registry,
-    props.matchInputCase,
-  );
+  });
 }
 
 onMounted(() => {
@@ -247,16 +81,8 @@ onMounted(() => {
   const extensions: Extension[] = [
     history(),
     EditorView.lineWrapping,
-    metadataHighlightExtension,
-    autocompleteCompartment.of(createAutocompleteExtension()),
-    keymap.of([
-      { key: "Tab", run: indentCommand },
-      { key: "Shift-Tab", run: outdentCommand },
-      { key: "Enter", run: newlineCommand },
-      { key: "Ctrl-Space", run: startCompletion },
-      ...historyKeymap,
-      ...defaultKeymap,
-    ]),
+    editingCompartment.of(createEditingExtension()),
+    keymap.of([...historyKeymap, ...defaultKeymap]),
     EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         emit("update:modelValue", update.state.doc.toString());
@@ -268,7 +94,7 @@ onMounted(() => {
         if (!orbatData) return false;
         try {
           const units: Unit[] = JSON.parse(orbatData);
-          const text = serializeUnitsToIndentedText(units);
+          const text = unitsToText(units);
           const pos =
             view.posAtCoords({ x: event.clientX, y: event.clientY }) ??
             view.state.doc.length;
@@ -422,23 +248,16 @@ watch(
   },
 );
 
-watch(
-  [
-    () => props.enableAutocomplete,
-    () => props.registryVersion,
-    () => props.matchInputCase,
-  ],
-  () => {
-    const view = editorView.value;
-    if (!view) {
-      return;
-    }
+watch([() => props.enableAutocomplete, () => props.matchInputCase], () => {
+  const view = editorView.value;
+  if (!view) {
+    return;
+  }
 
-    view.dispatch({
-      effects: autocompleteCompartment.reconfigure(createAutocompleteExtension()),
-    });
-  },
-);
+  view.dispatch({
+    effects: editingCompartment.reconfigure(createEditingExtension()),
+  });
+});
 
 onBeforeUnmount(() => {
   editorView.value?.destroy();

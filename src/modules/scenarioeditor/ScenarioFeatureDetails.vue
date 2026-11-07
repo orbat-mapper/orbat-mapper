@@ -40,6 +40,13 @@ import type { ScenarioFeatureActions } from "@/types/constants";
 import { useNotifications } from "@/composables/notifications";
 import { layerItemsToGeoJsonString } from "@/modules/scenarioeditor/featureLayerUtils";
 import ScenarioLayerItemState from "@/modules/scenarioeditor/ScenarioLayerItemState.vue";
+import FeatureStateGeometryForm from "@/modules/scenarioeditor/FeatureStateGeometryForm.vue";
+import {
+  getStateGeometryBlocker,
+  type StateGeometryResult,
+} from "@/modules/scenarioeditor/featureStateGeometry";
+import { useFeatureStateGeometry } from "@/modules/scenarioeditor/useFeatureStateGeometry";
+import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
 import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeaturesGeometryStats.vue";
 import ScenarioFeatureStyleGroup from "@/modules/scenarioeditor/ScenarioFeatureStyleGroup.vue";
@@ -76,6 +83,8 @@ const uiStore = useUiStore();
 const { featureDetailsTab: selectedTab } = storeToRefs(useTabStore());
 const toolbarStore = useMainToolbarStore();
 const { rootUnitIds } = useRootUnitIds();
+const fmt = useTimeFormatStore();
+const stateGeometry = useFeatureStateGeometry({ store, geo });
 
 const feature = computed(() => {
   if (props.selectedIds.size === 1) {
@@ -151,6 +160,9 @@ const canTransformFeature = computed(() =>
 );
 const canAssignFeatureToUnit = computed(
   () => !!feature.value && isAssignableTrackFeature(toGeoJSONFeature(feature.value)),
+);
+const canTakeStateGeometry = computed(
+  () => !!feature.value && !getStateGeometryBlocker(feature.value),
 );
 const selectedAssignmentUnitId = ref<string | null>(null);
 const assignmentUnitId = computed({
@@ -304,7 +316,36 @@ function doDuplicate() {
   duplicatedIds.forEach((id) => selectedFeatureIds.value.add(id));
 }
 
+function notifyStateGeometry(result: StateGeometryResult) {
+  notify(
+    result.ok
+      ? {
+          message: `Recorded geometry at ${fmt.scenarioFormatter.format(store.state.currentTime)}`,
+        }
+      : { message: result.message, type: "error" },
+  );
+}
+
+async function pasteStateGeometry() {
+  if (!feature.value) {
+    notify({ message: "Select a single feature to paste a geometry", type: "error" });
+    return;
+  }
+  notifyStateGeometry(await stateGeometry.pasteFromClipboard(feature.value.id));
+}
+
+function applyStateGeometryFrom(sourceId: FeatureId, deleteSource: boolean) {
+  if (!feature.value) return;
+  notifyStateGeometry(
+    stateGeometry.applyFromFeature(feature.value.id, sourceId, deleteSource),
+  );
+}
+
 function onAction(action: ScenarioFeatureActions) {
+  if (action === "pasteGeometryAsState") {
+    void pasteStateGeometry();
+    return;
+  }
   if (action === "removeMedia") {
     removeMedia();
     return;
@@ -460,6 +501,13 @@ function assignFeatureToUnit() {
         </TabsContent>
         <TabsContent value="2" class="mx-4">
           <ScenarioLayerItemState v-if="feature" :item="feature" />
+          <FeatureStateGeometryForm
+            v-if="feature && canTakeStateGeometry"
+            :item="feature"
+            class="border-border mt-4 border-t pt-4"
+            @paste="pasteStateGeometry"
+            @apply="applyStateGeometryFrom"
+          />
           <div
             v-if="feature && canAssignFeatureToUnit"
             class="border-border mt-4 space-y-3 border-t pt-4"

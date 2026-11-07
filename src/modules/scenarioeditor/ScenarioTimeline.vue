@@ -351,16 +351,21 @@ function updateEvents(minDate: Date, maxDate: Date, tzOffsetMinutes: number) {
   binsWithX.value = renderBins;
 }
 
+function updateHistogram() {
+  const { histogram: hg, max: mc } = computeTimeHistogram();
+  histogram = hg;
+  maxCount = mc;
+  redrawCounter.value += 1;
+}
+
 watch(
   [() => store.state.unitStateCounter, () => store.state.featureStateCounter],
-  () => {
-    const { histogram: hg, max: mc } = computeTimeHistogram();
-    histogram = hg;
-    maxCount = mc;
-    redrawCounter.value += 1;
-  },
+  updateHistogram,
   { immediate: true },
 );
+// Undo/redo restore the counters, and the recompute that follows can move them back
+// to the value they had before, so the watcher above can miss the change.
+store.onUndoRedo(updateHistogram);
 
 watch(events, () => {
   if (!width.value) return;

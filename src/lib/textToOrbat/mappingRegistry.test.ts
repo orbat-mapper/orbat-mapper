@@ -17,12 +17,10 @@ const ICON_ARMOR = extractEntityCode(
 const ECHELON_BATTALION = BUILTIN_ECHELON_DEFINITIONS.find(
   (d) => d.label === "Battalion",
 )!.code;
-import {
-  getIconCodeFromName,
-  getEchelonCodeFromName,
-  parseTextToUnits,
-  getIconFromSidc,
-} from "./textToOrbat";
+import { getEchelonCodeFromName, getIconMatchFromName, parseTextToUnits } from "./parser";
+
+const getIconCodeFromName = (name: string, registry: MappingRegistry) =>
+  extractEntityCode(getIconMatchFromName(name, registry).sidc);
 
 describe("MappingRegistry — adding new mappings", () => {
   it("adds a new icon mapping that matches in getIconCodeFromName", () => {
@@ -108,9 +106,9 @@ describe("MappingRegistry — adding new mappings", () => {
 
     const units = parseTextToUnits(text, registry);
     expect(units).toHaveLength(1);
-    expect(getIconFromSidc(units[0].sidc)).toBe(ICON_INFANTRY);
-    expect(getIconFromSidc(units[0].children[0].sidc)).toBe(DRONE_CODE);
-    expect(getIconFromSidc(units[0].children[1].sidc)).toBe(DRONE_CODE);
+    expect(extractEntityCode(units[0].sidc)).toBe(ICON_INFANTRY);
+    expect(extractEntityCode(units[0].children[0].sidc)).toBe(DRONE_CODE);
+    expect(extractEntityCode(units[0].children[1].sidc)).toBe(DRONE_CODE);
   });
 
   it("does not affect other MappingRegistry instances", () => {

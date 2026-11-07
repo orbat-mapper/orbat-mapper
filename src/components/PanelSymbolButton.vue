@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
+import UnitSymbol from "@/components/UnitSymbol.vue";
 import { type UnitSymbolOptions } from "@/types/scenarioModels";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 <template>
   <Button type="button" variant="ghost" size="icon" :class="[active ? 'invert' : '']">
-    <NewMilitarySymbol
+    <UnitSymbol
       :sidc="sidc"
       :size="size"
       class="size-9"

@@ -69,7 +69,8 @@ export function useYMDElements({
     inputDateTime,
     (v) => {
       year.value = v.year();
-      month.value = v.month();
+      // dayjs months are 0-based; the form and the parser below use 1-based months.
+      month.value = v.month() + 1;
       day.value = v.date();
       hour.value = v.hour();
       minute.value = v.minute();

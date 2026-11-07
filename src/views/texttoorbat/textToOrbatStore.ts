@@ -1,12 +1,24 @@
-import { ref } from "vue";
+import { customRef, markRaw } from "vue";
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import {
-  defaultRegistry,
+  createTextToOrbat,
   type AllMappingData,
-} from "@/views/texttoorbat/mappingRegistry";
-import type { CommaFieldOrder } from "@/views/texttoorbat/textToOrbat";
+  type CommaFieldOrder,
+  type TextToOrbat,
+} from "@/lib/textToOrbat";
 import type { Unit } from "@/types/scenarioModels";
+
+function createEngine(storedMappings: AllMappingData | null): TextToOrbat {
+  if (storedMappings?.icons?.length || storedMappings?.echelons?.length) {
+    try {
+      return createTextToOrbat({ mappings: storedMappings });
+    } catch (e) {
+      console.warn("Failed to load stored mappings, resetting to defaults", e);
+    }
+  }
+  return createTextToOrbat();
+}
 
 export const useTextToOrbatStore = defineStore("textToOrbat", () => {
   const enableAutocomplete = useLocalStorage("enableAutoComplete", true);
@@ -37,31 +49,32 @@ export const useTextToOrbatStore = defineStore("textToOrbat", () => {
       },
     },
   );
-  const registryVersion = ref(0);
 
-  // Load stored mappings on init
-  if (storedMappings.value?.icons?.length || storedMappings.value?.echelons?.length) {
-    try {
-      defaultRegistry.importMappings(storedMappings.value);
-      defaultRegistry.clearUndoRedoStack();
-      registryVersion.value = defaultRegistry.version;
-    } catch (e) {
-      console.warn("Failed to load stored mappings, resetting to defaults", e);
-      storedMappings.value = null;
-    }
-  }
-
-  function handleMappingsChanged() {
-    registryVersion.value = defaultRegistry.version;
-    storedMappings.value = defaultRegistry.exportMappings();
-  }
-
-  function handleMappingsReset() {
-    registryVersion.value = defaultRegistry.version;
+  const rawEngine = markRaw(createEngine(storedMappings.value));
+  if (storedMappings.value && !rawEngine.mappings.isCustomized)
     storedMappings.value = null;
-  }
+
+  rawEngine.mappings.subscribe(() => {
+    storedMappings.value = rawEngine.mappings.isCustomized
+      ? rawEngine.mappings.exportMappings()
+      : null;
+  });
+
+  // Reading the engine through this ref makes computeds re-run after its
+  // mappings change; the engine object itself never changes
+  const engine = customRef<TextToOrbat>((track, trigger) => {
+    rawEngine.mappings.subscribe(trigger);
+    return {
+      get() {
+        track();
+        return rawEngine;
+      },
+      set() {},
+    };
+  });
 
   return {
+    engine,
     enableAutocomplete,
     matchInputCase,
     useCommaSeparator,
@@ -74,8 +87,5 @@ export const useTextToOrbatStore = defineStore("textToOrbat", () => {
     shortNameForceLength,
     showScratchPad,
     scratchPadUnits,
-    registryVersion,
-    handleMappingsChanged,
-    handleMappingsReset,
   };
 });

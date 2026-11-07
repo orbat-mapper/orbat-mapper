@@ -4,6 +4,7 @@ import {
   buildScenarioFeatureRenderPlan,
   MapLibreScenarioFeatureManager,
 } from "@/modules/maplibreview/maplibreScenarioFeatures";
+import { defaultTextSize } from "@/geo/simplestyle";
 
 describe("buildScenarioFeatureRenderPlan", () => {
   it("converts circles into polygon render features", () => {
@@ -455,6 +456,56 @@ describe("buildScenarioFeatureRenderPlan", () => {
       "get",
       "textAnchor",
     ]);
+  });
+
+  it("uses the feature label size and keeps pixel offsets independent of it", () => {
+    const plan = buildScenarioFeatureRenderPlan(
+      {
+        id: "layer-label-size",
+        kind: "overlay",
+        name: "Layer Label Size",
+        items: [
+          {
+            id: "sized-label",
+            kind: "geometry",
+            _pid: "layer-label-size",
+            geometry: { type: "Point", coordinates: [10, 10] },
+            geometryMeta: { geometryKind: "Point" },
+            name: "Big",
+            style: {
+              showLabel: true,
+              "text-size": 20,
+              "text-offset-x": 10,
+              "text-offset-y": 5,
+            },
+          },
+          {
+            id: "default-label",
+            kind: "geometry",
+            _pid: "layer-label-size",
+            geometry: { type: "Point", coordinates: [11, 11] },
+            geometryMeta: { geometryKind: "Point" },
+            name: "Default",
+            style: { showLabel: true },
+          },
+        ],
+      } as any,
+      {
+        filterVisible: true,
+        selectedFeatureIds: new Set(),
+      },
+    );
+
+    const labelProps = (id: string) =>
+      plan.labelData.features.find((feature) => feature.properties?.featureId === id)
+        ?.properties;
+    expect(labelProps("sized-label")?.textSize).toBe(20);
+    expect(labelProps("sized-label")?.textOffset).toEqual([0.5, 0.25]);
+    expect(labelProps("default-label")?.textSize).toBe(defaultTextSize);
+    expect(labelProps("default-label")?.textOffset).toEqual([15 / defaultTextSize, 0]);
+
+    const labelLayer = plan.layerDefinitions.find((layer) => layer.id.includes("labels"));
+    expect((labelLayer?.spec.layout as any)["text-size"]).toEqual(["get", "textSize"]);
   });
 
   it("uses per-arrow maplibre placement metadata for open hand-drawn heads", () => {

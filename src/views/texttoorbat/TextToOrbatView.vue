@@ -30,19 +30,16 @@ import {
 } from "@/components/ui/resizable";
 
 import {
-  applyGeneratedShortNamesToText,
-  clearAllShortNames,
+  BUILTIN_ECHELON_DEFINITIONS,
+  toUnits,
+  type ParseOptions,
+} from "@/lib/textToOrbat";
+import {
   convertParsedUnitsToOrbatMapperScenario,
   convertParsedUnitsToSpatialIllusions,
-  generateMissingShortNamesWithOptions,
-  parseTextToUnits,
-  serializeParsedUnitsToScenarioUnits,
-  type CommaFieldOrder,
-} from "@/views/texttoorbat/textToOrbat.ts";
+} from "@/views/texttoorbat/orbatExports";
 import { storeToRefs } from "pinia";
 import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
-import { defaultRegistry } from "@/views/texttoorbat/mappingRegistry";
-import { BUILTIN_ECHELON_DEFINITIONS } from "@/views/texttoorbat/echelonRegistry";
 import {
   Select,
   SelectContent,
@@ -105,9 +102,8 @@ const {
   shortNameForceLength,
   showScratchPad,
   scratchPadUnits,
-  registryVersion,
+  engine,
 } = storeToRefs(store);
-const { handleMappingsChanged, handleMappingsReset } = store;
 
 const showPatternMapping = ref(false);
 const isOpeningScenario = ref(false);
@@ -127,16 +123,15 @@ const inputText = ref(`# sample ORBAT
   A, Alpha Company, Main assault element
 `);
 
-const parsedUnits = computed(() => {
-  void registryVersion.value;
-  return parseTextToUnits(inputText.value, {
-    registry: defaultRegistry,
-    useCommaSeparator: useCommaSeparator.value,
-    commaFieldOrder: commaFieldOrder.value as CommaFieldOrder,
-    standardIdentity: standardIdentity.value,
-    defaultStartingEchelon: defaultStartingEchelon.value,
-  });
-});
+const parseOptions = computed<ParseOptions>(() => ({
+  fields: useCommaSeparator.value ? commaFieldOrder.value : "off",
+  standardIdentity: standardIdentity.value,
+  startingEchelon: defaultStartingEchelon.value,
+}));
+
+const parsedUnits = computed(() =>
+  engine.value.parse(inputText.value, parseOptions.value),
+);
 const spatialIllusionsOrbat = computed(() =>
   convertParsedUnitsToSpatialIllusions(parsedUnits.value),
 );
@@ -152,7 +147,7 @@ function handleClearInput() {
 }
 
 function buildClipboardUnits() {
-  return serializeParsedUnitsToScenarioUnits(parsedUnits.value);
+  return toUnits(parsedUnits.value);
 }
 
 function handleGenerateShortNames() {
@@ -160,28 +155,26 @@ function handleGenerateShortNames() {
     return;
   }
 
-  const units = serializeParsedUnitsToScenarioUnits(parsedUnits.value);
-  const result = generateMissingShortNamesWithOptions(units, {
-    maxLength: shortNameMaxLength.value,
-    uppercase: shortNameUppercase.value,
-    allowWhitespace: shortNameAllowWhitespace.value,
-    forceLength: shortNameForceLength.value,
+  const result = engine.value.rewriteShortNames(inputText.value, "generate", {
+    ...parseOptions.value,
+    shortNames: {
+      maxLength: shortNameMaxLength.value,
+      uppercase: shortNameUppercase.value,
+      allowWhitespace: shortNameAllowWhitespace.value,
+      forceLength: shortNameForceLength.value,
+    },
   });
 
-  if (result.generatedCount === 0) {
+  if (result.changedCount === 0) {
     sendNotification({ message: "All units already have short names" });
     return;
   }
 
   useCommaSeparator.value = true;
   commaFieldOrder.value = "name,shortName,description";
-  inputText.value = applyGeneratedShortNamesToText(
-    inputText.value,
-    parsedUnits.value,
-    result.units,
-  ).text;
+  inputText.value = result.text;
   sendNotification({
-    message: `Generated ${result.generatedCount} short name${result.generatedCount === 1 ? "" : "s"}`,
+    message: `Generated ${result.changedCount} short name${result.changedCount === 1 ? "" : "s"}`,
   });
 }
 
@@ -190,14 +183,13 @@ function handleClearShortNames() {
     return;
   }
 
-  const units = serializeParsedUnitsToScenarioUnits(parsedUnits.value);
-  const result = applyGeneratedShortNamesToText(
+  const result = engine.value.rewriteShortNames(
     inputText.value,
-    parsedUnits.value,
-    clearAllShortNames(units),
+    "clear",
+    parseOptions.value,
   );
 
-  if (result.updatedCount === 0) {
+  if (result.changedCount === 0) {
     sendNotification({ message: "No short names to clear" });
     return;
   }
@@ -206,7 +198,7 @@ function handleClearShortNames() {
   commaFieldOrder.value = "name,shortName,description";
   inputText.value = result.text;
   sendNotification({
-    message: `Cleared ${result.updatedCount} short name${result.updatedCount === 1 ? "" : "s"}`,
+    message: `Cleared ${result.changedCount} short name${result.changedCount === 1 ? "" : "s"}`,
   });
 }
 
@@ -571,8 +563,7 @@ onUnmounted(() => {
             v-model="inputText"
             :enable-autocomplete="enableAutocomplete"
             :match-input-case="matchInputCase"
-            :registry="defaultRegistry"
-            :registry-version="registryVersion"
+            :engine="engine"
             class="flex-1"
             placeholder="1st Infantry Division
   1st Brigade
@@ -736,11 +727,5 @@ onUnmounted(() => {
     </ResizablePanelGroup>
   </div>
 
-  <PatternMappingModal
-    v-model="showPatternMapping"
-    :registry="defaultRegistry"
-    :registry-version="registryVersion"
-    @mappings-changed="handleMappingsChanged"
-    @mappings-reset="handleMappingsReset"
-  />
+  <PatternMappingModal v-model="showPatternMapping" />
 </template>

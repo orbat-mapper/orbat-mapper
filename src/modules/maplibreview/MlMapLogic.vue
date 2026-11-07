@@ -83,6 +83,7 @@ import { useMaplibreDayNightTerminator } from "@/composables/maplibreDayNightTer
 import { provideMapHoverContext, type HoverFeatureLike } from "@/geo/mapHover";
 import MapHoverFeatureTooltip from "@/components/MapHoverFeatureTooltip.vue";
 import { getCustomSymbolId } from "@/symbology/helpers";
+import { unitSymbolSize } from "@/symbology/echelonSize";
 import { SID_INDEX } from "@/symbology/sidc";
 import { registerMissingStyleImageResolver } from "@/modules/maplibreview/missingStyleImageResolver";
 
@@ -216,6 +217,9 @@ const boxSelect = useMaplibreBoxSelect(mlMap, {
   onBoxStart: () => clearSelectedItems(),
   onBoxEnd: (ids) => ids.forEach((id) => selectedUnitIds.value.add(id)),
   isEnabled: () => !moveUnitEnabled.value && !rotateUnitEnabled.value,
+  // Ctrl/⌘ + drag on an edit handle is tactical-draw's modifier drag (a Flow or
+  // Split Arrow pulls a new flow out of a point), not a box select.
+  isOwnedPress: (e) => isEditHandlePress(e),
   suspend: suspendMapDragInteractions,
   restore: restoreMapDragInteractions,
 });
@@ -399,12 +403,6 @@ function applyUnitLayerRotationAlignment() {
     mlMap.setLayoutProperty(layerId, "icon-rotation-alignment", alignment.icon);
     mlMap.setLayoutProperty(layerId, "text-rotation-alignment", alignment.text);
   }
-}
-
-function getUnitMapSymbolSize(unit: { style?: { mapSymbolSize?: number } }) {
-  return typeof unit.style?.mapSymbolSize === "number"
-    ? unit.style.mapSymbolSize
-    : mapSettings.mapIconSize;
 }
 
 function isHostileSidc(sidc: string) {
@@ -893,6 +891,15 @@ function pickControlMeasureAt(
   return { featureId: layerItem.id, layerId: layer?.id };
 }
 
+/**
+ * Whether a press lands on an open edit's handles. An active edit handle owns modifier
+ * presses before the map-level chords: tactical-draw reads Ctrl/⌘ (modifier drag),
+ * Alt (delete a vertex, reset a grip) and Shift (constrain) off the same press.
+ */
+function isEditHandlePress(e: MouseEvent): boolean {
+  return tacticalDrawHitAt(getEventPixel(e), e)?.layer === "handles";
+}
+
 function tacticalDrawHitAt(
   pixel: [number, number],
   originalEvent?: unknown,
@@ -978,7 +985,28 @@ function onNativeCanvasClick(e: MouseEvent) {
   e.stopPropagation();
 }
 
+/**
+ * Shift + drag on an edit handle is tactical-draw's angle constraint. MapLibre's
+ * box zoom also starts on Shift + press, and the adapter only holds drag-pan and
+ * drag-rotate during a handle drag, so hold box zoom until the press ends.
+ */
+function holdBoxZoomForPress() {
+  if (!mlMap.boxZoom?.isEnabled()) return;
+  mlMap.boxZoom.disable();
+  const release = () => {
+    window.removeEventListener("mouseup", release, true);
+    window.removeEventListener("blur", release, true);
+    mlMap.boxZoom.enable();
+  };
+  window.addEventListener("mouseup", release, true);
+  window.addEventListener("blur", release, true);
+}
+
 function onNativeCanvasMouseDown(e: MouseEvent) {
+  if (e.shiftKey && e.button === 0 && isEditHandlePress(e)) {
+    holdBoxZoomForPress();
+    return;
+  }
   // Another interaction (e.g. an export-area box draw) owns selection; the
   // shift-click additive path must defer to it just like onMapClick does.
   if (selectionSuppressed.value) return;
@@ -1038,6 +1066,10 @@ function onMapClick(e: MapMouseEvent) {
   // separate tactical-draw stack above the plain scenario feature source, so a hit
   // test that consulted both would have no honest way to order them.
   const controlMeasure = pickControlMeasureAt([e.point.x, e.point.y], e.originalEvent);
+  // A press can change what lies under the pointer before its click arrives:
+  // Alt-clicking a vertex deletes it, and on a thin line the click then lands on
+  // empty map. The engine reports that the edit kept the click.
+  if (!controlMeasure && engineRef.value?.draw?.consumedPointerCycle()) return;
   if (controlMeasure) {
     if (!featureSelectEnabled.value) return;
     // Additive selection is owned by the native mousedown path (box-zoom eats the
@@ -1301,6 +1333,8 @@ watch(
   [
     () => mapSettings.mapUnitLabelBelow,
     () => mapSettings.mapIconSize,
+    () => mapSettings.mapSizeUnitsByEchelon,
+    () => mapSettings.mapEchelonSizeRatios,
     () => mapSettings.mapCustomIconScale,
     () => symbolSettings.symbolOptions,
     () => mapSettings.mapWrapUnitLabels,
@@ -1509,7 +1543,7 @@ function buildUnitFeature(
   const customSymbol = customSymbolId
     ? activeScenario.store.state.customSymbolMap[customSymbolId]
     : undefined;
-  const baseSymbolSize = getUnitMapSymbolSize(unit);
+  const baseSymbolSize = unitSymbolSize(unit.style?.mapSymbolSize, sidc, mapSettings);
   const renderedSymbolSize =
     customSymbol && customSymbolId
       ? baseSymbolSize * (mapSettings.mapCustomIconScale || 1.7)

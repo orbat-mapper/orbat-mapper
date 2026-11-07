@@ -11,11 +11,11 @@ import type {
   TextAmplifiers,
 } from "@orbat-mapper/control-measures";
 import { Input } from "@/components/ui/input";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
+import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 import ControlMeasureDoctrinalParameters from "@/modules/scenarioeditor/ControlMeasureDoctrinalParameters.vue";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
@@ -30,9 +30,22 @@ const emit = defineEmits<{
   "update-options": [options: TacticalGraphicOptions];
 }>();
 
-const descriptors = computed<readonly TextAmplifierDescriptor[]>(
-  () => CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? [],
-);
+/** Where a kind's amplifier means more than the registry says. */
+const DESCRIPTION_OVERRIDES: Partial<Record<ControlMeasureId, Record<string, string>>> = {
+  "split-arrow": {
+    T: "The trunk's label. Each flow's label, and where every label sits, is in the Style tab under Flows.",
+  },
+};
+
+const descriptors = computed<readonly TextAmplifierDescriptor[]>(() => {
+  const overrides = DESCRIPTION_OVERRIDES[props.graphicKind];
+  return (CONTROL_MEASURE_METADATA[props.graphicKind]?.textAmplifiers ?? []).map(
+    (descriptor) =>
+      overrides?.[descriptor.key]
+        ? { ...descriptor, description: overrides[descriptor.key] }
+        : descriptor,
+  );
+});
 // The same filter the child renders from, so the section and the "nothing here"
 // message can never disagree.
 const hasDoctrinalParameters = computed(
@@ -138,10 +151,11 @@ function commitGenericText() {
     />
 
     <Field v-if="isGenericText">
-      <FieldLabel for="control-measure-generic-text">Text</FieldLabel>
-      <FieldDescription>
-        The text to render. Explicit line breaks are preserved.
-      </FieldDescription>
+      <ControlMeasureFieldLabel
+        for="control-measure-generic-text"
+        label="Text"
+        description="The text to render. Explicit line breaks are preserved."
+      />
       <Textarea
         id="control-measure-generic-text"
         :model-value="genericText"
@@ -153,17 +167,16 @@ function commitGenericText() {
 
     <div v-if="descriptors.length" class="space-y-4">
       <div v-for="descriptor in descriptors" :key="descriptor.key" class="space-y-1.5">
-        <div class="flex items-baseline justify-between gap-3">
-          <Label :for="`control-measure-amplifier-${descriptor.key}`">
-            {{ descriptor.label }}
-          </Label>
+        <div class="flex items-center justify-between gap-3">
+          <ControlMeasureFieldLabel
+            :for="`control-measure-amplifier-${descriptor.key}`"
+            :label="descriptor.label"
+            :description="descriptor.description"
+          />
           <span class="text-muted-foreground font-mono text-xs">
             {{ descriptor.key }}
           </span>
         </div>
-        <p v-if="descriptor.description" class="text-muted-foreground text-xs">
-          {{ descriptor.description }}
-        </p>
 
         <Switch
           v-if="descriptor.key === 'N'"

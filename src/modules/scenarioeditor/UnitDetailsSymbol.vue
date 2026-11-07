@@ -19,6 +19,13 @@ import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { Slider } from "@/components/ui/slider";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
+import {
+  defaultUnitSymbolSize,
+  MAX_MAP_SYMBOL_SIZE,
+  MIN_MAP_SYMBOL_SIZE,
+  unitSymbolSize,
+} from "@/symbology/echelonSize";
+import EchelonSizesDialog from "@/components/EchelonSizesDialog.vue";
 
 interface Props {
   unit: NUnit;
@@ -33,8 +40,6 @@ const {
   helpers: { getUnitById },
 } = activeScenario;
 const mapSettings = useMapSettingsStore();
-const MIN_MAP_SYMBOL_SIZE = 8;
-const MAX_MAP_SYMBOL_SIZE = 120;
 
 const {
   isMultiMode,
@@ -276,24 +281,38 @@ const hasMixedMapSymbolSizeOverride = computed(() => {
   return values.size > 1;
 });
 
-const mapSymbolSizeDraft = ref(mapSettings.mapIconSize);
+// Kept apart from previewUnits, so dragging the size does not rebuild their options.
+const previewSizes = computed(() => {
+  const ownSize = overrideMapSymbolSize.value
+    ? clampMapSymbolSize(mapSymbolSizeDraft.value)
+    : undefined;
+  return previewUnits.value.map((unit) =>
+    unitSymbolSize(ownSize, unit.sidc, mapSettings),
+  );
+});
+
+// The first target unit's SIDC, which the size field and the echelon sizes
+// dialog go by.
+const primarySidc = computed(() => {
+  const unit = targetUnits.value[0] ?? props.unit;
+  return unit._state?.sidc || unit.sidc;
+});
+
+// The size the first target unit draws at without an override: the map symbol
+// size, or its echelon's size when units are sized by echelon.
+const defaultMapSymbolSize = computed(() =>
+  defaultUnitSymbolSize(primarySidc.value, mapSettings),
+);
+
+const mapSymbolSizeDraft = ref(defaultMapSymbolSize.value);
+const echelonSizesOpen = ref(false);
 const isSyncingMapSymbolSizeDraft = ref(false);
 const overrideMapSymbolSize = ref(false);
 const isSyncingMapSymbolSizeToggle = ref(false);
 let mapSymbolSizeCommitTimeout: ReturnType<typeof setTimeout> | null = null;
-const previewSymbolSize = computed(() => {
-  return overrideMapSymbolSize.value
-    ? clampMapSymbolSize(mapSymbolSizeDraft.value)
-    : mapSettings.mapIconSize;
-});
 
 watch(
-  [
-    currentMapSymbolSizeOverride,
-    () => mapSettings.mapIconSize,
-    () => props.unit.id,
-    unitIds,
-  ],
+  [currentMapSymbolSizeOverride, defaultMapSymbolSize, () => props.unit.id, unitIds],
   () => {
     isSyncingMapSymbolSizeDraft.value = true;
     isSyncingMapSymbolSizeToggle.value = true;
@@ -301,7 +320,7 @@ watch(
       (unit) => typeof unit.style?.mapSymbolSize === "number",
     );
     mapSymbolSizeDraft.value =
-      currentMapSymbolSizeOverride.value ?? mapSettings.mapIconSize;
+      currentMapSymbolSizeOverride.value ?? defaultMapSymbolSize.value;
     isSyncingMapSymbolSizeToggle.value = false;
     isSyncingMapSymbolSizeDraft.value = false;
   },
@@ -351,7 +370,7 @@ function resetMapSymbolSizeOverride() {
     updateUnit(unitId, { style: styleWithoutMapSymbolSize });
   });
   isSyncingMapSymbolSizeDraft.value = true;
-  mapSymbolSizeDraft.value = mapSettings.mapIconSize;
+  mapSymbolSizeDraft.value = defaultMapSymbolSize.value;
   isSyncingMapSymbolSizeDraft.value = false;
 }
 
@@ -550,10 +569,10 @@ function getTextAmpPlaceholder(field: TextAmpKey) {
 
     <div class="mt-4 flex flex-wrap items-end justify-center gap-4">
       <UnitSymbol
-        v-for="previewUnit in previewUnits"
+        v-for="(previewUnit, index) in previewUnits"
         :key="previewUnit.id"
         :sidc="previewUnit.sidc"
-        :size="previewSymbolSize"
+        :size="previewSizes[index]"
         :options="previewUnit.options"
       />
     </div>
@@ -582,7 +601,16 @@ function getTextAmpPlaceholder(field: TextAmpKey) {
       <div v-if="hasMixedMapSymbolSizeOverride" class="col-span-2 text-xs text-amber-700">
         Mixed values in current selection.
       </div>
-      <div class="col-span-2 flex justify-end">
+      <div class="col-span-2 flex justify-end gap-2">
+        <Button
+          v-if="mapSettings.mapSizeUnitsByEchelon"
+          type="button"
+          variant="ghost"
+          size="sm"
+          @click="echelonSizesOpen = true"
+        >
+          Echelon sizes…
+        </Button>
         <Button
           type="button"
           variant="outline"
@@ -593,6 +621,7 @@ function getTextAmpPlaceholder(field: TextAmpKey) {
           Reset
         </Button>
       </div>
+      <EchelonSizesDialog v-model:open="echelonSizesOpen" :sidc="primarySidc" />
     </PanelDataGrid>
 
     <PanelDataGrid class="mt-6">

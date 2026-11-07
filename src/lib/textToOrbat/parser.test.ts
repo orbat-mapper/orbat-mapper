@@ -4,23 +4,31 @@ import {
   extractEntityCode,
   ICON_UNSPECIFIED,
 } from "./iconRegistry";
+import { MappingRegistry } from "./mappingRegistry";
 import {
-  applyGeneratedShortNamesToText,
-  clearAllShortNames,
-  buildSidc,
-  convertParsedUnitsToOrbatMapperScenario,
-  convertParsedUnitsToSpatialIllusions,
-  generateMissingShortNames,
-  generateMissingShortNamesWithOptions,
-  getEchelonCode,
-  getEchelonCodeFromName,
+  getEchelonCode as getEchelonCodeWith,
   getEchelonFromSidc,
-  getIconCodeFromName,
-  getNextLowerEchelon,
-  parseTextToUnits,
-  serializeParsedUnitsToScenarioUnits,
-  serializeUnitsToIndentedText,
-} from "./textToOrbat.ts";
+  getNextLowerEchelon as getNextLowerEchelonWith,
+  inferSymbol,
+  parseTextToUnits as parseWith,
+  toUnits,
+  unitsToText,
+  type ParseOptions,
+} from "./parser";
+
+// The parser takes its registry explicitly; these tests use the built-ins
+const registry = new MappingRegistry();
+const getNextLowerEchelon = (echelon: string) =>
+  getNextLowerEchelonWith(echelon, registry);
+const getEchelonCode = (level: number) => getEchelonCodeWith(level, registry);
+const parseTextToUnits = (text: string, options?: ParseOptions) =>
+  parseWith(text, registry, options);
+const buildSidc = (
+  level: number,
+  name: string,
+  parentEchelon?: string,
+  parentIcon?: string,
+) => inferSymbol({ level, displayName: name, parentEchelon, parentIcon }, registry).sidc;
 
 /** Look up the 10-char entity code for a built-in icon by label. */
 function iconCode(label: string): string {
@@ -33,22 +41,6 @@ const ICON_ARMOR = iconCode("Armor");
 const ICON_ARTILLERY = iconCode("Artillery");
 const ICON_INFANTRY = iconCode("Infantry");
 const ICON_MECHANIZED_INFANTRY = iconCode("Mechanized Infantry");
-
-describe("convertParsedUnitsToOrbatMapperScenario", () => {
-  it("creates a canonical v3 scenario with a default overlay layer", () => {
-    const scenario = convertParsedUnitsToOrbatMapperScenario([]);
-
-    expect(scenario.version).toBe("3.0.0");
-    expect(scenario.layerStack).toHaveLength(1);
-    expect(scenario.layerStack[0]).toMatchObject({
-      kind: "overlay",
-      name: "Features",
-      items: [],
-    });
-    expect(scenario.layers).toBeUndefined();
-    expect(scenario.mapLayers).toBeUndefined();
-  });
-});
 
 describe("getNextLowerEchelon", () => {
   it("returns Brigade for Division", () => {
@@ -425,24 +417,6 @@ describe("parseTextToUnits", () => {
   });
 });
 
-describe("conversion helpers with hidden metadata", () => {
-  it("exports scenario units without hidden metadata in the name", () => {
-    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry|");
-    const scenarioUnits = serializeParsedUnitsToScenarioUnits(units);
-
-    expect(scenarioUnits[0].name).toBe("Alpha");
-    expect(scenarioUnits[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
-  });
-
-  it("exports Spatial Illusions designations without hidden metadata in the name", () => {
-    const units = parseTextToUnits("Alpha [brigade] |mechanized infantry|");
-    const orbat = convertParsedUnitsToSpatialIllusions(units);
-
-    expect(orbat.options.uniqueDesignation).toBe("Alpha");
-    expect(orbat.options.sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
-  });
-});
-
 describe("getEchelonFromSidc", () => {
   it("extracts echelon code from positions 8-9", () => {
     const sidc = "10031000210000000000";
@@ -579,7 +553,7 @@ describe("parseTextToUnits with icon inheritance", () => {
 });
 
 describe("comma separator mode", () => {
-  const opts = { useCommaSeparator: true };
+  const opts = { fields: "shortName,name,description" as const };
 
   it("single value sets name only", () => {
     const units = parseTextToUnits("Alpha Company", opts);
@@ -641,10 +615,7 @@ describe("comma separator mode", () => {
   });
 
   describe("name,shortName,description order", () => {
-    const nsdOpts = {
-      useCommaSeparator: true,
-      commaFieldOrder: "name,shortName,description" as const,
-    };
+    const nsdOpts = { fields: "name,shortName,description" as const };
 
     it("two values set name and shortName", () => {
       const units = parseTextToUnits("Alpha Company, A", nsdOpts);
@@ -669,174 +640,26 @@ describe("comma separator mode", () => {
   });
 });
 
-describe("generateMissingShortNames", () => {
-  it("fills only missing short names and preserves existing values", () => {
-    const result = generateMissingShortNames([
-      {
-        id: "1",
-        name: "1st Battalion Alpha",
-        sidc: "10031000161211000000",
-        subUnits: [],
-      },
-      {
-        id: "2",
-        name: "1st Battalion Bravo",
-        shortName: "EXISTING",
-        sidc: "10031000161211000000",
-        subUnits: [],
-      },
-    ]);
+describe("toUnits", () => {
+  it("drops hidden metadata from names and gives fresh ids", () => {
+    const parsed = parseTextToUnits("Alpha [brigade] |mechanized infantry|\n  Bravo");
+    const units = toUnits(parsed);
 
-    expect(result.generatedCount).toBe(1);
-    expect(result.units[0].shortName).toBeTruthy();
-    expect(result.units[1].shortName).toBe("EXISTING");
+    expect(units[0].name).toBe("Alpha");
+    expect(units[0].sidc.substring(10, 20)).toBe(ICON_MECHANIZED_INFANTRY);
+    expect(units[0].subUnits[0].name).toBe("Bravo");
+    expect(units[0].id).not.toBe(parsed[0].id);
   });
+});
 
-  it("uses sibling context per level and reserves existing sibling short names", () => {
-    const result = generateMissingShortNames([
-      {
-        id: "root",
-        name: "5 Inf Bde",
-        sidc: "10031000181211000000",
-        subUnits: [
-          {
-            id: "a",
-            name: "2nd Bn Scots Guards",
-            sidc: "10031000161211000000",
-            subUnits: [
-              {
-                id: "a1",
-                name: "Left Flank",
-                sidc: "10031000111211000000",
-                subUnits: [],
-              },
-              {
-                id: "a2",
-                name: "Right Flank",
-                sidc: "10031000111211000000",
-                subUnits: [],
-              },
-            ],
-          },
-          {
-            id: "b",
-            name: "1st Bn Welsh Guards",
-            shortName: "1 BN WEL",
-            sidc: "10031000161211000000",
-            subUnits: [],
-          },
-        ],
-      },
-    ]);
-
-    expect(result.units[0].shortName).toBe("5 INF BDE");
-    expect(result.units[0].subUnits?.[0].shortName).toBe("2 BN SCOT");
-    expect(result.units[0].subUnits?.[1].shortName).toBe("1 BN WEL");
-    expect(result.units[0].subUnits?.[0].subUnits?.[0].shortName).toBe("L FLK");
-    expect(result.units[0].subUnits?.[0].subUnits?.[1].shortName).toBe("R FLK");
-  });
-
-  it("serializes generated short names back to comma-separated text", () => {
-    const result = generateMissingShortNames([
-      {
-        id: "1",
-        name: "63 AD Squadron",
-        sidc: "10031000161211000000",
-        subUnits: [],
-      },
-    ]);
-
-    expect(serializeUnitsToIndentedText(result.units)).toBe("63 AD Squadron, 63 AD SQN");
-  });
-
-  it("honors explicit short-name generation settings", () => {
-    const result = generateMissingShortNamesWithOptions(
-      [
-        {
-          id: "1",
-          name: "63 AD Squadron",
-          sidc: "10031000161211000000",
-          subUnits: [],
-        },
-      ],
-      {
-        maxLength: 4,
-        uppercase: false,
-        allowWhitespace: false,
-        forceLength: true,
-      },
+describe("unitsToText", () => {
+  it("round-trips through name,shortName,description parsing", () => {
+    const text =
+      "1st Division, 1 DIV, Main effort\n  2nd Brigade\n    3rd Battalion, 3 BN";
+    const units = toUnits(
+      parseTextToUnits(text, { fields: "name,shortName,description" }),
     );
 
-    expect(result.units[0].shortName).toBe("63AD");
-  });
-
-  it("does not assign a short name when it would be identical to the unit name", () => {
-    const result = generateMissingShortNames([
-      {
-        id: "1",
-        name: "TGG",
-        sidc: "10031000161211000000",
-        subUnits: [],
-      },
-    ]);
-
-    expect(result.generatedCount).toBe(0);
-    expect(result.units[0].shortName).toBeUndefined();
-  });
-
-  it("applies generated short names without destroying comments or metadata markup", () => {
-    const source = [
-      "# heading",
-      "5 Inf Bde // mech",
-      "  2nd Bn Scots Guards [infantry] # comment",
-      "  1st Bn Welsh Guards, 1 BN WEL |guards|",
-    ].join("\n");
-    const originalUnits = parseTextToUnits(source, {
-      useCommaSeparator: true,
-      commaFieldOrder: "name,shortName,description",
-    });
-    const generated = generateMissingShortNames(
-      serializeParsedUnitsToScenarioUnits(originalUnits),
-    );
-
-    const result = applyGeneratedShortNamesToText(source, originalUnits, generated.units);
-
-    expect(result.updatedCount).toBe(2);
-    expect(result.text).toContain("5 Inf Bde, 5 INF BDE // mech");
-    expect(result.text).toContain("2nd Bn Scots Guards, 2 BN SCOT [infantry] # comment");
-    expect(result.text).toContain("1st Bn Welsh Guards, 1 BN WEL |guards|");
-    expect(result.text).toContain("# heading");
-  });
-
-  it("fills an empty short-name slot when description is already present", () => {
-    const source = "3rd RA,,description";
-    const originalUnits = parseTextToUnits(source, {
-      useCommaSeparator: true,
-      commaFieldOrder: "name,shortName,description",
-    });
-    const generated = generateMissingShortNames(
-      serializeParsedUnitsToScenarioUnits(originalUnits),
-    );
-
-    const result = applyGeneratedShortNamesToText(source, originalUnits, generated.units);
-
-    expect(result.updatedCount).toBe(1);
-    expect(result.text).toBe("3rd RA, 3 RA, description");
-  });
-
-  it("clears short names while preserving descriptions", () => {
-    const source = "3rd RA, 3 RA, description";
-    const originalUnits = parseTextToUnits(source, {
-      useCommaSeparator: true,
-      commaFieldOrder: "name,shortName,description",
-    });
-    const clearedUnits = clearAllShortNames(
-      serializeParsedUnitsToScenarioUnits(originalUnits),
-    );
-
-    const result = applyGeneratedShortNamesToText(source, originalUnits, clearedUnits);
-
-    expect(result.updatedCount).toBe(1);
-    expect(result.text).toBe("3rd RA, , description");
+    expect(unitsToText(units)).toBe(text);
   });
 });

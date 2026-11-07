@@ -27,7 +27,7 @@ import type {
   UnitSymbolOptions,
 } from "@/types/scenarioModels";
 import { mapReinforcedStatus2Field } from "@/types/scenarioModels";
-import { getNextEchelonBelow, setSid } from "@/symbology/helpers";
+import { getNextEchelonBelow, setSid, updateSidc } from "@/symbology/helpers";
 import { clearUnitStyleCache, invalidateUnitStyle } from "@/geo/unitStyles";
 import { useSupplyManipulations } from "@/scenariostore/supplyManipulations";
 import { useToeManipulations } from "@/scenariostore/toeManipulations";
@@ -177,6 +177,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
+    getLegDepartureWindow,
+    getLegAfterWaypoint,
+    setLegDepartureTime,
   } = useUnitStateManipulations(store);
 
   function refreshProjectedHierarchy(s = state) {
@@ -565,6 +568,8 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unitIds.reverse();
     update((s) => {
       removeTimedHierarchyReferences(deletedIds, s);
+      // Inside the recipe, so undo/redo also move it and redraw the timeline.
+      s.unitStateCounter++;
       for (const id of unitIds) {
         const u = s.unitMap[id];
         if (!u) {
@@ -909,21 +914,22 @@ export function useUnitManipulations(store: NewScenarioStore) {
   function createSubordinateUnit(parentId: EntityId, data: Partial<NUnit> = {}) {
     const parent = getUnitOrSideGroupOrSide(parentId);
     if (!parent) return;
-    let sidc: Sidc;
+    let sidc: string;
     if (data.sidc) {
-      sidc = new Sidc(data.sidc);
+      sidc = updateSidc(data.sidc, () => {});
     } else if ("sidc" in parent) {
-      const parentSidc = new Sidc(parent.sidc);
-      sidc = new Sidc(data.sidc || parent.sidc);
-      sidc.emt = getNextEchelonBelow(parentSidc.emt);
+      sidc = updateSidc(parent.sidc, (parsed) => {
+        parsed.emt = getNextEchelonBelow(parsed.emt);
+      });
     } else {
-      sidc = new Sidc("10031000000000000000");
+      const parsed = new Sidc("10031000000000000000");
       const side = "_pid" in parent ? state.sideMap[parent._pid] : parent;
-      sidc.standardIdentity = side?.standardIdentity || "0";
+      parsed.standardIdentity = side?.standardIdentity || "0";
+      sidc = parsed.toString();
     }
     const newUnit: NUnit = {
       name: data.name || parent.name + counter++,
-      sidc: sidc.toString(),
+      sidc,
       id: nanoid(),
       state: [],
       _state: null,
@@ -1297,6 +1303,9 @@ export function useUnitManipulations(store: NewScenarioStore) {
     canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
+    getLegDepartureWindow,
+    getLegAfterWaypoint,
+    setLegDepartureTime,
     updateUnitStateEntry,
     addUnitStateEntry,
     removeUnitFromMap,

@@ -36,6 +36,15 @@ function mountSettings(
   });
 }
 
+/** A size field's readout: its typed value and unit, e.g. "80 px". */
+function sizeReadouts(wrapper: { findAll: (s: string) => { element: Element }[] }) {
+  return wrapper.findAll('[data-slot="size-slider-field"]').map(({ element }) => {
+    const input = element.querySelector("input") as HTMLInputElement;
+    const unit = element.querySelector("input + span")?.textContent?.trim();
+    return `${input.value} ${unit}`;
+  });
+}
+
 describe("ControlMeasureExtendedStyleSettings", () => {
   it("keeps metadata order and separates advanced appearance parameters", async () => {
     const wrapper = mountSettings("classic-arrow");
@@ -86,14 +95,12 @@ describe("ControlMeasureExtendedStyleSettings", () => {
     const text = () => wrapper.text().replace(/\s+/g, " ");
 
     expect(text()).toContain("Echelon size");
-    expect(text()).toContain("20 px");
-    expect(text()).not.toContain("900 m");
+    expect(sizeReadouts(wrapper)).toEqual(["20 px"]);
     expect(wrapper.text()).not.toContain("EchelonField B");
 
     await wrapper.setProps({ options: { echelonSize: 900 } });
     expect(text()).toContain("Echelon size");
-    expect(text()).toContain("900 m");
-    expect(text()).not.toContain("20 px");
+    expect(sizeReadouts(wrapper)).toEqual(["900 m"]);
   });
 
   it.each(["destroy", "defeat", "neutralize", "suppress"] as const)(
@@ -108,14 +115,14 @@ describe("ControlMeasureExtendedStyleSettings", () => {
         global: { stubs: { ControlMeasureColorPicker: ControlMeasureColorPickerStub } },
       });
       expect(wrapper.findAll('[aria-label="Size unit"]')).toHaveLength(1);
-      expect(wrapper.text()).toContain("80 px");
+      expect(sizeReadouts(wrapper)).toEqual(["80 px"]);
       const meters = wrapper.find('button[aria-label="Meters"]');
       await meters.trigger("click");
       expect(wrapper.emitted("update")?.at(-1)).toEqual([
         { crossAngle: 60, sizeMeters: 200 },
       ]);
       await wrapper.setProps({ options: { sizeMeters: 125, crossAngle: 60 } });
-      expect(wrapper.text()).toContain("125 m");
+      expect(sizeReadouts(wrapper)).toEqual(["125 m"]);
       await wrapper.find('button[aria-label="Pixels"]').trigger("click");
       expect(wrapper.emitted("update")?.at(-1)).toEqual([
         { crossAngle: 60, sizePixels: 50 },
@@ -157,15 +164,15 @@ describe("ControlMeasureExtendedStyleSettings", () => {
     const wrapper = mountSettings("phase-line");
     const labelSize = wrapper
       .findAllComponents({ name: "Slider" })
-      .find((slider) => slider.attributes("id")?.includes("labelSizePixels"));
+      .find((slider) => slider.attributes("id")?.includes("label"));
 
     expect(wrapper.text()).toContain("Label size");
-    expect(wrapper.text()).toContain("14 px");
+    expect(sizeReadouts(wrapper)).toContain("14 px");
     expect(labelSize).toBeDefined();
     await labelSize!.vm.$emit("value-commit", [20]);
     expect(wrapper.emitted("update")?.at(-1)).toEqual([{ labelSizePixels: 20 }]);
 
     await wrapper.setProps({ options: { labelSize: 500 } });
-    expect(wrapper.text()).toContain("500 m");
+    expect(sizeReadouts(wrapper)).toContain("500 m");
   });
 });

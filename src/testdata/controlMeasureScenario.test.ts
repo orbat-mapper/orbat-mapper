@@ -189,10 +189,14 @@ describe("control measure fixture — projection at time T", () => {
     expect(plan.graphics.map((g) => g.id)).toContain("cm-late");
   });
 
-  it("treats visibleFromT as an exclusive bound for a control measure", () => {
+  it("treats visibleFromT as an inclusive bound for a control measure", () => {
     const { geo, time } = loadFixture();
-    time.setCurrentTime(FIXTURE_T1);
+    time.setCurrentTime(FIXTURE_T1 - 1);
     expect(measures(geo.layerItemsLayers.value).graphics.map((g) => g.id)).not.toContain(
+      "cm-late",
+    );
+    time.setCurrentTime(FIXTURE_T1);
+    expect(measures(geo.layerItemsLayers.value).graphics.map((g) => g.id)).toContain(
       "cm-late",
     );
   });

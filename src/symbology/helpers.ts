@@ -1,7 +1,12 @@
 import { echelonValues, type SidValue, standardIdentityValues } from "@/symbology/values";
 import type { SymbolItem } from "@/types/constants";
 import { CUSTOM_SYMBOL_PREFIX } from "@/config/constants.ts";
-import { CUSTOM_SYMBOL_SID_INDEX, SID_INDEX, STATUS_INDEX } from "@/symbology/sidc.ts";
+import {
+  CUSTOM_SYMBOL_SID_INDEX,
+  SID_INDEX,
+  Sidc,
+  STATUS_INDEX,
+} from "@/symbology/sidc.ts";
 import { setCharAt } from "@/components/helpers.ts";
 
 export const sidItems = standardIdentityValues.map(({ code, text }): SymbolItem => {
@@ -54,6 +59,19 @@ function parseCustomSymbolCode(
 
 export function getCustomSymbolId(sidc: string | null | undefined): string | undefined {
   return parseCustomSymbolCode(sidc)?.symbolId;
+}
+
+/**
+ * Applies `update` to the SIDC of a plain or custom symbol code and returns the new code.
+ * For a custom symbol code, the embedded SIDC is updated and the symbol ID is kept.
+ */
+export function updateSidc(code: string, update: (sidc: Sidc) => void): string {
+  const custom = parseCustomSymbolCode(code);
+  const sidc = new Sidc(custom?.sidc ?? code);
+  update(sidc);
+  return custom
+    ? `${CUSTOM_SYMBOL_PREFIX}${sidc.toString()}:${custom.symbolId}`
+    : sidc.toString();
 }
 
 export function setSid(sidc: string, sidValue: string): string {

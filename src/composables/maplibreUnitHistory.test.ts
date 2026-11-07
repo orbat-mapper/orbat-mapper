@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { useMaplibreUnitHistory } from "@/composables/maplibreUnitHistory";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useUnitSettingsStore } from "@/stores/geoStore";
+import { useSelectedWaypoints } from "@/stores/selectedWaypoints";
 
 const UNIT_ID = "unit-1";
 const WAYPOINT_ID = "V1StGXR8Z5jdHi6BmyT"; // nanoid, not parseable as an integer
@@ -209,6 +210,25 @@ describe("useMaplibreUnitHistory", () => {
     expect(unitActions.updateUnit).toHaveBeenCalledWith(UNIT_ID, { location: [15, 25] });
   });
 
+  it("leaves a clicked waypoint where it is", () => {
+    const { history, trigger, addUnitPosition } = createHarness();
+    history.setupUnitHistoryLayers();
+    useSelectedItems().selectedUnitIds.value.add(UNIT_ID);
+    useUnitSettingsStore().editHistory = true;
+    history.drawHistory();
+
+    const feature = {
+      id: NaN,
+      properties: { unitId: UNIT_ID, waypointId: WAYPOINT_ID, t: 2000, isInitial: false },
+    };
+    // The pointer lands a little off the waypoint's center and wobbles by a pixel.
+    trigger("mousedown:unitHistoryWaypointLayer", createEvent(11.4, 21.3, [feature]));
+    trigger("mousemove", createEvent(12, 21.8));
+    trigger("mouseup", createEvent(12, 21.8));
+
+    expect(addUnitPosition).not.toHaveBeenCalled();
+  });
+
   it("moves a via point when it is dragged", () => {
     const { history, trigger, sources, unitActions, unit } = createHarness();
     unit.state[0].via = [[11.5, 21.5]];
@@ -282,6 +302,41 @@ describe("useMaplibreUnitHistory", () => {
           : [],
     );
   }
+
+  function clickWaypoint(
+    harness: ReturnType<typeof createHarness>,
+    waypointId: string,
+    originalEvent: Record<string, unknown> = {},
+  ) {
+    harness.mlMap.queryRenderedFeatures = vi.fn(
+      (_point: unknown, options: { layers: string[] }) =>
+        options.layers[0] === "unitHistoryWaypointLayer"
+          ? [
+              {
+                layer: { id: "unitHistoryWaypointLayer" },
+                properties: { unitId: UNIT_ID, stateIndex: 0, waypointId },
+              },
+            ]
+          : [],
+    );
+    return harness.history.handleMapClick(createEvent(11, 21, undefined, originalEvent));
+  }
+
+  it("selects only the clicked waypoint unless shift is held", () => {
+    const harness = createHarness();
+    setupEditing(harness);
+    const { selectedWaypointIds } = useSelectedWaypoints();
+
+    clickWaypoint(harness, "waypoint-a");
+    clickWaypoint(harness, "waypoint-b");
+    expect([...selectedWaypointIds.value]).toEqual(["waypoint-b"]);
+
+    clickWaypoint(harness, "waypoint-a", { shiftKey: true });
+    expect([...selectedWaypointIds.value]).toEqual(["waypoint-b", "waypoint-a"]);
+
+    clickWaypoint(harness, "waypoint-a");
+    expect([...selectedWaypointIds.value]).toEqual(["waypoint-b"]);
+  });
 
   it("annotates leg segments with the via insertion position", () => {
     const harness = createHarness();

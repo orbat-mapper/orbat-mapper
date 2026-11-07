@@ -15,21 +15,8 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { CircleXIcon } from "@lucide/vue";
 import MilSymbol from "@/components/NewMilitarySymbol.vue";
 import TreeDropIndicator from "@/components/TreeDropIndicator.vue";
-import {
-  ECHELON_CODE_TO_NAME,
-  ICON_CODE_TO_NAME,
-  serializeParsedUnitToScenarioUnit,
-} from "@/views/texttoorbat/textToOrbat.ts";
-
-interface ParsedUnit {
-  id: string;
-  name: string;
-  shortName?: string;
-  description?: string;
-  sidc: string;
-  children: ParsedUnit[];
-  level: number;
-}
+import { toUnits, type ParsedUnit } from "@/lib/textToOrbat";
+import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 
 const props = defineProps<{
   unit: ParsedUnit;
@@ -53,13 +40,16 @@ let dndCleanup: () => void = () => {};
 const echelonCode = computed(() => props.unit.sidc.substring(8, 10));
 const entityCode = computed(() => props.unit.sidc.substring(10, 20));
 
-const echelonVarName = computed(() => {
-  return ECHELON_CODE_TO_NAME[echelonCode.value] ?? echelonCode.value;
-});
+const textToOrbatStore = useTextToOrbatStore();
+const symbolDescription = computed(() =>
+  textToOrbatStore.engine.describe(props.unit.sidc),
+);
 
-const entityVarName = computed(() => {
-  return ICON_CODE_TO_NAME[entityCode.value] ?? entityCode.value;
-});
+const echelonVarName = computed(
+  () => symbolDescription.value.echelon ?? echelonCode.value,
+);
+
+const entityVarName = computed(() => symbolDescription.value.icon ?? entityCode.value);
 
 const hasChildren = computed(() => props.unit.children.length > 0);
 
@@ -87,19 +77,19 @@ onMounted(() => {
     draggable({
       element: dragHandleRef.value,
       getInitialData: () => {
-        const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+        const serializedUnits = toUnits([props.unit]);
         return {
           type: "application/orbat",
           sourceType: "scratchpad",
           unitId: props.unit.id,
-          orbatJson: JSON.stringify([serializedUnit]),
+          orbatJson: JSON.stringify(serializedUnits),
         };
       },
       getInitialDataForExternal: () => {
-        const serializedUnit = serializeParsedUnitToScenarioUnit(props.unit);
+        const serializedUnits = toUnits([props.unit]);
         return {
-          "application/orbat": JSON.stringify([serializedUnit]),
-          "text/plain": JSON.stringify([serializedUnit]),
+          "application/orbat": JSON.stringify(serializedUnits),
+          "text/plain": JSON.stringify(serializedUnits),
         };
       },
       onDragStart: () => (isDragged.value = true),

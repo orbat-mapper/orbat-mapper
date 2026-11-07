@@ -152,6 +152,27 @@ describe("horizontal layout bounds", () => {
     expect(childBranches[0].units[0].x).toBe(parents[0].x + 60);
     expect(childBranches[1].units[0].x).toBe(parents[1].x + 60);
   });
+
+  it("applies the final level layout when the tree is shallower than maxLevels", () => {
+    const root = unit("root", [
+      unit("left", [unit("left-child")]),
+      unit("right", [unit("right-child")]),
+    ]);
+    const chart = new OrbatChart(root, {
+      lastLevelLayout: "TREE_RIGHT",
+      maxLevels: 4,
+      symbolGenerator: createSymbol,
+      treeOffset: 60,
+    });
+
+    chart.toSVG(document.createElement("div"), { width: 600, height: 600 });
+
+    expect(chart.renderedChart.levels).toHaveLength(3);
+    const parents = chart.renderedChart.levels[1].branches[0].units;
+    const childBranches = chart.renderedChart.levels[2].branches;
+    expect(childBranches[0].units[0].x).toBe(parents[0].x + 60);
+    expect(childBranches[1].units[0].x).toBe(parents[1].x + 60);
+  });
 });
 
 function resourceUnit(id: string): ChartUnit {

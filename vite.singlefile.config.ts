@@ -146,28 +146,33 @@ function assertSelfContained(): Plugin {
   return {
     name: "singlefile-assert-self-contained",
     enforce: "post",
-    generateBundle(_options, bundle) {
-      const emitted = Object.keys(bundle);
-      if (emitted.length !== 1 || emitted[0] !== "index.html") {
-        this.error(
-          `The standalone build emitted ${emitted.length} files: ${emitted.join(", ")}.\n` +
-            "The deliverable is index.html alone.",
-        );
-      }
-      const html = bundle["index.html"];
-      if (html?.type !== "asset") return;
-      const source = String(html.source);
-      const external = [...source.matchAll(SUBRESOURCE)]
-        .map((match) => match[1])
-        .filter((url) => !ALLOWED.test(url))
-        // Attributes written by the app at runtime hold a template, not an address.
-        .filter((url) => !url.includes("${") && !url.includes("`"));
-      if (external.length > 0) {
-        this.error(
-          `The standalone build refers to files it does not contain: ${[...new Set(external)].join(", ")}.\n` +
-            "A file:// page cannot read them.",
-        );
-      }
+    // vite-plugin-singlefile inlines in a post-ordered generateBundle. Being post-ordered too and
+    // listed after it, this check runs once the inlining is done.
+    generateBundle: {
+      order: "post",
+      handler(_options, bundle) {
+        const emitted = Object.keys(bundle);
+        if (emitted.length !== 1 || emitted[0] !== "index.html") {
+          this.error(
+            `The standalone build emitted ${emitted.length} files: ${emitted.join(", ")}.\n` +
+              "The deliverable is index.html alone.",
+          );
+        }
+        const html = bundle["index.html"];
+        if (html?.type !== "asset") return;
+        const source = String(html.source);
+        const external = [...source.matchAll(SUBRESOURCE)]
+          .map((match) => match[1])
+          .filter((url) => !ALLOWED.test(url))
+          // Attributes written by the app at runtime hold a template, not an address.
+          .filter((url) => !url.includes("${") && !url.includes("`"));
+        if (external.length > 0) {
+          this.error(
+            `The standalone build refers to files it does not contain: ${[...new Set(external)].join(", ")}.\n` +
+              "A file:// page cannot read them.",
+          );
+        }
+      },
     },
   };
 }

@@ -1,4 +1,5 @@
-import type { Scenario } from "@/types/scenarioModels";
+import type { Scenario, SymbologyStandard } from "@/types/scenarioModels";
+import { isSymbologyStandard } from "@/symbology/standards";
 import { compare as compareVersions } from "compare-versions";
 import type {
   ScenarioFeature,
@@ -473,7 +474,8 @@ function upgradeLegacyFeatureProperties(scenario: Scenario): Scenario {
         isHidden: false,
       };
 
-      const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke"> = {
+      // Legacy features predate label sizes; they keep the renderer default.
+      const style: Omit<Required<SimpleStyleSpec>, "_fill" | "_stroke" | "text-size"> = {
         fill,
         "fill-opacity": fillOpacity,
         "stroke-opacity": strokeOpacity,
@@ -523,21 +525,24 @@ function upgradeGeometryLayerItemsToSharedBase(scenario: Scenario): Scenario {
   return upgradedScenario;
 }
 
-function upgradeSymbologyStandardNames(scenario: Scenario): Scenario {
-  // The sibling `tacticalGraphic.standard` rewrite that used to live here is gone
-  // with the field: the control-measure library is 2525E-only, so `standard` selected
-  // between nothing. It could never have fired anyway — canonicalizeOverlayLayer
-  // dropped every tacticalGraphic item before this ran.
-  const symbologyStandardMap: Record<string, string> = { "2525": "2525d", app6: "app6d" };
-  const upgradedScenario = { ...scenario };
-  if (upgradedScenario.symbologyStandard != null) {
-    upgradedScenario.symbologyStandard =
-      (symbologyStandardMap[
-        upgradedScenario.symbologyStandard
-      ] as typeof upgradedScenario.symbologyStandard) ??
-      upgradedScenario.symbologyStandard;
+const LEGACY_SYMBOLOGY_STANDARDS = new Map<unknown, SymbologyStandard>([
+  ["2525", "2525d"],
+  ["app6", "app6d"],
+]);
+
+// Runs on every load, not only for old versions: a file can name a standard this build
+// does not know, and the editor cannot render one. Unknown standards are dropped so the
+// default applies, the same as a scenario without the field.
+function normalizeSymbologyStandard(scenario: Scenario): Scenario {
+  const { symbologyStandard } = scenario as { symbologyStandard?: unknown };
+  if (symbologyStandard == null || isSymbologyStandard(symbologyStandard)) {
+    return scenario;
   }
-  return upgradedScenario;
+  const legacy = LEGACY_SYMBOLOGY_STANDARDS.get(symbologyStandard);
+  if (!legacy) {
+    console.warn("Ignoring unknown symbology standard", symbologyStandard);
+  }
+  return { ...scenario, symbologyStandard: legacy };
 }
 
 function upgradeClassicArrow(item: TacticalGraphicLayerItem): TacticalGraphicLayerItem {
@@ -588,13 +593,10 @@ export function upgradeScenarioIfNecessary(
   if (compareVersions(canonicalScenario.version, "3.2.0", "<")) {
     canonicalScenario = upgradeGeometryLayerItemsToSharedBase(canonicalScenario);
   }
-  if (compareVersions(canonicalScenario.version, "3.3.0", "<")) {
-    canonicalScenario = upgradeSymbologyStandardNames(canonicalScenario);
-  }
   if (compareVersions(canonicalScenario.version, "3.5.0", "<")) {
     // Reversing is not idempotent and some load paths upgrade twice, so stamp the
     // version to keep a second pass from flipping the arrows back.
     canonicalScenario = { ...upgradeClassicArrows(canonicalScenario), version: "3.5.0" };
   }
-  return canonicalScenario;
+  return normalizeSymbologyStandard(canonicalScenario);
 }

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import type { ParamDescriptor } from "@orbat-mapper/control-measures";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { roundToStep } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 
 const props = defineProps<{
   id: string;
@@ -33,6 +35,14 @@ watch(
     if (typeof value === "number") numberDraft.value = value;
   },
   { immediate: true },
+);
+
+/** The readout, at the step's precision: a value set by a grip is not on a step. */
+const numberReadout = computed(() =>
+  roundToStep(
+    numberDraft.value,
+    (props.parameter.type === "number" && props.parameter.step) || 0.001,
+  ),
 );
 
 function previewNumber(value: number[] | undefined) {
@@ -71,18 +81,18 @@ function updateEnum(
 <template>
   <Field>
     <div class="flex items-center justify-between gap-2">
-      <FieldLabel :for="id">{{ parameter.label }}</FieldLabel>
-      <slot name="unit" />
+      <ControlMeasureFieldLabel
+        :for="id"
+        :label="parameter.label"
+        :description="parameter.description"
+      />
       <span
         v-if="parameter.type === 'number' && boundedNumber"
         class="text-muted-foreground text-xs tabular-nums"
       >
-        {{ numberDraft }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
+        {{ numberReadout }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
       </span>
     </div>
-    <FieldDescription v-if="parameter.description">
-      {{ parameter.description }}
-    </FieldDescription>
 
     <ToggleGroup
       v-if="parameter.type === 'enum' && parameter.options.length <= 7"
@@ -124,6 +134,7 @@ function updateEnum(
     <Switch
       v-else-if="parameter.type === 'boolean'"
       :id="id"
+      class="self-start"
       :model-value="Boolean(modelValue)"
       @update:model-value="$emit('update:modelValue', Boolean($event))"
     />

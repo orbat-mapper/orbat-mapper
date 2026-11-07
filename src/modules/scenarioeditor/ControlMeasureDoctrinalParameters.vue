@@ -10,11 +10,12 @@ import type {
   ParamDescriptor,
 } from "@orbat-mapper/control-measures";
 import { Input } from "@/components/ui/input";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
 
@@ -79,18 +80,16 @@ function updateText(parameter: Extract<ParamDescriptor, { type: "text" }>, event
     />
 
     <Field v-else :class="fieldLayout ? undefined : 'contents'">
-      <FieldLabel
+      <ControlMeasureFieldLabel
         :for="`cm-doctrinal-${parameter.key}`"
+        :label="parameter.label"
+        :description="fieldLayout ? parameter.description : undefined"
         :class="fieldLayout ? undefined : 'self-center'"
       >
-        {{ parameter.label }}
         <template v-if="parameter.type === 'number' && parameter.unit">
           ({{ parameter.unit }})
         </template>
-      </FieldLabel>
-      <FieldDescription v-if="fieldLayout && parameter.description">
-        {{ parameter.description }}
-      </FieldDescription>
+      </ControlMeasureFieldLabel>
 
       <NativeSelect
         v-if="parameter.type === 'enum'"

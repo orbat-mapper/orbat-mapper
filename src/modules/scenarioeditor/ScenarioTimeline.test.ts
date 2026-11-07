@@ -3,6 +3,7 @@ import "@/dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive, ref } from "vue";
+import { createEventHook } from "@vueuse/core";
 import { createPinia, setActivePinia } from "pinia";
 import ScenarioTimeline from "./ScenarioTimeline.vue";
 import { activeScenarioKey } from "@/components/injects";
@@ -61,6 +62,8 @@ function makeScenarioFixture(histogram: { t: number; count: number }[] = []) {
     featureStateCounter: 0,
   });
 
+  const undoRedoHook = createEventHook<void>();
+
   const setCurrentTime = vi.fn((timestamp: number) => {
     state.currentTime = timestamp;
   });
@@ -88,10 +91,11 @@ function makeScenarioFixture(histogram: { t: number; count: number }[] = []) {
     },
     store: {
       state,
+      onUndoRedo: undoRedoHook.on,
     },
   };
 
-  return { scenario, state, setCurrentTime, addScenarioEvent };
+  return { scenario, state, setCurrentTime, addScenarioEvent, undoRedoHook };
 }
 
 function parseWidth(style: string | undefined) {
@@ -144,6 +148,17 @@ afterEach(() => {
 });
 
 describe("ScenarioTimeline", () => {
+  it("recounts the change markers after undo and redo", async () => {
+    const { scenario, undoRedoHook } = mountTimeline();
+    const computeTimeHistogram = scenario.time.computeTimeHistogram;
+    expect(computeTimeHistogram).toHaveBeenCalledTimes(1);
+
+    // Undo/redo can leave the state counters at their earlier values.
+    await undoRedoHook.trigger();
+
+    expect(computeTimeHistogram).toHaveBeenCalledTimes(2);
+  });
+
   it("adds scenario event from context-menu position without prior mousemove", async () => {
     const { wrapper, addScenarioEvent } = mountTimeline();
     await nextTick();

@@ -9,15 +9,9 @@ import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
-import {
-  isNGeometryLayerItem,
-  isNTacticalGraphicLayerItem,
-} from "@/types/scenarioLayerItems";
-import { controlMeasureExtentFeature } from "@/geo/controlMeasures";
+import { layerItemToGeoJsonFeature } from "@/geo/layerItemExtent";
 import { featureCollection } from "@turf/helpers";
 import turfCenter from "@turf/center";
-import turfCircle from "@turf/circle";
-import type { Position } from "geojson";
 import { useSelectedItems } from "@/stores/selectedStore";
 import { useScenarioInfoPanelStore } from "@/stores/scenarioInfoPanelStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -206,8 +200,10 @@ export function useUnitActions(
     }
     if (Array.isArray(unitOrUnits)) {
       groupUpdate(() => {
-        if (action === UnitActions.Zoom || action === UnitActions.Pan) {
+        if (action === UnitActions.Zoom) {
           geoStore.zoomToUnits(unitOrUnits, { duration: 500 });
+        } else if (action === UnitActions.Pan) {
+          geoStore.panToUnits(unitOrUnits, 500);
         } else unitOrUnits.forEach((unit) => _onUnitAction(unit, action, waypointIds));
       });
     } else _onUnitAction(unitOrUnits, action, waypointIds);
@@ -276,6 +272,11 @@ export function useUnitMenu(
         action: UnitActions.Zoom,
         disabled: !unit._state?.location,
       },
+      {
+        label: "Pan to",
+        action: UnitActions.Pan,
+        disabled: !unit._state?.location,
+      },
       // { label: "Copy", action: UnitActions.Copy },
       // { label: "Paste", action: UnitActions.Paste },
       { label: "Duplicate", action: UnitActions.Clone, disabled: isLocked.value },
@@ -342,33 +343,8 @@ export function useScenarioFeatureActions(
     geo,
   } = activeScenario;
 
-  function toGeoJsonFeature(featureId: FeatureId) {
-    const item = state.layerItemMap[featureId];
-    if (!item) return null;
-    // Zoom and pan are shared chrome over every layer-item kind — the same Z/P
-    // shortcuts and the same context menu act on whatever is selected. A control
-    // measure has no `geometry`, so it frames through its control points instead.
-    if (isNTacticalGraphicLayerItem(item)) {
-      return controlMeasureExtentFeature(item) ?? null;
-    }
-    if (!isNGeometryLayerItem(item)) return null;
-    const geometry = item._state?.geometry ?? item.geometry;
-    if (!geometry) return null;
-    const radius = "radius" in item.geometryMeta ? item.geometryMeta.radius : undefined;
-    if (typeof radius === "number" && geometry.type === "Point") {
-      const circle = turfCircle(geometry.coordinates as Position, radius / 1000, {
-        steps: 48,
-        units: "kilometers",
-      });
-      return { ...circle, id: featureId };
-    }
-    return {
-      type: "Feature" as const,
-      id: featureId,
-      geometry,
-      properties: {},
-    };
-  }
+  const toGeoJsonFeature = (featureId: FeatureId) =>
+    layerItemToGeoJsonFeature(state, featureId);
 
   function zoomToFeatures(featureIds: FeatureId[], maxZoom: number) {
     const features = featureIds

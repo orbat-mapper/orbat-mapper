@@ -108,6 +108,9 @@ export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
   "smoothResolution",
   "smoothMode",
   "multilineLabel",
+  // The Filled switch beside the fill pattern. Every kind with a `filled` param is a
+  // `canAuthorFillPattern` kind, so the Style tab always shows it.
+  "filled",
 ];
 
 /** True for exactly the Generic Graphics kinds — the ones the UI lets you colour. */

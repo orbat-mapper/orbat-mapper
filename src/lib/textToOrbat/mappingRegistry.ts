@@ -2,8 +2,8 @@
  * MappingRegistry — merges built-in icon/echelon definitions with user-defined
  * overrides and compiles them into ready-to-match pattern lists.
  *
- * Consumers obtain a default instance via {@link defaultRegistry} and can
- * optionally call mutation methods to layer user-defined mappings on top.
+ * Each engine owns one instance; mutation methods layer user-defined mappings
+ * on top of the built-ins, with undo/redo and change notification.
  */
 
 import {
@@ -177,6 +177,8 @@ export class MappingRegistry {
 
   // Monotonically increasing version for reactive consumers
   private _version = 0;
+  private _listeners = new Set<() => void>();
+  private _builtInExport: string | null = null;
 
   // Undo/redo stacks (snapshots of definition arrays)
   private _undoStack: RegistrySnapshot[] = [];
@@ -272,9 +274,26 @@ export class MappingRegistry {
     return this._concatenatedSuffixes;
   }
 
-  /** Monotonically increasing version — use in Vue reactivity to trigger recomputation. */
+  /** Monotonically increasing version, bumped on every change. */
   get version(): number {
     return this._version;
+  }
+
+  /**
+   * Call `listener` after every change to the definitions, undo and redo
+   * included. Returns a function that removes the listener.
+   */
+  subscribe(listener: () => void): () => void {
+    this._listeners.add(listener);
+    return () => this._listeners.delete(listener);
+  }
+
+  /** Whether the definitions differ from the built-in ones. */
+  get isCustomized(): boolean {
+    this._builtInExport ??= JSON.stringify(
+      new MappingRegistry(this._builtInIcons, this._builtInEchelons).exportMappings(),
+    );
+    return JSON.stringify(this.exportMappings()) !== this._builtInExport;
   }
 
   // ── Undo / Redo ────────────────────────────────────────────────
@@ -522,8 +541,7 @@ export class MappingRegistry {
     this.pushUndo();
     this._iconDefs = this._builtInIcons.map((d) => ({ ...d }));
     this._echelonDefs = this._builtInEchelons.map((d) => ({ ...d }));
-    this.invalidateIconCache();
-    this.invalidateEchelonCache();
+    this.invalidateAllCaches();
   }
 
   /** Reset only icon definitions to built-in defaults. */
@@ -607,28 +625,41 @@ export class MappingRegistry {
           }),
       }));
     }
-    this.invalidateIconCache();
-    this.invalidateEchelonCache();
+    this.invalidateAllCaches();
   }
 
   // ── Private ──────────────────────────────────────────────────────
 
-  private invalidateIconCache(): void {
+  private clearIconCache(): void {
     this._iconPatterns = null;
     this._iconCodeToName = null;
-    this._version++;
   }
 
-  private invalidateEchelonCache(): void {
+  private clearEchelonCache(): void {
     this._echelonPatterns = null;
     this._echelonCodeToName = null;
     this._concatenatedSuffixes = null;
-    this._version++;
+  }
+
+  private invalidateIconCache(): void {
+    this.clearIconCache();
+    this.changed();
+  }
+
+  private invalidateEchelonCache(): void {
+    this.clearEchelonCache();
+    this.changed();
   }
 
   private invalidateAllCaches(): void {
-    this.invalidateIconCache();
-    this.invalidateEchelonCache();
+    this.clearIconCache();
+    this.clearEchelonCache();
+    this.changed();
+  }
+
+  private changed(): void {
+    this._version++;
+    for (const listener of [...this._listeners]) listener();
   }
 
   // ── XLSX serialisation ──────────────────────────────────────────
@@ -746,9 +777,3 @@ export function parseMappingsFromXlsxWorkbook(
 
   return data;
 }
-
-// ---------------------------------------------------------------------------
-// Default instance (used when no custom registry is provided)
-// ---------------------------------------------------------------------------
-
-export const defaultRegistry = new MappingRegistry();

@@ -14,6 +14,7 @@ import {
 } from "@/symbology/values";
 import type { SymbolItem, SymbolValue } from "@/types/constants";
 import { Sidc } from "@/symbology/sidc";
+import { getFullUnitSidc, updateSidc } from "@/symbology/helpers";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useActiveUnitStore } from "@/stores/dragStore";
@@ -62,7 +63,9 @@ const activeSidc = ref("10031000141211000000");
 export function useToolbarUnitSymbolData() {
   const emtStore: Record<string, string> = { [UNIT_SYMBOLSET_VALUE]: "16" };
 
-  const symbolSetValue = computed(() => new Sidc(activeSidc.value).symbolSet);
+  const symbolSetValue = computed(
+    () => new Sidc(getFullUnitSidc(activeSidc.value)).symbolSet,
+  );
 
   function mapSymbolCode({ code, text, symbolSet }: ExtendedSymbolValue): SymbolItem {
     return {
@@ -94,13 +97,13 @@ export function useToolbarUnitSymbolData() {
       "0000000000",
   );
 
-  const customSidc = computed(() => {
-    const parsedSidc = new Sidc(customIcon.value.code);
-    parsedSidc.standardIdentity = currentSid.value;
-    parsedSidc.emt = "00";
-    parsedSidc.hqtfd = "0";
-    return parsedSidc.toString();
-  });
+  const customSidc = computed(() =>
+    updateSidc(customIcon.value.code, (sidc) => {
+      sidc.standardIdentity = currentSid.value;
+      sidc.emt = "00";
+      sidc.hqtfd = "0";
+    }),
+  );
 
   const emtItems = computed(() => {
     let values: SymbolValue[];
@@ -153,12 +156,12 @@ export function useToolbarUnitSymbolData() {
 export function useActiveSidc() {
   const { unitActions } = injectStrict(activeScenarioKey);
   const { activeParent } = useActiveUnitStore();
-  const sidc = computed(() => {
-    const sidcObj = new Sidc(activeSidc.value);
-    sidcObj.emt = currentEchelon.value;
-    sidcObj.standardIdentity = currentSid.value;
-    return sidcObj.toString();
-  });
+  const sidc = computed(() =>
+    updateSidc(activeSidc.value, (sidcObj) => {
+      sidcObj.emt = currentEchelon.value;
+      sidcObj.standardIdentity = currentSid.value;
+    }),
+  );
   const symbolOptions = computed(() =>
     activeParent.value
       ? {

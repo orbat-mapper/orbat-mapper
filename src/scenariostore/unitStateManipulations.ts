@@ -16,6 +16,7 @@ import {
   computeViaPointTime,
   findFollowingLocationState,
   findPrecedingTrackPoint,
+  getLegDepartureWindow as getDepartureWindow,
   getUnitSpeedMps,
 } from "@/scenariostore/unitTrackConversions";
 
@@ -414,6 +415,47 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     updateUnitState(unitId);
   }
 
+  /** The departure window of the leg that ends at `stateIndex`, or null when none does. */
+  function getLegDepartureWindow(unitId: EntityId, stateIndex: number) {
+    const unit = state.unitMap[unitId];
+    return unit ? getDepartureWindow(unit, stateIndex) : null;
+  }
+
+  /**
+   * The leg that sets off from a waypoint: the index of the state entry it ends
+   * at, and its departure window. Null when the path ends or is broken there.
+   * The initial location is the waypoint at index -1.
+   */
+  function getLegAfterWaypoint(unitId: EntityId, stateIndex: number) {
+    const unit = state.unitMap[unitId];
+    const following = unit && findFollowingLocationState(unit, stateIndex);
+    const window = following && getDepartureWindow(unit, following.index);
+    return window ? { stateIndex: following.index, window } : null;
+  }
+
+  /**
+   * Makes the leg that ends at `stateIndex` set off at `t`, so the unit holds at
+   * the leg's start until then. The arrival time stays, so the unit travels the
+   * leg faster. A time no later than when the unit reaches the leg's start, or
+   * undefined, clears the hold. Returns false when the leg can't set off at `t`.
+   */
+  function setLegDepartureTime(
+    unitId: EntityId,
+    stateIndex: number,
+    t: number | undefined,
+  ): boolean {
+    const window = getLegDepartureWindow(unitId, stateIndex);
+    if (!window || (t !== undefined && t >= window.arrival)) return false;
+    const departure =
+      t !== undefined && (window.earliest === undefined || t > window.earliest)
+        ? t
+        : undefined;
+    if (departure !== window.departure) {
+      updateUnitStateEntry(unitId, stateIndex, { viaStartTime: departure });
+    }
+    return true;
+  }
+
   return {
     clearUnitState,
     updateUnitState,
@@ -429,5 +471,8 @@ export function useUnitStateManipulations(store: NewScenarioStore) {
     canConvertWaypointToViaPoint,
     convertViaPointToWaypoint,
     convertWaypointToViaPoint,
+    getLegDepartureWindow,
+    getLegAfterWaypoint,
+    setLegDepartureTime,
   };
 }

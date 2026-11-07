@@ -5,7 +5,7 @@
  * and pattern lists are derived automatically.
  *
  * ORDER MATTERS: more-specific entries must precede general ones so that the
- * first-match-wins logic in {@link getIconCodeFromName} resolves correctly.
+ * first-match-wins logic in {@link getIconMatchFromName} resolves correctly.
  */
 
 // ---------------------------------------------------------------------------

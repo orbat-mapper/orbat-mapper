@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { computed, ref, useId } from "vue";
 import { resolveSizePair } from "@orbat-mapper/control-measures";
-import type { ControlMeasureId, SizeUnit } from "@orbat-mapper/control-measures";
+import type {
+  ControlMeasureId,
+  ParamDescriptor,
+  SizeUnit,
+} from "@orbat-mapper/control-measures";
 import { FieldGroup } from "@/components/ui/field";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import ControlMeasureParameterField from "@/modules/scenarioeditor/ControlMeasureParameterField.vue";
+import ControlMeasureSizeSliderField from "@/modules/scenarioeditor/ControlMeasureSizeSliderField.vue";
 import {
   metadataFor,
   sizePairParameter,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
-import { editControlMeasureSizes } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
+import {
+  editControlMeasureSizes,
+  groundSizeRange,
+} from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import type {
   ControlMeasureSizeTarget,
   ControlMeasureSizeUpdate,
@@ -46,7 +52,11 @@ const dimensions = computed(() => {
         pair,
         unit: resolved.unit,
         value: resolved.value,
-        parameter: sizePairParameter(first.graphicKind, pair, resolved.unit),
+        range: sliderRange(
+          sizePairParameter(first.graphicKind, pair, resolved.unit),
+          sizePairParameter(first.graphicKind, pair, "px"),
+          resolved.unit,
+        ),
         mixedUnit: resolutions.some(
           (r) => r?.status === "resolved" && r.unit !== resolved.unit,
         ),
@@ -59,6 +69,26 @@ const dimensions = computed(() => {
     ];
   });
 });
+
+/**
+ * The slider's travel: the declared range for pixels, and for meters the pixel range
+ * at the current zoom (`groundSizeRange`), since the declared meter range is zoom-blind.
+ * Read with the rest of `dimensions`, so it follows the zoom the panel last saw.
+ */
+function sliderRange(
+  parameter: ParamDescriptor,
+  pixelParameter: ParamDescriptor,
+  unit: SizeUnit,
+) {
+  const number = parameter.type === "number" ? parameter : undefined;
+  const declared = {
+    min: number?.min ?? 1,
+    max: number?.max ?? 100,
+    step: number?.step ?? 1,
+  };
+  if (unit === "px") return declared;
+  return groundSizeRange(pixelParameter, props.getResolution?.()) ?? declared;
+}
 
 function edit(dimension: string, unit: unknown, value?: string | number | boolean) {
   if (unit !== "m" && unit !== "px") return;
@@ -82,26 +112,17 @@ function edit(dimension: string, unit: unknown, value?: string | number | boolea
       :key="dimension.pair.id"
       class="flex flex-col gap-2"
     >
-      <ControlMeasureParameterField
-        :id="`${instanceId}-cm-size-${dimension.parameter.key}`"
-        :parameter="dimension.parameter"
-        :model-value="dimension.value"
-        @update:model-value="edit(dimension.pair.id, dimension.unit, $event)"
-      >
-        <template #unit>
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            size="sm"
-            :model-value="dimension.mixedUnit ? '' : dimension.unit"
-            :aria-label="`${dimension.pair.label} unit`"
-            @update:model-value="edit(dimension.pair.id, $event)"
-          >
-            <ToggleGroupItem value="m" aria-label="Meters">m</ToggleGroupItem>
-            <ToggleGroupItem value="px" aria-label="Pixels">px</ToggleGroupItem>
-          </ToggleGroup>
-        </template>
-      </ControlMeasureParameterField>
+      <ControlMeasureSizeSliderField
+        :id="`${instanceId}-cm-size-${dimension.pair.id}`"
+        :label="dimension.pair.label"
+        :unit="dimension.unit"
+        :value="dimension.value"
+        :range="dimension.range"
+        :mixed="dimension.mixed"
+        :mixed-unit="dimension.mixedUnit"
+        @update:value="edit(dimension.pair.id, dimension.unit, $event)"
+        @update:unit="edit(dimension.pair.id, $event)"
+      />
       <p v-if="dimension.mixed" class="text-muted-foreground text-xs">
         Mixed sizes; showing the first selected graphic. Changing units preserves each
         graphic's size.

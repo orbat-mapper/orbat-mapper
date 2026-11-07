@@ -100,6 +100,17 @@ export function getControlMeasureLabel(item: ControlMeasureLayerEntry): string {
   return item.name || getControlMeasureKindName(item.graphicKind);
 }
 
+/** The name a layer item is listed under, falling back to what kind of item it is. */
+export function getLayerItemLabel(item: NScenarioLayerItem): string {
+  if (isNTacticalGraphicLayerItem(item) || isNPointSymbolLayerItem(item)) {
+    return getControlMeasureLabel(item);
+  }
+  if (item.kind === "geometry") {
+    return item.name || item.geometryMeta.geometryKind || item.geometry.type;
+  }
+  return item.name || (item.kind === "annotation" ? "Annotation" : "Measurement");
+}
+
 /** The library's doctrinal name for a kind, or the raw kind when it has none. */
 export function getControlMeasureKindName(kind: string | undefined): string {
   if (isSupportedGraphicKind(kind)) {

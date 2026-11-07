@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getControlMeasureLabel,
   getControlMeasureLayerGroups,
+  getLayerItemLabel,
 } from "@/modules/scenarioeditor/controlMeasureLayers";
 import type {
   NScenarioLayerItem,
@@ -125,5 +126,34 @@ describe("getControlMeasureLabel", () => {
   it("falls back to the raw graphicKind for an unsupported kind", () => {
     const item = cm("cm1", "from-the-future") as NTacticalGraphicLayerItem;
     expect(getControlMeasureLabel(item)).toBe("from-the-future");
+  });
+});
+
+describe("getLayerItemLabel", () => {
+  it("labels control measures the way the control measure list does", () => {
+    const item = cm("cm1", "from-the-future") as NTacticalGraphicLayerItem;
+    expect(getLayerItemLabel(item)).toBe("from-the-future");
+  });
+
+  it("labels an unnamed feature by its shape", () => {
+    const item = {
+      id: "g1",
+      kind: "geometry",
+      geometry: { type: "Polygon", coordinates: [] },
+      geometryMeta: { geometryKind: "Circle" },
+    } as unknown as NScenarioLayerItem;
+    expect(getLayerItemLabel(item)).toBe("Circle");
+    expect(getLayerItemLabel({ ...item, name: "OBJ FALCON" } as NScenarioLayerItem)).toBe(
+      "OBJ FALCON",
+    );
+  });
+
+  it("labels unnamed annotations and measurements by kind", () => {
+    expect(getLayerItemLabel({ id: "a", kind: "annotation" } as NScenarioLayerItem)).toBe(
+      "Annotation",
+    );
+    expect(
+      getLayerItemLabel({ id: "m", kind: "measurement" } as NScenarioLayerItem),
+    ).toBe("Measurement");
   });
 });

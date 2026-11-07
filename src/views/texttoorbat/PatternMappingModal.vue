@@ -20,14 +20,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import {
-  defaultRegistry,
-  type MappingRegistry,
+  ECHELON_UNSPECIFIED,
+  extractEntityCode,
+  extractSymbolSet,
+  ICON_UNSPECIFIED,
   parseMappingsFromXlsxWorkbook,
-} from "./mappingRegistry";
+} from "@/lib/textToOrbat";
+import { storeToRefs } from "pinia";
 import { useTextToOrbatStore } from "./textToOrbatStore";
-import { extractEntityCode, extractSymbolSet, ICON_UNSPECIFIED } from "./iconRegistry";
-import { ECHELON_UNSPECIFIED } from "./echelonRegistry";
-import { getEchelonCodeFromName, getIconMatchFromName } from "./textToOrbat";
 import fuzzysort from "fuzzysort";
 import ToggleField from "@/components/ToggleField.vue";
 import {
@@ -78,21 +78,7 @@ const FRIENDLY_SI = "3";
 
 const open = defineModel<boolean>({ default: false });
 
-const props = withDefaults(
-  defineProps<{
-    registry?: MappingRegistry;
-    registryVersion?: number;
-  }>(),
-  {
-    registry: () => defaultRegistry,
-    registryVersion: 0,
-  },
-);
-
-const emit = defineEmits<{
-  mappingsChanged: [];
-  mappingsReset: [];
-}>();
+const { engine } = storeToRefs(useTextToOrbatStore());
 
 const { send: sendNotification } = useNotifications();
 const searchQuery = ref("");
@@ -104,8 +90,6 @@ const activeTab = ref<"icons" | "echelons">("icons");
 const showSyntaxHelp = ref(false);
 const showTester = ref(false);
 const testInput = ref("");
-
-const textToOrbatStore = useTextToOrbatStore();
 
 // ── Add alias state ──────────────────────────────────────────────
 const addingAliasKey = ref<string | null>(null);
@@ -204,10 +188,9 @@ function displayPatternSource(source: string): string {
 }
 
 const echelonEntries = computed<PatternEntry[]>(() => {
-  void props.registryVersion;
   const grouped = new Map<string, PatternEntry>();
 
-  for (const def of props.registry.echelonDefinitions) {
+  for (const def of engine.value.mappings.echelonDefinitions) {
     const existing = grouped.get(def.code);
     const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
       value: displayAlias(a),
@@ -253,8 +236,7 @@ const echelonEntries = computed<PatternEntry[]>(() => {
 });
 
 const iconEntries = computed<PatternEntry[]>(() => {
-  void props.registryVersion;
-  return props.registry.iconDefinitions.map((def, index) => {
+  return engine.value.mappings.iconDefinitions.map((def, index) => {
     const aliasKeywords: KeywordEntry[] = (def.aliases ?? []).map((a) => ({
       value: displayAlias(a),
       type: "alias" as const,
@@ -310,16 +292,13 @@ interface OverriddenMatch {
 }
 
 const testResult = computed(() => {
-  void props.registryVersion;
   const input = testInput.value.trim();
   if (!input) return null;
 
-  const iconMatch = getIconMatchFromName(input, props.registry);
-  const iconEntity = extractEntityCode(iconMatch.sidc);
-  const hasIconMatch = iconEntity !== ICON_UNSPECIFIED;
-  const iconEntry = hasIconMatch
-    ? iconEntries.value.find((e) => e.code === iconMatch.sidc)
-    : null;
+  const { icon, echelon } = engine.value.classify(input);
+  const iconEntity = icon?.entityCode ?? ICON_UNSPECIFIED;
+  const hasIconMatch = icon !== null;
+  const iconEntry = icon ? iconEntries.value.find((e) => e.code === icon.sidc) : null;
 
   // Find which icon pattern matched + collect overridden matches
   let iconMatchedPattern: string | null = null;
@@ -327,7 +306,7 @@ const testResult = computed(() => {
   {
     let foundWinner = false;
     const seenCodes = new Set<string>();
-    for (const cp of props.registry.iconPatterns) {
+    for (const cp of engine.value.mappings.iconPatterns) {
       if (cp.pattern.test(input)) {
         const m = input.match(cp.pattern);
         const matchedText = m ? m[0] : cp.pattern.source;
@@ -349,8 +328,8 @@ const testResult = computed(() => {
     }
   }
 
-  const echelonCode = getEchelonCodeFromName(input, props.registry);
-  const hasEchelonMatch = echelonCode !== ECHELON_UNSPECIFIED;
+  const echelonCode = echelon?.code ?? ECHELON_UNSPECIFIED;
+  const hasEchelonMatch = echelon !== null;
   const echelonEntry = hasEchelonMatch
     ? echelonEntries.value.find((e) => e.code === echelonCode)
     : null;
@@ -360,7 +339,7 @@ const testResult = computed(() => {
   {
     let foundWinner = false;
     const seenCodes = new Set<string>();
-    for (const cp of props.registry.echelonPatterns) {
+    for (const cp of engine.value.mappings.echelonPatterns) {
       if (cp.pattern.test(input)) {
         const m = input.match(cp.pattern);
         const matchedText = m ? m[0] : cp.pattern.source;
@@ -384,12 +363,12 @@ const testResult = computed(() => {
 
   // Build a combined display SIDC
   const si = FRIENDLY_SI;
-  const symbolSet = extractSymbolSet(iconMatch.sidc);
+  const symbolSet = icon ? extractSymbolSet(icon.sidc) : "10";
   const displaySidc = `100${si}${symbolSet}00${echelonCode}${iconEntity}`;
 
   return {
     iconLabel: iconEntry?.label ?? null,
-    iconSidc: hasIconMatch ? templateToDisplaySidc(iconMatch.sidc) : null,
+    iconSidc: icon ? templateToDisplaySidc(icon.sidc) : null,
     iconMatchedPattern,
     hasIconMatch,
     echelonLabel: echelonEntry?.label ?? null,
@@ -418,7 +397,6 @@ interface FuzzyTarget {
 }
 
 const fuzzyTargets = computed<FuzzyTarget[]>(() => {
-  void props.registryVersion;
   const targets: FuzzyTarget[] = [];
   for (const entry of iconEntries.value) {
     for (const kw of entry.keywords) {
@@ -488,11 +466,10 @@ function submitAddAlias(entry: PatternEntry) {
   if (!alias || !entry.code) return;
 
   if (entry.kind === "icon") {
-    props.registry.extendIcon(entry.code, [alias]);
+    engine.value.mappings.extendIcon(entry.code, [alias]);
   } else {
-    props.registry.extendEchelon(entry.code, [alias]);
+    engine.value.mappings.extendEchelon(entry.code, [alias]);
   }
-  emit("mappingsChanged");
   cancelAddAlias();
 }
 
@@ -530,11 +507,10 @@ function submitAddPattern(entry: PatternEntry) {
   }
 
   if (entry.kind === "icon") {
-    props.registry.extendIconPattern(entry.code, regex);
+    engine.value.mappings.extendIconPattern(entry.code, regex);
   } else {
-    props.registry.extendEchelonPattern(entry.code, regex);
+    engine.value.mappings.extendEchelonPattern(entry.code, regex);
   }
-  emit("mappingsChanged");
   cancelAddPattern();
 }
 
@@ -551,15 +527,13 @@ function cancelAddSuffix() {
 function submitAddSuffix(entry: PatternEntry) {
   const suffix = newSuffixInput.value.trim().toLowerCase();
   if (!suffix || !entry.code) return;
-  props.registry.addEchelonSuffix(entry.code, suffix);
-  emit("mappingsChanged");
+  engine.value.mappings.addEchelonSuffix(entry.code, suffix);
   cancelAddSuffix();
 }
 
 function deleteSuffix(entry: PatternEntry, suffix: string) {
   if (!entry.code) return;
-  props.registry.removeEchelonSuffix(entry.code, suffix);
-  emit("mappingsChanged");
+  engine.value.mappings.removeEchelonSuffix(entry.code, suffix);
 }
 
 function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
@@ -567,16 +541,15 @@ function deleteKeyword(entry: PatternEntry, keyword: KeywordEntry) {
 
   if (entry.kind === "icon") {
     if (keyword.type === "alias") {
-      props.registry.removeIconAlias(entry.code, keyword.raw);
+      engine.value.mappings.removeIconAlias(entry.code, keyword.raw);
     } else {
-      props.registry.removeIconPattern(entry.code, keyword.raw);
+      engine.value.mappings.removeIconPattern(entry.code, keyword.raw);
     }
   } else {
     if (keyword.type === "alias") {
-      props.registry.removeEchelonAlias(entry.code, keyword.raw);
+      engine.value.mappings.removeEchelonAlias(entry.code, keyword.raw);
     }
   }
-  emit("mappingsChanged");
 }
 
 // ── Icon drag-and-drop reordering ────────────────────────────────
@@ -682,8 +655,7 @@ onMounted(() => {
       const adjustedTarget = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
 
       if (sourceIndex !== adjustedTarget) {
-        props.registry.moveIconTo(sourceIndex, adjustedTarget);
-        emit("mappingsChanged");
+        engine.value.mappings.moveIconTo(sourceIndex, adjustedTarget);
       }
     },
   });
@@ -699,14 +671,13 @@ function deleteEntry(entry: PatternEntry) {
   if (!entry.code) return;
   if (entry.kind === "icon") {
     if (entry.defIndex !== undefined) {
-      props.registry.removeIconAt(entry.defIndex);
+      engine.value.mappings.removeIconAt(entry.defIndex);
     } else {
-      props.registry.removeIcon(entry.code);
+      engine.value.mappings.removeIcon(entry.code);
     }
   } else {
-    props.registry.clearEchelonAliases(entry.code);
+    engine.value.mappings.clearEchelonAliases(entry.code);
   }
-  emit("mappingsChanged");
 }
 
 function entryKey(entry: PatternEntry): string {
@@ -732,14 +703,13 @@ function submitEditEntry(entry: PatternEntry) {
 
   if (entry.kind === "icon") {
     const newSidc = editCodeValue.value !== entry.code ? editCodeValue.value : undefined;
-    props.registry.updateIcon(entry.code, {
+    engine.value.mappings.updateIcon(entry.code, {
       label,
       ...(newSidc && { sidc: newSidc }),
     });
   } else {
-    props.registry.updateEchelon(entry.code, { label });
+    engine.value.mappings.updateEchelon(entry.code, { label });
   }
-  emit("mappingsChanged");
   editingEntryKey.value = null;
 }
 
@@ -792,13 +762,12 @@ function submitNewIcon() {
     }
   }
 
-  props.registry.addIcon({
+  engine.value.mappings.addIcon({
     sidc,
     label,
     aliases,
     ...(patterns && { patterns }),
   });
-  emit("mappingsChanged");
   showAddIconForm.value = false;
   newIconLabel.value = "";
   newIconSidc.value = "";
@@ -816,18 +785,17 @@ function handleReset() {
     return;
   }
   if (activeTab.value === "icons") {
-    props.registry.resetIconsToDefaults();
+    engine.value.mappings.resetIconsToDefaults();
   } else {
-    props.registry.resetEchelonsToDefaults();
+    engine.value.mappings.resetEchelonsToDefaults();
   }
-  emit("mappingsReset");
   sendNotification({
     message: `${scope.charAt(0).toUpperCase() + scope.slice(1)} mappings reset to defaults`,
   });
 }
 
 async function handleExportJson() {
-  const data = props.registry.exportMappings();
+  const data = engine.value.mappings.exportMappings();
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: "application/json",
   });
@@ -846,8 +814,8 @@ async function handleExportXlsx() {
   const { xlsxWrite, xlsxUtils } = await import("@/extlib/xlsx-lazy");
   const { zipSync, unzipSync } = await import("fflate");
   const wb = xlsxUtils.book_new();
-  const iconRows = props.registry.exportIconRows();
-  const echelonRows = props.registry.exportEchelonRows();
+  const iconRows = engine.value.mappings.exportIconRows();
+  const echelonRows = engine.value.mappings.exportEchelonRows();
   xlsxUtils.book_append_sheet(wb, xlsxUtils.json_to_sheet(iconRows), "Icons");
   xlsxUtils.book_append_sheet(wb, xlsxUtils.json_to_sheet(echelonRows), "Echelons");
 
@@ -972,14 +940,13 @@ async function handleImportFile(event: Event) {
       const data = parseMappingsFromXlsxWorkbook(wb, (sheet) =>
         xlsxUtils.sheet_to_json(sheet as any),
       );
-      props.registry.importMappings(data);
+      engine.value.mappings.importMappings(data);
     } else {
       const text = await file.text();
       const data = JSON.parse(text);
       if (typeof data !== "object" || data === null) throw new Error("Invalid format");
-      props.registry.importMappings(data);
+      engine.value.mappings.importMappings(data);
     }
-    emit("mappingsChanged");
     sendNotification({ message: "Mappings imported" });
   } catch {
     sendNotification({ message: "Failed to import mappings", type: "error" });
@@ -992,25 +959,19 @@ async function handleImportFile(event: Event) {
 // ── Undo / Redo ──────────────────────────────────────────────────
 
 const canUndo = computed(() => {
-  void props.registryVersion;
-  return props.registry.canUndo;
+  return engine.value.mappings.canUndo;
 });
 
 const canRedo = computed(() => {
-  void props.registryVersion;
-  return props.registry.canRedo;
+  return engine.value.mappings.canRedo;
 });
 
 function handleUndo() {
-  if (props.registry.undo()) {
-    emit("mappingsChanged");
-  }
+  engine.value.mappings.undo();
 }
 
 function handleRedo() {
-  if (props.registry.redo()) {
-    emit("mappingsChanged");
-  }
+  engine.value.mappings.redo();
 }
 
 function onKeydown(e: KeyboardEvent) {

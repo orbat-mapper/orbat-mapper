@@ -33,6 +33,8 @@ import type { Position } from "geojson";
 import { commonFields, useColumnMapping } from "@/composables/import/useColumnMapping";
 import { useSheetData } from "@/composables/import/useSheetData";
 import { useMappedData, type HierarchyUnit } from "@/composables/import/useMappedData";
+import { storeToRefs } from "pinia";
+import { useTextToOrbatStore } from "@/views/texttoorbat/textToOrbatStore";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import {
   useUpdateMatching,
@@ -207,6 +209,7 @@ const { mappedData, hierarchyData } = useMappedData({
   parentSidc,
   parentSymbolOptions,
   parentSideIdentifier: computed(() => parentSide.value?.standardIdentity),
+  textToOrbat: storeToRefs(useTextToOrbatStore()).engine,
 });
 
 // Update matching (for update mode)

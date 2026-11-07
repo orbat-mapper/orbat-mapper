@@ -58,7 +58,7 @@ function createScenario() {
     },
     geo: {
       layerItemsLayers: { value: [] },
-      getGeometryLayerItemById: vi.fn(() => ({})),
+      getGeometryLayerItemById: vi.fn<(id: string) => { layerItem?: object }>(() => ({})),
       getLayerItemById: vi.fn((id: string) => ({
         layerItem: id.startsWith("cm-")
           ? {
@@ -664,6 +664,32 @@ describe("useScenarioDraw", () => {
 
     draw.arm({ kind: "cmEdit", featureId: "cm-1" });
     expect(draw.handleUndoKey()).toBe(true);
+  });
+
+  it("hands the draw interaction the geometry shown at the current time", async () => {
+    const baseGeometry = { type: "Point", coordinates: [0, 0] };
+    const recordedGeometry = { type: "Point", coordinates: [5, 5] };
+    const scenario = createScenario();
+    scenario.geo.getGeometryLayerItemById.mockImplementation((id: string) => ({
+      layerItem: {
+        id,
+        kind: "geometry",
+        geometry: baseGeometry,
+        _state: id === "recorded" ? { t: 1, geometry: recordedGeometry } : null,
+      },
+    }));
+    const { engineRef } = mountHarness({ scenario });
+    engineRef.value = createEngine();
+    await nextTick();
+    const { selectedFeatureIds } = useSelectedItems();
+    selectedFeatureIds.value.add("recorded");
+    selectedFeatureIds.value.add("unrecorded");
+
+    const { getSelectedFeatures } = mocks.useMapLibreDrawInteraction.mock.calls[0][1];
+
+    expect(
+      getSelectedFeatures().map((feature: { geometry: unknown }) => feature.geometry),
+    ).toEqual([recordedGeometry, baseGeometry]);
   });
 
   it("deletes selected features through the scenario store", () => {

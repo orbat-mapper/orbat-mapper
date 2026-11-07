@@ -4,11 +4,13 @@ import { DEFAULT_MAPLIBRE_BASEMAP_ID } from "@/config/constants";
 import {
   DEFAULT_BASEMAP_FLAVOR,
   type BasemapFlavor,
+  type MlAtlasLayerConfig,
   type MlLayerConfig,
   type MlPmtilesLayerConfig,
   type MlRasterLayerConfig,
   type MlStyleLayerConfig,
 } from "@/geo/maplibreLayerConfigTypes";
+import { createAtlasStyle } from "@/geo/atlasStyle";
 import { registerBasemapProtocols } from "@/geo/basemapArchive";
 import { archiveTileUrl } from "@/geo/pmtilesProtocol";
 import { protomapsSpriteUrl } from "@/geo/protomapsSprite";
@@ -79,6 +81,13 @@ function createEmptyStyle(): StyleSpecification {
     sources: {},
     layers: [],
   };
+}
+
+function createAtlasBasemapStyle(layer: MlAtlasLayerConfig): StyleSpecification {
+  return createAtlasStyle({
+    vector: layer.vectorUrl ? { type: "vector", url: layer.vectorUrl } : undefined,
+    glyphs: layer.glyphs,
+  });
 }
 
 function resolveStyleSource(layer: MlStyleLayerConfig): MaplibreBasemapStyle | null {
@@ -218,6 +227,12 @@ function configToBasemapOption(layer: MlLayerConfig): MaplibreBasemapOption | nu
         style: createRasterStyle(layer),
       };
     }
+    case "atlas":
+      return {
+        id: layer.name,
+        title: resolveBasemapTitle(layer),
+        style: createAtlasBasemapStyle(layer),
+      };
     case "pmtiles": {
       const style = createPmtilesStyle(layer);
       if (!style) return null;

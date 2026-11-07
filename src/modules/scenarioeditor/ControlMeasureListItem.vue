@@ -7,15 +7,12 @@ import {
   IconDrag,
 } from "@iconify-prerendered/vue-mdi";
 import LayerItemActions from "@/modules/scenarioeditor/LayerItemActions.vue";
-import ControlMeasurePreview from "@/modules/scenarioeditor/ControlMeasurePreview.vue";
-import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
+import LayerItemGlyph from "@/modules/scenarioeditor/LayerItemGlyph.vue";
 import { getControlMeasureLabel } from "@/modules/scenarioeditor/controlMeasureLayers";
-import { resolveControlMeasureStyle } from "@/geo/controlMeasures";
 import { isSupportedGraphicKind } from "@/scenariostore/tacticalGraphics";
 import type { ScenarioFeatureActions } from "@/types/constants";
 import type { ControlMeasureLayerEntry } from "@/modules/scenarioeditor/controlMeasureLayers";
 import { isControlMeasureLayerItemKind } from "@/types/scenarioLayerItems";
-import MilitarySymbol from "@/components/MilitarySymbol.vue";
 import type { NScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import type { MenuItemData } from "@/components/types";
 import {
@@ -120,17 +117,6 @@ onUnmounted(() => {
   mounted = false;
   dndCleanup();
 });
-
-/**
- * Read-time only. The tint is the same projection the map renders with — an authored
- * stroke colour, else the identity/monochrome colour resolved from `standardIdentity`
- * and `colorMode`. Nothing derived is stored, so this recomputes rather than caches.
- */
-const strokeColor = computed(() => {
-  if (props.item.kind === "pointSymbol") return undefined;
-  const style = resolveControlMeasureStyle(props.item);
-  return style.strokeColor ?? style.color;
-});
 </script>
 
 <template>
@@ -157,26 +143,7 @@ const strokeColor = computed(() => {
       @dblclick="emit('item-double-click', $event)"
       class="flex min-w-0 flex-auto items-center py-1.5"
     >
-      <span
-        v-if="item.kind === 'pointSymbol'"
-        class="flex size-5 shrink-0 items-center justify-center"
-      >
-        <MilitarySymbol :sidc="item.sidc" :size="12" />
-      </span>
-      <ControlMeasurePreview
-        v-else-if="supported"
-        :kind="item.graphicKind"
-        class="size-5 shrink-0"
-        :style="{ color: strokeColor }"
-        :stroke-width="1.5"
-        :pad="4"
-        non-scaling-stroke
-      />
-      <component
-        v-else
-        :is="getGeometryIcon(item)"
-        class="text-muted-foreground size-5 shrink-0"
-      />
+      <LayerItemGlyph :item="item" />
       <span
         class="group-hover:text-accent-foreground text-foreground ml-2 truncate text-left text-sm"
         :class="{ 'font-bold': active, 'opacity-50': hidden }"

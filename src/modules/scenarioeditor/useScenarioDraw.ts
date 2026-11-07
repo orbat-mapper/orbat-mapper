@@ -11,6 +11,7 @@ import {
   type ShallowRef,
 } from "vue";
 import { storeToRefs } from "pinia";
+import type { Position } from "geojson";
 import type {
   ControlMeasureId,
   ControlMeasureKind,
@@ -52,6 +53,7 @@ import {
   type ControlMeasurePlacementView,
 } from "@/modules/scenarioeditor/controlMeasurePlacement";
 import { useControlMeasureEditSession } from "@/modules/scenarioeditor/useControlMeasureEditSession";
+import { applyScenarioControlMeasureUpdate } from "@/modules/scenarioeditor/controlMeasureEditHelpers";
 import {
   getUnitSnapCandidates,
   isUnitSnapMap,
@@ -67,6 +69,7 @@ import {
   type NPointSymbolLayerItem,
   type PointSymbolLayerItemUpdate,
   type TacticalGraphicLayerItemUpdate,
+  type TacticalGraphicOptions,
 } from "@/types/scenarioLayerItems";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import { useNotifications } from "@/composables/notifications";
@@ -363,12 +366,20 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     releaseSelectionSuppression = null;
   }
 
+  // Edits start from the geometry shown at the current time. Starting from the base
+  // geometry would make each recorded edit discard the previous ones.
   const selectedGeometryFeatures = () =>
-    [...selectedFeatureIds.value]
-      .map(
-        (featureId) => activeScenario.geo.getGeometryLayerItemById(featureId).layerItem,
-      )
-      .filter(Boolean) as GeometryLayerItem[];
+    (
+      [...selectedFeatureIds.value]
+        .map(
+          (featureId) => activeScenario.geo.getGeometryLayerItemById(featureId).layerItem,
+        )
+        .filter(Boolean) as GeometryLayerItem[]
+    ).map((feature) =>
+      feature._state?.geometry
+        ? { ...feature, geometry: feature._state.geometry }
+        : feature,
+    );
 
   /**
    * Return the primary selected control measure only when the whole feature selection
@@ -980,6 +991,23 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     activeScenario.geo.updatePointSymbol(featureId, update);
   }
 
+  /**
+   * A flow edit (reverse, detach, remove) changes points and options together. Settle
+   * first like `updateControlMeasure`, then write both as one undo step; with
+   * recording on, the shape goes into `state[]` the way a settled edit's does.
+   */
+  function applyControlMeasureTopologyEdit(
+    featureId: FeatureId,
+    edit: { controlPoints: Position[]; options: TacticalGraphicOptions },
+  ) {
+    if (controlMeasureEdit.featureId.value === featureId) {
+      renderFeed?.settle("render");
+    }
+    applyScenarioControlMeasureUpdate(activeScenario, featureId, edit, {
+      recordShape: isRecordingGeometry.value,
+    });
+  }
+
   /** Settle once before the group so an open shape edit cannot overwrite sizes. */
   function updateControlMeasureSizes(updates: ControlMeasureSizeUpdate[]) {
     if (!updates.length) return;
@@ -1193,6 +1221,15 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureCanResetVertexWidths: controlMeasureEdit.canResetVertexWidths,
     setControlMeasureWidthGrips: controlMeasureEdit.setWidthGrips,
     resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
+    /** The flow selected on a Flow or Split Arrow under edit. */
+    controlMeasureSelectedPart: controlMeasureEdit.selectedPart,
+    /** The working points and options of the open edit, before they settle. */
+    controlMeasureLiveShape: controlMeasureEdit.liveShape,
+    selectControlMeasurePart: controlMeasureEdit.selectPart,
+    controlMeasureCanAddFlow: controlMeasureEdit.canAddFlow,
+    controlMeasureAddFlowArmed: controlMeasureEdit.addFlowArmed,
+    setControlMeasureAddFlowArmed: controlMeasureEdit.setAddFlowArmed,
+    applyControlMeasureTopologyEdit,
     setControlMeasureLabelDrag: (enabled: boolean) =>
       controlMeasureEdit.setLabelDrag(enabled),
     /** The explicit edit gesture. Arming settles whatever was open first. */
