@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 - Fixed filled control measures (polygons, circles, block arrows and others) showing a second, full-width Filled switch in their extended style settings.
 - Fixed the white outline around echelon markers (III, XX and so on) being drawn above the marker instead of around it.
 - Fixed the scenario editor hanging on a scenario file with an unknown symbology standard, such as `app6`. Old names now map to the current standard, and unknown ones fall back to the default.
+- Fixed personnel and equipment counts in ORBAT charts starting left of the unit name when labels are placed to the right of the symbol. Their line spacing now also follows the font size.
 
 ## October 2026
 

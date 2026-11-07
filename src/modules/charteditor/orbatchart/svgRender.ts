@@ -18,6 +18,10 @@ import ms from "milsymbol";
 import { sortBy } from "@/utils";
 import { walkTree } from "@/modules/charteditor/orbatchart/utils";
 
+// Font sizes are in pt; SVG user units are px
+const PT_TO_PX = 4 / 3;
+const EQUIPMENT_FONT_SCALE = 0.9;
+
 const HIGHLIGT_STYLE = `
   .o-unit:hover {
     fill: #770303;
@@ -227,6 +231,16 @@ export function createUnitGroup(
   let dy = `${options.labelOffset}pt`;
   let dx = "0";
   let classes = "o-label";
+  // Reads x, y offsets and classes at call time, after label placement is applied
+  const addText = (textY: number, content: string) =>
+    g
+      .append("text")
+      .attr("x", x)
+      .attr("dx", dx)
+      .attr("dy", dy)
+      .attr("y", textY)
+      .attr("class", classes)
+      .text(content);
   if (!options.hideLabel) {
     if (options.labelPlacement === "right") {
       y = unitNode.octagonAnchor.y;
@@ -235,14 +249,7 @@ export function createUnitGroup(
       dy = "0";
       classes = "o-label-right";
     }
-    const text = g
-      .append("text")
-      .attr("x", x)
-      .attr("dy", dy)
-      .attr("dx", dx)
-      .attr("y", y)
-      .attr("class", classes)
-      .text(unitLabel);
+    const text = addText(y, unitLabel);
 
     if (specificOptions.fontSize) text.attr("font-size", `${options.fontSize}pt`);
     if (specificOptions.fontWeight) text.attr("font-weight", options.fontWeight);
@@ -252,30 +259,23 @@ export function createUnitGroup(
 
   if (options.showPersonnel || options.showEquipment) {
     const { aggregatedPersonnel, aggregatedEquipment } = aggregateData(unitNode.unit);
+    const equipmentFontSize = options.fontSize * EQUIPMENT_FONT_SCALE;
+    const lineHeight = options.fontSize * PT_TO_PX * 1.5;
+    const equipmentLineHeight = equipmentFontSize * PT_TO_PX * 1.4;
     if (options.showPersonnel && aggregatedPersonnel.length) {
       const sum = aggregatedPersonnel.reduce((acc, p) => acc + p.count, 0);
       const label = aggregatedPersonnel.map((p) => `${p.count}`).join("/");
-      y += 25;
-      const text = g
-        .append("text")
-        .attr("x", x)
-        .attr("dy", dy)
-        .attr("y", y)
-        .attr("class", classes)
-        .text(`${label}  (${sum})`);
+      y += lineHeight;
+      addText(y, `${label}  (${sum})`);
     }
 
     if (options.showEquipment && (isLastLevel || !unitNode.unit.subUnits?.length)) {
-      y += 25;
+      y += lineHeight;
       aggregatedEquipment.forEach((e, idx) => {
-        const text = g
-          .append("text")
-          .attr("x", x)
-          .attr("dy", dy)
-          .attr("y", y + idx * 20)
-          .attr("class", classes)
-          .text(`${e.count} x ${e.name}`);
-        text.attr("font-size", `${options.fontSize * 0.9}pt`);
+        addText(y + idx * equipmentLineHeight, `${e.count} x ${e.name}`).attr(
+          "font-size",
+          `${equipmentFontSize}pt`,
+        );
       });
     }
   }
