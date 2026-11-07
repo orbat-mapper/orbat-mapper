@@ -101,6 +101,18 @@ const DESIGNATION: ParamDescriptor = {
   maxLength: 32,
 };
 
+/** The key of the trunk's label field: the graphic's Field T, not a flow option. */
+export const TRUNK_LABEL_KEY = "T";
+
+const TRUNK_LABEL: ParamDescriptor = {
+  key: TRUNK_LABEL_KEY,
+  label: "Label",
+  description:
+    "Designation drawn along the trunk. It is the graphic's Field T, also under Text labels",
+  type: "text",
+  maxLength: 32,
+};
+
 const LABEL_ALIGNMENT = flowParam(
   "labelVerticalAlignment",
   "Label alignment",
@@ -144,10 +156,11 @@ const ARROWHEAD_WIDTH = flowParam(
 );
 
 /** The fields for one flow, in panel order. The trunk's label is the
- *  graphic's Field T, and a flow without a head has no head to style. */
+ *  graphic's Field T (`TRUNK_LABEL_KEY`), and a flow without a head has no
+ *  head to style. */
 export function splitFlowParams(summary: SplitFlowSummary): ParamDescriptor[] {
   return [
-    ...(summary.index > 0 ? [DESIGNATION] : []),
+    summary.index === 0 ? TRUNK_LABEL : DESIGNATION,
     LABEL_ALIGNMENT,
     LABEL_POSITION,
     ...(summary.hasHead ? [ARROWHEAD_STYLE, ARROWHEAD_SCALE, ARROWHEAD_WIDTH] : []),

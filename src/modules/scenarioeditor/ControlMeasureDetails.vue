@@ -278,6 +278,16 @@ function doAmplifierUpdate(textAmplifiers: NTacticalGraphicLayerItem["textAmplif
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { textAmplifiers });
 }
 
+/** The Split Arrow's trunk label is Field T: an emptied one is dropped, as in Text labels. */
+function updateTrunkLabel(label: string) {
+  const textAmplifiers: NonNullable<NTacticalGraphicLayerItem["textAmplifiers"]> = {
+    ...item.value?.textAmplifiers,
+    T: label,
+  };
+  if (!label.trim()) delete textAmplifiers.T;
+  doAmplifierUpdate(textAmplifiers);
+}
+
 function doControlMeasureOptionsUpdate(options: TacticalGraphicOptions) {
   if (item.value) scenarioDraw.updateControlMeasure(item.value.id, { options });
 }
@@ -543,7 +553,9 @@ function doDelete() {
             :editing="isEditingShape"
             :can-add-flow="scenarioDraw.controlMeasureCanAddFlow.value"
             :add-flow-armed="scenarioDraw.controlMeasureAddFlowArmed.value"
+            :trunk-label="item.textAmplifiers?.T"
             @update:add-flow-armed="scenarioDraw.setControlMeasureAddFlowArmed"
+            @update:trunk-label="updateTrunkLabel"
             @select="selectFlow"
             @patch="patchFlows"
             @edit="applyFlowEdit"
