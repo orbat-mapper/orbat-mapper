@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { upgradeScenarioIfNecessary } from "./upgrade";
+import type { Scenario } from "@/types/scenarioModels";
 import type { ScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 
 function getOverlayLayers(scenario: { layerStack: any[] }): ScenarioOverlayLayer[] {
@@ -452,5 +453,31 @@ describe("Classic Arrow upgrade", () => {
       ) as any,
     );
     expect(firstItem(current).controlPoints).toEqual(points);
+  });
+});
+
+describe("symbology standard upgrade", () => {
+  function upgradeStandard(symbologyStandard: unknown, version = "3.7.0") {
+    return upgradeScenarioIfNecessary(
+      createScenario({ version, symbologyStandard }) as unknown as Scenario,
+    ).symbologyStandard;
+  }
+
+  it("maps legacy names in scenarios of any version", () => {
+    expect(upgradeStandard("app6", "3.2.0")).toBe("app6d");
+    expect(upgradeStandard("app6")).toBe("app6d");
+    expect(upgradeStandard("2525")).toBe("2525d");
+  });
+
+  it("keeps supported standards", () => {
+    expect(upgradeStandard("2525d")).toBe("2525d");
+    expect(upgradeStandard("2525e")).toBe("2525e");
+    expect(upgradeStandard("app6d")).toBe("app6d");
+  });
+
+  it("drops unknown standards so the default applies", () => {
+    expect(upgradeStandard("app6x")).toBeUndefined();
+    expect(upgradeStandard(42)).toBeUndefined();
+    expect(upgradeStandard("toString")).toBeUndefined();
   });
 });
