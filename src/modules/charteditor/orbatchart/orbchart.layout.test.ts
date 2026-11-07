@@ -246,3 +246,32 @@ describe.each([LevelLayouts.Tree, LevelLayouts.TreeLeft, LevelLayouts.TreeRight]
     });
   },
 );
+
+describe.each([LevelLayouts.Tree, LevelLayouts.TreeLeft, LevelLayouts.TreeRight])(
+  "symbol alignment for %s",
+  (lastLevelLayout) => {
+    it("lines up symbols on the same side of the trunk regardless of label width", () => {
+      const root = unit("root", [
+        unit("parent", [
+          unit("a"),
+          unit("A much wider unit label"),
+          unit("b"),
+          unit("Another wide unit label here"),
+        ]),
+      ]);
+      const chart = new OrbatChart(root, {
+        lastLevelLayout,
+        maxLevels: 3,
+        symbolGenerator: createSymbol,
+      });
+      chart.toSVG(document.createElement("div"), { width: 800, height: 800 });
+
+      const [branch] = chart.renderedChart.levels[2].branches;
+      const parentX = branch.units[0].parent!.x;
+      const rightX = branch.units.filter((u) => u.x > parentX).map((u) => u.x);
+      const leftX = branch.units.filter((u) => u.x < parentX).map((u) => u.x);
+      expect(new Set(rightX).size).toBeLessThanOrEqual(1);
+      expect(new Set(leftX).size).toBeLessThanOrEqual(1);
+    });
+  },
+);

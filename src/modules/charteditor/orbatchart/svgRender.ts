@@ -393,6 +393,13 @@ export function drawUnitLevelConnectorPath(
   g.append("path").attr("d", d).classed("o-line", true);
 }
 
+/** Whether a tree unit sits to the right of its parent's connector trunk. */
+export function isPlacedRight(layout: LevelLayout, index: number) {
+  return (
+    layout === LevelLayouts.TreeRight || (layout === LevelLayouts.Tree && index % 2 > 0)
+  );
+}
+
 export function drawUnitBranchTreeLeftRightConnectorPath(
   g: GElementSelection,
   unitBranch: RenderedUnitNode[],
@@ -408,24 +415,13 @@ export function drawUnitBranchTreeLeftRightConnectorPath(
   }`;
   g.append("path").attr("d", d1).classed("o-line", true);
 
-  // find the widest node
-  const maxWidth = Math.max(...unitBranch.map((u) => u.boundingBox.width));
   for (const [yIdx, unit] of unitBranch.entries()) {
-    let d1;
-    // const delta = Math.abs(unit.boundingBox.width / 2 - maxWidth / 2);
-    const delta = 0;
-    if (
-      levelLayout === LevelLayouts.TreeRight ||
-      (levelLayout === LevelLayouts.Tree && yIdx % 2)
-    )
-      d1 = `M ${unit.lsx - delta - options.connectorOffset}, ${unit.y}  H ${
-        parentUnit.x
-      }`;
-    else
-      d1 = `M ${unit.rsx + delta + options.connectorOffset}, ${unit.y}  H ${
-        parentUnit.x
-      }`;
-    g.append("path").attr("d", d1).classed("o-line", true);
+    const startX = isPlacedRight(levelLayout, yIdx)
+      ? unit.lsx - options.connectorOffset
+      : unit.rsx + options.connectorOffset;
+    g.append("path")
+      .attr("d", `M ${startX}, ${unit.y}  H ${parentUnit.x}`)
+      .classed("o-line", true);
   }
 }
 

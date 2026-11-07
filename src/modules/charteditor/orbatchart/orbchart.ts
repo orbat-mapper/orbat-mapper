@@ -26,6 +26,7 @@ import {
   addFontAttributes,
   calculateAnchorPoints,
   getUnitBoxOrigin,
+  isPlacedRight,
   createChartStyle,
   createGroupElement,
   createInitialNodeStructure,
@@ -51,24 +52,29 @@ function isLeftRightLayout(layout: LevelLayout) {
 }
 
 /**
- * Position a tree unit far enough from its parent's connector trunk that the
- * unit's complete rendered box, including resource text, clears the line.
+ * Horizontal offsets from the parent's connector trunk for a branch of tree units.
+ * Each unit's complete rendered box, including resource text, must clear the line.
+ * Units on the same side share the largest offset so their symbols line up.
  */
-function getTreeUnitOffset(
-  unit: RenderedUnitNode,
+function getTreeBranchOffsets(
+  units: RenderedUnitNode[],
   layout: LevelLayout,
-  index: number,
-  options: Pick<OrbChartOptions, "connectorOffset" | "lineWidth" | "treeOffset">,
+  branchOptions: Pick<OrbChartOptions, "connectorOffset" | "lineWidth" | "treeOffset">,
 ) {
-  const boxLeftOffset = getUnitBoxOrigin(unit).x - unit.x;
-  const boxRightOffset = boxLeftOffset + unit.boundingBox.width;
-  const clearance = options.connectorOffset + options.lineWidth;
-  const placeRight =
-    layout === LevelLayouts.TreeRight || (layout === LevelLayouts.Tree && index % 2 > 0);
-
-  return placeRight
-    ? Math.max(options.treeOffset, clearance - boxLeftOffset)
-    : -Math.max(options.treeOffset, clearance + boxRightOffset);
+  let right = 0;
+  let left = 0;
+  units.forEach((unit, index) => {
+    const options = { ...branchOptions, ...unit.options };
+    const boxLeftOffset = getUnitBoxOrigin(unit).x - unit.x;
+    const boxRightOffset = boxLeftOffset + unit.boundingBox.width;
+    const clearance = options.connectorOffset + options.lineWidth;
+    if (isPlacedRight(layout, index)) {
+      right = Math.max(right, options.treeOffset, clearance - boxLeftOffset);
+    } else {
+      left = Math.max(left, options.treeOffset, clearance + boxRightOffset);
+    }
+  });
+  return units.map((_, index) => (isPlacedRight(layout, index) ? right : -left));
 }
 
 export function isTreeLayout(layout: LevelLayout) {
@@ -370,13 +376,18 @@ class OrbatChart {
         let rowY = y;
         let rowBottom = Number.NEGATIVE_INFINITY;
         let previousInRow: RenderedUnitNode | null = null;
+        const offsets = getTreeBranchOffsets(
+          unitBranch.units,
+          LevelLayouts.Tree,
+          branchOptions,
+        );
         for (const [yIdx, unitNode] of unitBranch.units.entries()) {
           const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
 
-          x += getTreeUnitOffset(unitNode, LevelLayouts.Tree, yIdx, unitOptions);
+          x += offsets[yIdx];
           unitNode.x = x;
           unitNode.y = rowY;
           calculateAnchorPoints(unitNode);
@@ -423,15 +434,16 @@ class OrbatChart {
       renderedLevel.branches.forEach((unitBranch, groupIdx) => {
         const branchOptions = { ...levelOptions, ...unitBranch.options };
         let prevY = y;
+        const offsets = isLeftRightLayout(layout)
+          ? getTreeBranchOffsets(unitBranch.units, layout, branchOptions)
+          : unitBranch.units.map(() => 0);
         for (const [yIdx, unitNode] of unitBranch.units.entries()) {
           const unitOptions = { ...branchOptions, ...unitNode.options };
           let x = unitNode.parent
             ? unitNode.parent.x
             : ((groupIdx + 1) * chartWidth) / (groupsOnLevel + 1);
 
-          if (isLeftRightLayout(layout)) {
-            x += getTreeUnitOffset(unitNode, layout, yIdx, unitOptions);
-          }
+          x += offsets[yIdx];
           const ny = prevY;
           unitNode.x = x;
           unitNode.y = ny;
@@ -488,17 +500,15 @@ class OrbatChart {
       const level = renderedChart.levels[lastLevelIndex];
       const levelOptions = { ...this.options, ...level.options };
       const branchOptions = { ...levelOptions, ...branch.options };
+      const offsets = getTreeBranchOffsets(
+        branch.units,
+        this.options.lastLevelLayout,
+        branchOptions,
+      );
       let left = 0;
       let right = 0;
       branch.units.forEach((child, index) => {
-        const unitOptions = { ...branchOptions, ...child.options };
-        const offset = getTreeUnitOffset(
-          child,
-          this.options.lastLevelLayout,
-          index,
-          unitOptions,
-        );
-        const childBoxLeft = getUnitBoxOrigin(child).x - child.x + offset;
+        const childBoxLeft = getUnitBoxOrigin(child).x - child.x + offsets[index];
         left = Math.min(left, childBoxLeft);
         right = Math.max(right, childBoxLeft + child.boundingBox.width);
       });
