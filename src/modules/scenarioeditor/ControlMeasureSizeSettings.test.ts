@@ -2,7 +2,7 @@
 import { mount } from "@vue/test-utils";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import ControlMeasureSizeSettings from "@/modules/scenarioeditor/ControlMeasureSizeSettings.vue";
-import ControlMeasureParameterField from "@/modules/scenarioeditor/ControlMeasureParameterField.vue";
+import ControlMeasureSizeSliderField from "@/modules/scenarioeditor/ControlMeasureSizeSliderField.vue";
 
 beforeAll(() =>
   vi.stubGlobal(
@@ -36,7 +36,7 @@ describe("batch size controls", () => {
         getResolution: () => resolution,
       },
     });
-    expect(wrapper.findAllComponents(ControlMeasureParameterField)).toHaveLength(1);
+    expect(wrapper.findAllComponents(ControlMeasureSizeSliderField)).toHaveLength(1);
     expect(wrapper.text()).toContain("Mixed sizes");
     resolution = 2.5;
     await wrapper.find('button[aria-label="Meters"]').trigger("click");
@@ -47,8 +47,8 @@ describe("batch size controls", () => {
       ],
     ]);
     await wrapper
-      .findComponent(ControlMeasureParameterField)
-      .vm.$emit("update:modelValue", 50);
+      .findComponent(ControlMeasureSizeSliderField)
+      .vm.$emit("update:value", 50);
     expect(wrapper.emitted("update")?.at(-1)).toEqual([
       [
         { id: "one", options: { sizePixels: 50, crossAngle: 60 } },
@@ -85,7 +85,7 @@ describe("batch size controls", () => {
         ],
       },
     });
-    expect(wrapper.findAllComponents(ControlMeasureParameterField)).toHaveLength(0);
+    expect(wrapper.findAllComponents(ControlMeasureSizeSliderField)).toHaveLength(0);
   });
 
   it("keeps the authored unit and emits no update when conversion is unavailable", async () => {

@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { roundToStep } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
 
 const props = defineProps<{
@@ -33,6 +34,14 @@ watch(
     if (typeof value === "number") numberDraft.value = value;
   },
   { immediate: true },
+);
+
+/** The readout, at the step's precision: a value set by a grip is not on a step. */
+const numberReadout = computed(() =>
+  roundToStep(
+    numberDraft.value,
+    (props.parameter.type === "number" && props.parameter.step) || 0.001,
+  ),
 );
 
 function previewNumber(value: number[] | undefined) {
@@ -72,12 +81,11 @@ function updateEnum(
   <Field>
     <div class="flex items-center justify-between gap-2">
       <FieldLabel :for="id">{{ parameter.label }}</FieldLabel>
-      <slot name="unit" />
       <span
         v-if="parameter.type === 'number' && boundedNumber"
         class="text-muted-foreground text-xs tabular-nums"
       >
-        {{ numberDraft }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
+        {{ numberReadout }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
       </span>
     </div>
     <FieldDescription v-if="parameter.description">
@@ -124,6 +132,7 @@ function updateEnum(
     <Switch
       v-else-if="parameter.type === 'boolean'"
       :id="id"
+      class="self-start"
       :model-value="Boolean(modelValue)"
       @update:model-value="$emit('update:modelValue', Boolean($event))"
     />

@@ -10,6 +10,7 @@ import type {
   DrawOptions,
   DrawPointSymbolDraft,
   EditOptions,
+  EditPointerDriver,
   Graphic,
   GraphicSnapshot,
   InteractionHit,
@@ -159,6 +160,18 @@ export interface TacticalDrawSurface {
     options?: { tolerance?: number; originalEvent?: unknown },
   ): InteractionHit | null;
   /**
+   * Whether the live edit kept the click now being handled, even though the pixel may
+   * be empty by then: Alt-clicking a vertex deletes it on press, so on a thin line the
+   * click lands on empty map. Only meaningful inside a click handler.
+   */
+  consumedPointerCycle(): boolean;
+  /**
+   * Report Ctrl held on edit presses, so a definition's Ctrl/⌘ + drag on a point
+   * (a Flow or Split Arrow pulling a new flow out of it) can start without a
+   * keyboard. Read at event time; the caller turns it off again.
+   */
+  setModifierDragArmed(armed: boolean): void;
+  /**
    * Replace the passive selection-highlight set. Declarative and idempotent, like
    * `render()`; `[]` clears it. Unknown ids are skipped by the library.
    *
@@ -255,6 +268,19 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   // ~150-200. The cost is that pixel-fit chrome refits at `moveend` instead of
   // scaling mid-animation. See docs/adr/0006-control-measures-on-tactical-draw.md.
   const adapter = new MapLibreAdapter(mlMap, { viewChangeMode: "settle" });
+  // An armed modifier drag rides the edit pointer stream: every edit press reports
+  // Ctrl held, which is how touch reaches the Ctrl/⌘ + drag a definition declares.
+  let modifierDragArmed = false;
+  const createEditPointerDriver = adapter.createEditPointerDriver.bind(adapter);
+  adapter.createEditPointerDriver = (): EditPointerDriver => {
+    const driver = createEditPointerDriver();
+    const onPointerDown = driver.onPointerDown.bind(driver);
+    driver.onPointerDown = (cb) =>
+      onPointerDown((pixel, info) =>
+        cb(pixel, modifierDragArmed ? { ...info, ctrlKey: true } : info),
+      );
+    return driver;
+  };
   const pickHandlers = new Set<(event: PickEvent) => void>();
   const beforeDetachHandlers = new Set<() => void>();
 
@@ -341,6 +367,12 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     },
     ownsInteractionAt(pixel, options) {
       return tacticalDraw?.ownsInteractionAt(pixel, options) ?? null;
+    },
+    consumedPointerCycle() {
+      return tacticalDraw?.consumedPointerCycle() ?? false;
+    },
+    setModifierDragArmed(armed) {
+      modifierDragArmed = armed;
     },
     pointSymbolAt(pixel, { tolerance = 4, above } = {}) {
       if (!tacticalDraw) return null;

@@ -16,9 +16,9 @@ import {
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 
 describe("the styling gate", () => {
-  it("covers exactly the 8 Generic Graphics kinds", () => {
+  it("covers exactly the 10 Generic Graphics kinds", () => {
     const styleable = CONTROL_MEASURE_IDS.filter(isStyleableControlMeasureKind);
-    expect(styleable).toHaveLength(8);
+    expect(styleable).toHaveLength(10);
     expect(styleable).toEqual(
       CONTROL_MEASURE_IDS.filter(
         (id) => CONTROL_MEASURE_METADATA[id].entity === GENERIC_GRAPHICS_ENTITY,
@@ -39,11 +39,20 @@ describe("the styling gate", () => {
     // `paints.fill === "user"` — the kinds governed by a `filled` boolean option.
     expect(CONTROL_MEASURE_IDS.filter(canAuthorFillPattern)).toEqual([
       "block-arrow",
+      "flow-arrow",
       "polygon",
       "rectangle",
       "circle",
       "sector",
     ]);
+    // The Style tab's Filled switch owns `filled`, so no kind with the param can
+    // offer it twice.
+    for (const id of CONTROL_MEASURE_IDS) {
+      const hasFilled = CONTROL_MEASURE_METADATA[id].params?.some(
+        (p) => p.key === "filled",
+      );
+      if (hasFilled) expect(canAuthorFillPattern(id)).toBe(true);
+    }
     // Styleable, but its generator pins the pattern, so the control would be inert.
     expect(canAuthorFillPattern("classic-arrow")).toBe(false);
     expect(canAuthorFillPattern("line")).toBe(false);

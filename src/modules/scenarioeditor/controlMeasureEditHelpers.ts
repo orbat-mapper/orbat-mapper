@@ -15,6 +15,7 @@ import type {
   TacticalGraphicLayerItemUpdate,
   TacticalGraphicOptions,
 } from "@/types/scenarioLayerItems";
+import type { FeatureId } from "@/types/scenarioGeoModels";
 import { toControlMeasure } from "@/geo/controlMeasures";
 
 /**
@@ -77,21 +78,40 @@ export function applyScenarioControlMeasureEdit(
   measure: ControlMeasure,
   options: ApplyControlMeasureEditOptions = {},
 ) {
-  const update = toControlMeasureEditUpdate(measure);
+  applyScenarioControlMeasureUpdate(
+    scenario,
+    measure.id,
+    toControlMeasureEditUpdate(measure),
+    options,
+  );
+}
+
+/**
+ * Write an edit-shaped update: top-level, or with recording on, shape into `state[]`
+ * and everything else top-level, grouped as one undo step. Shared by the settled-edit
+ * fold and the panel's flow edits (a Flow or Split Arrow's reverse, detach and remove),
+ * which change points and options together.
+ */
+export function applyScenarioControlMeasureUpdate(
+  scenario: TScenario,
+  id: FeatureId,
+  update: TacticalGraphicLayerItemUpdate,
+  options: ApplyControlMeasureEditOptions = {},
+) {
   if (!options.recordShape) {
-    scenario.geo.updateTacticalGraphic(measure.id, update);
+    scenario.geo.updateTacticalGraphic(id, update);
     return;
   }
   const { controlPoints, ...timeless } = update;
   scenario.store.groupUpdate(
     () => {
       if (Object.keys(timeless).length > 0) {
-        scenario.geo.updateTacticalGraphic(measure.id, timeless);
+        scenario.geo.updateTacticalGraphic(id, timeless);
       }
       if (controlPoints) {
-        scenario.geo.addTacticalGraphicStateControlPoints(measure.id, controlPoints);
+        scenario.geo.addTacticalGraphicStateControlPoints(id, controlPoints);
       }
     },
-    { label: "updateFeatureGeometry", value: measure.id },
+    { label: "updateFeatureGeometry", value: id },
   );
 }

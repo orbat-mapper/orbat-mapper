@@ -17,6 +17,7 @@
  * toolbar, since that toolbar is usually closed.
  */
 import { computed, ref, watch } from "vue";
+import type { Position } from "geojson";
 import {
   IconAlertOutline,
   IconContentCopy as DuplicateIcon,
@@ -41,6 +42,7 @@ import { useTabStore } from "@/stores/tabStore";
 import { renderMarkdown } from "@/composables/formatting";
 import { getGeometryIcon } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
+  resolveControlMeasureControlPoints,
   resolveControlMeasureOptions,
   resolveControlMeasureStyle,
 } from "@/geo/controlMeasures";
@@ -63,6 +65,7 @@ import type { ControlMeasureSizeUpdate } from "@/modules/scenarioeditor/controlM
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
+import ControlMeasureFlows from "@/modules/scenarioeditor/ControlMeasureFlows.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
@@ -180,6 +183,58 @@ const kindMetadata = computed(() => {
 const resolvedOptions = computed(() =>
   item.value ? resolveControlMeasureOptions(item.value) : undefined,
 );
+
+/**
+ * An arrow drawn as flows (Flow Arrow, Split Arrow) has its flows edited in a section
+ * of its own. While the shape is under edit the flow follows the session's selected
+ * part, so a click on a flow on the map picks it here too.
+ */
+const flowKind = computed(() => {
+  const kind = item.value?.graphicKind;
+  return kind === "flow-arrow" || kind === "split-arrow" ? kind : undefined;
+});
+// While the shape is under edit its work has not reached the store yet, so the
+// flows come from the open session.
+const liveShape = computed(() =>
+  isEditingShape.value ? scenarioDraw.controlMeasureLiveShape.value : null,
+);
+const flowControlPoints = computed(
+  () =>
+    liveShape.value?.controlPoints ??
+    (item.value ? resolveControlMeasureControlPoints(item.value) : []),
+);
+const flowOptions = computed(
+  () =>
+    (liveShape.value?.options ?? resolvedOptions.value ?? {}) as TacticalGraphicOptions,
+);
+const panelFlow = ref(0);
+watch(
+  () => item.value?.id,
+  () => {
+    panelFlow.value = 0;
+  },
+);
+const selectedFlow = computed(() =>
+  isEditingShape.value ? scenarioDraw.controlMeasureSelectedPart.value : panelFlow.value,
+);
+
+function selectFlow(part: number) {
+  panelFlow.value = part;
+  if (isEditingShape.value) scenarioDraw.selectControlMeasurePart(part);
+}
+
+function patchFlows(patch: object) {
+  // Settles the open edit first, so the store then holds what `flowOptions` showed.
+  doControlMeasureOptionsUpdate({ ...flowOptions.value, ...patch });
+}
+
+function applyFlowEdit(edit: {
+  controlPoints: Position[];
+  options: TacticalGraphicOptions;
+}) {
+  if (item.value) scenarioDraw.applyControlMeasureTopologyEdit(item.value.id, edit);
+}
+
 const hDescription = computed(() => renderMarkdown(item.value?.description || ""));
 
 const itemName = ref("");
@@ -477,6 +532,21 @@ function doDelete() {
             :options="resolvedOptions"
             :get-resolution="constructionResolution"
             @update="doControlMeasureOptionsUpdate"
+          />
+          <ControlMeasureFlows
+            v-if="flowKind"
+            class="mt-5"
+            :graphic-kind="flowKind"
+            :control-points="flowControlPoints"
+            :options="flowOptions"
+            :selected-part="selectedFlow"
+            :editing="isEditingShape"
+            :can-add-flow="scenarioDraw.controlMeasureCanAddFlow.value"
+            :add-flow-armed="scenarioDraw.controlMeasureAddFlowArmed.value"
+            @update:add-flow-armed="scenarioDraw.setControlMeasureAddFlowArmed"
+            @select="selectFlow"
+            @patch="patchFlows"
+            @edit="applyFlowEdit"
           />
         </TabsContent>
         <TabsContent value="2" class="mx-4">

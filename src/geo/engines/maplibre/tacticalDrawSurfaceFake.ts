@@ -280,6 +280,11 @@ export function createTacticalDrawSurfaceFake(
         changeListeners.add(listener);
         return () => changeListeners.delete(listener);
       },
+      selectedPart: undefined,
+      selectPart() {},
+      onPartSelect() {
+        return () => {};
+      },
       setOptions(patch: Record<string, unknown>) {
         const next = { ...working.options } as Record<string, unknown>;
         for (const [key, value] of Object.entries(patch)) {
@@ -372,6 +377,10 @@ export function createTacticalDrawSurfaceFake(
     ownsInteractionAt() {
       return null;
     },
+    consumedPointerCycle() {
+      return false;
+    },
+    setModifierDragArmed() {},
     pointSymbolAt() {
       return null;
     },

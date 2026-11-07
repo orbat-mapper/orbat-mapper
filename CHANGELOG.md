@@ -9,14 +9,19 @@ All notable changes to this project will be documented in this file.
 - Added Pan to for units: in the ORBAT context menu, and as a choice on the Zoom to button in the unit details toolbar, which remembers the last one used.
 - Added a zoom button to layer headers in the Layers panel.
 - Added a 2D button under the map compass that levels the view while keeping the bearing. It shows only while the map is tilted.
+- Added the Flow Arrow and the Split Arrow to the control measures. Hold Ctrl/⌘ and drag from a point while editing the shape to pull out a new flow, or turn on Add flow in the details panel on a touch screen. The details panel lists the flows: pick one to set its own arrowhead, widths or label, or to reverse or remove it.
 
 ### Changed
 
+- Size settings such as Arrowhead length and Label size now show the label and a typed value on one line, with the slider and the m/px switch below. In meters the slider covers the sizes that are visible at the current zoom.
 - Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
 - Clicking the map compass now resets only the bearing. Double-click it to also level the view.
 
 ### Fixed
 
+- Fixed Ctrl/⌘ + drag and Shift + drag on a control measure's edit handle also starting a box select or a box zoom, which ended the edit.
+- Fixed a control measure dropping out of its edit when Alt-clicking a point on a thin line deleted the point.
+- Fixed filled control measures (polygons, circles, block arrows and others) showing a second, full-width Filled switch in their extended style settings.
 - Fixed the white outline around echelon markers (III, XX and so on) being drawn above the marker instead of around it.
 
 ## October 2026

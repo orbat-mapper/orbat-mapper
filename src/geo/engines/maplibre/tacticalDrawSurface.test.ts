@@ -20,6 +20,7 @@ const { facades, adapters } = vi.hoisted(() => ({
   adapters: [] as Array<{
     destroy: ReturnType<typeof vi.fn>;
     options: { viewChangeMode?: "continuous" | "settle" } | undefined;
+    press: (info: Record<string, unknown>) => void;
   }>,
 }));
 
@@ -64,9 +65,30 @@ vi.mock("@orbat-mapper/tactical-draw", () => ({
 vi.mock("@orbat-mapper/tactical-draw-adapter-maplibre", () => ({
   MapLibreAdapter: class FakeMapLibreAdapter {
     constructor(_map: unknown, options?: { viewChangeMode?: "continuous" | "settle" }) {
-      const entry = { destroy: vi.fn(), options };
+      const pointerDown: ((pixel: unknown, info?: unknown) => void)[] = [];
+      const driver = {
+        setDragPanEnabled: vi.fn(),
+        toPixel: vi.fn(),
+        fromPixel: vi.fn(),
+        dispose: vi.fn(),
+        onPointerDown: (cb: (pixel: unknown, info?: unknown) => void) => {
+          pointerDown.push(cb);
+          return () => {};
+        },
+        onPointerMove: () => () => {},
+        onPointerUp: () => () => {},
+      };
+      const entry = {
+        destroy: vi.fn(),
+        options,
+        press: (info: Record<string, unknown>) =>
+          pointerDown.forEach((cb) => cb([0, 0], info)),
+      };
       adapters.push(entry);
-      Object.assign(this, { destroy: entry.destroy });
+      Object.assign(this, {
+        destroy: entry.destroy,
+        createEditPointerDriver: () => driver,
+      });
     }
   },
 }));
@@ -103,6 +125,26 @@ describe("createTacticalDrawSurface", () => {
   // The adapter's default is "continuous", which re-renders the whole stack on every
   // frame of a pure pan. Nothing fails if this regresses — the map just gets slow —
   // so it is asserted rather than left to a comment. See ADR-0006.
+  it("reports Ctrl held on edit presses only while a modifier drag is armed", () => {
+    const { map } = createFakeMap(true);
+    const surface = createTacticalDrawSurface(map);
+    const driver = surface.adapter.createEditPointerDriver();
+    const seen: unknown[] = [];
+    driver.onPointerDown((_pixel, info) => seen.push(info));
+
+    adapters[0].press({ ctrlKey: false, shiftKey: true });
+    surface.setModifierDragArmed(true);
+    adapters[0].press({ ctrlKey: false, shiftKey: true });
+    surface.setModifierDragArmed(false);
+    adapters[0].press({ ctrlKey: false });
+
+    expect(seen).toEqual([
+      { ctrlKey: false, shiftKey: true },
+      { ctrlKey: true, shiftKey: true },
+      { ctrlKey: false },
+    ]);
+  });
+
   it("constructs the adapter in settle view-change mode", () => {
     const { map } = createFakeMap(true);
     createTacticalDrawSurface(map);
