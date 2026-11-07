@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added Pan to for units: in the ORBAT context menu, and as a choice on the Zoom to button in the unit details toolbar, which remembers the last one used.
 - Added a zoom button to layer headers in the Layers panel.
 - Added a 2D button under the map compass that levels the view while keeping the bearing. It shows only while the map is tilted.
+- Added the Atlas base map, drawn in the manner of military history atlas plates: white low ground, buff to brown elevation tints above 100, 200, 500, 1,000 and 2,000 m, pale cyan water and light grey borders. The tints use Mapterhorn elevation data online.
 - Added the Flow Arrow and the Split Arrow to the control measures. Hold Ctrl/⌘ and drag from a point while editing the shape to pull out a new flow, or turn on Add flow in the details panel on a touch screen. The details panel lists the flows: pick one to set its own arrowhead, widths or label, or to reverse or remove it.
 
 ### Changed
