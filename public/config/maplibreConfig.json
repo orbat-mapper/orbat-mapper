@@ -30,6 +30,11 @@
     "styleUrl": "https://tiles.openfreemap.org/styles/fiord"
   },
   {
+    "name": "atlas",
+    "title": "Atlas",
+    "sourceType": "atlas"
+  },
+  {
     "name": "versaTilesEclipse",
     "title": "VersaTiles Eclipse (dark)",
     "sourceType": "style",

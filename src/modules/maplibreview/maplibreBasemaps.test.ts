@@ -84,6 +84,23 @@ describe("maplibreBasemaps", () => {
     });
   });
 
+  it("builds the Atlas style for atlas sources", () => {
+    const [atlas] = getSupportedMaplibreBasemaps([
+      {
+        name: "atlas",
+        title: "Atlas",
+        sourceType: "atlas",
+        vectorUrl: "https://tiles.example.com/planet",
+      },
+    ]);
+    expect(atlas.id).toBe("atlas");
+    expect(atlas.title).toBe("Atlas");
+    expect(atlas.style).toMatchObject({
+      version: 8,
+      sources: { omt: { type: "vector", url: "https://tiles.example.com/planet" } },
+    });
+  });
+
   it("emits an empty style for the no-basemap option", () => {
     const options = getSupportedMaplibreBasemaps(layers);
     const none = options.find((o) => o.id === NO_BASEMAP_ID);
