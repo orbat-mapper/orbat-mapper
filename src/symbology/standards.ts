@@ -52,6 +52,10 @@ export const stableSymbologyStandardOptions = symbologyStandardOptions.filter(
   ({ value }) => value !== "2525e",
 );
 
+export function isSymbologyStandard(value: unknown): value is SymbologyStandard {
+  return typeof value === "string" && Object.hasOwn(symbologyStandards, value);
+}
+
 export function getSymbologyStandardName(standard?: SymbologyStandard): string {
   return standard ? symbologyStandards[standard].name : "";
 }
