@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import InputGroup from "@/components/InputGroup.vue";
+import { computed } from "vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { enum2Items } from "@/utils";
-import {
-  type ChartItemType,
-  FontStyles,
-  FontWeights,
-  LabelPlacements,
-} from "./orbatchart";
+import { type ChartItemType, LABEL_FONT_OPTIONS, LabelPlacements } from "./orbatchart";
+import FontStyleControl from "./FontStyleControl.vue";
 import { useChartSettings } from "./composables";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
@@ -16,10 +12,10 @@ interface Props {
   itemType: ChartItemType;
 }
 const props = defineProps<Props>();
-const { setValue, usedOptions, mergedOptions } = useChartSettings(props.itemType);
+const { setValue, clearValues, inheritedOptions, usedOptions, mergedOptions } =
+  useChartSettings(props.itemType);
 
-const fontWeightItems = enum2Items(FontWeights);
-const fontStyleItems = enum2Items(FontStyles);
+const labelFontInherited = computed(() => inheritedOptions(LABEL_FONT_OPTIONS));
 const labelPlacementItems = enum2Items(LabelPlacements);
 </script>
 
@@ -32,33 +28,16 @@ const labelPlacementItems = enum2Items(LabelPlacements);
       :class="!usedOptions.has('symbolSize') && 'sepia-[50%]'"
     />
 
-    <NumberInputGroup
-      label="Font size"
-      :model-value="mergedOptions.fontSize"
-      @update:model-value="setValue('fontSize', $event)"
-      :class="!usedOptions.has('fontSize') && 'sepia-[50%]'"
-    />
-
-    <SimpleSelect
-      label="Font weight"
-      :model-value="mergedOptions.fontWeight"
-      @update:model-value="setValue('fontWeight', $event)"
-      :class="!usedOptions.has('fontWeight') && 'sepia-[50%]'"
-      :items="fontWeightItems"
-    />
-    <SimpleSelect
-      label="Font style"
-      :model-value="mergedOptions.fontStyle"
-      @update:model-value="setValue('fontStyle', $event)"
-      :class="!usedOptions.has('fontStyle') && 'sepia-[50%]'"
-      :items="fontStyleItems"
-    />
-    <InputGroup
-      label="Font color"
-      type="color"
-      :model-value="mergedOptions.fontColor"
-      @update:model-value="setValue('fontColor', $event)"
-      :class="!usedOptions.has('fontColor') && 'sepia-[50%]'"
+    <FontStyleControl
+      label="Label font"
+      :font-size="mergedOptions.fontSize"
+      :font-weight="mergedOptions.fontWeight"
+      :font-style="mergedOptions.fontStyle"
+      :font-color="mergedOptions.fontColor"
+      :inherited="labelFontInherited"
+      reset-label="Use inherited font"
+      @update="setValue"
+      @reset="clearValues(Object.values(LABEL_FONT_OPTIONS))"
     />
     <NumberInputGroup
       label="Label offset"

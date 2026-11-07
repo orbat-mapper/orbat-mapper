@@ -7,6 +7,7 @@ import { useChartSettings } from "./composables";
 import SettingsUnit from "./SettingsUnit.vue";
 import AccordionPanel from "../../components/AccordionPanel.vue";
 import SettingConnectors from "./SettingsConnectors.vue";
+import SettingsToe from "./SettingsToe.vue";
 
 const selectedElement = useSelectedChartElementStore();
 const { clearSpecificOptions } = useChartSettings(ChartItemTypes.Branch);
@@ -23,6 +24,9 @@ const currentBranch = computed(() => selectedElement.branch?.parent || null);
       </AccordionPanel>
       <AccordionPanel label="Connectors">
         <SettingConnectors :item-type="ChartItemTypes.Branch" />
+      </AccordionPanel>
+      <AccordionPanel label="Equipment and personnel">
+        <SettingsToe :item-type="ChartItemTypes.Branch" />
       </AccordionPanel>
     </div>
   </div>

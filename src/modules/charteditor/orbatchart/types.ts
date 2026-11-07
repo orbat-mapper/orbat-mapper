@@ -44,20 +44,6 @@ export const VerticalAlignments = {
 export type VerticalAlignment =
   (typeof VerticalAlignments)[keyof typeof VerticalAlignments];
 
-export const FontWeights = {
-  Normal: "normal",
-  Bold: "bold",
-  Bolder: "bolder",
-  Lighter: "lighter",
-} as const;
-
-export type FontWeight = (typeof FontWeights)[keyof typeof FontWeights];
-
-export const FontStyles = {
-  Normal: "normal",
-  Italic: "italic",
-} as const;
-
 export const LabelPlacements = {
   Below: "below",
   // Left: "left",
@@ -143,6 +129,47 @@ export interface PersonnelOptions {
   showPersonnel: boolean;
 }
 
+export const FONT_KEYS = ["fontSize", "fontWeight", "fontStyle", "fontColor"] as const;
+export type FontKey = (typeof FONT_KEYS)[number];
+
+// Fonts for the personnel and equipment lines. Unset personnel options follow the unit
+// label font. Unset equipment options follow the personnel ones, with the size at 90%.
+export interface ToeFontOptions {
+  personnelFontSize?: number;
+  personnelFontStyle?: FontOptions["fontStyle"];
+  personnelFontWeight?: FontOptions["fontWeight"];
+  personnelFontColor?: string;
+  equipmentFontSize?: number;
+  equipmentFontStyle?: FontOptions["fontStyle"];
+  equipmentFontWeight?: FontOptions["fontWeight"];
+  equipmentFontColor?: string;
+}
+
+export type ToeFontGroup = "personnel" | "equipment";
+
+// The option names behind each font, keyed by font property
+export const LABEL_FONT_OPTIONS = {
+  fontSize: "fontSize",
+  fontWeight: "fontWeight",
+  fontStyle: "fontStyle",
+  fontColor: "fontColor",
+} as const satisfies Record<FontKey, keyof FontOptions>;
+
+export const TOE_FONT_OPTIONS = {
+  personnel: {
+    fontSize: "personnelFontSize",
+    fontWeight: "personnelFontWeight",
+    fontStyle: "personnelFontStyle",
+    fontColor: "personnelFontColor",
+  },
+  equipment: {
+    fontSize: "equipmentFontSize",
+    fontWeight: "equipmentFontWeight",
+    fontStyle: "equipmentFontStyle",
+    fontColor: "equipmentFontColor",
+  },
+} as const satisfies Record<ToeFontGroup, Record<FontKey, keyof ToeFontOptions>>;
+
 export interface ChartSymbolOptions {
   symbolOutlineWidth?: number;
   symbolOutlineColor?: string;
@@ -155,6 +182,7 @@ export interface OrbChartOptions
     LabelOptions,
     EquipmentOptions,
     PersonnelOptions,
+    ToeFontOptions,
     ChartSymbolOptions {
   symbolSize: number;
   maxLevels: number;

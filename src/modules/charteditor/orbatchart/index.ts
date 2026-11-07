@@ -1,3 +1,4 @@
 export { OrbatChart } from "./orbchart";
 export * from "./types";
 export { DEFAULT_OPTIONS } from "./defaults";
+export { resolveToeFonts } from "./toeFonts";

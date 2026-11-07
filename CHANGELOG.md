@@ -11,9 +11,11 @@ All notable changes to this project will be documented in this file.
 - Added a 2D button under the map compass that levels the view while keeping the bearing. It shows only while the map is tilted.
 - Added the Atlas base map, drawn in the manner of military history atlas plates: white low ground, buff to brown elevation tints above 100, 200, 500, 1,000 and 2,000 m, pale cyan water and light grey borders. The tints use Mapterhorn elevation data online.
 - Added the Flow Arrow and the Split Arrow to the control measures. Hold Ctrl/⌘ and drag from a point while editing the shape to pull out a new flow, or turn on Add flow in the details panel on a touch screen. The details panel lists the flows: pick one to set its own arrowhead, widths or label, or to reverse or remove it.
+- Added font settings for the personnel and equipment lines in ORBAT charts, under Equipment and personnel on the Chart, Level, Branch and Units tabs. Personnel lines follow the unit label font and equipment lines follow the personnel font until set. Font settings on the Units tab now also apply to a unit's personnel and equipment lines.
 
 ### Changed
 
+- Font settings in the ORBAT chart settings are now one compact row each: a size field, Bold and Italic buttons and a colour button. The Bolder and Lighter weights are no longer offered.
 - Size settings such as Arrowhead length and Label size now show the label and a typed value on one line, with the slider and the m/px switch below. In meters the slider covers the sizes that are visible at the current zoom.
 - Control measure field descriptions now open from an info button next to the field label instead of taking up space under every field.
 - Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
