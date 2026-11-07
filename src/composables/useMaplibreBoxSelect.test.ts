@@ -168,6 +168,33 @@ describe("useMaplibreBoxSelect", () => {
     expect(restore).toHaveBeenCalledWith("suspended");
   });
 
+  it("leaves a ctrl/cmd drag that another interaction owns alone", () => {
+    const mockMap = createMockMap();
+    const onBoxStart = vi.fn();
+    const suspend = vi.fn(() => "suspended");
+
+    useMaplibreBoxSelect(mockMap.map, {
+      getUnitLayerIds: () => ["unitLayer"],
+      onBoxStart,
+      onBoxEnd: vi.fn(),
+      isEnabled: () => true,
+      isOwnedPress: () => true,
+      suspend,
+      restore: vi.fn(),
+    });
+
+    const move = createMouseEvent("mousemove", { clientX: 40, clientY: 40 });
+    mockMap.container.dispatchEvent(
+      createMouseEvent("mousedown", { clientX: 10, clientY: 10 }),
+    );
+    window.dispatchEvent(move);
+    window.dispatchEvent(createMouseEvent("mouseup", { clientX: 40, clientY: 40 }));
+
+    expect(move.defaultPrevented).toBe(false);
+    expect(onBoxStart).not.toHaveBeenCalled();
+    expect(suspend).not.toHaveBeenCalled();
+  });
+
   it("removes pending window listeners during cleanup", () => {
     const mockMap = createMockMap();
     const onBoxStart = vi.fn();

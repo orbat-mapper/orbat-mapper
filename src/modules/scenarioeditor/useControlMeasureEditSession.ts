@@ -19,9 +19,15 @@
  * geometry; the promise resolves a microtask later, by which time a new tool may
  * already be armed. The promise therefore only reports *that* the session ended.
  */
-import { onScopeDispose, ref } from "vue";
-import type { Ref } from "vue";
-import { getControlMeasureVertexAlignedOptions } from "@orbat-mapper/control-measures";
+import { onScopeDispose, ref, shallowRef } from "vue";
+import type { Ref, ShallowRef } from "vue";
+import type { Position } from "geojson";
+import {
+  getControlMeasureModifierDrag,
+  getControlMeasureVertexAlignedOptions,
+  hasControlMeasureDetailHandles,
+} from "@orbat-mapper/control-measures";
+import type { FlowArrowOptions } from "@orbat-mapper/control-measures";
 import { isEqual } from "es-toolkit";
 import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
@@ -50,6 +56,10 @@ import {
   toControlMeasureEditUpdate,
   toEditStartMeasure,
 } from "@/modules/scenarioeditor/controlMeasureEditHelpers";
+import {
+  clearAllFlowPointWidths,
+  hasAnyFlowPointWidths,
+} from "@/modules/scenarioeditor/flowArrowFlows";
 
 /** An open edit session, whichever kind of graphic it edits. */
 type LiveEditSession = EditSession | GraphicEditSession<PointSymbol>;
@@ -88,6 +98,30 @@ export interface ControlMeasureEditSession {
   readonly canResetVertexWidths: Ref<boolean>;
   setWidthGrips(enabled: boolean): void;
   resetVertexWidths(): void;
+  /**
+   * The engine's sub-selected part of a graphic drawn in parts (a Flow or Split
+   * Arrow's flow); `undefined` for kinds without parts. View state: remembered across
+   * the protective reopen a panel write causes, so the panel keeps its flow.
+   */
+  readonly selectedPart: Ref<number | undefined>;
+  /**
+   * The open session's working points and options, which reach the store only when
+   * the edit settles. The panel reads them while editing, so a flow pulled out on the
+   * map shows up at once. Only arrows drawn as flows track it; `null` otherwise.
+   */
+  readonly liveShape: ShallowRef<{
+    controlPoints: Position[];
+    options: Record<string, unknown>;
+  } | null>;
+  selectPart(part: number): void;
+  /** Whether the open graphic declares a Ctrl/⌘ + drag on a point (new flow). */
+  readonly canAddFlow: Ref<boolean>;
+  /**
+   * One-shot stand-in for holding Ctrl, for touch: the next press on a point that
+   * changes the graphic pulls out a new flow, then it switches off.
+   */
+  readonly addFlowArmed: Ref<boolean>;
+  setAddFlowArmed(armed: boolean): void;
   /** In-session history availability, for the details panel's affordances. */
   readonly canUndo: Ref<boolean>;
   readonly canRedo: Ref<boolean>;
@@ -132,6 +166,23 @@ export function useControlMeasureEditSession(
   const canResetVertexWidths = ref(false);
   /** The open session's per-vertex width option keys; empty when it has none. */
   let widthKeys: readonly string[] = [];
+  /** A Flow Arrow keeps its point widths on each flow instead. */
+  let flowWidths = false;
+  const selectedPart = ref<number | undefined>(undefined);
+  const liveShape: ControlMeasureEditSession["liveShape"] = shallowRef(null);
+  /** The graphic `selectedPart` belongs to, so a reopen on it restores the part. */
+  let selectedPartOwner: FeatureId | null = null;
+  const canAddFlow = ref(false);
+  const addFlowArmed = ref(false);
+
+  function setAddFlowArmed(armed: boolean) {
+    addFlowArmed.value = armed && canAddFlow.value;
+    options.surface()?.setModifierDragArmed(addFlowArmed.value);
+  }
+
+  function selectPart(part: number) {
+    controlMeasureSession()?.selectPart(part);
+  }
 
   function setWidthGrips(enabled: boolean) {
     widthGrips.value = enabled;
@@ -141,7 +192,11 @@ export function useControlMeasureEditSession(
   function resetVertexWidths() {
     const session = controlMeasureSession();
     if (!session || !canResetVertexWidths.value) return;
-    session.setOptions(Object.fromEntries(widthKeys.map((key) => [key, undefined])));
+    session.setOptions(
+      flowWidths
+        ? clearAllFlowPointWidths(session.workingGraphic.options as FlowArrowOptions)
+        : Object.fromEntries(widthKeys.map((key) => [key, undefined])),
+    );
   }
 
   /**
@@ -186,7 +241,11 @@ export function useControlMeasureEditSession(
     live = null;
     featureId.value = null;
     widthKeys = [];
+    flowWidths = false;
+    liveShape.value = null;
     supportsWidthGrips.value = false;
+    canAddFlow.value = false;
+    if (addFlowArmed.value) setAddFlowArmed(false);
     canResetVertexWidths.value = false;
     settleReason = undefined;
     canUndo.value = false;
@@ -317,6 +376,10 @@ export function useControlMeasureEditSession(
     if (!isSupportedGraphicKind(layerItem.graphicKind)) return false;
 
     featureId.value = itemId;
+    if (selectedPartOwner !== itemId) {
+      selectedPartOwner = itemId;
+      selectedPart.value = undefined;
+    }
     const startMeasure = toEditStartMeasure(layerItem);
     // Detached from the object tactical-draw receives, so a library-owned mutation of
     // its working graphic cannot move the comparison baseline along with the edit.
@@ -335,16 +398,40 @@ export function useControlMeasureEditSession(
         if (!editSession) return;
         adopt(editSession);
         widthKeys = getControlMeasureVertexAlignedOptions(startMeasure.kind);
-        supportsWidthGrips.value = widthKeys.length > 0;
+        flowWidths = startMeasure.kind === "flow-arrow";
+        supportsWidthGrips.value = hasControlMeasureDetailHandles(startMeasure.kind);
+        canAddFlow.value = getControlMeasureModifierDrag(startMeasure.kind) !== null;
         const readWidths = () => {
           const options = editSession.workingGraphic.options as
             Record<string, unknown> | undefined;
-          canResetVertexWidths.value = widthKeys.some((key) =>
-            Array.isArray(options?.[key]),
-          );
+          canResetVertexWidths.value = flowWidths
+            ? hasAnyFlowPointWidths((options ?? {}) as FlowArrowOptions)
+            : widthKeys.some((key) => Array.isArray(options?.[key]));
+        };
+        const tracksShape =
+          startMeasure.kind === "flow-arrow" || startMeasure.kind === "split-arrow";
+        const readShape = () => {
+          if (!tracksShape) return;
+          liveShape.value = {
+            controlPoints: editSession.controlPoints.map((point) => [...point]),
+            options: { ...(editSession.workingGraphic.options ?? {}) },
+          };
         };
         readWidths();
-        editSession.onChange(readWidths);
+        readShape();
+        editSession.onChange(() => {
+          readWidths();
+          readShape();
+          // A change while armed is the armed press doing its work: one-shot.
+          if (addFlowArmed.value) setAddFlowArmed(false);
+        });
+        // Restore the flow the panel was on before a protective reopen.
+        const rememberedPart = selectedPart.value;
+        if (rememberedPart !== undefined) editSession.selectPart(rememberedPart);
+        selectedPart.value = editSession.selectedPart;
+        editSession.onPartSelect((part) => {
+          if (token === generation) selectedPart.value = part;
+        });
         // The fold channel. Fires exactly once, synchronously from within the
         // `close()` that produced it, and never on abort.
         editSession.onCommit((snapshot) => fold(snapshot.graphic, startUpdate));
@@ -390,6 +477,12 @@ export function useControlMeasureEditSession(
     canResetVertexWidths,
     setWidthGrips,
     resetVertexWidths,
+    selectedPart,
+    liveShape,
+    selectPart,
+    canAddFlow,
+    addFlowArmed,
+    setAddFlowArmed,
     canUndo,
     canRedo,
     start,

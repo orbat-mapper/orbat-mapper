@@ -5,7 +5,11 @@ import {
   resolveSizePair,
 } from "@orbat-mapper/control-measures";
 import { MapLibreAdapter } from "@orbat-mapper/tactical-draw-adapter-maplibre";
-import { editControlMeasureSizes } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
+import {
+  editControlMeasureSizes,
+  groundSizeRange,
+  roundToStep,
+} from "@/modules/scenarioeditor/controlMeasureSizeOptions";
 import {
   resetControlMeasureSizesForResolution,
   sizePairParameter,
@@ -191,5 +195,33 @@ describe("control measure size editing", () => {
         ]);
       }
     }
+  });
+});
+
+describe("groundSizeRange", () => {
+  const pixels = {
+    key: "arrowheadLengthPixels",
+    label: "Arrowhead length",
+    type: "number",
+    min: 4,
+    max: 64,
+    step: 1,
+    unit: "px",
+  } as const;
+
+  it("expresses the pixel range in meters at the current zoom, on round steps", () => {
+    // 1 px = 37 m: steps snap to 50 m, ends outward to whole steps.
+    expect(groundSizeRange(pixels, 37)).toEqual({ min: 100, max: 2400, step: 50 });
+  });
+
+  it("leaves the declared range alone without a resolution or a bounded pixel half", () => {
+    expect(groundSizeRange(pixels, undefined)).toBeNull();
+    expect(groundSizeRange({ ...pixels, max: undefined }, 37)).toBeNull();
+  });
+
+  it("rounds a converted value to its step's precision", () => {
+    expect(roundToStep(12.000000000000002, 0.5)).toBe(12);
+    expect(roundToStep(0.30000000000000004, 0.05)).toBe(0.3);
+    expect(roundToStep(4712.3, 50)).toBe(4712);
   });
 });

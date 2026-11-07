@@ -123,6 +123,17 @@ function createMockMap() {
     isEnabled: vi.fn(() => dragPanEnabled),
   };
 
+  let boxZoomEnabled = true;
+  const boxZoom = {
+    enable: vi.fn(() => {
+      boxZoomEnabled = true;
+    }),
+    disable: vi.fn(() => {
+      boxZoomEnabled = false;
+    }),
+    isEnabled: vi.fn(() => boxZoomEnabled),
+  };
+
   const touchZoomRotate = {
     enable: vi.fn(() => {
       touchZoomRotateEnabled = true;
@@ -189,6 +200,7 @@ function createMockMap() {
     getCanvasContainer: vi.fn(() => canvasContainer),
     dragPan,
     touchZoomRotate,
+    boxZoom,
     setCenter: vi.fn(),
     removeLayer: vi.fn((id: string) => {
       layers.delete(id);
@@ -204,6 +216,7 @@ function createMockMap() {
     canvasContainer,
     dragPan,
     touchZoomRotate,
+    boxZoom,
     getSource(id: string) {
       return sources.get(id);
     },
@@ -4004,7 +4017,11 @@ describe("MlMapLogic", () => {
             [activeScenarioMapEngineKey as symbol]: shallowRef({
               map: {},
               layers: { refreshScenarioFeatureLayers },
-              draw: { ownsInteractionAt, pointSymbolAt },
+              draw: {
+                ownsInteractionAt,
+                pointSymbolAt,
+                consumedPointerCycle: () => false,
+              },
             } as any),
             [searchActionsKey as symbol]: searchActions,
             ...(scenarioDraw ? { [scenarioDrawKey as symbol]: scenarioDraw } : {}),
@@ -4252,6 +4269,37 @@ describe("MlMapLogic", () => {
 
       expect(selectedFeatureIds.value.has("cm-1")).toBe(true);
       expect(selectedFeatureIds.value.has("feature-1")).toBe(false);
+    });
+
+    it("leaves shift on an edit handle to tactical-draw's angle constraint", () => {
+      // Toggling selection here would drop the graphic out of its own edit.
+      const h = createControlMeasureHarness(true);
+      h.ownsInteractionAt.mockReturnValue({
+        layer: "handles",
+        feature: {},
+        measureId: "cm-1",
+      });
+      const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+      selectedFeatureIds.value.clear();
+      selectedUnitIds.value.clear();
+      selectedFeatureIds.value.add("cm-1");
+
+      const down = new MouseEvent("mousedown", {
+        bubbles: true,
+        cancelable: true,
+        shiftKey: true,
+        button: 0,
+        clientX: 1,
+        clientY: 2,
+      });
+      h.mockMap.canvasContainer.dispatchEvent(down);
+
+      expect(selectedFeatureIds.value.has("cm-1")).toBe(true);
+      expect(down.defaultPrevented).toBe(false);
+      // MapLibre's Shift box zoom is held for the press, then handed back.
+      expect(h.mockMap.boxZoom.isEnabled()).toBe(false);
+      window.dispatchEvent(new MouseEvent("mouseup"));
+      expect(h.mockMap.boxZoom.isEnabled()).toBe(true);
     });
   });
 });

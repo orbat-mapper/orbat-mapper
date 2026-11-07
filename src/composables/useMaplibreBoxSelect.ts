@@ -14,6 +14,8 @@ export interface MaplibreBoxSelectOptions<S> {
   onBoxStart: () => void;
   onBoxEnd: (unitIds: EntityId[]) => void;
   isEnabled: () => boolean;
+  /** A press another interaction owns (an edit handle's Ctrl/⌘ drag); no box starts. */
+  isOwnedPress?: (e: MouseEvent) => boolean;
   suspend: () => S;
   restore: (suspended: S) => void;
 }
@@ -201,6 +203,7 @@ export function useMaplibreBoxSelect<S>(
     if (e.button !== 0) return;
     if (!(e.ctrlKey || e.metaKey)) return;
     if (!options.isEnabled()) return;
+    if (options.isOwnedPress?.(e)) return;
 
     pending = {
       startPx: getPixel(e),
