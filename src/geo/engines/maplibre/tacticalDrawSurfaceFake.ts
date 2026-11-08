@@ -248,6 +248,18 @@ export function createTacticalDrawSurfaceFake(
     const notifyChange = () => {
       for (const listener of [...changeListeners]) listener();
     };
+    // Only the arrows drawn as flows divide into parts.
+    const hasParts = measure.kind === "flow-arrow" || measure.kind === "split-arrow";
+    let selectedPart: number | undefined = hasParts ? 0 : undefined;
+    let selectedParts: readonly number[] = hasParts ? [0] : [];
+    const partListeners = new Set<
+      (part: number | undefined, parts: readonly number[]) => void
+    >();
+    const setParts = (primary: number, parts: readonly number[]) => {
+      selectedPart = primary;
+      selectedParts = [...parts].sort((a, b) => a - b);
+      for (const listener of [...partListeners]) listener(selectedPart, selectedParts);
+    };
     const historyState = { canUndo: false, canRedo: false };
     const historyListeners = new Set<(state: typeof historyState) => void>();
     let commitHandler: ((snap: GraphicSnapshot<ControlMeasure>) => void) | null = null;
@@ -280,10 +292,36 @@ export function createTacticalDrawSurfaceFake(
         changeListeners.add(listener);
         return () => changeListeners.delete(listener);
       },
-      selectedPart: undefined,
-      selectPart() {},
-      onPartSelect() {
-        return () => {};
+      get selectedPart() {
+        return selectedPart;
+      },
+      get selectedParts() {
+        return selectedParts;
+      },
+      // The engine's rules, short of checking that the graphic has the part.
+      selectPart(part: number, opts?: { extend?: boolean }) {
+        if (!hasParts) return;
+        if (!opts?.extend) setParts(part, [part]);
+        else if (!selectedParts.includes(part)) setParts(part, [...selectedParts, part]);
+        else if (selectedParts.length > 1) {
+          const rest = selectedParts.filter((other) => other !== part);
+          setParts(part === selectedPart ? rest[rest.length - 1]! : selectedPart!, rest);
+        }
+      },
+      selectParts(parts: readonly number[], primary?: number) {
+        if (!hasParts || !parts.length) return;
+        setParts(
+          primary !== undefined && parts.includes(primary)
+            ? primary
+            : parts[parts.length - 1]!,
+          parts,
+        );
+      },
+      onPartSelect(
+        listener: (part: number | undefined, parts: readonly number[]) => void,
+      ) {
+        partListeners.add(listener);
+        return () => partListeners.delete(listener);
       },
       setOptions(patch: Record<string, unknown>) {
         const next = { ...working.options } as Record<string, unknown>;

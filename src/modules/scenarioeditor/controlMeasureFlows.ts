@@ -46,6 +46,70 @@ export function drawnFlows<F extends Flow>(
   return [{ count: controlPoints.length } as F];
 }
 
+/** The actions while several flows are selected: the edits run on one flow. */
+export const NO_FLOW_ACTIONS: FlowActions = {
+  reverse: false,
+  detach: false,
+  remove: false,
+};
+
+/** The selected flows of an arrow: `primary` is what the fields show where
+ *  values differ, and is always one of `parts`. */
+export interface FlowSelection {
+  primary: number;
+  parts: readonly number[];
+}
+
+/**
+ * The panel's own selection after a click, for an arrow with no edit session to
+ * hold it, by the engine's rules for `EditSession.selectPart`: a plain click selects
+ * `part` alone; an extending click toggles it, a flow added becomes the primary,
+ * taking out the primary promotes the most recently added, and the last flow stays.
+ */
+export function nextFlowSelection(
+  { primary, parts }: FlowSelection,
+  part: number,
+  extend: boolean,
+): FlowSelection {
+  if (!extend) return { primary: part, parts: [part] };
+  if (!parts.includes(part)) return { primary: part, parts: [...parts, part] };
+  if (parts.length === 1) return { primary, parts };
+  const rest = parts.filter((other) => other !== part);
+  return { primary: part === primary ? rest[rest.length - 1]! : primary, parts: rest };
+}
+
+/** The field keys whose value differs between several flows' field values.
+ *  `all` has at least one flow. */
+export function mixedKeys(all: readonly Record<string, unknown>[]): string[] {
+  const [first, ...rest] = all;
+  return Object.keys(first!).filter((key) =>
+    rest.some((other) => other[key] !== first![key]),
+  );
+}
+
+/** The selected flows' summaries, `primary` first. A stale part, which an undo
+ *  can leave until the engine's fallback reaches the panel, is skipped. */
+export function selectedSummaries<S extends { index: number }>(
+  summaries: readonly S[],
+  primary: S,
+  parts: readonly number[] | undefined,
+): S[] {
+  const others = (parts ?? [])
+    .filter((part) => part !== primary.index)
+    .flatMap((part) => summaries[part] ?? []);
+  return [primary, ...others];
+}
+
+/** What the flow fields edit: the flow's name, or how many flows. `selected`
+ *  has at least one flow. */
+export function flowSelectionHeading(
+  selected: readonly { label: string }[],
+  flowCount: number,
+): string {
+  if (selected.length === 1) return selected[0]!.label;
+  return selected.length === flowCount ? "All flows" : `${selected.length} flows`;
+}
+
 /** "Trunk" for `flows[0]`, "Flow n" for the rest. */
 export function flowLabel(index: number): string {
   return index === 0 ? "Trunk" : `Flow ${index}`;

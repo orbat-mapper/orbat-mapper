@@ -8,7 +8,8 @@ import {
   CLEAR_FLOW_POINT_WIDTHS,
   flowActions,
   flowArrowFlows,
-  flowParams,
+  sharedFlowParams,
+  sharedFlowValues,
   flowValues,
   patchFlowOptions,
   summarizeFlows,
@@ -108,9 +109,9 @@ describe("flowActions", () => {
   });
 });
 
-describe("flowParams", () => {
+describe("sharedFlowParams", () => {
   const keys = (points: number[][], options: object, index: number) =>
-    flowParams(summarizeFlows(points, options)[index]!).map((param) => param.key);
+    sharedFlowParams([summarizeFlows(points, options)[index]!]).map((param) => param.key);
 
   it("offers the arrowhead and width of a flow that ends in its own head", () => {
     expect(keys(splitPoints, splitOptions, 1)).toEqual([
@@ -135,7 +136,7 @@ describe("flowParams", () => {
       const param = graphic.find((p) => p.key === key);
       return param?.type === "number" ? [param.min, param.max, param.step] : undefined;
     };
-    const params = flowParams(summarizeFlows(splitPoints, ownRearOptions)[1]!);
+    const params = sharedFlowParams([summarizeFlows(splitPoints, ownRearOptions)[1]!]);
     const own = (key: string) => {
       const param = params.find((p) => p.key === key);
       return param?.type === "number" ? [param.min, param.max, param.step] : undefined;
@@ -149,7 +150,7 @@ describe("flowParams", () => {
   });
 
   it("lists every arrowhead style the engine draws", () => {
-    const style = flowParams(summarizeFlows(splitPoints, splitOptions)[0]!)[0]!;
+    const style = sharedFlowParams([summarizeFlows(splitPoints, splitOptions)[0]!])[0]!;
     expect(style).toMatchObject({ key: "arrowheadStyle", type: "enum" });
     expect(
       style.type === "enum" && style.options.map((option) => option.value),
@@ -191,7 +192,7 @@ describe("flowValues", () => {
 describe("patchFlowOptions", () => {
   it("patches one flow and leaves the others", () => {
     expect(
-      patchFlowOptions(splitPoints, splitOptions, 1, { arrowheadStyle: "tee" }),
+      patchFlowOptions(splitPoints, splitOptions, [1], { arrowheadStyle: "tee" }),
     ).toEqual({
       flows: [
         { count: 3 },
@@ -201,7 +202,7 @@ describe("patchFlowOptions", () => {
   });
 
   it("writes the trunk out when the arrow had no flows yet", () => {
-    expect(patchFlowOptions(splitPoints, {}, 0, { widthRatio: 0.2 })).toEqual({
+    expect(patchFlowOptions(splitPoints, {}, [0], { widthRatio: 0.2 })).toEqual({
       flows: [{ count: 5, widthRatio: 0.2 }],
     });
   });
@@ -217,14 +218,16 @@ describe("patchFlowOptions", () => {
         splitOptions.flows[1]!,
       ],
     };
-    expect(patchFlowOptions(splitPoints, options, 0, CLEAR_FLOW_POINT_WIDTHS)).toEqual(
+    expect(patchFlowOptions(splitPoints, options, [0], CLEAR_FLOW_POINT_WIDTHS)).toEqual(
       splitOptions,
     );
   });
 
   it("drops a key patched to undefined", () => {
     const options = { flows: [{ count: 5, widthRatio: 0.2 }] };
-    expect(patchFlowOptions(splitPoints, options, 0, { widthRatio: undefined })).toEqual({
+    expect(
+      patchFlowOptions(splitPoints, options, [0], { widthRatio: undefined }),
+    ).toEqual({
       flows: [{ count: 5 }],
     });
   });
@@ -264,5 +267,60 @@ describe("applyFlowCommand", () => {
   it("is null for an edit the engine refuses", () => {
     expect(applyFlowCommand(splitPoints, splitOptions, 0, "remove")).toBeNull();
     expect(applyFlowCommand(splitPoints, splitOptions, 1, "detach")).toBeNull();
+  });
+});
+
+describe("several selected flows", () => {
+  // Trunk, a flow with its own rear, and a flow that merges into the trunk.
+  const points = [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [5, 5],
+    [6, 6],
+    [1, 1],
+  ];
+  const options = {
+    flows: [
+      { count: 3, widthRatio: 0.2 },
+      { count: 2, widthRatio: 0.2, arrowheadStyle: "tee" as const },
+      { count: 1, splitFrom: { flow: 0, vertex: 0 }, mergeInto: { flow: 0, vertex: 2 } },
+    ],
+  };
+  const [trunk, ownRear, merging] = summarizeFlows(points, options);
+  const keys = (summaries: NonNullable<typeof trunk>[]) =>
+    sharedFlowParams(summaries).map((param) => param.key);
+
+  it("drops the arrowhead fields when any selected flow merges", () => {
+    expect(keys([trunk!, merging!])).toEqual(["widthRatio"]);
+  });
+
+  it("offers a rear width only when every selected flow has its own rear", () => {
+    expect(keys([ownRear!])).toContain("rearWidthRatio");
+    expect(keys([trunk!, ownRear!])).not.toContain("rearWidthRatio");
+  });
+
+  it("shows the first flow's values and lists the fields that differ", () => {
+    const { values, mixed } = sharedFlowValues([ownRear!, trunk!], options);
+    expect(values.arrowheadStyle).toBe("tee");
+    expect(mixed).toContain("arrowheadStyle");
+    expect(mixed).not.toContain("widthRatio");
+  });
+
+  it("compares what the engine draws, so an unset field matches its default", () => {
+    const same = {
+      flows: [
+        { count: 3, arrowheadStyle: "triangle" as const },
+        { count: 2 },
+        { count: 1 },
+      ],
+    };
+    const [a, b] = summarizeFlows(points, same);
+    expect(sharedFlowValues([a!, b!], same).mixed).toEqual([]);
+  });
+
+  it("applies a patch to every listed flow and leaves the others alone", () => {
+    const { flows } = patchFlowOptions(points, options, [0, 2], { widthRatio: 0.4 });
+    expect(flows!.map((flow) => flow.widthRatio)).toEqual([0.4, 0.2, 0.4]);
   });
 });

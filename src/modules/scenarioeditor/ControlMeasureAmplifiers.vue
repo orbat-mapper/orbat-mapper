@@ -33,7 +33,7 @@ const emit = defineEmits<{
 /** Where a kind's amplifier means more than the registry says. */
 const DESCRIPTION_OVERRIDES: Partial<Record<ControlMeasureId, Record<string, string>>> = {
   "split-arrow": {
-    T: "The trunk's label. Each flow's label, and where every label sits, is in the Style tab under Flows.",
+    T: "The trunk's label. Each flow's label, and where every label sits, is with the flow's other fields in the Style tab.",
   },
 };
 

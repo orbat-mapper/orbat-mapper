@@ -1223,9 +1223,12 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
     /** The flow selected on a Flow or Split Arrow under edit. */
     controlMeasureSelectedPart: controlMeasureEdit.selectedPart,
+    /** Every flow selected on it, the primary `controlMeasureSelectedPart` included. */
+    controlMeasureSelectedParts: controlMeasureEdit.selectedParts,
     /** The working points and options of the open edit, before they settle. */
     controlMeasureLiveShape: controlMeasureEdit.liveShape,
     selectControlMeasurePart: controlMeasureEdit.selectPart,
+    selectControlMeasureParts: controlMeasureEdit.selectParts,
     controlMeasureCanAddFlow: controlMeasureEdit.canAddFlow,
     controlMeasureAddFlowArmed: controlMeasureEdit.addFlowArmed,
     setControlMeasureAddFlowArmed: controlMeasureEdit.setAddFlowArmed,

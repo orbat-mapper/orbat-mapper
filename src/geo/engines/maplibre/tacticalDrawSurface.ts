@@ -103,7 +103,13 @@ export function __resetTacticalDrawReactivityWarning() {
  * Rebuilt per attach because the façade is reconstructed on every `style.load`.
  */
 function tacticalDrawOptions() {
-  return { generateId: () => nanoid(), pointSymbols: pointSymbolCapability() };
+  return {
+    generateId: () => nanoid(),
+    pointSymbols: pointSymbolCapability(),
+    // Shift-click a flow's point, midpoint or body to add it to the flow selection or
+    // take it out; Shift-drag still constrains.
+    editModifiers: { extendPartSelection: "shift" as const },
+  };
 }
 
 let sharedPointSymbols: ReturnType<typeof milsymbolPointSymbols> | null = null;

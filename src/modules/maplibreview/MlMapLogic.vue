@@ -1002,8 +1002,21 @@ function holdBoxZoomForPress() {
   window.addEventListener("blur", release, true);
 }
 
+/**
+ * Whether a press lands on the body of an arrow under edit that has flows. A Shift-click
+ * there extends the flow selection, which the engine reads from the click: box zoom
+ * would swallow that click, and toggling the item would end the edit being extended.
+ */
+function isEditedFlowsPress(e: MouseEvent): boolean {
+  const editedId = scenarioDraw?.controlMeasureEditFeatureId.value;
+  if (editedId == null || scenarioDraw?.controlMeasureSelectedPart.value === undefined) {
+    return false;
+  }
+  return pickControlMeasureAt(getEventPixel(e), e)?.featureId === editedId;
+}
+
 function onNativeCanvasMouseDown(e: MouseEvent) {
-  if (e.shiftKey && e.button === 0 && isEditHandlePress(e)) {
+  if (e.shiftKey && e.button === 0 && (isEditHandlePress(e) || isEditedFlowsPress(e))) {
     holdBoxZoomForPress();
     return;
   }

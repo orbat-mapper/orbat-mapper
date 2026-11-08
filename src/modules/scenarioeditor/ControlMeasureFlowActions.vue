@@ -10,14 +10,17 @@ import { Toggle } from "@/components/ui/toggle";
 /**
  * The flow edits both flow arrows offer on the selected flow: Add flow, Reverse,
  * Detach tip (on a merging flow) and Remove flow (on any flow but the trunk). The
- * default slot adds the arrow's own buttons before Remove.
+ * default slot adds the arrow's own buttons before Remove. With several flows selected
+ * only Add flow and the slot remain: the topology edits shift the flows' indices, so
+ * they run on one flow at a time.
  */
 defineProps<{
-  /** The selected flow's name, for the group's label. */
+  /** What the buttons act on, for the group's label. */
   label: string;
   actions: FlowActions;
   merges: boolean;
   trunk: boolean;
+  several?: boolean;
   /** Whether Add flow can be armed: only during a shape edit. */
   canAddFlow: boolean;
   addFlowArmed: boolean;
@@ -43,6 +46,7 @@ const emit = defineEmits<{
       Add flow
     </Toggle>
     <Button
+      v-if="!several"
       variant="outline"
       size="sm"
       data-test="flow-reverse"
@@ -53,7 +57,7 @@ const emit = defineEmits<{
       Reverse
     </Button>
     <Button
-      v-if="merges"
+      v-if="merges && !several"
       variant="outline"
       size="sm"
       data-test="flow-detach"
@@ -65,7 +69,7 @@ const emit = defineEmits<{
     </Button>
     <slot />
     <Button
-      v-if="!trunk"
+      v-if="!trunk && !several"
       variant="outline"
       size="sm"
       data-test="flow-remove"

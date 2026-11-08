@@ -145,6 +145,14 @@ describe("createTacticalDrawSurface", () => {
     ]);
   });
 
+  it("lets Shift extend a flow selection while it still constrains a drag", () => {
+    const { map } = createFakeMap(true);
+    createTacticalDrawSurface(map);
+    expect(facades[0].options).toMatchObject({
+      editModifiers: { extendPartSelection: "shift" },
+    });
+  });
+
   it("constructs the adapter in settle view-change mode", () => {
     const { map } = createFakeMap(true);
     createTacticalDrawSurface(map);
