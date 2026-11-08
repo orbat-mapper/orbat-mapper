@@ -48,3 +48,6 @@ cache
 
 # Local offline experiment assets (staged basemaps, generated configs)
 /offline/
+
+# Local research notes
+docs/research/
