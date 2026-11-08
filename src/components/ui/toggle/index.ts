@@ -25,4 +25,11 @@ export const toggleVariants = cva(
   },
 );
 
+/**
+ * The pressed state of a labelled choice: an outline toggle whose unpressed siblings are muted.
+ * In the light theme the stock pressed fill matches hover, so a choice would not read as made.
+ */
+export const toggleChoiceClass =
+  "text-muted-foreground data-[state=on]:border-ring data-[state=on]:bg-primary/10 data-[state=on]:text-foreground data-[state=on]:hover:bg-primary/15 data-[state=on]:hover:text-foreground";
+
 export type ToggleVariants = VariantProps<typeof toggleVariants>;

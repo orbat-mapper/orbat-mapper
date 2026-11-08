@@ -41,9 +41,16 @@ import { breakpointsTailwind, useBreakpoints, useClipboard } from "@vueuse/core"
 import {
   basemapFlavor,
   basemapIsRemovable,
+  basemapSupportsAtlasOptions,
   getSupportedMaplibreBasemaps,
   resolveMaplibreBasemap,
 } from "@/modules/maplibreview/maplibreBasemaps";
+import {
+  ATLAS_LABEL_CATEGORIES,
+  ATLAS_LAYER_GROUPS,
+  ELEVATION_BAND_PRESETS,
+  canDrawLabelCategory,
+} from "@/geo/atlasStyle";
 import {
   BASEMAP_FLAVORS,
   isBasemapFlavor,
@@ -149,19 +156,18 @@ const activeBasemapId = computed(
   () => resolveMaplibreBasemap(baseMapId.value, maplibreLayersStore.layers)?.id,
 );
 
-/** The active basemap when, and only when, it is an archive the user opened from disk. */
-const removableActiveBasemap = computed(() => {
-  const layer = maplibreLayersStore.layers.find(
-    (entry) => entry.name === activeBasemapId.value,
-  );
-  return basemapIsRemovable(layer) ? layer : undefined;
-});
-
-const activeFlavor = computed(() =>
-  basemapFlavor(
-    maplibreLayersStore.layers.find((layer) => layer.name === activeBasemapId.value),
-  ),
+const activeBasemap = computed(() =>
+  maplibreLayersStore.layers.find((layer) => layer.name === activeBasemapId.value),
 );
+
+/** The active basemap when, and only when, it is an archive the user opened from disk. */
+const removableActiveBasemap = computed(() =>
+  basemapIsRemovable(activeBasemap.value) ? activeBasemap.value : undefined,
+);
+
+const activeFlavor = computed(() => basemapFlavor(activeBasemap.value));
+
+const showAtlasOptions = computed(() => basemapSupportsAtlasOptions(activeBasemap.value));
 
 function flavorLabel(flavor: BasemapFlavor) {
   return flavor.charAt(0).toUpperCase() + flavor.slice(1);
@@ -721,6 +727,52 @@ function onContextMenu(event: MouseEvent) {
               {{ flavorLabel(flavor) }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <!-- Only Atlas has these, so this is hidden for every other basemap. -->
+      <ContextMenuSub v-if="showAtlasOptions">
+        <ContextMenuSubTrigger inset><span>Atlas options</span></ContextMenuSubTrigger>
+        <ContextMenuSubContent>
+          <ContextMenuLabel inset>Elevation bands</ContextMenuLabel>
+          <ContextMenuRadioGroup v-model="mapSettings.atlasElevationBands">
+            <ContextMenuRadioItem
+              v-for="preset in ELEVATION_BAND_PRESETS"
+              :key="preset.value"
+              :value="preset.value"
+              @select.prevent
+            >
+              {{ preset.label }}
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
+          <ContextMenuSeparator />
+          <ContextMenuLabel inset>Show</ContextMenuLabel>
+          <ContextMenuCheckboxItem
+            v-for="group in ATLAS_LAYER_GROUPS"
+            :key="group.value"
+            :model-value="mapSettings.atlasLayerGroups.includes(group.value)"
+            @update:model-value="
+              mapSettings.setAtlasLayerGroupShown(group.value, $event === true)
+            "
+            @select.prevent
+          >
+            {{ group.label }}
+          </ContextMenuCheckboxItem>
+          <ContextMenuSeparator />
+          <ContextMenuLabel inset>Label types</ContextMenuLabel>
+          <ContextMenuCheckboxItem
+            v-for="category in ATLAS_LABEL_CATEGORIES"
+            :key="category.value"
+            :model-value="mapSettings.atlasLayerGroups.includes(category.value)"
+            :disabled="
+              !canDrawLabelCategory(category.value, mapSettings.atlasLayerGroups)
+            "
+            @update:model-value="
+              mapSettings.setAtlasLayerGroupShown(category.value, $event === true)
+            "
+            @select.prevent
+          >
+            {{ category.label }}
+          </ContextMenuCheckboxItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
       <TerrainMenu kind="context" />

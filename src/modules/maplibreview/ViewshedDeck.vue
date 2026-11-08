@@ -19,7 +19,7 @@ import TargetHeightIcon from "@/components/TargetHeightIcon.vue";
 import ReachIcon from "@/components/ReachIcon.vue";
 import CellSizeIcon from "@/components/CellSizeIcon.vue";
 import SnapGroundIcon from "@/components/SnapGroundIcon.vue";
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle, toggleChoiceClass } from "@/components/ui/toggle";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -93,8 +93,7 @@ const DECK_ICON_CLASS = `size-9 rounded-lg p-0 text-muted-foreground has-[>svg]:
 const DECK_LABEL_CLASS = `h-9 gap-1.5 rounded-lg px-3.5 has-[>svg]:px-3.5 sm:h-8 ${motionSafe}`;
 const DECK_TOGGLE_CLASS = `size-9 min-w-0 shrink-0 rounded-lg p-0 text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground ${motionSafe} data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90 sm:size-8`;
 /** A labelled choice in the settings popover: the ones not pressed are muted. */
-const DECK_CHOICE_CLASS =
-  "flex-1 text-muted-foreground data-[state=on]:border-ring data-[state=on]:bg-primary/10 data-[state=on]:text-foreground data-[state=on]:hover:bg-primary/15 data-[state=on]:hover:text-foreground";
+const DECK_CHOICE_CLASS = `flex-1 ${toggleChoiceClass}`;
 const DECK_SEPARATOR_CLASS = "mx-0.5 data-[orientation=vertical]:h-6";
 const FLOATING_SURFACE_CLASS =
   "rounded-lg border bg-background/90 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10";

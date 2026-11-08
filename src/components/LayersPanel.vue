@@ -11,6 +11,7 @@ import { type LayerType } from "@/modules/scenarioeditor/featureLayerUtils";
 import {
   basemapFlavor,
   basemapIsRemovable,
+  basemapSupportsAtlasOptions,
   basemapSupportsFlavor,
   basemapSupportsOpacity,
   getSupportedMaplibreBasemaps,
@@ -37,6 +38,8 @@ export interface LayerInfo {
   supportsOpacity?: boolean;
   /** Set only for the active base layer when it is a vector PMTiles archive. */
   flavor?: BasemapFlavor;
+  /** Set only for the active base layer when it is the Atlas basemap. */
+  atlasOptions?: boolean;
   /**
    * "pending-archive" is the remembered basemap archive that is not loaded. Such a row has no
    * radio: it cannot be activated, its action button loads the archive first.
@@ -89,6 +92,7 @@ const baseLayers = computed<LayerInfo[]>(() => {
         // so that is the only row that gets the select.
         flavor:
           isActive && basemapSupportsFlavor(config) ? basemapFlavor(config) : undefined,
+        atlasOptions: isActive && basemapSupportsAtlasOptions(config),
         rowKind: "basemap" as const,
         removable: basemapIsRemovable(config),
       };
