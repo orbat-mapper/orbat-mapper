@@ -190,6 +190,11 @@ export function basemapSupportsFlavor(
   return layer?.sourceType === "pmtiles" && layer.archive?.kind === "vector";
 }
 
+/** Whether the UI should offer the elevation bands and layer groups of the Atlas basemap. */
+export function basemapSupportsAtlasOptions(layer: MlLayerConfig | undefined): boolean {
+  return layer?.sourceType === "atlas";
+}
+
 /**
  * Whether the UI should offer to remove this basemap. Only what the user added qualifies: an
  * archive opened from disk, or a basemap added by address. A config-declared archive carries a

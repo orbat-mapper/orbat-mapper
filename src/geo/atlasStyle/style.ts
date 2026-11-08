@@ -1,9 +1,7 @@
 /**
- * The Atlas basemap, ported from TacTrace's `src/lib/atlasStyle`: a MapLibre style in the manner of
- * military history atlas plates (white low ground, buff-to-brown elevation tints, pale cyan water,
- * light grey borders, letter-spaced country names).
+ * A MapLibre style in the manner of military history atlas plates: white low ground, buff-to-brown
+ * elevation tints, pale cyan water, light grey borders and letter-spaced country names.
  *
- * Only TacTrace's Alpine elevation bands are ported: tints above 100, 200, 500, 1,000 and 2,000 m.
  * Credit the default vector tiles and glyphs as "OpenFreeMap © OpenMapTiles Data from
  * OpenStreetMap"; the default DEM carries its own attribution.
  */
@@ -18,6 +16,18 @@ import type {
   StyleSpecification,
   VectorSourceSpecification,
 } from "maplibre-gl";
+import {
+  DEFAULT_ELEVATION_BAND_PRESET,
+  ELEVATION_BAND_LAYER_PREFIX,
+  elevationBandRamp,
+  type ElevationBandPreset,
+} from "./elevationBands";
+import {
+  ALL_ATLAS_LAYER_GROUPS,
+  drawsWithLayerGroups,
+  layerGroupMetadata,
+  type AtlasLayerGroup,
+} from "./layerGroups";
 
 export interface AtlasStyleOptions {
   /** OpenMapTiles-schema vector tiles. Defaults to the OpenFreeMap planet. */
@@ -26,26 +36,10 @@ export interface AtlasStyleOptions {
   dem?: RasterDEMSourceSpecification;
   /** Glyph URL template serving the Noto Sans Regular, Bold and Italic stacks. */
   glyphs?: string;
-}
-
-/** Atlas-plate elevation tints on the five-band scale of the plates for the Alps. */
-const ELEVATION_THRESHOLDS = [100, 200, 500, 1000, 2000] as const;
-const LOW_GROUND = "rgba(255,255,255,0)";
-/** Lightest first, one per threshold. */
-const BAND_COLORS = ["#ffe8ba", "#e5d0a7", "#ccba95", "#b2a282", "#998b70"] as const;
-/** color-relief only accepts `interpolate`, so a hard edge is a pair of stops this far apart. */
-const EDGE = 0.1;
-export const ATLAS_ELEVATION_LAYER_PREFIX = "elevation-bands-";
-
-function elevationBandRamp(): ExpressionSpecification {
-  const below = [LOW_GROUND, ...BAND_COLORS];
-  const stops = ELEVATION_THRESHOLDS.flatMap((threshold, i) => [
-    threshold - EDGE,
-    below[i]!,
-    threshold,
-    BAND_COLORS[i]!,
-  ]);
-  return ["interpolate", ["linear"], ["elevation"], ...stops] as ExpressionSpecification;
+  /** The elevation tints the style starts with. */
+  elevationBands?: ElevationBandPreset;
+  /** The layer groups the style starts with. Defaults to all of them. */
+  show?: readonly AtlasLayerGroup[];
 }
 
 /** The style always has `layers`, `sources` and `glyphs`. */
@@ -235,12 +229,12 @@ const inUnitedStates: ExpressionSpecification = ["within", UNITED_STATES];
 
 const demSourceId = (demZoom: number) => `dem${demZoom}`;
 
-function elevationLayers(): LayerSpecification[] {
-  const ramp = elevationBandRamp();
+function elevationLayers(preset: ElevationBandPreset): LayerSpecification[] {
+  const ramp = elevationBandRamp(preset);
   return ELEVATION_LEVELS.map(({ demZoom, fromZoom }, i) => {
     const nextFrom = ELEVATION_LEVELS[i + 1]?.fromZoom;
     return {
-      id: `${ATLAS_ELEVATION_LAYER_PREFIX}${demZoom}`,
+      id: `${ELEVATION_BAND_LAYER_PREFIX}${demZoom}`,
       type: "color-relief",
       source: demSourceId(demZoom),
       ...(fromZoom === undefined ? {} : { minzoom: fromZoom }),
@@ -285,6 +279,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "state-borders",
+      metadata: layerGroupMetadata("borders"),
       type: "line",
       source: VECTOR,
       "source-layer": "boundary",
@@ -298,6 +293,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "border-ribbon",
+      metadata: layerGroupMetadata("borders"),
       type: "line",
       source: VECTOR,
       "source-layer": "boundary",
@@ -311,6 +307,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "borders",
+      metadata: layerGroupMetadata("borders"),
       type: "line",
       source: VECTOR,
       "source-layer": "boundary",
@@ -320,6 +317,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "borders-disputed",
+      metadata: layerGroupMetadata("borders"),
       type: "line",
       source: VECTOR,
       "source-layer": "boundary",
@@ -334,6 +332,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "river-labels",
+      metadata: layerGroupMetadata("labels", "rivers"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "waterway",
@@ -355,6 +354,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "sea-labels",
+      metadata: layerGroupMetadata("labels", "seas"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "water_name",
@@ -370,6 +370,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "state-labels",
+      metadata: layerGroupMetadata("labels", "states"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "place",
@@ -389,6 +390,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "country-labels",
+      metadata: layerGroupMetadata("labels", "countries"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "place",
@@ -418,6 +420,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "island-labels",
+      metadata: layerGroupMetadata("labels", "islands"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "place",
@@ -434,6 +437,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "town-dots",
+      metadata: layerGroupMetadata("cities"),
       type: "circle",
       source: VECTOR,
       "source-layer": "place",
@@ -447,6 +451,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "town-labels",
+      metadata: layerGroupMetadata("cities", "labels", "towns"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "place",
@@ -465,6 +470,20 @@ function vectorLayers(): LayerSpecification[] {
       },
     },
   ];
+}
+
+function withLayerGroups(
+  layers: LayerSpecification[],
+  show: readonly AtlasLayerGroup[],
+): LayerSpecification[] {
+  return layers.map((layer) =>
+    drawsWithLayerGroups(layer.metadata, show)
+      ? layer
+      : ({
+          ...layer,
+          layout: { ...layer.layout, visibility: "none" },
+        } as LayerSpecification),
+  );
 }
 
 /**
@@ -489,8 +508,8 @@ export function createAtlasStyle(options: AtlasStyleOptions = {}): AtlasStyle {
     sources,
     layers: [
       { id: "paper", type: "background", paint: { "background-color": INK.paper } },
-      ...elevationLayers(),
-      ...vectorLayers(),
+      ...elevationLayers(options.elevationBands ?? DEFAULT_ELEVATION_BAND_PRESET),
+      ...withLayerGroups(vectorLayers(), options.show ?? ALL_ATLAS_LAYER_GROUPS),
     ],
   });
 }

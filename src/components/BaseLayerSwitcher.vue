@@ -2,6 +2,7 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { type LayerInfo } from "./LayersPanel.vue";
+import AtlasBasemapOptions from "./AtlasBasemapOptions.vue";
 import OpacityInput from "./OpacityInput.vue";
 import { computed } from "vue";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -132,6 +133,7 @@ const selectedId = computed({
               </NativeSelectOption>
             </NativeSelect>
           </div>
+          <AtlasBasemapOptions v-if="setting.atlasOptions" class="mt-3" />
         </div>
       </div>
     </div>

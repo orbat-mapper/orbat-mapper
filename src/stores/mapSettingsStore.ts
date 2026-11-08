@@ -3,6 +3,17 @@ import { type CoordinateFormatType } from "@/geo/coordinateFormat";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
 import type { BasemapArchiveKind } from "@/geo/basemapArchive";
 import type { CustomBasemap } from "@/geo/customBasemap";
+// The two settings modules directly: the barrel would pull the whole Atlas style into the initial
+// chunk, which every visitor loads whether or not they use the map.
+import {
+  DEFAULT_ELEVATION_BAND_PRESET,
+  isElevationBandPreset,
+  type ElevationBandPreset,
+} from "@/geo/atlasStyle/elevationBands";
+import {
+  ALL_ATLAS_LAYER_GROUPS,
+  type AtlasLayerGroup,
+} from "@/geo/atlasStyle/layerGroups";
 
 export type MapProjection = "globe" | "mercator";
 
@@ -72,6 +83,22 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     customBasemaps: useLocalStorage<CustomBasemap[]>("customBasemaps", [], {
       serializer: StorageSerializers.object,
     }),
+    // Like the other basemap preferences these belong to the device, not to the scenario.
+    atlasElevationBands: useLocalStorage<ElevationBandPreset>(
+      "atlasElevationBands",
+      DEFAULT_ELEVATION_BAND_PRESET,
+      {
+        serializer: {
+          read: (value) =>
+            isElevationBandPreset(value) ? value : DEFAULT_ELEVATION_BAND_PRESET,
+          write: (value) => value,
+        },
+      },
+    ),
+    // Stores the hidden groups, so a group added later starts out shown.
+    atlasHiddenLayerGroups: useLocalStorage<string[]>("atlasHiddenLayerGroups", [], {
+      serializer: StorageSerializers.object,
+    }),
     showDayNightTerminator: false,
     mapIconSize: useLocalStorage("mapIconSize", 25),
     // Units without a size of their own take their echelon's ratio of mapIconSize.
@@ -100,4 +127,24 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     ),
     hellfireShake: useLocalStorage("hellfireShake", true),
   }),
+  getters: {
+    /** The Atlas layer groups currently shown. */
+    atlasLayerGroups: (state): AtlasLayerGroup[] =>
+      ALL_ATLAS_LAYER_GROUPS.filter(
+        (group) => !state.atlasHiddenLayerGroups.includes(group),
+      ),
+  },
+  actions: {
+    setAtlasLayerGroups(shown: readonly string[]) {
+      this.atlasHiddenLayerGroups = ALL_ATLAS_LAYER_GROUPS.filter(
+        (group) => !shown.includes(group),
+      );
+    },
+    setAtlasLayerGroupShown(group: AtlasLayerGroup, shown: boolean) {
+      const current = this.atlasLayerGroups;
+      this.setAtlasLayerGroups(
+        shown ? [...current, group] : current.filter((entry) => entry !== group),
+      );
+    },
+  },
 });

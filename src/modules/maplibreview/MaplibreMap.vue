@@ -37,6 +37,7 @@ import {
 } from "@/modules/scenarioeditor/scenarioMapViewSnapshot";
 
 import { useTerrainStore } from "@/stores/terrainStore";
+import { useAtlasBasemapOptions } from "./useAtlasBasemapOptions";
 import { useMapTerrain } from "./useMapTerrain";
 import { terrainElevationMeters, TERRAIN_SOURCE_ID } from "./mapTerrain";
 import TerrainMapToggle from "./TerrainMapToggle.vue";
@@ -64,8 +65,9 @@ const attrs = useAttrs();
 const mapContainerElement = useTemplateRef("mapContainerElement");
 const formattedLocation = ref("");
 let mlMap: MlMap;
-const terrainMap = shallowRef<MlMap>();
-useMapTerrain(terrainMap);
+const mapRef = shallowRef<MlMap>();
+useMapTerrain(mapRef);
+useAtlasBasemapOptions(mapRef);
 const terrainSettings = useTerrainStore();
 const elevation = ref<number | null>(null);
 const formattedElevation = computed(() => {
@@ -266,7 +268,7 @@ onMounted(async () => {
       preserveDrawingBuffer: true,
     },
   });
-  terrainMap.value = mlMap;
+  mapRef.value = mlMap;
   scaleControl = new ScaleControl({
     maxWidth: 100,
     unit: measurementUnit.value,
@@ -365,7 +367,7 @@ onUnmounted(() => {
   mlMap?.off("moveend", emitMapViewChange);
   mlMap?.off("contextmenu", handleContextMenu);
   mlMap?.off("sourcedata", handleTerrainData);
-  terrainMap.value = undefined;
+  mapRef.value = undefined;
   mlMap?.remove();
 });
 </script>
