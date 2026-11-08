@@ -66,6 +66,11 @@ import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasure
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import ControlMeasureAmplifiers from "@/modules/scenarioeditor/ControlMeasureAmplifiers.vue";
 import ControlMeasureFlows from "@/modules/scenarioeditor/ControlMeasureFlows.vue";
+import {
+  drawnFlows,
+  nextFlowSelection,
+  type FlowSelection,
+} from "@/modules/scenarioeditor/controlMeasureFlows";
 import EditableLabel from "@/components/EditableLabel.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import IconButton from "@/components/IconButton.vue";
@@ -186,8 +191,8 @@ const resolvedOptions = computed(() =>
 
 /**
  * An arrow drawn as flows (Flow Arrow, Split Arrow) has its flows edited in a section
- * of its own. While the shape is under edit the flow follows the session's selected
- * part, so a click on a flow on the map picks it here too.
+ * of its own. While the shape is under edit the flows follow the session's selected
+ * parts, so a click on a flow on the map picks it here too.
  */
 const flowKind = computed(() => {
   const kind = item.value?.graphicKind;
@@ -207,20 +212,33 @@ const flowOptions = computed(
   () =>
     (liveShape.value?.options ?? resolvedOptions.value ?? {}) as TacticalGraphicOptions,
 );
-const panelFlow = ref(0);
+const TRUNK_ONLY: FlowSelection = { primary: 0, parts: [0] };
+const panelFlows = ref<FlowSelection>(TRUNK_ONLY);
 watch(
   () => item.value?.id,
   () => {
-    panelFlow.value = 0;
+    panelFlows.value = TRUNK_ONLY;
   },
 );
 const selectedFlow = computed(() =>
-  isEditingShape.value ? scenarioDraw.controlMeasureSelectedPart.value : panelFlow.value,
+  isEditingShape.value
+    ? scenarioDraw.controlMeasureSelectedPart.value
+    : panelFlows.value.primary,
+);
+const selectedFlows = computed(() =>
+  isEditingShape.value
+    ? scenarioDraw.controlMeasureSelectedParts.value
+    : panelFlows.value.parts,
 );
 
-function selectFlow(part: number) {
-  panelFlow.value = part;
-  if (isEditingShape.value) scenarioDraw.selectControlMeasurePart(part);
+function selectFlow(part: number, extend: boolean) {
+  if (isEditingShape.value) scenarioDraw.selectControlMeasurePart(part, { extend });
+  else panelFlows.value = nextFlowSelection(panelFlows.value, part, extend);
+}
+
+function selectFlows(parts: number[], primary: number) {
+  if (isEditingShape.value) scenarioDraw.selectControlMeasureParts(parts, primary);
+  else panelFlows.value = { primary, parts };
 }
 
 function patchFlows(patch: object) {
@@ -327,6 +345,42 @@ function doMetaUpdate(data: {
 const canEditShape = computed(() => Boolean(engineRef.value?.draw) && supported.value);
 const isEditingShape = computed(
   () => !!item.value && scenarioDraw.controlMeasureEditFeatureId.value === item.value.id,
+);
+
+const editingFlows = computed(() => !!flowKind.value && isEditingShape.value);
+// The selection carries over both ways: an edit opens on the flows the panel was on,
+// and the panel keeps what the edit, a click on the map included, left selected. In
+// this order, so an edit that just opened has taken the panel's flows before they
+// could be read back.
+watch(editingFlows, (editing) => {
+  if (!editing) return;
+  const { parts, primary } = panelFlows.value;
+  scenarioDraw.selectControlMeasureParts(parts, primary);
+});
+watch(
+  () =>
+    editingFlows.value
+      ? {
+          primary: scenarioDraw.controlMeasureSelectedPart.value,
+          parts: scenarioDraw.controlMeasureSelectedParts.value,
+        }
+      : null,
+  (session) => {
+    if (session?.primary !== undefined) {
+      panelFlows.value = { primary: session.primary, parts: session.parts };
+    }
+  },
+);
+// Flows are indices, and the ones after a removed flow shift, so a change in their
+// number collapses the selection to its primary, as the engine's does.
+watch(
+  () =>
+    flowKind.value ? drawnFlows(flowControlPoints.value, flowOptions.value).length : 0,
+  (count) => {
+    const { primary } = panelFlows.value;
+    const part = primary < count ? primary : 0;
+    panelFlows.value = { primary: part, parts: [part] };
+  },
 );
 
 function toggleEditShape() {
@@ -550,6 +604,7 @@ function doDelete() {
             :control-points="flowControlPoints"
             :options="flowOptions"
             :selected-part="selectedFlow"
+            :selected-parts="selectedFlows"
             :editing="isEditingShape"
             :can-add-flow="scenarioDraw.controlMeasureCanAddFlow.value"
             :add-flow-armed="scenarioDraw.controlMeasureAddFlowArmed.value"
@@ -557,6 +612,7 @@ function doDelete() {
             @update:add-flow-armed="scenarioDraw.setControlMeasureAddFlowArmed"
             @update:trunk-label="updateTrunkLabel"
             @select="selectFlow"
+            @select-parts="selectFlows"
             @patch="patchFlows"
             @edit="applyFlowEdit"
           />

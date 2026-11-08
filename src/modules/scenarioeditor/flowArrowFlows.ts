@@ -17,6 +17,7 @@ import {
   flowEditor,
   flowLabel,
   graphicParam,
+  mixedKeys,
   type FlowCommand,
 } from "@/modules/scenarioeditor/controlMeasureFlows";
 
@@ -139,15 +140,18 @@ const ARROWHEAD_LENGTH = flowParam(
   "This flow's arrowhead length as a multiple of its width at the head",
 );
 
-/** The fields for one flow, in panel order. A merging flow has no head of its
- *  own to style, and only a flow with its own rear has a rear width (the
- *  trunk's is the graphic's `rearWidthRatio`). */
-export function flowParams(summary: FlowSummary): ParamDescriptor[] {
+/** The fields the selected flows share, in panel order. A merging flow has no
+ *  head of its own to style, so arrowhead fields need none of them to merge;
+ *  only a flow with its own rear has a rear width (the trunk's is the graphic's
+ *  `rearWidthRatio`), so that needs each of them to have one. */
+export function sharedFlowParams(summaries: readonly FlowSummary[]): ParamDescriptor[] {
+  const merges = summaries.some((summary) => summary.merges);
+  const ownRear = summaries.every((summary) => summary.ownRear);
   return [
-    ...(summary.merges ? [] : [ARROWHEAD_STYLE]),
+    ...(merges ? [] : [ARROWHEAD_STYLE]),
     WIDTH,
-    ...(summary.ownRear ? [REAR_WIDTH] : []),
-    ...(summary.merges ? [] : [ARROWHEAD_WIDTH, ARROWHEAD_LENGTH]),
+    ...(ownRear ? [REAR_WIDTH] : []),
+    ...(merges ? [] : [ARROWHEAD_WIDTH, ARROWHEAD_LENGTH]),
   ];
 }
 
@@ -172,16 +176,26 @@ export function flowValues(
   };
 }
 
-/** The `flows` options patch that applies `patch` to flow `index`. */
+/** The values several selected flows show: the first flow's, with the fields
+ *  where what the engine draws differs between them listed as `mixed`. */
+export function sharedFlowValues(
+  summaries: readonly Pick<FlowSummary, "flow">[],
+  options: FlowArrowOptions,
+): { values: Record<string, unknown>; mixed: string[] } {
+  const all = summaries.map(({ flow }) => flowValues(flow, options));
+  return { values: all[0]!, mixed: mixedKeys(all) };
+}
+
+/** The `flows` options patch that applies `patch` to flows `parts`. */
 export function patchFlowOptions(
   controlPoints: readonly Position[],
   options: FlowArrowOptions,
-  index: number,
+  parts: readonly number[],
   patch: Partial<FlowArrowFlow>,
 ): Pick<FlowArrowOptions, "flows"> {
   return {
     flows: flowArrowFlows(controlPoints, options).map((flow, i) =>
-      i === index ? patchFlowArrowFlow(flow, patch) : flow,
+      parts.includes(i) ? patchFlowArrowFlow(flow, patch) : flow,
     ),
   };
 }

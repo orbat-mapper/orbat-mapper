@@ -10,11 +10,13 @@ import {
   type SplitArrowOptions,
 } from "@orbat-mapper/control-measures";
 import type { Position } from "geojson";
+import { omit } from "es-toolkit";
 import {
   drawnFlows,
   flowEditor,
   flowLabel,
   graphicParam,
+  mixedKeys,
   type FlowCommand,
 } from "@/modules/scenarioeditor/controlMeasureFlows";
 
@@ -155,15 +157,20 @@ const ARROWHEAD_WIDTH = flowParam(
   "This flow's arrowhead width as a ratio of its length",
 );
 
-/** The fields for one flow, in panel order. The trunk's label is the
- *  graphic's Field T (`TRUNK_LABEL_KEY`), and a flow without a head has no
- *  head to style. */
-export function splitFlowParams(summary: SplitFlowSummary): ParamDescriptor[] {
+/** The fields the selected flows share, in panel order. The trunk's label is
+ *  the graphic's Field T (`TRUNK_LABEL_KEY`), offered only for the trunk alone;
+ *  with any other flow among them the label is those flows' own. A flow without
+ *  a head has no head to style, so head fields need each to have one. */
+export function sharedSplitFlowParams(
+  summaries: readonly SplitFlowSummary[],
+): ParamDescriptor[] {
   return [
-    summary.index === 0 ? TRUNK_LABEL : DESIGNATION,
+    summaries.some((summary) => summary.index > 0) ? DESIGNATION : TRUNK_LABEL,
     LABEL_ALIGNMENT,
     LABEL_POSITION,
-    ...(summary.hasHead ? [ARROWHEAD_STYLE, ARROWHEAD_SCALE, ARROWHEAD_WIDTH] : []),
+    ...(summaries.every((summary) => summary.hasHead)
+      ? [ARROWHEAD_STYLE, ARROWHEAD_SCALE, ARROWHEAD_WIDTH]
+      : []),
   ];
 }
 
@@ -188,6 +195,26 @@ export function splitFlowValues(
   };
 }
 
+/** The values several selected flows show: the first flow's, with the fields
+ *  where they differ listed as `mixed`. An automatic label position differs
+ *  from any set one, even the middle it reads as. The trunk takes no part in
+ *  the label: its own is the graphic's Field T. */
+export function sharedSplitFlowValues(
+  summaries: readonly Pick<SplitFlowSummary, "index" | "flow">[],
+  options: SplitArrowOptions,
+): { values: Record<string, unknown>; mixed: string[] } {
+  const designation = summaries.find(({ index }) => index > 0)?.flow.designation ?? "";
+  const compared = summaries.map(({ index, flow }) => ({
+    ...splitFlowValues(flow, options),
+    labelPosition: flow.labelPosition,
+    designation: index > 0 ? (flow.designation ?? "") : designation,
+  }));
+  return {
+    values: { ...splitFlowValues(summaries[0]!.flow, options), designation },
+    mixed: mixedKeys(compared),
+  };
+}
+
 /** `flow` with `patch` applied; a key patched to `undefined`, or an emptied
  *  designation, is dropped so the flow follows the graphic again. */
 function patchFlow(flow: SplitArrowFlow, patch: Partial<SplitArrowFlow>): SplitArrowFlow {
@@ -198,16 +225,19 @@ function patchFlow(flow: SplitArrowFlow, patch: Partial<SplitArrowFlow>): SplitA
   return patched as unknown as SplitArrowFlow;
 }
 
-/** The `flows` options patch that applies `patch` to flow `index`. */
+/** The `flows` options patch that applies `patch` to flows `parts`. A label goes
+ *  on all of them but the trunk, whose label is the graphic's Field T. */
 export function patchSplitFlowOptions(
   controlPoints: readonly Position[],
   options: SplitArrowOptions,
-  index: number,
+  parts: readonly number[],
   patch: Partial<SplitArrowFlow>,
 ): Pick<SplitArrowOptions, "flows"> {
   return {
     flows: splitArrowFlows(controlPoints, options).map((flow, i) =>
-      i === index ? patchFlow(flow, patch) : flow,
+      parts.includes(i)
+        ? patchFlow(flow, i === 0 ? omit(patch, ["designation"]) : patch)
+        : flow,
     ),
   };
 }

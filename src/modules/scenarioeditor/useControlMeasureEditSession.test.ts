@@ -338,3 +338,100 @@ describe("width grips", () => {
     scope.stop();
   });
 });
+
+describe("selected flows", () => {
+  it("follows the engine's part selection, wherever it comes from", () => {
+    const { edit, fake, scope } = setup({ graphicKind: "flow-arrow" });
+    edit.start("cm-1");
+    expect(edit.selectedPart.value).toBe(0);
+    expect(edit.selectedParts.value).toEqual([0]);
+
+    edit.selectPart(2, { extend: true });
+    expect(edit.selectedPart.value).toBe(2);
+    expect(edit.selectedParts.value).toEqual([0, 2]);
+
+    // A Shift-click on the map reaches the session without going through the panel.
+    fake.editSession!.session.selectPart(1, { extend: true });
+    expect(edit.selectedParts.value).toEqual([0, 1, 2]);
+
+    edit.selectParts([0, 1], 0);
+    expect(edit.selectedPart.value).toBe(0);
+    expect(edit.selectedParts.value).toEqual([0, 1]);
+    scope.stop();
+  });
+
+  // Every panel write settles the edit and reopens it, so a selection that only lived
+  // in the session would fall back to one flow after the first change.
+  it("keeps the whole selection, and its primary, across a reopen", () => {
+    const { edit, fake, scope } = setup({ graphicKind: "flow-arrow" });
+    edit.start("cm-1");
+    edit.selectParts([0, 1, 2], 1);
+
+    edit.stop();
+    edit.start("cm-1");
+
+    expect(fake.editSession!.session.selectedParts).toEqual([0, 1, 2]);
+    expect(fake.editSession!.session.selectedPart).toBe(1);
+    expect(edit.selectedParts.value).toEqual([0, 1, 2]);
+    expect(edit.selectedPart.value).toBe(1);
+    scope.stop();
+  });
+
+  // Flows are indices, so once their number changes the remembered ones may be others.
+  it("keeps only the primary when the flow count changed before a reopen", () => {
+    const { edit, fake, scenario, scope } = setup({ graphicKind: "flow-arrow" });
+    edit.start("cm-1");
+    fake.editSession!.session.setOptions({
+      flows: [{ count: 1 }, { count: 1 }, { count: 0 }],
+    });
+    edit.selectParts([0, 1, 2], 1);
+    edit.stop();
+
+    scenario.geo.updateTacticalGraphic("cm-1", {
+      options: { flows: [{ count: 1 }, { count: 1 }] },
+    });
+    edit.start("cm-1");
+
+    expect(edit.selectedPart.value).toBe(1);
+    expect(edit.selectedParts.value).toEqual([1]);
+    scope.stop();
+  });
+
+  it("has no selected flow while a point symbol is edited after an arrow", () => {
+    const { edit, scenario, scope } = setup({ graphicKind: "flow-arrow" });
+    edit.start("cm-1");
+    expect(edit.selectedPart.value).toBe(0);
+
+    scenario.geo.addFeature(
+      {
+        id: "symbol-1",
+        kind: "pointSymbol",
+        sidc: "10031000001211000000",
+        location: [10, 60],
+      } as never,
+      "layer-1",
+      { allowSpecializationMismatch: true },
+    );
+    edit.start("symbol-1");
+
+    expect(edit.featureId.value).toBe("symbol-1");
+    expect(edit.selectedPart.value).toBeUndefined();
+    expect(edit.selectedParts.value).toEqual([]);
+    scope.stop();
+  });
+
+  it("forgets the selection on another graphic", () => {
+    const { edit, scope } = setup({ graphicKind: "flow-arrow" });
+    edit.start("cm-1");
+    edit.selectParts([0, 1], 1);
+
+    edit.start("cm-screen");
+    expect(edit.selectedPart.value).toBeUndefined();
+    expect(edit.selectedParts.value).toEqual([]);
+
+    edit.start("cm-1");
+    expect(edit.selectedPart.value).toBe(0);
+    expect(edit.selectedParts.value).toEqual([0]);
+    scope.stop();
+  });
+});

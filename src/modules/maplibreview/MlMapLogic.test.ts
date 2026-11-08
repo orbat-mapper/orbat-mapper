@@ -3975,7 +3975,11 @@ describe("MlMapLogic", () => {
           properties: { featureId: "feature-1", layerId: "layer-1" },
         },
       ],
-      scenarioDraw?: { startControlMeasureEdit: (featureId: string) => void },
+      scenarioDraw?: {
+        startControlMeasureEdit: (featureId: string) => void;
+        controlMeasureEditFeatureId?: { value: string | null };
+        controlMeasureSelectedPart?: { value: number | undefined };
+      },
     ) {
       const mockMap = createMockMap();
       const searchActions = createSearchActions();
@@ -4269,6 +4273,59 @@ describe("MlMapLogic", () => {
 
       expect(selectedFeatureIds.value.has("cm-1")).toBe(true);
       expect(selectedFeatureIds.value.has("feature-1")).toBe(false);
+    });
+
+    describe("shift on the body of the graphic under edit", () => {
+      function shiftPressCm1(
+        editedId: string,
+        selectedPart: number | undefined,
+        { suppressed = false } = {},
+      ) {
+        const h = createControlMeasureHarness(true, [], {
+          startControlMeasureEdit: vi.fn(),
+          controlMeasureEditFeatureId: { value: editedId },
+          controlMeasureSelectedPart: { value: selectedPart },
+        });
+        // A toolbar-armed edit holds map selection off for as long as it is open.
+        if (suppressed) useMapSelectStore().suppressSelection();
+        const { selectedFeatureIds, selectedUnitIds } = useSelectedItems();
+        selectedFeatureIds.value.clear();
+        selectedUnitIds.value.clear();
+        selectedFeatureIds.value.add("cm-1");
+        const down = new MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          shiftKey: true,
+          button: 0,
+          clientX: 1,
+          clientY: 2,
+        });
+        h.mockMap.canvasContainer.dispatchEvent(down);
+        return { h, down, selectedFeatureIds };
+      }
+
+      it("leaves a flow click to the engine, with box zoom held so the click arrives", () => {
+        // Toggling selection here would drop the arrow out of the edit being extended.
+        const { h, down, selectedFeatureIds } = shiftPressCm1("cm-1", 0, {
+          suppressed: true,
+        });
+
+        expect(selectedFeatureIds.value.has("cm-1")).toBe(true);
+        expect(down.defaultPrevented).toBe(false);
+        expect(h.mockMap.boxZoom.isEnabled()).toBe(false);
+        window.dispatchEvent(new MouseEvent("mouseup"));
+        expect(h.mockMap.boxZoom.isEnabled()).toBe(true);
+      });
+
+      it("still toggles a graphic under edit that has no flows", () => {
+        const { selectedFeatureIds } = shiftPressCm1("cm-1", undefined);
+        expect(selectedFeatureIds.value.has("cm-1")).toBe(false);
+      });
+
+      it("still toggles a graphic other than the one under edit", () => {
+        const { selectedFeatureIds } = shiftPressCm1("cm-2", 0);
+        expect(selectedFeatureIds.value.has("cm-1")).toBe(false);
+      });
     });
 
     it("leaves shift on an edit handle to tactical-draw's angle constraint", () => {

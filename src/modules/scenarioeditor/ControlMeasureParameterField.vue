@@ -16,6 +16,12 @@ const props = defineProps<{
   id: string;
   parameter: ParamDescriptor;
   modelValue?: string | number | boolean;
+  /**
+   * The value differs across what this edits at once (several of an arrow's flows).
+   * The controls a flow field uses read Mixed until the first change levels them;
+   * `modelValue` still carries the value a slider starts from.
+   */
+  mixed?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -45,6 +51,10 @@ const numberReadout = computed(() =>
   ),
 );
 
+/** A mixed slider has no value to point at, except under the pointer dragging it. */
+const sliderHeld = ref(false);
+const sliderMixed = computed(() => props.mixed && !sliderHeld.value);
+
 function previewNumber(value: number[] | undefined) {
   if (value?.[0] !== undefined) numberDraft.value = value[0];
 }
@@ -63,6 +73,7 @@ function updateText(event: Event) {
 }
 
 function enumValue(parameter: Extract<ParamDescriptor, { type: "enum" }>): string {
+  if (props.mixed) return "";
   const option = parameter.options.find(({ value }) => value === props.modelValue);
   return String(option?.value ?? parameter.options[0]?.value ?? "");
 }
@@ -90,7 +101,16 @@ function updateEnum(
         v-if="parameter.type === 'number' && boundedNumber"
         class="text-muted-foreground text-xs tabular-nums"
       >
-        {{ numberReadout }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
+        <template v-if="sliderMixed">Mixed</template>
+        <template v-else>
+          {{ numberReadout }}{{ parameter.unit ? ` ${parameter.unit}` : "" }}
+        </template>
+      </span>
+      <span
+        v-else-if="mixed && parameter.type === 'enum' && parameter.options.length <= 7"
+        class="text-muted-foreground text-xs"
+      >
+        Mixed
       </span>
     </div>
 
@@ -122,6 +142,7 @@ function updateEnum(
       :model-value="enumValue(parameter)"
       @update:model-value="updateEnum(parameter, $event)"
     >
+      <NativeSelectOption v-if="mixed" value="" disabled hidden>Mixed</NativeSelectOption>
       <NativeSelectOption
         v-for="option in parameter.options"
         :key="String(option.value)"
@@ -142,10 +163,17 @@ function updateEnum(
     <Slider
       v-else-if="parameter.type === 'number' && boundedNumber"
       :id="id"
+      :class="
+        sliderMixed &&
+        '[&_[data-slot=slider-range]]:opacity-0 [&_[data-slot=slider-thumb]:not(:focus-visible)]:opacity-0'
+      "
       :model-value="[numberDraft]"
       :min="parameter.min"
       :max="parameter.max"
       :step="parameter.step ?? 1"
+      @pointerdown="sliderHeld = true"
+      @pointerup="sliderHeld = false"
+      @pointercancel="sliderHeld = false"
       @update:model-value="previewNumber"
       @value-commit="commitNumber"
     />
@@ -154,7 +182,8 @@ function updateEnum(
       v-else-if="parameter.type === 'number'"
       :id="id"
       type="number"
-      :model-value="modelValue as number"
+      :model-value="mixed ? undefined : (modelValue as number)"
+      :placeholder="mixed ? 'Mixed' : undefined"
       :min="parameter.min"
       :max="parameter.max"
       :step="parameter.step"
@@ -170,16 +199,16 @@ function updateEnum(
     <Textarea
       v-else-if="parameter.type === 'text' && parameter.multiline"
       :id="id"
-      :model-value="String(modelValue ?? '')"
-      :placeholder="parameter.placeholder"
+      :model-value="mixed ? '' : String(modelValue ?? '')"
+      :placeholder="mixed ? 'Mixed' : parameter.placeholder"
       :maxlength="parameter.maxLength"
       @change="updateText"
     />
     <Input
       v-else-if="parameter.type === 'text'"
       :id="id"
-      :model-value="String(modelValue ?? '')"
-      :placeholder="parameter.placeholder"
+      :model-value="mixed ? '' : String(modelValue ?? '')"
+      :placeholder="mixed ? 'Mixed' : parameter.placeholder"
       :maxlength="parameter.maxLength"
       @change="updateText"
     />

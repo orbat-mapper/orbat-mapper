@@ -105,6 +105,11 @@ export interface ControlMeasureEditSession {
    */
   readonly selectedPart: Ref<number | undefined>;
   /**
+   * Every sub-selected part, `selectedPart` (the primary) included, ascending; empty
+   * for kinds without parts. Remembered across a protective reopen like the primary.
+   */
+  readonly selectedParts: Ref<readonly number[]>;
+  /**
    * The open session's working points and options, which reach the store only when
    * the edit settles. The panel reads them while editing, so a flow pulled out on the
    * map shows up at once. Only arrows drawn as flows track it; `null` otherwise.
@@ -113,7 +118,10 @@ export interface ControlMeasureEditSession {
     controlPoints: Position[];
     options: Record<string, unknown>;
   } | null>;
-  selectPart(part: number): void;
+  /** Select a part alone, or with `extend` toggle it in or out of the selection. */
+  selectPart(part: number, opts?: { extend?: boolean }): void;
+  /** Replace the selected parts; `primary` defaults to the last listed. */
+  selectParts(parts: readonly number[], primary?: number): void;
   /** Whether the open graphic declares a Ctrl/⌘ + drag on a point (new flow). */
   readonly canAddFlow: Ref<boolean>;
   /**
@@ -169,9 +177,12 @@ export function useControlMeasureEditSession(
   /** A Flow Arrow keeps its point widths on each flow instead. */
   let flowWidths = false;
   const selectedPart = ref<number | undefined>(undefined);
+  const selectedParts = shallowRef<readonly number[]>([]);
   const liveShape: ControlMeasureEditSession["liveShape"] = shallowRef(null);
   /** The graphic `selectedPart` belongs to, so a reopen on it restores the part. */
   let selectedPartOwner: FeatureId | null = null;
+  /** How many flows `selectedParts` counted: parts are indices, so only then still apt. */
+  let selectedPartsFlowCount = 0;
   const canAddFlow = ref(false);
   const addFlowArmed = ref(false);
 
@@ -180,8 +191,12 @@ export function useControlMeasureEditSession(
     options.surface()?.setModifierDragArmed(addFlowArmed.value);
   }
 
-  function selectPart(part: number) {
-    controlMeasureSession()?.selectPart(part);
+  function selectPart(part: number, opts?: { extend?: boolean }) {
+    controlMeasureSession()?.selectPart(part, opts);
+  }
+
+  function selectParts(parts: readonly number[], primary?: number) {
+    controlMeasureSession()?.selectParts(parts, primary);
   }
 
   function setWidthGrips(enabled: boolean) {
@@ -360,6 +375,11 @@ export function useControlMeasureEditSession(
     const token = generation;
     const surface = options.surface();
     if (!surface) return false;
+    if (selectedPartOwner !== itemId) {
+      selectedPartOwner = itemId;
+      selectedPart.value = undefined;
+      selectedParts.value = [];
+    }
     const { layerItem } = options.scenario.geo.getLayerItemById(itemId);
     if (layerItem && isNPointSymbolLayerItem(layerItem)) {
       // Its own copy, for the same reason `toEditStartMeasure` clones.
@@ -376,10 +396,6 @@ export function useControlMeasureEditSession(
     if (!isSupportedGraphicKind(layerItem.graphicKind)) return false;
 
     featureId.value = itemId;
-    if (selectedPartOwner !== itemId) {
-      selectedPartOwner = itemId;
-      selectedPart.value = undefined;
-    }
     const startMeasure = toEditStartMeasure(layerItem);
     // Detached from the object tactical-draw receives, so a library-owned mutation of
     // its working graphic cannot move the comparison baseline along with the edit.
@@ -417,20 +433,36 @@ export function useControlMeasureEditSession(
             options: { ...(editSession.workingGraphic.options ?? {}) },
           };
         };
+        const flowCount = () =>
+          (editSession.workingGraphic.options as { flows?: unknown[] } | undefined)?.flows
+            ?.length ?? 1;
         readWidths();
         readShape();
         editSession.onChange(() => {
           readWidths();
           readShape();
+          selectedPartsFlowCount = flowCount();
           // A change while armed is the armed press doing its work: one-shot.
           if (addFlowArmed.value) setAddFlowArmed(false);
         });
-        // Restore the flow the panel was on before a protective reopen.
-        const rememberedPart = selectedPart.value;
-        if (rememberedPart !== undefined) editSession.selectPart(rememberedPart);
+        // Restore the flows the panel was on before a protective reopen. Should their
+        // number have changed since, they may be other flows: keep the primary alone,
+        // as the engine does when an edit changes it.
+        if (selectedPart.value !== undefined) {
+          editSession.selectParts(
+            selectedPartsFlowCount === flowCount()
+              ? selectedParts.value
+              : [selectedPart.value],
+            selectedPart.value,
+          );
+        }
+        selectedPartsFlowCount = flowCount();
         selectedPart.value = editSession.selectedPart;
-        editSession.onPartSelect((part) => {
-          if (token === generation) selectedPart.value = part;
+        selectedParts.value = editSession.selectedParts;
+        editSession.onPartSelect((part, parts) => {
+          if (token !== generation) return;
+          selectedPart.value = part;
+          selectedParts.value = parts;
         });
         // The fold channel. Fires exactly once, synchronously from within the
         // `close()` that produced it, and never on abort.
@@ -478,8 +510,10 @@ export function useControlMeasureEditSession(
     setWidthGrips,
     resetVertexWidths,
     selectedPart,
+    selectedParts,
     liveShape,
     selectPart,
+    selectParts,
     canAddFlow,
     addFlowArmed,
     setAddFlowArmed,
