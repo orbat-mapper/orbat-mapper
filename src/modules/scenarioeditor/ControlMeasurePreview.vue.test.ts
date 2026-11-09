@@ -14,6 +14,15 @@ function amplifierPlaceholders(kind: "no-fire-area-irregular" | "boundary") {
 }
 
 describe("ControlMeasurePreview", () => {
+  it("sets a label beside a line end off the line, as the map does", () => {
+    // Light Line's "LL" sits on the line's tip, offset in its own frame.
+    const label = mount(ControlMeasurePreview, { props: { kind: "light-line" } })
+      .findAll("g")
+      .find((group) => group.find("text").exists());
+
+    expect(label?.attributes("transform")).toMatch(/translate\(/);
+  });
+
   it("keeps amplifier labels readable over a patterned area", () => {
     const wrapper = mount(ControlMeasurePreview, {
       props: {
