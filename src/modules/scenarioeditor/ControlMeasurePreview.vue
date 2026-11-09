@@ -138,7 +138,7 @@ function textBackgroundWidth(shape: PreviewShape): number {
       />
       <g
         v-else-if="shape.type === 'text' && shape.cx !== undefined"
-        :transform="svgTextTransform(shape)"
+        :transform="svgTextTransform(shape, labelFontSize(shape))"
       >
         <rect
           v-if="shape.textBackground"
