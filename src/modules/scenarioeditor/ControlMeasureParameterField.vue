@@ -90,8 +90,8 @@ function updateEnum(
 </script>
 
 <template>
-  <Field>
-    <div class="flex items-center justify-between gap-2">
+  <Field :orientation="parameter.type === 'boolean' ? 'horizontal' : undefined">
+    <div class="flex flex-1 items-center justify-between gap-2">
       <ControlMeasureFieldLabel
         :for="id"
         :label="parameter.label"
@@ -155,7 +155,6 @@ function updateEnum(
     <Switch
       v-else-if="parameter.type === 'boolean'"
       :id="id"
-      class="self-start"
       :model-value="Boolean(modelValue)"
       @update:model-value="$emit('update:modelValue', Boolean($event))"
     />

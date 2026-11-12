@@ -135,6 +135,8 @@ function mountDetails(
     controlMeasureCanResetVertexWidths: ref(false),
     setControlMeasureWidthGrips: vi.fn(),
     resetControlMeasureVertexWidths: vi.fn(),
+    controlMeasureCanReverse: ref(false),
+    reverseControlMeasure: vi.fn(),
     setControlMeasureLabelDrag: vi.fn(),
     cancel: vi.fn(),
     startControlMeasureEdit: vi.fn(),
@@ -190,6 +192,15 @@ describe("ControlMeasureDetails tabs", () => {
     scenarioDraw.controlMeasureSupportsWidthGrips.value = false;
     await nextTick();
     expect(wrapper.find('[aria-label="Toggle width grips"]').exists()).toBe(false);
+  });
+
+  it("offers Reverse direction only when the edit can run the other way", async () => {
+    const { wrapper, scenarioDraw } = mountDetails({ graphicKind: "main-attack" }, true);
+    expect(wrapper.find('[aria-label="Reverse direction"]').exists()).toBe(false);
+    scenarioDraw.controlMeasureCanReverse.value = true;
+    await nextTick();
+    await wrapper.get('[aria-label="Reverse direction"]').trigger("click");
+    expect(scenarioDraw.reverseControlMeasure).toHaveBeenCalledOnce();
   });
 
   it("shows styling, amplifier, details and state tabs, with Debug gated by debug mode", async () => {

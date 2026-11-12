@@ -251,6 +251,10 @@ describe("resolveSymbol", () => {
       type: "control-measure",
       kind: "phase-line",
     });
+    expect(resolveSymbol("GFGPGLC--------", 2)).toMatchObject({
+      type: "control-measure",
+      kind: "line-of-contact",
+    });
     expect(resolveSymbol("SFGPUCI----D---", 1)).toMatchObject({ type: "unit" });
     expect(resolveSymbol("GFGPAAR--------", 3)).toEqual({ type: "unsupported" });
     expect(resolveSymbol("not a sidc", 1)).toEqual({ type: "unsupported" });

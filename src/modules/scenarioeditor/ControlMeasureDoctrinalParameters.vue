@@ -79,12 +79,16 @@ function updateText(parameter: Extract<ParamDescriptor, { type: "text" }>, event
       @update="$emit('update', $event)"
     />
 
-    <Field v-else :class="fieldLayout ? undefined : 'contents'">
+    <Field
+      v-else
+      :orientation="parameter.type === 'boolean' ? 'horizontal' : undefined"
+      :class="fieldLayout ? undefined : 'contents'"
+    >
       <ControlMeasureFieldLabel
         :for="`cm-doctrinal-${parameter.key}`"
         :label="parameter.label"
         :description="fieldLayout ? parameter.description : undefined"
-        :class="fieldLayout ? undefined : 'self-center'"
+        :class="fieldLayout ? 'flex-1' : 'self-center'"
       >
         <template v-if="parameter.type === 'number' && parameter.unit">
           ({{ parameter.unit }})

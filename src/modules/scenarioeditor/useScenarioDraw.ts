@@ -1221,6 +1221,9 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     controlMeasureCanResetVertexWidths: controlMeasureEdit.canResetVertexWidths,
     setControlMeasureWidthGrips: controlMeasureEdit.setWidthGrips,
     resetControlMeasureVertexWidths: controlMeasureEdit.resetVertexWidths,
+    /** The graphic under edit can be run the other way. */
+    controlMeasureCanReverse: controlMeasureEdit.canReverse,
+    reverseControlMeasure: controlMeasureEdit.reverse,
     /** The flow selected on a Flow or Split Arrow under edit. */
     controlMeasureSelectedPart: controlMeasureEdit.selectedPart,
     /** Every flow selected on it, the primary `controlMeasureSelectedPart` included. */
