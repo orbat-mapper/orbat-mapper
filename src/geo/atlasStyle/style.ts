@@ -112,8 +112,15 @@ const rankUpTo = (...steps: number[]): ExpressionSpecification => [
   ["coalesce", ["get", "rank"], 99],
   ["step", ["zoom"], ...steps] as ExpressionSpecification,
 ];
-const notTunnel: FilterSpecification = ["!=", ["get", "brunnel"], "tunnel"];
+const notTunnel: ExpressionSpecification = ["!=", ["get", "brunnel"], "tunnel"];
 const isRiver: FilterSpecification = ["==", ["get", "class"], "river"];
+/** Water polygons split three ways, so each draws in exactly one of the sea, rivers or lakes. */
+const isOcean: ExpressionSpecification = ["==", ["get", "class"], "ocean"];
+const isRiverbank: ExpressionSpecification = ["==", ["get", "class"], "river"];
+const isLake: ExpressionSpecification = [
+  "!",
+  ["match", ["get", "class"], ["ocean", "river"], true, false],
+];
 const onLand: ExpressionSpecification = ["!=", ["get", "maritime"], 1];
 const country: ExpressionSpecification = ["==", ["get", "admin_level"], 2];
 /** The border ribbon and its line pick out the same borders. */
@@ -249,34 +256,64 @@ function elevationLayers(preset: ElevationBandPreset): LayerSpecification[] {
   });
 }
 
+/** The sea, riverbanks and lakes, each drawn as its own shoreline and fill. */
+const WATER: readonly {
+  prefix: string;
+  group?: AtlasLayerGroup;
+  filter: ExpressionSpecification;
+}[] = [
+  { prefix: "river-", group: "waterways", filter: isRiverbank },
+  { prefix: "lake-", group: "lakes", filter: isLake },
+  { prefix: "", filter: isOcean },
+];
+
+function shorelineLayer({
+  prefix,
+  group,
+  filter,
+}: (typeof WATER)[number]): LayerSpecification {
+  return {
+    id: `${prefix}shoreline`,
+    ...(group ? { metadata: layerGroupMetadata(group) } : {}),
+    type: "line",
+    source: VECTOR,
+    "source-layer": "water",
+    filter: ["all", notTunnel, filter],
+    paint: { "line-color": INK.waterLine, "line-width": byZoom(4, 1.2, 10, 2.8) },
+  };
+}
+
+function waterLayer({
+  prefix,
+  group,
+  filter,
+}: (typeof WATER)[number]): LayerSpecification {
+  return {
+    id: `${prefix}water`,
+    ...(group ? { metadata: layerGroupMetadata(group) } : {}),
+    type: "fill",
+    source: VECTOR,
+    "source-layer": "water",
+    filter: ["all", notTunnel, filter],
+    paint: { "fill-color": INK.water, "fill-antialias": false },
+  };
+}
+
 function vectorLayers(): LayerSpecification[] {
   return [
-    // Rivers and shorelines draw under the water fill, which hides their
+    // Rivers and shorelines draw under every water fill, which hides their
     // centre lines and riverbank seams and leaves only the outer edge.
     {
       id: "rivers",
+      metadata: layerGroupMetadata("waterways"),
       type: "line",
       source: VECTOR,
       "source-layer": "waterway",
       filter: isRiver,
       paint: { "line-color": INK.waterLine, "line-width": byZoom(4, 0.6, 10, 1.6) },
     },
-    {
-      id: "shoreline",
-      type: "line",
-      source: VECTOR,
-      "source-layer": "water",
-      filter: notTunnel,
-      paint: { "line-color": INK.waterLine, "line-width": byZoom(4, 1.2, 10, 2.8) },
-    },
-    {
-      id: "water",
-      type: "fill",
-      source: VECTOR,
-      "source-layer": "water",
-      filter: notTunnel,
-      paint: { "fill-color": INK.water, "fill-antialias": false },
-    },
+    ...WATER.map(shorelineLayer),
+    ...WATER.map(waterLayer),
     {
       id: "state-borders",
       metadata: layerGroupMetadata("borders"),
@@ -332,7 +369,7 @@ function vectorLayers(): LayerSpecification[] {
     },
     {
       id: "river-labels",
-      metadata: layerGroupMetadata("labels", "rivers"),
+      metadata: layerGroupMetadata("labels", "rivers", "waterways"),
       type: "symbol",
       source: VECTOR,
       "source-layer": "waterway",
@@ -358,6 +395,24 @@ function vectorLayers(): LayerSpecification[] {
       type: "symbol",
       source: VECTOR,
       "source-layer": "water_name",
+      filter: ["!=", ["get", "class"], "lake"],
+      layout: {
+        "text-field": NAME,
+        "text-font": ITALIC,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.5,
+        "text-size": byZoom(4, 11, 8, 15),
+        "text-max-width": 6,
+      },
+      paint: { "text-color": INK.waterText },
+    },
+    {
+      id: "lake-labels",
+      metadata: layerGroupMetadata("labels", "seas", "lakes"),
+      type: "symbol",
+      source: VECTOR,
+      "source-layer": "water_name",
+      filter: ["==", ["get", "class"], "lake"],
       layout: {
         "text-field": NAME,
         "text-font": ITALIC,

@@ -38,11 +38,20 @@ function fakeMap(layers: { id: string; metadata?: unknown }[]) {
 }
 
 describe("Atlas layer groups", () => {
-  it("offers borders, cities and labels", () => {
+  it("offers borders, cities, rivers, lakes and labels", () => {
     expect(ATLAS_LAYER_GROUPS.map((group) => group.value)).toEqual([
       "borders",
       "cities",
+      "waterways",
+      "lakes",
       "labels",
+    ]);
+    expect(ATLAS_LAYER_GROUPS.map((group) => group.label)).toEqual([
+      "Borders",
+      "Cities",
+      "Rivers",
+      "Lakes & reservoirs",
+      "Labels",
     ]);
   });
 
@@ -82,12 +91,48 @@ describe("Atlas layer groups", () => {
     expect(removed).toEqual(["town-dots", "town-labels"]);
   });
 
+  it("leaves out rivers, their banks and names without waterways", () => {
+    const removed = visibleIds(ALL).filter(
+      (id) => !visibleIds(allBut("waterways")).includes(id),
+    );
+    expect(removed).toEqual(["rivers", "river-shoreline", "river-water", "river-labels"]);
+  });
+
+  it("leaves out lakes, reservoirs and their names without lakes", () => {
+    const removed = visibleIds(ALL).filter(
+      (id) => !visibleIds(allBut("lakes")).includes(id),
+    );
+    expect(removed).toEqual(["lake-shoreline", "lake-water", "lake-labels"]);
+  });
+
+  it("draws each water polygon in exactly one of ocean, river and lake", () => {
+    const waterLayers = (type: string) =>
+      createAtlasStyle().layers.filter(
+        (layer) =>
+          layer.type === type &&
+          "source-layer" in layer &&
+          layer["source-layer"] === "water",
+      );
+    for (const type of ["fill", "line"]) {
+      expect(
+        waterLayers(type)
+          .map((layer) => layer.id)
+          .sort(),
+      ).toEqual(
+        type === "fill"
+          ? ["lake-water", "river-water", "water"]
+          : ["lake-shoreline", "river-shoreline", "shoreline"],
+      );
+    }
+  });
+
   it("leaves out every name, but keeps the town dots, without labels", () => {
     const shown = visibleIds(allBut("labels"));
     const removed = visibleIds(ALL).filter((id) => !shown.includes(id));
     expect(removed).toEqual([
       "river-labels",
       "sea-labels",
+      "lake-labels",
       "state-labels",
       "country-labels",
       "island-labels",
@@ -100,25 +145,28 @@ describe("Atlas layer groups", () => {
     ["countries", "country-labels"],
     ["states", "state-labels"],
     ["rivers", "river-labels"],
-    ["seas", "sea-labels"],
+    ["seas", "sea-labels", "lake-labels"],
     ["islands", "island-labels"],
     ["towns", "town-labels"],
-  ] as const)("leaves out only the %s names without that category", (category, layer) => {
-    const removed = visibleIds(ALL).filter(
-      (id) => !visibleIds(allBut(category)).includes(id),
-    );
-    expect(removed).toEqual([layer]);
-  });
+  ] as const)(
+    "leaves out only the %s names without that category",
+    (category, ...layers) => {
+      const removed = visibleIds(ALL).filter(
+        (id) => !visibleIds(allBut(category)).includes(id),
+      );
+      expect(removed).toEqual(layers);
+    },
+  );
 
   it("keeps the base of the plate with every group off", () => {
     expect(visibleIds([])).toEqual(
-      expect.arrayContaining([
-        "paper",
-        "elevation-bands-4",
-        "rivers",
-        "shoreline",
-        "water",
-      ]),
+      expect.arrayContaining(["paper", "elevation-bands-4", "shoreline", "water"]),
+    );
+  });
+
+  it("keeps the sea with rivers and lakes off", () => {
+    expect(visibleIds(allBut("waterways", "lakes"))).toEqual(
+      expect.arrayContaining(["shoreline", "water", "sea-labels"]),
     );
   });
 });
@@ -132,12 +180,12 @@ describe("canDrawLabelCategory", () => {
     islands: "island-labels",
     towns: "town-labels",
   } as const;
-  const PREREQUISITES: AtlasLayerGroup[][] = [
-    [],
-    ["labels"],
-    ["cities"],
-    ["labels", "cities"],
-  ];
+  const OTHERS: AtlasLayerGroup[] = ["labels", "cities", "waterways"];
+  /** Every combination of the groups a label category may depend on. */
+  const PREREQUISITES: AtlasLayerGroup[][] = OTHERS.reduce<AtlasLayerGroup[][]>(
+    (subsets, group) => [...subsets, ...subsets.map((subset) => [...subset, group])],
+    [[]],
+  );
 
   it.each(ATLAS_LABEL_CATEGORIES.map((category) => category.value))(
     "agrees with what the style draws once %s is on",
@@ -154,6 +202,11 @@ describe("canDrawLabelCategory", () => {
   it("answers for a category that is itself off", () => {
     expect(canDrawLabelCategory("seas", ["labels"])).toBe(true);
     expect(canDrawLabelCategory("seas", ["cities"])).toBe(false);
+  });
+
+  it("needs rivers on to draw river names", () => {
+    expect(canDrawLabelCategory("rivers", ["labels"])).toBe(false);
+    expect(canDrawLabelCategory("rivers", ["labels", "waterways"])).toBe(true);
   });
 });
 

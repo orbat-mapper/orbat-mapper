@@ -3,10 +3,17 @@
  * historical map. A layer lists its groups in its style metadata and draws only
  * while all of them are shown, so a town's name needs cities, labels and its own
  * category. A style opts in by the same metadata; its layer names don't matter.
+ *
+ * Rivers and lakes are present-day water: a river that has since moved its
+ * course, or a reservoir dammed after the period mapped. Lakes include
+ * reservoirs and large lakes such as the Great Lakes, which the tiles don't
+ * tell apart. The sea always draws.
  */
 export const ATLAS_LAYER_GROUPS = [
   { value: "borders", label: "Borders" },
   { value: "cities", label: "Cities" },
+  { value: "waterways", label: "Rivers" },
+  { value: "lakes", label: "Lakes & reservoirs" },
   { value: "labels", label: "Labels" },
 ] as const satisfies readonly { value: string; label: string }[];
 
@@ -53,12 +60,18 @@ export function drawsWithLayerGroups(
   );
 }
 
+/** The group a label category's names belong to besides `labels`: no river names without rivers. */
+const LABEL_CATEGORY_NEEDS: Partial<
+  Record<(typeof ATLAS_LABEL_CATEGORIES)[number]["value"], AtlasLayerGroup>
+> = { towns: "cities", rivers: "waterways" };
+
 /** Whether a label category would draw if it were on: the rest of what its layer needs is shown. */
 export function canDrawLabelCategory(
   category: (typeof ATLAS_LABEL_CATEGORIES)[number]["value"],
   show: readonly AtlasLayerGroup[],
 ): boolean {
-  return show.includes("labels") && (category !== "towns" || show.includes("cities"));
+  const needed = LABEL_CATEGORY_NEEDS[category];
+  return show.includes("labels") && (needed === undefined || show.includes(needed));
 }
 
 /** Shows and hides the style's grouped layers; false when it has none. */
