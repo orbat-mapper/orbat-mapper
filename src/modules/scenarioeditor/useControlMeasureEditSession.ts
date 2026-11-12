@@ -23,9 +23,11 @@ import { onScopeDispose, ref, shallowRef } from "vue";
 import type { Ref, ShallowRef } from "vue";
 import type { Position } from "geojson";
 import {
+  canReverseControlMeasure,
   getControlMeasureModifierDrag,
   getControlMeasureVertexAlignedOptions,
   hasControlMeasureDetailHandles,
+  reverseControlMeasure,
 } from "@orbat-mapper/control-measures";
 import type { FlowArrowOptions } from "@orbat-mapper/control-measures";
 import { isEqual } from "es-toolkit";
@@ -36,6 +38,7 @@ import type {
   GraphicEditSession,
   ImageGraphic,
   Marker,
+  NoteGraphic,
   PointSymbol,
 } from "@orbat-mapper/tactical-draw";
 import type { TScenario } from "@/scenariostore";
@@ -99,6 +102,14 @@ export interface ControlMeasureEditSession {
   setWidthGrips(enabled: boolean): void;
   resetVertexWidths(): void;
   /**
+   * Whether the open graphic can be run the other way: its kind has a direction and
+   * the working geometry allows it (a Flow Arrow whose tip carries other flows does
+   * not).
+   */
+  readonly canReverse: Ref<boolean>;
+  /** Run the open graphic the other way, as one in-session undo step. */
+  reverse(): void;
+  /**
    * The engine's sub-selected part of a graphic drawn in parts (a Flow or Split
    * Arrow's flow); `undefined` for kinds without parts. View state: remembered across
    * the protective reopen a panel write causes, so the panel keeps its flow.
@@ -154,7 +165,8 @@ function asControlMeasureEditSession(
     | EditSession
     | GraphicEditSession<PointSymbol>
     | GraphicEditSession<ImageGraphic>
-    | GraphicEditSession<Marker>,
+    | GraphicEditSession<Marker>
+    | GraphicEditSession<NoteGraphic>,
 ): EditSession | null {
   return "controlPoints" in live ? live : null;
 }
@@ -172,6 +184,7 @@ export function useControlMeasureEditSession(
   const widthGrips = ref(false);
   const supportsWidthGrips = ref(false);
   const canResetVertexWidths = ref(false);
+  const canReverse = ref(false);
   /** The open session's per-vertex width option keys; empty when it has none. */
   let widthKeys: readonly string[] = [];
   /** A Flow Arrow keeps its point widths on each flow instead. */
@@ -212,6 +225,28 @@ export function useControlMeasureEditSession(
         ? clearAllFlowPointWidths(session.workingGraphic.options as FlowArrowOptions)
         : Object.fromEntries(widthKeys.map((key) => [key, undefined])),
     );
+  }
+
+  /** The open session's graphic run the other way; `null` when it cannot be. */
+  function reversal(session: EditSession) {
+    const graphic = session.workingGraphic;
+    if (!canReverseControlMeasure(graphic.kind)) return null;
+    return reverseControlMeasure({
+      kind: graphic.kind,
+      controlPoints: session.controlPoints,
+      options: graphic.options ?? {},
+    });
+  }
+
+  function reverse() {
+    const session = controlMeasureSession();
+    const edit = session && reversal(session);
+    if (!session || !edit) return;
+    session.updateGraphic((graphic) => ({
+      ...graphic,
+      controlPoints: edit.controlPoints,
+      options: edit.options,
+    }));
   }
 
   /**
@@ -262,6 +297,7 @@ export function useControlMeasureEditSession(
     canAddFlow.value = false;
     if (addFlowArmed.value) setAddFlowArmed(false);
     canResetVertexWidths.value = false;
+    canReverse.value = false;
     settleReason = undefined;
     canUndo.value = false;
     canRedo.value = false;
@@ -436,11 +472,25 @@ export function useControlMeasureEditSession(
         const flowCount = () =>
           (editSession.workingGraphic.options as { flows?: unknown[] } | undefined)?.flows
             ?.length ?? 1;
+        // The engine refuses a reversal by point count and options, never by where
+        // the points are, so a drag (new points every tick) need not re-ask it.
+        const reversibleKind = canReverseControlMeasure(startMeasure.kind);
+        let reverseKey: [number, unknown] | null = null;
+        const readReverse = () => {
+          if (!reversibleKind) return;
+          const graphic = editSession.workingGraphic;
+          const key: [number, unknown] = [graphic.controlPoints.length, graphic.options];
+          if (reverseKey && reverseKey[0] === key[0] && reverseKey[1] === key[1]) return;
+          reverseKey = key;
+          canReverse.value = reversal(editSession) !== null;
+        };
         readWidths();
         readShape();
+        readReverse();
         editSession.onChange(() => {
           readWidths();
           readShape();
+          readReverse();
           selectedPartsFlowCount = flowCount();
           // A change while armed is the armed press doing its work: one-shot.
           if (addFlowArmed.value) setAddFlowArmed(false);
@@ -509,6 +559,8 @@ export function useControlMeasureEditSession(
     canResetVertexWidths,
     setWidthGrips,
     resetVertexWidths,
+    canReverse,
+    reverse,
     selectedPart,
     selectedParts,
     liveShape,

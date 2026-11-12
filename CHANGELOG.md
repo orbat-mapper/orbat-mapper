@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 - Added the Flow Arrow and the Split Arrow to the control measures. Hold Ctrl/⌘ and drag from a point while editing the shape to pull out a new flow, or turn on Add flow in the details panel on a touch screen. The details panel lists the flows: pick one to set its own arrowhead, widths or label, or to reverse or remove it.
 - Added selecting several flows of a Flow or Split Arrow at once: Shift or Ctrl/⌘-click the flow buttons, Shift-click flows on the map while editing the shape, or press All. A settings change or grip drag applies to every selected flow that has that field, as one undo step, and fields that differ read Mixed. A Split Arrow's Label can be set on several flows at once; the trunk keeps its own, Field T. Reverse, Detach tip and Remove flow stay single-flow.
 - Added font settings for the personnel and equipment lines in ORBAT charts, under Equipment and personnel on the Chart, Level, Branch and Units tabs. Personnel lines follow the unit label font and equipment lines follow the personnel font until set. Font settings on the Units tab now also apply to a unit's personnel and equipment lines.
+- Added the Line of Contact to the control measures, with Swap sides, LC label and Hostile color options. MilX import reads it from G*G*GLC.
+- Added Reverse direction to the shape edit section of the control measure details panel. It runs a line or arrow the other way as one Ctrl+Z step, and shows when the graphic has a direction to reverse.
 
 ### Changed
 

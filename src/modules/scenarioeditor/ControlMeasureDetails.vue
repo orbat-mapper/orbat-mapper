@@ -27,6 +27,7 @@ import {
   IconRestore as ResetIcon,
   IconVectorPolyline as ShapeIcon,
 } from "@iconify-prerendered/vue-mdi";
+import { ArrowLeftRight } from "@lucide/vue";
 import { storeToRefs } from "pinia";
 import { CONTROL_MEASURE_METADATA } from "@orbat-mapper/control-measures";
 import type { ControlMeasureId } from "@orbat-mapper/control-measures";
@@ -513,9 +514,22 @@ function doDelete() {
           }}
           Ctrl+Z undoes within the edit.
         </p>
-        <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
-          Done
-        </Button>
+        <div class="flex shrink-0 items-center gap-1">
+          <Button
+            v-if="scenarioDraw.controlMeasureCanReverse.value"
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            title="Reverse direction"
+            aria-label="Reverse direction"
+            @click="scenarioDraw.reverseControlMeasure()"
+          >
+            <ArrowLeftRight />
+          </Button>
+          <Button type="button" variant="outline" size="sm" @click="toggleEditShape()">
+            Done
+          </Button>
+        </div>
       </div>
       <div class="flex items-center justify-between gap-2">
         <label class="flex items-center gap-2">

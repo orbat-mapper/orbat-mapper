@@ -332,6 +332,14 @@ export function createTacticalDrawSurfaceFake(
         working = { ...working, options: next } as ControlMeasure;
         notifyChange();
       },
+      updateGraphic(updater: (graphic: ControlMeasure) => ControlMeasure) {
+        working = {
+          ...updater(working),
+          id: working.id,
+          kind: working.kind,
+        } as ControlMeasure;
+        notifyChange();
+      },
       graphic: measure,
       get workingGraphic() {
         return working;

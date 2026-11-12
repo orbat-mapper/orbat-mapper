@@ -339,6 +339,32 @@ describe("width grips", () => {
   });
 });
 
+describe("reverse direction", () => {
+  it("runs a directed graphic the other way as one change, kept on settle", () => {
+    const { edit, fake, scenario, scope } = setup({ graphicKind: "phase-line" });
+    edit.start("cm-1");
+    expect(edit.canReverse.value).toBe(true);
+    const session = fake.editSession!.session;
+    const before = [...session.controlPoints];
+    let changes = 0;
+    session.onChange(() => (changes += 1));
+    edit.reverse();
+    expect(changes).toBe(1);
+    expect(session.controlPoints).toEqual([...before].reverse());
+    edit.stop();
+    expect(storedControlPoints(scenario)).toEqual(session.workingGraphic.controlPoints);
+    expect(edit.canReverse.value).toBe(false);
+    scope.stop();
+  });
+
+  it("is not offered for a kind without a direction", () => {
+    const { edit, scope } = setup({ graphicKind: "battle-position" });
+    edit.start("cm-1");
+    expect(edit.canReverse.value).toBe(false);
+    scope.stop();
+  });
+});
+
 describe("selected flows", () => {
   it("follows the engine's part selection, wherever it comes from", () => {
     const { edit, fake, scope } = setup({ graphicKind: "flow-arrow" });
