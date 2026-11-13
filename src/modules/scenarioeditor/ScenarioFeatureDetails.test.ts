@@ -122,6 +122,46 @@ describe("ScenarioFeatureDetails", () => {
     expect([...useSelectedItems().selectedFeatureIds.value]).toEqual(["feature-copy"]);
   });
 
+  it("lists feature tags above geometry on the details tab", () => {
+    const feature = {
+      id: "feature-1",
+      kind: "geometry",
+      _pid: "layer-1",
+      geometry: { type: "Point", coordinates: [10, 20] },
+      geometryMeta: { geometryKind: "Point" },
+      name: "Bridge",
+      style: {},
+      userData: { category: "crossing", lanes: 2 },
+    };
+    const scenario = makeScenarioProvide({
+      geo: {
+        getGeometryLayerItemById: vi.fn(() => ({ layerItem: feature })),
+        updateFeature: vi.fn(),
+      },
+    });
+    const wrapper = mount(ScenarioFeatureDetails, {
+      props: { selectedIds: new Set(["feature-1"]) },
+      global: {
+        plugins: [createPinia()],
+        provide: {
+          [activeScenarioKey as symbol]: scenario,
+          [activeScenarioMapEngineKey as symbol]: shallowRef({
+            layers: { capabilities: { featureTransform: false } },
+          }),
+        },
+        stubs: baseStubs,
+      },
+    });
+
+    const text = wrapper.text();
+    expect(text).toContain("Tags");
+    expect(text).toContain("category");
+    expect(text).toContain("crossing");
+    expect(text).toContain("lanes");
+    expect(text).toContain("2");
+    expect(text.indexOf("Tags")).toBeLessThan(text.indexOf("Geometry"));
+  });
+
   it("updates feature styling through the scenario layer controller", async () => {
     const updateFeature = vi.fn();
     const feature = {
