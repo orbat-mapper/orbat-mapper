@@ -63,6 +63,8 @@ export const useMapSettingsStore = defineStore("mapSettings", {
     ),
     showScaleLine: useLocalStorage("showScaleLine", true),
     showFeatureTooltip: useLocalStorage("showFeatureTooltip", true),
+    // Empty uses the feature name. "en" prefers a name:en tag, then the feature name.
+    featureTooltipLanguage: useLocalStorage("featureTooltipLanguage", "en"),
     maplibreBaseLayerName: useLocalStorage("maplibreBaseLayerName", ""),
     // Only each archive's name, kind and key — never the bytes. On Chromium a file handle for the
     // same key may also be stored in IndexedDB, which lets the archive be opened again; elsewhere
