@@ -1692,9 +1692,155 @@
                     {
                       "id": "4uaYzkhO8a",
                       "name": "TG 40.1",
-                      "sidc": "10031004001211000000",
-                      "subUnits": [],
-                      "state": []
+                      "sidc": "10031004181211004600",
+                      "subUnits": [
+                        {
+                          "id": "rfC7I3zov1",
+                          "name": "Amph Cdo Gp",
+                          "sidc": "10031000151211006300",
+                          "subUnits": [],
+                          "shortName": "Amph Cdo",
+                          "description": "**Commander:** Lieutenant Commander Guillermo Sánchez Sabarots\n\nAgrupación de Comandos Anfibios (UT 40.1.3), about 70 commandos, landed by boat from ARA Santísima Trinidad at Mullet Creek to attack the Royal Marine barracks at Moody Brook.",
+                          "state": []
+                        },
+                        {
+                          "id": "4uXKU52kgG",
+                          "name": "Govt House Party",
+                          "sidc": "10031000131211006300",
+                          "subUnits": [],
+                          "shortName": "Giachino",
+                          "description": "**Commander:** Lieutenant Commander Pedro Edgardo Giachino\n\nUT 40.1.5: 16 men (8 commandos, 8 tactical divers) sent to take Government House. Giachino, second-in-command of 1 Mar Inf Bn, was killed.",
+                          "state": []
+                        },
+                        {
+                          "id": "mjWpfd5gCn",
+                          "name": "Tac Divers Gp",
+                          "sidc": "10031000141218050000",
+                          "subUnits": [],
+                          "shortName": "Divers",
+                          "description": "**Commander:** Lieutenant Commander Alfredo Raúl Cufré\n\nAgrupación Buzos Tácticos (UT 40.1.4), about 14 divers landed from the submarine ARA Santa Fe near Cape Pembroke to mark the Yorke Bay landing beach and take the lighthouse, then moved on to the airport.",
+                          "state": []
+                        },
+                        {
+                          "id": "JSpWGhQKTw",
+                          "name": "2 Mar Inf Bn",
+                          "sidc": "10031000161211004600",
+                          "subUnits": [
+                            {
+                              "id": "9EsnBybrIv",
+                              "name": "D Coy",
+                              "sidc": "10031000151211004600",
+                              "subUnits": [],
+                              "shortName": "D",
+                              "state": [],
+                              "description": "**Commander:** Lieutenant Francisco Armando Di Paola\n\n'Delta'."
+                            },
+                            {
+                              "id": "uY2Moj7jGd",
+                              "name": "E Coy",
+                              "sidc": "10031000151211004600",
+                              "subUnits": [],
+                              "shortName": "E",
+                              "state": [],
+                              "description": "**Commander:** Lieutenant Carlos César Arruani\n\n'Echo'."
+                            }
+                          ],
+                          "shortName": "2",
+                          "description": "**Commander:** Commander Alfredo Raúl Weinstabl\n\nUT 40.1.1. D and E Coys landed in LVTP-7s from ARA Cabo San Antonio.",
+                          "state": []
+                        },
+                        {
+                          "id": "Oh3zabI2fL",
+                          "name": "Conexión Team",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [
+                            {
+                              "id": "nDD6C0QUc5",
+                              "name": "F Sec, 2 Mar Inf Bn",
+                              "sidc": "10031000141211004600",
+                              "subUnits": [],
+                              "shortName": "F",
+                              "description": "**Commander:** Sub-Lieutenant Carlos R. Schweizer\n\n'Foxtrot'.",
+                              "state": []
+                            },
+                            {
+                              "id": "m4GCGMCvb4",
+                              "name": "Pl, 25 Inf Regt",
+                              "sidc": "10031000141211000000",
+                              "subUnits": [],
+                              "shortName": "25",
+                              "description": "**Commander:** Second Lieutenant Roberto Oscar Reyes\n\nSection of C Coy, 25 Inf Regt (UT 40.1.10), about 25 men, with Lieutenant Colonel Seineldín as the team's second-in-command. It cleared the airport runway.",
+                              "state": []
+                            }
+                          ],
+                          "shortName": "Conexión",
+                          "state": [],
+                          "description": "**Commander:** Lieutenant Commander Jorge Hugo Santillán\n\nEquipo Conexión (UT 40.1.2), 99 men: the vanguard that landed in four LVTP-7s at H-hour. Santillán was second-in-command of 2 Mar Inf Bn. Attached: 81 mm mortar, 75 mm recoilless rifle, MAG machine-gun and 3.5-inch rocket groups."
+                        },
+                        {
+                          "id": "f3RFMfL0ZY",
+                          "name": "1 Mar Amph Veh Bn",
+                          "sidc": "10031000161205024600",
+                          "subUnits": [],
+                          "shortName": "1 Amph Veh",
+                          "description": "**Commander:** Commander Cazzaniga\n\nBatallón de Vehículos Anfibios. Its tracked company (Lieutenant Mario Forbice) had 20 LVTP-7s and a recovery vehicle. Four of the five LARC-Vs carried the artillery.",
+                          "state": [],
+                          "equipment": [
+                            {
+                              "name": "LVTP-7",
+                              "count": 21
+                            },
+                            {
+                              "name": "LARC-V",
+                              "count": 5
+                            }
+                          ]
+                        },
+                        {
+                          "id": "grCpRt1JGW",
+                          "name": "A Bty, 1 Mar Fd Arty Bn",
+                          "sidc": "10031000151303004600",
+                          "subUnits": [],
+                          "shortName": "A/BIAC",
+                          "description": "**Commander:** Lieutenant Mario Francisco Pérez\n\nUT 40.1.6: 41 men and four 105 mm howitzers, landed on LARC-Vs with most crews flown from ARA Almirante Irízar. Withdrawn after the invasion.",
+                          "state": [],
+                          "equipment": [
+                            {
+                              "name": "OTO Melara M56 105 mm",
+                              "count": 4
+                            }
+                          ]
+                        },
+                        {
+                          "id": "YIKq4uMqDa",
+                          "name": "A Coy, 1 Mar Inf Bn",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "shortName": "1",
+                          "description": "**Commander:** Lieutenant Oscar Oulton\n\nUT 40.1.7, the reserve, embarked in ARA Almirante Irízar to land by helicopter.",
+                          "state": []
+                        },
+                        {
+                          "id": "nh8wHQcPN4",
+                          "name": "CSS Element",
+                          "sidc": "10031000151600004600",
+                          "subUnits": [],
+                          "shortName": "CSS",
+                          "description": "**Commander:** Commander Víctor Hugo Theaux\n\nUT 40.1.8, combat service support.",
+                          "state": []
+                        },
+                        {
+                          "id": "WMIzz9eErF",
+                          "name": "Civil Affairs Team",
+                          "sidc": "10031000131102004600",
+                          "subUnits": [],
+                          "shortName": "CA",
+                          "description": "**Commander:** Lieutenant Commander Martín Arrillaga\n\nUT 40.1.9, civil affairs and military government.",
+                          "state": []
+                        }
+                      ],
+                      "state": [],
+                      "description": "**Commander:** Rear Admiral (Marines) Carlos Büsser\n\nLanding force (Fuerza de Desembarco 40.1) for Operation Rosario. Chief of staff: Captain Pita."
                     }
                   ],
                   "state": [
@@ -1714,13 +1860,43 @@
                       },
                       "id": "f6KgfHt2gD"
                     }
-                  ]
+                  ],
+                  "description": "**Commander:** Rear Admiral Gualter Allara\n\nTask force for Operation Rosario, the invasion of 2 April 1982."
                 },
                 {
                   "id": "Dldry81snx",
                   "name": "TF 60",
                   "sidc": "10033000001210030000",
-                  "subUnits": [],
+                  "subUnits": [
+                    {
+                      "id": "LWRaYZE0Q3",
+                      "name": "TG 60.1",
+                      "sidc": "10031004151211004600",
+                      "subUnits": [
+                        {
+                          "id": "UScTRGCgrv",
+                          "name": "Tac Divers Det",
+                          "sidc": "10031000131218050000",
+                          "subUnits": [],
+                          "shortName": "Astiz",
+                          "description": "**Commander:** Lieutenant Alfredo Astiz\n\nAbout 14 tactical divers landed at Leith on 25 March to protect the scrap workers. Surrendered at Leith on 26 April.",
+                          "state": []
+                        },
+                        {
+                          "id": "K1gQ6Q5Ul4",
+                          "name": "Det, 1 Mar Inf Bn",
+                          "sidc": "10031000151211004600",
+                          "subUnits": [],
+                          "shortName": "1",
+                          "description": "**Commander:** Lieutenant Luna\n\nAbout 40 marines, landed by helicopter from ARA Bahía Paraíso (an Army Puma and a Navy Alouette) on 3 April. Fire support came from the corvette ARA Guerrico.",
+                          "reinforcedStatus": "Reduced",
+                          "state": []
+                        }
+                      ],
+                      "description": "**Commander:** Captain César Trombetta\n\nTask group for Operation Georgias, the seizure of South Georgia on 3 April 1982.",
+                      "state": []
+                    }
+                  ],
                   "state": [
                     {
                       "t": "1982-03-27T12:27:16-04:00",
@@ -2791,6 +2967,80 @@
                     }
                   ],
                   "state": []
+                },
+                {
+                  "id": "L8tUXZnvy2",
+                  "name": "Naval Aviation (COAN)",
+                  "sidc": "10031000181208004600",
+                  "subUnits": [
+                    {
+                      "id": "3aEjjpUCmL",
+                      "name": "1 Nav Air Atk Sqn",
+                      "sidc": "10031000151208004600",
+                      "subUnits": [],
+                      "shortName": "1 Sqn",
+                      "description": "**Deployed:** Port Stanley\n\nAermacchi MB-339A.",
+                      "state": []
+                    },
+                    {
+                      "id": "FhFNbGu9Oa",
+                      "name": "2 Nav Ftr/Atk Sqn",
+                      "sidc": "10031000151208004600",
+                      "subUnits": [],
+                      "shortName": "2 Sqn",
+                      "description": "**Commander:** Jorge Colombo\n\n**Deployed:** Río Grande\n\nSuper Étendard with AM39 Exocet.",
+                      "state": []
+                    },
+                    {
+                      "id": "R26bLw61VP",
+                      "name": "3 Nav Ftr/Atk Sqn",
+                      "sidc": "10031000151208004600",
+                      "subUnits": [],
+                      "shortName": "3 Sqn",
+                      "description": "**Commander:** Rodolfo A. Castro Fox\n\n**Deployed:** Río Grande\n\nA-4Q Skyhawk, flown from shore after ARA Veinticinco de Mayo returned to port.",
+                      "state": []
+                    },
+                    {
+                      "id": "kMSssqoLk7",
+                      "name": "4 Nav Air Atk Sqn",
+                      "sidc": "10031000151208004600",
+                      "subUnits": [],
+                      "shortName": "4 Sqn",
+                      "description": "**Deployed:** Pebble Island\n\nT-34C-1 Turbo Mentor. All were destroyed in the SAS raid on Pebble Island on the night of 14/15 May.",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "COAN",
+                  "description": "Comando de Aviación Naval Argentina.",
+                  "state": []
+                },
+                {
+                  "id": "i1GUjFFN98",
+                  "name": "Naval Station Malvinas",
+                  "sidc": "10031000161202004600",
+                  "subUnits": [
+                    {
+                      "id": "g4hBc6jz4x",
+                      "name": "NAS Calderón",
+                      "sidc": "10031000151202004600",
+                      "subUnits": [],
+                      "shortName": "Calderón",
+                      "description": "**Deployed:** Pebble Island\n\nEstación Aeronaval Calderón. Home of the T-34C Turbo Mentors, also used by Air Force Pucarás from 1 May. Raided by the SAS on 14/15 May.",
+                      "state": []
+                    },
+                    {
+                      "id": "eDXAdz2IH8",
+                      "name": "ITB Exocet Det",
+                      "sidc": "10031000131307004600",
+                      "subUnits": [],
+                      "shortName": "ITB",
+                      "description": "**Deployed:** South of Port Stanley\n\nImprovised land-based launcher for MM38 Exocet missiles. It hit HMS Glamorgan on 12 June.",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "Apostadero",
+                  "description": "**Commander:** Commander Adolfo Aurelio Gaffoglio\n\n**Deployed:** Port Stanley\n\nApostadero Naval Malvinas.",
+                  "state": []
                 }
               ],
               "symbolOptions": {},
@@ -2798,151 +3048,1162 @@
               "state": []
             },
             {
-              "id": "WEi8zOQmnr",
-              "name": "10 Mechanized Infantry Brigade",
-              "sidc": "10031000181211000000",
+              "id": "aPkM7qjN24",
+              "name": "Falkland Islands Garrison",
+              "sidc": "10031000211211000000",
               "subUnits": [
                 {
-                  "id": "EVkwU3z8me",
-                  "name": "3rd Inf Reg",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "3 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "h7MAj2W9Ub",
-                  "name": "7th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "7 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "K6QslV9ovo",
-                  "name": "6th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "6 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "52lP3wBqgH",
-                  "name": "25th Infantry Regiment",
-                  "sidc": "10031000171211000000",
-                  "subUnits": [],
-                  "shortName": "25 Inf Reg",
-                  "state": []
-                },
-                {
-                  "id": "jksAfGOypF",
-                  "name": "181st Armoured Cavalry Squadron",
-                  "sidc": "10031000151205010000",
-                  "subUnits": [],
-                  "shortName": "181 Arm Cav Sqd",
-                  "state": []
-                }
-              ],
-              "shortName": "10 Mech Inf",
-              "state": []
-            },
-            {
-              "id": "b2stPeJbsj",
-              "name": "5th Marine Infantry Battalion",
-              "sidc": "10031000161211004600",
-              "subUnits": [],
-              "shortName": "5 Mar Inf Btn",
-              "state": []
-            },
-            {
-              "id": "uPYcvYQqch",
-              "name": "3rd Mechanized Infantry Brigade",
-              "sidc": "10031000181211000000",
-              "subUnits": [
-                {
-                  "id": "tIl8jmzlvH",
-                  "name": "4th Inf Reg",
-                  "sidc": "10031000171211000000",
+                  "id": "uPYcvYQqch",
+                  "name": "3 Mech Inf Bde",
+                  "sidc": "10031000181211000000",
                   "subUnits": [
                     {
-                      "id": "c8Gp2Bt2Sl",
-                      "name": "AA1",
-                      "sidc": "10031500001110010000",
+                      "id": "tIl8jmzlvH",
+                      "name": "4 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "DfA5L0i7PW",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": [],
+                          "description": "**Deployed:** Murrell (Fresinet) peninsula\n\nAfter the withdrawal one section went to Two Sisters and one to Goat Ridge."
+                        },
+                        {
+                          "id": "BFoVMKuyOp",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": [],
+                          "description": "**Commander:** Captain Carlos Alberto Arroyo\n\n**Deployed:** Mount Harriet"
+                        },
+                        {
+                          "id": "YTv2H892KO",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": [],
+                          "description": "**Deployed:** Two Sisters"
+                        }
+                      ],
+                      "state": [],
+                      "shortName": "4",
+                      "description": "**Commander:** Lieutenant Colonel Diego Alejandro Soria\n\n**Deployed:** Mount Harriet (command post) and Two Sisters (under the regiment's second-in-command); initially Mount Wall and Twelve O'Clock Mountain\n\nArgentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "BoAMPXKcSq",
+                      "name": "12 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "e2Dd1jHi3I",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "state": [
+                            {
+                              "id": "mqG97vVJpu",
+                              "t": "1982-05-26T20:00:00-04:00",
+                              "location": [-58.97594045601976, -51.825991847559145]
+                            }
+                          ],
+                          "shortName": "A",
+                          "description": "**Commander:** First Lieutenant Jorge Manresa\n\n**Deployed:** Front line on the Darwin isthmus"
+                        },
+                        {
+                          "id": "wsQpmn3OGI",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "state": [
+                            {
+                              "id": "O1Yodf25k6",
+                              "t": "1982-05-26T20:00:00-04:00",
+                              "location": [-58.111871431119695, -51.67344058266559]
+                            }
+                          ],
+                          "shortName": "B",
+                          "description": "**Commander:** Captain Eduardo Corsiglia\n\nHeld on Mount Kent as heliborne reserve and flown to Goose Green on 28 May as Combat Team Solari."
+                        },
+                        {
+                          "id": "zE8dqBnoiU",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "state": [
+                            {
+                              "id": "sUADx0xyRO",
+                              "t": "1982-05-26T20:00:00-04:00",
+                              "location": [-58.971863498317134, -51.82771586853235]
+                            }
+                          ],
+                          "shortName": "C",
+                          "description": "**Commander:** First Lieutenant Ramón Duaso Fernández\n\n**Deployed:** Southern part of the isthmus"
+                        }
+                      ],
+                      "state": [],
+                      "shortName": "12",
+                      "description": "**Commander:** Lieutenant Colonel Ítalo Ángel Piaggi\n\n**Deployed:** Goose Green and Darwin (Task Force Mercedes)\n\nSecond-in-command: Major Alberto Horacio Frontera. Task Force Mercedes had 643 men on 27 May, including a section of B Bty, 601 AD Gp (two 35 mm guns), three guns of A Bty, 4 Airmob Arty Gp, a section of C Coy, 8 Inf Regt, and an engineer detachment. Argentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "hbLvBUqapH",
+                      "name": "5 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "y0aIoiFbkG",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": []
+                        },
+                        {
+                          "id": "zhXGMgeVNS",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": []
+                        },
+                        {
+                          "id": "vtqtjqmNsx",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": []
+                        },
+                        {
+                          "id": "9AgBCD94Ip",
+                          "name": "3 Cbt Eng Coy (-)",
+                          "sidc": "10031000151407000000",
+                          "subUnits": [],
+                          "shortName": "3 Eng",
+                          "description": "**Commander:** Lieutenant Gustavo Adolfo Calderini\n\n**Deployed:** Port Howard\n\nTwo sections attached to 5 Inf Regt.",
+                          "reinforcedStatus": "Reduced",
+                          "state": []
+                        }
+                      ],
+                      "state": [],
+                      "shortName": "5",
+                      "description": "**Commander:** Colonel Juan Ramón Mabragaña\n\n**Deployed:** Port Howard, West Falkland (Task Force Yapeyú)\n\nTask Force Yapeyú also included 3 Sig Coy and a medical company. Argentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "rRKxj6Sfzf",
+                      "name": "8 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "iBiVoORhQY",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": []
+                        },
+                        {
+                          "id": "3iV1j3pWkq",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": []
+                        },
+                        {
+                          "id": "KLrkxHiEs5",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": []
+                        },
+                        {
+                          "id": "DlcqDnNO9B",
+                          "name": "9 Eng Coy",
+                          "sidc": "10031000151407000000",
+                          "subUnits": [],
+                          "shortName": "9 Eng",
+                          "description": "**Commander:** Major Oscar Minorini Lima\n\n**Deployed:** Fox Bay East\n\nFrom 9th Infantry Brigade, attached to 8 Inf Regt. A detachment went to Goose Green.",
+                          "state": []
+                        }
+                      ],
+                      "state": [],
+                      "shortName": "8",
+                      "description": "**Commander:** Lieutenant Colonel Ernesto A. Repossi\n\n**Deployed:** Fox Bay West, West Falkland (Task Force Reconquista)\n\nAttached from 9th Infantry Brigade. A section of C Coy went to Goose Green. Argentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "qnFAQPDVcI",
+                      "name": "3 Sig Coy",
+                      "sidc": "10031000151110000000",
                       "subUnits": [],
+                      "shortName": "3 Sig",
+                      "description": "**Deployed:** Port Howard",
                       "state": []
                     },
                     {
-                      "id": "JuX2CtTDJj",
-                      "name": "AA2",
-                      "sidc": "10031500001105000000",
+                      "id": "9pVX0jiLse",
+                      "name": "Med Coy, 3 Log Bn",
+                      "sidc": "10031000151613000000",
                       "subUnits": [],
+                      "shortName": "3 Med",
+                      "description": "**Deployed:** Port Stanley and Port Howard",
                       "state": []
                     }
                   ],
+                  "state": [],
+                  "description": "**Commander:** Brigadier General Omar Edgardo Parada\n\n**Deployed:** Coastal Sector (Agrupación Ejército Litoral), commanded from Port Stanley"
+                },
+                {
+                  "id": "WEi8zOQmnr",
+                  "name": "10 Mech Inf Bde",
+                  "sidc": "10031000181211000000",
+                  "subUnits": [
+                    {
+                      "id": "EVkwU3z8me",
+                      "name": "3 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "D6dwPDLXjr",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": []
+                        },
+                        {
+                          "id": "G0YgGbrOQv",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": []
+                        },
+                        {
+                          "id": "Zeg9E4gBBh",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": [],
+                          "description": "Attached to 5 Mar Inf Bn."
+                        }
+                      ],
+                      "shortName": "3",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Colonel David U. Comini\n\n**Deployed:** Southern flank of Port Stanley\n\nArgentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "h7MAj2W9Ub",
+                      "name": "7 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "q2t4PiReBi",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": [],
+                          "description": "**Deployed:** Mount Camber, with part on Wireless Ridge"
+                        },
+                        {
+                          "id": "coWm4JpLDD",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": [],
+                          "description": "**Commander:** Captain Carlos López Astore\n\n**Deployed:** Mount Longdon\n\nReinforced by the 1st Section of 10 Mech Eng Coy (Lieutenant Hugo Aníbal Quiroga) and a Marine 12.7 mm machine-gun section."
+                        },
+                        {
+                          "id": "X69sCrqfOY",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": [],
+                          "description": "**Deployed:** Wireless Ridge and Moody Brook"
+                        }
+                      ],
+                      "shortName": "7",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Colonel Omar Giménez\n\n**Deployed:** Mount Longdon and Wireless Ridge\n\nThe regiment's second-in-command, Major Carlos Eduardo Carrizo Salvadores, commanded the Mount Longdon sector. Argentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "K6QslV9ovo",
+                      "name": "6 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "UJ1BUtXfKN",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": []
+                        },
+                        {
+                          "id": "6Pm1QIaGv5",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": [],
+                          "description": "**Commander:** Major Oscar Ramón Jaimet\n\nCompany 'Piribebuy'. Heliborne reserve behind Two Sisters, then attached to 5 Mar Inf Bn on Tumbledown."
+                        },
+                        {
+                          "id": "a1906fLL57",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": [],
+                          "description": "**Commander:** Captain Humberto Pascualetti\n\nCompañía A 'Malvinas' of 1st Infantry Regiment 'Patricios', attached as the regiment's C Coy. Its 2nd and 3rd Sections were sent to 25 Inf Regt and its 1st and support sections to the airport."
+                        }
+                      ],
+                      "shortName": "6",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Colonel Jorge Halperín\n\n**Deployed:** Stanley Common\n\nArgentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "52lP3wBqgH",
+                      "name": "25 Inf Regt",
+                      "sidc": "10031000171211000000",
+                      "subUnits": [
+                        {
+                          "id": "zGVOb6dnPU",
+                          "name": "A Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "A",
+                          "state": [],
+                          "description": "**Commander:** First Lieutenant Néstor José Montero, then First Lieutenant Carlos Federico Domínguez Lacreu from May\n\n**Deployed:** Heights north of the airport"
+                        },
+                        {
+                          "id": "LBUcIQylxK",
+                          "name": "B Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "B",
+                          "state": [],
+                          "description": "**Commander:** First Lieutenant Miguel Ángel Macchi\n\n**Deployed:** Heights west of the airport"
+                        },
+                        {
+                          "id": "2stnw2BOBL",
+                          "name": "C Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "C",
+                          "state": [],
+                          "description": "**Commander:** First Lieutenant Carlos Daniel Esteban\n\n**Deployed:** Goose Green, with Combat Team Güemes at Port San Carlos\n\nSections: 1st (Lieutenant Roberto Néstor Estévez), 2nd (Second Lieutenant Juan José Gómez Centurión), 3rd (Second Lieutenant Roberto Oscar Reyes). Combat Team Güemes was the 3rd Section plus a section of 12 Inf Regt (Second Lieutenant José Alberto Vásquez)."
+                        },
+                        {
+                          "id": "XVAIdFUwrU",
+                          "name": "D Coy",
+                          "sidc": "10031000151211000000",
+                          "subUnits": [],
+                          "shortName": "D",
+                          "description": "**Commander:** Captain Raúl Antonio Sevillano\n\nFormed on the islands as Combat Team Sevillano.",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "25",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Colonel Mohamed Alí Seineldín\n\n**Deployed:** Port Stanley Airport\n\nAttached from 9th Infantry Brigade. Second-in-command: Major Carlos María Vergara. A section of the regiment landed with the marines on 2 April. Argentine infantry 'regiments' were single-battalion units. Although mechanised, the regiment was airlifted to the islands and left most of its vehicles in Argentina."
+                    },
+                    {
+                      "id": "jksAfGOypF",
+                      "name": "181 Armd Cav Det",
+                      "sidc": "10031000141205010000",
+                      "subUnits": [],
+                      "shortName": "181 Cav",
+                      "state": [],
+                      "description": "**Commander:** Major Alejandro D. Carullo\n\n**Deployed:** Moody Brook Barracks, Port Stanley\n\nDestacamento de Exploración de Caballería Blindada 181. The armoured cars were limited to the metalled roads around Port Stanley, so the crews also fought as infantry.",
+                      "equipment": [
+                        {
+                          "name": "Panhard AML-90",
+                          "count": 2
+                        }
+                      ]
+                    },
+                    {
+                      "id": "inECpp2m0D",
+                      "name": "10 Armd Cav Sqn",
+                      "sidc": "10031000151205010000",
+                      "subUnits": [],
+                      "shortName": "10 Cav",
+                      "description": "**Commander:** Captain Rodrigo Soloaga\n\n**Deployed:** Moody Brook\n\nFought dismounted.",
+                      "state": [],
+                      "equipment": [
+                        {
+                          "name": "Panhard AML-90",
+                          "count": 8
+                        }
+                      ]
+                    },
+                    {
+                      "id": "qDYWzxBx2J",
+                      "name": "Det, 9 Armd Cav Sqn",
+                      "sidc": "10031000141205010000",
+                      "subUnits": [],
+                      "shortName": "9 Cav",
+                      "description": "**Deployed:** Port Stanley",
+                      "equipment": [
+                        {
+                          "name": "Panhard AML-90",
+                          "count": 2
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "id": "ipfjSxYIfJ",
+                      "name": "10 Mech Eng Coy",
+                      "sidc": "10031000151407000000",
+                      "subUnits": [],
+                      "shortName": "10 Eng",
+                      "description": "**Commander:** Major Carlos Matalón\n\n**Deployed:** Port Stanley",
+                      "state": []
+                    },
+                    {
+                      "id": "nleXYbFlS4",
+                      "name": "10 Mech Sig Coy",
+                      "sidc": "10031000151110000000",
+                      "subUnits": [],
+                      "shortName": "10 Sig",
+                      "state": []
+                    }
+                  ],
+                  "state": [],
+                  "description": "**Commander:** Brigadier General Oscar Luis Jofre\n\n**Deployed:** Port Stanley Sector (Agrupación Puerto Argentino)"
+                },
+                {
+                  "id": "b2stPeJbsj",
+                  "name": "5 Mar Inf Bn",
+                  "sidc": "10031000161211004600",
+                  "subUnits": [
+                    {
+                      "id": "xDeZ03ULqu",
+                      "name": "M Coy",
+                      "sidc": "10031000151211004600",
+                      "subUnits": [],
+                      "shortName": "M",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Rodolfo Oscar Cionchi\n\n**Deployed:** Sapper Hill\n\n'Mar' company."
+                    },
+                    {
+                      "id": "bJAr4lvFyc",
+                      "name": "N Coy",
+                      "sidc": "10031000151211004600",
+                      "subUnits": [],
+                      "shortName": "N",
+                      "state": [],
+                      "description": "**Commander:** Lieutenant Eduardo Villarraza\n\n**Deployed:** Mount Tumbledown\n\n'Nácar' company."
+                    },
+                    {
+                      "id": "EdtO7lbfp1",
+                      "name": "O Coy",
+                      "sidc": "10031000151211004600",
+                      "subUnits": [],
+                      "shortName": "O",
+                      "state": [],
+                      "description": "**Commander:** Sub-Lieutenant Ricardo Luis Quiroga\n\n**Deployed:** Mount William (some sources place it in reserve near Moody Brook)\n\n'Obra' company."
+                    }
+                  ],
+                  "shortName": "5",
+                  "state": [],
+                  "description": "**Commander:** Commander Carlos Hugo Robacio\n\n**Deployed:** Mount Tumbledown, Mount William and Sapper Hill\n\nBatallón de Infantería de Marina N.º 5 (BIM 5), airlifted 8 to 12 April. Attached: C Coy, 3 Inf Regt; B Coy, 6 Inf Regt; 3rd Section of D Coy, 2 Mar Inf Bn; 2nd and 3rd Sections of H Coy, 3 Mar Inf Bn; 1st Section of the Marine amphibious engineers; B Bty of the Marine field artillery; two Bantam anti-tank missile groups, three forward air controller groups and a war-dog section. 1,590 marines served on the islands in all."
+                },
+                {
+                  "id": "v43pZMZsA9",
+                  "name": "3 Arty Gp",
+                  "sidc": "10031000161303000000",
+                  "subUnits": [
+                    {
+                      "id": "wqqkiZ2a9s",
+                      "name": "A Bty",
+                      "sidc": "10031000151303000000",
+                      "subUnits": [],
+                      "shortName": "A",
+                      "state": [],
+                      "description": "**Commander:** First Lieutenant Caballero"
+                    },
+                    {
+                      "id": "cyReNn3NdL",
+                      "name": "B Bty",
+                      "sidc": "10031000151303000000",
+                      "subUnits": [],
+                      "shortName": "B",
+                      "state": [],
+                      "description": "**Commander:** First Lieutenant Julio César Navone"
+                    },
+                    {
+                      "id": "MqZW5sG81o",
+                      "name": "C Bty",
+                      "sidc": "10031000151303000000",
+                      "subUnits": [],
+                      "shortName": "C",
+                      "state": [],
+                      "description": "**Commander:** Captain Héctor Domingo Tessey\n\nDrawn from the Colegio Militar de la Nación."
+                    },
+                    {
+                      "id": "koMp5NZ5vo",
+                      "name": "D Bty",
+                      "sidc": "10031000151303000000",
+                      "subUnits": [],
+                      "shortName": "D",
+                      "description": "**Deployed:** East slope of Sapper Hill\n\nCITER 155 mm L33 guns from GA 101 and GA 121, flown in from 14 May. Sources agree on four delivered, with three in action.",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "3 Arty",
+                  "description": "**Commander:** Lieutenant Colonel Martín Antonio Balza\n\n**Deployed:** Port Stanley\n\nBalza was also the garrison's fire-support coordinator. Three batteries of six OTO Melara M56 105 mm pack howitzers, reinforced by elements of GA 101 and GA 121.",
+                  "state": [],
+                  "equipment": [
+                    {
+                      "name": "OTO Melara M56 105 mm",
+                      "count": 18
+                    }
+                  ]
+                },
+                {
+                  "id": "GOIazBfeAE",
+                  "name": "4 Airmob Arty Gp",
+                  "sidc": "10031000161303000100",
+                  "subUnits": [
+                    {
+                      "id": "mmCgwkMDiG",
+                      "name": "A Bty",
+                      "sidc": "10031000151303000100",
+                      "subUnits": [],
+                      "shortName": "A",
+                      "state": [],
+                      "description": "Three guns under First Lieutenant Carlos Alberto Chanampa were sent to Goose Green."
+                    },
+                    {
+                      "id": "fpJj8WpdIF",
+                      "name": "B Bty",
+                      "sidc": "10031000151303000100",
+                      "subUnits": [],
+                      "shortName": "B",
+                      "state": []
+                    },
+                    {
+                      "id": "XJjrZQdlXx",
+                      "name": "C Bty",
+                      "sidc": "10031000151303000100",
+                      "subUnits": [],
+                      "shortName": "C",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "4 Arty",
+                  "description": "**Commander:** Lieutenant Colonel Carlos Alberto Quevedo\n\n**Deployed:** Port Stanley, with part of A Bty at Goose Green\n\nThree batteries of OTO Melara M56 105 mm pack howitzers.",
+                  "state": [],
+                  "equipment": [
+                    {
+                      "name": "OTO Melara M56 105 mm",
+                      "count": 18
+                    }
+                  ]
+                },
+                {
+                  "id": "HYt3Fndx02",
+                  "name": "601 Eng Gp",
+                  "sidc": "10031000161407000000",
+                  "subUnits": [
+                    {
+                      "id": "nA0hqAiIV1",
+                      "name": "601 Cbt Eng Coy",
+                      "sidc": "10031000151407000000",
+                      "subUnits": [],
+                      "shortName": "601 Eng",
+                      "description": "**Commander:** Major Jorge Etienot\n\n**Deployed:** Port Stanley",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "601 Eng",
+                  "description": "**Commander:** Colonel Manuel Dorrego\n\nAgrupación de Ingenieros 601, the parent of the engineer companies on the islands. 10 Mech Eng Coy, 9 Eng Coy and 3 Cbt Eng Coy are shown with the formations they supported.",
                   "state": []
                 },
                 {
-                  "id": "BoAMPXKcSq",
-                  "name": "12th Inf Reg",
-                  "sidc": "10031000171211000000",
+                  "id": "A21IAFwyCn",
+                  "name": "601 AD Gp",
+                  "sidc": "10031000161301000000",
                   "subUnits": [
                     {
-                      "id": "e2Dd1jHi3I",
-                      "name": "A",
-                      "sidc": "10031000161211000000",
+                      "id": "Dc9SxzLgLJ",
+                      "name": "A Bty",
+                      "sidc": "10031000151301020000",
                       "subUnits": [],
-                      "state": [
-                        {
-                          "id": "mqG97vVJpu",
-                          "t": "1982-05-26T20:00:00-04:00",
-                          "location": [-58.97594045601976, -51.825991847559145]
-                        }
-                      ]
+                      "shortName": "A",
+                      "description": "Oerlikon 35 mm guns with Skyguard. Its Skyguard radar was hit on 3 June, killing Lieutenant Alejandro Dachary.",
+                      "state": []
                     },
                     {
-                      "id": "wsQpmn3OGI",
-                      "name": "B",
-                      "sidc": "10031000161211000000",
+                      "id": "rz7i28jfF5",
+                      "name": "B Bty",
+                      "sidc": "10031000151301010000",
                       "subUnits": [],
-                      "state": [
-                        {
-                          "id": "O1Yodf25k6",
-                          "t": "1982-05-26T20:00:00-04:00",
-                          "location": [-58.111871431119695, -51.67344058266559]
-                        }
-                      ]
+                      "shortName": "B",
+                      "description": "Oerlikon 35 mm guns with Skyguard. Its 3rd Section (Second Lieutenant Claudio Braghini) with two guns and a Skyguard was at Goose Green from 27 April.",
+                      "state": []
                     },
                     {
-                      "id": "zE8dqBnoiU",
-                      "name": "C",
-                      "sidc": "10031000161211000000",
+                      "id": "yOn58REbo4",
+                      "name": "Roland Sec",
+                      "sidc": "10031000131301020000",
                       "subUnits": [],
-                      "state": [
+                      "shortName": "Roland",
+                      "description": "**Deployed:** Port Stanley",
+                      "state": []
+                    },
+                    {
+                      "id": "IByBIAjnAA",
+                      "name": "B Bty, 101 AD Gp",
+                      "sidc": "10031000151301010000",
+                      "subUnits": [],
+                      "shortName": "B/101",
+                      "description": "**Commander:** Major Jorge Monge\n\n**Deployed:** Camber\n\nAttached. Hispano-Suiza HS-831 30 mm guns and Browning .50 cal machine guns.",
+                      "state": [],
+                      "equipment": [
                         {
-                          "id": "sUADx0xyRO",
-                          "t": "1982-05-26T20:00:00-04:00",
-                          "location": [-58.971863498317134, -51.82771586853235]
+                          "name": "Hispano-Suiza HS-831 30 mm",
+                          "count": 8
+                        },
+                        {
+                          "name": "Browning M2 .50 cal",
+                          "count": 10
                         }
                       ]
                     }
                   ],
+                  "shortName": "601 AD",
+                  "description": "**Commander:** Lieutenant Colonel Héctor Lubin Arias\n\n**Deployed:** Port Stanley\n\nReinforced by GADA 602. Two batteries of six Oerlikon GDF-002 twin 35 mm guns with Skyguard fire control, and a Roland SAM section. British sources also credit the group with Tigercat launchers.",
+                  "state": [],
+                  "equipment": [
+                    {
+                      "name": "Oerlikon GDF-002 35 mm",
+                      "count": 12
+                    },
+                    {
+                      "name": "Roland",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "2tTWioNP8N",
+                  "name": "601 Cbt Avn Bn",
+                  "sidc": "10031000161206000000",
+                  "subUnits": [
+                    {
+                      "id": "Ixo4DaIcpX",
+                      "name": "A Aslt Hel Coy",
+                      "sidc": "10031000151206000000",
+                      "subUnits": [],
+                      "shortName": "A",
+                      "description": "SA 330 Puma and CH-47C Chinook.",
+                      "state": []
+                    },
+                    {
+                      "id": "Wj5gDeKBhW",
+                      "name": "B Aslt Hel Coy",
+                      "sidc": "10031000151206000000",
+                      "subUnits": [],
+                      "shortName": "B",
+                      "description": "**Deployed:** Mount Kent\n\nUH-1H.",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "601 Avn",
+                  "description": "Deployed as the Grupo de Helicópteros de Asalto 601, with Sección de Aviación de Ejército 9 (UH-1H) and an aircraft supply and maintenance company.",
+                  "state": [],
+                  "equipment": [
+                    {
+                      "name": "UH-1H Iroquois",
+                      "count": 9
+                    },
+                    {
+                      "name": "SA 330 Puma",
+                      "count": 6
+                    },
+                    {
+                      "name": "A109A Hirundo",
+                      "count": 3
+                    },
+                    {
+                      "name": "CH-47C Chinook",
+                      "count": 2
+                    }
+                  ]
+                },
+                {
+                  "id": "N84n8jvqma",
+                  "name": "601 Cdo Coy",
+                  "sidc": "10031000151211006300",
+                  "subUnits": [],
+                  "shortName": "601 Cdo",
+                  "description": "**Commander:** Major Mario Castagneto\n\n**Deployed:** Port Stanley, patrolling to Port Howard and Murrell River\n\nSections under Lieutenants José Martiniano Duarte, Sergio Fernández and Daniel González Deibe. Argentina had no permanent commando units; 601 and 602 Commando Companies were formed at short notice in 1982.",
                   "state": []
                 },
                 {
-                  "id": "hbLvBUqapH",
-                  "name": "5th Inf Reg",
-                  "sidc": "10031000171211000000",
+                  "id": "SbWgw6wYOz",
+                  "name": "602 Cdo Coy",
+                  "sidc": "10031000151211006300",
                   "subUnits": [],
+                  "shortName": "602 Cdo",
+                  "description": "**Commander:** Major Aldo Rico\n\n**Deployed:** Mount Kent, Top Malo and Bluff Cove Peak\n\nCaptain Vercesi led the 1st Section.",
                   "state": []
                 },
                 {
-                  "id": "rRKxj6Sfzf",
-                  "name": "8th Inf Reg",
-                  "sidc": "10031000171211000000",
+                  "id": "vih6c2V9vs",
+                  "name": "601 GN SF Sqn",
+                  "sidc": "10031000151211006400",
                   "subUnits": [],
+                  "shortName": "601 GN",
+                  "description": "**Commander:** Comandante José Ricardo Spadaro\n\nGendarmería Nacional special forces squadron 'Alacrán', about 40 men. Arrived on 28 May and operated under 601 Cdo Coy.",
+                  "state": []
+                },
+                {
+                  "id": "PPHfGkD5Jo",
+                  "name": "B Bty, 1 Mar Fd Arty Bn",
+                  "sidc": "10031000151303004600",
+                  "subUnits": [],
+                  "shortName": "B/BIAC",
+                  "description": "**Commander:** Mario Abadal (sources disagree on his rank)\n\n**Deployed:** Stanley Common, supporting 5 Mar Inf Bn\n\nOTO Melara M56 105 mm pack howitzers.",
+                  "state": []
+                },
+                {
+                  "id": "4hMCluU8nv",
+                  "name": "HMG Coy, Mar HQ Bn",
+                  "sidc": "10031000151211004600",
+                  "subUnits": [],
+                  "shortName": "Mar HMG",
+                  "description": "**Commander:** Sub-Lieutenant Sergio Andrés Dachary\n\n**Deployed:** Sections with 5 Mar Inf Bn, 4 Inf Regt and 7 Inf Regt\n\n12.7 mm machine-gun company of the Marine Batallón Comando. Dachary was on Mount Longdon.",
+                  "state": []
+                },
+                {
+                  "id": "sYwtMtGEvs",
+                  "name": "1 Mar Amph Eng Coy (-)",
+                  "sidc": "10031000151407004600",
+                  "subUnits": [],
+                  "shortName": "1 Mar Eng",
+                  "description": "**Commander:** Lieutenant Commander Luis Arístides Menghini\n\n**Deployed:** Stanley Common\n\n1st Section attached to 5 Mar Inf Bn.",
+                  "state": [],
+                  "reinforcedStatus": "Reduced"
+                },
+                {
+                  "id": "ELalR7TdHg",
+                  "name": "1 Mar AA Bn",
+                  "sidc": "10031000161301014600",
+                  "subUnits": [],
+                  "shortName": "1 Mar AA",
+                  "description": "**Commander:** Lieutenant Commander Rubén Héctor Silva\n\n**Deployed:** Stanley Common\n\nArrived from 7 April. One Tigercat battery and one Hispano-Suiza HS-831 30 mm gun battery. Operations officer: Lieutenant Juan Alberto Baffico.",
+                  "state": [],
+                  "equipment": [
+                    {
+                      "name": "Tigercat",
+                      "count": 3
+                    },
+                    {
+                      "name": "Hispano-Suiza HS-831 30 mm",
+                      "count": 12
+                    }
+                  ]
+                },
+                {
+                  "id": "a3X2xh3Iyb",
+                  "name": "Air Component Malvinas",
+                  "sidc": "10031000181208000000",
+                  "subUnits": [
+                    {
+                      "id": "Tmk4jL1v4B",
+                      "name": "BAM Malvinas",
+                      "sidc": "10031000161202000000",
+                      "subUnits": [
+                        {
+                          "id": "AjtZNEwKat",
+                          "name": "Tropa Sqn, BAM Malvinas",
+                          "sidc": "10031000151211005400",
+                          "subUnits": [],
+                          "shortName": "Tropa",
+                          "description": "Escuadrón Tropa: two companies of conscripts (225 men), from IX Air Brigade (Lieutenant Eduardo Luppo) and I Air Brigade (Captain Alfredo Rivarola, then Captain Neldo Mena from 4 May).",
+                          "state": []
+                        },
+                        {
+                          "id": "ov6yNIG31G",
+                          "name": "FAA Spec Ops Gp",
+                          "sidc": "10031000151211006300",
+                          "subUnits": [],
+                          "shortName": "GOE",
+                          "description": "**Commander:** Vice Commodore Esteban Luis Correa\n\nGrupo de Operaciones Especiales: 29 commandos from VII Air Brigade. Landed from the first C-130 on 2 April; ground defence of the airfield, prisoner guard and reconnaissance patrols.",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "BAM Malvinas",
+                      "description": "**Commander:** Commodore Héctor Luis Destri\n\n**Deployed:** Port Stanley Airport\n\nBase Aérea Militar Malvinas, created 2 April.",
+                      "state": []
+                    },
+                    {
+                      "id": "90F6q5gGgR",
+                      "name": "BAM Cóndor",
+                      "sidc": "10031000161202000000",
+                      "subUnits": [
+                        {
+                          "id": "Xn31niZiGU",
+                          "name": "Base Sqn, BAM Cóndor",
+                          "sidc": "10031000151211005400",
+                          "subUnits": [],
+                          "shortName": "Base",
+                          "description": "**Commander:** Major Jorge R. Zaporta\n\nEscuadrón Base, including a security and defence company (First Lieutenant Ricardo Sifón, 110 conscripts).",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "BAM Cóndor",
+                      "description": "**Commander:** Vice Commodore Wilson Rosier José Pedrozo\n\n**Deployed:** Goose Green\n\nBase Aérea Militar Cóndor, established 12 to 15 April.",
+                      "state": []
+                    },
+                    {
+                      "id": "HpCH7HsQ73",
+                      "name": "FAA AD Arty Sqn",
+                      "sidc": "10031000161301000000",
+                      "subUnits": [
+                        {
+                          "id": "CmH52cvkls",
+                          "name": "3 Bty",
+                          "sidc": "10031000151301010000",
+                          "subUnits": [],
+                          "shortName": "3",
+                          "description": "**Commander:** First Lieutenant Oscar Spath\n\n**Deployed:** BAM Malvinas\n\nOerlikon 35 mm guns with a Superfledermaus fire director.",
+                          "state": []
+                        },
+                        {
+                          "id": "YlCZ3mIiEZ",
+                          "name": "10 Bty",
+                          "sidc": "10031000151301010000",
+                          "subUnits": [],
+                          "shortName": "10",
+                          "description": "**Commander:** First Lieutenant Alberto Dalves\n\n**Deployed:** BAM Malvinas\n\nNine Rh-202 twin 20 mm guns and an Elta radar.",
+                          "state": []
+                        },
+                        {
+                          "id": "ktcoonQZ0H",
+                          "name": "Bty (-), BAM Cóndor",
+                          "sidc": "10031000151301010000",
+                          "subUnits": [],
+                          "shortName": "Cóndor",
+                          "description": "**Commander:** Lieutenant Darío Valazza\n\n**Deployed:** BAM Cóndor\n\nSix Rh-202 twin 20 mm guns and an Elta radar. Two SA-7 launchers arrived on 9 May.",
+                          "reinforcedStatus": "Reduced",
+                          "state": []
+                        }
+                      ],
+                      "shortName": "FAA AD",
+                      "description": "**Commander:** Major Hugo Maiorano\n\nEscuadrón de Artillería Antiaérea. Maiorano also ran the joint air defence operations centre.",
+                      "equipment": [
+                        {
+                          "name": "Rheinmetall Rh-202 20 mm",
+                          "count": 15
+                        },
+                        {
+                          "name": "Oerlikon GDF-002 35 mm",
+                          "count": 2
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "id": "SBticjd9vS",
+                      "name": "VyCA Sqn Malvinas",
+                      "sidc": "10031000151216000000",
+                      "subUnits": [],
+                      "shortName": "VyCA",
+                      "description": "**Commander:** Major Miguel Ángel Silva\n\n**Deployed:** South of Port Stanley\n\nEscuadrón de Vigilancia y Control Aéreo, from Grupo 2 VyCA. One AN/TPS-43 radar.",
+                      "state": []
+                    },
+                    {
+                      "id": "3RyYgE09yh",
+                      "name": "Pucará Sqn Malvinas",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "Pucará",
+                      "description": "**Commander:** Major Miguel M. Navarro\n\n**Deployed:** BAM Malvinas, then BAM Cóndor from 29 April, dispersed to Pebble Island from 1 May\n\nEscuadrón Aeromóvil Pucará Malvinas, from Grupo 3 de Ataque.",
+                      "equipment": [
+                        {
+                          "name": "FMA IA 58 Pucará",
+                          "count": 12
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "id": "Bo2fJ5wxev",
+                      "name": "FAA Hel Sqn",
+                      "sidc": "10031000151206000000",
+                      "subUnits": [],
+                      "shortName": "FAA Hel",
+                      "description": "**Commander:** Major Oscar J. Pose Ortiz de Rozas\n\nFrom Grupo 7 de Helicópteros. The Chinooks withdrew to the mainland on 9 June.",
+                      "equipment": [
+                        {
+                          "name": "CH-47C Chinook",
+                          "count": 2
+                        },
+                        {
+                          "name": "Bell 212",
+                          "count": 2
+                        }
+                      ],
+                      "state": []
+                    },
+                    {
+                      "id": "ICjZ0Wqi1a",
+                      "name": "Construction Sqn",
+                      "sidc": "10031000151407000000",
+                      "subUnits": [],
+                      "shortName": "Constr",
+                      "description": "**Commander:** Major Raúl O. Maiorano",
+                      "state": []
+                    },
+                    {
+                      "id": "az7LjfXBrL",
+                      "name": "Supply Sqn",
+                      "sidc": "10031000151634000000",
+                      "subUnits": [],
+                      "shortName": "Sup",
+                      "description": "**Commander:** Vice Commodore Néstor Giménez Ortiz",
+                      "state": []
+                    }
+                  ],
+                  "shortName": "CAM",
+                  "description": "**Commander:** Brigadier Luis Guillermo Castellano\n\nComponente Aéreo Malvinas, the Air Force command on the islands under the garrison. Mainland air units came under Fuerza Aérea Sur instead.",
+                  "state": []
+                },
+                {
+                  "id": "y4KbidGzxL",
+                  "name": "181 MP Coy",
+                  "sidc": "10031000151412000000",
+                  "subUnits": [],
+                  "shortName": "181 MP",
+                  "state": []
+                },
+                {
+                  "id": "N5ddHGOkyc",
+                  "name": "10 Log Bn",
+                  "sidc": "10031000161600000000",
+                  "subUnits": [],
+                  "shortName": "10 Log",
+                  "description": "With elements of 9 Log Bn.",
+                  "state": []
+                },
+                {
+                  "id": "1dG6nXnvTw",
+                  "name": "Elm, 181 Sig Bn",
+                  "sidc": "10031000161110000000",
+                  "subUnits": [],
+                  "shortName": "181 Sig",
+                  "state": []
+                },
+                {
+                  "id": "On8tYyUf2t",
+                  "name": "Mil Hospital Det",
+                  "sidc": "10031000151614000000",
+                  "subUnits": [],
+                  "shortName": "Hosp",
+                  "description": "**Deployed:** Port Stanley\n\nDetachment of the Hospital Militar Comodoro Rivadavia.",
                   "state": []
                 }
               ],
+              "description": "**Commander:** Brigadier General Mario Benjamín Menéndez (Military Governor)\n\nFormally the Guarnición Militar Malvinas, a joint command. Its Army component was the Agrupación Ejército Malvinas.\n\nSources:\n\n- R. Mark Davies, [Argentine Ground Forces in the Falklands War of 1982](https://www.fireandfury.com/orbats/falklands_argentina.pdf) (Fire & Fury Games)\n- Ministerio de Defensa, [Malvinas 44 años: preparación de la defensa](https://www.argentina.gob.ar/noticias/malvinas-44-anos-preparacion-de-la-defensa-de-malvinas)\n- Armada Argentina, Informe Operación Rosario, COAC 6.B.1 ([vol. 1](https://www.argentina.gob.ar/sites/default/files/ar-ara-coac-6b1_tomo1_0.pdf), [vol. 2](https://www.argentina.gob.ar/sites/default/files/ar-ara-coac-6b1_tomo2_0.pdf))\n- Fuerza Aérea Argentina, [La Fuerza Aérea en Malvinas, Tomo I](https://asociacionatta.com.ar/Libros/La-Fuerza-Aerea-en-Malvinas-Tomo-I.pdf)\n- [Argentine ground forces in the Falklands War](https://en.wikipedia.org/wiki/Argentine_ground_forces_in_the_Falklands_War) (Wikipedia)",
+              "state": []
+            },
+            {
+              "id": "agpRI3iKBH",
+              "name": "Fuerza Aérea Sur",
+              "sidc": "10031000211208000000",
+              "subUnits": [
+                {
+                  "id": "S1PPC68riA",
+                  "name": "2 Bomb Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [
+                    {
+                      "id": "w5AJ1D8yCn",
+                      "name": "Canberra Sqn",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "Canberra",
+                      "description": "**Commander:** Major Ramón P. Vivas\n\n**Deployed:** Trelew",
+                      "equipment": [
+                        {
+                          "name": "Canberra B.62",
+                          "count": 9
+                        }
+                      ],
+                      "state": []
+                    }
+                  ],
+                  "description": "**Deployed:** Trelew (Base Aeronaval Almirante Zar) from 10 April\n\nGrupo 2 de Bombardeo, II Air Brigade (Paraná).",
+                  "state": [],
+                  "shortName": "2 Bomb"
+                },
+                {
+                  "id": "SdBtHpAboN",
+                  "name": "3 Atk Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [],
+                  "description": "**Deployed:** BAM Santa Cruz\n\nGrupo 3 de Ataque, III Air Brigade (Reconquista). Also the replacement pool for the Pucará squadron on the islands.",
+                  "state": [],
+                  "shortName": "3 Atk",
+                  "equipment": [
+                    {
+                      "name": "FMA IA 58 Pucará",
+                      "count": 8
+                    }
+                  ]
+                },
+                {
+                  "id": "Xafn77GkpK",
+                  "name": "4 Ftr Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [
+                    {
+                      "id": "db9S5il0PV",
+                      "name": "I Sqn A-4C",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "I A-4C",
+                      "description": "**Commander:** Major Juan Lupiáñez\n\n**Deployed:** BAM San Julián",
+                      "equipment": [
+                        {
+                          "name": "A-4C Skyhawk",
+                          "count": 16
+                        }
+                      ],
+                      "state": []
+                    }
+                  ],
+                  "description": "**Commander:** Commodore José A. Juliá\n\nGrupo 4 de Caza, IV Air Brigade (Mendoza).",
+                  "state": [],
+                  "shortName": "4 Ftr"
+                },
+                {
+                  "id": "hD46rkAM7A",
+                  "name": "5 Ftr Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [
+                    {
+                      "id": "vmVPAoShHW",
+                      "name": "I Sqn A-4B",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "I A-4B",
+                      "description": "**Commander:** Vice Commodore Rubén G. Zini\n\n**Deployed:** BAM Río Gallegos",
+                      "state": []
+                    },
+                    {
+                      "id": "uzsVtVO4MO",
+                      "name": "II Sqn A-4B",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "II A-4B",
+                      "description": "**Commander:** Vice Commodore Ernesto Dubourg\n\n**Deployed:** BAM Río Gallegos\n\nFrom 2 May.",
+                      "state": []
+                    }
+                  ],
+                  "description": "**Deployed:** BAM Río Gallegos\n\nGrupo 5 de Caza, V Air Brigade (Villa Reynolds).",
+                  "state": [],
+                  "shortName": "5 Ftr",
+                  "equipment": [
+                    {
+                      "name": "A-4B Skyhawk",
+                      "count": 28
+                    }
+                  ]
+                },
+                {
+                  "id": "VXHrUt8x8X",
+                  "name": "6 Ftr Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [
+                    {
+                      "id": "L4mwHrVG07",
+                      "name": "I Sqn Dagger",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "I Dagger",
+                      "description": "**Commander:** Major Carlos Napoleón Martínez\n\n**Deployed:** Base Aeronaval Río Grande",
+                      "state": []
+                    },
+                    {
+                      "id": "EPcmIlEc22",
+                      "name": "II Sqn Dagger",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "II Dagger",
+                      "description": "**Commander:** Major Juan C. Sapolski\n\n**Deployed:** Comodoro Rivadavia, then BAM San Julián from 25 April",
+                      "state": []
+                    }
+                  ],
+                  "description": "Grupo 6 de Caza, VI Air Brigade (Tandil). IAI Dagger.",
+                  "state": [],
+                  "shortName": "6 Ftr"
+                },
+                {
+                  "id": "0zL8Ahz8yk",
+                  "name": "8 Ftr Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [
+                    {
+                      "id": "m6Dug0c1G7",
+                      "name": "I Sqn M-IIIEA",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "I M-III",
+                      "description": "**Commander:** Major José Sánchez, then Major Carlos Neme from 26 May\n\n**Deployed:** BAM Río Gallegos",
+                      "state": []
+                    },
+                    {
+                      "id": "ayhF1xI58X",
+                      "name": "II Sqn M-IIIEA",
+                      "sidc": "10031000151208000000",
+                      "subUnits": [],
+                      "shortName": "II M-III",
+                      "description": "**Commander:** Major Hugo J. Páez\n\n**Deployed:** Comodoro Rivadavia",
+                      "state": []
+                    }
+                  ],
+                  "description": "Grupo 8 de Caza, VIII Air Brigade (Mariano Moreno). Mirage IIIEA.",
+                  "state": [],
+                  "shortName": "8 Ftr"
+                },
+                {
+                  "id": "jogGOdJZ9d",
+                  "name": "1 Air Tpt Gp",
+                  "sidc": "10031000161208000000",
+                  "subUnits": [],
+                  "shortName": "1 Tpt",
+                  "description": "**Commander:** Commodore Jorge F. Martínez\n\n**Deployed:** Comodoro Rivadavia\n\nGrupo 1 de Transporte Aéreo.",
+                  "equipment": [
+                    {
+                      "name": "C-130H Hercules",
+                      "count": 7
+                    },
+                    {
+                      "name": "KC-130H Hercules",
+                      "count": 2
+                    }
+                  ],
+                  "state": []
+                }
+              ],
+              "shortName": "FAS",
+              "description": "**Commander:** Brigadier Ernesto Horacio Crespo\n\n**Deployed:** Comodoro Rivadavia\n\nAir Force command for the mainland units, created 5 April 1982.",
               "state": []
             }
           ],
@@ -4779,7 +6040,71 @@
       "id": "L7sLKYe3xMRELH2bEA7Da"
     }
   ],
-  "equipment": [],
+  "equipment": [
+    {
+      "name": "LVTP-7"
+    },
+    {
+      "name": "LARC-V"
+    },
+    {
+      "name": "OTO Melara M56 105 mm"
+    },
+    {
+      "name": "Panhard AML-90"
+    },
+    {
+      "name": "Oerlikon GDF-002 35 mm"
+    },
+    {
+      "name": "Roland"
+    },
+    {
+      "name": "Hispano-Suiza HS-831 30 mm"
+    },
+    {
+      "name": "Browning M2 .50 cal"
+    },
+    {
+      "name": "UH-1H Iroquois"
+    },
+    {
+      "name": "SA 330 Puma"
+    },
+    {
+      "name": "A109A Hirundo"
+    },
+    {
+      "name": "CH-47C Chinook"
+    },
+    {
+      "name": "Tigercat"
+    },
+    {
+      "name": "Rheinmetall Rh-202 20 mm"
+    },
+    {
+      "name": "FMA IA 58 Pucará"
+    },
+    {
+      "name": "Bell 212"
+    },
+    {
+      "name": "Canberra B.62"
+    },
+    {
+      "name": "A-4C Skyhawk"
+    },
+    {
+      "name": "A-4B Skyhawk"
+    },
+    {
+      "name": "C-130H Hercules"
+    },
+    {
+      "name": "KC-130H Hercules"
+    }
+  ],
   "personnel": [],
   "supplyCategories": [],
   "settings": {
