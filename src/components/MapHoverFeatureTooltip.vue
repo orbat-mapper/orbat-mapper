@@ -5,22 +5,7 @@ import { useMapHover } from "@/geo/mapHover";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
-
-function resolveFeatureHoverName(
-  feature: { name?: string; userData?: Record<string, unknown> } | null | undefined,
-  language: string | null | undefined,
-): string {
-  const fallback = feature?.name?.trim() ?? "";
-  const code = language?.trim().toLowerCase();
-  if (!feature || !code) return fallback;
-
-  const wanted = `name:${code}`;
-  for (const [key, value] of Object.entries(feature.userData ?? {})) {
-    if (key.toLowerCase() !== wanted) continue;
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return fallback;
-}
+import { getGeometryLayerItemTooltipName } from "@/types/scenarioLayerItems";
 
 const props = withDefaults(
   defineProps<{
@@ -41,7 +26,9 @@ const rawHoveredFeatureName = computed(() => {
     const featureId = hoveredFeature?.getId?.();
     if (featureId === undefined || featureId === null) continue;
     const { layerItem: feature } = geo.getGeometryLayerItemById(featureId);
-    const name = resolveFeatureHoverName(feature, mapSettings.featureTooltipLanguage);
+    const name = feature
+      ? getGeometryLayerItemTooltipName(feature, mapSettings.featureTooltipLanguage)
+      : "";
     if (name) return name;
   }
   return "";

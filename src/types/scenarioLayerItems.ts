@@ -734,6 +734,20 @@ export function getGeometryLayerItemLabelText(
   );
 }
 
+/**
+ * Name shown when hovering a feature. With a language code such as "en", a non-empty `name:en`
+ * tag in userData wins over the feature name. An empty code always uses the feature name.
+ */
+export function getGeometryLayerItemTooltipName(
+  item: Pick<GeometryLayerItem, "name" | "userData">,
+  language?: string,
+): string {
+  const code = language?.trim().toLowerCase();
+  const localized = code ? item.userData?.[`name:${code}`] : undefined;
+  if (typeof localized === "string" && localized.trim()) return localized.trim();
+  return item.name?.trim() ?? "";
+}
+
 export function toGeometryLayerItemGeoJsonProperties(
   item: Pick<
     GeometryLayerItem,

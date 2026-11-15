@@ -53,7 +53,7 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
     </ToggleField>
     <InputGroup
       label="Feature tooltip language"
-      description=""
+      description="Tooltip only. Shows the name:<code> tag when a feature has one, otherwise its name."
       v-model="featureTooltipLanguage"
       placeholder="en"
       autocapitalize="off"
