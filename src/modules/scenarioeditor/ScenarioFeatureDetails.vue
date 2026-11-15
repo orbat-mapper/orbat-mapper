@@ -48,6 +48,7 @@ import {
 import { useFeatureStateGeometry } from "@/modules/scenarioeditor/useFeatureStateGeometry";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import ScenarioFeatureGeometryStats from "@/modules/scenarioeditor/ScenarioFeatureGeometryStats.vue";
+import ScenarioFeatureTags from "@/modules/scenarioeditor/ScenarioFeatureTags.vue";
 import ScenarioFeaturesGeometryStats from "@/modules/scenarioeditor/ScenarioFeaturesGeometryStats.vue";
 import ScenarioFeatureStyleGroup from "@/modules/scenarioeditor/ScenarioFeatureStyleGroup.vue";
 import { Button } from "@/components/ui/button";
@@ -473,7 +474,10 @@ function assignFeatureToUnit() {
           />
         </TabsContent>
         <TabsContent value="1" class="mx-4">
-          <ScenarioFeatureGeometryStats v-if="feature && !isEditing" :feature="feature" />
+          <template v-if="feature && !isEditing">
+            <ScenarioFeatureTags :feature="feature" />
+            <ScenarioFeatureGeometryStats :feature="feature" />
+          </template>
           <ScenarioFeaturesGeometryStats
             v-else-if="isMultiMode && selectedFeatures.length"
             :features="selectedFeatures"

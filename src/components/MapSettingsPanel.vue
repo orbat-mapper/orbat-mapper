@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import type { RadioGroupItemData } from "@/components/types";
@@ -10,10 +11,18 @@ import { type MeasurementUnit } from "@/geo/measurementTypes";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import SimpleDivider from "@/components/SimpleDivider.vue";
 import PanelSubHeading from "@/components/PanelSubHeading.vue";
+import InputGroup from "@/components/InputGroup.vue";
 
 const settings = useMapSettingsStore();
 const measurementStore = useMeasurementsStore();
 const uiSettings = useUiStore();
+
+const featureTooltipLanguage = computed({
+  get: () => settings.featureTooltipLanguage,
+  set: (value: string) => {
+    settings.featureTooltipLanguage = value.trim().toLowerCase();
+  },
+});
 
 const coordinateFormatItems: RadioGroupItemData<CoordinateFormatType>[] = [
   { name: "DG", description: "Decimal degrees", value: "DecimalDegrees" },
@@ -42,6 +51,15 @@ const measurementItems: RadioGroupItemData<MeasurementUnit>[] = [
     <ToggleField v-model="settings.showFeatureTooltip"
       >Show scenario feature tooltip
     </ToggleField>
+    <InputGroup
+      label="Feature tooltip language"
+      description=""
+      v-model="featureTooltipLanguage"
+      placeholder="en"
+      autocapitalize="off"
+      spellcheck="false"
+      class="max-w-48"
+    />
     <SimpleDivider class="mt-8" />
     <PanelSubHeading>Map unit symbol settings</PanelSubHeading>
     <NumberInputGroup label="Map symbol size" v-model="settings.mapIconSize" />
