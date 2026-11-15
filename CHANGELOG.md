@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 - Added font settings for the personnel and equipment lines in ORBAT charts, under Equipment and personnel on the Chart, Level, Branch and Units tabs. Personnel lines follow the unit label font and equipment lines follow the personnel font until set. Font settings on the Units tab now also apply to a unit's personnel and equipment lines.
 - Added the Line of Contact to the control measures, with Swap sides, LC label and Hostile color options. MilX import reads it from G*G*GLC.
 - Added Reverse direction to the shape edit section of the control measure details panel. It runs a line or arrow the other way as one Ctrl+Z step, and shows when the graphic has a direction to reverse.
+- Added a Tags list to the Details tab of the feature details panel. It shows the properties a feature brought with it from an imported file, such as GeoJSON attributes.
+- Added a Feature tooltip language setting to Map settings. With a language code such as `en`, the feature hover tooltip shows the feature's `name:en` tag when it has one, and otherwise its name. It is empty by default, and the choice belongs to this device.
 
 ### Changed
 
