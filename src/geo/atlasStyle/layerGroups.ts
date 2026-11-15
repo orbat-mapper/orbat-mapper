@@ -1,3 +1,5 @@
+import { metadataValue } from "./metadata";
+
 /**
  * Parts of the plate a user can leave out, such as present-day borders on a
  * historical map. A layer lists its groups in its style metadata and draws only
@@ -37,26 +39,43 @@ export const ALL_ATLAS_LAYER_GROUPS: readonly AtlasLayerGroup[] = [
 ].map((group) => group.value);
 
 export const ATLAS_LAYER_GROUPS_METADATA_KEY = "atlas:layer-groups";
+/**
+ * Groups whose layers stand in for this one: it hides while all of them are
+ * shown. The bare town dots give way to the named ones, which carry their dot
+ * in the label.
+ */
+export const ATLAS_REPLACED_BY_LAYER_GROUPS_METADATA_KEY =
+  "atlas:replaced-by-layer-groups";
 
 /** The metadata that puts a layer in `groups`. */
 export function layerGroupMetadata(...groups: AtlasLayerGroup[]) {
   return { [ATLAS_LAYER_GROUPS_METADATA_KEY]: groups };
 }
 
-function groupsOf(metadata: unknown): readonly unknown[] | undefined {
-  const groups = (metadata as Record<string, unknown> | undefined)?.[
-    ATLAS_LAYER_GROUPS_METADATA_KEY
-  ];
+/** The metadata that hides a layer while every one of `groups` is shown. */
+export function replacedByLayerGroupsMetadata(...groups: AtlasLayerGroup[]) {
+  return { [ATLAS_REPLACED_BY_LAYER_GROUPS_METADATA_KEY]: groups };
+}
+
+function listAt(metadata: unknown, key: string): readonly unknown[] | undefined {
+  const groups = metadataValue(metadata, key);
   return Array.isArray(groups) ? groups : undefined;
 }
+
+const groupsOf = (metadata: unknown) => listAt(metadata, ATLAS_LAYER_GROUPS_METADATA_KEY);
+const replacedByOf = (metadata: unknown) =>
+  listAt(metadata, ATLAS_REPLACED_BY_LAYER_GROUPS_METADATA_KEY);
 
 /** Whether a layer with this metadata draws while `show` is on; a layer in no group always does. */
 export function drawsWithLayerGroups(
   metadata: unknown,
   show: readonly AtlasLayerGroup[],
 ): boolean {
-  return (groupsOf(metadata) ?? []).every((group) =>
-    show.includes(group as AtlasLayerGroup),
+  const allShown = (groups: readonly unknown[]) =>
+    groups.every((group) => show.includes(group as AtlasLayerGroup));
+  const replacedBy = replacedByOf(metadata) ?? [];
+  return (
+    allShown(groupsOf(metadata) ?? []) && !(replacedBy.length > 0 && allShown(replacedBy))
   );
 }
 
@@ -86,7 +105,7 @@ export function applyAtlasLayerGroups(
   let found = false;
   for (const id of map.getLayersOrder()) {
     const metadata = map.getLayer(id)?.metadata;
-    if (!groupsOf(metadata)) continue;
+    if (!groupsOf(metadata) && !replacedByOf(metadata)) continue;
     found = true;
     map.setLayoutProperty(
       id,

@@ -18,7 +18,16 @@ export {
   ATLAS_LABEL_CATEGORIES,
   ATLAS_LAYER_GROUPS,
   ATLAS_LAYER_GROUPS_METADATA_KEY,
+  ATLAS_REPLACED_BY_LAYER_GROUPS_METADATA_KEY,
   applyAtlasLayerGroups,
   canDrawLabelCategory,
   type AtlasLayerGroup,
 } from "./layerGroups";
+export {
+  ATLAS_PLACES_METADATA_KEY,
+  DEFAULT_SMALLEST_PLACE,
+  SMALLEST_PLACES,
+  applySmallestPlace,
+  isSmallestPlace,
+  type SmallestPlace,
+} from "./places";

@@ -9,6 +9,7 @@ function fakeMap(layerIds: string[]) {
   return {
     getLayersOrder: () => layerIds,
     setPaintProperty: vi.fn<(id: string, name: string, value: unknown) => void>(),
+    setLayoutProperty: vi.fn<(id: string, name: string, value: unknown) => void>(),
   };
 }
 

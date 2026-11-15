@@ -5,10 +5,12 @@ import type { ExpressionSpecification } from "maplibre-gl";
  * tints start: low ground such as Northwest Europe, mountainous ground such as
  * North Africa, or high plateaus such as the American Southwest. Alpine
  * follows the five-band scale of the plates for the Alps, where the high
- * ground needs more steps than three. A style opts in by naming its
+ * ground needs more steps than three. None leaves all ground white, for a
+ * plate that should carry no relief. A style opts in by naming its
  * color-relief layers with ELEVATION_BAND_LAYER_PREFIX.
  */
 export const ELEVATION_BAND_PRESETS = [
+  { value: "none", label: "None", thresholds: [] },
   { value: "lowland", label: "Lowland", thresholds: [200, 400, 800] },
   { value: "upland", label: "Upland", thresholds: [500, 1000, 1500] },
   { value: "highland", label: "Highland", thresholds: [1500, 2000, 2500] },
@@ -16,7 +18,7 @@ export const ELEVATION_BAND_PRESETS = [
 ] as const satisfies readonly {
   value: string;
   label: string;
-  /** Ascending; one per band color, at most as many as BAND_COLORS. */
+  /** Ascending; one per band color, at most as many as BAND_COLORS. Empty draws no bands. */
   thresholds: readonly number[];
 }[];
 
@@ -46,14 +48,22 @@ export function elevationBandRamp(preset: ElevationBandPreset): ExpressionSpecif
     threshold,
     BAND_COLORS[i]!,
   ]);
+  // `interpolate` needs at least one stop, so no bands is low ground all the way up.
+  if (stops.length === 0) stops.push(0, LOW_GROUND, 1, LOW_GROUND);
   return ["interpolate", ["linear"], ["elevation"], ...stops] as ExpressionSpecification;
 }
 
-/** Repaints the style's elevation band layers; false when it has none. */
+/** No bands hides the layers rather than drawing them clear, so their tiles aren't fetched. */
+export function elevationBandVisibility(preset: ElevationBandPreset): "visible" | "none" {
+  return preset === "none" ? "none" : "visible";
+}
+
+/** Repaints, or hides, the style's elevation band layers; false when it has none. */
 export function applyElevationBands(
   map: {
     getLayersOrder(): string[];
     setPaintProperty(layerId: string, name: string, value: unknown): unknown;
+    setLayoutProperty(layerId: string, name: string, value: unknown): unknown;
   },
   preset: ElevationBandPreset,
 ): boolean {
@@ -61,6 +71,10 @@ export function applyElevationBands(
     .getLayersOrder()
     .filter((id) => id.startsWith(ELEVATION_BAND_LAYER_PREFIX));
   const ramp = elevationBandRamp(preset);
-  for (const id of ids) map.setPaintProperty(id, "color-relief-color", ramp);
+  const visibility = elevationBandVisibility(preset);
+  for (const id of ids) {
+    map.setPaintProperty(id, "color-relief-color", ramp);
+    map.setLayoutProperty(id, "visibility", visibility);
+  }
   return ids.length > 0;
 }

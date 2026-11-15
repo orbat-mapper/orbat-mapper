@@ -6,8 +6,10 @@ import {
   ATLAS_LABEL_CATEGORIES,
   ATLAS_LAYER_GROUPS,
   ELEVATION_BAND_PRESETS,
+  SMALLEST_PLACES,
   canDrawLabelCategory,
   isElevationBandPreset,
+  isSmallestPlace,
 } from "@/geo/atlasStyle";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
@@ -24,9 +26,19 @@ function formatMeters(value: number) {
   return `${value.toLocaleString("en-US")} m`;
 }
 
+function bandsTitle(thresholds: readonly number[]) {
+  return thresholds.length === 0
+    ? "No elevation tints"
+    : `Tints above ${thresholds.map(formatMeters).join(", ")}`;
+}
+
 function onElevationBands(value: unknown) {
   // A single toggle group emits nothing selected when the pressed item is clicked again.
   if (isElevationBandPreset(value)) mapSettings.atlasElevationBands = value;
+}
+
+function onSmallestPlace(value: unknown) {
+  if (isSmallestPlace(value)) mapSettings.atlasSmallestPlace = value;
 }
 
 function onLayerGroups(value: unknown) {
@@ -51,9 +63,29 @@ function onLayerGroups(value: unknown) {
           :class="toggleChoiceClass"
           :key="preset.value"
           :value="preset.value"
-          :title="`Tints above ${preset.thresholds.map(formatMeters).join(', ')}`"
+          :title="bandsTitle(preset.thresholds)"
         >
           {{ preset.label }}
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </Field>
+    <Field>
+      <FieldLabel id="atlas-smallest-place-label">Smallest place</FieldLabel>
+      <ToggleGroup
+        type="single"
+        v-bind="GROUP_PROPS"
+        aria-labelledby="atlas-smallest-place-label"
+        data-test="atlas-smallest-place"
+        :model-value="mapSettings.atlasSmallestPlace"
+        @update:model-value="onSmallestPlace"
+      >
+        <ToggleGroupItem
+          v-for="choice in SMALLEST_PLACES"
+          :class="toggleChoiceClass"
+          :key="choice.value"
+          :value="choice.value"
+        >
+          {{ choice.label }}
         </ToggleGroupItem>
       </ToggleGroup>
     </Field>

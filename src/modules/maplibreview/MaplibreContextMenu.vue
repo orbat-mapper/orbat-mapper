@@ -49,6 +49,7 @@ import {
   ATLAS_LABEL_CATEGORIES,
   ATLAS_LAYER_GROUPS,
   ELEVATION_BAND_PRESETS,
+  SMALLEST_PLACES,
   canDrawLabelCategory,
 } from "@/geo/atlasStyle";
 import {
@@ -742,6 +743,18 @@ function onContextMenu(event: MouseEvent) {
               @select.prevent
             >
               {{ preset.label }}
+            </ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
+          <ContextMenuSeparator />
+          <ContextMenuLabel inset>Smallest place</ContextMenuLabel>
+          <ContextMenuRadioGroup v-model="mapSettings.atlasSmallestPlace">
+            <ContextMenuRadioItem
+              v-for="choice in SMALLEST_PLACES"
+              :key="choice.value"
+              :value="choice.value"
+              @select.prevent
+            >
+              {{ choice.label }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
           <ContextMenuSeparator />

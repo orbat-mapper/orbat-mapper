@@ -1,6 +1,10 @@
 import { watch, type ShallowRef } from "vue";
 import type { Map as MlMap } from "maplibre-gl";
-import { applyAtlasLayerGroups, applyElevationBands } from "@/geo/atlasStyle";
+import {
+  applyAtlasLayerGroups,
+  applyElevationBands,
+  applySmallestPlace,
+} from "@/geo/atlasStyle";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 
 /**
@@ -18,16 +22,20 @@ export function useAtlasBasemapOptions(mapRef: ShallowRef<MlMap | undefined>) {
       if (!map) return;
       const applyBands = () => applyElevationBands(map, settings.atlasElevationBands);
       const applyGroups = () => applyAtlasLayerGroups(map, settings.atlasLayerGroups);
+      const applyPlaces = () => applySmallestPlace(map, settings.atlasSmallestPlace);
       const onStyleLoad = () => {
         applyBands();
         applyGroups();
+        applyPlaces();
       };
       map.on("style.load", onStyleLoad);
       const stopBands = watch(() => settings.atlasElevationBands, applyBands);
       const stopGroups = watch(() => settings.atlasLayerGroups, applyGroups);
+      const stopPlaces = watch(() => settings.atlasSmallestPlace, applyPlaces);
       onCleanup(() => {
         stopBands();
         stopGroups();
+        stopPlaces();
         map.off("style.load", onStyleLoad);
       });
     },

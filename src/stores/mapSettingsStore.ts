@@ -3,7 +3,7 @@ import { type CoordinateFormatType } from "@/geo/coordinateFormat";
 import { StorageSerializers, useLocalStorage } from "@vueuse/core";
 import type { BasemapArchiveKind } from "@/geo/basemapArchive";
 import type { CustomBasemap } from "@/geo/customBasemap";
-// The two settings modules directly: the barrel would pull the whole Atlas style into the initial
+// The settings modules directly: the barrel would pull the whole Atlas style into the initial
 // chunk, which every visitor loads whether or not they use the map.
 import {
   DEFAULT_ELEVATION_BAND_PRESET,
@@ -14,6 +14,11 @@ import {
   ALL_ATLAS_LAYER_GROUPS,
   type AtlasLayerGroup,
 } from "@/geo/atlasStyle/layerGroups";
+import {
+  DEFAULT_SMALLEST_PLACE,
+  isSmallestPlace,
+  type SmallestPlace,
+} from "@/geo/atlasStyle/places";
 
 export type MapProjection = "globe" | "mercator";
 
@@ -93,6 +98,16 @@ export const useMapSettingsStore = defineStore("mapSettings", {
         serializer: {
           read: (value) =>
             isElevationBandPreset(value) ? value : DEFAULT_ELEVATION_BAND_PRESET,
+          write: (value) => value,
+        },
+      },
+    ),
+    atlasSmallestPlace: useLocalStorage<SmallestPlace>(
+      "atlasSmallestPlace",
+      DEFAULT_SMALLEST_PLACE,
+      {
+        serializer: {
+          read: (value) => (isSmallestPlace(value) ? value : DEFAULT_SMALLEST_PLACE),
           write: (value) => value,
         },
       },

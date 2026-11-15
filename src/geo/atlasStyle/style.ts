@@ -20,12 +20,23 @@ import {
   DEFAULT_ELEVATION_BAND_PRESET,
   ELEVATION_BAND_LAYER_PREFIX,
   elevationBandRamp,
+  elevationBandVisibility,
   type ElevationBandPreset,
 } from "./elevationBands";
+import {
+  ATLAS_PLACES_METADATA_KEY,
+  DEFAULT_SMALLEST_PLACE,
+  byPlaceKind,
+  placementOrder,
+  placesFilter,
+  rankUpTo,
+  type SmallestPlace,
+} from "./places";
 import {
   ALL_ATLAS_LAYER_GROUPS,
   drawsWithLayerGroups,
   layerGroupMetadata,
+  replacedByLayerGroupsMetadata,
   type AtlasLayerGroup,
 } from "./layerGroups";
 
@@ -40,6 +51,8 @@ export interface AtlasStyleOptions {
   elevationBands?: ElevationBandPreset;
   /** The layer groups the style starts with. Defaults to all of them. */
   show?: readonly AtlasLayerGroup[];
+  /** The smallest kind of place the style starts naming. Defaults to hamlets. */
+  smallestPlace?: SmallestPlace;
 }
 
 /** The style always has `layers`, `sources` and `glyphs`. */
@@ -75,13 +88,28 @@ const FADE = 0.5;
 const INK = {
   paper: "#ffffff",
   water: "#c9f3ff",
-  waterLine: "#26cfff",
+  /** Muted enough that coasts and rivers don't outrank the borders. */
+  waterLine: "#4cb4d6",
   waterText: "#1683b0",
   border: "#7a736a",
   borderRibbon: "#9c9184",
   disputed: "#3d3a36",
-  countryText: "#8aa1a4",
+  /** Dark enough to read on the darkest elevation band, still lighter than town names. */
+  countryText: "#4f6164",
+  /** States and islands, a step below countries. */
+  regionText: "#6a7b7e",
   town: "#404040",
+} as const;
+
+/**
+ * A soft paper-coloured halo for country, state and island names, so borders
+ * and rivers don't cut through the letters; translucent so it lifts the text
+ * off a dark tint without punching a white box out of it.
+ */
+const AREA_HALO = {
+  "text-halo-color": "rgba(255,255,255,0.55)",
+  "text-halo-width": 1.5,
+  "text-halo-blur": 1,
 } as const;
 
 const REGULAR = ["Noto Sans Regular"];
@@ -107,11 +135,6 @@ const byZoom = (...stops: number[]): ExpressionSpecification => [
   ["zoom"],
   ...stops,
 ];
-const rankUpTo = (...steps: number[]): ExpressionSpecification => [
-  "<=",
-  ["coalesce", ["get", "rank"], 99],
-  ["step", ["zoom"], ...steps] as ExpressionSpecification,
-];
 const notTunnel: ExpressionSpecification = ["!=", ["get", "brunnel"], "tunnel"];
 const isRiver: FilterSpecification = ["==", ["get", "class"], "river"];
 /** Water polygons split three ways, so each draws in exactly one of the sea, rivers or lakes. */
@@ -136,11 +159,35 @@ const disputedBorder: FilterSpecification = [
   onLand,
   ["==", ["get", "disputed"], 1],
 ];
-/** Every town with a dot gets a label, and the reverse. */
-const listedTown: FilterSpecification = [
-  "all",
-  ["match", ["get", "class"], ["city", "town"], true, false],
-  rankUpTo(4, 6, 7, 8, 10),
+const isCapital: ExpressionSpecification = ["==", ["get", "capital"], 2];
+/** `capital` for a capital, else `perKind` of its kind of place, else `fallback`. */
+const capitalOrKind = (
+  capital: unknown,
+  perKind: Parameters<typeof byPlaceKind>[0],
+  fallback: unknown,
+) =>
+  ["case", isCapital, capital, byPlaceKind(perKind, fallback)] as ExpressionSpecification;
+/** The groups the town names draw in; the bare dots stand in while any is hidden. */
+const TOWN_LABEL_GROUPS = ["cities", "labels", "towns"] as const;
+/** The town dot as a glyph: Noto Sans's white circle, filled by the label's halo. */
+const TOWN_RING = "\u25cb";
+const CAPITAL_RING_SCALE = 1.7;
+/**
+ * How far the label moves, in ems, to centre a ring of this scale on the town:
+ * left by half the glyph's 14/24 em advance, and up by how far the ring sits
+ * below the middle of a left-anchored label (measured on screen).
+ */
+const ringOffset = (scale: number): ExpressionSpecification => [
+  "literal",
+  [(-7 / 24) * scale, -0.175 * scale],
+];
+/** The ring's size for a capital, else for its kind of place. */
+const ringScale = capitalOrKind(CAPITAL_RING_SCALE, (kind) => kind.ring, 1);
+/** Each kind's type, scaled from the town names' size. */
+const placeTypeSize = (size: number): ExpressionSpecification => [
+  "*",
+  size,
+  byPlaceKind((kind) => kind.type, 1),
 ];
 
 /**
@@ -238,6 +285,7 @@ const demSourceId = (demZoom: number) => `dem${demZoom}`;
 
 function elevationLayers(preset: ElevationBandPreset): LayerSpecification[] {
   const ramp = elevationBandRamp(preset);
+  const hidden = elevationBandVisibility(preset) === "none";
   return ELEVATION_LEVELS.map(({ demZoom, fromZoom }, i) => {
     const nextFrom = ELEVATION_LEVELS[i + 1]?.fromZoom;
     return {
@@ -246,6 +294,7 @@ function elevationLayers(preset: ElevationBandPreset): LayerSpecification[] {
       source: demSourceId(demZoom),
       ...(fromZoom === undefined ? {} : { minzoom: fromZoom }),
       ...(nextFrom === undefined ? {} : { maxzoom: nextFrom + FADE }),
+      ...(hidden ? { layout: { visibility: "none" } } : {}),
       paint: {
         "color-relief-color": ramp,
         ...(fromZoom === undefined
@@ -279,7 +328,7 @@ function shorelineLayer({
     source: VECTOR,
     "source-layer": "water",
     filter: ["all", notTunnel, filter],
-    paint: { "line-color": INK.waterLine, "line-width": byZoom(4, 1.2, 10, 2.8) },
+    paint: { "line-color": INK.waterLine, "line-width": byZoom(4, 0.8, 10, 1.8) },
   };
 }
 
@@ -299,7 +348,8 @@ function waterLayer({
   };
 }
 
-function vectorLayers(): LayerSpecification[] {
+function vectorLayers(smallestPlace: SmallestPlace): LayerSpecification[] {
+  const places = placesFilter(smallestPlace);
   return [
     // Rivers and shorelines draw under every water fill, which hides their
     // centre lines and riverbank seams and leaves only the outer edge.
@@ -385,9 +435,27 @@ function vectorLayers(): LayerSpecification[] {
       },
       paint: {
         "text-color": INK.waterText,
-        "text-halo-color": INK.water,
+        // Paper, not water: a name set beside a narrow river would smear cyan onto the land.
+        "text-halo-color": "rgba(255,255,255,0.7)",
         "text-halo-width": 1.2,
       },
+    },
+    {
+      id: "island-labels",
+      metadata: layerGroupMetadata("labels", "islands"),
+      type: "symbol",
+      source: VECTOR,
+      "source-layer": "place",
+      filter: ["==", ["get", "class"], "island"],
+      minzoom: 6,
+      layout: {
+        "text-field": NAME,
+        "text-font": REGULAR,
+        "text-transform": "uppercase",
+        "text-size": byZoom(6, 9, 10, 12),
+        "text-letter-spacing": 0.1,
+      },
+      paint: { "text-color": INK.regionText, ...AREA_HALO },
     },
     {
       id: "sea-labels",
@@ -423,6 +491,78 @@ function vectorLayers(): LayerSpecification[] {
       },
       paint: { "text-color": INK.waterText },
     },
+    // MapLibre places symbols from the top layer down, so a lower layer's
+    // names give way: islands, seas and lakes yield to towns, and towns yield
+    // to the state and country names drawn above them.
+    //
+    // A named town draws its dot as the first glyph of its label, so the two
+    // place or drop together. These bare dots stand in only while town names
+    // are hidden.
+    {
+      id: "town-dots",
+      metadata: {
+        ...layerGroupMetadata("cities"),
+        ...replacedByLayerGroupsMetadata(...TOWN_LABEL_GROUPS),
+        [ATLAS_PLACES_METADATA_KEY]: true,
+      },
+      type: "circle",
+      source: VECTOR,
+      "source-layer": "place",
+      filter: places,
+      paint: {
+        "circle-radius": capitalOrKind(3.5, (kind) => kind.dot, 2.5),
+        "circle-color": INK.paper,
+        "circle-stroke-color": INK.town,
+        "circle-stroke-width": 1,
+      },
+    },
+    {
+      id: "town-labels",
+      metadata: {
+        ...layerGroupMetadata(...TOWN_LABEL_GROUPS),
+        [ATLAS_PLACES_METADATA_KEY]: true,
+      },
+      type: "symbol",
+      source: VECTOR,
+      "source-layer": "place",
+      filter: places,
+      layout: {
+        "text-field": [
+          "format",
+          TOWN_RING,
+          { "font-scale": ringScale },
+          " ",
+          {},
+          NAME,
+          {},
+        ],
+        "text-font": REGULAR,
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5,
+          placeTypeSize(10),
+          10,
+          placeTypeSize(13),
+        ],
+        "symbol-sort-key": placementOrder,
+        // One line, or the ring would sit beside the middle of a wrapped name, off the town.
+        "text-max-width": 100,
+        "text-anchor": "left",
+        // Puts the ring's centre, not the label's left edge, on the town.
+        "text-offset": capitalOrKind(
+          ringOffset(CAPITAL_RING_SCALE),
+          (kind) => ringOffset(kind.ring),
+          ringOffset(1),
+        ),
+      },
+      paint: {
+        "text-color": INK.town,
+        "text-halo-color": INK.paper,
+        "text-halo-width": 1.2,
+      },
+    },
     {
       id: "state-labels",
       metadata: layerGroupMetadata("labels", "states"),
@@ -441,7 +581,7 @@ function vectorLayers(): LayerSpecification[] {
         "text-variable-anchor": ["center", "top", "bottom", "left", "right"],
         "text-radial-offset": 1.2,
       },
-      paint: { "text-color": INK.countryText },
+      paint: { "text-color": INK.regionText, ...AREA_HALO },
     },
     {
       id: "country-labels",
@@ -471,58 +611,7 @@ function vectorLayers(): LayerSpecification[] {
         "text-size": byZoom(3, 9, 5, 12, 6, 15, 8, 22),
         "text-max-width": 20,
       },
-      paint: { "text-color": INK.countryText, "text-opacity": byZoom(3, 0.85, 5.5, 1) },
-    },
-    {
-      id: "island-labels",
-      metadata: layerGroupMetadata("labels", "islands"),
-      type: "symbol",
-      source: VECTOR,
-      "source-layer": "place",
-      filter: ["==", ["get", "class"], "island"],
-      minzoom: 6,
-      layout: {
-        "text-field": NAME,
-        "text-font": REGULAR,
-        "text-transform": "uppercase",
-        "text-size": 9,
-        "text-letter-spacing": 0.1,
-      },
-      paint: { "text-color": INK.countryText },
-    },
-    {
-      id: "town-dots",
-      metadata: layerGroupMetadata("cities"),
-      type: "circle",
-      source: VECTOR,
-      "source-layer": "place",
-      filter: listedTown,
-      paint: {
-        "circle-radius": ["case", ["==", ["get", "capital"], 2], 3.5, 2.5],
-        "circle-color": INK.paper,
-        "circle-stroke-color": INK.town,
-        "circle-stroke-width": 1,
-      },
-    },
-    {
-      id: "town-labels",
-      metadata: layerGroupMetadata("cities", "labels", "towns"),
-      type: "symbol",
-      source: VECTOR,
-      "source-layer": "place",
-      filter: listedTown,
-      layout: {
-        "text-field": NAME,
-        "text-font": REGULAR,
-        "text-size": byZoom(5, 10, 10, 13),
-        "text-anchor": "left",
-        "text-offset": [0.5, 0],
-      },
-      paint: {
-        "text-color": INK.town,
-        "text-halo-color": INK.paper,
-        "text-halo-width": 1,
-      },
+      paint: { "text-color": INK.countryText, ...AREA_HALO },
     },
   ];
 }
@@ -564,7 +653,10 @@ export function createAtlasStyle(options: AtlasStyleOptions = {}): AtlasStyle {
     layers: [
       { id: "paper", type: "background", paint: { "background-color": INK.paper } },
       ...elevationLayers(options.elevationBands ?? DEFAULT_ELEVATION_BAND_PRESET),
-      ...withLayerGroups(vectorLayers(), options.show ?? ALL_ATLAS_LAYER_GROUPS),
+      ...withLayerGroups(
+        vectorLayers(options.smallestPlace ?? DEFAULT_SMALLEST_PLACE),
+        options.show ?? ALL_ATLAS_LAYER_GROUPS,
+      ),
     ],
   });
 }

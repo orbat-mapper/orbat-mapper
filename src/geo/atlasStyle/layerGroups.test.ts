@@ -66,10 +66,11 @@ describe("Atlas layer groups", () => {
     ]);
   });
 
-  it("draws every layer by default", () => {
+  it("draws every layer by default, but the bare town dots the named ones replace", () => {
     const all = createAtlasStyle().layers;
-    expect(all.every((layer) => layer.layout?.visibility !== "none")).toBe(true);
-    expect(visibleIds(ALL)).toEqual(all.map((layer) => layer.id));
+    expect(visibleIds(ALL)).toEqual(
+      all.map((layer) => layer.id).filter((id) => id !== "town-dots"),
+    );
   });
 
   it("leaves out all four kinds of border, and nothing else, without borders", () => {
@@ -85,10 +86,9 @@ describe("Atlas layer groups", () => {
   });
 
   it("leaves out town dots and names without cities", () => {
-    const removed = visibleIds(ALL).filter(
-      (id) => !visibleIds(allBut("cities")).includes(id),
-    );
-    expect(removed).toEqual(["town-dots", "town-labels"]);
+    const shown = visibleIds(allBut("cities"));
+    expect(shown).not.toContain("town-dots");
+    expect(shown).not.toContain("town-labels");
   });
 
   it("leaves out rivers, their banks and names without waterways", () => {
@@ -131,12 +131,12 @@ describe("Atlas layer groups", () => {
     const removed = visibleIds(ALL).filter((id) => !shown.includes(id));
     expect(removed).toEqual([
       "river-labels",
+      "island-labels",
       "sea-labels",
       "lake-labels",
+      "town-labels",
       "state-labels",
       "country-labels",
-      "island-labels",
-      "town-labels",
     ]);
     expect(shown).toContain("town-dots");
   });

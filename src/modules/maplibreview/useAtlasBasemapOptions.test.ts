@@ -46,8 +46,9 @@ describe("useAtlasBasemapOptions", () => {
     map.loadStyle();
     map.loadStyle();
 
+    // Each load repaints the band layer, and sets its visibility and the borders'.
     expect(map.setPaintProperty).toHaveBeenCalledTimes(2);
-    expect(map.setLayoutProperty).toHaveBeenCalledTimes(2);
+    expect(map.setLayoutProperty).toHaveBeenCalledTimes(4);
     expect(map.setLayoutProperty).toHaveBeenLastCalledWith(
       "borders",
       "visibility",
@@ -62,7 +63,12 @@ describe("useAtlasBasemapOptions", () => {
     await nextTick();
 
     expect(map.setPaintProperty).toHaveBeenCalledTimes(1);
-    expect(map.setLayoutProperty).not.toHaveBeenCalled();
+    expect(map.setLayoutProperty).toHaveBeenCalledOnce();
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      "elevation-bands-4",
+      "visibility",
+      "visible",
+    );
   });
 
   it("shows and hides layers on the live map when the groups change", async () => {
