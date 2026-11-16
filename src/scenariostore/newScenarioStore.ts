@@ -567,7 +567,8 @@ export type ActionLabel =
   | "moveMapLayer"
   | "clearUnitState"
   | "hideUnits"
-  | "showUnits";
+  | "showUnits"
+  | "setBranchVisibility";
 
 export function useNewScenarioStore(data: Scenario | LoadableScenario) {
   const inputState = prepareScenario(data);

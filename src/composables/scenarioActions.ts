@@ -1,10 +1,10 @@
 import type { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { TAB_SCENARIO_SETTINGS, type UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed, type ComputedRef } from "vue";
+import { computed, type ComputedRef, hasInjectionContext, inject } from "vue";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
-import { activeScenarioKey } from "@/components/injects";
+import { activeScenarioKey, branchCutoffModalKey } from "@/components/injects";
 import type { MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
@@ -38,6 +38,10 @@ export function hideBranchMenuItems(unit: { subUnits?: unknown[] }) {
       label: "Show on map (with subordinates)",
       action: UnitActions.ShowWithSubordinates,
     },
+    {
+      label: "Hide subordinates below…",
+      action: UnitActions.HideSubordinatesBelow,
+    },
   ];
 }
 
@@ -52,6 +56,10 @@ export function useUnitActions(
   } = options.activeScenario || injectStrict(activeScenarioKey);
   const { selectedUnitIds, activeUnitId } = useSelectedItems();
   const geoStore = useGeoStore();
+  // Only the scenario editor provides the dialog; useHellfire also calls this outside setup.
+  const branchCutoffModal = hasInjectionContext()
+    ? inject(branchCutoffModalKey, undefined)
+    : undefined;
 
   const _onUnitAction = (
     unit: NUnit | undefined | null,
@@ -184,18 +192,31 @@ export function useUnitActions(
     unitActions.setUnitsHidden(ids, hidden);
   }
 
+  async function hideSubordinatesBelow(units: NUnit[]) {
+    if (!branchCutoffModal) return;
+    const label = units.length === 1 ? units[0]!.name : `${units.length} units`;
+    const cutoff = await branchCutoffModal.getBranchCutoff(label);
+    if (cutoff)
+      unitActions.setBranchVisibility(
+        units.map((u) => u.id),
+        cutoff,
+      );
+  }
+
   function onUnitAction(
     unitOrUnits: NUnit | NUnit[] | null,
     action: UnitAction,
     waypointIds?: EntityId[],
   ) {
     if (!unitOrUnits) return;
+    const units = Array.isArray(unitOrUnits) ? unitOrUnits : [unitOrUnits];
+    if (action === UnitActions.HideSubordinatesBelow) {
+      hideSubordinatesBelow(units);
+      return;
+    }
     const hideAction = HIDE_ACTIONS[action];
     if (hideAction) {
-      setUnitsHidden(
-        Array.isArray(unitOrUnits) ? unitOrUnits : [unitOrUnits],
-        hideAction,
-      );
+      setUnitsHidden(units, hideAction);
       return;
     }
     if (Array.isArray(unitOrUnits)) {

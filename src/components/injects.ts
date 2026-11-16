@@ -1,7 +1,11 @@
 import type { ComputedRef, InjectionKey, MaybeRef, Ref, ShallowRef } from "vue";
 import type { EntityId } from "@/types/base";
 import type { TScenario } from "@/scenariostore";
-import type { SidcModalPromise, TimeModalPromise } from "@/composables/modals";
+import type {
+  BranchCutoffModalPromise,
+  SidcModalPromise,
+  TimeModalPromise,
+} from "@/composables/modals";
 import type { EventHook } from "@vueuse/core";
 import type { FeatureId } from "@/types/scenarioGeoModels";
 import type { ScenarioMapEngine } from "@/geo/contracts/scenarioMapEngine";
@@ -39,6 +43,10 @@ export const timeModalKey = Symbol("Time modal") as InjectionKey<{
 
 export const sidcModalKey = Symbol("SIDC modal") as InjectionKey<{
   getModalSidc: SidcModalPromise;
+}>;
+
+export const branchCutoffModalKey = Symbol("Branch cutoff modal") as InjectionKey<{
+  getBranchCutoff: BranchCutoffModalPromise;
 }>;
 
 export const searchActionsKey = Symbol("Search actions") as InjectionKey<{

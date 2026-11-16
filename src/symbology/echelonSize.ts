@@ -5,11 +5,16 @@
  */
 import { Sidc } from "@/symbology/sidc";
 import { getFullUnitSidc } from "@/symbology/helpers";
-import { UNIT_SYMBOLSET_VALUE } from "@/symbology/values";
+import { echelonValues, UNIT_SYMBOLSET_VALUE } from "@/symbology/values";
 
 /** The table key for symbols without an echelon: equipment, installations,
  *  activities and Unspecified. Matches the Unspecified echelon code. */
 export const NO_ECHELON = "00";
+
+/** The echelons, biggest first like an ORBAT read top-down, without Unspecified. */
+export const ECHELONS_BIG_FIRST = echelonValues
+  .filter((v) => v.code !== NO_ECHELON)
+  .reverse();
 
 /** Ratio of the map symbol size per echelon code. Tactrace's seed table, so a
  *  scenario looks alike in both apps: the stencils' order, but a compressed spread
