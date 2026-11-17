@@ -1,11 +1,11 @@
 import type { OrbatItemData, Unit } from "@/types/scenarioModels";
 import { TAB_SCENARIO_SETTINGS, type UnitAction, UnitActions } from "@/types/constants";
 import { useGeoStore } from "@/stores/geoStore";
-import { computed, type ComputedRef, hasInjectionContext, inject } from "vue";
+import { type ComputedRef, hasInjectionContext, inject } from "vue";
 import type { NOrbatItemData, NUnit } from "@/types/internalModels";
 import { injectStrict } from "@/utils";
 import { activeScenarioKey, branchCutoffModalKey } from "@/components/injects";
-import type { MenuItemData } from "@/components/types";
+import type { MenuEntry, MenuItemData } from "@/components/types";
 import { multiPoint } from "@turf/helpers";
 import type { TScenario } from "@/scenariostore";
 import type { FeatureId } from "@/types/scenarioGeoModels";
@@ -26,22 +26,15 @@ const HIDE_ACTIONS: Partial<
   [UnitActions.ShowWithSubordinates]: { hidden: false, withSubordinates: true },
 };
 
-/** Menu entries for hiding or showing a unit's whole branch, for units with subordinates. */
-export function hideBranchMenuItems(unit: { subUnits?: unknown[] }) {
+/** Map-visibility entries for a unit's whole branch; empty for units without subordinates. */
+export function hideBranchMenuItems(unit: {
+  subUnits?: unknown[];
+}): MenuItemData<UnitAction>[] {
   if (!unit.subUnits?.length) return [];
   return [
-    {
-      label: "Hide on map (with subordinates)",
-      action: UnitActions.HideWithSubordinates,
-    },
-    {
-      label: "Show on map (with subordinates)",
-      action: UnitActions.ShowWithSubordinates,
-    },
-    {
-      label: "Hide subordinates below…",
-      action: UnitActions.HideSubordinatesBelow,
-    },
+    { label: "Hide on map", action: UnitActions.HideWithSubordinates },
+    { label: "Show on map", action: UnitActions.ShowWithSubordinates },
+    { label: "Hide subordinates below…", action: UnitActions.HideSubordinatesBelow },
   ];
 }
 
@@ -238,118 +231,96 @@ export function useUnitMenu(
   isLocked: ComputedRef<boolean>,
   isSideGroupLocked: ComputedRef<boolean>,
 ) {
-  const { store } = injectStrict(activeScenarioKey);
+  const { store, unitActions } = injectStrict(activeScenarioKey);
   const unit = "unit" in item ? item.unit : item;
 
-  const hasChildren = computed(() => {
-    return Boolean(unit.subUnits && unit.subUnits.length);
-  });
+  /** Builds the unit menu. Pass it uncalled to DotsMenu so it only runs when the menu opens. */
+  const getUnitMenuItems = (): MenuEntry<UnitAction>[] => {
+    const locked = isLocked.value;
+    const hasLocation = Boolean(unit._state?.location);
+    const hasChildren = Boolean(unit.subUnits?.length);
+    const pid = "_pid" in unit ? unit._pid : undefined;
+    const parent = pid ? unitActions.getUnitOrSideGroup(pid) : undefined;
+    const isParentUnit = Boolean(pid && pid in store.state.unitMap);
 
-  const isFirstSibling = computed(() => {
-    if (!("_pid" in unit) || !unit._pid) return false;
-    const parentId = unit._pid;
-    const parent =
-      store.state.unitMap[parentId] ?? store.state.sideGroupMap[parentId] ?? null;
-    if (!parent) return false;
-    return parent.subUnits[0] === unit.id;
-  });
+    const duplicateItems: MenuItemData<UnitAction>[] = [
+      { label: "Unit", action: UnitActions.Clone },
+      { label: "Unit with state", action: UnitActions.CloneWithState },
+    ];
+    if (hasChildren) {
+      duplicateItems.push(
+        { label: "Hierarchy", action: UnitActions.CloneWithSubordinates },
+        {
+          label: "Hierarchy with state",
+          action: UnitActions.CloneWithSubordinatesAndState,
+        },
+      );
+    }
 
-  const isLastSibling = computed(() => {
-    if (!("_pid" in unit) || !unit._pid) return false;
-    const parentId = unit._pid;
-    const parent =
-      store.state.unitMap[parentId] ?? store.state.sideGroupMap[parentId] ?? null;
-    if (!parent?.subUnits?.length) return false;
-    return parent.subUnits[parent.subUnits.length - 1] === unit.id;
-  });
+    const branchEntries: MenuEntry<UnitAction>[] = hasChildren
+      ? [
+          {
+            label: "Branch",
+            children: [
+              { label: "Expand all", action: UnitActions.Expand },
+              { label: "Collapse all", action: UnitActions.Collapse },
+              { separator: true },
+              ...hideBranchMenuItems(unit),
+            ],
+          },
+        ]
+      : [];
 
-  const canMoveUpInHierarchy = computed(() => {
-    if (!("_pid" in unit) || !unit._pid) return false;
-    return Boolean(store.state.unitMap[unit._pid]);
-  });
-
-  const unitMenuItems = computed((): MenuItemData<UnitAction>[] => {
     return [
+      { label: "Edit", action: UnitActions.Edit, disabled: locked },
+      { label: "Add subordinate", action: UnitActions.AddSubordinate, disabled: locked },
+      { label: "Zoom to", action: UnitActions.Zoom, disabled: !hasLocation },
+      { label: "Pan to", action: UnitActions.Pan, disabled: !hasLocation },
+      { separator: true },
+      { label: "Duplicate", disabled: locked, children: duplicateItems },
       {
-        label: "Add subordinate",
-        action: UnitActions.AddSubordinate,
-        disabled: isLocked.value,
+        label: "Move",
+        disabled: locked,
+        children: [
+          {
+            label: "Up",
+            action: UnitActions.MoveUp,
+            disabled: parent?.subUnits[0] === unit.id,
+          },
+          {
+            label: "Down",
+            action: UnitActions.MoveDown,
+            disabled: parent?.subUnits.at(-1) === unit.id,
+          },
+          {
+            label: "Up in hierarchy",
+            action: UnitActions.MoveUpInHierarchy,
+            disabled: !isParentUnit,
+          },
+        ],
       },
-      { label: "Delete", action: UnitActions.Delete, disabled: isLocked.value },
-      { label: "Clear state", action: UnitActions.ClearState, disabled: isLocked.value },
-      { label: "Edit", action: UnitActions.Edit, disabled: isLocked.value },
-      {
-        label: "Expand branch",
-        action: UnitActions.Expand,
-        disabled: !hasChildren.value,
-      },
-      {
-        label: "Collapse branch",
-        action: UnitActions.Collapse,
-        disabled: !hasChildren.value,
-      },
-      {
-        label: "Zoom to",
-        action: UnitActions.Zoom,
-        disabled: !unit._state?.location,
-      },
-      {
-        label: "Pan to",
-        action: UnitActions.Pan,
-        disabled: !unit._state?.location,
-      },
-      // { label: "Copy", action: UnitActions.Copy },
-      // { label: "Paste", action: UnitActions.Paste },
-      { label: "Duplicate", action: UnitActions.Clone, disabled: isLocked.value },
-      {
-        label: "Duplicate (with state)",
-        action: UnitActions.CloneWithState,
-        disabled: isLocked.value,
-      },
-      {
-        label: "Duplicate hierarchy",
-        action: UnitActions.CloneWithSubordinates,
-        disabled: isLocked.value,
-      },
-      {
-        label: "Duplicate hierarchy (with state)",
-        action: UnitActions.CloneWithSubordinatesAndState,
-        disabled: isLocked.value,
-      },
-      {
-        label: "Move up",
-        action: UnitActions.MoveUp,
-        disabled: isLocked.value || isFirstSibling.value,
-      },
-      {
-        label: "Move down",
-        action: UnitActions.MoveDown,
-        disabled: isLocked.value || isLastSibling.value,
-      },
-      {
-        label: "Move up in hierarchy",
-        action: UnitActions.MoveUpInHierarchy,
-        disabled: isLocked.value || !canMoveUpInHierarchy.value,
-      },
+      { separator: true },
       unit.isHidden
         ? { label: "Show on map", action: UnitActions.Show }
         : { label: "Hide on map", action: UnitActions.Hide },
-      ...hideBranchMenuItems(unit),
-      unit.locked
-        ? {
-            label: "Unlock",
-            action: UnitActions.Unlock,
-            disabled: isSideGroupLocked.value,
-          }
-        : {
-            label: "Lock",
-            action: UnitActions.Lock,
-            disabled: isSideGroupLocked.value,
-          },
+      ...branchEntries,
+      {
+        label: unit.locked ? "Unlock" : "Lock",
+        action: unit.locked ? UnitActions.Unlock : UnitActions.Lock,
+        disabled: isSideGroupLocked.value,
+      },
+      { separator: true },
+      { label: "Clear state", action: UnitActions.ClearState, disabled: locked },
+      {
+        label: "Delete",
+        action: UnitActions.Delete,
+        disabled: locked,
+        variant: "destructive",
+      },
     ];
-  });
+  };
 
-  return { unitMenuItems };
+  return { getUnitMenuItems };
 }
 
 export function useScenarioFeatureActions(

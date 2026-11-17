@@ -46,7 +46,7 @@ import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { type MenuItemData } from "@/components/types";
+import type { MenuEntry, MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
@@ -188,7 +188,7 @@ const recordingStore = useRecordingStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
 
-const unitMenuItems = computed((): MenuItemData[] => [
+const unitMenuItems = computed((): MenuEntry[] => [
   {
     label: "Change symbol",
     action: () => handleChangeSymbol(),
@@ -213,12 +213,19 @@ const unitMenuItems = computed((): MenuItemData[] => [
     action: () => removeMedia(),
     disabled: isLocked.value,
   },
-  ...hideBranchMenuItems(unit.value).map(({ label, action }) => ({
-    label,
-    action: () => actionWrapper(action),
-  })),
+  ...branchMenuEntries.value,
   lockMenuItem.value,
 ]);
+
+const branchMenuEntries = computed((): MenuEntry[] => {
+  const items = hideBranchMenuItems(unit.value);
+  if (!items.length) return [];
+  const children = items.map(({ label, action }) => ({
+    label,
+    action: () => actionWrapper(action),
+  }));
+  return [{ label: "Branch", children }];
+});
 
 // Units whose side or side group is locked can't be locked or unlocked individually.
 const lockTargetIds = computed(() =>
