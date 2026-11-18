@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 - Added Reverse direction to the shape edit section of the control measure details panel. It runs a line or arrow the other way as one Ctrl+Z step, and shows when the graphic has a direction to reverse.
 - Added a Tags list to the Details tab of the feature details panel. It shows the properties a feature brought with it from an imported file, such as GeoJSON attributes.
 - Added a Feature tooltip language setting to Map settings. With a language code such as `en`, the feature hover tooltip shows the feature's `name:en` tag when it has one, and otherwise its name. It is empty by default, and the choice belongs to this device.
+- Added Hide subordinates below to the unit menu in the ORBAT panel, the unit details menu and a new menu next to the eye button in the unit details toolbar. It keeps a unit's branch on the map down to a number of levels, a smallest echelon or both, and hides the rest as one undo step. It works on several selected units at once, and Show on map in the same menu brings the whole branch back.
+- Added a None choice to the Atlas Elevation bands, which leaves all ground white, and a Smallest place choice (Towns, Villages or Hamlets) to the Atlas options. Smallest place belongs to this device.
 
 ### Changed
 
@@ -26,6 +28,8 @@ All notable changes to this project will be documented in this file.
 - Control measure field descriptions now open from an info button next to the field label instead of taking up space under every field.
 - Zoom to no longer zooms out, and keeps the current zoom when the map is already zoomed in close.
 - Clicking the map compass now resets only the bearing. Double-click it to also level the view.
+- The unit menu in the ORBAT panel is shorter: the Duplicate and Move choices and the branch actions (Expand all, Collapse all, Hide on map, Show on map, Hide subordinates below) are now in submenus, choices that do not apply to a unit without subordinates are left out, and Delete is last. The unit details menu has the same Branch submenu.
+- The Atlas base map now draws villages and hamlets, town dots in their labels, softer water lines and haloed area names.
 
 ### Fixed
 
