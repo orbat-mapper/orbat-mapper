@@ -31,6 +31,7 @@ export const UnitActions = {
   Show: "Show",
   HideWithSubordinates: "HideWithSubordinates",
   ShowWithSubordinates: "ShowWithSubordinates",
+  HideSubordinatesBelow: "HideSubordinatesBelow",
 } as const;
 
 export type UnitAction = (typeof UnitActions)[keyof typeof UnitActions];

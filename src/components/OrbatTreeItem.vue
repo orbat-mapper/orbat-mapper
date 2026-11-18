@@ -109,7 +109,7 @@ const hasActiveChildren = computed(() =>
   activeUnitStore.activeUnitParentIds.value.includes(props.item.unit.id),
 );
 
-const { unitMenuItems: menuItems } = useUnitMenu(props.item, isLocked, isSideGroupLocked);
+const { getUnitMenuItems } = useUnitMenu(props.item, isLocked, isSideGroupLocked);
 
 let dndCleanup: CleanupFn = () => {};
 const instruction = ref<Instruction | null>(null);
@@ -342,7 +342,7 @@ const toggleOpen = () => {
       <IconLockOutline v-if="unit.locked" class="text-muted-foreground h-5 w-5" />
       <DotsMenu
         class="shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 group-focus/orbat-item:opacity-100"
-        :items="menuItems"
+        :items="getUnitMenuItems"
         @action="onUnitMenuAction(unit, $event)"
       />
     </div>

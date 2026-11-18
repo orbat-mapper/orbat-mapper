@@ -60,6 +60,13 @@ vi.mock("@/composables/modals", () => ({
     initialTab: 0,
     initialReinforcedReduced: undefined,
   }),
+  useBranchCutoffModal: () => ({
+    showBranchCutoffModal: false,
+    getBranchCutoff: vi.fn(),
+    confirmBranchCutoff: vi.fn(),
+    cancelBranchCutoff: vi.fn(),
+    branchCutoffUnitLabel: "",
+  }),
 }));
 
 vi.mock("@/composables/filedragdrop", () => ({

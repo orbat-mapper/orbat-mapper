@@ -9,8 +9,6 @@ import {
 } from "vue";
 import {
   IconCrosshairsGps,
-  IconEye,
-  IconEyeOff,
   IconFileTreeOutline as TreeLocateIcon,
   IconLockOutline,
   IconLockOpenVariantOutline,
@@ -32,6 +30,7 @@ import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/
 import type { MediaUpdate, NUnit, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
+import UnitVisibilityButton from "./UnitVisibilityButton.vue";
 import UnitLocateButton from "./UnitLocateButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 
@@ -46,7 +45,7 @@ import { storeToRefs } from "pinia";
 import UnitDetailsToe from "@/modules/scenarioeditor/UnitDetailsToe.vue";
 import ScrollTabs from "@/components/ScrollTabs.vue";
 import DotsMenu from "@/components/DotsMenu.vue";
-import { type MenuItemData } from "@/components/types";
+import type { MenuEntry, MenuItemData } from "@/components/types";
 import EditMediaForm from "@/modules/scenarioeditor/EditMediaForm.vue";
 import EditMetaForm from "@/modules/scenarioeditor/EditMetaForm.vue";
 import UnitDetailsProperties from "@/modules/scenarioeditor/UnitDetailsProperties.vue";
@@ -188,7 +187,7 @@ const recordingStore = useRecordingStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
 
-const unitMenuItems = computed((): MenuItemData[] => [
+const unitMenuItems = computed((): MenuEntry[] => [
   {
     label: "Change symbol",
     action: () => handleChangeSymbol(),
@@ -213,12 +212,26 @@ const unitMenuItems = computed((): MenuItemData[] => [
     action: () => removeMedia(),
     disabled: isLocked.value,
   },
-  ...hideBranchMenuItems(unit.value).map(({ label, action }) => ({
-    label,
-    action: () => actionWrapper(action),
-  })),
+  ...branchMenuEntries.value,
   lockMenuItem.value,
 ]);
+
+// In multi-select, offer branch actions if any selected unit has subordinates
+const hasSubordinates = computed(() =>
+  isMultiMode.value
+    ? selectedUnits.value.some((u) => u.subUnits?.length)
+    : Boolean(unit.value.subUnits?.length),
+);
+
+const branchMenuEntries = computed((): MenuEntry[] => {
+  const items = hideBranchMenuItems(hasSubordinates.value);
+  if (!items.length) return [];
+  const children = items.map(({ label, action }) => ({
+    label,
+    action: () => actionWrapper(action),
+  }));
+  return [{ label: "Branch", children }];
+});
 
 // Units whose side or side group is locked can't be locked or unlocked individually.
 const lockTargetIds = computed(() =>
@@ -649,17 +662,12 @@ function locateInOrbat() {
           >
             <TreeLocateIcon class="size-5" aria-hidden="true" />
           </IconButton>
-          <!-- aria-pressed:bg-accent keeps hidden and locked states visible at a glance -->
-          <IconButton
-            size="icon-sm"
-            class="aria-pressed:bg-accent"
-            :tooltip="isHiddenOnMap ? 'Hidden on map. Click to show' : 'Hide on map'"
-            :aria-pressed="isHiddenOnMap"
-            @click="actionWrapper(isHiddenOnMap ? UnitActions.Show : UnitActions.Hide)"
-          >
-            <IconEyeOff v-if="isHiddenOnMap" class="size-5" aria-hidden="true" />
-            <IconEye v-else class="size-5" aria-hidden="true" />
-          </IconButton>
+          <UnitVisibilityButton
+            :hidden="isHiddenOnMap"
+            :has-subordinates="hasSubordinates"
+            @action="actionWrapper"
+          />
+          <!-- aria-pressed:bg-accent keeps the locked state visible at a glance -->
           <IconButton
             size="icon-sm"
             v-if="isMultiMode"

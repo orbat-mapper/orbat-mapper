@@ -86,13 +86,27 @@ export interface MenuItemData<T = string | Function> {
   action: T;
   disabled?: boolean;
   active?: boolean;
+  variant?: "default" | "destructive";
 }
 
 export interface MenuItemSeparator {
   separator: true;
 }
 
-export type DropdownMenuItemType = MenuItemData<SideAction> | MenuItemSeparator;
+interface MenuSubmenuData<T = string | Function> {
+  label: string;
+  children: (MenuItemData<T> | MenuItemSeparator)[];
+  disabled?: boolean;
+}
+
+/** An entry in a DotsMenu: an item, a separator, or a one-level submenu. */
+export type MenuEntry<T = string | Function> =
+  MenuItemData<T> | MenuItemSeparator | MenuSubmenuData<T>;
+
+export type DropdownMenuItemType = Exclude<
+  MenuEntry<SideAction>,
+  MenuSubmenuData<SideAction>
+>;
 
 export interface BreadcrumbItem {
   name: string;

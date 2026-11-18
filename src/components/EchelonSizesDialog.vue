@@ -4,8 +4,8 @@ import { useLocalStorage } from "@vueuse/core";
 import NewMilitarySymbol from "@/components/NewMilitarySymbol.vue";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { getFullUnitSidc, updateSidc } from "@/symbology/helpers";
-import { echelonValues } from "@/symbology/values";
 import {
+  ECHELONS_BIG_FIRST,
   echelonRatio,
   echelonSizeKey,
   isPositiveNumber,
@@ -64,7 +64,7 @@ watch(open, (isOpen) => {
 });
 
 // Biggest first, like an ORBAT read top-down; No echelon last.
-const echelons = echelonValues.filter((v) => v.code !== NO_ECHELON).reverse();
+const echelons = ECHELONS_BIG_FIRST;
 const rows = [...echelons, { code: NO_ECHELON, text: "No echelon" }];
 // Two columns on a wide screen, read down the first then the second.
 const half = Math.ceil(rows.length / 2);

@@ -50,11 +50,12 @@ import {
   scenarioKeyboardOwnerKey,
   searchActionsKey,
   sidcModalKey,
+  branchCutoffModalKey,
   timeModalKey,
 } from "@/components/injects";
 import type { ScenarioKeyboardOwner } from "@/modules/scenarioeditor/useScenarioDraw";
 import type { EventSearchResult } from "@/components/types";
-import { useDateModal, useSidcModal } from "@/composables/modals";
+import { useBranchCutoffModal, useDateModal, useSidcModal } from "@/composables/modals";
 import { storeToRefs } from "pinia";
 import {
   CHART_EDIT_MODE_ROUTE,
@@ -104,6 +105,9 @@ const ExportScenarioModal = defineAsyncComponent(
 );
 
 const ImportModal = defineAsyncComponent(() => import("@/components/ImportModal.vue"));
+const HideSubordinatesDialog = defineAsyncComponent(
+  () => import("./HideSubordinatesDialog.vue"),
+);
 const ShareScenarioUrlModal = defineAsyncComponent(
   () => import("@/components/ShareScenarioUrlModal.vue"),
 );
@@ -286,6 +290,14 @@ const {
   initialReinforcedReduced,
 } = useSidcModal();
 provide(sidcModalKey, { getModalSidc });
+const {
+  showBranchCutoffModal,
+  getBranchCutoff,
+  confirmBranchCutoff,
+  cancelBranchCutoff,
+  branchCutoffUnitLabel,
+} = useBranchCutoffModal();
+provide(branchCutoffModalKey, { getBranchCutoff });
 
 onUnmounted(() => {
   useTitle(originalTitle);
@@ -700,6 +712,12 @@ if (firstOverlayLayerId) {
     />
     <ExportScenarioModal v-if="showExportModal" v-model="showExportModal" />
     <ImportModal v-if="showImportModal" v-model="showImportModal" />
+    <HideSubordinatesDialog
+      v-if="showBranchCutoffModal"
+      :unit-label="branchCutoffUnitLabel"
+      @confirm="confirmBranchCutoff"
+      @cancel="cancelBranchCutoff"
+    />
     <ShareScenarioUrlModal v-if="showShareUrlModal" v-model="showShareUrlModal" />
     <ShareScenarioModal v-if="showShareModal" v-model="showShareModal" />
     <EncryptScenarioModal v-if="showEncryptModal" v-model="showEncryptModal" />

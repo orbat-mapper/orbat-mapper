@@ -2,6 +2,7 @@ import { useConfirmDialog } from "@vueuse/core";
 import { computed, ref } from "vue";
 import NProgress from "nprogress";
 import type { ReinforcedStatus, UnitSymbolOptions } from "@/types/scenarioModels";
+import type { SubordinateCutoff } from "@/scenariostore/subordinateVisibility";
 
 export interface ModalTimestampOptions {
   timeZone: string;
@@ -123,3 +124,27 @@ export function useSidcModal() {
 
 export type TimeModalPromise = ReturnType<typeof useDateModal>["getModalTimestamp"];
 export type SidcModalPromise = ReturnType<typeof useSidcModal>["getModalSidc"];
+
+export function useBranchCutoffModal() {
+  const { isRevealed, reveal, confirm, cancel } = useConfirmDialog<SubordinateCutoff>();
+  const branchCutoffUnitLabel = ref("");
+
+  const getBranchCutoff = async (
+    unitLabel: string,
+  ): Promise<SubordinateCutoff | undefined> => {
+    branchCutoffUnitLabel.value = unitLabel;
+    const { data, isCanceled } = await reveal();
+    if (!isCanceled) return data;
+  };
+  return {
+    showBranchCutoffModal: isRevealed,
+    getBranchCutoff,
+    confirmBranchCutoff: confirm,
+    cancelBranchCutoff: cancel,
+    branchCutoffUnitLabel,
+  };
+}
+
+export type BranchCutoffModalPromise = ReturnType<
+  typeof useBranchCutoffModal
+>["getBranchCutoff"];

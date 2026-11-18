@@ -1,5 +1,9 @@
 import type { EntityId } from "@/types/base";
-import type { NewScenarioStore, ScenarioState } from "./newScenarioStore";
+import type { ActionLabel, NewScenarioStore, ScenarioState } from "./newScenarioStore";
+import {
+  partitionBranchVisibility,
+  type SubordinateCutoff,
+} from "./subordinateVisibility";
 import { moveElement, nanoid, removeElement } from "@/utils";
 import type {
   NSide,
@@ -525,22 +529,46 @@ export function useUnitManipulations(store: NewScenarioStore) {
     unit.locked = locked;
   }
 
+  function changedVisibility(unitIds: Iterable<EntityId>, hidden: boolean) {
+    const ids: EntityId[] = [];
+    for (const id of unitIds) {
+      const unit = state.unitMap[id];
+      if (unit && !!unit.isHidden !== hidden) ids.push(id);
+    }
+    return ids;
+  }
+
+  function applyVisibility(
+    hideIds: EntityId[],
+    showIds: EntityId[],
+    meta: { label: ActionLabel; value: string },
+  ) {
+    if (!hideIds.length && !showIds.length) return;
+    update((s) => {
+      hideIds.forEach((id) => (s.unitMap[id]!.isHidden = true));
+      showIds.forEach((id) => delete s.unitMap[id]!.isHidden);
+      s.unitStateCounter++;
+    }, meta);
+  }
+
   function setUnitsHidden(unitIds: Iterable<EntityId>, hidden: boolean) {
-    const ids = [...unitIds].filter(
-      (id) => state.unitMap[id] && !!state.unitMap[id].isHidden !== hidden,
-    );
-    if (!ids.length) return;
-    update(
-      (s) => {
-        ids.forEach((id) => {
-          const unit = s.unitMap[id]!;
-          if (hidden) unit.isHidden = true;
-          else delete unit.isHidden;
-        });
-        s.unitStateCounter++;
-      },
-      { label: hidden ? "hideUnits" : "showUnits", value: ids.join(",") },
-    );
+    const ids = changedVisibility(unitIds, hidden);
+    const [hideIds, showIds] = hidden ? [ids, []] : [[], ids];
+    applyVisibility(hideIds, showIds, {
+      label: hidden ? "hideUnits" : "showUnits",
+      value: ids.join(","),
+    });
+  }
+
+  /** Shows the branches under `rootIds` down to `cutoff` and hides the rest of
+   *  them, in one undo step. */
+  function setBranchVisibility(rootIds: Iterable<EntityId>, cutoff: SubordinateCutoff) {
+    const { show, hide } = partitionBranchVisibility(state.unitMap, rootIds, cutoff);
+    const hideIds = changedVisibility(hide, true);
+    applyVisibility(hideIds, changedVisibility(show, false), {
+      label: "setBranchVisibility",
+      value: hideIds.join(","),
+    });
   }
 
   function updateUnitProperties(
@@ -1351,6 +1379,7 @@ export function useUnitManipulations(store: NewScenarioStore) {
     isUnitLocked,
     isUnitHidden,
     setUnitsHidden,
+    setBranchVisibility,
     updateUnitState,
     batchUpdateUnit,
     batchUpdateUnitStyle,

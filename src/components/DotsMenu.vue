@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from "vue";
+import { type HTMLAttributes, type MaybeRefOrGetter, toValue } from "vue";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
-import { type MenuItemData } from "@/components/types";
+import type { MenuEntry, MenuItemData } from "@/components/types";
 import { cn } from "@/lib/utils";
+import DotsMenuEntries from "./DotsMenuEntries.vue";
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
-    items: MenuItemData[];
+    /** A getter is only called while the menu is open, so rows can build items lazily. */
+    items: MaybeRefOrGetter<MenuEntry[]>;
     sideOffset?: number;
     buttonClass?: HTMLAttributes["class"];
     triggerClass?: HTMLAttributes["class"];
@@ -27,7 +28,7 @@ const props = withDefaults(
 );
 const emit = defineEmits(["action"]);
 
-const onItemClick = (item: MenuItemData<string | Function>) => {
+const onItemClick = (item: MenuItemData) => {
   if (item.action instanceof Function) item.action();
   else emit("action", item.action);
 };
@@ -48,13 +49,7 @@ const onItemClick = (item: MenuItemData<string | Function>) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent :side-offset="sideOffset" align="end">
-        <DropdownMenuItem
-          v-for="item in items"
-          @select="onItemClick(item)"
-          :disabled="item.disabled"
-        >
-          <span>{{ item.label }}</span>
-        </DropdownMenuItem>
+        <DotsMenuEntries :entries="toValue(items)" @select="onItemClick" />
       </DropdownMenuContent>
     </DropdownMenu>
   </div>

@@ -102,8 +102,8 @@ duplicate, move up/down, hide/show on map, lock/unlock and delete.
 
 - You cannot drag or change locked units and groups.
 - _Hide on map_ removes the unit from the map, the range rings, the unit tracks and the GeoJSON/KML exports. The unit
-  stays in the ORBAT, but it is dimmed. Hide a unit does not hide its subordinates. To hide them also, select _Hide on
-  map (with subordinates)_. The scenario keeps this setting.
+  stays in the ORBAT, but it is dimmed. Hide a unit does not hide its subordinates. To hide them also, select
+  _Branch_ > _Hide on map_. The scenario keeps this setting.
 
 ### Layers tab
 
