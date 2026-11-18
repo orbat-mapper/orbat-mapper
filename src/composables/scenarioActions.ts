@@ -26,11 +26,11 @@ const HIDE_ACTIONS: Partial<
   [UnitActions.ShowWithSubordinates]: { hidden: false, withSubordinates: true },
 };
 
-/** Map-visibility entries for a unit's whole branch; empty for units without subordinates. */
-export function hideBranchMenuItems(unit: {
-  subUnits?: unknown[];
-}): MenuItemData<UnitAction>[] {
-  if (!unit.subUnits?.length) return [];
+/** Map-visibility entries for a unit's whole branch; empty when there are no subordinates. */
+export function hideBranchMenuItems(
+  hasSubordinates: boolean,
+): MenuItemData<UnitAction>[] {
+  if (!hasSubordinates) return [];
   return [
     { label: "Hide on map", action: UnitActions.HideWithSubordinates },
     { label: "Show on map", action: UnitActions.ShowWithSubordinates },
@@ -265,7 +265,7 @@ export function useUnitMenu(
               { label: "Expand all", action: UnitActions.Expand },
               { label: "Collapse all", action: UnitActions.Collapse },
               { separator: true },
-              ...hideBranchMenuItems(unit),
+              ...hideBranchMenuItems(hasChildren),
             ],
           },
         ]

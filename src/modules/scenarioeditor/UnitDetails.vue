@@ -9,8 +9,6 @@ import {
 } from "vue";
 import {
   IconCrosshairsGps,
-  IconEye,
-  IconEyeOff,
   IconFileTreeOutline as TreeLocateIcon,
   IconLockOutline,
   IconLockOpenVariantOutline,
@@ -32,6 +30,7 @@ import { activeScenarioKey, searchActionsKey, sidcModalKey } from "@/components/
 import type { MediaUpdate, NUnit, UnitUpdate } from "@/types/internalModels";
 import { formatPosition } from "@/geo/utils";
 import IconButton from "@/components/IconButton.vue";
+import UnitVisibilityButton from "./UnitVisibilityButton.vue";
 import UnitLocateButton from "./UnitLocateButton.vue";
 import { useGetMapLocation } from "@/composables/geoMapLocation";
 
@@ -217,8 +216,15 @@ const unitMenuItems = computed((): MenuEntry[] => [
   lockMenuItem.value,
 ]);
 
+// In multi-select, offer branch actions if any selected unit has subordinates
+const hasSubordinates = computed(() =>
+  isMultiMode.value
+    ? selectedUnits.value.some((u) => u.subUnits?.length)
+    : Boolean(unit.value.subUnits?.length),
+);
+
 const branchMenuEntries = computed((): MenuEntry[] => {
-  const items = hideBranchMenuItems(unit.value);
+  const items = hideBranchMenuItems(hasSubordinates.value);
   if (!items.length) return [];
   const children = items.map(({ label, action }) => ({
     label,
@@ -656,17 +662,12 @@ function locateInOrbat() {
           >
             <TreeLocateIcon class="size-5" aria-hidden="true" />
           </IconButton>
-          <!-- aria-pressed:bg-accent keeps hidden and locked states visible at a glance -->
-          <IconButton
-            size="icon-sm"
-            class="aria-pressed:bg-accent"
-            :tooltip="isHiddenOnMap ? 'Hidden on map. Click to show' : 'Hide on map'"
-            :aria-pressed="isHiddenOnMap"
-            @click="actionWrapper(isHiddenOnMap ? UnitActions.Show : UnitActions.Hide)"
-          >
-            <IconEyeOff v-if="isHiddenOnMap" class="size-5" aria-hidden="true" />
-            <IconEye v-else class="size-5" aria-hidden="true" />
-          </IconButton>
+          <UnitVisibilityButton
+            :hidden="isHiddenOnMap"
+            :has-subordinates="hasSubordinates"
+            @action="actionWrapper"
+          />
+          <!-- aria-pressed:bg-accent keeps the locked state visible at a glance -->
           <IconButton
             size="icon-sm"
             v-if="isMultiMode"
