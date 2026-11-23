@@ -119,14 +119,27 @@ export function updateCurrentUnitState(
   return true;
 }
 
-function rebuildCurrentUnitState(
-  unit: NUnit,
-  timestamp: number,
-  options: UpdateUnitStateOptions,
-) {
-  // Reads go to the raw unit, which is much faster for a reactive unit. Writes go
-  // through `unit`, so that they still trigger.
-  const rawUnit = toRaw(unit);
+/**
+ * The state of `unit` at `timestamp`: its location, which may be interpolated along a
+ * leg, symbol, status and resources.
+ *
+ * Pure: it reads the unit's base values and state entries and changes nothing, so it
+ * can answer questions about any time without moving the scenario clock or touching
+ * the display cache in `unit._state`.
+ */
+export function unitStateAt(unit: NUnit, timestamp: number): CurrentState | null {
+  return computeUnitStateAt(toRaw(unit), timestamp).state;
+}
+
+type UnitStateAt = {
+  state: CurrentState | null;
+  /** Start of the span in which `state` stays the same. */
+  from: number;
+  /** End (exclusive) of that span. Equal to `from` for an interpolated state. */
+  until: number;
+};
+
+function computeUnitStateAt(rawUnit: NUnit, timestamp: number): UnitStateAt {
   let from = Number.NEGATIVE_INFINITY;
   let until = Number.POSITIVE_INFINITY;
   let currentState = createInitialState(rawUnit);
@@ -182,6 +195,18 @@ function rebuildCurrentUnitState(
       break;
     }
   }
+  return { state: currentState, from, until };
+}
+
+function rebuildCurrentUnitState(
+  unit: NUnit,
+  timestamp: number,
+  options: UpdateUnitStateOptions,
+) {
+  // Reads go to the raw unit, which is much faster for a reactive unit. Writes go
+  // through `unit`, so that they still trigger.
+  const rawUnit = toRaw(unit);
+  const { state: currentState, from, until } = computeUnitStateAt(rawUnit, timestamp);
   if (
     currentState?.sidc !== rawUnit._state?.sidc ||
     currentState?.symbolRotation !== rawUnit._state?.symbolRotation ||

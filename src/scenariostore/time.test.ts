@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createInitialState, updateCurrentUnitState, useScenarioTime } from "./time";
-import type { NUnit } from "@/types/internalModels";
+import {
+  createInitialState,
+  unitStateAt,
+  updateCurrentUnitState,
+  useScenarioTime,
+} from "./time";
+import type { NState, NUnit } from "@/types/internalModels";
 import { useNewScenarioStore } from "@/scenariostore/newScenarioStore";
 import { useGeo } from "@/scenariostore/geo";
 import { useUnitManipulations } from "@/scenariostore/unitManipulations";
@@ -630,5 +635,39 @@ describe("setCurrentTime with states out of order in the file", () => {
     expect(location()).toEqual([12, 60]);
     time.setCurrentTime(35);
     expect(location()).toEqual([14, 60]);
+  });
+});
+
+describe("unitStateAt", () => {
+  it("interpolates the location between two state entries without touching _state", () => {
+    const unit = createUnit({
+      state: [
+        { id: "a", t: 0, location: [0, 0] },
+        { id: "b", t: 2000, location: [0, 2] },
+      ] as NState[],
+      _state: null,
+    });
+
+    const state = unitStateAt(unit, 1000);
+
+    expect(state?.type).toBe("interpolated");
+    expect(state?.location?.[0]).toBeCloseTo(0, 6);
+    expect(state?.location?.[1]).toBeCloseTo(1, 6);
+    expect(unit._state).toBeNull();
+  });
+
+  it("accumulates supply diffs up to the given time, the same on every call", () => {
+    const unit = createUnit({
+      supplies: [{ id: "fuel", count: 1000 }],
+      state: [
+        { id: "a", t: 100, diff: { supplies: [{ id: "fuel", onHand: -200 }] } },
+        { id: "b", t: 200, diff: { supplies: [{ id: "fuel", onHand: -300 }] } },
+      ] as NState[],
+    });
+
+    expect(unitStateAt(unit, 250)?.supplies?.[0].onHand).toBe(500);
+    expect(unitStateAt(unit, 250)?.supplies?.[0].onHand).toBe(500);
+    expect(unitStateAt(unit, 150)?.supplies?.[0].onHand).toBe(800);
+    expect(unit.supplies?.[0].onHand).toBeUndefined();
   });
 });
