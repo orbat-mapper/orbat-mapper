@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Added Hide subordinates below to the unit menu in the ORBAT panel, the unit details menu and a new menu next to the eye button in the unit details toolbar. It keeps a unit's branch on the map down to a number of levels, a smallest echelon or both, and hides the rest as one undo step. It works on several selected units at once, and Show on map in the same menu brings the whole branch back.
 - Added a None choice to the Atlas Elevation bands, which leaves all ground white, and a Smallest place choice (Towns, Villages or Hamlets) to the Atlas options. Smallest place belongs to this device.
 - Added the Curly Bracket to the control measures. It is drawn as a filled, tapered shape by default; turn off Filled in the Style tab to draw it as a single line with a stroke width.
+- Added a Fill color section to the Map symbol tab of the unit details panel. It sets the symbol fill color of one or several selected units as one undo step, and leaves each unit's symbol and reinforced/reduced status alone. Clear custom colors, also in the unit details menu, removes the units' own fill colors so they use their side or side group color again.
 
 ### Changed
 

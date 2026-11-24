@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
-import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import BufferedColorPicker from "@/components/BufferedColorPicker.vue";
 
 /**
  * A stand-in for the real picker with the one property that matters here: it emits the
@@ -18,11 +18,11 @@ vi.mock("@/components/PopoverColorPicker.vue", () => ({
 }));
 
 function mountPicker(modelValue = "#00ff00") {
-  const wrapper = mount(ControlMeasureColorPicker, { props: { modelValue } });
+  const wrapper = mount(BufferedColorPicker, { props: { modelValue } });
   return { wrapper, picker: wrapper.findComponent({ name: "PopoverColorPicker" }) };
 }
 
-describe("ControlMeasureColorPicker", () => {
+describe("BufferedColorPicker", () => {
   it("writes nothing while the picker is being dragged", async () => {
     const { wrapper, picker } = mountPicker();
     for (const color of ["#010101", "#020202", "#030303"]) {

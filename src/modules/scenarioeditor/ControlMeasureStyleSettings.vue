@@ -39,7 +39,7 @@ import type {
   TacticalGraphicStatus,
 } from "@/types/scenarioLayerItems";
 import { resolveControlMeasureColorFrom } from "@/geo/controlMeasures";
-import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import BufferedColorPicker from "@/components/BufferedColorPicker.vue";
 import ControlMeasureStrokeWidthChoices from "@/modules/scenarioeditor/ControlMeasureStrokeWidthChoices.vue";
 import {
   CONTROL_MEASURE_FILL_PATTERNS,
@@ -315,7 +315,7 @@ const filledModel = computed({
   <template v-if="showColor">
     <div class="self-center">Color</div>
     <div class="flex items-center gap-1">
-      <ControlMeasureColorPicker
+      <BufferedColorPicker
         :model-value="resolvedColor"
         @update:model-value="updateStyle({ color: $event })"
       />

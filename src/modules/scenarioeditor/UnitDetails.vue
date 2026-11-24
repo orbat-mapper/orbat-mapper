@@ -62,6 +62,7 @@ import DetailsPanelHeader from "@/modules/scenarioeditor/DetailsPanelHeader.vue"
 import PanelTitle from "@/modules/scenarioeditor/PanelTitle.vue";
 import UnitSelectionSummary from "@/modules/scenarioeditor/UnitSelectionSummary.vue";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
+import { useUnitFillColor } from "@/composables/unitFillColor";
 import { useTimeFormatStore } from "@/stores/timeFormatStore";
 import { ChevronDown } from "@lucide/vue";
 import {
@@ -187,11 +188,21 @@ const recordingStore = useRecordingStore();
 const unitSettings = useUnitSettingsStore();
 const { getModalSidc } = injectStrict(sidcModalKey);
 
+const { hasCustomFillColor, setFillColor } = useUnitFillColor({
+  units: selectedUnits,
+  forEachEditableUnit,
+});
+
 const unitMenuItems = computed((): MenuEntry[] => [
   {
     label: "Change symbol",
     action: () => handleChangeSymbol(),
     disabled: isLocked.value,
+  },
+  {
+    label: isMultiMode.value ? "Clear custom colors" : "Clear custom color",
+    action: () => setFillColor(null),
+    disabled: isLocked.value || !hasCustomFillColor.value,
   },
   ...(isMultiMode.value
     ? []
