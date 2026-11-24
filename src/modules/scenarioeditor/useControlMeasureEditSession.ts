@@ -33,6 +33,7 @@ import type { FlowArrowOptions } from "@orbat-mapper/control-measures";
 import { isEqual } from "es-toolkit";
 import { getSizeAnchor, isTacticalDrawAbortError } from "@orbat-mapper/tactical-draw";
 import type {
+  CollocationEditSession,
   EditMode,
   EditSession,
   GraphicEditSession,
@@ -166,7 +167,8 @@ function asControlMeasureEditSession(
     | GraphicEditSession<PointSymbol>
     | GraphicEditSession<ImageGraphic>
     | GraphicEditSession<Marker>
-    | GraphicEditSession<NoteGraphic>,
+    | GraphicEditSession<NoteGraphic>
+    | CollocationEditSession,
 ): EditSession | null {
   return "controlPoints" in live ? live : null;
 }

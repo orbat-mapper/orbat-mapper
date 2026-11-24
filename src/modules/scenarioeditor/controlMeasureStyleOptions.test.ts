@@ -10,15 +10,16 @@ import {
   GENERIC_GRAPHICS_ENTITY,
   canAuthorFillPattern,
   canAuthorStrokeWidth,
+  canFillControlMeasureKind,
   fillPatternLabel,
   isStyleableControlMeasureKind,
   newControlMeasureDefaults,
 } from "@/modules/scenarioeditor/controlMeasureStyleOptions";
 
 describe("the styling gate", () => {
-  it("covers exactly the 10 Generic Graphics kinds", () => {
+  it("covers exactly the 11 Generic Graphics kinds", () => {
     const styleable = CONTROL_MEASURE_IDS.filter(isStyleableControlMeasureKind);
-    expect(styleable).toHaveLength(10);
+    expect(styleable).toHaveLength(11);
     expect(styleable).toEqual(
       CONTROL_MEASURE_IDS.filter(
         (id) => CONTROL_MEASURE_METADATA[id].entity === GENERIC_GRAPHICS_ENTITY,
@@ -45,23 +46,39 @@ describe("the styling gate", () => {
       "circle",
       "sector",
     ]);
-    // The Style tab's Filled switch owns `filled`, so no kind with the param can
-    // offer it twice.
-    for (const id of CONTROL_MEASURE_IDS) {
-      const hasFilled = CONTROL_MEASURE_METADATA[id].params?.some(
-        (p) => p.key === "filled",
-      );
-      if (hasFilled) expect(canAuthorFillPattern(id)).toBe(true);
+    // Every fill-pattern kind also gets the Filled switch the pattern depends on.
+    for (const id of CONTROL_MEASURE_IDS.filter(canAuthorFillPattern)) {
+      expect(canFillControlMeasureKind(id)).toBe(true);
     }
     // Styleable, but its generator pins the pattern, so the control would be inert.
     expect(canAuthorFillPattern("classic-arrow")).toBe(false);
     expect(canAuthorFillPattern("line")).toBe(false);
   });
 
+  it("offers the Filled switch wherever the kind declares `filled`", () => {
+    // The Style tab owns `filled`, so it must show the switch for every kind with the
+    // param, including one whose fill pattern is fixed.
+    for (const id of CONTROL_MEASURE_IDS) {
+      const hasFilled = CONTROL_MEASURE_METADATA[id].params?.some(
+        (p) => p.key === "filled",
+      );
+      expect(canFillControlMeasureKind(id)).toBe(Boolean(hasFilled));
+    }
+    expect(canFillControlMeasureKind("curly-bracket")).toBe(true);
+    expect(canAuthorFillPattern("curly-bracket")).toBe(false);
+  });
+
   it("offers stroke width exactly where the registry paints a stroke", () => {
     expect(canAuthorStrokeWidth("phase-line")).toBe(true);
     expect(canAuthorStrokeWidth("polygon")).toBe(true);
     expect(canAuthorStrokeWidth("text")).toBe(false);
+  });
+
+  it("reads the options for a kind whose stroke depends on them", () => {
+    // A Curly Bracket is filled by default and then paints no stroke.
+    expect(canAuthorStrokeWidth("curly-bracket")).toBe(false);
+    expect(canAuthorStrokeWidth("curly-bracket", { filled: true })).toBe(false);
+    expect(canAuthorStrokeWidth("curly-bracket", { filled: false })).toBe(true);
   });
 });
 
@@ -133,6 +150,12 @@ describe("newControlMeasureDefaults", () => {
       expect(result.options).toEqual({ filled: true });
     },
   );
+
+  it("carries sticky filledness onto a Curly Bracket", () => {
+    expect(
+      newControlMeasureDefaults({ options: { filled: false } }, "curly-bracket").options,
+    ).toEqual({ filled: false });
+  });
 
   it("does not carry filledness onto a kind that cannot be filled", () => {
     expect(

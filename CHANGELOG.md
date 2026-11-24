@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Added a Feature tooltip language setting to Map settings. With a language code such as `en`, the feature hover tooltip shows the feature's `name:en` tag when it has one, and otherwise its name. It is empty by default, and the choice belongs to this device.
 - Added Hide subordinates below to the unit menu in the ORBAT panel, the unit details menu and a new menu next to the eye button in the unit details toolbar. It keeps a unit's branch on the map down to a number of levels, a smallest echelon or both, and hides the rest as one undo step. It works on several selected units at once, and Show on map in the same menu brings the whole branch back.
 - Added a None choice to the Atlas Elevation bands, which leaves all ground white, and a Smallest place choice (Towns, Villages or Hamlets) to the Atlas options. Smallest place belongs to this device.
+- Added the Curly Bracket to the control measures. It is drawn as a filled, tapered shape by default; turn off Filled in the Style tab to draw it as a single line with a stroke width.
 
 ### Changed
 

@@ -43,20 +43,20 @@ importers:
         specifier: ^1.73.0
         version: 1.73.0(vue@3.5.45(typescript@5.9.3))
       '@orbat-mapper/control-measures':
-        specifier: 0.46.0
-        version: 0.46.0
+        specifier: 0.47.0
+        version: 0.47.0
       '@orbat-mapper/convert-symbology':
         specifier: ^2.0.0
         version: 2.0.0
       '@orbat-mapper/point-symbols':
-        specifier: 0.2.33
-        version: 0.2.33(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: 0.3.2
+        version: 0.3.2(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw':
-        specifier: 0.33.0
-        version: 0.33.0(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: 0.36.2
+        version: 0.36.2(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@orbat-mapper/tactical-draw-adapter-maplibre':
-        specifier: 0.14.4
-        version: 0.14.4(maplibre-gl@6.18.0)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+        specifier: 0.16.0
+        version: 0.16.0(maplibre-gl@6.18.0)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       '@panzoom/panzoom':
         specifier: ^4.6.2
         version: 4.6.2
@@ -1142,24 +1142,24 @@ packages:
   '@one-ini/wasm@0.2.1':
     resolution: {integrity: sha512-TUqERXGNTifZ9y2g3wPxQrw3HpHv/02DsW3D90T9x0hhonrL1ZqpSmNrU2XkoIq0fP1N6gZfVQzy2Fw1ZvGBNg==}
 
-  '@orbat-mapper/control-measures@0.46.0':
-    resolution: {integrity: sha512-DpfVy3dHhpUnTpwoKgCKYFOxXer2yW9uNAxGQf6JWpz9qj+4uUellDDO8dO93uneRZvs9M59NFmAFmMoXFbIqg==}
+  '@orbat-mapper/control-measures@0.47.0':
+    resolution: {integrity: sha512-vfgdGBRKO1EdcESXcPiRj/Ml6KKZfkqiZZnkDwEYQpFtSFQ+F8TCf/kfpXx2gwXUOLG393Fv4j8gqy1IJ7aCVg==}
 
   '@orbat-mapper/convert-symbology@2.0.0':
     resolution: {integrity: sha512-TkVgQ8ymPxqVxP3dekzrJ4cB1G1mtnamYsxT/c07nu4DfSCf9TFGle3tPhZmlnfX/JxdT4iK148A2OXz14dJYw==}
 
-  '@orbat-mapper/point-symbols@0.2.33':
-    resolution: {integrity: sha512-EL2tAqMBas7SDsTt2dhhGw50AGuIFWfivlFF8VClL3Dh0z/7iTSpzvKFOKN4BPESCqxs02TJW1iE2JonNjV9Xg==}
+  '@orbat-mapper/point-symbols@0.3.2':
+    resolution: {integrity: sha512-AC0+K6BRzBwQmlRA+UvJhOzjn4t5nuyCCvBN9FoZk8Y1M+15M7mUAaPyeJJThFIIfl02EnGFDvUsDCqm6Xc2cw==}
     peerDependencies:
       milsymbol: '>=3.0.4 <4.0.0'
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.14.4':
-    resolution: {integrity: sha512-WVgx8A0JXG3MTBlI/zhkntGtnYKdtPvYuunXcZDoIC4LPOJpngpCjoy6UVOwn/dENcof/rPcuXH5ZSzOldwBOw==}
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.16.0':
+    resolution: {integrity: sha512-n3HkytFpUUtC6lq8hXRArkZciGeBOXz/8g9vOYNcGwH0e/xDUmCP+rDP4jBKKB4uZZN+B270QGFrkCwxLUwp4Q==}
     peerDependencies:
       maplibre-gl: '>=5.8.0 <7.0.0'
 
-  '@orbat-mapper/tactical-draw@0.33.0':
-    resolution: {integrity: sha512-geFsoYI5k51FI4EDkgzpsSTyiViM3Bk6NQQHno5VI72CIM8w8aTzYV4KNMcSI8Mzo1nAO5Uz4aGBzEc23sHzxA==}
+  '@orbat-mapper/tactical-draw@0.36.2':
+    resolution: {integrity: sha512-o9TSZRFim8sOAiUD6yV+598SROPujtffR6dcKoX/yy8afsYD7A14EuIUAAMuLVRe3upHSyuc5zj2LySDMj4HYA==}
     peerDependencies:
       vitest: '>=4.0.0'
     peerDependenciesMeta:
@@ -5163,31 +5163,31 @@ snapshots:
 
   '@one-ini/wasm@0.2.1': {}
 
-  '@orbat-mapper/control-measures@0.46.0':
+  '@orbat-mapper/control-measures@0.47.0':
     dependencies:
       polygon-clipping: 0.15.7
 
   '@orbat-mapper/convert-symbology@2.0.0': {}
 
-  '@orbat-mapper/point-symbols@0.2.33(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/point-symbols@0.3.2(milsymbol@3.0.4)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.46.0
-      '@orbat-mapper/tactical-draw': 0.33.0(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+      '@orbat-mapper/control-measures': 0.47.0
+      '@orbat-mapper/tactical-draw': 0.36.2(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       milsymbol: 3.0.4
     transitivePeerDependencies:
       - vitest
 
-  '@orbat-mapper/tactical-draw-adapter-maplibre@0.14.4(maplibre-gl@6.18.0)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw-adapter-maplibre@0.16.0(maplibre-gl@6.18.0)(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.46.0
-      '@orbat-mapper/tactical-draw': 0.33.0(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
+      '@orbat-mapper/control-measures': 0.47.0
+      '@orbat-mapper/tactical-draw': 0.36.2(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       maplibre-gl: 6.18.0
     transitivePeerDependencies:
       - vitest
 
-  '@orbat-mapper/tactical-draw@0.33.0(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
+  '@orbat-mapper/tactical-draw@0.36.2(vitest@4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))':
     dependencies:
-      '@orbat-mapper/control-measures': 0.46.0
+      '@orbat-mapper/control-measures': 0.47.0
     optionalDependencies:
       vitest: 4.1.12(@types/node@25.9.9)(jsdom@27.4.0)(vite@8.3.8(@types/node@25.9.9)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
 
