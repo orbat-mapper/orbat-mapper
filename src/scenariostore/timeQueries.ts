@@ -1,8 +1,8 @@
-import type { MultiPolygon, Polygon, Position } from "geojson";
-import { booleanPointInPolygon, distance, length, lineString } from "@turf/turf";
+import type { MultiPolygon, Polygon } from "geojson";
+import { booleanPointInPolygon, distance } from "@turf/turf";
 import type { NUnit } from "@/types/internalModels";
 import type { CurrentState } from "@/types/scenarioModels";
-import { unitStateAt } from "./time";
+import { unitLegs, unitStateAt, viaPointTimes } from "./time";
 
 /**
  * Questions about where units are at a given time, answered without moving the scenario
@@ -56,8 +56,10 @@ export type ClosestApproachOptions = {
  * if there are none.
  *
  * The interval is split wherever either unit starts or ends a leg or turns at a via
- * point. Between those times both units move at constant speed along a straight line,
- * so the distance has a single minimum there, which a golden-section search finds.
+ * point. Between those times both units move at constant speed along one great-circle
+ * segment each. For legs much shorter than the earth's radius, the distance then has a
+ * single minimum in each span, which a golden-section search finds to within
+ * `toleranceMs`. The result is a close approximation, not an exact solution.
  */
 export function closestApproach(
   a: NUnit,
@@ -72,7 +74,7 @@ export function closestApproach(
     .sort((x, y) => x - y);
 
   let best: ClosestApproach | undefined;
-  const consider = (time: number) => {
+  const measureAndKeepBest = (time: number) => {
     const d = distanceAt(a, b, time);
     if (d !== undefined && (!best || d < best.distanceMeters)) {
       best = { distanceMeters: d, time };
@@ -80,14 +82,15 @@ export function closestApproach(
     return d;
   };
 
-  times.forEach((t) => consider(t));
+  times.forEach((t) => measureAndKeepBest(t));
   for (let i = 0; i < times.length - 1; i++) {
     const lo = times[i];
     const hi = times[i + 1];
     // Whether the units have a location only changes at state entries, which are all
     // breakpoints, so the middle of the span tells for the whole open span.
-    if (hi - lo <= toleranceMs || consider((lo + hi) / 2) === undefined) continue;
-    goldenSectionSearch(lo, hi, toleranceMs, consider);
+    if (hi - lo <= toleranceMs || measureAndKeepBest((lo + hi) / 2) === undefined)
+      continue;
+    goldenSectionSearch(lo, hi, toleranceMs, measureAndKeepBest);
   }
   return best;
 }
@@ -130,35 +133,13 @@ function goldenSectionSearch(
 
 /**
  * Times at which a unit's movement can change direction or speed: its state entries,
- * the start of each leg and the times it passes each via point.
- *
- * Extra times are harmless, they only split the search into more spans. This mirrors
- * how `unitStateAt` interpolates: a leg runs from the previous location to the entry's
- * location through its via points, at one speed, starting at `viaStartTime` or at the
- * time of the previous location.
+ * the start of each leg and the times it passes each via point. Extra times are
+ * harmless, they only split the search into more spans.
  */
 function trackBreakpoints(unit: NUnit): number[] {
-  const times: number[] = [];
-  let lastLocation: Position | undefined = unit.location;
-  let lastLocationT: number | undefined;
-  for (const entry of unit.state ?? []) {
-    times.push(entry.t);
-    if (entry.viaStartTime !== undefined) times.push(entry.viaStartTime);
-    if (entry.location === undefined) continue;
-    const legStart = entry.viaStartTime ?? lastLocationT;
-    if (entry.via?.length && lastLocation && entry.location && legStart !== undefined) {
-      const path = [lastLocation, ...entry.via, entry.location];
-      const total = length(lineString(path));
-      if (total > 0) {
-        let covered = 0;
-        for (let i = 1; i < path.length - 1; i++) {
-          covered += length(lineString([path[i - 1], path[i]]));
-          times.push(legStart + (covered / total) * (entry.t - legStart));
-        }
-      }
-    }
-    lastLocation = entry.location ?? undefined;
-    lastLocationT = entry.t;
+  const times = (unit.state ?? []).map((entry) => entry.t);
+  for (const leg of unitLegs(unit)) {
+    times.push(leg.start, leg.end, ...viaPointTimes(leg));
   }
   return times;
 }

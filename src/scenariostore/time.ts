@@ -3,9 +3,11 @@ import type { CurrentState, ScenarioEvent } from "@/types/scenarioModels";
 import type {
   NScenarioEvent,
   NGeometryLayerItem,
+  NState,
   NUnit,
   ScenarioEventUpdate,
 } from "@/types/internalModels";
+import type { Position } from "geojson";
 import dayjs, { type ManipulateType } from "dayjs";
 import { computed, toRaw } from "vue";
 import turfLength from "@turf/length";
@@ -126,12 +128,15 @@ export function updateCurrentUnitState(
  * Pure: it reads the unit's base values and state entries and changes nothing, so it
  * can answer questions about any time without moving the scenario clock or touching
  * the display cache in `unit._state`.
+ *
+ * The result shares arrays such as `location` and `via` with the unit's state entries.
+ * Treat it as read-only: changing it changes the scenario.
  */
 export function unitStateAt(unit: NUnit, timestamp: number): CurrentState | null {
   return computeUnitStateAt(toRaw(unit), timestamp).state;
 }
 
-type UnitStateAt = {
+type UnitStateSpan = {
   state: CurrentState | null;
   /** Start of the span in which `state` stays the same. */
   from: number;
@@ -139,13 +144,85 @@ type UnitStateAt = {
   until: number;
 };
 
-function computeUnitStateAt(rawUnit: NUnit, timestamp: number): UnitStateAt {
+/**
+ * A stretch of movement between two locations, which a unit covers at one speed along
+ * the great-circle segments of `path`.
+ */
+export type UnitLeg = {
+  /** When the unit leaves the start of `path`. */
+  start: number;
+  /** When the unit reaches the end of `path`. */
+  end: number;
+  /** The start location, the leg end's via points and its location. */
+  path: Position[];
+};
+
+/**
+ * The leg that ends at the state entry `legEnd`, starting from `fromLocation`, the
+ * location the unit has before it, which an entry at `fromT` set.
+ *
+ * There is no leg when either end has no location, when `legEnd` is marked
+ * `interpolate: false`, or when there is no start time: the base location has no time,
+ * so a leg from it only exists when `legEnd` gives a `viaStartTime`.
+ */
+function legEndingAt(
+  fromLocation: Position | null | undefined,
+  fromT: number | undefined,
+  legEnd: NState,
+): UnitLeg | undefined {
+  const start = legEnd.viaStartTime ?? fromT;
+  if (!fromLocation || !legEnd.location || legEnd.interpolate === false) return undefined;
+  if (start === undefined) return undefined;
+  const path = legEnd.via
+    ? [fromLocation, ...legEnd.via, legEnd.location]
+    : [fromLocation, legEnd.location];
+  return { start, end: legEnd.t, path };
+}
+
+/** Where on `leg` the unit is at `timestamp`, which must be within the leg. */
+function positionOnLeg(leg: UnitLeg, timestamp: number): Position {
+  const line = lineString(leg.path);
+  const averageSpeed = turfLength(line) / (leg.end - leg.start);
+  return turfAlong(line, averageSpeed * (timestamp - leg.start)).geometry.coordinates;
+}
+
+/** When the unit passes each via point of `leg`. */
+export function viaPointTimes(leg: UnitLeg): number[] {
+  const total = turfLength(lineString(leg.path));
+  if (total === 0) return [];
+  const times: number[] = [];
+  let covered = 0;
+  for (let i = 1; i < leg.path.length - 1; i++) {
+    covered += turfLength(lineString([leg.path[i - 1], leg.path[i]]));
+    times.push(leg.start + (covered / total) * (leg.end - leg.start));
+  }
+  return times;
+}
+
+/** Every leg of the unit's movement, in time order. */
+export function unitLegs(unit: NUnit): UnitLeg[] {
+  const rawUnit = toRaw(unit);
+  const legs: UnitLeg[] = [];
+  let location: Position | null | undefined = rawUnit.location;
+  let locationT: number | undefined;
+  for (const entry of rawUnit.state ?? []) {
+    // As in `computeUnitStateAt`, only entries that set or remove the location start
+    // or end a leg.
+    if (entry.location === undefined) continue;
+    const leg = legEndingAt(location, locationT, entry);
+    if (leg) legs.push(leg);
+    location = entry.location;
+    locationT = entry.t;
+  }
+  return legs;
+}
+
+function computeUnitStateAt(rawUnit: NUnit, timestamp: number): UnitStateSpan {
   let from = Number.NEGATIVE_INFINITY;
   let until = Number.POSITIVE_INFINITY;
   let currentState = createInitialState(rawUnit);
   // Time of the entry that set the current location. Entries without a location, such
-  // as a status change, do not start a new leg. The base location has no time, so a
-  // leg from it only moves when the next location gives a `viaStartTime`.
+  // as a status change, do not start a new leg.
   let locationT: number | undefined;
   const entries = rawUnit.state ?? [];
   for (const [index, s] of entries.entries()) {
@@ -163,25 +240,12 @@ function computeUnitStateAt(rawUnit: NUnit, timestamp: number): UnitStateAt {
     } else {
       // The leg ends at the next entry that sets or removes the location.
       const legEnd = entries.slice(index).find((entry) => entry.location !== undefined);
-      const legStart = legEnd?.viaStartTime ?? locationT;
-      if (
-        currentState?.location &&
-        legEnd?.location &&
-        !(legEnd.interpolate === false) &&
-        legStart !== undefined &&
-        legStart <= timestamp
-      ) {
-        const n = lineString(
-          legEnd.via
-            ? [currentState.location, ...legEnd.via, legEnd.location]
-            : [currentState.location, legEnd.location],
-        );
-        const averageSpeed = turfLength(n) / (legEnd.t - legStart);
-        const p = turfAlong(n, averageSpeed * (timestamp - legStart));
+      const leg = legEnd && legEndingAt(currentState?.location, locationT, legEnd);
+      if (leg && leg.start <= timestamp) {
         currentState = {
           ...currentState,
           t: timestamp,
-          location: p.geometry.coordinates,
+          location: positionOnLeg(leg, timestamp),
           type: "interpolated",
         };
         // Interpolated states change with every timestamp.
