@@ -1,5 +1,5 @@
-import { effectScope, type Ref } from "vue";
-import { tryOnScopeDispose, useLocalStorage } from "@vueuse/core";
+import type { Ref } from "vue";
+import { useLocalStorage } from "@vueuse/core";
 import { klona } from "klona";
 import type { Exporter } from "./types";
 
@@ -34,27 +34,22 @@ function readLegacySettings(): unknown {
  * with no saved settings yet starts from the old shared settings, then its defaults.
  * Settings added to a format later get their default value.
  *
- * Call it in a component's setup. A format's settings are loaded the first time they are
- * asked for, and stop syncing with local storage when the component unmounts.
+ * Call it in a component's setup: the settings stop syncing with local storage when the
+ * component unmounts.
  */
-export function useExporterSettings() {
-  // Formats are loaded lazily, after setup, so their watchers and storage listeners
-  // live in a scope of their own, which ends with the component's.
-  const scope = effectScope();
-  tryOnScopeDispose(() => scope.stop());
-  const byFormat = new Map<string, Ref<object>>();
+export function useExporterSettings(exporters: readonly Exporter<object>[]) {
+  const legacy = readLegacySettings();
+  const byFormat = new Map(
+    exporters.map((exporter) => [
+      exporter.id,
+      useLocalStorage<object>(
+        `${LEGACY_STORAGE_KEY}.${exporter.id}`,
+        settingsFromLegacy(exporter.defaultSettings(), legacy),
+        { mergeDefaults: true },
+      ),
+    ]),
+  );
   return function settingsFor<S extends object>(exporter: Exporter<S>): Ref<S> {
-    let settings = byFormat.get(exporter.id);
-    if (!settings) {
-      settings = scope.run(() =>
-        useLocalStorage<object>(
-          `${LEGACY_STORAGE_KEY}.${exporter.id}`,
-          settingsFromLegacy(exporter.defaultSettings(), readLegacySettings()),
-          { mergeDefaults: true },
-        ),
-      )!;
-      byFormat.set(exporter.id, settings);
-    }
-    return settings as Ref<S>;
+    return byFormat.get(exporter.id) as Ref<S>;
   };
 }

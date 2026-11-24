@@ -16,10 +16,6 @@ export const useImportStore = defineStore("import", {
     }) as unknown as ImportState,
 });
 
-export interface ExportSettings {
-  keepOpen: boolean;
-  currentFormat: ExportFormat;
-}
 export const useExportStore = defineStore("exportStore", {
   state() {
     return {

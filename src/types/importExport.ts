@@ -4,15 +4,7 @@ import type { ImportedFileInfo } from "@/importexport/fileHandling.ts";
 import type { FeatureCollection } from "geojson";
 
 export type ExportFormat =
-  | "orbatmapper"
-  | "geojson"
-  | "kml"
-  | "kmz"
-  | "msdl"
-  | "xlsx"
-  | "csv"
-  | "milx"
-  | "unitgenerator";
+  "orbatmapper" | "geojson" | "kml" | "kmz" | "xlsx" | "csv" | "milx" | "unitgenerator";
 
 export type ImportFormat =
   | "milx"

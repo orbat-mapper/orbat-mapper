@@ -26,7 +26,7 @@ describe("exporters", () => {
   });
 
   it("falls back to the native format for an unknown saved format", () => {
-    expect(findExporter("msdl").id).toBe("orbatmapper");
+    expect(findExporter("no-such-format").id).toBe("orbatmapper");
     expect(findExporter("csv").id).toBe("csv");
   });
 });

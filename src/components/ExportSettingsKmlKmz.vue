@@ -26,7 +26,6 @@ const fmt = useTimeFormatStore();
 const formattedTime = computed(() =>
   fmt.scenarioFormatter.format(+time.scenarioTime.value),
 );
-const isKml = computed(() => props.format === "kml");
 const isKmz = computed(() => props.format === "kmz");
 
 const { selectedUnitIds } = useSelectedItems();
@@ -103,11 +102,7 @@ function toggleAllEvents() {
         v-model="form.includeFeatures"
         description=""
       />
-      <InputCheckbox
-        label="Use short unit names"
-        v-if="isKml || isKmz"
-        v-model="form.useShortName"
-      />
+      <InputCheckbox label="Use short unit names" v-model="form.useShortName" />
       <InputCheckbox
         v-if="isKmz"
         label="Include unit icons"

@@ -43,7 +43,9 @@ describe("useExporterSettings", () => {
       JSON.stringify({ format: "csv", maxLevels: 5 }),
     );
     const scope = effectScope();
-    const settings = scope.run(() => useExporterSettings()(spatialIllusionsExporter))!;
+    const settings = scope.run(() =>
+      useExporterSettings([spatialIllusionsExporter])(spatialIllusionsExporter),
+    )!;
 
     expect(settings.value).toEqual({ rootUnit: "", maxLevels: 5 });
     settings.value.rootUnit = "unit-1";
@@ -57,9 +59,9 @@ describe("useExporterSettings", () => {
 
   it("stops saving a format's settings once its component is gone", async () => {
     const scope = effectScope();
-    const settingsFor = scope.run(() => useExporterSettings())!;
-    // Loaded after setup, as the export dialog does when the user picks a format.
-    const settings = settingsFor(spatialIllusionsExporter);
+    const settings = scope.run(() =>
+      useExporterSettings([spatialIllusionsExporter])(spatialIllusionsExporter),
+    )!;
     await nextTick();
     scope.stop();
 

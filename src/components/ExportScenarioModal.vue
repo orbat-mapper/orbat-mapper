@@ -37,7 +37,7 @@ const emit = defineEmits(["cancel"]);
 
 const scenario = injectStrict(activeScenarioKey);
 const store = useExportStore();
-const settingsFor = useExporterSettings();
+const settingsFor = useExporterSettings(exporters);
 
 const formatItems: (SelectItem<ExportFormat> & { description: string })[] = exporters.map(
   ({ id, label, description }) => ({ label, value: id, description }),
@@ -51,8 +51,7 @@ const settings = computed({
 });
 
 const { send } = useNotifications();
-const { copy } = useClipboard();
-const justCopied = ref(false);
+const { copy, copied } = useClipboard({ copiedDuring: 2000 });
 
 async function generate(): Promise<ExportFile | undefined> {
   NProgress.start();
@@ -100,8 +99,6 @@ async function onCopyToClipboard() {
   const file = await generate();
   if (typeof file?.content !== "string" || !file.content) return;
   await copy(file.content);
-  justCopied.value = true;
-  setTimeout(() => (justCopied.value = false), 2000);
   send({ message: "Copied to clipboard" });
 }
 
@@ -143,10 +140,10 @@ function onCancel() {
               @click="onCopyToClipboard"
             >
               <component
-                :is="justCopied ? CheckIcon : ClipboardCopyIcon"
+                :is="copied ? CheckIcon : ClipboardCopyIcon"
                 class="mr-1 h-4 w-4"
               />
-              {{ justCopied ? "Copied!" : "Copy" }}
+              {{ copied ? "Copied!" : "Copy" }}
             </Button>
             <Button type="submit" size="sm">Export</Button>
           </template>

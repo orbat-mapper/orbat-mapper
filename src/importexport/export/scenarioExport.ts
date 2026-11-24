@@ -1,5 +1,6 @@
 import { buildRecipientScenario, snapshotSourceAt } from "./recipientScenario";
 import { featureCollection } from "@turf/helpers";
+import type { Position } from "geojson";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { TScenario } from "@/scenariostore";
@@ -7,12 +8,16 @@ import type {
   ColumnMapping,
   CsvSettings,
   GeoJsonSettings,
+  LocationExportFormat,
   OrbatMapperExportSettings,
   XlsxSettings,
 } from "@/types/importExport.ts";
 import { INTERNAL_NAMES } from "@/types/internalModels";
 import { useKmlExport } from "./kmlExport";
 import { useGeoJsonConverter } from "@/importexport/export/geojsonConverter";
+
+export const XLSX_MIME_TYPE =
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
@@ -82,19 +87,21 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return JSON.stringify(featureCollection(combined), stringifyReplacer, 2);
   }
 
-  /** One row per unit of a side, with its location at the current scenario time. */
-  async function unitRows(
-    sideId: string,
-    locationFormat: XlsxSettings["locationFormat"],
-  ): Promise<any[]> {
+  /** A function that writes a location in the chosen format, loaded on first use. */
+  async function locationFormatter(locationFormat: LocationExportFormat) {
     const { formatLocation } = await import("@/importexport/export/locationFormat");
+    return (location: Position | undefined) => formatLocation(location, locationFormat);
+  }
+
+  /** One row per unit of a side, with its location at the current scenario time. */
+  function unitRows(sideId: string, formatLoc: (location?: Position) => unknown): any[] {
     const rows: any[] = [];
-    unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
+    unitActions.walkSide(sideId, (unit, _level, _parent, _sideGroup, side) => {
       rows.push({
         ...unit,
-        location: formatLocation(unit._state?.location || unit.location, locationFormat),
+        location: formatLoc(unit._state?.location || unit.location),
         sideId: side.id,
-        sideName: side?.name,
+        sideName: side.name,
       });
     });
     return rows;
@@ -104,16 +111,15 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     const { xlsxWrite, xlsxUtils } = await import("@/extlib/xlsx-lazy");
     const workbook = xlsxUtils.book_new();
     const sideIds = Object.keys(sideMap);
+    const formatLoc = await locationFormatter(opts.locationFormat);
     if (opts.oneSheetPerSide) {
       for (const sideId of sideIds) {
-        const rows = await unitRows(sideId, opts.locationFormat);
+        const rows = unitRows(sideId, formatLoc);
         const ws = xlsxUtils.json_to_sheet(columnMapper(rows, opts.columns));
         xlsxUtils.book_append_sheet(workbook, ws, sideMap[sideId].name);
       }
     } else {
-      const rows = (
-        await Promise.all(sideIds.map((id) => unitRows(id, opts.locationFormat)))
-      ).flat();
+      const rows = sideIds.flatMap((id) => unitRows(id, formatLoc));
       const ws = xlsxUtils.json_to_sheet(columnMapper(rows, opts.columns));
       xlsxUtils.book_append_sheet(workbook, ws, "Units");
     }
@@ -122,11 +128,8 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
   }
 
   async function generateCsv(opts: CsvSettings): Promise<string> {
-    const rows = (
-      await Promise.all(
-        Object.keys(sideMap).map((id) => unitRows(id, opts.locationFormat)),
-      )
-    ).flat();
+    const formatLoc = await locationFormatter(opts.locationFormat);
+    const rows = Object.keys(sideMap).flatMap((id) => unitRows(id, formatLoc));
     return toCsv(columnMapper(rows, opts.columns), opts.separator || ",");
   }
 
@@ -155,6 +158,3 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     generateOrbatMapper,
   };
 }
-
-export const XLSX_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
