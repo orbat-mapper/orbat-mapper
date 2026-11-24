@@ -14,7 +14,7 @@ import { Field } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import BufferedColorPicker from "@/components/BufferedColorPicker.vue";
 import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 import ControlMeasureEchelonSelect from "@/modules/scenarioeditor/ControlMeasureEchelonSelect.vue";
 import type { TacticalGraphicOptions } from "@/types/scenarioLayerItems";
@@ -133,7 +133,7 @@ function updateText(parameter: Extract<ParamDescriptor, { type: "text" }>, event
         @change="updateNumber(parameter, $event)"
       />
 
-      <ControlMeasureColorPicker
+      <BufferedColorPicker
         v-else-if="parameter.type === 'color'"
         :model-value="String(valueFor(parameter) ?? '')"
         @update:model-value="updateOption(parameter.key, $event)"

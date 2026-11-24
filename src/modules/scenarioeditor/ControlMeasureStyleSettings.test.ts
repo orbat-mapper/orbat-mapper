@@ -7,9 +7,9 @@ import type {
 } from "@orbat-mapper/control-measures";
 import ControlMeasureStyleSettings from "@/modules/scenarioeditor/ControlMeasureStyleSettings.vue";
 
-vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
+vi.mock("@/components/BufferedColorPicker.vue", () => ({
   default: defineComponent({
-    name: "ControlMeasureColorPicker",
+    name: "BufferedColorPicker",
     props: { modelValue: { type: String, default: "" } },
     emits: ["update:modelValue"],
     template: "<div />",
@@ -140,7 +140,7 @@ describe("what it emits", () => {
       measureStyle: { strokeWidth: 3, color: "#000000" },
     });
     await wrapper
-      .findComponent({ name: "ControlMeasureColorPicker" })
+      .findComponent({ name: "BufferedColorPicker" })
       .vm.$emit("update:modelValue", "#ff0000");
     expect(wrapper.emitted("update")).toEqual([
       [{ style: { strokeWidth: 3, color: "#ff0000" } }],

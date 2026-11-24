@@ -4,8 +4,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
 import ControlMeasureExtendedStyleSettings from "@/modules/scenarioeditor/ControlMeasureExtendedStyleSettings.vue";
 
-const ControlMeasureColorPickerStub = defineComponent({
-  name: "ControlMeasureColorPicker",
+const BufferedColorPickerStub = defineComponent({
+  name: "BufferedColorPicker",
   props: ["modelValue"],
   emits: ["update:modelValue"],
   template: "<button data-test='color-picker' />",
@@ -32,7 +32,7 @@ function mountSettings(
 ) {
   return mount(ControlMeasureExtendedStyleSettings, {
     props: { graphicKind, options },
-    global: { stubs: { ControlMeasureColorPicker: ControlMeasureColorPickerStub } },
+    global: { stubs: { BufferedColorPicker: BufferedColorPickerStub } },
   });
 }
 
@@ -112,7 +112,7 @@ describe("ControlMeasureExtendedStyleSettings", () => {
           getResolution: () => 2.5,
           options: { crossAngle: 60 },
         },
-        global: { stubs: { ControlMeasureColorPicker: ControlMeasureColorPickerStub } },
+        global: { stubs: { BufferedColorPicker: BufferedColorPickerStub } },
       });
       expect(wrapper.findAll('[aria-label="Size unit"]')).toHaveLength(1);
       expect(sizeReadouts(wrapper)).toEqual(["80 px"]);

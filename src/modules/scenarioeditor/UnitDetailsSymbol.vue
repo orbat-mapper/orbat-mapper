@@ -19,6 +19,7 @@ import NumberInputGroup from "@/components/NumberInputGroup.vue";
 import { Slider } from "@/components/ui/slider";
 import { useMapSettingsStore } from "@/stores/mapSettingsStore";
 import { useUnitEditTargets } from "@/composables/unitEditTargets";
+import { useUnitFillColor } from "@/composables/unitFillColor";
 import {
   defaultUnitSymbolSize,
   MAX_MAP_SYMBOL_SIZE,
@@ -26,6 +27,8 @@ import {
   unitSymbolSize,
 } from "@/symbology/echelonSize";
 import EchelonSizesDialog from "@/components/EchelonSizesDialog.vue";
+import SymbolFillColorSelect from "@/components/SymbolFillColorSelect.vue";
+import BufferedColorPicker from "@/components/BufferedColorPicker.vue";
 
 interface Props {
   unit: NUnit;
@@ -415,6 +418,14 @@ watch(
   { flush: "sync" },
 );
 
+const {
+  currentFillColor,
+  hasMixedFillColor,
+  hasCustomFillColor,
+  inheritedFillColor,
+  setFillColor,
+} = useUnitFillColor({ units: targetUnits, forEachEditableUnit });
+
 interface TextFieldMeta {
   x: number;
   y: number;
@@ -582,6 +593,42 @@ function getTextAmpPlaceholder(field: TextAmpKey) {
     >
       Showing {{ previewUnits.length }} of {{ targetUnits.length }} selected units
     </p>
+    <section v-if="!customSymbol" class="mt-6 px-4 sm:px-0">
+      <div class="mt-2 font-semibold">Fill color</div>
+      <div class="mt-2 flex w-full items-end gap-2">
+        <SymbolFillColorSelect
+          :model-value="currentFillColor"
+          @update:model-value="setFillColor($event)"
+          :default-fill-color="inheritedFillColor"
+          :class="['flex-auto', { 'pointer-events-none opacity-50': isLocked }]"
+        />
+        <BufferedColorPicker
+          :model-value="currentFillColor ?? undefined"
+          @update:model-value="setFillColor"
+        >
+          <template #trigger>
+            <Button type="button" variant="outline" size="lg" :disabled="isLocked"
+              >Custom color</Button
+            >
+          </template>
+        </BufferedColorPicker>
+      </div>
+      <p v-if="hasMixedFillColor" class="mt-2 text-xs text-amber-700">
+        Mixed values in current selection.
+      </p>
+      <div class="mt-2 flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          :disabled="isLocked || !hasCustomFillColor"
+          @click="setFillColor(null)"
+        >
+          {{ isMultiMode ? "Clear custom colors" : "Clear custom color" }}
+        </Button>
+      </div>
+    </section>
+
     <PanelDataGrid class="mt-6">
       <div class="col-span-2 mt-2 font-semibold">Map symbol size</div>
       <ToggleField class="col-span-2" v-model="overrideMapSymbolSize"

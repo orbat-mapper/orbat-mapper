@@ -22,9 +22,9 @@ vi.mock("@/components/ui/popover", () => ({
   PopoverContent: defineComponent({ template: "<div><slot /></div>" }),
 }));
 
-vi.mock("@/modules/scenarioeditor/ControlMeasureColorPicker.vue", () => ({
+vi.mock("@/components/BufferedColorPicker.vue", () => ({
   default: defineComponent({
-    name: "ControlMeasureColorPicker",
+    name: "BufferedColorPicker",
     props: { modelValue: { type: String, default: "" } },
     emits: ["update:modelValue"],
     template: "<div />",

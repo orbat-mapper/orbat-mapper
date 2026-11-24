@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { roundToStep } from "@/modules/scenarioeditor/controlMeasureSizeOptions";
-import ControlMeasureColorPicker from "@/modules/scenarioeditor/ControlMeasureColorPicker.vue";
+import BufferedColorPicker from "@/components/BufferedColorPicker.vue";
 import ControlMeasureFieldLabel from "@/modules/scenarioeditor/ControlMeasureFieldLabel.vue";
 
 const props = defineProps<{
@@ -189,7 +189,7 @@ function updateEnum(
       @change="updateNumber"
     />
 
-    <ControlMeasureColorPicker
+    <BufferedColorPicker
       v-else-if="parameter.type === 'color'"
       :model-value="String(modelValue ?? '')"
       @update:model-value="$emit('update:modelValue', $event)"
