@@ -117,6 +117,26 @@ export function compileSimpleAlias(alias: string): string {
   return result;
 }
 
+/** Scripts written without spaces between words (Chinese, Japanese, Korean). */
+const UNSPACED_SCRIPT_CHAR =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+// Unicode-aware word boundaries. JS `\b` only knows ASCII word characters,
+// so it never matches next to Cyrillic, Greek or CJK text.
+const WORD_START = "(?<![\\p{L}\\p{N}_])";
+const WORD_END = "(?![\\p{L}\\p{N}_])";
+
+/**
+ * Compile an alias and wrap it in word boundaries. An edge in a script
+ * written without spaces gets no boundary, so "师" matches inside "第1步兵师".
+ */
+function compileAliasWithBoundaries(alias: string): string {
+  const literal = normalizeInput(alias.toLowerCase()).replace(/[().\s]/g, "");
+  const start = UNSPACED_SCRIPT_CHAR.test(literal.at(0) ?? "") ? "" : WORD_START;
+  const end = UNSPACED_SCRIPT_CHAR.test(literal.at(-1) ?? "") ? "" : WORD_END;
+  return `${start}(?:${compileSimpleAlias(alias)})${end}`;
+}
+
 /** Compile a definition's aliases + raw patterns into `CompiledPattern[]`. */
 function compileDefinition(
   def: Pick<IconDefinition | EchelonDefinition, "label" | "aliases" | "patterns">,
@@ -126,9 +146,9 @@ function compileDefinition(
 
   // Aliases → single case-insensitive regex
   if (def.aliases && def.aliases.length > 0) {
-    const joined = def.aliases.map(compileSimpleAlias).join("|");
+    const joined = def.aliases.map(compileAliasWithBoundaries).join("|");
     result.push({
-      pattern: new RegExp(`\\b(${joined})\\b`, "i"),
+      pattern: new RegExp(`(?:${joined})`, "iu"),
       code,
       label: def.label,
       sourceType: "alias",
