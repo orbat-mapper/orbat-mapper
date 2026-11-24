@@ -7,8 +7,7 @@ import type { TScenario } from "@/scenariostore";
 vi.mock("@/importexport/export/kmlExport", () => ({
   useKmlExport: () => ({
     generateKml: vi.fn(),
-    downloadAsKML: vi.fn(),
-    downloadAsKMZ: vi.fn(),
+    generateKmz: vi.fn(),
   }),
 }));
 

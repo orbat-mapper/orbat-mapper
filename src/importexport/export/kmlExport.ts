@@ -1,7 +1,6 @@
 import type { KmlKmzExportSettings } from "@/types/importExport.ts";
 import type { Folder, Root } from "@tmcw/togeojson";
 import type { NUnit } from "@/types/internalModels";
-import { saveBlobToLocalFile } from "@/utils/files";
 import { useSymbolSettingsStore } from "@/stores/settingsStore";
 import { useGeoJsonConverter } from "@/importexport/export/geojsonConverter";
 import type { TScenario } from "@/scenariostore";
@@ -259,17 +258,6 @@ export function useKmlExport(scenario: TScenario) {
     });
   }
 
-  async function downloadAsKML(opts: KmlKmzExportSettings) {
-    const kmlString = await generateKml(opts);
-    await saveBlobToLocalFile(
-      new Blob([kmlString], {
-        type: "application/vnd.google-earth.kml+xml",
-      }),
-      "scenario.kml",
-      { mimeTypes: ["application/vnd.google-earth.kml+xml"], extensions: [".kml"] },
-    );
-  }
-
   function createRenderSymbolSettings(
     unit: NUnit,
     opts: KmlKmzExportSettings,
@@ -502,7 +490,10 @@ export function useKmlExport(scenario: TScenario) {
     return { blob, canvasWidth, iconWidth, iconHeight, iconX };
   }
 
-  async function downloadAsKMZ(opts: KmlKmzExportSettings) {
+  /** A KMZ file, with unit icons and rendered labels when the settings ask for them. */
+  async function generateKmz(
+    opts: KmlKmzExportSettings,
+  ): Promise<{ blob: Blob; warnings: string[] }> {
     const { zipSync, strToU8 } = await import("fflate");
     const { foldersToKML } = await import("@/extlib/tokml");
     const data: Record<string, Uint8Array> = {};
@@ -620,20 +611,14 @@ export function useKmlExport(scenario: TScenario) {
 
     data["doc.kml"] = strToU8(kmlString);
     const zipData = zipSync(data);
-    await saveBlobToLocalFile(
-      new Blob([zipData as BlobPart], {
-        type: "application/vnd.google-earth.kmz",
-      }),
-      "scenario.kmz",
-      { mimeTypes: ["application/vnd.google-earth.kmz"], extensions: [".kmz"] },
-    );
-
-    return { warnings };
+    const blob = new Blob([zipData as BlobPart], {
+      type: "application/vnd.google-earth.kmz",
+    });
+    return { blob, warnings };
   }
 
   return {
     generateKml,
-    downloadAsKML,
-    downloadAsKMZ,
+    generateKmz,
   };
 }

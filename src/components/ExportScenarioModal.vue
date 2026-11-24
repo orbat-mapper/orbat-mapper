@@ -1,19 +1,18 @@
 <script setup lang="ts">
+import { computed, ref } from "vue";
+import NProgress from "nprogress";
+import { useClipboard } from "@vueuse/core";
+import { ClipboardCopyIcon, CheckIcon } from "@lucide/vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 import { type SelectItem } from "@/components/types";
-import { computed } from "vue";
-import InputCheckbox from "@/components/InputCheckbox.vue";
-import type { ExportFormat, ExportSettings } from "@/types/importExport.ts";
-import { useScenarioExport } from "@/importexport/export/scenarioExport.ts";
+import type { ExportFormat } from "@/types/importExport.ts";
+import {
+  exporters,
+  findExporter,
+  type ExportFile,
+} from "@/importexport/export/exporters";
+import { useExporterSettings } from "@/importexport/export/exporters/settings";
 import { useNotifications } from "@/composables/notifications";
-import NProgress from "nprogress";
-import { useLocalStorage } from "@vueuse/core";
-import ExportSettingsXlsx from "@/components/ExportSettingsXlsx.vue";
-import ExportSettingsCsv from "@/components/ExportSettingsCsv.vue";
-import ExportSettingsSpatialIllusions from "@/components/ExportSettingsSpatialIllusions.vue";
-import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
-import ExportSettingsOrbatMapper from "@/components/ExportSettingsOrbatMapper.vue";
-import ExportSettingsKmlKmz from "@/components/ExportSettingsKmlKmz.vue";
 import ToggleField from "@/components/ToggleField.vue";
 import { useExportStore } from "@/stores/importExportStore";
 import { Button } from "@/components/ui/button";
@@ -28,130 +27,63 @@ import {
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import NewSimpleModal from "@/components/NewSimpleModal.vue";
-import { ClipboardCopyIcon, CheckIcon } from "@lucide/vue";
-import { useClipboard } from "@vueuse/core";
-import { ref } from "vue";
 import ImportStepLayout from "@/components/ImportStepLayout.vue";
+import { injectStrict } from "@/utils";
+import { activeScenarioKey } from "@/components/injects";
+import { saveBlobToLocalFile } from "@/utils/files";
 
 const open = defineModel<boolean>({ default: false });
 const emit = defineEmits(["cancel"]);
-const {
-  downloadAsGeoJSON,
-  downloadAsKML,
-  downloadAsKMZ,
-  downloadAsXlsx,
-  downloadAsCsv,
-  downloadAsMilx,
-  downloadAsSpatialIllusions,
-  downloadAsOrbatMapper,
-  generateGeoJSON,
-  generateKml,
-  generateCsv,
-  generateMilx,
-  generateSpatialIllusions,
-  generateOrbatMapper,
-} = useScenarioExport();
+
+const scenario = injectStrict(activeScenarioKey);
 const store = useExportStore();
-const formatItems: (SelectItem<ExportFormat> & { description: string })[] = [
-  {
-    label: "ORBAT Mapper",
-    value: "orbatmapper",
-    description: "Native scenario data",
-  },
-  { label: "GeoJSON", value: "geojson", description: "Geographic JSON data" },
-  { label: "KML", value: "kml", description: "Data for Google Earth" },
-  { label: "KMZ", value: "kmz", description: "Compressed KML with unit icons" },
-  { label: "XLSX", value: "xlsx", description: "Spreadsheet workbook" },
-  { label: "CSV/TSV", value: "csv", description: "Delimited tabular data" },
-  { label: "MilX", value: "milx", description: "MilX layers" },
-  {
-    label: "Spatial Illusions ORBAT builder",
-    value: "unitgenerator",
-    description: "Unit hierarchy data",
-  },
-];
+const settingsFor = useExporterSettings();
 
-interface Form extends ExportSettings {
-  format: ExportFormat;
-}
-
-const form = useLocalStorage(
-  "exportSettings",
-  {
-    format: store.currentFormat ?? "orbatmapper",
-    includeFeatures: false,
-    includeUnits: true,
-    includeSelectedUnitsOnly: false,
-    sideGroups: [],
-    fileName: "scenario.json",
-    embedIcons: true,
-    useShortName: true,
-    oneSheetPerSide: true,
-    columns: [],
-    locationFormat: "json",
-    separator: ",",
-    oneFolderPerSide: true,
-    folderMode: "side",
-    customColors: true,
-    rootUnit: "",
-    maxLevels: 3,
-    includeIdInProperties: false,
-    includeId: true,
-    iconScale: 1.5,
-    labelScale: 1,
-    drawSymbolOutline: true,
-    outlineColor: "rgba(255,255,255,0.8)",
-    outlineWidth: 8,
-    renderAmplifiers: false,
-    renderCustomIconLabels: false,
-    controlMeasureLabelMode: "native",
-    timeMode: "current",
-    exportEventId: "",
-    exportEventIds: [],
-    useRadioFolder: true,
-  } as Form,
-  { writeDefaults: true },
+const formatItems: (SelectItem<ExportFormat> & { description: string })[] = exporters.map(
+  ({ id, label, description }) => ({ label, value: id, description }),
 );
+
+const format = ref<ExportFormat>(findExporter(store.currentFormat).id);
+const exporter = computed(() => findExporter(format.value));
+const settings = computed({
+  get: () => settingsFor(exporter.value).value,
+  set: (value) => (settingsFor(exporter.value).value = value),
+});
 
 const { send } = useNotifications();
 const { copy } = useClipboard();
 const justCopied = ref(false);
 
-const format = computed(() => form.value.format);
-const canCopyToClipboard = computed(() => !["xlsx", "kmz"].includes(form.value.format));
-const isKml = computed(() => form.value.format === "kml");
-const isKmz = computed(() => form.value.format === "kmz");
-const isMilx = computed(() => form.value.format === "milx");
+async function generate(): Promise<ExportFile | undefined> {
+  NProgress.start();
+  try {
+    return await exporter.value.generate({ scenario }, settings.value);
+  } catch (error) {
+    console.error(error);
+    send({ type: "error", message: `Could not export the scenario as ${format.value}` });
+  } finally {
+    NProgress.done();
+  }
+}
 
 async function onExport() {
-  const { format } = form.value;
-  let kmzWarnings: string[] = [];
-  NProgress.start();
-  if (format === "geojson") {
-    await downloadAsGeoJSON(form.value);
-  } else if (format === "kml") {
-    await downloadAsKML(form.value);
-  } else if (format === "kmz") {
-    const result = await downloadAsKMZ(form.value);
-    kmzWarnings = result?.warnings ?? [];
-  } else if (format === "xlsx") {
-    await downloadAsXlsx(form.value);
-  } else if (format === "csv") {
-    await downloadAsCsv(form.value);
-  } else if (format === "milx") {
-    await downloadAsMilx(form.value);
-  } else if (format === "unitgenerator") {
-    await downloadAsSpatialIllusions(form.value);
-  } else if (format === "orbatmapper") {
-    await downloadAsOrbatMapper(form.value);
-  }
-  NProgress.done();
+  const file = await generate();
+  if (!file) return;
+  const blob =
+    file.content instanceof Blob
+      ? file.content
+      : new Blob([file.content], { type: file.mimeType });
+  await saveBlobToLocalFile(blob, file.fileName, {
+    mimeTypes: [file.mimeType],
+    extensions: [file.extension],
+  });
   if (!store.keepOpen) open.value = false;
-  store.currentFormat = format;
-  send({ message: `Exported scenario as ${format}` });
-  if (kmzWarnings.length) {
-    const warningExamples = kmzWarnings.slice(0, 2).join(" ");
-    const andMore = kmzWarnings.length > 2 ? ` (+${kmzWarnings.length - 2} more)` : "";
+  store.currentFormat = format.value;
+  send({ message: `Exported scenario as ${format.value}` });
+  if (file.warnings?.length) {
+    const warningExamples = file.warnings.slice(0, 2).join(" ");
+    const andMore =
+      file.warnings.length > 2 ? ` (+${file.warnings.length - 2} more)` : "";
     send({
       type: "warning",
       title: "Export used compatibility fallbacks",
@@ -162,29 +94,12 @@ async function onExport() {
 }
 
 async function onCopyToClipboard() {
-  const { format } = form.value;
-  let data: string | undefined;
-  NProgress.start();
-  if (format === "geojson") {
-    data = generateGeoJSON(form.value);
-  } else if (format === "kml") {
-    data = await generateKml(form.value);
-  } else if (format === "csv") {
-    data = await generateCsv(form.value);
-  } else if (format === "milx") {
-    data = await generateMilx(form.value);
-  } else if (format === "unitgenerator") {
-    data = generateSpatialIllusions(form.value);
-  } else if (format === "orbatmapper") {
-    data = generateOrbatMapper(form.value);
-  }
-  NProgress.done();
-  if (data) {
-    await copy(data);
-    justCopied.value = true;
-    setTimeout(() => (justCopied.value = false), 2000);
-    send({ message: "Copied to clipboard" });
-  }
+  const file = await generate();
+  if (typeof file?.content !== "string") return;
+  await copy(file.content);
+  justCopied.value = true;
+  setTimeout(() => (justCopied.value = false), 2000);
+  send({ message: "Copied to clipboard" });
 }
 
 function onCancel() {
@@ -218,7 +133,7 @@ function onCancel() {
               Cancel
             </Button>
             <Button
-              v-if="canCopyToClipboard"
+              v-if="exporter.canCopyToClipboard"
               variant="outline"
               type="button"
               size="sm"
@@ -238,7 +153,7 @@ function onCancel() {
               class="lg:hidden"
               label="Export format"
               :items="formatItems"
-              v-model="form.format"
+              v-model="format"
             />
 
             <FieldSet class="hidden lg:block">
@@ -246,7 +161,7 @@ function onCancel() {
               <FieldDescription
                 >Select the format for your exported data</FieldDescription
               >
-              <RadioGroup v-model="form.format" class="mt-3 flex flex-col gap-2">
+              <RadioGroup v-model="format" class="mt-3 flex flex-col gap-2">
                 <FieldLabel
                   v-for="item in formatItems"
                   :key="item.value"
@@ -266,15 +181,9 @@ function onCancel() {
               </RadioGroup>
             </FieldSet>
 
-            <div class="text-muted-foreground text-sm lg:hidden">
-              <p v-if="isKml">
-                KML displays geographic data in applications such as Google Earth. Use KMZ
-                if you want to include unit icons.
-              </p>
-              <p v-else-if="isKmz">
-                KMZ is a compressed version of KML that can include unit icons.
-              </p>
-            </div>
+            <p v-if="exporter.hint" class="text-muted-foreground text-sm lg:hidden">
+              {{ exporter.hint }}
+            </p>
 
             <ToggleField v-model="store.keepOpen">
               Keep dialog open on export
@@ -283,65 +192,13 @@ function onCancel() {
 
           <div class="min-h-0 flex-1 overflow-y-auto p-6">
             <div class="space-y-6">
-              <ExportSettingsXlsx
-                v-if="format === 'xlsx'"
-                :format="format"
-                v-model="form"
+              <component
+                :is="exporter.settingsComponent"
+                :key="exporter.id"
+                :format="exporter.id"
+                v-model="settings"
               />
-              <ExportSettingsCsv
-                v-else-if="format === 'csv'"
-                :format="format"
-                v-model="form"
-              />
-              <ExportSettingsSpatialIllusions
-                v-else-if="format === 'unitgenerator'"
-                :format="format"
-                v-model="form"
-              />
-              <ExportSettingsOrbatMapper
-                v-else-if="format === 'orbatmapper'"
-                v-model="form"
-              />
-              <ExportSettingsGeoJson
-                v-else-if="format === 'geojson'"
-                :format="format"
-                v-model="form"
-              />
-              <ExportSettingsKmlKmz
-                v-else-if="format === 'kml' || format === 'kmz'"
-                :format="format"
-                v-model="form"
-              />
-              <template v-else>
-                <fieldset class="space-y-4">
-                  <InputCheckbox
-                    label="Include units"
-                    description="Units with a location at current scenario time"
-                    v-model="form.includeUnits"
-                  />
-                  <InputCheckbox
-                    v-if="!isMilx"
-                    label="Include scenario features"
-                    v-model="form.includeFeatures"
-                    description=""
-                  />
-                  <InputCheckbox
-                    v-if="isMilx"
-                    label="Use one layer per side"
-                    v-model="form.oneFolderPerSide"
-                  />
-                </fieldset>
-              </template>
-
-              <p v-if="isKmz || isKml" class="text-sm">
-                Please note that the export functionality is experimental. Scenario
-                feature export is currently limited to geometries (no styles).
-              </p>
-
-              <p v-if="isMilx" class="text-sm">
-                Please note that the MilX export is experimental. It is currently limited
-                and has several bugs.
-              </p>
+              <p v-if="exporter.note" class="text-sm">{{ exporter.note }}</p>
             </div>
           </div>
         </ImportStepLayout>
