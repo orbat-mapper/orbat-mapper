@@ -148,4 +148,51 @@ describe("closestApproach", () => {
 
     expect(closestApproach(a, b, [0, 2 * HOUR])).toBeUndefined();
   });
+
+  it("waits for a leg's viaStartTime before moving", () => {
+    // A leaves [0, 0] at 1 h and reaches [2, 0] at 2 h, passing [1, 0] at 1.5 h.
+    const a = createUnit("a", {
+      state: [
+        { id: "a1", t: 0, location: [0, 0] },
+        { id: "a2", t: 2 * HOUR, location: [2, 0], viaStartTime: HOUR },
+      ] as NState[],
+    });
+    const b = createUnit("b", { location: [1, 0.01] });
+
+    const result = closestApproach(a, b, [0, 2 * HOUR]);
+
+    expect(result?.distanceMeters).toBeCloseTo(ONE_HUNDREDTH_DEGREE_M, -1);
+    expect(Math.abs(result!.time - 1.5 * HOUR)).toBeLessThan(1000);
+  });
+
+  it("does not move a unit from its base location without a viaStartTime", () => {
+    // The base location has no time, so A stays at [0, 0] and jumps to [2, 0] at 2 h.
+    const a = createUnit("a", {
+      location: [0, 0],
+      state: [{ id: "a1", t: 2 * HOUR, location: [2, 0] }] as NState[],
+    });
+    const b = createUnit("b", { location: [2, 0.01] });
+
+    const result = closestApproach(a, b, [0, 2 * HOUR]);
+
+    expect(result?.distanceMeters).toBeCloseTo(ONE_HUNDREDTH_DEGREE_M, -1);
+    expect(result?.time).toBe(2 * HOUR);
+  });
+
+  it("does not interpolate a leg marked interpolate: false", () => {
+    // A stays at [0, 0] and jumps to [2, 0] at 2 h, never passing near [1.9, 0.01].
+    const a = createUnit("a", {
+      state: [
+        { id: "a1", t: 0, location: [0, 0] },
+        { id: "a2", t: 2 * HOUR, location: [2, 0], interpolate: false },
+      ] as NState[],
+    });
+    const b = createUnit("b", { location: [1.9, 0.01] });
+
+    const result = closestApproach(a, b, [0, 2 * HOUR]);
+
+    // Haversine distance from [2, 0] to [1.9, 0.01].
+    expect(result?.distanceMeters).toBeCloseTo(11174.97, 0);
+    expect(result?.time).toBe(2 * HOUR);
+  });
 });
