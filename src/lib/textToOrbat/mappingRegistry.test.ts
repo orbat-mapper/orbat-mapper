@@ -250,3 +250,47 @@ describe("MappingRegistry — adding new mappings", () => {
     expect(getIconCodeFromName("Armor Company", registry)).toBe(ICON_UNSPECIFIED);
   });
 });
+
+describe("MappingRegistry — aliases in scripts beyond ASCII", () => {
+  const ECHELON_DIVISION = BUILTIN_ECHELON_DEFINITIONS.find(
+    (d) => d.label === "Division",
+  )!.code;
+
+  it("matches CJK echelon aliases inside unit names without spaces", () => {
+    const registry = new MappingRegistry();
+    registry.extendEchelon(ECHELON_DIVISION, ["师"]);
+    expect(getEchelonCodeFromName("第1步兵师", registry)).toBe(ECHELON_DIVISION);
+    expect(getEchelonCodeFromName("步兵第1师 (北)", registry)).toBe(ECHELON_DIVISION);
+  });
+
+  it("matches CJK icon aliases inside unit names without spaces", () => {
+    const registry = new MappingRegistry();
+    registry.extendIcon(buildIconSidc(ICON_INFANTRY), ["步兵"]);
+    expect(getIconCodeFromName("第1步兵师", registry)).toBe(ICON_INFANTRY);
+  });
+
+  it("matches Japanese and Korean aliases", () => {
+    const registry = new MappingRegistry();
+    registry.extendEchelon(ECHELON_DIVISION, ["師団", "사단"]);
+    expect(getEchelonCodeFromName("第1師団", registry)).toBe(ECHELON_DIVISION);
+    expect(getEchelonCodeFromName("제1보병사단", registry)).toBe(ECHELON_DIVISION);
+  });
+
+  it("matches Cyrillic aliases as whole words", () => {
+    const registry = new MappingRegistry();
+    registry.extendEchelon(ECHELON_DIVISION, ["дивизия"]);
+    expect(getEchelonCodeFromName("1-я танковая дивизия", registry)).toBe(
+      ECHELON_DIVISION,
+    );
+    expect(getEchelonCodeFromName("1-я танковая дивизияx", registry)).not.toBe(
+      ECHELON_DIVISION,
+    );
+  });
+
+  it("still requires whole words for Latin aliases", () => {
+    const registry = new MappingRegistry();
+    expect(getEchelonCodeFromName("Divisional HQ", registry)).not.toBe(ECHELON_DIVISION);
+    expect(getEchelonCodeFromName("3rd Division", registry)).toBe(ECHELON_DIVISION);
+    expect(getEchelonCodeFromName("Vrkdivisionmn", registry)).not.toBe(ECHELON_DIVISION);
+  });
+});
