@@ -48,6 +48,7 @@ import {
   type ControlMeasureStyleUpdate,
   canAuthorFillPattern,
   canAuthorStrokeWidth,
+  canFillControlMeasureKind,
   canSmoothControlMeasureKind,
   canUseMultilineControlMeasureLabel,
   effectiveControlMeasureOptions,
@@ -100,8 +101,16 @@ function gatedOnEveryKind(canAuthor: (kind: ControlMeasureKind) => boolean) {
 }
 
 const showColor = gatedOnEveryKind(isStyleableControlMeasureKind);
+const showFilled = gatedOnEveryKind(canFillControlMeasureKind);
 const showFillPattern = gatedOnEveryKind(canAuthorFillPattern);
-const showStrokeWidth = gatedOnEveryKind(canAuthorStrokeWidth);
+// `options` belongs to the edited item, so it can only refine a single-kind answer:
+// a filled Curly Bracket paints no stroke.
+const showStrokeWidth = computed(() =>
+  editedKinds.value.length === 1
+    ? canAuthorStrokeWidth(editedKinds.value[0], props.options)
+    : editedKinds.value.length > 0 &&
+      editedKinds.value.every((kind) => canAuthorStrokeWidth(kind)),
+);
 
 /** What the graphic actually draws as, authored colour or identity projection. */
 const resolvedColor = computed(() =>
@@ -246,7 +255,9 @@ const fillPatternModel = computed({
 
 /** Filledness is a generator option; a pattern alone cannot make an outline fill. */
 const filledModel = computed({
-  get: () => props.options?.filled === true,
+  // The effective value: a Curly Bracket is filled by default.
+  get: () =>
+    effectiveControlMeasureOptions(props.graphicKind, props.options).filled === true,
   set: (value: boolean) =>
     emit("update", {
       options: { ...toRaw(props.options), filled: value } as TacticalGraphicOptions,
@@ -321,13 +332,15 @@ const filledModel = computed({
     </div>
   </template>
 
-  <template v-if="showFillPattern">
+  <template v-if="showFilled">
     <div></div>
     <label for="cm-filled" class="flex items-center gap-2">
       <Switch id="cm-filled" v-model="filledModel" />
       <span>Filled</span>
     </label>
+  </template>
 
+  <template v-if="showFillPattern">
     <label for="cm-fill-pattern" class="self-center">Fill pattern</label>
     <NativeSelect
       id="cm-fill-pattern"

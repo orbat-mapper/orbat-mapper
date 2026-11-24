@@ -9,7 +9,7 @@
  * control measure with an authored colour on a doctrinal kind still renders with it.
  * Nothing here may ever be consulted by the store or by `toControlMeasure`.
  *
- * Stroke width follows `paints.stroke`; colour and fill remain restricted by entity
+ * Stroke width follows the library's `paintsStroke`; colour and fill remain restricted by entity
  * and fill capability. Everything is derived from the library's own metadata, so
  * there is no parallel list of kinds or patterns to drift out of step with the
  * registry.
@@ -17,6 +17,7 @@
 import {
   CONTROL_MEASURE_METADATA,
   getDefaultOptions,
+  paintsStroke,
   resolveParameterSemanticRole,
   resolveSizePair,
 } from "@orbat-mapper/control-measures";
@@ -108,8 +109,7 @@ export const CONTROL_MEASURE_STYLE_OWNED_OPTION_KEYS: readonly string[] = [
   "smoothResolution",
   "smoothMode",
   "multilineLabel",
-  // The Filled switch beside the fill pattern. Every kind with a `filled` param is a
-  // `canAuthorFillPattern` kind, so the Style tab always shows it.
+  // The Filled switch: the Style tab shows it for every kind with a `filled` param.
   "filled",
 ];
 
@@ -131,9 +131,31 @@ export function canAuthorFillPattern(kind: ControlMeasureKind | undefined): bool
   return isStyleableControlMeasureKind(kind) && metadataFor(kind)?.paints.fill === "user";
 }
 
-/** Stroke width is meaningful for every kind whose registry output paints a stroke. */
-export function canAuthorStrokeWidth(kind: ControlMeasureKind | undefined): boolean {
-  return metadataFor(kind)?.paints.stroke === true;
+/**
+ * Whether the Filled switch is meaningful: the kind declares a `filled` boolean. Every
+ * `canAuthorFillPattern` kind does, and so does a kind like the Curly Bracket, whose
+ * `filled` picks a tapered shape over a single stroke while its fill stays fixed.
+ */
+export function canFillControlMeasureKind(kind: ControlMeasureKind | undefined): boolean {
+  return (
+    metadataFor(kind)?.params?.some(
+      (param) => param.key === "filled" && param.type === "boolean",
+    ) ?? false
+  );
+}
+
+/**
+ * Stroke width is meaningful wherever the output paints a stroke. Some kinds turn the
+ * stroke off through an option (a filled Curly Bracket), so the library answers with
+ * the effective options; without `options` it answers for a fresh graphic.
+ */
+export function canAuthorStrokeWidth(
+  kind: ControlMeasureKind | undefined,
+  options?: TacticalGraphicOptions,
+): boolean {
+  const metadata = metadataFor(kind);
+  if (!metadata) return false;
+  return paintsStroke(metadata, effectiveControlMeasureOptions(kind, options));
 }
 
 /**
@@ -381,7 +403,7 @@ export function newControlMeasureDefaults(
   if (options) {
     const authored = options as Record<string, unknown>;
     const narrowedOptions: Record<string, unknown> = {};
-    if (canAuthorFillPattern(graphicKind) && typeof authored.filled === "boolean") {
+    if (canFillControlMeasureKind(graphicKind) && typeof authored.filled === "boolean") {
       narrowedOptions.filled = authored.filled;
     }
     if (canSmoothControlMeasureKind(graphicKind)) {
