@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { settingsFromLegacy } from "./settings";
+import { afterEach, describe, expect, it } from "vitest";
+import { effectScope, nextTick } from "vue";
+import { settingsFromLegacy, useExporterSettings } from "./settings";
+import { spatialIllusionsExporter } from "./spatialIllusions";
 
 describe("settingsFromLegacy", () => {
   const defaults = { rootUnit: "", maxLevels: 3 };
@@ -29,5 +31,42 @@ describe("settingsFromLegacy", () => {
     const result = settingsFromLegacy(withArray, null);
     result.columns.push("name");
     expect(withArray.columns).toEqual([]);
+  });
+});
+
+describe("useExporterSettings", () => {
+  afterEach(() => localStorage.clear());
+
+  it("starts a format from the old shared settings and saves it under its own key", async () => {
+    localStorage.setItem(
+      "exportSettings",
+      JSON.stringify({ format: "csv", maxLevels: 5 }),
+    );
+    const scope = effectScope();
+    const settings = scope.run(() => useExporterSettings()(spatialIllusionsExporter))!;
+
+    expect(settings.value).toEqual({ rootUnit: "", maxLevels: 5 });
+    settings.value.rootUnit = "unit-1";
+    await nextTick();
+    expect(JSON.parse(localStorage.getItem("exportSettings.unitgenerator")!)).toEqual({
+      rootUnit: "unit-1",
+      maxLevels: 5,
+    });
+    scope.stop();
+  });
+
+  it("stops saving a format's settings once its component is gone", async () => {
+    const scope = effectScope();
+    const settingsFor = scope.run(() => useExporterSettings())!;
+    // Loaded after setup, as the export dialog does when the user picks a format.
+    const settings = settingsFor(spatialIllusionsExporter);
+    await nextTick();
+    scope.stop();
+
+    settings.value.maxLevels = 9;
+    await nextTick();
+    expect(
+      JSON.parse(localStorage.getItem("exportSettings.unitgenerator")!).maxLevels,
+    ).toBe(3);
   });
 });

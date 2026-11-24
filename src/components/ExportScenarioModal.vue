@@ -60,7 +60,10 @@ async function generate(): Promise<ExportFile | undefined> {
     return await exporter.value.generate({ scenario }, settings.value);
   } catch (error) {
     console.error(error);
-    send({ type: "error", message: `Could not export the scenario as ${format.value}` });
+    send({
+      type: "error",
+      message: `Could not export the scenario as ${exporter.value.label}`,
+    });
   } finally {
     NProgress.done();
   }
@@ -95,7 +98,7 @@ async function onExport() {
 
 async function onCopyToClipboard() {
   const file = await generate();
-  if (typeof file?.content !== "string") return;
+  if (typeof file?.content !== "string" || !file.content) return;
   await copy(file.content);
   justCopied.value = true;
   setTimeout(() => (justCopied.value = false), 2000);
@@ -195,7 +198,6 @@ function onCancel() {
               <component
                 :is="exporter.settingsComponent"
                 :key="exporter.id"
-                :format="exporter.id"
                 v-model="settings"
               />
               <p v-if="exporter.note" class="text-sm">{{ exporter.note }}</p>

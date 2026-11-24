@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import type { MilxSettings } from "@/importexport/export/exporters/milx";
-import type { ExportFormat } from "@/types/importExport";
 
-defineProps<{ format?: ExportFormat }>();
 const settings = defineModel<MilxSettings>({ required: true });
 </script>
 

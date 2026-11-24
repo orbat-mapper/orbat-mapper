@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import InputCheckbox from "@/components/InputCheckbox.vue";
-import type {
-  ExportFormat,
-  ExportSettings,
-  KmlKmzExportSettings,
-} from "@/types/importExport.ts";
+import type { ExportFormat, KmlKmzExportSettings } from "@/types/importExport.ts";
 import { Slider } from "@/components/ui/slider";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import NewAccordionPanel from "@/components/NewAccordionPanel.vue";
@@ -20,7 +16,6 @@ import { Button } from "@/components/ui/button";
 
 const props = defineProps<{
   format: ExportFormat;
-  modelValue: ExportSettings;
 }>();
 const form = defineModel<KmlKmzExportSettings>({ required: true });
 

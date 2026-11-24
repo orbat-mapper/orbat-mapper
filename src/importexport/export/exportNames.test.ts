@@ -25,7 +25,6 @@ describe("export name suggestions", () => {
         sideGroups,
         layerIds,
         fileName: "",
-        customColors: true,
       }),
     ).toEqual({ scenarioName, fileName });
   });
@@ -41,7 +40,6 @@ describe("export name suggestions", () => {
           emptySideIds: ["blue"],
           layerIds: [],
           fileName: "",
-          customColors: true,
         },
       ).fileName,
     ).toBe("øvelse-2026-blue.json");

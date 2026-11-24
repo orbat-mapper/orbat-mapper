@@ -151,7 +151,6 @@ function form(layerIds?: string[]): OrbatMapperExportSettings {
     sideGroups: [],
     // Saved layers are discarded on mount; tests select layers after mounting.
     layerIds,
-    customColors: true,
     fileName: "scenario.json",
   });
 }

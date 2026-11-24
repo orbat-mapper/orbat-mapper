@@ -1,3 +1,4 @@
+import { h, type FunctionalComponent } from "vue";
 import ExportSettingsCsv from "@/components/ExportSettingsCsv.vue";
 import ExportSettingsGeoJson from "@/components/ExportSettingsGeoJson.vue";
 import ExportSettingsKmlKmz from "@/components/ExportSettingsKmlKmz.vue";
@@ -24,6 +25,14 @@ const KML_NOTE =
 const generators = (scenario: ExportContext["scenario"]) =>
   useScenarioExport({ activeScenario: scenario });
 
+/** The KML and KMZ settings form, which shows some settings for one of them only. */
+function kmlSettingsFor(format: "kml" | "kmz"): FunctionalComponent {
+  const KmlSettings: FunctionalComponent = (_, { attrs }) =>
+    h(ExportSettingsKmlKmz, { ...attrs, format } as never);
+  KmlSettings.inheritAttrs = false;
+  return KmlSettings;
+}
+
 export const orbatMapperExporter: Exporter<OrbatMapperExportSettings> = {
   id: "orbatmapper",
   label: "ORBAT Mapper",
@@ -32,7 +41,6 @@ export const orbatMapperExporter: Exporter<OrbatMapperExportSettings> = {
   defaultSettings: () => ({
     sideGroups: [],
     fileName: "scenario.json",
-    customColors: true,
     emptySideIds: undefined,
     layerIds: undefined,
     scenarioName: undefined,
@@ -65,14 +73,12 @@ export const geoJsonExporter: Exporter<GeoJsonSettings> = {
     includeIdInProperties: false,
     includeId: true,
     includeSelectedUnitsOnly: false,
-    customColors: true,
-    fileName: "scenario.json",
   }),
   canCopyToClipboard: true,
   async generate({ scenario }, settings) {
     return {
       content: generators(scenario).generateGeoJSON(settings),
-      fileName: settings.fileName || "scenario.json",
+      fileName: "scenario.json",
       mimeType: "application/json",
       extension: ".json",
     };
@@ -106,7 +112,7 @@ export const kmlExporter: Exporter<KmlKmzExportSettings> = {
   label: "KML",
   description: "Data for Google Earth",
   hint: "KML displays geographic data in applications such as Google Earth. Use KMZ if you want to include unit icons.",
-  settingsComponent: ExportSettingsKmlKmz,
+  settingsComponent: kmlSettingsFor("kml"),
   defaultSettings: kmlDefaults,
   canCopyToClipboard: true,
   note: KML_NOTE,
@@ -125,7 +131,7 @@ export const kmzExporter: Exporter<KmlKmzExportSettings> = {
   label: "KMZ",
   description: "Compressed KML with unit icons",
   hint: "KMZ is a compressed version of KML that can include unit icons.",
-  settingsComponent: ExportSettingsKmlKmz,
+  settingsComponent: kmlSettingsFor("kmz"),
   defaultSettings: kmlDefaults,
   canCopyToClipboard: false,
   note: KML_NOTE,
@@ -150,8 +156,6 @@ export const xlsxExporter: Exporter<XlsxSettings> = {
     oneSheetPerSide: true,
     columns: [],
     locationFormat: "json",
-    customColors: true,
-    fileName: "scenario.xlsx",
   }),
   canCopyToClipboard: false,
   async generate({ scenario }, settings) {
@@ -173,8 +177,6 @@ export const csvExporter: Exporter<CsvSettings> = {
     columns: [],
     locationFormat: "json",
     separator: ",",
-    customColors: true,
-    fileName: "scenario.csv",
   }),
   canCopyToClipboard: true,
   async generate({ scenario }, settings) {

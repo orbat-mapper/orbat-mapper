@@ -124,7 +124,6 @@ describe("toCsv", () => {
 describe("ORBAT Mapper export file format", () => {
   const settings = {
     sideGroups: ["blue-group"],
-    customColors: true,
     fileName: "blue.json",
   };
 

@@ -38,14 +38,9 @@ export interface ColumnMapping<TData = Record<string, unknown>> {
   field: keyof TData | string;
 }
 
-export interface BaseExportSettings {
-  customColors: boolean;
-  fileName: string;
-}
-
 export type LocationExportFormat = "json" | "latlon" | "lonlat" | "mgrs" | "dms" | "dd";
 
-export interface XlsxSettings extends BaseExportSettings {
+export interface XlsxSettings {
   oneSheetPerSide: boolean;
   columns: ColumnMapping[];
   locationFormat: LocationExportFormat;
@@ -53,18 +48,13 @@ export interface XlsxSettings extends BaseExportSettings {
 
 export type CsvSeparator = "," | "\t" | ";";
 
-export interface CsvSettings extends BaseExportSettings {
+export interface CsvSettings {
   columns: ColumnMapping[];
   locationFormat: LocationExportFormat;
   separator: CsvSeparator;
 }
 
-export interface UnitGeneratorSettings extends BaseExportSettings {
-  rootUnit: EntityId;
-  maxLevels: number;
-}
-
-export interface GeoJsonSettings extends BaseExportSettings {
+export interface GeoJsonSettings {
   includeUnits: boolean;
   includeFeatures: boolean;
   includeIdInProperties: boolean;
@@ -72,7 +62,8 @@ export interface GeoJsonSettings extends BaseExportSettings {
   includeSelectedUnitsOnly: boolean;
 }
 
-export interface OrbatMapperExportSettings extends BaseExportSettings {
+export interface OrbatMapperExportSettings {
+  fileName: string;
   sideGroups: EntityId[];
   /** Explicitly selected sides that have no groups. */
   emptySideIds?: EntityId[];
@@ -127,21 +118,6 @@ export interface KmlKmzExportSettings {
   exportEventId?: EntityId;
   exportEventIds: EntityId[];
   useRadioFolder: boolean;
-}
-
-export interface ExportSettings
-  extends
-    XlsxSettings,
-    CsvSettings,
-    UnitGeneratorSettings,
-    GeoJsonSettings,
-    OrbatMapperExportSettings,
-    KmlKmzExportSettings {
-  fileName: string;
-  includeUnits: boolean;
-  includeFeatures: boolean;
-  embedIcons: boolean;
-  useShortName: boolean;
 }
 
 export interface ImportSettings {

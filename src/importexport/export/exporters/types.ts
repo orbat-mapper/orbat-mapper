@@ -22,10 +22,7 @@ export interface Exporter<S extends object = object> {
   id: ExportFormat;
   label: string;
   description: string;
-  /**
-   * Edits the format's settings with `v-model`. Gets the format id as the `format` prop,
-   * which it must declare.
-   */
+  /** Edits the format's settings with `v-model`. */
   settingsComponent: Component;
   /** The settings a user starts with. Each format's settings are saved separately. */
   defaultSettings: () => S;

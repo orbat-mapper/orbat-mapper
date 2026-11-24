@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  type ExportFormat,
-  type OrbatMapperExportSettings,
-} from "@/types/importExport.ts";
+import { type OrbatMapperExportSettings } from "@/types/importExport.ts";
 import { computed, ref, shallowRef, watch } from "vue";
 import { useLocalStorage } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
@@ -22,7 +19,6 @@ import FieldSelect from "@/components/FieldSelect.vue";
 import InputGroup from "@/components/InputGroup.vue";
 import { formatDateString } from "@/geo/utils";
 
-defineProps<{ format?: ExportFormat }>();
 const form = defineModel<OrbatMapperExportSettings>({ required: true });
 
 const scenario = injectStrict(activeScenarioKey);
