@@ -30,6 +30,12 @@
     "styleUrl": "https://tiles.openfreemap.org/styles/fiord"
   },
   {
+    "name": "naval",
+    "title": "Naval (dark)",
+    "sourceType": "style",
+    "styleUrl": "https://orbat-mapper.github.io/naval-basemap/style/naval.json"
+  },
+  {
     "name": "atlas",
     "title": "Atlas",
     "sourceType": "atlas"
