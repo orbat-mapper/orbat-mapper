@@ -54,8 +54,8 @@ import {
 } from "@/geo/atlasStyle";
 import {
   BASEMAP_FLAVORS,
+  BASEMAP_FLAVOR_LABELS,
   isBasemapFlavor,
-  type BasemapFlavor,
 } from "@/geo/maplibreLayerConfigTypes";
 import {
   getFeatureIdFromRenderedFeature,
@@ -169,10 +169,6 @@ const removableActiveBasemap = computed(() =>
 const activeFlavor = computed(() => basemapFlavor(activeBasemap.value));
 
 const showAtlasOptions = computed(() => basemapSupportsAtlasOptions(activeBasemap.value));
-
-function flavorLabel(flavor: BasemapFlavor) {
-  return flavor.charAt(0).toUpperCase() + flavor.slice(1);
-}
 
 function onSelectFlavor(value: unknown) {
   const id = activeBasemapId.value;
@@ -725,7 +721,7 @@ function onContextMenu(event: MouseEvent) {
               :value="flavor"
               @select.prevent
             >
-              {{ flavorLabel(flavor) }}
+              {{ BASEMAP_FLAVOR_LABELS[flavor] }}
             </ContextMenuRadioItem>
           </ContextMenuRadioGroup>
         </ContextMenuSubContent>

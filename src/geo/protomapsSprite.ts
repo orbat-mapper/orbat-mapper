@@ -13,7 +13,7 @@
  * See docs/adr/0003-vector-pmtiles-styling.md.
  */
 import { addProtocol, removeProtocol } from "maplibre-gl";
-import type { BasemapFlavor } from "@/geo/maplibreLayerConfigTypes";
+import type { ProtomapsFlavor } from "@/geo/maplibreLayerConfigTypes";
 
 export const PROTOMAPS_SPRITE_PROTOCOL = "pmsprite";
 
@@ -34,7 +34,7 @@ const assetByFileName = new Map<string, string>(
 );
 
 /** The sprite base URL to put in a generated style for a flavour. */
-export function protomapsSpriteUrl(flavor: BasemapFlavor): string {
+export function protomapsSpriteUrl(flavor: ProtomapsFlavor): string {
   return `${SPRITE_URL_PREFIX}${flavor}`;
 }
 

@@ -4,6 +4,8 @@ import { DEFAULT_MAPLIBRE_BASEMAP_ID } from "@/config/constants";
 import {
   DEFAULT_BASEMAP_FLAVOR,
   type BasemapFlavor,
+  PROTOMAPS_FLAVORS,
+  type ProtomapsFlavor,
   type MlAtlasLayerConfig,
   type MlLayerConfig,
   type MlPmtilesLayerConfig,
@@ -11,6 +13,7 @@ import {
   type MlStyleLayerConfig,
 } from "@/geo/maplibreLayerConfigTypes";
 import { createAtlasStyle } from "@/geo/atlasStyle";
+import { phosphorBasemap, type PhosphorPaletteName } from "@/geo/phosphorBasemap";
 import { registerBasemapProtocols } from "@/geo/basemapArchive";
 import { archiveTileUrl } from "@/geo/pmtilesProtocol";
 import { protomapsSpriteUrl } from "@/geo/protomapsSprite";
@@ -126,9 +129,38 @@ function createPmtilesRasterStyle(layer: MlPmtilesLayerConfig): StyleSpecificati
   };
 }
 
+/** The sprite and layers of one flavour, reading every feature from `source`. */
+type FlavorStyle = (
+  source: string,
+  lang: string,
+) => Pick<StyleSpecification, "sprite" | "layers">;
+
+const protomapsStyle =
+  (flavor: ProtomapsFlavor): FlavorStyle =>
+  (source, lang) => ({
+    sprite: protomapsSpriteUrl(flavor),
+    layers: protomapsLayers(source, namedFlavor(flavor), { lang }),
+  });
+
+const phosphorStyle =
+  (palette: PhosphorPaletteName): FlavorStyle =>
+  (source, lang) =>
+    phosphorBasemap(source, { palette, lang });
+
+/** How each flavour is drawn. */
+const FLAVOR_STYLES: Record<BasemapFlavor, FlavorStyle> = {
+  ...(Object.fromEntries(PROTOMAPS_FLAVORS.map((f) => [f, protomapsStyle(f)])) as Record<
+    ProtomapsFlavor,
+    FlavorStyle
+  >),
+  phosphor: phosphorStyle("green"),
+  "phosphor-amber": phosphorStyle("amber"),
+};
+
 /**
- * Style for a vector PMTiles archive. The archive holds tiles only, so the layers come from
- * `@protomaps/basemaps` (which assumes the Protomaps schema) and the sprite is the committed one.
+ * Style for a vector PMTiles archive. The archive holds tiles only, so the sprite and layers come
+ * from the flavour: a `@protomaps/basemaps` preset or a Phosphor look. Both assume the Protomaps
+ * schema.
  *
  * `glyphs` is deliberately left unset unless the config opts in, which makes MapLibre rasterise
  * labels locally with TinySDF. See docs/adr/0003-vector-pmtiles-styling.md.
@@ -136,9 +168,10 @@ function createPmtilesRasterStyle(layer: MlPmtilesLayerConfig): StyleSpecificati
 function createPmtilesVectorStyle(layer: MlPmtilesLayerConfig): StyleSpecification {
   const archive = layer.archive!;
   const flavor = layer.flavor ?? DEFAULT_BASEMAP_FLAVOR;
+  const look = FLAVOR_STYLES[flavor](layer.name, layer.lang ?? "en");
   const style: StyleSpecification = {
     version: 8,
-    sprite: protomapsSpriteUrl(flavor),
+    sprite: look.sprite,
     sources: {
       [layer.name]: {
         type: "vector",
@@ -149,9 +182,7 @@ function createPmtilesVectorStyle(layer: MlPmtilesLayerConfig): StyleSpecificati
         attribution: archive.attribution,
       },
     },
-    layers: protomapsLayers(layer.name, namedFlavor(flavor), {
-      lang: layer.lang ?? "en",
-    }),
+    layers: look.layers,
   };
   if (layer.glyphs) style.glyphs = layer.glyphs;
   return style;

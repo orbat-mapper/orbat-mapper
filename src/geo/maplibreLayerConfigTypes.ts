@@ -48,10 +48,40 @@ export interface MlAtlasLayerConfig extends BaseMlLayerConfig {
   glyphs?: string;
 }
 
-/** The Protomaps basemap presets a vector PMTiles archive can be styled with. */
-export const BASEMAP_FLAVORS = ["light", "dark", "white", "black", "grayscale"] as const;
+/** The Protomaps basemap presets. */
+export const PROTOMAPS_FLAVORS = [
+  "light",
+  "dark",
+  "white",
+  "black",
+  "grayscale",
+] as const;
+
+export type ProtomapsFlavor = (typeof PROTOMAPS_FLAVORS)[number];
+
+/**
+ * The styles a vector PMTiles archive can be drawn with: the Protomaps presets, plus the
+ * Phosphor looks (`@/geo/phosphorBasemap`), which are their own layer set rather than a
+ * Protomaps colour preset.
+ */
+export const BASEMAP_FLAVORS = [
+  ...PROTOMAPS_FLAVORS,
+  "phosphor",
+  "phosphor-amber",
+] as const;
 
 export type BasemapFlavor = (typeof BASEMAP_FLAVORS)[number];
+
+/** Menu label for each flavour. */
+export const BASEMAP_FLAVOR_LABELS: Record<BasemapFlavor, string> = {
+  light: "Light",
+  dark: "Dark",
+  white: "White",
+  black: "Black",
+  grayscale: "Grayscale",
+  phosphor: "Phosphor",
+  "phosphor-amber": "Phosphor amber",
+};
 
 export const DEFAULT_BASEMAP_FLAVOR: BasemapFlavor = "light";
 

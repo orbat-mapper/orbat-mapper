@@ -26,6 +26,7 @@ import {
   registerPmtilesProtocol,
 } from "@/geo/pmtilesProtocol";
 import { registerProtomapsSpriteProtocol } from "@/geo/protomapsSprite";
+import { registerPhosphorSpriteProtocol } from "@/geo/phosphorBasemap/sprite";
 
 /** The archive kinds we can recognise from a file name. */
 export type BasemapArchiveKind = "pmtiles" | "mapbundle";
@@ -41,6 +42,7 @@ export class UnsupportedArchiveError extends Error {}
 export function registerBasemapProtocols(): void {
   registerPmtilesProtocol();
   registerProtomapsSpriteProtocol();
+  registerPhosphorSpriteProtocol();
 }
 
 /** The archive kind a file name implies, or `null` when it is not an archive at all. */

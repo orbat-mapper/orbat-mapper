@@ -6,7 +6,7 @@ import AtlasBasemapOptions from "./AtlasBasemapOptions.vue";
 import OpacityInput from "./OpacityInput.vue";
 import { computed } from "vue";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { BASEMAP_FLAVORS } from "@/geo/maplibreLayerConfigTypes";
+import { BASEMAP_FLAVOR_LABELS, BASEMAP_FLAVORS } from "@/geo/maplibreLayerConfigTypes";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 
@@ -129,7 +129,7 @@ const selectedId = computed({
               @update:model-value="$emit('update:layerFlavor', setting, $event)"
             >
               <NativeSelectOption v-for="f in BASEMAP_FLAVORS" :key="f" :value="f">
-                {{ f }}
+                {{ BASEMAP_FLAVOR_LABELS[f] }}
               </NativeSelectOption>
             </NativeSelect>
           </div>
