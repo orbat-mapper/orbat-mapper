@@ -502,3 +502,48 @@ describe("layers in the file", () => {
     expect(wrapper.emitted("applied")).toBeUndefined();
   });
 });
+
+describe("file origin check", () => {
+  const exportOf = (id: string, exportedDate: string) => ({
+    id,
+    exportedDate,
+    sideGroupIds: ["own"],
+    snapshotGroupIds: [],
+    layerIds: [],
+    snapshotTime: exportedDate,
+  });
+  const notice = (wrapper: ReturnType<typeof setup>["wrapper"]) =>
+    wrapper.find('[aria-label="File origin"]');
+  const setupFromExport = (fileId: string) => {
+    const result = setup(false, false, false, (data) => (data.id = fileId));
+    result.store.state.exportRecords.push(
+      exportOf("export-1", "2026-10-12T14:05:00.000Z"),
+      exportOf("export-2", "2026-10-14T09:30:00.000Z"),
+    );
+    return result;
+  };
+
+  it("shows no notice for a file made from the latest export of the group", async () => {
+    const { wrapper } = setupFromExport("export-2");
+    await flushPromises();
+    expect(notice(wrapper).exists()).toBe(false);
+  });
+
+  it("warns above the summary, without blocking, for a file from an older export", async () => {
+    const { wrapper } = setupFromExport("export-1");
+    await flushPromises();
+    expect(notice(wrapper).text()).toContain("A newer export of this group was made on");
+    const html = wrapper.html();
+    expect(html.indexOf('aria-label="File origin"')).toBeLessThan(
+      html.indexOf('aria-label="Import summary"'),
+    );
+    const importButton = wrapper.findAll("button").find((b) => b.text() === "Import")!;
+    expect(importButton.attributes()).not.toHaveProperty("disabled");
+  });
+
+  it("notes an unknown origin for a file that is not from a recorded export", async () => {
+    const { wrapper } = setupFromExport("elsewhere");
+    await flushPromises();
+    expect(notice(wrapper).text()).toContain("origin of this file is unknown");
+  });
+});

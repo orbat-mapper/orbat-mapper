@@ -12,7 +12,8 @@ import type {
   UnitGeneratorSettings,
 } from "@/types/importExport.ts";
 import { INTERNAL_NAMES, type NUnit } from "@/types/internalModels";
-import type { Unit } from "@/types/scenarioModels";
+import type { ExportRecord, Unit } from "@/types/scenarioModels";
+import { isScenarioOverlayLayer } from "@/types/scenarioStackLayers";
 import {
   reinforcedStatus2SpatialIllusions,
   type SpatialIllusionsOrbat,
@@ -262,17 +263,35 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
 
   function generateOrbatMapper(settings: OrbatMapperExportSettings): string {
     const scn = io.toObject();
-    const newScenario = buildRecipientScenario(
-      scn,
-      settings,
-      snapshotSourceAt(scenario, settings),
-    );
+    const snapshot = snapshotSourceAt(scenario, settings);
+    const newScenario = buildRecipientScenario(scn, settings, snapshot);
+    const exportedDate = new Date().toISOString();
     newScenario.id = nanoid();
+    // The export records stay in this scenario: listed explicitly so they cannot leak.
     newScenario.meta = {
-      ...scn.meta!,
+      createdDate: scn.meta!.createdDate,
+      lastModifiedDate: scn.meta!.lastModifiedDate,
       exportedFrom: scn.id,
-      exportedDate: new Date().toISOString(),
+      exportedDate,
     };
+    const sideGroupIds = newScenario.sides.flatMap((side) =>
+      side.groups.map((group) => group.id),
+    );
+    const record: ExportRecord = {
+      id: newScenario.id,
+      exportedDate,
+      sideGroupIds,
+      snapshotGroupIds: sideGroupIds.filter((id) =>
+        settings.snapshotGroupIds?.includes(id),
+      ),
+      layerIds: newScenario.layerStack
+        .filter(isScenarioOverlayLayer)
+        .map((layer) => layer.id),
+      snapshotTime: new Date(snapshot.timestamp).toISOString(),
+    };
+    store.updateWithoutUndo((s) => {
+      s.exportRecords.push(record);
+    });
     return io.stringifyObject(newScenario);
   }
 
