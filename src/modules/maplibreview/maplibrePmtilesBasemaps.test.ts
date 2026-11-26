@@ -75,6 +75,39 @@ describe("createPmtilesStyle", () => {
     expect(JSON.stringify(dark.layers)).not.toEqual(JSON.stringify(light.layers));
   });
 
+  it("draws the phosphor flavour with its own layers and sprite", () => {
+    const style = createPmtilesStyle(pmtilesLayer({ flavor: "phosphor", lang: "de" }))!;
+    expect(style.sprite).toBe("phosphorsprite://3dff5a/6/1/3/1");
+    expect(style.layers.every((layer) => layer.id.startsWith("phosphor-"))).toBe(true);
+    const sourceLayers = new Set(
+      style.layers.map((layer) =>
+        "source-layer" in layer ? layer["source-layer"] : undefined,
+      ),
+    );
+    expect(sourceLayers).toEqual(new Set([undefined, "water", "boundaries", "places"]));
+    const countries = style.layers.find(
+      (layer) => layer.id === "phosphor-country-labels",
+    )!;
+    expect(JSON.stringify(countries)).toContain('"name:de"');
+  });
+
+  it("draws phosphor amber in amber", () => {
+    const style = createPmtilesStyle(pmtilesLayer({ flavor: "phosphor-amber" }))!;
+    expect(style.sprite).toBe("phosphorsprite://ffb000/6/1/3/1");
+    const coast = style.layers.find((layer) => layer.id === "phosphor-coastline")!;
+    expect("paint" in coast && coast.paint).toMatchObject({ "line-color": "#ffb000" });
+  });
+
+  it("labels phosphor towns with the local name under the translated one", () => {
+    const style = createPmtilesStyle(pmtilesLayer({ flavor: "phosphor", lang: "de" }))!;
+    const towns = style.layers.find((layer) => layer.id === "phosphor-town-labels")!;
+    const layout = "layout" in towns ? towns.layout : undefined;
+    expect(layout).toMatchObject({ "text-transform": "uppercase" });
+    const textField = JSON.stringify(layout?.["text-field" as keyof typeof layout]);
+    expect(textField).toContain('"name:de"');
+    expect(textField).toContain('"pgf:name"');
+  });
+
   it("defaults to the light flavour", () => {
     const style = createPmtilesStyle(pmtilesLayer({ flavor: undefined }))!;
     const light = createPmtilesStyle(pmtilesLayer({ flavor: "light" }))!;
