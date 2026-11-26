@@ -257,12 +257,16 @@ export function useMapOrbit(
 
     const container = map.getCanvasContainer();
     const dragPanEnabled = map.dragPan.isEnabled();
+    // Box zoom starts on any Shift+press and swallows the click that follows, which would
+    // keep shift-clicks (Hellfire's trigger) from reaching `claimClick`.
+    const boxZoomEnabled = map.boxZoom.isEnabled();
     // While clamped, MapLibre re-solves the center onto the terrain after every ease and
     // render, which would move the camera with the ground below it.
     const centerClampedToGround = map.getCenterClampedToGround();
     const releaseSelection = mapSelectStore.suppressSelection();
 
     map.dragPan.disable();
+    map.boxZoom.disable();
     map.touchZoomRotate.disableRotation();
     map.setCenterClampedToGround(false);
     map.on("click", onClick);
@@ -297,6 +301,7 @@ export function useMapOrbit(
       listeners.abort();
       container.classList.remove("map-picking");
       if (dragPanEnabled) map.dragPan.enable();
+      if (boxZoomEnabled) map.boxZoom.enable();
       map.touchZoomRotate.enableRotation();
       map.setCenterClampedToGround(centerClampedToGround);
       // A frozen-elevation ease ends by re-solving the center onto the terrain the camera

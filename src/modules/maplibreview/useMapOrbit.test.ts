@@ -51,6 +51,7 @@ function createFakeMap() {
     off: vi.fn((type: string) => listeners.delete(type)),
     dragPan: createHandler(),
     dragRotate: createHandler(),
+    boxZoom: createHandler(),
     touchZoomRotate: { disableRotation: vi.fn(), enableRotation: vi.fn() },
   };
   const fire = (type: string, event: unknown) => listeners.get(type)?.(event);
@@ -276,6 +277,8 @@ describe("useMapOrbit", () => {
     const { map, orbit, listeners } = setup();
     orbit.startOrbit({ lng: 0, lat: 0 });
     expect(map.dragPan.isEnabled()).toBe(false);
+    // Box zoom would swallow a shift-click, which Hellfire fires on.
+    expect(map.boxZoom.isEnabled()).toBe(false);
     expect(map.dragRotate.isEnabled()).toBe(true);
     expect(map.getCenterClampedToGround()).toBe(false);
 
@@ -283,6 +286,7 @@ describe("useMapOrbit", () => {
     expect(orbit.isOrbiting.value).toBe(false);
     expect(frames).toHaveLength(0);
     expect(map.dragPan.isEnabled()).toBe(true);
+    expect(map.boxZoom.isEnabled()).toBe(true);
     expect(map.getCenterClampedToGround()).toBe(true);
     expect(listeners.has("click")).toBe(false);
     expect(useMapSelectStore().selectionSuppressed).toBe(false);
