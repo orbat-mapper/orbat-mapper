@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 - Added a None choice to the Atlas Elevation bands, which leaves all ground white, and a Smallest place choice (Towns, Villages or Hamlets) to the Atlas options. Smallest place belongs to this device.
 - Added the Curly Bracket to the control measures. It is drawn as a filled, tapered shape by default; turn off Filled in the Style tab to draw it as a single line with a stroke width.
 - Added a Fill color section to the Map symbol tab of the unit details panel. It sets the symbol fill color of one or several selected units as one undo step, and leaves each unit's symbol and reinforced/reduced status alone. Clear custom colors, also in the unit details menu, removes the units' own fill colors so they use their side or side group color again.
+- Added the Naval base map: bright green coastlines, borders and labels on black, in the manner of a naval plotting screen.
+- Added the Phosphor and Phosphor amber flavours for vector basemap archives. They draw the Naval look from a PMTiles file on your disk, in green or amber, with monospace labels, a soft glow, dotted seas and faint scanlines.
 
 ### Changed
 
@@ -44,6 +46,7 @@ All notable changes to this project will be documented in this file.
 - Fixed the bottom level of an ORBAT chart being drawn as a pile of overlapping units when the Levels setting was higher than the number of levels in the chart.
 - Fixed symbols in the Tree, Tree right and Tree left ORBAT chart layouts being shifted sideways by the width of their labels. Symbols on the same side of a branch now line up.
 - Fixed Text to ORBAT pattern mapping aliases in Chinese, Japanese, Korean, Cyrillic or Greek never matching a unit name. An alias such as 师 now matches inside 第1步兵师.
+- Fixed Shift-click not firing a Hellfire strike while orbiting. The click started a box zoom instead.
 
 ## October 2026
 
