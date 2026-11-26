@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type { ExportFormat, GeoJsonSettings } from "@/types/importExport.ts";
+import type { GeoJsonSettings } from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 
-interface Props {
-  format: ExportFormat;
-}
-
-const props = defineProps<Props>();
 const settings = defineModel<GeoJsonSettings>({ required: true });
 </script>
 

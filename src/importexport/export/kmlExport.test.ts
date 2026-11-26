@@ -2,14 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useKmlExport } from "./kmlExport";
 
 const {
-  saveBlobToLocalFileMock,
   foldersToKMLMock,
   zipSyncMock,
   strToU8Mock,
   symbolGeneratorMock,
   mapSettingsMock,
 } = vi.hoisted(() => ({
-  saveBlobToLocalFileMock: vi.fn(),
   foldersToKMLMock: vi.fn(() => "<kml></kml>"),
   zipSyncMock: vi.fn((data: Record<string, Uint8Array>) => data),
   strToU8Mock: vi.fn((s: string) => new TextEncoder().encode(s)),
@@ -25,10 +23,6 @@ const {
     mapIconSize: 30,
     mapCustomIconScale: 1.7,
   },
-}));
-
-vi.mock("@/utils/files", () => ({
-  saveBlobToLocalFile: saveBlobToLocalFileMock,
 }));
 
 vi.mock("@/stores/settingsStore", () => ({
@@ -200,7 +194,7 @@ function createKmzOptions(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("downloadAsKMZ custom symbols", () => {
+describe("generateKmz custom symbols", () => {
   const originalImage = globalThis.Image;
   let fillTextMock: ReturnType<typeof vi.fn>;
   let strokeTextMock: ReturnType<typeof vi.fn>;
@@ -208,7 +202,6 @@ describe("downloadAsKMZ custom symbols", () => {
 
   beforeEach(() => {
     symbolGeneratorMock.mockClear();
-    saveBlobToLocalFileMock.mockClear();
     foldersToKMLMock.mockClear();
     zipSyncMock.mockClear();
     strToU8Mock.mockClear();
@@ -258,9 +251,9 @@ describe("downloadAsKMZ custom symbols", () => {
         anchor: [0.25, 0.8],
       },
     });
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    const result = await downloadAsKMZ(createKmzOptions());
+    const result = await generateKmz(createKmzOptions());
 
     expect(result.warnings).toHaveLength(0);
     expect(symbolGeneratorMock).not.toHaveBeenCalled();
@@ -279,9 +272,9 @@ describe("downloadAsKMZ custom symbols", () => {
 
   it("falls back when custom symbol is missing", async () => {
     const scenario = createScenario({});
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    const result = await downloadAsKMZ(createKmzOptions());
+    const result = await generateKmz(createKmzOptions());
 
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]).toContain("is missing");
@@ -304,9 +297,9 @@ describe("downloadAsKMZ custom symbols", () => {
         sidc: "10031000000000000000",
       },
     });
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    const result = await downloadAsKMZ(createKmzOptions());
+    const result = await generateKmz(createKmzOptions());
 
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]).toContain("could not be embedded");
@@ -322,11 +315,9 @@ describe("downloadAsKMZ custom symbols", () => {
         sidc: "10031000000000000000",
       },
     });
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    const result = await downloadAsKMZ(
-      createKmzOptions({ renderCustomIconLabels: true }),
-    );
+    const result = await generateKmz(createKmzOptions({ renderCustomIconLabels: true }));
 
     expect(result.warnings).toHaveLength(0);
     expect(fillTextMock).toHaveBeenCalled();
@@ -349,9 +340,9 @@ describe("downloadAsKMZ custom symbols", () => {
       },
       { unitName: "This is a very long unit label that should not shrink the icon" },
     );
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    await downloadAsKMZ(createKmzOptions({ renderCustomIconLabels: true }));
+    await generateKmz(createKmzOptions({ renderCustomIconLabels: true }));
 
     const styles = (foldersToKMLMock.mock.calls as any[])[0][1] as Array<
       Record<string, unknown>
@@ -373,9 +364,9 @@ describe("downloadAsKMZ custom symbols", () => {
       },
       { unitName: "Very long label that should expand canvas width" },
     );
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    await downloadAsKMZ(createKmzOptions({ renderCustomIconLabels: true }));
+    await generateKmz(createKmzOptions({ renderCustomIconLabels: true }));
 
     const styles = (foldersToKMLMock.mock.calls as any[])[0][1] as Array<
       Record<string, unknown>
@@ -398,9 +389,9 @@ describe("downloadAsKMZ custom symbols", () => {
       },
       { unitName: "Alpha Bravo Charlie" },
     );
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    await downloadAsKMZ(createKmzOptions({ renderCustomIconLabels: true }));
+    await generateKmz(createKmzOptions({ renderCustomIconLabels: true }));
 
     // Wrapped labels should render on multiple lines when wrap width is small.
     expect(fillTextMock.mock.calls.length).toBeGreaterThan(1);
@@ -408,7 +399,7 @@ describe("downloadAsKMZ custom symbols", () => {
 
   it("embeds ordinary symbol icon when canvas toBlob returns null", async () => {
     const scenario = createMilScenario();
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
     const toDataURLSpy = vi
       .spyOn(HTMLCanvasElement.prototype, "toDataURL")
@@ -418,7 +409,7 @@ describe("downloadAsKMZ custom symbols", () => {
       cb?.(null);
     });
 
-    const result = await downloadAsKMZ(createKmzOptions());
+    const result = await generateKmz(createKmzOptions());
 
     expect(result.warnings).toHaveLength(0);
     expect(symbolGeneratorMock).toHaveBeenCalledTimes(1);
@@ -511,9 +502,9 @@ describe("downloadAsKMZ custom symbols", () => {
         },
       ],
     } as any;
-    const { downloadAsKMZ } = useKmlExport(scenario);
+    const { generateKmz } = useKmlExport(scenario);
 
-    await downloadAsKMZ(
+    await generateKmz(
       createKmzOptions({
         includeUnits: false,
         includeFeatures: true,

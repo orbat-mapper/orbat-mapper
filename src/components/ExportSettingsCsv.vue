@@ -2,18 +2,12 @@
 import type {
   CsvSeparator,
   CsvSettings,
-  ExportFormat,
   LocationExportFormat,
 } from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 
-interface Props {
-  format: ExportFormat;
-}
-
-defineProps<Props>();
 const settings = defineModel<CsvSettings>({ required: true });
 
 const attributes: (string | { field: string; label: string })[] = [

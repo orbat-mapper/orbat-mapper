@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import type {
-  ExportFormat,
-  LocationExportFormat,
-  XlsxSettings,
-} from "@/types/importExport.ts";
+import type { LocationExportFormat, XlsxSettings } from "@/types/importExport.ts";
 import InputCheckbox from "@/components/InputCheckbox.vue";
 import InputGroupTemplate from "@/components/InputGroupTemplate.vue";
 import SimpleSelect from "@/components/SimpleSelect.vue";
 
-interface Props {
-  format: ExportFormat;
-}
-
-defineProps<Props>();
 const settings = defineModel<XlsxSettings>({ required: true });
 
 const attributes: (string | { field: string; label: string })[] = [

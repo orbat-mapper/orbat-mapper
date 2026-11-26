@@ -7,8 +7,7 @@ import type { TScenario } from "@/scenariostore";
 vi.mock("@/importexport/export/kmlExport", () => ({
   useKmlExport: () => ({
     generateKml: vi.fn(),
-    downloadAsKML: vi.fn(),
-    downloadAsKMZ: vi.fn(),
+    generateKmz: vi.fn(),
   }),
 }));
 
@@ -42,7 +41,6 @@ describe("partial ORBAT Mapper export", () => {
       sideGroups: [],
       emptySideIds: ["empty"],
       layerIds: [],
-      customColors: true,
       fileName: "empty.json",
     };
     expect(buildRecipientScenario(source, settings, noSnapshots).sides).toEqual([
@@ -66,7 +64,6 @@ describe("partial ORBAT Mapper export", () => {
       sideGroups: [],
       layerIds: ["layer-control-measures"],
       scenarioName: "Blue update",
-      customColors: true,
       fileName: "blue.json",
     };
     const source = loadControlMeasureScenarioFixture();
@@ -86,7 +83,6 @@ describe("partial ORBAT Mapper export", () => {
       exporter().generateOrbatMapper({
         sideGroups: [],
         scenarioName: "Control measures only",
-        customColors: true,
         fileName: "control-measures.json",
       }),
     );
@@ -119,7 +115,6 @@ describe("partial ORBAT Mapper export", () => {
       exporter().generateOrbatMapper({
         sideGroups: [],
         layerIds: ["layer-control-measures"],
-        customColors: true,
         fileName: "selected-layers.json",
       }),
     );
@@ -139,7 +134,6 @@ describe("partial ORBAT Mapper export", () => {
       exporter().generateOrbatMapper({
         sideGroups: [],
         layerIds: [],
-        customColors: true,
         fileName: "no-layers.json",
       }),
     );

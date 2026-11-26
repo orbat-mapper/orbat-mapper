@@ -1,26 +1,23 @@
 import { buildRecipientScenario, snapshotSourceAt } from "./recipientScenario";
 import { featureCollection } from "@turf/helpers";
+import type { Position } from "geojson";
 import { injectStrict, nanoid } from "@/utils";
 import { activeScenarioKey } from "@/components/injects";
 import type { TScenario } from "@/scenariostore";
 import type {
   ColumnMapping,
   CsvSettings,
-  ExportSettings,
   GeoJsonSettings,
+  LocationExportFormat,
   OrbatMapperExportSettings,
-  UnitGeneratorSettings,
+  XlsxSettings,
 } from "@/types/importExport.ts";
-import { INTERNAL_NAMES, type NUnit } from "@/types/internalModels";
-import type { Unit } from "@/types/scenarioModels";
-import {
-  reinforcedStatus2SpatialIllusions,
-  type SpatialIllusionsOrbat,
-} from "@/types/externalModels";
-import type { OrbatMapperGeoJsonLayer } from "@/importexport/jsonish/types";
-import { saveBlobToLocalFile } from "@/utils/files";
+import { INTERNAL_NAMES } from "@/types/internalModels";
 import { useKmlExport } from "./kmlExport";
 import { useGeoJsonConverter } from "@/importexport/export/geojsonConverter";
+
+export const XLSX_MIME_TYPE =
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 export interface UseScenarioExportOptions {
   activeScenario: TScenario;
@@ -72,17 +69,12 @@ export function toCsv(data: Record<string, any>[], separator: string): string {
 
 export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {}) {
   const scenario = options.activeScenario || injectStrict(activeScenarioKey);
-  const {
-    geo,
-    store,
-    unitActions,
-    io,
-    helpers: { getUnitById },
-  } = scenario;
+  const { geo, store, unitActions, io } = scenario;
   const { sideMap } = store.state;
 
   const { convertUnitsToGeoJson, convertScenarioFeaturesToGeoJson } =
     useGeoJsonConverter(scenario);
+  const { generateKml, generateKmz } = useKmlExport(scenario);
 
   function generateGeoJSON(opts: GeoJsonSettings): string {
     const units = opts.includeUnits
@@ -95,169 +87,50 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return JSON.stringify(featureCollection(combined), stringifyReplacer, 2);
   }
 
-  async function downloadAsGeoJSON(opts: GeoJsonSettings) {
-    await saveBlobToLocalFile(
-      new Blob([generateGeoJSON(opts)], {
-        type: "application/json",
-      }),
-      opts.fileName,
-    );
-  }
-
-  const {
-    generateKml,
-    downloadAsKML,
-    downloadAsKMZ: exportAsKMZ,
-  } = useKmlExport(scenario);
-
-  async function downloadAsKMZ(opts: ExportSettings) {
-    return exportAsKMZ(opts);
-  }
-
-  async function generateMilx(opts: ExportSettings): Promise<string> {
-    const { toMilx } = await import("@/importexport/milx");
-
-    const layers: OrbatMapperGeoJsonLayer[] = [];
-
-    if (opts.includeUnits) {
-      if (opts.oneFolderPerSide) {
-        Object.keys(sideMap).forEach((sideId) => {
-          const side = sideMap[sideId];
-          const units: NUnit[] = [];
-          unitActions.walkSide(sideId, (unit) => {
-            if (unit._state?.location) units.push(unit);
-          });
-          layers.push({
-            name: side.name,
-            featureCollection: convertUnitsToGeoJson(units),
-          });
-        });
-      } else {
-        layers.push({
-          name: "Units",
-          featureCollection: convertUnitsToGeoJson(geo.everyVisibleUnit.value),
-        });
-      }
-    }
-
-    return toMilx(layers);
-  }
-
-  async function downloadAsMilx(opts: ExportSettings) {
-    const milxString = await generateMilx(opts);
-    await saveBlobToLocalFile(
-      new Blob([milxString], {
-        type: "application/xml",
-      }),
-      "scenario.milxly",
-      { mimeTypes: ["application/xml"], extensions: [".milxly"] },
-    );
-  }
-
-  async function downloadAsXlsx(opts: ExportSettings) {
-    const { writeFileXLSX, xlsxUtils } = await import("@/extlib/xlsx-lazy");
+  /** A function that writes a location in the chosen format, loaded on first use. */
+  async function locationFormatter(locationFormat: LocationExportFormat) {
     const { formatLocation } = await import("@/importexport/export/locationFormat");
-    const workbook = xlsxUtils.book_new();
-    let unitData: any[] = [];
-    const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
-    if (opts.oneSheetPerSide) {
-      Object.keys(sideMap).forEach((sideId) => {
-        unitData = [];
-        const sideName = sideMap[sideId].name;
-        unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-          unitData.push({
-            ...unit,
-            location: formatLoc(unit._state?.location || unit.location),
-            sideId: side.id,
-            sideName: side?.name,
-          });
-        });
-        const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));
-        xlsxUtils.book_append_sheet(workbook, ws, sideName);
+    return (location: Position | undefined) => formatLocation(location, locationFormat);
+  }
+
+  /** One row per unit of a side, with its location at the current scenario time. */
+  function unitRows(sideId: string, formatLoc: (location?: Position) => unknown): any[] {
+    const rows: any[] = [];
+    unitActions.walkSide(sideId, (unit, _level, _parent, _sideGroup, side) => {
+      rows.push({
+        ...unit,
+        location: formatLoc(unit._state?.location || unit.location),
+        sideId: side.id,
+        sideName: side.name,
       });
+    });
+    return rows;
+  }
+
+  async function generateXlsx(opts: XlsxSettings): Promise<Blob> {
+    const { xlsxWrite, xlsxUtils } = await import("@/extlib/xlsx-lazy");
+    const workbook = xlsxUtils.book_new();
+    const sideIds = Object.keys(sideMap);
+    const formatLoc = await locationFormatter(opts.locationFormat);
+    if (opts.oneSheetPerSide) {
+      for (const sideId of sideIds) {
+        const rows = unitRows(sideId, formatLoc);
+        const ws = xlsxUtils.json_to_sheet(columnMapper(rows, opts.columns));
+        xlsxUtils.book_append_sheet(workbook, ws, sideMap[sideId].name);
+      }
     } else {
-      Object.keys(sideMap).forEach((sideId) =>
-        unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-          unitData.push({
-            ...unit,
-            location: formatLoc(unit._state?.location || unit.location),
-            sideId: side.id,
-            sideName: side?.name,
-          });
-        }),
-      );
-      const ws = xlsxUtils.json_to_sheet(columnMapper(unitData, opts.columns));
+      const rows = sideIds.flatMap((id) => unitRows(id, formatLoc));
+      const ws = xlsxUtils.json_to_sheet(columnMapper(rows, opts.columns));
       xlsxUtils.book_append_sheet(workbook, ws, "Units");
     }
-
-    writeFileXLSX(workbook, "scenario.xlsx");
+    const data: ArrayBuffer = xlsxWrite(workbook, { bookType: "xlsx", type: "array" });
+    return new Blob([data], { type: XLSX_MIME_TYPE });
   }
 
-  async function generateCsv(opts: CsvSettings & ExportSettings): Promise<string> {
-    const { formatLocation } = await import("@/importexport/export/locationFormat");
-    const formatLoc = (loc: any) => formatLocation(loc, opts.locationFormat);
-    const separator = opts.separator || ",";
-
-    const unitData: any[] = [];
-    Object.keys(sideMap).forEach((sideId) =>
-      unitActions.walkSide(sideId, (unit, level, parent, sideGroup, side) => {
-        unitData.push({
-          ...unit,
-          location: formatLoc(unit._state?.location || unit.location),
-          sideId: side.id,
-          sideName: side?.name,
-        });
-      }),
-    );
-
-    const mappedData = columnMapper(unitData, opts.columns);
-    return toCsv(mappedData, separator);
-  }
-
-  async function downloadAsCsv(opts: CsvSettings & ExportSettings) {
-    const csvContent = await generateCsv(opts);
-    const separator = opts.separator || ",";
-    const extension = separator === "\t" ? ".tsv" : ".csv";
-    const mimeType = separator === "\t" ? "text/tab-separated-values" : "text/csv";
-
-    await saveBlobToLocalFile(
-      new Blob([csvContent], { type: mimeType }),
-      `scenario${extension}`,
-      { mimeTypes: [mimeType], extensions: [extension] },
-    );
-  }
-
-  function generateSpatialIllusions(opts: UnitGeneratorSettings): string {
-    const { rootUnit } = opts;
-    const hierarchy = unitActions.expandUnitWithSymbolOptions(getUnitById(rootUnit));
-
-    const d = convertUnit(hierarchy, 0);
-    function convertUnit(unit: Unit, level: number): SpatialIllusionsOrbat {
-      return {
-        options: {
-          uniqueDesignation: unit.name,
-          sidc: unit.sidc,
-          fillColor: unit.symbolOptions?.fillColor,
-          reinforced: reinforcedStatus2SpatialIllusions[unit.reinforcedStatus ?? "None"],
-          additionalInformation: unit.textAmplifiers?.additionalInformation,
-        },
-        subOrganizations:
-          level < opts.maxLevels
-            ? unit.subUnits?.map((subUnit) => convertUnit(subUnit, level + 1)) || []
-            : [],
-      };
-    }
-    return JSON.stringify(d, undefined, 2);
-  }
-
-  async function downloadAsSpatialIllusions(opts: UnitGeneratorSettings) {
-    await saveBlobToLocalFile(
-      new Blob([generateSpatialIllusions(opts)], {
-        type: "application/json",
-      }),
-      "spatialillusions-orbat.json",
-      { mimeTypes: ["application/json"], extensions: [".json"] },
-    );
+  async function generateCsv(opts: CsvSettings): Promise<string> {
+    const formatLoc = await locationFormatter(opts.locationFormat);
+    const rows = Object.keys(sideMap).flatMap((id) => unitRows(id, formatLoc));
+    return toCsv(columnMapper(rows, opts.columns), opts.separator || ",");
   }
 
   function generateOrbatMapper(settings: OrbatMapperExportSettings): string {
@@ -276,30 +149,12 @@ export function useScenarioExport(options: Partial<UseScenarioExportOptions> = {
     return io.stringifyObject(newScenario);
   }
 
-  async function downloadAsOrbatMapper(opts: OrbatMapperExportSettings) {
-    await saveBlobToLocalFile(
-      new Blob([generateOrbatMapper(opts)], {
-        type: "application/json",
-      }),
-      opts.fileName || "scenario-export-orbatmapper.json",
-      { mimeTypes: ["application/json"], extensions: [".json"] },
-    );
-  }
-
   return {
-    downloadAsGeoJSON,
-    downloadAsKML,
-    downloadAsKMZ,
-    downloadAsXlsx,
-    downloadAsCsv,
-    downloadAsMilx,
-    downloadAsSpatialIllusions,
-    downloadAsOrbatMapper,
     generateGeoJSON,
     generateKml,
+    generateKmz,
+    generateXlsx,
     generateCsv,
-    generateMilx,
-    generateSpatialIllusions,
     generateOrbatMapper,
   };
 }

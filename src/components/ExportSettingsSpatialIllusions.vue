@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import type { ExportFormat, UnitGeneratorSettings } from "@/types/importExport.ts";
+import type { SpatialIllusionsSettings } from "@/importexport/export/exporters/spatialIllusions";
 import SymbolCodeSelect from "@/components/SymbolCodeSelect.vue";
 import { useRootUnits } from "@/composables/scenarioUtils";
 import NumberInputGroup from "@/components/NumberInputGroup.vue";
 
-interface Props {
-  format: ExportFormat;
-}
-
-const props = defineProps<Props>();
-const settings = defineModel<UnitGeneratorSettings>({ required: true });
+const settings = defineModel<SpatialIllusionsSettings>({ required: true });
 
 const { rootUnitItems, groupedRootUnitItems } = useRootUnits();
 
