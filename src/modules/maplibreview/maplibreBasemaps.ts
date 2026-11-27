@@ -299,10 +299,24 @@ export function getSupportedMaplibreBasemaps(
   return options;
 }
 
+/**
+ * Basemap ids that were renamed, mapped to their new id. Scenarios and device settings saved
+ * before a rename still carry the old id, and would otherwise fall back to the first basemap.
+ */
+const RENAMED_BASEMAP_IDS: Readonly<Record<string, string>> = {
+  naval: "phosphor",
+};
+
 export function resolveMaplibreBasemap(
   basemapId: string | undefined,
   layers: MlLayerConfig[],
 ): MaplibreBasemapOption {
   const options = getSupportedMaplibreBasemaps(layers);
-  return options.find((option) => option.id === basemapId) ?? options[0];
+  const find = (id: string | undefined) => options.find((option) => option.id === id);
+  // The exact id first: a config may still declare a basemap under its old id.
+  return (
+    find(basemapId) ??
+    (basemapId ? find(RENAMED_BASEMAP_IDS[basemapId]) : undefined) ??
+    options[0]
+  );
 }

@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Added a Fill color section to the Map symbol tab of the unit details panel. It sets the symbol fill color of one or several selected units as one undo step, and leaves each unit's symbol and reinforced/reduced status alone. Clear custom colors, also in the unit details menu, removes the units' own fill colors so they use their side or side group color again.
 - Added the Naval base map: bright green coastlines, borders and labels on black, in the manner of a naval plotting screen.
 - Added the Phosphor and Phosphor amber flavours for vector basemap archives. They draw the Naval look from a PMTiles file on your disk, in green or amber, with monospace labels, a soft glow, dotted seas and faint scanlines.
+- Added the Phosphor amber base map, the amber version of the Phosphor base map.
 
 ### Changed
 
@@ -34,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Clicking the map compass now resets only the bearing. Double-click it to also level the view.
 - The unit menu in the ORBAT panel is shorter: the Duplicate and Move choices and the branch actions (Expand all, Collapse all, Hide on map, Show on map, Hide subordinates below) are now in submenus, choices that do not apply to a unit without subordinates are left out, and Delete is last. The unit details menu has the same Branch submenu.
 - The Atlas base map now draws villages and hamlets, town dots in their labels, softer water lines and haloed area names.
+- The Naval base map is now called Phosphor, like the matching flavour for basemap archives. Scenarios and settings that use Naval open on Phosphor.
 
 ### Fixed
 

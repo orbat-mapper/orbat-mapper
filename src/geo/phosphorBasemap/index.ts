@@ -1,6 +1,6 @@
 /**
  * The Phosphor basemap: a CRT look, phosphor on black, for a vector archive in the Protomaps
- * schema. It is the look of the hosted Naval basemap (orbat-mapper/naval-basemap), with
+ * schema. It is the look of the hosted Phosphor basemaps (orbat-mapper/naval-basemap), with
  * presets for green (P1) and amber (P3) phosphor.
  *
  * One call gives a style's layers and sprite URL:
@@ -13,7 +13,7 @@
  * This folder is self-contained (it imports only `maplibre-gl` and `@protomaps/basemaps`) so
  * it can be copied into another app as is, such as tactrace.
  *
- * The hosted Naval style is written for the OpenMapTiles schema. These are the same layers
+ * The hosted Phosphor styles are written for the OpenMapTiles schema. These are the same layers
  * translated to Protomaps source layers and attributes:
  *
  * - `water` polygons that are not river areas stand in for OpenMapTiles `water`
@@ -59,7 +59,7 @@ export interface PhosphorPalette {
 }
 
 export const PHOSPHOR_PALETTES = {
-  /** P1 green phosphor, the hosted Naval look. */
+  /** P1 green phosphor, the hosted Phosphor look. */
   green: {
     background: "#000000",
     line: "#3dff5a",
