@@ -30,10 +30,16 @@
     "styleUrl": "https://tiles.openfreemap.org/styles/fiord"
   },
   {
-    "name": "naval",
-    "title": "Naval (dark)",
+    "name": "phosphor",
+    "title": "Phosphor (dark)",
     "sourceType": "style",
     "styleUrl": "https://orbat-mapper.github.io/naval-basemap/style/naval.json"
+  },
+  {
+    "name": "phosphorAmber",
+    "title": "Phosphor amber (dark)",
+    "sourceType": "style",
+    "styleUrl": "https://orbat-mapper.github.io/naval-basemap/style/naval-amber.json"
   },
   {
     "name": "atlas",

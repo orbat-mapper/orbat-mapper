@@ -115,4 +115,30 @@ describe("maplibreBasemaps", () => {
     const option = resolveMaplibreBasemap("missing-id", layers);
     expect(option.id).toBe(layers[0]?.name);
   });
+
+  it("resolves a renamed basemap id to its new id", () => {
+    const withPhosphor: MlLayerConfig[] = [
+      ...layers,
+      {
+        name: "phosphor",
+        title: "Phosphor (dark)",
+        sourceType: "style",
+        styleUrl: "https://orbat-mapper.github.io/naval-basemap/style/naval.json",
+      },
+    ];
+    expect(resolveMaplibreBasemap("naval", withPhosphor).id).toBe("phosphor");
+  });
+
+  it("prefers a basemap that is still declared under its old id", () => {
+    const withNaval: MlLayerConfig[] = [
+      ...layers,
+      {
+        name: "naval",
+        title: "Naval (dark)",
+        sourceType: "style",
+        styleUrl: "https://orbat-mapper.github.io/naval-basemap/style/naval.json",
+      },
+    ];
+    expect(resolveMaplibreBasemap("naval", withNaval).id).toBe("naval");
+  });
 });
