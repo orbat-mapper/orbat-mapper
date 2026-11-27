@@ -47,11 +47,17 @@ Collapsing them would mean either adopting the library's ABI as our scenario sea
 (coupling every scenario module to an alpha package) or teaching the library to
 speak ours (a fork).
 
-The surface owns one hazard that the rest of the app must not have to know about:
-tactical-draw's `@ready` fires on `load`, and a basemap swap never re-fires it. The
-surface therefore **re-attaches on `style.load` itself** and replays the last
-`render()`. The façade identity changes underneath any long-lived host code, so no
-caller may capture a `Pick<TacticalDraw, …>` and hold it.
+The surface owns one hazard that the rest of the app must not have to know about: a
+basemap swap (`setStyle(..., { diff: false })`) drops every source and layer the
+adapter added and re-fires `style.load`, never `load`. The surface builds the façade
+on the first `style.load` and keeps it until it is destroyed; every later
+`style.load` is a swap, answered with **`adapter.reattach()`**, which re-adds the
+adapter's layers from what it last drew. Graphics, highlights, snapping and an open
+draw or edit survive the swap untouched. Until `reattach()` runs, the adapter records
+renders without drawing them (tactical-draw-adapter-maplibre 0.16, control-measures
+#772), so a swap that skipped it would leave every graphic invisible. No caller
+should capture a `Pick<TacticalDraw, …>` and hold it: the façade still comes and
+goes with the map view.
 
 ## `tacticalGraphic` as the data model
 
@@ -250,11 +256,11 @@ alpha bump.
   route chunk. No cost to any other route. (#634)
 - **First population of the tactical-draw stack is ~O(n²)** — 464 ms at 100 graphics,
   ~1.5 s at 200, 5.4 s at 400 — because each new bundle's `addSource`/`addLayer`/
-  `moveLayer` walks the whole style. It is paid on scenario load **and on every
-  basemap swap**, since the surface re-attaches on `style.load` and replays
-  `lastRendered`. **Accepted for stage one**: no progressive population, no busy
-  affordance, no batching. It is the first thing to revisit if the interactive ceiling
-  is ever raised. (#643)
+  `moveLayer` walks the whole style. It is paid on scenario load. A basemap swap
+  re-adds the same layers through `adapter.reattach()`, which reuses the built groups
+  and decoded icons but still adds every layer to the new style. **Accepted for stage
+  one**: no progressive population, no busy affordance, no batching. It is the first
+  thing to revisit if the interactive ceiling is ever raised. (#643)
 - Steady state is otherwise free: at 400 graphics, 6 ms to rebuild every object, 5 ms
   to reverse z-order, 1 ms for a single edit. Time-scrubbing and layer reordering are
   not a performance concern. (#643)

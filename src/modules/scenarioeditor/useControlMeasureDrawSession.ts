@@ -7,8 +7,8 @@
  * library hands its override back and expects the host's next render to be
  * authoritative.
  *
- * Aborts are a **normal outcome**, never an error: Escape, arming another tool, a
- * basemap swap and a destroyed surface all reject the `draw()` promise with
+ * Aborts are a **normal outcome**, never an error: Escape, arming another tool and a
+ * destroyed surface all reject the `draw()` promise with
  * `TacticalDrawAbortError`, and all of them simply end the session with nothing written.
  * The one thing that must not happen is a stale rejection disarming a tool the user has
  * since armed, which is what the generation token guards.
@@ -47,7 +47,7 @@ export interface ControlMeasureDrawProgress {
 
 export interface UseControlMeasureDrawSessionOptions {
   scenario: TScenario;
-  /** Re-read on every use: the façade is rebuilt on every basemap swap. */
+  /** Re-read on every use: the surface comes and goes with the map view. */
   surface: () => TacticalDrawSurface | undefined | null;
   /** The settle-first feed for tactical drawing. */
   renderFeed?: TacticalGraphicRenderFeed | null;

@@ -199,7 +199,7 @@ describe("useControlMeasureDrawSession", () => {
 
   it("writes nothing when the façade is detached mid-gesture", async () => {
     const scenario = createScenario();
-    // A basemap swap: every authoring door rejects with `TacticalDrawAbortError`.
+    // No live façade: every authoring door rejects with `TacticalDrawAbortError`.
     const fake = createTacticalDrawSurfaceFake({ detached: true });
     const settled: { committed: boolean }[] = [];
     const scope = effectScope();

@@ -97,10 +97,7 @@ export function __resetTacticalDrawReactivityWarning() {
 /**
  * Id generation is handed to the host so a graphic's id is the scenario layer-item id
  * from birth — `ControlMeasure.id === TacticalGraphicLayerItem.id`, with no
- * reconciliation table anywhere. The library's default is a monotonic `td-${n}` slug,
- * which would collide across façade re-attaches.
- *
- * Rebuilt per attach because the façade is reconstructed on every `style.load`.
+ * reconciliation table anywhere. The library's default is a monotonic `td-${n}` slug.
  */
 function tacticalDrawOptions() {
   return {
@@ -116,7 +113,7 @@ let sharedPointSymbols: ReturnType<typeof milsymbolPointSymbols> | null = null;
 
 /**
  * Milsymbol rendering for point symbols (ADR-0029 in tactical-draw). One instance for
- * the app, so its render cache survives the façade being rebuilt on every basemap swap.
+ * the app, so its render cache outlives any one map view.
  */
 function pointSymbolCapability() {
   return (sharedPointSymbols ??= milsymbolPointSymbols({
@@ -137,7 +134,7 @@ function pointSymbolCapability() {
 export interface TacticalDrawSurface {
   /** tactical-draw's engine adapter. Held for projection queries; not the render seam. */
   readonly adapter: TacticalDrawMapAdapter;
-  /** The façade, or `null` between a basemap swap and the next `style.load`. */
+  /** The façade, or `null` before the first `style.load` and after `destroy()`. */
   readonly tacticalDraw: TacticalDraw | null;
   /** Bottommost native graphics layer, used to place scenario layers underneath it. */
   getGraphicsAnchorLayerId(): string | undefined;
@@ -183,7 +180,7 @@ export interface TacticalDrawSurface {
    *
    * Deliberately **not** part of the render batch: highlighting starts no session and
    * aborts none, so selection changes must not have to go through the settle-first
-   * render feed. The set is replayed after a `style.load` re-attach.
+   * render feed. A set made before the style loaded is applied when it does.
    */
   setHighlightedGraphics(ids: readonly string[]): void;
   /**
@@ -202,15 +199,15 @@ export interface TacticalDrawSurface {
   ): string | null;
   /**
    * Engine-level snapping for draw and edit sessions. Cheap and idempotent, so the
-   * host re-asserts it rather than tracking what the façade currently holds — which
-   * is also what makes it survive a `style.load` re-attach.
+   * host re-asserts it rather than tracking what the façade currently holds.
    */
   setSnappingOptions(options?: SnappingOptions): void;
   /**
    * Start an interactive draw. Resolves with the committed snapshot, rejects with
-   * `TacticalDrawAbortError` on Escape / abort / destroy — and, notably, while the
-   * façade is detached, so a caller's abort path covers the basemap-swap window by
-   * construction rather than by a separate null check.
+   * `TacticalDrawAbortError` on Escape / abort / destroy — and, notably, before the
+   * style has loaded or after `destroy()`, so a caller's abort path covers those
+   * windows by construction rather than by a separate null check. A basemap swap
+   * neither aborts nor settles an open session.
    *
    * Nothing here writes to the scenario store: the host folds the resolved snapshot
    * in exactly once, on settle (ADR-0006).
@@ -236,11 +233,11 @@ export interface TacticalDrawSurface {
    * trigger's hard end — a draw aborts, an edit is closed by the caller instead.
    */
   cancel(reason?: TacticalDrawAbortReason): boolean;
-  /** The open session, or `null`. Re-read it; never hold it across a basemap swap. */
+  /** The open session, or `null`. Re-read it rather than holding it. */
   readonly activeSession: TacticalDrawSession;
   /**
-   * Fires immediately before a live façade is destroyed — a basemap swap's
-   * `style.load` re-attach, or `destroy()`.
+   * Fires immediately before a live façade is destroyed by `destroy()`. A basemap
+   * swap keeps the façade, so it does not fire then.
    *
    * Destroying the façade rejects an open session's promise without firing
    * `onCommit`, which for an **edit** would silently discard the user's work and
@@ -256,10 +253,13 @@ export interface TacticalDrawSurface {
 /**
  * Stand a `TacticalDraw` façade up over `mlMap`.
  *
- * Attachment is gated on `style.load` rather than `load`, because a basemap swap
- * (`setStyle(..., { diff: false })`) discards every custom source and layer without
- * re-firing `load`. The same gate therefore doubles as the re-attach hook, matching
- * how `mapLibreScenarioLayerController` already rebuilds its layers.
+ * The façade is built on the first `style.load` and lives until `destroy()`. A
+ * basemap swap (`setStyle(..., { diff: false })`) discards every custom source and
+ * layer and re-fires `style.load` but not `load`; the surface answers it with
+ * `adapter.reattach()`, which re-adds the adapter's layers from what it last drew.
+ * Until that runs the adapter records renders without drawing them, so a swap that
+ * skipped it would leave every graphic invisible. Graphics, highlights, snapping and
+ * an open draw or edit all survive the swap.
  *
  * Nothing returned here may be made deeply reactive — the engine caches rendered
  * output on `Graphic` object identity, and a Vue proxy would defeat that. Callers
@@ -301,7 +301,7 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   function detachedAbort(): TacticalDrawAbortError {
     return new TacticalDrawAbortError("destroyed", {
       message:
-        "tactical-draw is detached (basemap swap in progress or surface destroyed)",
+        "tactical-draw is detached (map style not loaded yet, or surface destroyed)",
     });
   }
 
@@ -323,9 +323,6 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
   }
 
   function attachFacade() {
-    if (destroyed) return;
-    // Idempotent by construction, so a repeated `style.load` cannot stack façades.
-    detachFacade();
     tacticalDraw = new TacticalDraw(adapter, {
       ...tacticalDrawOptions(),
       snapping: lastSnapping,
@@ -333,14 +330,18 @@ export function createTacticalDrawSurface(mlMap: MlMap): TacticalDrawSurface {
     unsubscribePick = tacticalDraw.onGraphicPick((event) => {
       for (const handler of pickHandlers) handler(event);
     });
-    // A style swap wiped the previous layers; restore what the host last asked for.
+    // Apply what the host asked for before the style was ready.
     if (lastRendered.length > 0) tacticalDraw.render(lastRendered);
-    // Highlights live on their own layer and are wiped by the same swap. Replay after
-    // `render`, since the library skips ids that are not currently rendered.
+    // After `render`, since the library skips ids that are not currently rendered.
     if (lastHighlighted.length > 0) tacticalDraw.setHighlightedGraphics(lastHighlighted);
   }
 
-  const handleStyleLoad = () => attachFacade();
+  function handleStyleLoad() {
+    if (destroyed) return;
+    if (!tacticalDraw) attachFacade();
+    // A basemap swap: the façade stays, the adapter re-adds its layers on the new style.
+    else adapter.reattach();
+  }
   mlMap.on("style.load", handleStyleLoad);
   // `@ready` fires on `load`, which is after the first `style.load` — attach now
   // rather than waiting for a basemap swap that may never come.
