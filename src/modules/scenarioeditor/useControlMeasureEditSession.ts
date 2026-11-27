@@ -70,7 +70,7 @@ type LiveEditSession = EditSession | GraphicEditSession<PointSymbol>;
 
 export interface UseControlMeasureEditSessionOptions {
   scenario: TScenario;
-  /** Re-read on every use: the façade is rebuilt on every basemap swap. */
+  /** Re-read on every use: the surface comes and goes with the map view. */
   surface: () => TacticalDrawSurface | undefined | null;
   /** The settle-first feed for tactical drawing. */
   renderFeed?: TacticalGraphicRenderFeed | null;
@@ -371,7 +371,7 @@ export function useControlMeasureEditSession(
         notifySettled(true, itemId, settleReason);
       })
       .catch((error) => {
-        // Abort is a normal outcome — a destroyed façade, a basemap swap mid-gesture.
+        // Abort is a normal outcome — Escape, or the surface destroyed mid-gesture.
         // Nothing was folded, because `onCommit` never fired.
         if (!isTacticalDrawAbortError(error)) {
           console.error(`[${logTag}] edit session failed`, error);

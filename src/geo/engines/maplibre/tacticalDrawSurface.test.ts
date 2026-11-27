@@ -19,6 +19,7 @@ const { facades, adapters } = vi.hoisted(() => ({
   }>,
   adapters: [] as Array<{
     destroy: ReturnType<typeof vi.fn>;
+    reattach: ReturnType<typeof vi.fn>;
     options: { viewChangeMode?: "continuous" | "settle" } | undefined;
     press: (info: Record<string, unknown>) => void;
   }>,
@@ -80,6 +81,7 @@ vi.mock("@orbat-mapper/tactical-draw-adapter-maplibre", () => ({
       };
       const entry = {
         destroy: vi.fn(),
+        reattach: vi.fn(),
         options,
         press: (info: Record<string, unknown>) =>
           pointerDown.forEach((cb) => cb([0, 0], info)),
@@ -87,6 +89,7 @@ vi.mock("@orbat-mapper/tactical-draw-adapter-maplibre", () => ({
       adapters.push(entry);
       Object.assign(this, {
         destroy: entry.destroy,
+        reattach: entry.reattach,
         createEditPointerDriver: () => driver,
       });
     }
@@ -161,14 +164,13 @@ describe("createTacticalDrawSurface", () => {
   });
 
   // Without this the library falls back to a monotonic `td-${n}` slug, which would
-  // not equal the scenario layer-item id and would restart on every re-attach.
-  it("injects nanoid as the façade's id generator, on every attach", () => {
-    const { map, emitStyleLoad } = createFakeMap(true);
+  // not equal the scenario layer-item id.
+  it("injects nanoid as the façade's id generator", () => {
+    const { map } = createFakeMap(true);
     createTacticalDrawSurface(map);
-    emitStyleLoad();
 
-    expect(facades).toHaveLength(2);
-    const ids = facades.map((facade) => facade.options?.generateId?.());
+    const generateId = facades[0].options?.generateId;
+    const ids = [generateId?.(), generateId?.()];
     expect(ids.every((id) => typeof id === "string" && id.length > 0)).toBe(true);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -192,21 +194,59 @@ describe("createTacticalDrawSurface", () => {
 
     expect(facades).toHaveLength(1);
     expect(surface.tacticalDraw).not.toBeNull();
+    // The first style.load is the attach, not a basemap swap.
+    expect(adapters[0].reattach).not.toHaveBeenCalled();
   });
 
-  it("buffers the last render and replays it after a basemap swap", () => {
-    const { map, emitStyleLoad } = createFakeMap(true);
+  it("replays what the host set before the style loaded once it attaches", () => {
+    const { map, emitStyleLoad } = createFakeMap(false);
     const surface = createTacticalDrawSurface(map);
 
     surface.render([graphic]);
-    expect(facades[0].render).toHaveBeenCalledWith([graphic]);
-
-    // A basemap swap discards every custom layer, then re-fires style.load.
+    surface.setHighlightedGraphics(["g1"]);
     emitStyleLoad();
 
-    expect(facades).toHaveLength(2);
-    expect(facades[0].destroy).toHaveBeenCalledTimes(1);
-    expect(facades[1].render).toHaveBeenCalledWith([graphic]);
+    expect(facades[0].render).toHaveBeenCalledWith([graphic]);
+    expect(facades[0].setHighlightedGraphics).toHaveBeenCalledWith(["g1"]);
+    // Order matters: the library skips ids that are not currently rendered.
+    expect(facades[0].render.mock.invocationCallOrder[0]).toBeLessThan(
+      facades[0].setHighlightedGraphics.mock.invocationCallOrder[0],
+    );
+  });
+
+  // A basemap swap (`setStyle(..., { diff: false })`) drops every source and layer
+  // the adapter added, then re-fires style.load. Until `reattach()` runs the adapter
+  // records renders without drawing them, so a swap that skipped it would leave every
+  // graphic invisible. The façade, its graphics, highlights and any open session stay.
+  it("keeps the façade across a basemap swap and reattaches the adapter", () => {
+    const { map, emitStyleLoad } = createFakeMap(true);
+    const surface = createTacticalDrawSurface(map);
+    surface.render([graphic]);
+    surface.setHighlightedGraphics(["g1"]);
+    const facade = surface.tacticalDraw;
+
+    emitStyleLoad();
+
+    expect(facades).toHaveLength(1);
+    expect(surface.tacticalDraw).toBe(facade);
+    expect(facades[0].destroy).not.toHaveBeenCalled();
+    expect(adapters[0].reattach).toHaveBeenCalledTimes(1);
+    // The adapter restores what it last drew; nothing is rendered again.
+    expect(facades[0].render).toHaveBeenCalledTimes(1);
+    expect(facades[0].setHighlightedGraphics).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not detach on a basemap swap, so an open edit is not settled", () => {
+    const { map, emitStyleLoad } = createFakeMap(true);
+    const surface = createTacticalDrawSurface(map);
+    const beforeDetach = vi.fn();
+    surface.onBeforeDetach(beforeDetach);
+
+    emitStyleLoad();
+    expect(beforeDetach).not.toHaveBeenCalled();
+
+    surface.destroy();
+    expect(beforeDetach).toHaveBeenCalledTimes(1);
   });
 
   describe("pointSymbolAt", () => {
@@ -244,7 +284,7 @@ describe("createTacticalDrawSurface", () => {
     });
   });
 
-  it("keeps host pick subscriptions across a re-attach", () => {
+  it("keeps host pick subscriptions across a basemap swap", () => {
     const { map, emitStyleLoad } = createFakeMap(true);
     const surface = createTacticalDrawSurface(map);
     const handler = vi.fn();
@@ -255,7 +295,7 @@ describe("createTacticalDrawSurface", () => {
     expect(handler).toHaveBeenCalledTimes(1);
 
     emitStyleLoad();
-    facades[1].emitPick(pick);
+    facades[0].emitPick(pick);
 
     expect(handler).toHaveBeenCalledTimes(2);
   });
@@ -287,6 +327,7 @@ describe("createTacticalDrawSurface", () => {
     // Even a stray style.load must not resurrect the surface.
     emitStyleLoad();
     expect(facades).toHaveLength(1);
+    expect(adapters[0].reattach).not.toHaveBeenCalled();
     expect(surface.tacticalDraw).toBeNull();
   });
 
@@ -356,47 +397,17 @@ describe("createTacticalDrawSurface", () => {
         originalEvent,
       });
     });
-
-    it("replays the highlight set after a style.load re-attach, and after the batch", () => {
-      const { map, emitStyleLoad } = createFakeMap(true);
-      const surface = createTacticalDrawSurface(map);
-
-      surface.render([graphic]);
-      surface.setHighlightedGraphics(["g1"]);
-      expect(facades[0].setHighlightedGraphics).toHaveBeenCalledWith(["g1"]);
-
-      emitStyleLoad();
-
-      // A basemap swap wipes the highlight layer along with everything else.
-      expect(facades[1].setHighlightedGraphics).toHaveBeenCalledWith(["g1"]);
-      // Order matters: the library skips ids that are not currently rendered.
-      expect(facades[1].render.mock.invocationCallOrder[0]).toBeLessThan(
-        facades[1].setHighlightedGraphics.mock.invocationCallOrder[0],
-      );
-    });
-
-    it("does not replay a cleared highlight set", () => {
-      const { map, emitStyleLoad } = createFakeMap(true);
-      const surface = createTacticalDrawSurface(map);
-
-      surface.render([graphic]);
-      surface.setHighlightedGraphics(["g1"]);
-      surface.setHighlightedGraphics([]);
-      emitStyleLoad();
-
-      expect(facades[1].setHighlightedGraphics).not.toHaveBeenCalled();
-    });
   });
 
-  it("survives a facade that throws while its style is being torn down", () => {
-    const { map, emitStyleLoad } = createFakeMap(true);
+  it("still destroys the adapter when the facade throws while being torn down", () => {
+    const { map } = createFakeMap(true);
     const surface = createTacticalDrawSurface(map);
     facades[0].destroy.mockImplementation(() => {
       throw new Error("style already gone");
     });
 
-    expect(() => emitStyleLoad()).not.toThrow();
-    expect(facades).toHaveLength(2);
-    expect(surface.tacticalDraw).not.toBeNull();
+    expect(() => surface.destroy()).not.toThrow();
+    expect(adapters[0].destroy).toHaveBeenCalledTimes(1);
+    expect(surface.tacticalDraw).toBeNull();
   });
 });

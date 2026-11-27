@@ -41,7 +41,7 @@ export type SettleReason =
   /** A host deletion must settle any session before it removes the edited item. */
   | "delete"
   /**
-   * The tactical-draw façade is about to be destroyed and rebuilt — a basemap swap.
+   * The tactical-draw façade is about to be destroyed with its surface.
    * Destroying it rejects an open session without firing `onCommit`, so an edit that
    * did not settle here would lose its work.
    */
@@ -91,7 +91,7 @@ function highlightedIdsFor(
 export function useTacticalGraphicRenderFeed(
   scenario: TScenario,
   options: {
-    /** Re-read on every render: the façade is rebuilt on every basemap swap. */
+    /** Re-read on every render: the surface comes and goes with the map view. */
     surface: () => TacticalDrawSurface | undefined | null;
   },
 ): TacticalGraphicRenderFeed {

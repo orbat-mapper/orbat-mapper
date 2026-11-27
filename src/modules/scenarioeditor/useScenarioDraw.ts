@@ -494,11 +494,12 @@ export function useScenarioDraw(options: UseScenarioDrawOptions = {}) {
     });
   });
 
-  // A basemap swap destroys the tactical-draw façade and builds a new one. Destroying
-  // it rejects an open session's promise *without* firing `onCommit`, so an edit would
-  // lose everything the user had reshaped — the one settle path that cannot go through
-  // the render feed's own inputs, because nothing in the store changed. Registered here
-  // rather than in the map view because this is where the sessions are owned.
+  // Tearing the surface down destroys the tactical-draw façade, which rejects an open
+  // session's promise *without* firing `onCommit`, so an edit would lose everything
+  // the user had reshaped — the one settle path that cannot go through the render
+  // feed's own inputs, because nothing in the store changed. Registered here rather
+  // than in the map view because this is where the sessions are owned. A basemap swap
+  // keeps the façade and the session, so it settles nothing.
   watch(
     () => engineRef.value?.draw,
     (surface, _previous, onCleanup) => {

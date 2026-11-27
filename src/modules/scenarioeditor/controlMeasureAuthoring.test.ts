@@ -702,7 +702,7 @@ describe("the façade going away underneath a session", () => {
   // nothing in the store changed, so no other settle trigger can fire. Without the
   // `onBeforeDetach` hook the reshaping is silently discarded — the one settle path
   // ADR-0006's "an edit closes and keeps its work" cannot reach through the feed.
-  it("keeps an open edit's work when a basemap swap detaches the surface", async () => {
+  it("keeps an open edit's work when the surface is torn down", async () => {
     const { draw, scenario, fake } = setup();
 
     draw.arm({ kind: "cmEdit", featureId: "cm-1" });
